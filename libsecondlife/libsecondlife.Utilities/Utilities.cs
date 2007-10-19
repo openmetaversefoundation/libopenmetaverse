@@ -336,9 +336,10 @@ namespace libsecondlife.Utilities
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
-                                    Client.Self.Movement.Camera.CameraCenter.X = (float)(x * 4 + x1);
-                                    Client.Self.Movement.Camera.CameraCenter.Y = (float)(y * 4 + y1);
-                                    Client.Self.Movement.Camera.CameraCenter.Z = Client.Self.Position.Z;
+                                    LLVector3 position = new LLVector3((float)(x * 4 + x1), (float)(y * 4 + y1),
+                                        Client.Self.Position.Z);
+                                    Client.Self.Movement.Camera.Position = position;
+
                                     Client.Self.Movement.SendUpdate(true);
 
                                     Thread.Sleep(1000);
@@ -425,9 +426,10 @@ namespace libsecondlife.Utilities
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
-                                    Client.Self.Movement.Camera.CameraCenter.X = (float)(x * 4 + x1);
-                                    Client.Self.Movement.Camera.CameraCenter.Y = (float)(y * 4 + y1);
-                                    Client.Self.Movement.Camera.CameraCenter.Z = Client.Self.Position.Z;
+                                    LLVector3 position = new LLVector3((float)(x * 4 + x1), (float)(y * 4 + y1),
+                                        Client.Self.Position.Z);
+                                    Client.Self.Movement.Camera.Position = position;
+
                                     Client.Self.Movement.SendUpdate(true);
 
                                     Thread.Sleep(1000);

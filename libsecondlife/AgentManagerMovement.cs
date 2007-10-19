@@ -31,7 +31,7 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
-    public partial class MainAvatar
+    public partial class AgentManager
     {
         #region Enums
 
@@ -113,242 +113,203 @@ namespace libsecondlife
         #endregion Enums
 
         /// <summary> 
-        /// Holds current camera and control key status
+        /// Agent movement and camera control
         /// </summary> 
-        public class MainAvatarMovement
+        public partial class AgentMovement
         {
-            #region Structs
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public struct CameraStatus
-            {
-                /// <summary></summary>
-                public LLQuaternion BodyRotation;
-                /// <summary></summary>
-                public LLQuaternion HeadRotation;
-                /// <summary></summary>
-                public LLVector3 CameraAtAxis;
-                /// <summary></summary>
-                public LLVector3 CameraCenter;
-                /// <summary></summary>
-                public LLVector3 CameraLeftAxis;
-                /// <summary></summary>
-                public LLVector3 CameraUpAxis;
-                /// <summary></summary>
-                public float Far;
-                /// <summary></summary>
-                internal LLQuaternion LastBodyRotation;
-                /// <summary></summary>
-                internal LLQuaternion LastHeadRotation;
-                /// <summary></summary>
-                internal LLVector3 LastCameraAtAxis;
-                /// <summary></summary>
-                internal LLVector3 LastCameraCenter;
-                /// <summary></summary>
-                internal LLVector3 LastCameraLeftAxis;
-                /// <summary></summary>
-                internal LLVector3 LastCameraUpAxis;
-                /// <summary></summary>
-                internal float LastFar;
-            }
-
-            #endregion Structs
-
             #region Properties
 
             /// <summary></summary>
             public bool AtPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_AT_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_AT_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_POS, value); }
             }
             /// <summary></summary>
             public bool AtNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_AT_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_AT_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG, value); }
             }
             /// <summary></summary>
             public bool LeftPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LEFT_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LEFT_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS, value); }
             }
             /// <summary></summary>
             public bool LeftNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LEFT_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LEFT_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG, value); }
             }
             /// <summary></summary>
             public bool UpPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_UP_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_UP_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_POS, value); }
             }
             /// <summary></summary>
             public bool UpNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_UP_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_UP_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG, value); }
             }
             /// <summary></summary>
             public bool PitchPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_PITCH_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_PITCH_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_PITCH_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_PITCH_POS, value); }
             }
             /// <summary></summary>
             public bool PitchNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_PITCH_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_PITCH_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_PITCH_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_PITCH_NEG, value); }
             }
             /// <summary></summary>
             public bool YawPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_YAW_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_YAW_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_YAW_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_YAW_POS, value); }
             }
             /// <summary></summary>
             public bool YawNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_YAW_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_YAW_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_YAW_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_YAW_NEG, value); }
             }
             /// <summary></summary>
             public bool FastAt
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FAST_AT); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FAST_AT, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_AT); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_AT, value); }
             }
             /// <summary></summary>
             public bool FastLeft
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FAST_LEFT); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FAST_LEFT, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_LEFT); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_LEFT, value); }
             }
             /// <summary></summary>
             public bool FastUp
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FAST_UP); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FAST_UP, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_UP); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_UP, value); }
             }
             /// <summary></summary>
             public bool Fly
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FLY); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FLY, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FLY); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FLY, value); }
             }
             /// <summary></summary>
             public bool Stop
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_STOP); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_STOP, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STOP); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STOP, value); }
             }
             /// <summary></summary>
             public bool FinishAnim
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FINISH_ANIM); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_FINISH_ANIM, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FINISH_ANIM); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FINISH_ANIM, value); }
             }
             /// <summary></summary>
             public bool StandUp
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_STAND_UP); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_STAND_UP, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP, value); }
             }
             /// <summary></summary>
             public bool SitOnGround
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_SIT_ON_GROUND); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_SIT_ON_GROUND, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_SIT_ON_GROUND); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_SIT_ON_GROUND, value); }
             }
             /// <summary></summary>
             public bool Mouselook
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_MOUSELOOK); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_MOUSELOOK, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK, value); }
             }
             /// <summary></summary>
             public bool NudgeAtPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_AT_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_AT_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_POS, value); }
             }
             /// <summary></summary>
             public bool NudgeAtNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_AT_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_AT_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_NEG, value); }
             }
             /// <summary></summary>
             public bool NudgeLeftPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_POS, value); }
             }
             /// <summary></summary>
             public bool NudgeLeftNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_NEG, value); }
             }
             /// <summary></summary>
             public bool NudgeUpPos
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_UP_POS); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_UP_POS, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_POS); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_POS, value); }
             }
             /// <summary></summary>
             public bool NudgeUpNeg
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_UP_NEG); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_NUDGE_UP_NEG, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_NEG); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_NEG, value); }
             }
             /// <summary></summary>
             public bool TurnLeft
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_TURN_LEFT); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_TURN_LEFT, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_TURN_LEFT); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_TURN_LEFT, value); }
             }
             /// <summary></summary>
             public bool TurnRight
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_TURN_RIGHT); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_TURN_RIGHT, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT, value); }
             }
             /// <summary></summary>
             public bool Away
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_AWAY); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_AWAY, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AWAY); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AWAY, value); }
             }
             /// <summary></summary>
             public bool LButtonDown
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LBUTTON_DOWN); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LBUTTON_DOWN, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LBUTTON_DOWN); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LBUTTON_DOWN, value); }
             }
             /// <summary></summary>
             public bool LButtonUp
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LBUTTON_UP); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_LBUTTON_UP, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LBUTTON_UP); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LBUTTON_UP, value); }
             }
             /// <summary></summary>
             public bool MLButtonDown
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_ML_LBUTTON_DOWN); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_ML_LBUTTON_DOWN, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_ML_LBUTTON_DOWN); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_ML_LBUTTON_DOWN, value); }
             }
             /// <summary></summary>
             public bool MLButtonUp
             {
-                get { return GetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_ML_LBUTTON_UP); }
-                set { SetControlFlag(MainAvatar.ControlFlags.AGENT_CONTROL_ML_LBUTTON_UP, value); }
+                get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_ML_LBUTTON_UP); }
+                set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_ML_LBUTTON_UP, value); }
             }
             /// <summary>
             /// Returns "always run" value, or changes it by sending a SetAlwaysRunPacket
@@ -414,14 +375,34 @@ namespace libsecondlife
 
             #endregion Properties
 
-
-            /// <summary>Holds camera flags</summary>
-            public CameraStatus Camera;
+            /// <summary>Agent camera controls</summary>
+            public AgentCamera Camera;
             /// <summary>Currently only used for hiding your group title</summary>
             public AgentFlags Flags = AgentFlags.None;
             /// <summary>Action state of the avatar, which can currently be
             /// typing and editing</summary>
             public AgentState State = AgentState.None;
+            /// <summary></summary>
+            public LLQuaternion BodyRotation = LLQuaternion.Identity;
+            /// <summary></summary>
+            public LLQuaternion HeadRotation = LLQuaternion.Identity;
+
+            #region Change tracking
+            /// <summary></summary>
+            private LLQuaternion LastBodyRotation;
+            /// <summary></summary>
+            private LLQuaternion LastHeadRotation;
+            /// <summary></summary>
+            private LLVector3 LastCameraCenter;
+            /// <summary></summary>
+            private LLVector3 LastCameraXAxis;
+            /// <summary></summary>
+            private LLVector3 LastCameraYAxis;
+            /// <summary></summary>
+            private LLVector3 LastCameraZAxis;
+            /// <summary></summary>
+            private float LastFar;
+            #endregion Change tracking
 
             private bool alwaysRun = false;
             private SecondLife Client;
@@ -431,20 +412,11 @@ namespace libsecondlife
             /// <summary>Timer for sending AgentUpdate packets</summary>
             private Timer updateTimer;
 
-
             /// <summary>Default constructor</summary>
-            public MainAvatarMovement(SecondLife client)
+            public AgentMovement(SecondLife client)
             {
                 Client = client;
-
-                // Lets set some default camera values
-                Camera.BodyRotation = LLQuaternion.Identity;
-                Camera.HeadRotation = LLQuaternion.Identity;
-                Camera.CameraCenter = new LLVector3(128f, 128f, 20f);
-                Camera.CameraAtAxis = new LLVector3(0f, 0.9999f, 0f);
-                Camera.CameraLeftAxis = new LLVector3(0.9999f, 0f, 0f);
-                Camera.CameraUpAxis = new LLVector3(0f, 0f, 0.9999f);
-                Camera.Far = 128f;
+                Camera = new AgentCamera();
 
                 updateTimer = new Timer(Settings.DEFAULT_AGENT_UPDATE_INTERVAL);
                 updateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
@@ -460,14 +432,12 @@ namespace libsecondlife
             /// or not</param>
             public void UpdateFromHeading(double heading, bool reliable)
             {
-                Camera.CameraCenter = Client.Self.Position;
-                Camera.CameraAtAxis.X = (float)Math.Cos(heading);
-                Camera.CameraAtAxis.Y = (float)Math.Sin(heading);
-                Camera.CameraLeftAxis.X = (float)-Math.Sin(heading);
-                Camera.CameraLeftAxis.Y = (float)Math.Cos(heading);
-                Camera.BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
-                Camera.BodyRotation.W = (float)Math.Cos(heading / 2.0d);
-                Camera.HeadRotation = Camera.BodyRotation;
+                Camera.Position = Client.Self.Position;
+                Camera.LookDirection(heading);
+                
+                BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
+                BodyRotation.W = (float)Math.Cos(heading / 2.0d);
+                HeadRotation = BodyRotation;
 
                 SendUpdate(reliable);
             }
@@ -486,10 +456,9 @@ namespace libsecondlife
                     LLVector3 offset = LLVector3.Norm(target - myPos);
                     LLQuaternion newRot = LLVector3.RotBetween(forward, offset);
 
-                    Camera.BodyRotation = newRot;
-                    Camera.HeadRotation = newRot;
-
-                    //TODO - include CoordinateFrame for at/left/up camera axes
+                    BodyRotation = newRot;
+                    HeadRotation = newRot;
+                    Camera.LookAt(myPos, target);
 
                     SendUpdate();
 
@@ -576,16 +545,21 @@ namespace libsecondlife
             /// <param name="simulator">Simulator to send the update to</param>
             public void SendUpdate(bool reliable, Simulator simulator)
             {
+                LLVector3 origin = Camera.Position;
+                LLVector3 xAxis = Camera.LeftAxis;
+                LLVector3 yAxis = Camera.AtAxis;
+                LLVector3 zAxis = Camera.UpAxis;
+
                 // Attempted to sort these in a rough order of how often they might change
                 if (agentControls == 0 &&
-                    Camera.CameraAtAxis == Camera.LastCameraAtAxis &&
-                    Camera.CameraCenter == Camera.LastCameraCenter &&
+                    yAxis == LastCameraYAxis &&
+                    origin == LastCameraCenter &&
                     State == lastState &&
-                    Camera.HeadRotation == Camera.LastHeadRotation &&
-                    Camera.BodyRotation == Camera.LastBodyRotation &&
-                    Camera.CameraLeftAxis == Camera.LastCameraLeftAxis &&
-                    Camera.Far == Camera.LastFar &&
-                    Camera.CameraUpAxis == Camera.LastCameraUpAxis)
+                    HeadRotation == LastHeadRotation &&
+                    BodyRotation == LastBodyRotation &&
+                    xAxis == LastCameraXAxis &&
+                    Camera.Far == LastFar &&
+                    zAxis == LastCameraZAxis)
                 {
                     ++duplicateCount;
                 }
@@ -597,13 +571,13 @@ namespace libsecondlife
                 if (Client.Settings.CONTINUOUS_AGENT_UPDATES || duplicateCount < 10)
                 {
                     // Store the current state to do duplicate checking in the future
-                    Camera.LastHeadRotation = Camera.HeadRotation;
-                    Camera.LastBodyRotation = Camera.BodyRotation;
-                    Camera.LastCameraAtAxis = Camera.CameraAtAxis;
-                    Camera.LastCameraCenter = Camera.CameraCenter;
-                    Camera.LastCameraLeftAxis = Camera.CameraLeftAxis;
-                    Camera.LastCameraUpAxis = Camera.CameraUpAxis;
-                    Camera.LastFar = Camera.Far;
+                    LastHeadRotation = HeadRotation;
+                    LastBodyRotation = BodyRotation;
+                    LastCameraYAxis = yAxis;
+                    LastCameraCenter = origin;
+                    LastCameraXAxis = xAxis;
+                    LastCameraZAxis = zAxis;
+                    LastFar = Camera.Far;
                     lastState = State;
 
                     // Build the AgentUpdate packet and send it
@@ -612,12 +586,12 @@ namespace libsecondlife
 
                     update.AgentData.AgentID = Client.Network.AgentID;
                     update.AgentData.SessionID = Client.Network.SessionID;
-                    update.AgentData.HeadRotation = Camera.HeadRotation;
-                    update.AgentData.BodyRotation = Camera.BodyRotation;
-                    update.AgentData.CameraAtAxis = Camera.CameraAtAxis;
-                    update.AgentData.CameraCenter = Camera.CameraCenter;
-                    update.AgentData.CameraLeftAxis = Camera.CameraLeftAxis;
-                    update.AgentData.CameraUpAxis = Camera.CameraUpAxis;
+                    update.AgentData.HeadRotation = HeadRotation;
+                    update.AgentData.BodyRotation = BodyRotation;
+                    update.AgentData.CameraAtAxis = yAxis;
+                    update.AgentData.CameraCenter = origin;
+                    update.AgentData.CameraLeftAxis = xAxis;
+                    update.AgentData.CameraUpAxis = zAxis;
                     update.AgentData.Far = Camera.Far;
                     update.AgentData.State = (byte)State;
                     update.AgentData.ControlFlags = agentControls;
@@ -641,7 +615,7 @@ namespace libsecondlife
             /// <param name="headRotation"></param>
             /// <param name="farClip"></param>
             /// <param name="reliable"></param>
-            public void SendManualUpdate(MainAvatar.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
+            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
                 LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)
             {
@@ -665,13 +639,12 @@ namespace libsecondlife
                 Client.Network.SendPacket(update);
             }
 
-
-            private bool GetControlFlag(MainAvatar.ControlFlags flag)
+            private bool GetControlFlag(AgentManager.ControlFlags flag)
             {
                 return (agentControls & (uint)flag) != 0;
             }
 
-            private void SetControlFlag(MainAvatar.ControlFlags flag, bool value)
+            private void SetControlFlag(AgentManager.ControlFlags flag, bool value)
             {
                 if (value) agentControls |= (uint)flag;
                 else agentControls &= ~((uint)flag);

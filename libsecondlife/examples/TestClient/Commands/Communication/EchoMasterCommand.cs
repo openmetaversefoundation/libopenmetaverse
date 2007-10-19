@@ -19,13 +19,13 @@ namespace libsecondlife.TestClient
 			if (!Active)
 			{
 				Active = true;
-                Client.Self.OnChat += new MainAvatar.ChatCallback(Self_OnChat);
+                Client.Self.OnChat += new AgentManager.ChatCallback(Self_OnChat);
 				return "Echoing is now on.";
 			}
 			else
 			{
 				Active = false;
-                Client.Self.OnChat -= new MainAvatar.ChatCallback(Self_OnChat);
+                Client.Self.OnChat -= new AgentManager.ChatCallback(Self_OnChat);
 				return "Echoing is now off.";
 			}
 		}

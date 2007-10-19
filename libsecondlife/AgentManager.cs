@@ -435,9 +435,9 @@ namespace libsecondlife
 	#endregion Structs
 	
     /// <summary>
-    /// Class to hold Client Avatar's data
+    /// Manager class for our own avatar
     /// </summary>
-    public partial class MainAvatar
+    public partial class AgentManager
     {
         #region Enums
 
@@ -716,7 +716,7 @@ namespace libsecondlife
         /// <summary>LookAt point saved/restored with HomePosition</summary>
         public LLVector3 HomeLookAt;
         /// <summary>Used for movement and camera tracking</summary>
-        public MainAvatarMovement Movement;
+        public AgentMovement Movement;
         /// <summary>The UUID of your root inventory folder</summary>
         public LLUUID InventoryRootFolderUUID;
 
@@ -825,10 +825,10 @@ namespace libsecondlife
         /// Constructor, setup callbacks for packets related to our avatar
         /// </summary>
         /// <param name="client"></param>
-        public MainAvatar(SecondLife client)
+        public AgentManager(SecondLife client)
         {
             Client = client;
-            Movement = new MainAvatarMovement(Client);
+            Movement = new AgentMovement(Client);
             NetworkManager.PacketCallback callback;
 
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);

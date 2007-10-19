@@ -280,7 +280,7 @@ namespace libsecondlife
 
             Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnect);
             Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
-            Client.Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(MainAvatar_InstantMessage);
+            Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(MainAvatar_InstantMessage);
 
             Client.Network.RegisterCallback(PacketType.OnlineNotification, OnlineNotificationHandler);
             Client.Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);

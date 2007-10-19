@@ -86,13 +86,6 @@ namespace libsecondlife
 
         #region Constructors
 
-        public CoordinateFrame()
-        {
-            xAxis = X_AXIS;
-            yAxis = Y_AXIS;
-            zAxis = Z_AXIS;
-        }
-
         public CoordinateFrame(LLVector3 origin)
         {
             this.origin = origin;
@@ -100,7 +93,7 @@ namespace libsecondlife
             yAxis = Y_AXIS;
             zAxis = Z_AXIS;
 
-            if (!origin.IsFinite())
+            if (!this.origin.IsFinite())
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
@@ -159,46 +152,6 @@ namespace libsecondlife
             zAxis = Z_AXIS;
         }
 
-        public bool IsFinite()
-        {
-            if (xAxis.IsFinite() && yAxis.IsFinite() && zAxis.IsFinite())
-                return true;
-            else
-                return false;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="at">Looking direction, must be a normalized vector</param>
-        /// <param name="upDirection">Up direction, must be a normalized vector</param>
-        public void LookDirection(LLVector3 at, LLVector3 upDirection)
-        {
-            // The two parameters cannot be parallel
-            LLVector3 left = LLVector3.Cross(upDirection, at);
-            if (left == LLVector3.Zero)
-            {
-                // Prevent left from being zero
-                at.X += 0.01f;
-                at = LLVector3.Norm(at);
-                left = LLVector3.Cross(upDirection, at);
-            }
-            left = LLVector3.Norm(left);
-
-            xAxis = at;
-            yAxis = left;
-            zAxis = LLVector3.Cross(at, left);
-        }
-
-        public void Orthonormalize()
-        {
-            // Make sure the axis are orthagonal and normalized
-            xAxis = LLVector3.Norm(xAxis);
-            yAxis -= xAxis * (xAxis * yAxis);
-            yAxis = LLVector3.Norm(yAxis);
-            zAxis = LLVector3.Cross(xAxis, yAxis);
-        }
-
         public void Rotate(float angle, LLVector3 rotationAxis)
         {
             LLQuaternion q = new LLQuaternion(angle, rotationAxis);
@@ -254,7 +207,49 @@ namespace libsecondlife
 
         public void LookDirection(LLVector3 at)
         {
-            LookDirection(at, new LLVector3(0f, 0f, 1f));
+            LookDirection(at, Z_AXIS);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="at">Looking direction, must be a normalized vector</param>
+        /// <param name="upDirection">Up direction, must be a normalized vector</param>
+        public void LookDirection(LLVector3 at, LLVector3 upDirection)
+        {
+            // The two parameters cannot be parallel
+            LLVector3 left = LLVector3.Cross(upDirection, at);
+            if (left == LLVector3.Zero)
+            {
+                // Prevent left from being zero
+                at.X += 0.01f;
+                at = LLVector3.Norm(at);
+                left = LLVector3.Cross(upDirection, at);
+            }
+            left = LLVector3.Norm(left);
+
+            xAxis = at;
+            yAxis = left;
+            zAxis = LLVector3.Cross(at, left);
+        }
+
+        /// <summary>
+        /// Align the coordinate frame X and Y axis with a given rotation
+        /// around the Z axis in radians
+        /// </summary>
+        /// <param name="heading">Absolute rotation around the Z axis in
+        /// radians</param>
+        public void LookDirection(double heading)
+        {
+            yAxis.X = (float)Math.Cos(heading);
+            yAxis.Y = (float)Math.Sin(heading);
+            xAxis.X = (float)-Math.Sin(heading);
+            xAxis.Y = (float)Math.Cos(heading);
+        }
+
+        public void LookAt(LLVector3 origin, LLVector3 target)
+        {
+            LookAt(origin, target, new LLVector3(0f, 0f, 1f));
         }
 
         public void LookAt(LLVector3 origin, LLVector3 target, LLVector3 upDirection)
@@ -266,11 +261,23 @@ namespace libsecondlife
             LookDirection(at, upDirection);
         }
 
-        public void LookAt(LLVector3 origin, LLVector3 target)
+        #endregion Public Methods
+
+        protected bool IsFinite()
         {
-            LookAt(origin, target, new LLVector3(0f, 0f, 1f));
+            if (xAxis.IsFinite() && yAxis.IsFinite() && zAxis.IsFinite())
+                return true;
+            else
+                return false;
         }
 
-        #endregion Public Methods
+        protected void Orthonormalize()
+        {
+            // Make sure the axis are orthagonal and normalized
+            xAxis = LLVector3.Norm(xAxis);
+            yAxis -= xAxis * (xAxis * yAxis);
+            yAxis = LLVector3.Norm(yAxis);
+            zAxis = LLVector3.Cross(xAxis, yAxis);
+        }
     }
 }
