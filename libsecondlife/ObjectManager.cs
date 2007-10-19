@@ -2160,19 +2160,16 @@ namespace libsecondlife
                 for (int j = 0; j < numTextures; ++j)
                     props.TextureIDs[j] = new LLUUID(objectData.TextureID, j * 16);
 
-                Primitive findPrim;
+                Primitive findPrim = sim.Objects.Find(
+                    delegate(Primitive prim) { return prim.ID == props.ObjectID; });
 
-                findPrim = sim.Objects.Find(
-                    delegate(Primitive prim)
-                    {
-                        return prim.ID == props.ObjectID;
-                    }
-                );
-                
-                lock (sim.Objects.Prims)
+                if (findPrim != null)
                 {
-                    if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
-                        sim.Objects.Prims[findPrim.LocalID].Properties = props;
+                    lock (sim.Objects.Prims)
+                    {
+                        if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
+                            sim.Objects.Prims[findPrim.LocalID].Properties = props;
+                    }
                 }
 
                 FireOnObjectProperties(sim, props);
