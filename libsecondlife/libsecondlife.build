@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <project name="libsecondlife" default="build">
 	<sysinfo />
 
@@ -12,8 +12,7 @@
 	  xpath="/project/property[@name = 'project.version']/@value"
 	  property="project.version" />
 	<property name="build.number"
-	   value="${math::abs(math::floor(timespan::get-total-days(datetime::now()
-     - datetime::parse('01/01/2002'))))}" />
+	   value="${math::abs(math::floor(timespan::get-total-days(datetime::now() - datetime::parse('01/01/2002'))))}" />
 	<property name="assembly" value="libsecondlife" />
 	<property name="bin_dir" value="../bin" />
 
@@ -98,6 +97,8 @@
 		<csc target="library" unsafe="true" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
 			<sources>
 				<include name="*.cs" />
+				<include name="LLSD/*.cs" />
+				<include name="Capabilities/*.cs" />
 				<include name="libsecondlife.Utilities/*.cs" />
 			</sources>
 			<references basedir="${bin_dir}/"> 
