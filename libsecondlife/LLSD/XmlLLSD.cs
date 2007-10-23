@@ -106,6 +106,7 @@ namespace libsecondlife.LLSD
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
+                        return null;
                     }
 
                     reader.Read();
