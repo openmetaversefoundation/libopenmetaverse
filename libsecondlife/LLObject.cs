@@ -223,15 +223,7 @@ namespace libsecondlife
             /// <summary></summary>
             public ulong CreationDate;
             /// <summary></summary>
-            public uint BaseMask;
-            /// <summary></summary>
-            public uint OwnerMask;
-            /// <summary></summary>
-            public uint GroupMask;
-            /// <summary></summary>
-            public uint EveryoneMask;
-            /// <summary></summary>
-            public uint NextOwnerMask;
+            public Permissions Permissions;
             /// <summary></summary>
             public int OwnershipCost;
             /// <summary></summary>

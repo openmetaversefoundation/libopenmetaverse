@@ -36,7 +36,6 @@
 
 using Nwc.XmlRpc;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -81,7 +80,7 @@ namespace SLProxy
         public ProxyConfig(string userAgent, string author, string[] args)
             : this(userAgent, author)
         {
-            Hashtable argumentParsers = new Hashtable();
+            Dictionary<string, ArgumentParser> argumentParsers = new Dictionary<string, ArgumentParser>();
             argumentParsers["proxy-help"] = new ArgumentParser(ParseHelp);
             argumentParsers["proxy-login-port"] = new ArgumentParser(ParseLoginPort);
             argumentParsers["proxy-client-facing-address"] = new ArgumentParser(ParseClientFacingAddress);
@@ -312,7 +311,7 @@ namespace SLProxy
                 if (activeCircuit == null)
                 {
                     // no active circuit; queue the packet for injection once we have one
-                    ArrayList queue = direction == Direction.Incoming ? queuedIncomingInjections : queuedOutgoingInjections;
+                    List<Packet> queue = direction == Direction.Incoming ? queuedIncomingInjections : queuedOutgoingInjections;
                     queue.Add(packet);
                 }
                 else
@@ -386,7 +385,7 @@ namespace SLProxy
                             SimProxy activeProxy = (SimProxy)simProxies[activeCircuit];
                             foreach (Packet packet in queuedOutgoingInjections)
                                 activeProxy.Inject(packet, Direction.Outgoing);
-                            queuedOutgoingInjections = new ArrayList();
+                            queuedOutgoingInjections = new List<Packet>();
                         }
                 }
             }
@@ -588,7 +587,7 @@ namespace SLProxy
             if (cap != null)
             {
                 capReq = new CapsRequest(cap);
-                
+
                 if (cap.ReqFmt == CapsDataFormat.LLSD)
                 {
                     capReq.Request = LLSDParser.DeserializeXml(content);
@@ -739,11 +738,14 @@ namespace SLProxy
             {
                 foreach (CapsDelegate d in cap.GetDelegates())
                 {
-		  try {
-                    if (d(capReq, CapsStage.Response)) { break; }
-		  } catch (Exception e) {
-		    Console.WriteLine(e.ToString()); break;
-		  }
+                    try
+                    {
+                        if (d(capReq, CapsStage.Response)) { break; }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString()); break;
+                    }
                 }
 
                 if (cap.RespFmt == CapsDataFormat.LLSD)
@@ -772,14 +774,17 @@ namespace SLProxy
             Console.WriteLine("[" + reqNo + "] Fixed-up response:\n" + Encoding.UTF8.GetString(respBuf) + "\n--------");
 #endif
 
-
+            try
             {
-                byte[] wr = Encoding.UTF8.GetBytes("Content-Length: " + respBuf.Length + "\r\n\r\n");
-                netStream.Write(wr, 0, wr.Length);
+                byte[] wr2 = Encoding.UTF8.GetBytes("Content-Length: " + respBuf.Length + "\r\n\r\n");
+                netStream.Write(wr2, 0, wr2.Length);
+
+                netStream.Write(respBuf, 0, respBuf.Length);
             }
-
-
-            netStream.Write(respBuf, 0, respBuf.Length);
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
 
             return;
         }
@@ -788,12 +793,12 @@ namespace SLProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            Hashtable m = (Hashtable)capReq.Response;
-            Hashtable nm = new Hashtable();
+            Dictionary<string, object> m = (Dictionary<string, object>)capReq.Response;
+            Dictionary<string, object> nm = new Dictionary<string, object>();
             foreach (string key in m.Keys)
             {
                 string val = (string)m[key];
-                if (val != null && val != "")
+                if (!String.IsNullOrEmpty(val))
                 {
                     if (!KnownCaps.ContainsKey(val))
                     {
@@ -877,17 +882,17 @@ namespace SLProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            foreach (Hashtable evt in (ArrayList)((Hashtable)capReq.Response)["events"])
+            foreach (Dictionary<string, object> evt in (List<object>)((Dictionary<string, object>)capReq.Response)["events"])
             {
                 string message = (string)evt["message"];
-                Hashtable body = (Hashtable)evt["body"];
+                Dictionary<string, object> body = (Dictionary<string, object>)evt["body"];
                 if (message == "TeleportFinish" || message == "CrossedRegion")
                 {
-                    Hashtable info = null;
+                    Dictionary<string, object> info = null;
                     if (message == "TeleportFinish")
-		      info = (Hashtable)(((ArrayList)body["Info"])[0]);
+                        info = (Dictionary<string, object>)(((List<object>)body["Info"])[0]);
                     else
-		      info = (Hashtable)(((ArrayList)body["RegionData"])[0]);
+                        info = (Dictionary<string, object>)(((List<object>)body["RegionData"])[0]);
                     byte[] bytes = (byte[])info["SimIP"];
                     uint simIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
                     ushort simPort = (ushort)(int)info["SimPort"];
@@ -900,21 +905,24 @@ namespace SLProxy
                     bytes[3] = (byte)((simIP >> 24) % 256);
                     info["SimIP"] = bytes;
                     info["SimPort"] = (int)simPort;
-                } else if(message == "EstablishAgentCommunication") {
-			string ipAndPort = (string)body["sim-ip-and-port"];
-			string[] pieces = ipAndPort.Split(':');
-			byte[] bytes = IPAddress.Parse(pieces[0]).GetAddressBytes();
-		        uint simIP = (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
-        	        ushort simPort = (ushort)Convert.ToInt32(pieces[1]);
-			
-			string capsURL = (string)body["seed-capability"];
-			Console.WriteLine("DEBUG: Got EstablishAgentCommunication for " + ipAndPort +" with seed cap " +capsURL);
-			GenericCheck(ref simIP, ref simPort, ref capsURL, false);
-			body["seed-capability"] = capsURL;
-			body["sim-ip-and-port"] = new IPAddress((uint)simIP).ToString()+":"+simPort;
-			Console.WriteLine("DEBUG: Modified EstablishAgentCommunication to " + (string)body["sim-ip-and-port"] +" with seed cap " +capsURL);
-		}
+                }
+                else if (message == "EstablishAgentCommunication")
+                {
+                    string ipAndPort = (string)body["sim-ip-and-port"];
+                    string[] pieces = ipAndPort.Split(':');
+                    byte[] bytes = IPAddress.Parse(pieces[0]).GetAddressBytes();
+                    uint simIP = (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
+                    ushort simPort = (ushort)Convert.ToInt32(pieces[1]);
+
+                    string capsURL = (string)body["seed-capability"];
+                    Console.WriteLine("DEBUG: Got EstablishAgentCommunication for " + ipAndPort + " with seed cap " + capsURL);
+                    GenericCheck(ref simIP, ref simPort, ref capsURL, false);
+                    body["seed-capability"] = capsURL;
+                    body["sim-ip-and-port"] = new IPAddress((uint)simIP).ToString() + ":" + simPort;
+                    Console.WriteLine("DEBUG: Modified EstablishAgentCommunication to " + (string)body["sim-ip-and-port"] + " with seed cap " + capsURL);
+                }
             }
+
             return false;
         }
 
@@ -938,7 +946,7 @@ namespace SLProxy
                     }
 
                 // add our userAgent and author to the request
-                Hashtable requestParams = new Hashtable();
+                System.Collections.Hashtable requestParams = new System.Collections.Hashtable();
                 if (proxyConfig.userAgent != null)
                     requestParams["user-agent"] = proxyConfig.userAgent;
                 if (proxyConfig.author != null)
@@ -958,7 +966,7 @@ namespace SLProxy
                     return;
                 }
 
-                Hashtable responseData = (Hashtable)response.Value;
+                System.Collections.Hashtable responseData = (System.Collections.Hashtable)response.Value;
 
                 // proxy any simulator address given in the XML-RPC response
                 if (responseData.Contains("sim_ip") && responseData.Contains("sim_port"))
@@ -1014,15 +1022,15 @@ namespace SLProxy
 
         private Socket simFacingSocket;
         private IPEndPoint activeCircuit = null;
-        private Hashtable proxyEndPoints = new Hashtable();
-        private Hashtable simProxies = new Hashtable();
-        private Hashtable proxyHandlers = new Hashtable();
+        private Dictionary<IPEndPoint, IPEndPoint> proxyEndPoints = new Dictionary<IPEndPoint, IPEndPoint>();
+        private Dictionary<IPEndPoint, SimProxy> simProxies = new Dictionary<IPEndPoint, SimProxy>();
+        private Dictionary<EndPoint, SimProxy> proxyHandlers = new Dictionary<EndPoint, SimProxy>();
         private XmlRpcRequestDelegate loginRequestDelegate = null;
         private XmlRpcResponseDelegate loginResponseDelegate = null;
         private Dictionary<PacketType, List<PacketDelegate>> incomingDelegates = new Dictionary<PacketType, List<PacketDelegate>>();
         private Dictionary<PacketType, List<PacketDelegate>> outgoingDelegates = new Dictionary<PacketType, List<PacketDelegate>>();
-        private ArrayList queuedIncomingInjections = new ArrayList();
-        private ArrayList queuedOutgoingInjections = new ArrayList();
+        private List<Packet> queuedIncomingInjections = new List<Packet>();
+        private List<Packet> queuedOutgoingInjections = new List<Packet>();
 
         // InitializeSimProxy: initialize the sim proxy
         private void InitializeSimProxy()
@@ -1066,7 +1074,7 @@ namespace SLProxy
                     int length;
                     length = simFacingSocket.EndReceiveFrom(ar, ref remoteEndPoint);
 
-                    if (proxyHandlers.Contains(remoteEndPoint))
+                    if (proxyHandlers.ContainsKey(remoteEndPoint))
                     {
                         // find the proxy responsible for forwarding this packet
                         SimProxy simProxy = (SimProxy)proxyHandlers[remoteEndPoint];
@@ -1092,7 +1100,7 @@ namespace SLProxy
                             simProxy.incomingSequence = packet.Header.Sequence;
 
                         // check the packet for addresses that need proxying
-                        if (incomingCheckers.Contains(packet.Type))
+                        if (incomingCheckers.ContainsKey(packet.Type))
                         {
                             /* if (needsZero) {
                                 length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
@@ -1245,7 +1253,7 @@ namespace SLProxy
         // ProxySim: return the proxy for the specified sim, creating it if it doesn't exist
         private IPEndPoint ProxySim(IPEndPoint simEndPoint)
         {
-            if (proxyEndPoints.Contains(simEndPoint))
+            if (proxyEndPoints.ContainsKey(simEndPoint))
                 // return the existing proxy
                 return (IPEndPoint)proxyEndPoints[simEndPoint];
             else
@@ -1276,14 +1284,14 @@ namespace SLProxy
             private Socket socket;
             public uint incomingSequence;
             public uint outgoingSequence;
-            private ArrayList incomingInjections;
-            private ArrayList outgoingInjections;
+            private List<uint> incomingInjections;
+            private List<uint> outgoingInjections;
             private uint incomingOffset = 0;
             private uint outgoingOffset = 0;
-            private Hashtable incomingAcks;
-            private Hashtable outgoingAcks;
-            private ArrayList incomingSeenAcks;
-            private ArrayList outgoingSeenAcks;
+            private Dictionary<uint, Packet> incomingAcks;
+            private Dictionary<uint, Packet> outgoingAcks;
+            private List<uint> incomingSeenAcks;
+            private List<uint> outgoingSeenAcks;
 
             // SimProxy: construct a proxy for a single simulator
             public SimProxy(ProxyConfig proxyConfig, IPEndPoint simEndPoint, Proxy proxy)
@@ -1302,12 +1310,12 @@ namespace SLProxy
             {
                 incomingSequence = 0;
                 outgoingSequence = 0;
-                incomingInjections = new ArrayList();
-                outgoingInjections = new ArrayList();
-                incomingAcks = new Hashtable();
-                outgoingAcks = new Hashtable();
-                incomingSeenAcks = new ArrayList();
-                outgoingSeenAcks = new ArrayList();
+                incomingInjections = new List<uint>();
+                outgoingInjections = new List<uint>();
+                incomingAcks = new Dictionary<uint, Packet>();
+                outgoingAcks = new Dictionary<uint, Packet>();
+                incomingSeenAcks = new List<uint>();
+                outgoingSeenAcks = new List<uint>();
             }
 
             // BackgroundTasks: resend unacknowledged packets and keep data structures clean
@@ -1428,7 +1436,9 @@ namespace SLProxy
             // ReceiveFromClient: packet received from the client
             private void ReceiveFromClient(IAsyncResult ar)
             {
-                lock (proxy) try
+                lock (proxy)
+                {
+                    try
                     {
                         // pause listening and fetch the packet
                         bool needsZero = false;
@@ -1443,6 +1453,7 @@ namespace SLProxy
 #if DEBUG_SEQUENCE
 				Console.WriteLine("-> " + packet.Type + " #" + packet.Header.Sequence);
 #endif
+
                         // check for ACKs we're waiting for
                         packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
 
@@ -1455,7 +1466,7 @@ namespace SLProxy
                             outgoingSequence = packet.Header.Sequence;
 
                         // check the packet for addresses that need proxying
-                        if (proxy.outgoingCheckers.Contains(packet.Type))
+                        if (proxy.outgoingCheckers.ContainsKey(packet.Type))
                         {
                             /* if (packet.Header.Zerocoded) {
                                 length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
@@ -1530,7 +1541,7 @@ namespace SLProxy
                             firstReceive = false;
                             foreach (Packet queuedPacket in proxy.queuedIncomingInjections)
                                 Inject(queuedPacket, Direction.Incoming);
-                            proxy.queuedIncomingInjections = new ArrayList();
+                            proxy.queuedIncomingInjections = new List<Packet>();
                         }
                     }
                     catch (Exception e)
@@ -1543,6 +1554,7 @@ namespace SLProxy
                         // resume listening
                         socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
                     }
+                }
             }
 
             // SendPacket: send a packet from the sim to the client via our fake sim endpoint
@@ -1603,15 +1615,15 @@ namespace SLProxy
             // WaitForAck: take care of resending a packet until it's ACKed
             public void WaitForAck(Packet packet, Direction direction)
             {
-                Hashtable table = direction == Direction.Incoming ? incomingAcks : outgoingAcks;
+                Dictionary<uint, Packet> table = direction == Direction.Incoming ? incomingAcks : outgoingAcks;
                 table.Add(packet.Header.Sequence, packet);
             }
 
             // CheckAcks: check for and remove ACKs of packets we've injected
             public Packet CheckAcks(Packet packet, Direction direction, ref int length, ref bool needsCopy)
             {
-                Hashtable acks = direction == Direction.Incoming ? outgoingAcks : incomingAcks;
-                ArrayList seenAcks = direction == Direction.Incoming ? outgoingSeenAcks : incomingSeenAcks;
+                Dictionary<uint, Packet> acks = direction == Direction.Incoming ? outgoingAcks : incomingAcks;
+                List<uint> seenAcks = direction == Direction.Incoming ? outgoingSeenAcks : incomingSeenAcks;
 
                 if (acks.Count == 0)
                     return packet;
@@ -1627,7 +1639,7 @@ namespace SLProxy
 #if DEBUG_SEQUENCE
 						string hrup = "Check !" + id;
 #endif
-                        if (acks.Contains(id))
+                        if (acks.ContainsKey(id))
                         {
 #if DEBUG_SEQUENCE
 							hrup += " get's";
@@ -1669,7 +1681,7 @@ namespace SLProxy
 #if DEBUG_SEQUENCE
 						string hrup = "Check @" + ackID;
 #endif
-                        if (acks.Contains(ackID))
+                        if (acks.ContainsKey(ackID))
                         {
 #if DEBUG_SEQUENCE
 							hrup += " get's";
@@ -1701,8 +1713,8 @@ namespace SLProxy
             // ModifySequence: modify a packet's sequence number and ACK IDs to account for injections
             public Packet ModifySequence(Packet packet, Direction direction, ref int length, ref bool needsCopy)
             {
-                ArrayList ourInjections = direction == Direction.Outgoing ? outgoingInjections : incomingInjections;
-                ArrayList theirInjections = direction == Direction.Incoming ? outgoingInjections : incomingInjections;
+                List<uint> ourInjections = direction == Direction.Outgoing ? outgoingInjections : incomingInjections;
+                List<uint> theirInjections = direction == Direction.Incoming ? outgoingInjections : incomingInjections;
                 uint ourOffset = direction == Direction.Outgoing ? outgoingOffset : incomingOffset;
                 uint theirOffset = direction == Direction.Incoming ? outgoingOffset : incomingOffset;
 
@@ -1771,8 +1783,8 @@ namespace SLProxy
         // This is all because checkers may be operating on data that's still in a scratch buffer.
         delegate Packet AddressChecker(Packet packet);
 
-        Hashtable incomingCheckers = new Hashtable();
-        Hashtable outgoingCheckers = new Hashtable();
+        Dictionary<PacketType, AddressChecker> incomingCheckers = new Dictionary<PacketType, AddressChecker>();
+        Dictionary<PacketType, AddressChecker> outgoingCheckers = new Dictionary<PacketType, AddressChecker>();
 
         // InitializeAddressCheckers: initialize delegates that check packets for addresses that need proxying
         private void InitializeAddressCheckers()
@@ -1867,7 +1879,7 @@ namespace SLProxy
         // LogOutgoingMysteryPacket: log an outgoing packet we're watching for development purposes
         private Packet LogOutgoingMysteryPacket(Packet packet)
         {
-            return LogPacket(packet, "outgoing mystery");
+            return LogPacket (packet , "outgoing mystery");
         }
     }
 

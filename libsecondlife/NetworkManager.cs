@@ -78,7 +78,6 @@ namespace libsecondlife
             SimShutdown
         }
 
-
         /// <summary>
         /// Coupled with RegisterCallback(), this is triggered whenever a packet
         /// of a registered type is received
@@ -177,14 +176,6 @@ namespace libsecondlife
         /// </summary>
         public event EventQueueRunningCallback OnEventQueueRunning;
 
-
-        /// <summary>The permanent UUID for the logged in avatar</summary>
-        public LLUUID AgentID = LLUUID.Zero;
-        /// <summary>Temporary UUID assigned to this session, used for 
-        /// verifying our identity in packets</summary>
-        public LLUUID SessionID = LLUUID.Zero;
-        /// <summary>Shared secret UUID that is never sent over the wire</summary>
-        public LLUUID SecureSessionID = LLUUID.Zero;
         /// <summary>Uniquely identifier associated with our connections to
         /// simulators</summary>
         public uint CircuitCode;
@@ -199,6 +190,13 @@ namespace libsecondlife
         /// </summary>
         public bool Connected { get { return connected; } }
         public int InboxCount { get { return PacketInbox.Count; } }
+
+        [Obsolete("AgentID has been moved to Self.AgentID")]
+        public LLUUID AgentID { get { return Client.Self.AgentID; } }
+        [Obsolete("SessionID has been moved to Self.SessionID")]
+        public LLUUID SessionID { get { return Client.Self.SessionID; } }
+        [Obsolete("SecureSessionID has been mvoed to Self.SecureSessionID")]
+        public LLUUID SecureSessionID { get { return Client.Self.SecureSessionID; } }
 
         /// <summary>Handlers for incoming capability events</summary>
         internal CapsEventDictionary CapsEvents;
@@ -479,8 +477,8 @@ namespace libsecondlife
 
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
-            logout.AgentData.AgentID = AgentID;
-            logout.AgentData.SessionID = SessionID;
+            logout.AgentData.AgentID = Client.Self.AgentID;
+            logout.AgentData.SessionID = Client.Self.SessionID;
             CurrentSim.SendPacket(logout, true);
 
             LogoutTimer = new System.Timers.Timer(Client.Settings.LOGOUT_TIMEOUT);
@@ -871,7 +869,7 @@ namespace libsecondlife
         {
             LogoutReplyPacket logout = (LogoutReplyPacket)packet;
 
-            if ((logout.AgentData.SessionID == SessionID) && (logout.AgentData.AgentID == AgentID))
+            if ((logout.AgentData.SessionID == Client.Self.SessionID) && (logout.AgentData.AgentID == Client.Self.AgentID))
             {
                 Client.Log("Logout negotiated with server", Helpers.LogLevel.Debug);
 
@@ -1042,8 +1040,8 @@ namespace libsecondlife
 
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
-            reply.AgentData.AgentID = AgentID;
-            reply.AgentData.SessionID = SessionID;
+            reply.AgentData.AgentID = Client.Self.AgentID;
+            reply.AgentData.SessionID = Client.Self.SessionID;
             reply.RegionInfo.Flags = 0;
             SendPacket(reply, simulator);
 

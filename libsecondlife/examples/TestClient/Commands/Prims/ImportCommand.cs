@@ -118,7 +118,7 @@ namespace libsecondlife.TestClient
                     currentPrim = linkset.RootPrim;
                     // HACK: Offset the root prim position so it's not lying on top of the original
                     // We need a more elaborate solution for importing with relative or absolute offsets
-                    linkset.RootPrim.Position = Client.Self.Position;
+                    linkset.RootPrim.Position = Client.Self.SimPosition;
                     linkset.RootPrim.Position.Z += 3.0f;
                     currentPosition = linkset.RootPrim.Position;
                     // A better solution would move the bot to the desired position.

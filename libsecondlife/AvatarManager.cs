@@ -158,8 +158,8 @@ namespace libsecondlife
         public void TrackAvatar(LLUUID preyID)
         {
             TrackAgentPacket p = new TrackAgentPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
             p.TargetData.PreyID = preyID;
             Client.Network.SendPacket(p);
         }
@@ -204,8 +204,8 @@ namespace libsecondlife
         {
             AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();
             
-            aprp.AgentData.AgentID = Client.Network.AgentID;
-            aprp.AgentData.SessionID = Client.Network.SessionID;
+            aprp.AgentData.AgentID = Client.Self.AgentID;
+            aprp.AgentData.SessionID = Client.Self.SessionID;
             aprp.AgentData.AvatarID = avatarid;
 
             Client.Network.SendPacket(aprp);
@@ -220,8 +220,8 @@ namespace libsecondlife
         {
             AvatarPickerRequestPacket aprp = new AvatarPickerRequestPacket();
 
-            aprp.AgentData.AgentID = Client.Network.AgentID;
-            aprp.AgentData.SessionID = Client.Network.SessionID;
+            aprp.AgentData.AgentID = Client.Self.AgentID;
+            aprp.AgentData.SessionID = Client.Self.SessionID;
             aprp.AgentData.QueryID = queryID;
             aprp.Data.Name = Helpers.StringToField(name);
 

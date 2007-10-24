@@ -51,6 +51,9 @@ namespace libsecondlife
         /// <summary>Used for converting radians to degrees</summary>
         public const double RAD_TO_DEG = 180.0d / Math.PI;
 
+        /// <summary>UNIX epoch in DateTime format</summary>
+        public static DateTime Epoch = new DateTime(1970, 1, 1);
+
         /// <summary>
         /// Passed to SecondLife.Log() to identify the severity of a log entry
         /// </summary>
@@ -645,6 +648,29 @@ namespace libsecondlife
         //}
 
         /// <summary>
+        /// Returns the string between and exclusive of two search characters
+        /// </summary>
+        /// <param name="src">Source string</param>
+        /// <param name="start">Beginning and exclusive of the substring</param>
+        /// <param name="end">End and exclusive of the substring</param>
+        /// <returns>Substring between the start and end characters</returns>
+        public static string StringBetween(string src, char start, char end)
+        {
+            string ret = String.Empty;
+            int idxStart = src.IndexOf(start);
+            if (idxStart != -1)
+            {
+                ++idxStart;
+                int idxEnd = src.IndexOf(end, idxStart);
+                if (idxEnd != -1)
+                {
+                    ret = src.Substring(idxStart, idxEnd - idxStart);
+                }
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// Convert a string to a UTF8 encoded byte array
         /// </summary>
         /// <param name="str">The string to convert</param>
@@ -674,8 +700,7 @@ namespace libsecondlife
         /// the given timestamp</returns>
         public static DateTime UnixTimeToDateTime(uint timestamp)
         {
-            // Make a DateTime equivalent to the UNIX Epoch
-            System.DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+            System.DateTime dateTime = Epoch;
 
             // Add the number of seconds in our UNIX timestamp
             dateTime = dateTime.AddSeconds(timestamp);

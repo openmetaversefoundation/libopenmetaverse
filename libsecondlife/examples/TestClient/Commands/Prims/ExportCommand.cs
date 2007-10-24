@@ -78,9 +78,9 @@ namespace libsecondlife.TestClient
                 else
                 {
                     GotPermissions = false;
-                    if (Properties.OwnerID != Client.Network.AgentID && 
+                    if (Properties.OwnerID != Client.Self.AgentID && 
                         Properties.OwnerID != Client.MasterKey && 
-                        Client.Network.AgentID != Client.Self.ID)
+                        Client.Self.AgentID != Client.Self.AgentID)
                     {
                         return "That object is owned by " + Properties.OwnerID + ", we don't have permission " +
                             "to export it";

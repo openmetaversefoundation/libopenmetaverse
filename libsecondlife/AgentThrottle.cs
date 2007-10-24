@@ -191,8 +191,8 @@ namespace libsecondlife
         public void Set(Simulator simulator)
         {
             AgentThrottlePacket throttle = new AgentThrottlePacket();
-            throttle.AgentData.AgentID = Client.Network.AgentID;
-            throttle.AgentData.SessionID = Client.Network.SessionID;
+            throttle.AgentData.AgentID = Client.Self.AgentID;
+            throttle.AgentData.SessionID = Client.Self.SessionID;
             throttle.AgentData.CircuitCode = Client.Network.CircuitCode;
             throttle.Throttle.GenCounter = 0;
             throttle.Throttle.Throttles = this.ToBytes();

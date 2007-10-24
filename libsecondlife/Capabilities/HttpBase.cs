@@ -74,6 +74,7 @@ namespace libsecondlife.Caps
         protected byte[] _PostData;
         protected object _State;
         protected bool _Aborted = false;
+        protected AsyncCallback _ServerCallback;
 
         public HttpBase(string requestURL)
             : this(requestURL, null, null, null, null)
@@ -90,6 +91,8 @@ namespace libsecondlife.Caps
 
         public HttpBase(int listeningPort)
         {
+            _ServerCallback = new AsyncCallback(ListenerCallback);
+
             _ListenPort = listeningPort;
             _Listener = new HttpListener();
             _Listener.Prefixes.Add("http://+:" + _ListenPort + "/");
@@ -101,7 +104,7 @@ namespace libsecondlife.Caps
             {
                 // Server mode
                 _Listener.Start();
-                //FIXME: _Listener.BeginGetContext(new AsyncCallback(ListenerCallback), _Listener);
+                _Listener.BeginGetContext(_ServerCallback, _Listener);
             }
             else if (!String.IsNullOrEmpty(_RequestURL))
             {
@@ -221,6 +224,23 @@ namespace libsecondlife.Caps
         protected void TimeoutCallback(object state, bool timedOut)
         {
             if (timedOut) Stop(true, null);
+        }
+
+        protected void ListenerCallback(IAsyncResult result)
+        {
+            try
+            {
+                HttpListenerContext context = _Listener.EndGetContext(result);
+                // Start listening again immediately
+                _Listener.BeginGetContext(_ServerCallback, _Listener);
+
+                // FIXME: Fire a callback
+                // Need http method, URL and/or parameters, POST data
+            }
+            catch (Exception e)
+            {
+                SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Error);
+            }
         }
 
         protected void RequestStreamCallback(IAsyncResult result)

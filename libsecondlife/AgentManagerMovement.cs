@@ -112,6 +112,44 @@ namespace libsecondlife
 
         #endregion Enums
 
+        #region AgentUpdate Constants
+
+        private const int CONTROL_AT_POS_INDEX = 0;
+        private const int CONTROL_AT_NEG_INDEX = 1;
+        private const int CONTROL_LEFT_POS_INDEX = 2;
+        private const int CONTROL_LEFT_NEG_INDEX = 3;
+        private const int CONTROL_UP_POS_INDEX = 4;
+        private const int CONTROL_UP_NEG_INDEX = 5;
+        private const int CONTROL_PITCH_POS_INDEX = 6;
+        private const int CONTROL_PITCH_NEG_INDEX = 7;
+        private const int CONTROL_YAW_POS_INDEX = 8;
+        private const int CONTROL_YAW_NEG_INDEX = 9;
+        private const int CONTROL_FAST_AT_INDEX = 10;
+        private const int CONTROL_FAST_LEFT_INDEX = 11;
+        private const int CONTROL_FAST_UP_INDEX = 12;
+        private const int CONTROL_FLY_INDEX = 13;
+        private const int CONTROL_STOP_INDEX = 14;
+        private const int CONTROL_FINISH_ANIM_INDEX = 15;
+        private const int CONTROL_STAND_UP_INDEX = 16;
+        private const int CONTROL_SIT_ON_GROUND_INDEX = 17;
+        private const int CONTROL_MOUSELOOK_INDEX = 18;
+        private const int CONTROL_NUDGE_AT_POS_INDEX = 19;
+        private const int CONTROL_NUDGE_AT_NEG_INDEX = 20;
+        private const int CONTROL_NUDGE_LEFT_POS_INDEX = 21;
+        private const int CONTROL_NUDGE_LEFT_NEG_INDEX = 22;
+        private const int CONTROL_NUDGE_UP_POS_INDEX = 23;
+        private const int CONTROL_NUDGE_UP_NEG_INDEX = 24;
+        private const int CONTROL_TURN_LEFT_INDEX = 25;
+        private const int CONTROL_TURN_RIGHT_INDEX = 26;
+        private const int CONTROL_AWAY_INDEX = 27;
+        private const int CONTROL_LBUTTON_DOWN_INDEX = 28;
+        private const int CONTROL_LBUTTON_UP_INDEX = 29;
+        private const int CONTROL_ML_LBUTTON_DOWN_INDEX = 30;
+        private const int CONTROL_ML_LBUTTON_UP_INDEX = 31;
+        private const int TOTAL_CONTROLS = 32;
+
+        #endregion AgentUpdate Constants
+
         /// <summary> 
         /// Agent movement and camera control
         /// </summary> 
@@ -324,8 +362,8 @@ namespace libsecondlife
                 {
                     alwaysRun = value;
                     SetAlwaysRunPacket run = new SetAlwaysRunPacket();
-                    run.AgentData.AgentID = Client.Network.AgentID;
-                    run.AgentData.SessionID = Client.Network.SessionID;
+                    run.AgentData.AgentID = Client.Self.AgentID;
+                    run.AgentData.SessionID = Client.Self.SessionID;
                     run.AgentData.AlwaysRun = alwaysRun;
                     Client.Network.SendPacket(run);
                 }
@@ -432,7 +470,7 @@ namespace libsecondlife
             /// or not</param>
             public void UpdateFromHeading(double heading, bool reliable)
             {
-                Camera.Position = Client.Self.Position;
+                Camera.Position = Client.Self.SimPosition;
                 Camera.LookDirection(heading);
                 
                 BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
@@ -451,7 +489,7 @@ namespace libsecondlife
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
-                    LLVector3 myPos = Client.Self.Position;
+                    LLVector3 myPos = Client.Self.SimPosition;
                     LLVector3 forward = new LLVector3(1, 0, 0);
                     LLVector3 offset = LLVector3.Norm(target - myPos);
                     LLQuaternion newRot = LLVector3.RotBetween(forward, offset);
@@ -584,8 +622,8 @@ namespace libsecondlife
                     AgentUpdatePacket update = new AgentUpdatePacket();
                     update.Header.Reliable = reliable;
 
-                    update.AgentData.AgentID = Client.Network.AgentID;
-                    update.AgentData.SessionID = Client.Network.SessionID;
+                    update.AgentData.AgentID = Client.Self.AgentID;
+                    update.AgentData.SessionID = Client.Self.SessionID;
                     update.AgentData.HeadRotation = HeadRotation;
                     update.AgentData.BodyRotation = BodyRotation;
                     update.AgentData.CameraAtAxis = yAxis;
@@ -621,8 +659,8 @@ namespace libsecondlife
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();
 
-                update.AgentData.AgentID = Client.Network.AgentID;
-                update.AgentData.SessionID = Client.Network.SessionID;
+                update.AgentData.AgentID = Client.Self.AgentID;
+                update.AgentData.SessionID = Client.Self.SessionID;
                 update.AgentData.BodyRotation = bodyRotation;
                 update.AgentData.HeadRotation = headRotation;
                 update.AgentData.CameraCenter = position;

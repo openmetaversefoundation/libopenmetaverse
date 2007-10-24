@@ -59,9 +59,8 @@ namespace libsecondlife.TestClient
                 return "Failed to retrieve a complete profile for that UUID";
 
             // Synchronize our profile
-            Client.Self.ProfileInterests = Interests;
-            Client.Self.ProfileProperties = Properties;
-            Client.Self.SetAvatarInformation();
+            Client.Self.UpdateInterests(Interests);
+            Client.Self.UpdateProfile(Properties);
 
             // TODO: Leave all the groups we're currently a member of? This could
             // break TestClient connectivity that might be relying on group authentication

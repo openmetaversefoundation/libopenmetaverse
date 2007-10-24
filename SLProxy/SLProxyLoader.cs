@@ -5,7 +5,6 @@ using libsecondlife.Packets;
 using System.Reflection;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -18,7 +17,7 @@ namespace SLProxy
     public class ProxyFrame
     {
         public Proxy proxy;
-        private Hashtable commandDelegates = new Hashtable();
+        private Dictionary<string, CommandDelegate> commandDelegates = new Dictionary<string, CommandDelegate>();
         private LLUUID agentID;
         private LLUUID sessionID;
         private bool logLogin = false;
@@ -137,7 +136,7 @@ namespace SLProxy
         // Loginresponse: dump a login response to the console
         private void LoginResponse(XmlRpcResponse response)
         {
-            Hashtable values = (Hashtable)response.Value;
+            System.Collections.Hashtable values = (System.Collections.Hashtable)response.Value;
             if (values.Contains("agent_id"))
                 agentID = new LLUUID((string)values["agent_id"]);
             if (values.Contains("session_id"))
@@ -160,7 +159,7 @@ namespace SLProxy
             if (message.Length > 1 && message[0] == '/')
             {
                 string[] words = message.Split(' ');
-                if (commandDelegates.Contains(words[0]))
+                if (commandDelegates.ContainsKey(words[0]))
                 {
                     // this is an Analyst command; act on it and drop the chat packet
                     ((CommandDelegate)commandDelegates[words[0]])(words);

@@ -21,7 +21,7 @@ namespace libsecondlife.TestClient
 
             if (args.Length == 1)
             {
-                id = Client.Network.AgentID;
+                id = Client.Self.AgentID;
                 path = args[0];
             }
             else if (args.Length == 2)

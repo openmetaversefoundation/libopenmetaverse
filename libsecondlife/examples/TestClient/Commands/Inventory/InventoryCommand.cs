@@ -28,7 +28,7 @@ namespace libsecondlife.TestClient
 
             StringBuilder result = new StringBuilder();
 
-            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID,
+            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID,
             //    true, true, InventorySortOrder.ByName);
 
             //PrintFolder(Inventory.RootNode, result, 0);

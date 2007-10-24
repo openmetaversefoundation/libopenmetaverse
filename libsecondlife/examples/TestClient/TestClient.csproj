@@ -54,6 +54,7 @@
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />
     <Compile Include="Commands\Inventory\ImportOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
+    <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
     <Compile Include="Commands\Inventory\WearCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
     <Compile Include="Commands\Land\AgentLocationsCommand.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Commands\Movement\SitCommand.cs" />
     <Compile Include="Commands\Movement\SitOnCommand.cs" />
     <Compile Include="Commands\Movement\StandCommand.cs" />
+    <Compile Include="Commands\Prims\ChangePermsCommand.cs" />
     <Compile Include="Commands\Prims\ExportCommand.cs" />
     <Compile Include="Commands\Prims\ExportParticlesCommand.cs" />
     <Compile Include="Commands\Prims\FindTextureCommand.cs" />

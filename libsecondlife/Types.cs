@@ -175,6 +175,15 @@ namespace libsecondlife
             return UUID.ToString();
         }
 
+        /// <summary>
+        /// Get a 64-bit integer representation of the first half of this UUID
+        /// </summary>
+        /// <returns>An integer created from the first eight bytes of this UUID</returns>
+        public ulong ToULong()
+        {
+            return Helpers.BytesToUInt64(UUID.ToByteArray());
+        }
+
         #endregion Public Methods
 
         #region Static Methods

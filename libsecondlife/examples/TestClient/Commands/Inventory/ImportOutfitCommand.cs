@@ -32,8 +32,8 @@ namespace libsecondlife.TestClient
 
                 AgentSetAppearancePacket set = new AgentSetAppearancePacket();
 
-                set.AgentData.AgentID = Client.Network.AgentID;
-                set.AgentData.SessionID = Client.Network.SessionID;
+                set.AgentData.AgentID = Client.Self.AgentID;
+                set.AgentData.SessionID = Client.Self.SessionID;
                 set.AgentData.SerialNum = SerialNum++;
 
                 float AV_Height_Range = 2.025506f - 1.50856f;

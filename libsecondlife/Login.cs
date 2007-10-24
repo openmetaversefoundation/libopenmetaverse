@@ -629,44 +629,7 @@ namespace libsecondlife
 
                 try
                 {
-                    // Self
-                    Client.Self.ID = reply.agent_id;
-                    Client.Self.firstName = reply.first_name;
-                    Client.Self.lastName = reply.last_name;
-                    Client.Self.StartLocation = reply.start_location;
-                    Client.Self.AgentAccess = reply.agent_access;
-                    List<object> look_at = (List<object>)LLSDParser.DeserializeNotation(reply.look_at);
-                    Client.Self.LookAt = new LLVector3(
-                        (float)(double)look_at[0],
-                        (float)(double)look_at[1],
-                        (float)(double)look_at[2]);
-
-                    // Home
-                    if (reply.home != null)
-                    {
-                        Dictionary<string, object> home = (Dictionary<string, object>)LLSDParser.DeserializeNotation(reply.home);
-                        List<object> array = (List<object>)home["position"];
-                        Client.Self.HomePosition = new LLVector3(
-                            (float)(double)array[0],
-                            (float)(double)array[1],
-                            (float)(double)array[2]);
-
-                        array = (List<object>)home["look_at"];
-                        Client.Self.HomeLookAt = new LLVector3(
-                            (float)(double)array[0],
-                            (float)(double)array[1],
-                            (float)(double)array[2]);
-                    }
-                    else
-                    {
-                        Client.Self.HomePosition = LLVector3.Zero;
-                        Client.Self.HomeLookAt = LLVector3.Zero;
-                    }
-
                     // Networking
-                    Client.Network.AgentID = reply.agent_id;
-                    Client.Network.SessionID = reply.session_id;
-                    Client.Network.SecureSessionID = reply.secure_session_id;
                     Client.Network.CircuitCode = (uint)reply.circuit_code;
                     regionX = (uint)reply.region_x;
                     regionY = (uint)reply.region_y;

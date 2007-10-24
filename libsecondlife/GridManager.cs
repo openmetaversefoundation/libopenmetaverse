@@ -250,8 +250,8 @@ namespace libsecondlife
         {
             MapNameRequestPacket request = new MapNameRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.AgentData.Flags = (uint)layer;
             request.AgentData.EstateID = 0; // Filled in on the sim
             request.AgentData.Godlike = false; // Filled in on the sim
@@ -265,8 +265,8 @@ namespace libsecondlife
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.AgentData.Flags = (uint)layer;
             request.AgentData.Flags |= (uint)(returnNonExistent ? 0x10000 : 0);
             request.AgentData.EstateID = 0; // Filled in at the simulator
@@ -308,8 +308,8 @@ namespace libsecondlife
         public void RequestMapItems(ulong regionHandle, GridItemType item, GridLayerType layer)
         {
             MapItemRequestPacket request = new MapItemRequestPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.AgentData.Flags = (uint)layer;
             request.AgentData.Godlike = false; // Filled in on the sim
             request.AgentData.EstateID = 0; // Filled in on the sim

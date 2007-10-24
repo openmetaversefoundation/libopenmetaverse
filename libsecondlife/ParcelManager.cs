@@ -349,8 +349,8 @@ namespace libsecondlife
         {
             ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
 
-            request.AgentData.AgentID = Simulator.Client.Network.AgentID;
-            request.AgentData.SessionID = Simulator.Client.Network.SessionID;
+            request.AgentData.AgentID = Simulator.Client.Self.AgentID;
+            request.AgentData.SessionID = Simulator.Client.Self.SessionID;
 
             request.ParcelData.LocalID = this.LocalID;
 
@@ -381,8 +381,8 @@ namespace libsecondlife
         public void UpdateOtherCleanTime()
         {
             ParcelSetOtherCleanTimePacket request = new ParcelSetOtherCleanTimePacket();
-            request.AgentData.AgentID = Simulator.Client.Network.AgentID;
-            request.AgentData.SessionID = Simulator.Client.Network.SessionID;
+            request.AgentData.AgentID = Simulator.Client.Self.AgentID;
+            request.AgentData.SessionID = Simulator.Client.Self.SessionID;
             request.ParcelData.LocalID = this.LocalID;
             request.ParcelData.OtherCleanTime = this.OtherCleanTime;
 
@@ -567,8 +567,8 @@ namespace libsecondlife
         public void InfoRequest(LLUUID parcelID)
         {
             ParcelInfoRequestPacket request = new ParcelInfoRequestPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.Data.ParcelID = parcelID;
 
             Client.Network.SendPacket(request);
@@ -586,8 +586,8 @@ namespace libsecondlife
         {
             ParcelPropertiesRequestByIDPacket request = new ParcelPropertiesRequestByIDPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             request.ParcelData.LocalID = localID;
             request.ParcelData.SequenceID = sequenceID;
@@ -607,8 +607,8 @@ namespace libsecondlife
         {
             ParcelAccessListRequestPacket request = new ParcelAccessListRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.Data.LocalID = localID;
             request.Data.Flags = (uint)flags;
             request.Data.SequenceID = sequenceID;
@@ -635,8 +635,8 @@ namespace libsecondlife
         {
             ParcelPropertiesRequestPacket request = new ParcelPropertiesRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.ParcelData.North = north;
             request.ParcelData.East = east;
             request.ParcelData.South = south;
@@ -655,8 +655,8 @@ namespace libsecondlife
         public void DwellRequest(Simulator simulator, int localID)
         {
             ParcelDwellRequestPacket request = new ParcelDwellRequestPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.Data.LocalID = localID;
             request.Data.ParcelID = LLUUID.Zero; // Not used by clients
 
@@ -677,8 +677,8 @@ namespace libsecondlife
         {
             ParcelBuyPacket request = new ParcelBuyPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             request.Data.Final = true;
             request.Data.GroupID = groupID;
@@ -700,8 +700,8 @@ namespace libsecondlife
         public void Reclaim(Simulator simulator, int localID)
         {
             ParcelReclaimPacket request = new ParcelReclaimPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             request.Data.LocalID = localID;
 
@@ -717,8 +717,8 @@ namespace libsecondlife
         public void DeedToGroup(Simulator simulator, int localID, LLUUID groupID)
         {
             ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             request.Data.LocalID = localID;
             request.Data.GroupID = groupID;
@@ -735,8 +735,8 @@ namespace libsecondlife
         {
             ParcelObjectOwnersRequestPacket request = new ParcelObjectOwnersRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             request.ParcelData.LocalID = localID;
             Client.Network.SendPacket(request, simulator);
@@ -752,8 +752,8 @@ namespace libsecondlife
         public void ReturnObjects(Simulator simulator, int localID, ObjectReturnType type, List<LLUUID> ownerIDs)
         {
             ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             request.ParcelData.LocalID = localID;
             request.ParcelData.ReturnType = (uint)type;
@@ -793,8 +793,8 @@ namespace libsecondlife
         public void ParcelSubdivide(Simulator simulator, float west, float south, float east, float north)
         {
             ParcelDividePacket divide = new ParcelDividePacket();
-            divide.AgentData.AgentID = Client.Network.AgentID;
-            divide.AgentData.SessionID = Client.Network.SessionID;
+            divide.AgentData.AgentID = Client.Self.AgentID;
+            divide.AgentData.SessionID = Client.Self.SessionID;
             divide.ParcelData.East = east;
             divide.ParcelData.North = north;
             divide.ParcelData.South = south;
@@ -814,8 +814,8 @@ namespace libsecondlife
         public void ParcelJoin(Simulator simulator, float west, float south, float east, float north)
         {
             ParcelJoinPacket join = new ParcelJoinPacket();
-            join.AgentData.AgentID = Client.Network.AgentID;
-            join.AgentData.SessionID = Client.Network.SessionID;
+            join.AgentData.AgentID = Client.Self.AgentID;
+            join.AgentData.SessionID = Client.Self.SessionID;
             join.ParcelData.East = east;
             join.ParcelData.North = north;
             join.ParcelData.South = south;

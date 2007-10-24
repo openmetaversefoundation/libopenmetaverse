@@ -406,8 +406,8 @@ namespace libsecondlife
                 // Send the UseCircuitCode packet to initiate the connection
                 UseCircuitCodePacket use = new UseCircuitCodePacket();
                 use.CircuitCode.Code = Network.CircuitCode;
-                use.CircuitCode.ID = Network.AgentID;
-                use.CircuitCode.SessionID = Network.SessionID;
+                use.CircuitCode.ID = Client.Self.AgentID;
+                use.CircuitCode.SessionID = Client.Self.SessionID;
 
                 // Send the initial packet out
                 SendPacket(use, true);

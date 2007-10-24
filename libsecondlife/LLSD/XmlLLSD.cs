@@ -13,7 +13,6 @@ namespace libsecondlife.LLSD
         private static XmlTextReader XmlTextReader;
         private static string LastXmlErrors = String.Empty;
         private static object XmlValidationLock = new object();
-        private static DateTime Epoch = new DateTime(1970, 1, 1);
 
         public static object DeserializeXml(byte[] xmlData)
         {
@@ -194,18 +193,18 @@ namespace libsecondlife.LLSD
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return Epoch;
+                        return Helpers.Epoch;
                     }
 
                     if (reader.Read())
                     {
-                        DateTime value = Epoch;
+                        DateTime value = Helpers.Epoch;
                         DateTime.TryParse(reader.ReadString().Trim(), out value);
                         ret = value;
                         break;
                     }
 
-                    ret = Epoch;
+                    ret = Helpers.Epoch;
                     break;
                 case "string":
                     if (reader.IsEmptyElement)

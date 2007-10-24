@@ -334,8 +334,8 @@ namespace libsecondlife
             LLUUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
 
             AcceptFriendshipPacket request = new AcceptFriendshipPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.TransactionBlock.TransactionID = imSessionID;
             request.FolderData = new AcceptFriendshipPacket.FolderDataBlock[1];
             request.FolderData[0] = new AcceptFriendshipPacket.FolderDataBlock();
@@ -358,8 +358,8 @@ namespace libsecondlife
         public void DeclineFriendship(LLUUID fromAgentID, LLUUID imSessionID)
         {
             DeclineFriendshipPacket request = new DeclineFriendshipPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.TransactionBlock.TransactionID = imSessionID;
             Client.Network.SendPacket(request);
 
@@ -380,7 +380,7 @@ namespace libsecondlife
                 LLUUID.Random(),
                 InstantMessageDialog.FriendshipOffered,
                 InstantMessageOnline.Online,
-                Client.Self.Position,
+                Client.Self.SimPosition,
                 Client.Network.CurrentSim.ID,
                 new byte[0]);
         }
@@ -395,8 +395,8 @@ namespace libsecondlife
             if (_Friends.ContainsKey(agentID))
             {
                 TerminateFriendshipPacket request = new TerminateFriendshipPacket();
-                request.AgentData.AgentID = Client.Network.AgentID;
-                request.AgentData.SessionID = Client.Network.SessionID;
+                request.AgentData.AgentID = Client.Self.AgentID;
+                request.AgentData.SessionID = Client.Self.SessionID;
                 request.ExBlock.OtherID = agentID;
 
                 Client.Network.SendPacket(request);
@@ -418,8 +418,8 @@ namespace libsecondlife
         public void GrantRights(LLUUID agentID)
         {
             GrantUserRightsPacket request = new GrantUserRightsPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.Rights = new GrantUserRightsPacket.RightsBlock[1];
             request.Rights[0] = new GrantUserRightsPacket.RightsBlock();
             request.Rights[0].AgentRelated = agentID;
@@ -593,7 +593,7 @@ namespace libsecondlife
                             catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                         }
                     }
-                    else if (block.AgentRelated == Client.Self.ID)
+                    else if (block.AgentRelated == Client.Self.AgentID)
                     {
                         if (_Friends.TryGetValue(rights.AgentData.AgentID, out friend))
                         {

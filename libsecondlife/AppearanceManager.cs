@@ -367,7 +367,7 @@ namespace libsecondlife
                 string[] path = (string[])_folder;
 
                 folder = Client.Inventory.FindObjectByPath(
-                    Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, String.Join("/", path), 1000 * 20);
+                    Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, String.Join("/", path), 1000 * 20);
 
                 if (folder == LLUUID.Zero)
                 {
@@ -380,7 +380,7 @@ namespace libsecondlife
 
             wearables = new List<InventoryWearable>();
             attachments = new List<InventoryBase>();
-            List<InventoryBase> objects = Client.Inventory.FolderContents(folder, Client.Network.AgentID, 
+            List<InventoryBase> objects = Client.Inventory.FolderContents(folder, Client.Self.AgentID, 
                 false, true, InventorySortOrder.ByName, 1000 * 20);
 
             if (objects != null)
@@ -449,8 +449,8 @@ namespace libsecondlife
 
             // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
             RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
-            attachmentsPacket.AgentData.AgentID = Client.Network.AgentID;
-            attachmentsPacket.AgentData.SessionID = Client.Network.SessionID;
+            attachmentsPacket.AgentData.AgentID = Client.Self.AgentID;
+            attachmentsPacket.AgentData.SessionID = Client.Self.SessionID;
 
             attachmentsPacket.HeaderData.CompoundMsgID = LLUUID.Random();
             attachmentsPacket.HeaderData.FirstDetachAll = true;
@@ -513,8 +513,8 @@ namespace libsecondlife
 
             RezSingleAttachmentFromInvPacket attach = new RezSingleAttachmentFromInvPacket();
 
-            attach.AgentData.AgentID = Client.Network.AgentID;
-            attach.AgentData.SessionID = Client.Network.SessionID;
+            attach.AgentData.AgentID = Client.Self.AgentID;
+            attach.AgentData.SessionID = Client.Self.SessionID;
 
             attach.ObjectData.AttachmentPt = (byte)attachPoint;
             attach.ObjectData.Description = Helpers.StringToField(description);
@@ -537,7 +537,7 @@ namespace libsecondlife
         public void Detach(LLUUID itemID)
         {
             DetachAttachmentIntoInvPacket detach = new DetachAttachmentIntoInvPacket();
-            detach.ObjectData.AgentID = Client.Network.AgentID;
+            detach.ObjectData.AgentID = Client.Self.AgentID;
             detach.ObjectData.ItemID = itemID;
 
             Client.Network.SendPacket(detach);
@@ -604,8 +604,8 @@ namespace libsecondlife
             List<KeyValuePair<int, LLUUID>> hashes = new List<KeyValuePair<int,LLUUID>>();
 
             AgentCachedTexturePacket cache = new AgentCachedTexturePacket();
-            cache.AgentData.AgentID = Client.Network.AgentID;
-            cache.AgentData.SessionID = Client.Network.SessionID;
+            cache.AgentData.AgentID = Client.Self.AgentID;
+            cache.AgentData.SessionID = Client.Self.SessionID;
             cache.AgentData.SerialNum = CacheCheckSerialNum;
 
             // Build hashes for each of the bake layers from the individual components
@@ -666,8 +666,8 @@ namespace libsecondlife
         public void SendAgentWearablesRequest()
         {
             AgentWearablesRequestPacket request = new AgentWearablesRequestPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             Client.Network.SendPacket(request);
         }
@@ -705,8 +705,8 @@ namespace libsecondlife
         private void SendAgentSetAppearance()
         {
             AgentSetAppearancePacket set = new AgentSetAppearancePacket();
-            set.AgentData.AgentID = Client.Network.AgentID;
-            set.AgentData.SessionID = Client.Network.SessionID;
+            set.AgentData.AgentID = Client.Self.AgentID;
+            set.AgentData.SessionID = Client.Self.SessionID;
             set.AgentData.SerialNum = SetAppearanceSerialNum++;
             set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[VisualParams.Params.Count];
 
@@ -823,8 +823,8 @@ namespace libsecondlife
             Client.DebugLog("SendAgentIsNowWearing()");
 
             AgentIsNowWearingPacket wearing = new AgentIsNowWearingPacket();
-            wearing.AgentData.AgentID = Client.Network.AgentID;
-            wearing.AgentData.SessionID = Client.Network.SessionID;
+            wearing.AgentData.AgentID = Client.Self.AgentID;
+            wearing.AgentData.SessionID = Client.Self.SessionID;
             wearing.WearableData = new AgentIsNowWearingPacket.WearableDataBlock[WEARABLE_COUNT];
 
             for (int i = 0; i < WEARABLE_COUNT; i++)

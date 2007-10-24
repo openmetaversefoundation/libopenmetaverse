@@ -603,8 +603,8 @@ namespace libsecondlife
         {
             AgentDataUpdateRequestPacket request = new AgentDataUpdateRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             Client.Network.SendPacket(request);
         }
@@ -617,8 +617,8 @@ namespace libsecondlife
         {
             GroupProfileRequestPacket request = new GroupProfileRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.GroupData.GroupID = group;
 
             Client.Network.SendPacket(request);
@@ -635,8 +635,8 @@ namespace libsecondlife
 
             GroupMembersRequestPacket request = new GroupMembersRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
 
@@ -654,8 +654,8 @@ namespace libsecondlife
 
             GroupRoleDataRequestPacket request = new GroupRoleDataRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
 
@@ -675,8 +675,8 @@ namespace libsecondlife
             }
 
             GroupRoleMembersRequestPacket request = new GroupRoleMembersRequestPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
             Client.Network.SendPacket(request);
@@ -692,8 +692,8 @@ namespace libsecondlife
 
             GroupTitlesRequestPacket request = new GroupTitlesRequestPacket();
 
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
             request.AgentData.GroupID = group;
             request.AgentData.RequestID = requestID;
 
@@ -709,8 +709,8 @@ namespace libsecondlife
         public void RequestGroupAccountSummary(LLUUID group, int intervalDays, int currentInterval)
         {
             GroupAccountSummaryRequestPacket p = new GroupAccountSummaryRequestPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
             p.AgentData.GroupID = group;
             p.MoneyData.RequestID = LLUUID.Random();
             p.MoneyData.CurrentInterval = currentInterval;
@@ -729,8 +729,8 @@ namespace libsecondlife
             InviteGroupRequestPacket igp = new InviteGroupRequestPacket();
 
             igp.AgentData = new InviteGroupRequestPacket.AgentDataBlock();
-            igp.AgentData.AgentID = Client.Network.AgentID;
-            igp.AgentData.SessionID = Client.Network.SessionID;
+            igp.AgentData.AgentID = Client.Self.AgentID;
+            igp.AgentData.SessionID = Client.Self.SessionID;
 
             igp.GroupData = new InviteGroupRequestPacket.GroupDataBlock();
             igp.GroupData.GroupID = group;
@@ -754,8 +754,8 @@ namespace libsecondlife
         public void ActivateGroup(LLUUID id)
         {
             ActivateGroupPacket activate = new ActivateGroupPacket();
-            activate.AgentData.AgentID = Client.Network.AgentID;
-            activate.AgentData.SessionID = Client.Network.SessionID;
+            activate.AgentData.AgentID = Client.Self.AgentID;
+            activate.AgentData.SessionID = Client.Self.SessionID;
             activate.AgentData.GroupID = id;
 
             Client.Network.SendPacket(activate);
@@ -769,8 +769,8 @@ namespace libsecondlife
         public void ActivateTitle(LLUUID group, LLUUID role)
         {
             GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
-            gtu.AgentData.AgentID = Client.Network.AgentID;
-            gtu.AgentData.SessionID = Client.Network.SessionID;
+            gtu.AgentData.AgentID = Client.Self.AgentID;
+            gtu.AgentData.SessionID = Client.Self.SessionID;
             gtu.AgentData.TitleRoleID = role;
             gtu.AgentData.GroupID = group;
 
@@ -785,8 +785,8 @@ namespace libsecondlife
         public void SetGroupContribution(LLUUID group, int contribution)
         {
             SetGroupContributionPacket sgp = new SetGroupContributionPacket();
-            sgp.AgentData.AgentID = Client.Network.AgentID;
-            sgp.AgentData.SessionID = Client.Network.SessionID;
+            sgp.AgentData.AgentID = Client.Self.AgentID;
+            sgp.AgentData.SessionID = Client.Self.SessionID;
             sgp.Data.GroupID = group;
             sgp.Data.Contribution = contribution;
 
@@ -800,8 +800,8 @@ namespace libsecondlife
         public void RequestJoinGroup(LLUUID id)
         {
             JoinGroupRequestPacket join = new JoinGroupRequestPacket();
-            join.AgentData.AgentID = Client.Network.AgentID;
-            join.AgentData.SessionID = Client.Network.SessionID;
+            join.AgentData.AgentID = Client.Self.AgentID;
+            join.AgentData.SessionID = Client.Self.SessionID;
 
             join.GroupData.GroupID = id;
 
@@ -818,8 +818,8 @@ namespace libsecondlife
             libsecondlife.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
             //Fill in agent data
             cgrp.AgentData = new CreateGroupRequestPacket.AgentDataBlock();
-            cgrp.AgentData.AgentID = Client.Network.AgentID;
-            cgrp.AgentData.SessionID = Client.Network.SessionID;
+            cgrp.AgentData.AgentID = Client.Self.AgentID;
+            cgrp.AgentData.SessionID = Client.Self.SessionID;
             //Fill in group data
             cgrp.GroupData = new CreateGroupRequestPacket.GroupDataBlock();
             cgrp.GroupData.AllowPublish = group.AllowPublish;
@@ -843,8 +843,8 @@ namespace libsecondlife
             libsecondlife.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
             //Fill in agent data
             cgrp.AgentData = new UpdateGroupInfoPacket.AgentDataBlock();
-            cgrp.AgentData.AgentID = Client.Network.AgentID;
-            cgrp.AgentData.SessionID = Client.Network.SessionID;
+            cgrp.AgentData.AgentID = Client.Self.AgentID;
+            cgrp.AgentData.SessionID = Client.Self.SessionID;
             //Fill in group data
             cgrp.GroupData = new UpdateGroupInfoPacket.GroupDataBlock();
             cgrp.GroupData.GroupID = id;
@@ -868,8 +868,8 @@ namespace libsecondlife
         {
             libsecondlife.Packets.EjectGroupMemberRequestPacket eject = new EjectGroupMemberRequestPacket();
             eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
-            eject.AgentData.AgentID = Client.Network.AgentID;
-            eject.AgentData.SessionID = Client.Network.SessionID;
+            eject.AgentData.AgentID = Client.Self.AgentID;
+            eject.AgentData.SessionID = Client.Self.SessionID;
             //Group
             eject.GroupData = new EjectGroupMemberRequestPacket.GroupDataBlock();
             eject.GroupData.GroupID = group;
@@ -889,8 +889,8 @@ namespace libsecondlife
         public void UpdateRole(LLUUID group, GroupRole role)
         {
             libsecondlife.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
-            gru.AgentData.AgentID = Client.Network.AgentID;
-            gru.AgentData.SessionID = Client.Network.SessionID;
+            gru.AgentData.AgentID = Client.Self.AgentID;
+            gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
             gru.RoleData[0].Name = Helpers.StringToField(role.Name);
@@ -909,8 +909,8 @@ namespace libsecondlife
         public void CreateRole(LLUUID group, GroupRole role)
         {
             libsecondlife.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
-            gru.AgentData.AgentID = Client.Network.AgentID;
-            gru.AgentData.SessionID = Client.Network.SessionID;
+            gru.AgentData.AgentID = Client.Self.AgentID;
+            gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
             gru.RoleData[0].Name = Helpers.StringToField(role.Name);
@@ -930,8 +930,8 @@ namespace libsecondlife
         public void RemoveFromRole(LLUUID group, LLUUID role, LLUUID member)
         {
             libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
-            grc.AgentData.AgentID = Client.Network.AgentID;
-            grc.AgentData.SessionID = Client.Network.SessionID;
+            grc.AgentData.AgentID = Client.Self.AgentID;
+            grc.AgentData.SessionID = Client.Self.SessionID;
             grc.AgentData.GroupID = group;
             grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
             grc.RoleChange[0] = new GroupRoleChangesPacket.RoleChangeBlock();
@@ -952,8 +952,8 @@ namespace libsecondlife
         public void AddToRole(LLUUID group, LLUUID role, LLUUID member)
         {
             libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
-            grc.AgentData.AgentID = Client.Network.AgentID;
-            grc.AgentData.SessionID = Client.Network.SessionID;
+            grc.AgentData.AgentID = Client.Self.AgentID;
+            grc.AgentData.SessionID = Client.Self.SessionID;
             grc.AgentData.GroupID = group;
             grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
             grc.RoleChange[0] = new GroupRoleChangesPacket.RoleChangeBlock();
@@ -985,8 +985,8 @@ namespace libsecondlife
         public void StartProposal(LLUUID group, GroupProposal prop)
         {
             StartGroupProposalPacket p = new StartGroupProposalPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
             p.ProposalData.GroupID = group;
             p.ProposalData.ProposalText = Helpers.StringToField(prop.VoteText);
             p.ProposalData.Quorum = prop.Quorum;
@@ -1002,8 +1002,8 @@ namespace libsecondlife
         public void LeaveGroup(LLUUID groupID)
         {
             LeaveGroupRequestPacket p = new LeaveGroupRequestPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
             p.GroupData.GroupID = groupID;
             Client.Network.SendPacket(p);
         }

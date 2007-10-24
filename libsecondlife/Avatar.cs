@@ -210,10 +210,12 @@ namespace libsecondlife
             /// <summary>Languages profile field</summary>
             public string LanguagesText;
             /// <summary></summary>
+            // FIXME:
             public uint SkillsMask;
             /// <summary></summary>
             public string SkillsText;
             /// <summary></summary>
+            // FIXME:
             public uint WantToMask;
             /// <summary></summary>
             public string WantToText;

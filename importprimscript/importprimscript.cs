@@ -104,7 +104,7 @@ namespace importprimscript
             System.Threading.Thread.Sleep(1000 * 10);
 
             // Set the root position for the import
-            RootPosition = Client.Self.Position;
+            RootPosition = Client.Self.SimPosition;
             RootPosition.Z += 3.0f;
 
             for (int i = 0; i < sculpties.Count; i++)

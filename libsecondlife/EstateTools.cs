@@ -128,8 +128,8 @@ namespace libsecondlife
         public void LandStatRequest(int parcelLocalID, LandStatReportType reportType, uint requestFlags, string filter)
         {
             LandStatRequestPacket p = new LandStatRequestPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
             p.RequestData.Filter = Helpers.StringToField(filter);
             p.RequestData.ParcelLocalID = parcelLocalID;
             p.RequestData.ReportType = (uint)reportType;
@@ -235,8 +235,8 @@ namespace libsecondlife
         public void EstateOwnerMessage(string method, List<string>listParams)
         {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
-            estate.AgentData.AgentID = Client.Network.AgentID;
-            estate.AgentData.SessionID = Client.Network.SessionID;
+            estate.AgentData.AgentID = Client.Self.AgentID;
+            estate.AgentData.SessionID = Client.Self.SessionID;
             estate.MethodData.Invoice = LLUUID.Random();
             estate.MethodData.Method = Helpers.StringToField(method);
             estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[listParams.Count];
@@ -262,7 +262,7 @@ namespace libsecondlife
         {
             List<string> listParams = new List<string>();
             uint flag = (uint)EstateAccessDelta.BanUser;
-            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToStringHyphenated());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -273,7 +273,7 @@ namespace libsecondlife
         {
             List<string> listParams = new List<string>();
             uint flag = (uint)EstateAccessDelta.BanUser;
-            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToStringHyphenated());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -300,7 +300,7 @@ namespace libsecondlife
             List<string> listParams = new List<string>();
             listParams.Add("-1");
             listParams.Add("-1");
-            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
             listParams.Add(Client.Self.FirstName + " " + Client.Self.LastName);
             listParams.Add(message);
             EstateOwnerMessage("simulatormessage", listParams);
@@ -313,7 +313,7 @@ namespace libsecondlife
         public void TeleportHomeUser(LLUUID pest)
         {
             List<string> listParams = new List<string>();
-            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
             listParams.Add(pest.ToStringHyphenated());
             EstateOwnerMessage("teleporthomeuser", listParams);
         }

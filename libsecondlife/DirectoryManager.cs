@@ -297,8 +297,8 @@ namespace libsecondlife
             DirClassifiedQueryPacket query = new DirClassifiedQueryPacket();
             LLUUID queryID = LLUUID.Random();
 
-            query.AgentData.AgentID = Client.Network.AgentID;
-            query.AgentData.SessionID = Client.Network.SessionID;
+            query.AgentData.AgentID = Client.Self.AgentID;
+            query.AgentData.SessionID = Client.Self.SessionID;
             query.QueryData.Category = (uint)categories;
             query.QueryData.QueryFlags = (uint)(mature ? 0 : 2);
             query.QueryData.QueryID = queryID;
@@ -377,8 +377,8 @@ namespace libsecondlife
             LLUUID queryID = LLUUID.Random();
 
             DirLandQueryPacket query = new DirLandQueryPacket();
-            query.AgentData.AgentID = Client.Network.AgentID;
-            query.AgentData.SessionID = Client.Network.SessionID;
+            query.AgentData.AgentID = Client.Self.AgentID;
+            query.AgentData.SessionID = Client.Self.SessionID;
             query.QueryData.Area = areaLimit;
             query.QueryData.Price = priceLimit;
             query.QueryData.QueryStart = queryStart;
@@ -413,8 +413,8 @@ namespace libsecondlife
         public LLUUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart, LLUUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
-            find.AgentData.AgentID = Client.Network.AgentID;
-            find.AgentData.SessionID = Client.Network.SessionID;
+            find.AgentData.AgentID = Client.Self.AgentID;
+            find.AgentData.SessionID = Client.Self.SessionID;
             find.QueryData.QueryFlags = (uint)findFlags;
             find.QueryData.QueryText = Helpers.StringToField(searchText);
             find.QueryData.QueryID = queryID;
@@ -431,8 +431,8 @@ namespace libsecondlife
         public LLUUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart, LLUUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
-            find.AgentData.AgentID = Client.Network.AgentID;
-            find.AgentData.SessionID = Client.Network.SessionID;
+            find.AgentData.AgentID = Client.Self.AgentID;
+            find.AgentData.SessionID = Client.Self.SessionID;
             find.QueryData.QueryFlags = (uint)findFlags;
             find.QueryData.QueryText = Helpers.StringToField(searchText);
             find.QueryData.QueryID = queryID;
@@ -491,8 +491,8 @@ namespace libsecondlife
         public LLUUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, string searchText, string simulatorName, LLUUID groupID, LLUUID transactionID)
         {
             PlacesQueryPacket find = new PlacesQueryPacket();
-            find.AgentData.AgentID = Client.Network.AgentID;
-            find.AgentData.SessionID = Client.Network.SessionID;
+            find.AgentData.AgentID = Client.Self.AgentID;
+            find.AgentData.SessionID = Client.Self.SessionID;
             find.AgentData.QueryID = groupID;
 
             find.TransactionData.TransactionID = transactionID;

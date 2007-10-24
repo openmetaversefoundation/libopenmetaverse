@@ -295,20 +295,29 @@ namespace libsecondlife
         /// <param name="FolderID"></param>
         /// <param name="CreatorID"></param>
         /// <param name="AssetID"></param>
-        public delegate void TaskItemReceivedCallback(LLUUID ItemID, LLUUID FolderID, LLUUID CreatorID, 
-            LLUUID AssetID, InventoryType Type);
+        public delegate void TaskItemReceivedCallback(LLUUID itemID, LLUUID folderID, LLUUID creatorID, 
+            LLUUID assetID, InventoryType type);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="path"></param>
         /// <param name="inventoryObjectID"></param>
         public delegate void FindObjectByPathCallback(string path, LLUUID inventoryObjectID);
+        /// <summary>
+        /// Reply received after calling <code>RequestTaskInventory</code>,
+        /// contains a filename that can be used in an asset download request
+        /// </summary>
+        /// <param name="itemID">UUID of the inventory item</param>
+        /// <param name="serial">Version number of the task inventory asset</param>
+        /// <param name="assetFilename">Filename of the task inventory asset</param>
+        public delegate void TaskInventoryReplyCallback(LLUUID itemID, short serial, string assetFilename);
 
         public event ItemReceivedCallback OnItemReceived;
         public event FolderUpdatedCallback OnFolderUpdated;
         public event ObjectOfferedCallback OnObjectOffered;
         public event TaskItemReceivedCallback OnTaskItemReceived;
         public event FindObjectByPathCallback OnFindObjectByPath;
+        public event TaskInventoryReplyCallback OnTaskInventoryReply;
 
         private SecondLife _Client;
         private Inventory _Store;
@@ -423,8 +432,10 @@ namespace libsecondlife
             _Client.Network.RegisterCallback(PacketType.MoveInventoryItem, new NetworkManager.PacketCallback(MoveInventoryItemHandler));
             _Client.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
             _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
+            _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
             // Watch for inventory given to us through instant message
             _Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+            // Register extra parameters with login and parse the inventory data that comes back
             _Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse), new string[] {"inventory-root", "inventory-skeleton", "inventory-lib-root", "inventory-lib-owner", "inventory-skel-lib"} );
         }
 
@@ -444,7 +455,7 @@ namespace libsecondlife
         //    {
         //        lock (FindDescendantsMap)
         //        {
-        //            IAsyncResult descendReq = BeginRequestFolderContents(baseFolder, _Client.Network.AgentID, true, true, recurse && !firstOnly, InventorySortOrder.ByName, new AsyncCallback(SearchDescendantsCallback), baseFolder);
+        //            IAsyncResult descendReq = BeginRequestFolderContents(baseFolder, _Client.Self.AgentID, true, true, recurse && !firstOnly, InventorySortOrder.ByName, new AsyncCallback(SearchDescendantsCallback), baseFolder);
         //            FindDescendantsMap.Add(descendReq, result);
         //        }
         //    }
@@ -508,7 +519,7 @@ namespace libsecondlife
         //        result.FoldersWaiting = 1;
         //        BeginRequestFolderContents(
         //            baseFolder,
-        //            _Client.Network.AgentID,
+        //            _Client.Self.AgentID,
         //            true,
         //            true,
         //            false,
@@ -540,8 +551,8 @@ namespace libsecondlife
 
             FetchInventoryPacket fetch = new FetchInventoryPacket();
             fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
-            fetch.AgentData.AgentID = _Client.Network.AgentID;
-            fetch.AgentData.SessionID = _Client.Network.SessionID;
+            fetch.AgentData.AgentID = _Client.Self.AgentID;
+            fetch.AgentData.SessionID = _Client.Self.SessionID;
 
             fetch.InventoryData = new FetchInventoryPacket.InventoryDataBlock[itemIDs.Count];
             for (int i = 0; i < itemIDs.Count; i++)
@@ -582,8 +593,8 @@ namespace libsecondlife
             InventorySortOrder order)
         {
             FetchInventoryDescendentsPacket fetch = new FetchInventoryDescendentsPacket();
-            fetch.AgentData.AgentID = _Client.Network.AgentID;
-            fetch.AgentData.SessionID = _Client.Network.SessionID;
+            fetch.AgentData.AgentID = _Client.Self.AgentID;
+            fetch.AgentData.SessionID = _Client.Self.SessionID;
 
             fetch.InventoryData.FetchFolders = folders;
             fetch.InventoryData.FetchItems = items;
@@ -729,8 +740,8 @@ namespace libsecondlife
             }
 
             MoveInventoryFolderPacket move = new MoveInventoryFolderPacket();
-            move.AgentData.AgentID = _Client.Network.AgentID;
-            move.AgentData.SessionID = _Client.Network.SessionID;
+            move.AgentData.AgentID = _Client.Self.AgentID;
+            move.AgentData.SessionID = _Client.Self.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[1];
@@ -765,8 +776,8 @@ namespace libsecondlife
 
             //TODO: Test if this truly supports multiple-folder move
             MoveInventoryFolderPacket move = new MoveInventoryFolderPacket();
-            move.AgentData.AgentID = _Client.Network.AgentID;
-            move.AgentData.SessionID = _Client.Network.SessionID;
+            move.AgentData.AgentID = _Client.Self.AgentID;
+            move.AgentData.SessionID = _Client.Self.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[foldersNewParents.Count];
@@ -801,8 +812,8 @@ namespace libsecondlife
             }
 
             MoveInventoryItemPacket move = new MoveInventoryItemPacket();
-            move.AgentData.AgentID = _Client.Network.AgentID;
-            move.AgentData.SessionID = _Client.Network.SessionID;
+            move.AgentData.AgentID = _Client.Self.AgentID;
+            move.AgentData.SessionID = _Client.Self.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[1];
@@ -830,8 +841,8 @@ namespace libsecondlife
             }
 
             MoveInventoryItemPacket move = new MoveInventoryItemPacket();
-            move.AgentData.AgentID = _Client.Network.AgentID;
-            move.AgentData.SessionID = _Client.Network.SessionID;
+            move.AgentData.AgentID = _Client.Self.AgentID;
+            move.AgentData.SessionID = _Client.Self.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[itemsNewParents.Count];
@@ -856,8 +867,8 @@ namespace libsecondlife
         public void RemoveDescendants(LLUUID folder)
         {
             PurgeInventoryDescendentsPacket purge = new PurgeInventoryDescendentsPacket();
-            purge.AgentData.AgentID = _Client.Network.AgentID;
-            purge.AgentData.SessionID = _Client.Network.SessionID;
+            purge.AgentData.AgentID = _Client.Self.AgentID;
+            purge.AgentData.SessionID = _Client.Self.SessionID;
             purge.InventoryData.FolderID = folder;
             _Client.Network.SendPacket(purge);
 
@@ -897,8 +908,8 @@ namespace libsecondlife
                 return;
 
             RemoveInventoryObjectsPacket rem = new RemoveInventoryObjectsPacket();
-            rem.AgentData.AgentID = _Client.Network.AgentID;
-            rem.AgentData.SessionID = _Client.Network.SessionID;
+            rem.AgentData.AgentID = _Client.Self.AgentID;
+            rem.AgentData.SessionID = _Client.Self.SessionID;
 
             if (items == null || items.Count == 0)
             {
@@ -1008,8 +1019,8 @@ namespace libsecondlife
             ItemCreatedCallback callback)
         {
             CreateInventoryItemPacket create = new CreateInventoryItemPacket();
-            create.AgentData.AgentID = _Client.Network.AgentID;
-            create.AgentData.SessionID = _Client.Network.SessionID;
+            create.AgentData.AgentID = _Client.Self.AgentID;
+            create.AgentData.SessionID = _Client.Self.SessionID;
 
             create.InventoryBlock.CallbackID = RegisterItemCreatedCallback(callback);
             create.InventoryBlock.FolderID = parentFolder;
@@ -1048,7 +1059,7 @@ namespace libsecondlife
             newFolder.ParentUUID = parentID;
             newFolder.PreferredType = preferredType;
             newFolder.Name = name;
-            newFolder.OwnerID = _Client.Network.AgentID;
+            newFolder.OwnerID = _Client.Self.AgentID;
 
             // Update the local store
             try { _Store[newFolder.UUID] = newFolder; }
@@ -1056,8 +1067,8 @@ namespace libsecondlife
 
             // Create the create folder packet and send it
             CreateInventoryFolderPacket create = new CreateInventoryFolderPacket();
-            create.AgentData.AgentID = _Client.Network.AgentID;
-            create.AgentData.SessionID = _Client.Network.SessionID;
+            create.AgentData.AgentID = _Client.Self.AgentID;
+            create.AgentData.SessionID = _Client.Self.SessionID;
 
             create.FolderData.FolderID = id;
             create.FolderData.ParentID = parentID;
@@ -1102,7 +1113,7 @@ namespace libsecondlife
 
         public void RequestCopyItem(LLUUID item, LLUUID newParent, string newName, ItemCopiedCallback callback)
         {
-            RequestCopyItem(item, newParent, newName, _Client.Network.AgentID, callback);
+            RequestCopyItem(item, newParent, newName, _Client.Self.AgentID, callback);
         }
 
         public void RequestCopyItem(LLUUID item, LLUUID newParent, string newName, LLUUID oldOwnerID,
@@ -1129,8 +1140,8 @@ namespace libsecondlife
             uint callbackID = RegisterItemsCopiedCallback(callback);
 
             CopyInventoryItemPacket copy = new CopyInventoryItemPacket();
-            copy.AgentData.AgentID = _Client.Network.AgentID;
-            copy.AgentData.SessionID = _Client.Network.SessionID;
+            copy.AgentData.AgentID = _Client.Self.AgentID;
+            copy.AgentData.SessionID = _Client.Self.SessionID;
 
             copy.InventoryData = new CopyInventoryItemPacket.InventoryDataBlock[items.Count];
             for (int i = 0; i < items.Count; ++i)
@@ -1153,8 +1164,8 @@ namespace libsecondlife
         public void RequestCopyItemFromNotecard(LLUUID objectID, LLUUID notecardID, LLUUID folderID, LLUUID itemID)
         {
             CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
-            copy.AgentData.AgentID = _Client.Network.AgentID;
-            copy.AgentData.SessionID = _Client.Network.SessionID;
+            copy.AgentData.AgentID = _Client.Self.AgentID;
+            copy.AgentData.SessionID = _Client.Self.SessionID;
 
             copy.NotecardData.ObjectID = objectID;
             copy.NotecardData.NotecardItemID = notecardID;
@@ -1187,8 +1198,8 @@ namespace libsecondlife
         public void RequestUpdateItems(List<InventoryItem> items, LLUUID transactionID)
         {
             UpdateInventoryItemPacket update = new UpdateInventoryItemPacket();
-            update.AgentData.AgentID = _Client.Network.AgentID;
-            update.AgentData.SessionID = _Client.Network.SessionID;
+            update.AgentData.AgentID = _Client.Self.AgentID;
+            update.AgentData.SessionID = _Client.Self.SessionID;
             update.AgentData.TransactionID = transactionID;
 
             update.InventoryData = new UpdateInventoryItemPacket.InventoryDataBlock[items.Count];
@@ -1273,8 +1284,8 @@ namespace libsecondlife
         {
             RezObjectPacket add = new RezObjectPacket();
 
-            add.AgentData.AgentID = _Client.Network.AgentID;
-            add.AgentData.SessionID = _Client.Network.SessionID;
+            add.AgentData.AgentID = _Client.Self.AgentID;
+            add.AgentData.SessionID = _Client.Self.SessionID;
             add.AgentData.GroupID = groupOwner;
 
             add.RezData.FromTaskID = LLUUID.Zero;
@@ -1329,18 +1340,101 @@ namespace libsecondlife
                 LLUUID.Random(),
                 InstantMessageDialog.InventoryOffered,
                 InstantMessageOnline.Online,
-                _Client.Self.Position,
+                _Client.Self.SimPosition,
                 _Client.Network.CurrentSim.ID,
                 bucket);
 
             if (doEffect)
             {
-                _Client.Self.BeamEffect(_Client.Network.AgentID, recipient, LLVector3d.Zero,
+                _Client.Self.BeamEffect(_Client.Self.AgentID, recipient, LLVector3d.Zero,
                     _Client.Settings.DEFAULT_EFFECT_COLOR, 1f, LLUUID.Random());
             }
         }
 
         #endregion Rez/Give
+
+        #region Task
+
+        public List<InventoryBase> GetTaskInventory(LLUUID objectID, uint objectLocalID, int timeoutMS)
+        {
+            string filename = null;
+            AutoResetEvent taskReplyEvent = new AutoResetEvent(false);
+
+            TaskInventoryReplyCallback callback =
+                delegate(LLUUID itemID, short serial, string assetFilename)
+                {
+                    if (itemID == objectID)
+                    {
+                        filename = assetFilename;
+                        taskReplyEvent.Set();
+                    }
+                };
+
+            OnTaskInventoryReply += callback;
+
+            RequestTaskInventory(objectLocalID);
+
+            if (taskReplyEvent.WaitOne(timeoutMS, false))
+            {
+                OnTaskInventoryReply -= callback;
+
+                byte[] assetData = null;
+                ulong xferID = 0;
+                AutoResetEvent taskDownloadEvent = new AutoResetEvent(false);
+
+                AssetManager.XferReceivedCallback xferCallback =
+                    delegate(XferDownload xfer)
+                    {
+                        if (xfer.XferID == xferID)
+                        {
+                            assetData = xfer.AssetData;
+                            taskDownloadEvent.Set();
+                        }
+                    };
+
+                _Client.Assets.OnXferReceived += xferCallback;
+
+                // Start the actual asset xfer
+                xferID = _Client.Assets.RequestAssetXfer(filename, true, false, LLUUID.Zero, AssetType.Unknown);
+
+                if (taskDownloadEvent.WaitOne(timeoutMS, false))
+                {
+                    _Client.Assets.OnXferReceived -= xferCallback;
+
+                    string taskList = Helpers.FieldToUTF8String(assetData);
+                    return ParseTaskInventory(taskList);
+                }
+                else
+                {
+                    _Client.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning);
+                    _Client.Assets.OnXferReceived -= xferCallback;
+                    return null;
+                }
+            }
+            else
+            {
+                _Client.Log("Timed out waiting for task inventory reply for " + objectLocalID, Helpers.LogLevel.Warning);
+                OnTaskInventoryReply -= callback;
+                return null;
+            }
+        }
+
+        public void RequestTaskInventory(uint objectLocalID)
+        {
+            RequestTaskInventory(objectLocalID, _Client.Network.CurrentSim);
+        }
+
+        public void RequestTaskInventory(uint objectLocalID, Simulator simulator)
+        {
+            RequestTaskInventoryPacket request = new RequestTaskInventoryPacket();
+            request.AgentData.AgentID = _Client.Self.AgentID;
+            request.AgentData.SessionID = _Client.Self.SessionID;
+            request.InventoryData.LocalID = objectLocalID;
+
+            _Client.Network.SendPacket(request, simulator);
+        }
+
+        #endregion Task
 
         #region Helper Functions
 
@@ -1349,9 +1443,31 @@ namespace libsecondlife
             return _AssetTypeNames[(int)type];
         }
 
+        public static AssetType StringToAssetType(string type)
+        {
+            for (int i = 0; i < _AssetTypeNames.Length; i++)
+            {
+                if (_AssetTypeNames[i] == type)
+                    return (AssetType)i;
+            }
+
+            return AssetType.Unknown;
+        }
+
         public static string InventoryTypeToString(InventoryType type)
         {
             return _InventoryTypeNames[(int)type];
+        }
+
+        public static InventoryType StringToInventoryType(string type)
+        {
+            for (int i = 0; i < _InventoryTypeNames.Length; i++)
+            {
+                if (_InventoryTypeNames[i] == type)
+                    return (InventoryType)i;
+            }
+
+            return InventoryType.Unknown;
         }
 
         private uint RegisterItemCreatedCallback(ItemCreatedCallback callback)
@@ -1453,6 +1569,246 @@ namespace libsecondlife
                 ret = CreateInventoryItem(InvType, ItemID);
 
             return ret;
+        }
+
+        private static bool ParseLine(string line, out string key, out string value)
+        {
+            string origLine = line;
+
+            // Clean up and convert tabs to spaces
+            line = line.Trim();
+            line = line.Replace('\t', ' ');
+
+            // Shrink all whitespace down to single spaces
+            while (line.IndexOf("  ") > 0)
+                line = line.Replace("  ", " ");
+
+            if (line.Length > 2)
+            {
+                int sep = line.IndexOf(' ');
+                if (sep > 0)
+                {
+                    key = line.Substring(0, sep);
+                    value = line.Substring(sep + 1);
+
+                    return true;
+                }
+            }
+            else if (line.Length == 1)
+            {
+                key = line;
+                value = String.Empty;
+                return true;
+            }
+
+            key = null;
+            value = null;
+            return false;
+        }
+
+        public static List<InventoryBase> ParseTaskInventory(string taskData)
+        {
+            List<InventoryBase> items = new List<InventoryBase>();
+            int lineNum = 0;
+            string[] lines = taskData.Replace("\r\n", "\n").Split(new char[] { '\n' });
+
+            while (lineNum < lines.Length)
+            {
+                string key, value;
+                if (ParseLine(lines[lineNum++], out key, out value))
+                {
+                    if (key == "inv_object")
+                    {
+                        // In practice this appears to only be used for folders
+                        LLUUID itemID = LLUUID.Zero;
+                        LLUUID parentID = LLUUID.Zero;
+                        string name = String.Empty;
+                        AssetType assetType = AssetType.Unknown;
+
+                        while (lineNum < lines.Length)
+                        {
+                            if (ParseLine(lines[lineNum++], out key, out value))
+                            {
+                                if (key == "{")
+                                {
+                                    continue;
+                                }
+                                else if (key == "}")
+                                {
+                                    break;
+                                }
+                                else if (key == "obj_id")
+                                {
+                                    LLUUID.TryParse(value, out itemID);
+                                }
+                                else if (key == "parent_id")
+                                {
+                                    LLUUID.TryParse(value, out parentID);
+                                }
+                                else if (key == "type")
+                                {
+                                    assetType = StringToAssetType(value);
+                                }
+                                else if (key == "name")
+                                {
+                                    name = value.Substring(0, value.IndexOf('|'));
+                                }
+                            }
+                        }
+
+                        if (assetType == AssetType.Folder)
+                        {
+                            InventoryFolder folder = new InventoryFolder(itemID);
+                            folder.Name = name;
+                            folder.ParentUUID = parentID;
+
+                            items.Add(folder);
+                        }
+                        else
+                        {
+                            InventoryItem item = new InventoryItem(itemID);
+                            item.Name = name;
+                            item.ParentUUID = parentID;
+                            item.AssetType = assetType;
+
+                            items.Add(item);
+                        }
+                    }
+                    else if (key == "inv_item")
+                    {
+                        // Any inventory item that links to an assetID, has permissions, etc
+                        LLUUID itemID = LLUUID.Zero;
+                        LLUUID assetID = LLUUID.Zero;
+                        LLUUID parentID = LLUUID.Zero;
+                        string name = String.Empty;
+                        string desc = String.Empty;
+                        AssetType assetType = AssetType.Unknown;
+                        InventoryType inventoryType = InventoryType.Unknown;
+                        DateTime creationDate = Helpers.Epoch;
+                        uint flags = 0;
+
+                        while (lineNum < lines.Length)
+                        {
+                            if (ParseLine(lines[lineNum++], out key, out value))
+                            {
+                                if (key == "{")
+                                {
+                                    continue;
+                                }
+                                else if (key == "}")
+                                {
+                                    break;
+                                }
+                                else if (key == "item_id")
+                                {
+                                    LLUUID.TryParse(value, out itemID);
+                                }
+                                else if (key == "parent_id")
+                                {
+                                    LLUUID.TryParse(value, out parentID);
+                                }
+                                else if (key == "permissions")
+                                {
+                                    while (lineNum < lines.Length)
+                                    {
+                                        if (ParseLine(lines[lineNum++], out key, out value))
+                                        {
+                                            if (key == "{")
+                                            {
+                                                continue;
+                                            }
+                                            else if (key == "}")
+                                            {
+                                                break;
+                                            }
+                                            //FIXME:
+                                        }
+                                    }
+                                }
+                                else if (key == "sale_info")
+                                {
+                                    while (lineNum < lines.Length)
+                                    {
+                                        if (ParseLine(lines[lineNum++], out key, out value))
+                                        {
+                                            if (key == "{")
+                                            {
+                                                continue;
+                                            }
+                                            else if (key == "}")
+                                            {
+                                                break;
+                                            }
+                                            //FIXME:
+                                        }
+                                    }
+                                }
+                                else if (key == "shadow_id")
+                                {
+                                    //FIXME:
+                                }
+                                else if (key == "asset_id")
+                                {
+                                    LLUUID.TryParse(value, out assetID);
+                                }
+                                else if (key == "type")
+                                {
+                                    assetType = StringToAssetType(value);
+                                }
+                                else if (key == "inv_type")
+                                {
+                                    inventoryType = StringToInventoryType(value);
+                                }
+                                else if (key == "flags")
+                                {
+                                    UInt32.TryParse(value, out flags);
+                                }
+                                else if (key == "name")
+                                {
+                                    name = value.Substring(0, value.IndexOf('|'));
+                                }
+                                else if (key == "desc")
+                                {
+                                    desc = value.Substring(0, value.IndexOf('|'));
+                                }
+                                else if (key == "creation_date")
+                                {
+                                    uint timestamp;
+                                    if (UInt32.TryParse(value, out timestamp))
+                                        creationDate = Helpers.UnixTimeToDateTime(timestamp);
+                                    else
+                                        SecondLife.LogStatic("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
+                                }
+                            }
+                        }
+
+                        InventoryItem item = CreateInventoryItem(inventoryType, itemID);
+                        item.AssetUUID = assetID;
+                        item.AssetType = assetType;
+                        item.CreationDate = creationDate;
+                        //item.CreatorID
+                        item.Description = desc;
+                        item.Flags = flags;
+                        //item.GroupID
+                        //item.GroupOwned
+                        item.Name = name;
+                        //item.OwnerID
+                        item.ParentUUID = parentID;
+                        //item.Permissions
+                        //item.SalePrice
+                        //item.SaleType
+
+                        items.Add(item);
+                    }
+                    else
+                    {
+                        SecondLife.LogStatic("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
+                            Helpers.LogLevel.Error);
+                    }
+                }
+            }
+
+            return items;
         }
         
         #endregion Helper Functions
@@ -1859,6 +2215,21 @@ namespace libsecondlife
             }
         }
 
+        private void ReplyTaskInventoryHandler(Packet packet, Simulator simulator)
+        {
+            if (OnTaskInventoryReply != null)
+            {
+                ReplyTaskInventoryPacket reply = (ReplyTaskInventoryPacket)packet;
+
+                try
+                {
+                    OnTaskInventoryReply(reply.InventoryData.TaskID, reply.InventoryData.Serial,
+                        Helpers.FieldToUTF8String(reply.InventoryData.Filename));
+                }
+                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
         private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
         {
             // TODO: MainAvatar.InstantMessageDialog.GroupNotice can also be an inventory offer, should we
@@ -1906,8 +2277,8 @@ namespace libsecondlife
                 try
                 {
                     ImprovedInstantMessagePacket imp = new ImprovedInstantMessagePacket();
-                    imp.AgentData.AgentID = _Client.Network.AgentID;
-                    imp.AgentData.SessionID = _Client.Network.SessionID;
+                    imp.AgentData.AgentID = _Client.Self.AgentID;
+                    imp.AgentData.SessionID = _Client.Self.SessionID;
                     imp.MessageBlock.FromGroup = false;
                     imp.MessageBlock.ToAgentID = im.FromAgentID;
                     imp.MessageBlock.Offline = 0;
@@ -1917,7 +2288,7 @@ namespace libsecondlife
                     imp.MessageBlock.Message = new byte[0];
                     imp.MessageBlock.ParentEstateID = 0;
                     imp.MessageBlock.RegionID = LLUUID.Zero;
-                    imp.MessageBlock.Position = _Client.Self.Position;
+                    imp.MessageBlock.Position = _Client.Self.SimPosition;
 
                     if (OnObjectOffered(im.FromAgentID, im.FromAgentName, im.ParentEstateID, im.RegionID, im.Position,
                         im.Timestamp, type, objectID, fromTask))

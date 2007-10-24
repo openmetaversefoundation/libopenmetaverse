@@ -138,7 +138,7 @@ namespace libsecondlife.TestClient
                 Array.Copy(tokens, 1, args, 0, args.Length);
                 string response = Commands[firstToken].Execute(args, fromAgentID);
 
-                if (response.Length > 0)
+                if (!String.IsNullOrEmpty(response))
                 {
                     Console.WriteLine(response);
 
@@ -162,7 +162,7 @@ namespace libsecondlife.TestClient
         private void AgentDataUpdateHandler(Packet packet, Simulator sim)
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
-            if (p.AgentData.AgentID == sim.Client.Network.AgentID)
+            if (p.AgentData.AgentID == sim.Client.Self.AgentID)
             {
                 Console.WriteLine("Got the group ID for " + sim.Client.ToString() + ", requesting group members...");
                 GroupID = p.AgentData.ActiveGroupID;

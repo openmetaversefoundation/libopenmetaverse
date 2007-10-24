@@ -234,7 +234,7 @@ namespace libsecondlife.TestClient
             lock (CurrentDownloads) CurrentDownloads.Clear();
 
             // FIXME:
-            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, 
+            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, 
             //    true, true, false, InventorySortOrder.ByName);
 
             DirectoryInfo di = new DirectoryInfo(args[1]);
@@ -253,7 +253,7 @@ namespace libsecondlife.TestClient
             StringBuilder sbRequests = new StringBuilder();
 
             // FIXME:
-            //Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Network.AgentID, true, true, false, 
+            //Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Self.AgentID, true, true, false, 
             //    InventorySortOrder.ByName);
 
             // first scan this folder for text
@@ -282,7 +282,7 @@ namespace libsecondlife.TestClient
 
                         // create the new qdi
                         QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.AssetUUID, iNode.Data.UUID, LLUUID.Zero, 
-                            Client.Network.AgentID, ii.AssetType);
+                            Client.Self.AgentID, ii.AssetType);
                         
                         // add it to the queue
                         lock (PendingDownloads)
