@@ -63,6 +63,21 @@ namespace libsecondlife
         Gesture = 20
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum SaleType : byte
+    {
+        /// <summary>Not for sale</summary>
+        Not = 0,
+        /// <summary>The original is for sale</summary>
+        Original = 1,
+        /// <summary>Copies are for sale</summary>
+        Copy = 2,
+        /// <summary>The contents of the object are for sale</summary>
+        Contents = 3
+    }
+
     [Flags]
     public enum InventorySortOrder : int
     {
@@ -407,6 +422,14 @@ namespace libsecondlife
 	        "wearable",
 	        "animation",
 	        "gesture",
+        };
+
+        private static readonly string[] _SaleTypeNames = new string[]
+        {
+            "not",
+            "orig",
+            "copy",
+            "cntn"
         };
 
         #endregion String Arrays
@@ -1507,6 +1530,22 @@ namespace libsecondlife
             return InventoryType.Unknown;
         }
 
+        public static string SaleTypeToString(SaleType type)
+        {
+            return _SaleTypeNames[(int)type];
+        }
+
+        public static SaleType StringToSaleType(string value)
+        {
+            for (int i = 0; i < _SaleTypeNames.Length; i++)
+            {
+                if (value == _SaleTypeNames[i])
+                    return (SaleType)i;
+            }
+
+            return SaleType.Not;
+        }
+
         private uint RegisterItemCreatedCallback(ItemCreatedCallback callback)
         {
             lock (_CallbacksLock)
@@ -1656,6 +1695,8 @@ namespace libsecondlife
                 {
                     if (key == "inv_object")
                     {
+                        #region inv_object
+
                         // In practice this appears to only be used for folders
                         LLUUID itemID = LLUUID.Zero;
                         LLUUID parentID = LLUUID.Zero;
@@ -1710,19 +1751,31 @@ namespace libsecondlife
 
                             items.Add(item);
                         }
+
+                        #endregion inv_object
                     }
                     else if (key == "inv_item")
                     {
+                        #region inv_item
+
                         // Any inventory item that links to an assetID, has permissions, etc
                         LLUUID itemID = LLUUID.Zero;
                         LLUUID assetID = LLUUID.Zero;
                         LLUUID parentID = LLUUID.Zero;
+                        LLUUID creatorID = LLUUID.Zero;
+                        LLUUID ownerID = LLUUID.Zero;
+                        LLUUID lastOwnerID = LLUUID.Zero;
+                        LLUUID groupID = LLUUID.Zero;
+                        bool groupOwned = false;
                         string name = String.Empty;
                         string desc = String.Empty;
                         AssetType assetType = AssetType.Unknown;
                         InventoryType inventoryType = InventoryType.Unknown;
                         DateTime creationDate = Helpers.Epoch;
                         uint flags = 0;
+                        Permissions perms = Permissions.NoPermissions;
+                        SaleType saleType = SaleType.Not;
+                        int salePrice = 0;
 
                         while (lineNum < lines.Length)
                         {
@@ -1746,6 +1799,8 @@ namespace libsecondlife
                                 }
                                 else if (key == "permissions")
                                 {
+                                    #region permissions
+
                                     while (lineNum < lines.Length)
                                     {
                                         if (ParseLine(lines[lineNum++], out key, out value))
@@ -1758,12 +1813,80 @@ namespace libsecondlife
                                             {
                                                 break;
                                             }
-                                            //FIXME:
+                                            else if (key == "creator_mask")
+                                            {
+                                                // Deprecated
+                                                uint val;
+                                                if (UInt32.TryParse(value, System.Globalization.NumberStyles.HexNumber,
+                                                    Helpers.EnUsCulture.NumberFormat, out val))
+                                                    perms.BaseMask = (PermissionMask)val;
+                                            }
+                                            else if (key == "base_mask")
+                                            {
+                                                uint val;
+                                                if (UInt32.TryParse(value, System.Globalization.NumberStyles.HexNumber,
+                                                    Helpers.EnUsCulture.NumberFormat, out val))
+                                                    perms.BaseMask = (PermissionMask)val;
+                                            }
+                                            else if (key == "owner_mask")
+                                            {
+                                                uint val;
+                                                if (UInt32.TryParse(value, System.Globalization.NumberStyles.HexNumber,
+                                                    Helpers.EnUsCulture.NumberFormat, out val))
+                                                    perms.OwnerMask = (PermissionMask)val;
+                                            }
+                                            else if (key == "group_mask")
+                                            {
+                                                uint val;
+                                                if (UInt32.TryParse(value, System.Globalization.NumberStyles.HexNumber,
+                                                    Helpers.EnUsCulture.NumberFormat, out val))
+                                                    perms.GroupMask = (PermissionMask)val;
+                                            }
+                                            else if (key == "everyone_mask")
+                                            {
+                                                uint val;
+                                                if (UInt32.TryParse(value, System.Globalization.NumberStyles.HexNumber,
+                                                    Helpers.EnUsCulture.NumberFormat, out val))
+                                                    perms.EveryoneMask = (PermissionMask)val;
+                                            }
+                                            else if (key == "next_owner_mask")
+                                            {
+                                                uint val;
+                                                if (UInt32.TryParse(value, System.Globalization.NumberStyles.HexNumber,
+                                                    Helpers.EnUsCulture.NumberFormat, out val))
+                                                    perms.NextOwnerMask = (PermissionMask)val;
+                                            }
+                                            else if (key == "creator_id")
+                                            {
+                                                LLUUID.TryParse(value, out creatorID);
+                                            }
+                                            else if (key == "owner_id")
+                                            {
+                                                LLUUID.TryParse(value, out ownerID);
+                                            }
+                                            else if (key == "last_owner_id")
+                                            {
+                                                LLUUID.TryParse(value, out lastOwnerID);
+                                            }
+                                            else if (key == "group_id")
+                                            {
+                                                LLUUID.TryParse(value, out groupID);
+                                            }
+                                            else if (key == "group_owned")
+                                            {
+                                                uint val;
+                                                if (UInt32.TryParse(value, out val))
+                                                    groupOwned = (val != 0);
+                                            }
                                         }
                                     }
+
+                                    #endregion permissions
                                 }
                                 else if (key == "sale_info")
                                 {
+                                    #region sale_info
+
                                     while (lineNum < lines.Length)
                                     {
                                         if (ParseLine(lines[lineNum++], out key, out value))
@@ -1776,9 +1899,18 @@ namespace libsecondlife
                                             {
                                                 break;
                                             }
-                                            //FIXME:
+                                            else if (key == "sale_type")
+                                            {
+                                                saleType = StringToSaleType(value);
+                                            }
+                                            else if (key == "sale_price")
+                                            {
+                                                Int32.TryParse(value, out salePrice);
+                                            }
                                         }
                                     }
+
+                                    #endregion sale_info
                                 }
                                 else if (key == "shadow_id")
                                 {
@@ -1823,19 +1955,21 @@ namespace libsecondlife
                         item.AssetUUID = assetID;
                         item.AssetType = assetType;
                         item.CreationDate = creationDate;
-                        //item.CreatorID
+                        item.CreatorID = creatorID;
                         item.Description = desc;
                         item.Flags = flags;
-                        //item.GroupID
-                        //item.GroupOwned
+                        item.GroupID = groupID;
+                        item.GroupOwned = groupOwned;
                         item.Name = name;
-                        //item.OwnerID
+                        item.OwnerID = ownerID;
                         item.ParentUUID = parentID;
-                        //item.Permissions
-                        //item.SalePrice
-                        //item.SaleType
+                        item.Permissions = perms;
+                        item.SalePrice = salePrice;
+                        item.SaleType = saleType;
 
                         items.Add(item);
+
+                        #endregion inv_item
                     }
                     else
                     {

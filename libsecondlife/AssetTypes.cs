@@ -174,41 +174,21 @@ namespace libsecondlife
         Invalid = 255
     };
 
-    public enum ForSale
-    {
-        /// <summary>Not for sale</summary>
-        Not = 0,
-        /// <summary>The original is for sale</summary>
-        Original = 1,
-        /// <summary>Copies are for sale</summary>
-        Copy = 2,
-        /// <summary>The contents of the object are for sale</summary>
-        Contents = 3
-    }
-
     public abstract class AssetWearable : Asset
     {
         public string Name = String.Empty;
         public string Description = String.Empty;
         public WearableType WearableType = WearableType.Shape;
-        public ForSale ForSale = ForSale.Not;
-        public int SalePrice = 0;
-        public LLUUID Creator = LLUUID.Zero;
-        public LLUUID Owner = LLUUID.Zero;
-        public LLUUID LastOwner = LLUUID.Zero;
-        public LLUUID Group = LLUUID.Zero;
-        public bool GroupOwned = false;
+        public SaleType ForSale;
+        public int SalePrice;
+        public LLUUID Creator;
+        public LLUUID Owner;
+        public LLUUID LastOwner;
+        public LLUUID Group;
+        public bool GroupOwned;
         public Permissions Permissions;
         public Dictionary<int, float> Params = new Dictionary<int, float>();
         public Dictionary<AppearanceManager.TextureIndex, LLUUID> Textures = new Dictionary<AppearanceManager.TextureIndex, LLUUID>();
-
-        private string[] ForSaleNames = new string[]
-        {
-            "not",
-            "orig",
-            "copy",
-            "cntn"
-        };
 
         public AssetWearable() { }
 
@@ -302,14 +282,7 @@ namespace libsecondlife
                     }
                     else if (fields[0] == "sale_type")
                     {
-                        for (int i = 0; i < ForSaleNames.Length; i++)
-                        {
-                            if (fields[1] == ForSaleNames[i])
-                            {
-                                ForSale = (ForSale)i;
-                                break;
-                            }
-                        }
+                        ForSale = InventoryManager.StringToSaleType(fields[1]);
                     }
                     else if (fields[0] == "sale_price")
                     {
@@ -385,7 +358,7 @@ namespace libsecondlife
             data.Append("\t}\n");
             data.Append("\tsale_info\t0\n");
             data.Append("\t{\n");
-            data.Append("\t\tsale_type\t"); data.Append(ForSaleNames[(int)ForSale]); data.Append("\n");
+            data.Append("\t\tsale_type\t"); data.Append(InventoryManager.SaleTypeToString(ForSale)); data.Append("\n");
             data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append("\n");
             data.Append("\t}\n");
             data.Append("type "); data.Append((int)WearableType); data.Append("\n");

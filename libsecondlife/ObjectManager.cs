@@ -33,21 +33,6 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
-    /// </summary>
-    public enum SaleType : byte
-    {
-        /// <summary></summary>
-        Not = 0,
-        /// <summary></summary>
-        Original = 1,
-        /// <summary></summary>
-        Copy = 2,
-        /// <summary></summary>
-        Contents = 3
-    }
-
-    /// <summary>
     /// Contains the variables sent in an object update packet for objects. 
     /// Used to track position and movement of prims and avatars
     /// </summary>

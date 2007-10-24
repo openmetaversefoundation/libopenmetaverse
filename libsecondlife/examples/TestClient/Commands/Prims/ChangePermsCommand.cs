@@ -124,7 +124,32 @@ namespace libsecondlife.TestClient
 
             #endregion Set Linkset Permissions
 
-            return "Set permissions to " + Perms.ToString() + " on " + localIDs.Count + " objects";
+            // Check each prim for task inventory and set permissions on the task inventory
+            int taskItems = 0;
+            foreach (Primitive prim in Objects.Values)
+            {
+                if ((prim.Flags & LLObject.ObjectFlags.InventoryEmpty) == 0)
+                {
+                    List<InventoryBase> items = Client.Inventory.GetTaskInventory(prim.ID, prim.LocalID, 1000 * 30);
+
+                    if (items != null)
+                    {
+                        for (int i = 0; i < items.Count; i++)
+                        {
+                            if (!(items[i] is InventoryFolder))
+                            {
+                                InventoryItem item = (InventoryItem)items[i];
+                                item.Permissions.NextOwnerMask = Perms;
+
+                                Client.Inventory.UpdateTaskInventory(prim.LocalID, item);
+                                ++taskItems;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return "Set permissions to " + Perms.ToString() + " on " + localIDs.Count + " objects and " + taskItems + " inventory items";
         }
 
         void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectProperties properties)

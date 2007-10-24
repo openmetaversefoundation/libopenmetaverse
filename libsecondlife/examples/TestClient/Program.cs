@@ -42,14 +42,19 @@ namespace libsecondlife.TestClient
                     masterName = arguments["master"];
                 }
 
-                if (arguments["contact"] == null)
-                    throw new CommandLineArgumentsException();
+                if (arguments["contact"] != null)
+                {
+                    contact = arguments["contact"];
+                }
+                else
+                {
+                    contact = "anonymous";
+                }
+
                 if (arguments["loginuri"] != null)
                 {
                     loginuri = arguments["loginuri"];
                 }
-
-                contact = arguments["contact"];
 
                 if (arguments["file"] != null)
                 {

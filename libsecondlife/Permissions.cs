@@ -94,5 +94,7 @@ namespace libsecondlife
             return String.Format("Base: {0}, Everyone: {1}, Group: {2}, NextOwner: {3}, Owner: {4}",
                 BaseMask, EveryoneMask, GroupMask, NextOwnerMask, OwnerMask);
         }
+
+        public static Permissions NoPermissions = new Permissions();
     }
 }
