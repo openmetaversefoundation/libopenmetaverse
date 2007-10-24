@@ -1355,6 +1355,43 @@ namespace libsecondlife
 
         #region Task
 
+        public LLUUID UpdateTaskInventory(uint objectLocalID, InventoryItem item)
+        {
+            LLUUID transactionID = LLUUID.Random();
+
+            UpdateTaskInventoryPacket update = new UpdateTaskInventoryPacket();
+            update.AgentData.AgentID = _Client.Self.AgentID;
+            update.AgentData.SessionID = _Client.Self.SessionID;
+            update.UpdateData.Key = 0;
+            update.UpdateData.LocalID = objectLocalID;
+
+            update.InventoryData.ItemID = item.UUID;
+            update.InventoryData.FolderID = item.ParentUUID;
+            update.InventoryData.CreatorID = item.CreatorID;
+            update.InventoryData.OwnerID = item.OwnerID;
+            update.InventoryData.GroupID = item.GroupID;
+            update.InventoryData.BaseMask = (uint)item.Permissions.BaseMask;
+            update.InventoryData.OwnerMask = (uint)item.Permissions.OwnerMask;
+            update.InventoryData.GroupMask = (uint)item.Permissions.GroupMask;
+            update.InventoryData.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            update.InventoryData.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+            update.InventoryData.GroupOwned = item.GroupOwned;
+            update.InventoryData.TransactionID = transactionID;
+            update.InventoryData.Type = (sbyte)item.AssetType;
+            update.InventoryData.InvType = (sbyte)item.InventoryType;
+            update.InventoryData.Flags = item.Flags;
+            update.InventoryData.SaleType = (byte)item.SaleType;
+            update.InventoryData.SalePrice = item.SalePrice;
+            update.InventoryData.Name = Helpers.StringToField(item.Name);
+            update.InventoryData.Description = Helpers.StringToField(item.Description);
+            update.InventoryData.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+            update.InventoryData.CRC = ItemCRC(item);
+
+            _Client.Network.SendPacket(update);
+
+            return transactionID;
+        }
+
         public List<InventoryBase> GetTaskInventory(LLUUID objectID, uint objectLocalID, int timeoutMS)
         {
             string filename = null;
