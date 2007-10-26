@@ -272,6 +272,14 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="success"></param>
+        /// <param name="status"></param>
+        /// <param name="itemID"></param>
+        /// <param name="assetID"></param>
+        public delegate void ItemCreatedFromAssetCallback(bool success, string status, LLUUID itemID, LLUUID assetID);
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="items"></param>
         public delegate void ItemCopiedCallback(InventoryBase item);
         /// <summary>
@@ -561,6 +569,45 @@ namespace libsecondlife
         //}
 
         #region Fetch
+
+        public InventoryItem FetchItem(LLUUID itemID, LLUUID ownerID, int timeoutMS)
+        {
+            AutoResetEvent fetchEvent = new AutoResetEvent(false);
+            InventoryItem fetchedItem = null;
+
+            ItemReceivedCallback callback =
+                delegate(InventoryItem item)
+                {
+                    if (item.UUID == itemID)
+                    {
+                        fetchedItem = item;
+                        fetchEvent.Set();
+                    }
+                };
+
+            OnItemReceived += callback;
+            RequestFetchInventory(itemID, ownerID);
+
+            fetchEvent.WaitOne(timeoutMS, false);
+            OnItemReceived -= callback;
+
+            return fetchedItem;
+        }
+
+        public void RequestFetchInventory(LLUUID itemID, LLUUID ownerID)
+        {
+            FetchInventoryPacket fetch = new FetchInventoryPacket();
+            fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
+            fetch.AgentData.AgentID = _Client.Self.AgentID;
+            fetch.AgentData.SessionID = _Client.Self.SessionID;
+
+            fetch.InventoryData = new FetchInventoryPacket.InventoryDataBlock[1];
+            fetch.InventoryData[0] = new FetchInventoryPacket.InventoryDataBlock();
+            fetch.InventoryData[0].ItemID = itemID;
+            fetch.InventoryData[0].OwnerID = ownerID;
+
+            _Client.Network.SendPacket(fetch);
+        }
 
         /// <summary>
         /// Request inventory items
@@ -1104,8 +1151,11 @@ namespace libsecondlife
         }
 
         public void RequestCreateItemFromAsset(byte[] data, string name, string description, AssetType assetType,
-            InventoryType invType, LLUUID folderID, ItemCreatedCallback callback)
+            InventoryType invType, LLUUID folderID, ItemCreatedFromAssetCallback callback)
         {
+            if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
+                throw new Exception("NewFileAgentInventory capability is not currently available");
+
             string url = _Client.Network.CurrentSim.Caps.CapabilityURI("NewFileAgentInventory");
 
             if (url != String.Empty)
@@ -1122,7 +1172,7 @@ namespace libsecondlife
                 // Make the request
                 CapsRequest request = new CapsRequest(url, _Client.Network.CurrentSim);
                 request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateItemFromAssetResponse);
-                request.MakeRequest(postData, "application/xml", 0, new KeyValuePair<ItemCreatedCallback, byte[]>(callback, data));
+                request.MakeRequest(postData, "application/xml", 0, new KeyValuePair<ItemCreatedFromAssetCallback, byte[]>(callback, data));
             }
             else
             {
@@ -1989,8 +2039,8 @@ namespace libsecondlife
         private void CreateItemFromAssetResponse(object response, HttpRequestState state)
         {
             Dictionary<string, object> contents = (Dictionary<string, object>)response;
-            KeyValuePair<ItemCreatedCallback, byte[]> kvp = (KeyValuePair<ItemCreatedCallback, byte[]>)state.State;
-            ItemCreatedCallback callback = kvp.Key;
+            KeyValuePair<ItemCreatedFromAssetCallback, byte[]> kvp = (KeyValuePair<ItemCreatedFromAssetCallback, byte[]>)state.State;
+            ItemCreatedFromAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
             string status = (string)contents["state"];
@@ -2007,13 +2057,21 @@ namespace libsecondlife
             }
             else if (status == "complete")
             {
-                //FIXME: Callback successfully
-                callback(true, null);
+                if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
+                {
+                    try { callback(true, String.Empty, (LLUUID)contents["new_inventory_item"], (LLUUID)contents["new_asset"]); }
+                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+                else
+                {
+                    try { callback(false, "Failed to parse asset and item UUIDs", LLUUID.Zero, LLUUID.Zero); }
+                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
             else
             {
                 // Failure
-                try { callback(false, null); }
+                try { callback(false, status, LLUUID.Zero, LLUUID.Zero); }
                 catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
@@ -2034,7 +2092,7 @@ namespace libsecondlife
 
             if (reply.AgentData.Descendents > 0)
             {
-                // InventoryDescendantsReply sends a null folder if the parent doesnt contain any folders.
+                // InventoryDescendantsReply sends a null folder if the parent doesnt contain any folders
                 if (reply.FolderData[0].FolderID != LLUUID.Zero)
                 {
                     // Iterate folders in this packet

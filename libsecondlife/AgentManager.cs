@@ -1202,10 +1202,8 @@ namespace libsecondlife
             effect.Effect[0].Type = (byte)EffectType.Beam;
 
             byte[] typeData = new byte[56];
-            if (sourceAvatar != null)
-                Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
-            if (targetObject != null)
-                Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
+            Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
             Buffer.BlockCopy(globalOffset.GetBytes(), 0, typeData, 32, 24);
 
             effect.Effect[0].TypeData = typeData;
