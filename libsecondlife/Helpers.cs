@@ -244,8 +244,7 @@ namespace libsecondlife
         /// less than four bytes</returns>
         public static uint BytesToUInt(byte[] bytes)
         {
-            if (bytes.Length < 4) return 0;
-            return (uint)(bytes[3] + (bytes[2] << 8) + (bytes[1] << 16) + (bytes[0] << 24));
+            return BytesToUInt(bytes, 0);
         }
 
         /// <summary>

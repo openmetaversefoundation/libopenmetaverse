@@ -1280,12 +1280,12 @@ namespace libsecondlife
                 string nameValue = Helpers.FieldToUTF8String(block.NameValue);
                 if (nameValue.Length > 0)
                 {
-                    string[] lines = nameValue.Split(new char[] { '\n' });
+                    string[] lines = nameValue.Split('\n');
                     nameValues = new NameValue[lines.Length];
 
                     for (int i = 0; i < lines.Length; i++)
                     {
-                        if (lines[i].Length > 0)
+                        if (!String.IsNullOrEmpty(lines[i]))
                         {
                             NameValue nv = new NameValue(lines[i]);
                             if (nv.Name == "AttachItemID") attachment = true;
@@ -1964,12 +1964,12 @@ namespace libsecondlife
                                 // Parse the name values
                                 if (text.Length > 0)
                                 {
-                                    string[] lines = text.Split(new char[] { '\n' });
+                                    string[] lines = text.Split('\n');
                                     prim.NameValues = new NameValue[lines.Length];
 
                                     for (int j = 0; j < lines.Length; j++)
                                     {
-                                        if (lines[j].Length > 0)
+                                        if (!String.IsNullOrEmpty(lines[j]))
                                         {
                                             NameValue nv = new NameValue(lines[j]);
                                             prim.NameValues[j] = nv;
@@ -2006,16 +2006,15 @@ namespace libsecondlife
                             LLUUID test = new LLUUID("73818c3a-acc3-30b8-5060-0e6cf693cddf");
 
                             // TextureEntry
-                            int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                            int textureEntryLength = (int)Helpers.BytesToUIntBig(block.Data, i);
+                            i += 4;
                             prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
                             i += textureEntryLength;
 
                             // Texture animation
                             if ((flags & CompressedFlags.TextureAnimation) != 0)
                             {
-                                //int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                                //    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                                //int textureAnimLength = (int)Helpers.BytesToUIntBig(block.Data, i);
                                 i += 4;
                                 prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
                             }

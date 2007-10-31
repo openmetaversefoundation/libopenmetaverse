@@ -206,10 +206,8 @@ namespace libsecondlife
         internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
         private SecondLife Client;
-        private System.Timers.Timer DisconnectTimer, LogoutTimer;
+        private System.Timers.Timer DisconnectTimer;
         private bool connected = false;
-        private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
-
 
         /// <summary>
         /// Default constructor
@@ -449,59 +447,52 @@ namespace libsecondlife
 
         /// <summary>
         /// Initiate a blocking logout request. This will return when the logout
-        /// handshake has completed or when Settings.LOGOUT_TIMEOUT has expired
-        /// and a LogoutDemand packet has been sent
+        /// handshake has completed or when <code>Settings.LOGOUT_TIMEOUT</code>
+        /// has expired and the network layer is manually shut down
         /// </summary>
         public void Logout()
         {
-            LogoutReplyEvent.Reset();
+            AutoResetEvent logoutEvent = new AutoResetEvent(false);
+            LogoutCallback callback = 
+                delegate(List<LLUUID> inventoryItems) { logoutEvent.Set(); };
+            OnLogoutReply += callback;
+
+            // Send the packet requesting a clean logout
             RequestLogout();
-            LogoutReplyEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false);
+
+            // Wait for a logout response. If the response is received, shutdown
+            // will be fired in the callback. Otherwise we fire it manually with
+            // a NetworkTimeout type
+            if (!logoutEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false))
+                Shutdown(DisconnectType.NetworkTimeout);
+
+            OnLogoutReply -= callback;
         }
 
         /// <summary>
-        /// Initiate the logout process (three step process!)
+        /// Initiate the logout process. Check if logout succeeded with the
+        /// <code>OnLogoutReply</code> event, and if this does not fire the
+        /// <code>Shutdown()</code> function needs to be manually called
         /// </summary>
         public void RequestLogout()
         {
+            // No need to run the disconnect timer any more
+            DisconnectTimer.Stop();
+
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
             {
-                LogoutReplyEvent.Set();
+                Client.Log("Ignoring RequestLogout(), client is already logged out", Helpers.LogLevel.Warning);
                 return;
             }
 
             Client.Log("Logging out", Helpers.LogLevel.Info);
-
-            DisconnectTimer.Stop();
 
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
             logout.AgentData.AgentID = Client.Self.AgentID;
             logout.AgentData.SessionID = Client.Self.SessionID;
             CurrentSim.SendPacket(logout, true);
-
-            LogoutTimer = new System.Timers.Timer(Client.Settings.LOGOUT_TIMEOUT);
-            LogoutTimer.AutoReset = false;
-            LogoutTimer.Elapsed += new ElapsedEventHandler(LogoutTimer_Elapsed);
-            LogoutTimer.Start();
-        }
-
-        /// <summary>
-        /// Uses a LogoutDemand packet to force initiate a logout
-        /// </summary>
-        public void ForceLogout()
-        {
-            Client.Log("Forcing a logout", Helpers.LogLevel.Info);
-
-            DisconnectTimer.Stop();
-
-            // Insist on shutdown
-            // LogoutDemandPacket logoutDemand = new LogoutDemandPacket(); // FIXME: packet is no more
-            // logoutDemand.LogoutBlock.SessionID = SessionID;
-            // CurrentSim.SendPacket(logoutDemand, true);
-
-            FinalizeLogout();
         }
 
         /// <summary>
@@ -528,6 +519,65 @@ namespace libsecondlife
             else
             {
                 Client.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Shutdown will disconnect all the sims except for the current sim
+        /// first, and then kill the connection to CurrentSim. This should only
+        /// be called if the logout process times out on <code>RequestLogout</code>
+        /// </summary>
+        public void Shutdown(DisconnectType type)
+        {
+            Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
+
+            // Send a CloseCircuit packet to simulators if we are initiating the disconnect
+            bool sendCloseCircuit = (type == DisconnectType.ClientInitiated || type == DisconnectType.NetworkTimeout);
+
+            lock (Simulators)
+            {
+                // Disconnect all simulators except the current one
+                for (int i = 0; i < Simulators.Count; i++)
+                {
+                    if (Simulators[i] != null && Simulators[i] != CurrentSim)
+                    {
+                        Simulators[i].Disconnect(sendCloseCircuit);
+
+                        // Fire the SimDisconnected event if a handler is registered
+                        if (OnSimDisconnected != null)
+                        {
+                            try { OnSimDisconnected(Simulators[i], type); }
+                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        }
+                    }
+                }
+
+                Simulators.Clear();
+            }
+
+            if (CurrentSim != null)
+            {
+                // Kill the connection to the curent simulator
+                CurrentSim.Disconnect(sendCloseCircuit);
+
+                // Fire the SimDisconnected event if a handler is registered
+                if (OnSimDisconnected != null)
+                {
+                    try { OnSimDisconnected(CurrentSim, type); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+
+            // Clear out all of the packets that never had time to process
+            lock (PacketInbox) PacketInbox.Clear();
+
+            connected = false;
+
+            // Fire the disconnected callback
+            if (OnDisconnected != null)
+            {
+                try { OnDisconnected(DisconnectType.ClientInitiated, String.Empty); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -685,96 +735,7 @@ namespace libsecondlife
             }
         }
 
-        /// <summary>
-        /// Finalize the logout procedure. Close down sockets, etc.
-        /// </summary>
-        private void FinalizeLogout()
-        {
-            if (LogoutTimer != null) LogoutTimer.Stop();
-
-            // Shutdown the network layer
-            Shutdown(DisconnectType.ClientInitiated);
-
-            if (OnDisconnected != null)
-            {
-                try
-                {
-                    OnDisconnected(DisconnectType.ClientInitiated, String.Empty);
-                }
-                catch (Exception e)
-                {
-                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
-                        Helpers.LogLevel.Error);
-                }
-            }
-
-            // In case we are blocking in Logout()
-            LogoutReplyEvent.Set();
-        }
-
-        /// <summary>
-        /// Shutdown will disconnect all the sims except for the current sim
-        /// first, and then kill the connection to CurrentSim.
-        /// </summary>
-        private void Shutdown(DisconnectType type)
-        {
-            Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
-
-            // Send a CloseCircuit packet to simulators if we are initiating the disconnect
-            bool sendCloseCircuit = (type == DisconnectType.ClientInitiated || type == DisconnectType.NetworkTimeout);
-
-            lock (Simulators)
-            {
-                // Disconnect all simulators except the current one
-                for (int i = 0; i < Simulators.Count; i++)
-                {
-                    if (Simulators[i] != null && Simulators[i] != CurrentSim)
-                    {
-                        Simulators[i].Disconnect(sendCloseCircuit);
-
-                        // Fire the SimDisconnected event if a handler is registered
-                        if (OnSimDisconnected != null)
-                        {
-                            try { OnSimDisconnected(Simulators[i], type); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                        }
-                    }
-                }
-
-                Simulators.Clear();
-            }
-
-            if (CurrentSim != null)
-            {
-                // Kill the connection to the curent simulator
-                CurrentSim.Disconnect(sendCloseCircuit);
-
-                // Fire the SimDisconnected event if a handler is registered
-                if (OnSimDisconnected != null)
-                {
-                    try { OnSimDisconnected(CurrentSim, type); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
-            }
-
-
-            // Clear out all of the packets that never had time to process
-            lock (PacketInbox) PacketInbox.Clear();
-
-            connected = false;
-        }
-
         #region Timers
-
-        /// <summary>
-        /// Triggered if a LogoutReply is not received
-        /// </summary>
-        private void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
-        {
-            LogoutTimer.Stop();
-            Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
-            ForceLogout();
-        }
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
@@ -871,7 +832,7 @@ namespace libsecondlife
 
             if ((logout.AgentData.SessionID == Client.Self.SessionID) && (logout.AgentData.AgentID == Client.Self.AgentID))
             {
-                Client.Log("Logout negotiated with server", Helpers.LogLevel.Debug);
+                Client.DebugLog("Logout reply received");
 
                 // Deal with callbacks, if any
                 if (OnLogoutReply != null)
@@ -887,7 +848,8 @@ namespace libsecondlife
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
-                FinalizeLogout();
+                // If we are receiving a LogoutReply packet assume this is a client initiated shutdown
+                Shutdown(DisconnectType.ClientInitiated);
             }
             else
             {

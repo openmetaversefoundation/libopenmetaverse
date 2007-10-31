@@ -147,8 +147,9 @@ namespace libsecondlife
         /// <summary>If true, all object update packets will be decoded in to
         /// native objects. If false, only updates for our own agent will be
         /// decoded. Registering an event handler will force objects for that
-        /// type to always be decoded</summary>
-        public bool ALWAYS_DECODE_OBJECTS = false;
+        /// type to always be decoded. If this is disabled the object tracking
+        /// will have missing or partial prim and avatar information</summary>
+        public bool ALWAYS_DECODE_OBJECTS = true;
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>
         public bool ALWAYS_REQUEST_OBJECTS = false;

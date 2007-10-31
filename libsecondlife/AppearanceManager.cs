@@ -100,10 +100,16 @@ namespace libsecondlife
         /// <param name="wearables">A mapping of WearableTypes to KeyValuePairs
         /// with Asset ID of the wearable as key and Item ID as value</param>
         public delegate void AgentWearablesCallback(Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="textures">List of the textures our avatar is currently wearing</param>
+        public delegate void AppearanceUpdatedCallback(LLObject.TextureEntry te);
 
         /// <summary></summary>
         public event AgentWearablesCallback OnAgentWearables;
+        /// <summary></summary>
+        public event AppearanceUpdatedCallback OnAppearanceUpdated;
 
         /// <summary>Total number of wearables for each avatar</summary>
         public const int WEARABLE_COUNT = 13;
@@ -171,6 +177,7 @@ namespace libsecondlife
         private AutoResetEvent WearablesRequestEvent = new AutoResetEvent(false);
         private AutoResetEvent WearablesDownloadedEvent = new AutoResetEvent(false);
         private AutoResetEvent CachedResponseEvent = new AutoResetEvent(false);
+        private AutoResetEvent UpdateEvent = new AutoResetEvent(false);
         // FIXME: Create a class-level appearance thread so multiple threads can't be launched
 
         /// <summary>
@@ -189,15 +196,7 @@ namespace libsecondlife
 
             Client.Network.RegisterCallback(PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateHandler));
             Client.Network.RegisterCallback(PacketType.AgentCachedTextureResponse, new NetworkManager.PacketCallback(AgentCachedTextureResponseHandler));
-        }
-
-        /// <summary>
-        /// If the appearance thread is running it is terminated here
-        /// </summary>
-        ~AppearanceManager()
-        {
-            WearablesDownloadedEvent.Set();
-            CachedResponseEvent.Set();
+            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }
 
         private static AssetType WearableTypeToAssetType(WearableType type)
@@ -566,13 +565,16 @@ namespace libsecondlife
             // Unregister the asset download callback
             Assets.OnAssetReceived -= assetCallback;
 
-            string tex = "";
+            if (Client.Settings.DEBUG)
+            {
+                StringBuilder tex = new StringBuilder();
 
-            for (int i = 0; i < AgentTextures.Length; i++)
-                if (AgentTextures[i] != LLUUID.Zero)
-                    tex += ((TextureIndex)i).ToString() + " = " + AgentTextures[i] + "\n";
+                for (int i = 0; i < AgentTextures.Length; i++)
+                    if (AgentTextures[i] != LLUUID.Zero)
+                        tex.AppendFormat("{0} = {1}\n", (TextureIndex)i, AgentTextures[i]);
 
-            Client.DebugLog("AgentTextures:\n" + tex);
+                Client.DebugLog("AgentTextures:" + Environment.NewLine + tex.ToString());
+            }
 
             // Check if anything needs to be rebaked
             if (bake) RequestCachedBakes();
@@ -589,8 +591,74 @@ namespace libsecondlife
 
             Client.DebugLog("CachedResponseEvent completed");
 
+            #region Send Appearance
+
+            LLObject.TextureEntry te = null;
+
+            ObjectManager.NewAvatarCallback updateCallback =
+                delegate(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+                {
+                    if (avatar.LocalID == Client.Self.LocalID)
+                    {
+                        if (avatar.Textures.FaceTextures != null)
+                        {
+                            bool match = true;
+
+                            for (uint i = 0; i < AgentTextures.Length; i++)
+                            {
+                                LLObject.TextureEntryFace face = avatar.Textures.FaceTextures[i];
+
+                                if (face == null)
+                                {
+                                    // If the texture is LLUUID.Zero the face should be null
+                                    if (AgentTextures[i] != LLUUID.Zero)
+                                    {
+                                        match = false;
+                                        break;
+                                    }
+                                }
+                                else if (face.TextureID != AgentTextures[i])
+                                {
+                                    match = false;
+                                    break;
+                                }
+                            }
+
+                            if (!match)
+                                Client.Log("TextureEntry mismatch after updating our appearance", Helpers.LogLevel.Warning);
+
+                            te = avatar.Textures;
+                            UpdateEvent.Set();
+                        }
+                        else
+                        {
+                            Client.Log("Received an update for our avatar with a null FaceTextures array",
+                                Helpers.LogLevel.Warning);
+                        }
+                    }
+                };
+            Client.Objects.OnNewAvatar += updateCallback;
+
             // Send all of the visual params and textures for our agent
             SendAgentSetAppearance();
+
+            // Wait for the ObjectUpdate to come in for our avatar after changing appearance
+            if (UpdateEvent.WaitOne(1000 * 60, false))
+            {
+                if (OnAppearanceUpdated != null)
+                {
+                    try { OnAppearanceUpdated(te); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            else
+            {
+                Client.Log("Timed out waiting for our appearance to update on the simulator", Helpers.LogLevel.Warning);
+            }
+
+            Client.Objects.OnNewAvatar -= updateCallback;
+
+            #endregion Send Appearance
         }
 
         /// <summary>
@@ -895,6 +963,38 @@ namespace libsecondlife
             }
         }
 
+        private void UploadBake(Baker bake)
+        {
+            // Upload the completed layer data
+            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
+
+            Client.DebugLog(String.Format("Bake {0} completed. Uploading asset {1}", bake.BakeType,
+                bake.BakedTexture.AssetID.ToStringHyphenated()));
+
+            // Add it to a pending uploads list
+            lock (PendingUploads) PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
+        }
+
+        private int AddImageDownload(TextureIndex index)
+        {
+            LLUUID image = AgentTextures[(int)index];
+
+            if (image != LLUUID.Zero)
+            {
+                if (!ImageDownloads.ContainsKey(image))
+                {
+                    Client.DebugLog("Downloading layer " + index.ToString());
+                    ImageDownloads.Add(image, index);
+                }
+
+                return 1;
+            }
+
+            return 0;
+        }
+
+        #region Callbacks
+
         private void AgentCachedTextureResponseHandler(Packet packet, Simulator simulator)
         {
             Client.DebugLog("AgentCachedTextureResponseHandler()");
@@ -1041,24 +1141,6 @@ namespace libsecondlife
             }
         }
 
-        private int AddImageDownload(TextureIndex index)
-        {
-            LLUUID image = AgentTextures[(int)index];
-
-            if (image != LLUUID.Zero)
-            {
-                if (!ImageDownloads.ContainsKey(image))
-                {
-                    Client.DebugLog("Downloading layer " + index.ToString());
-                    ImageDownloads.Add(image, index);
-                }
-
-                return 1;
-            }
-
-            return 0;
-        }
-
         private void Assets_OnAssetReceived(AssetDownload download, Asset asset)
         {
             lock (Wearables)
@@ -1174,17 +1256,6 @@ namespace libsecondlife
             }
         }
 
-        private void UploadBake(Baker bake)
-        {
-            // Upload the completed layer data
-            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
-
-            Client.DebugLog("Bake " + bake.BakeType.ToString() + " completed. Uploading asset " + bake.BakedTexture.AssetID.ToStringHyphenated());
-
-            // Add it to a pending uploads list
-            lock (PendingUploads) PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
-        }
-
         private void Assets_OnAssetUploaded(AssetUpload upload)
         {
             lock (PendingUploads)
@@ -1225,5 +1296,18 @@ namespace libsecondlife
                 }
             }
         }
+
+        /// <summary>
+        /// Terminate any wait handles when the network layer disconnects
+        /// </summary>
+        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            WearablesRequestEvent.Set();
+            WearablesDownloadedEvent.Set();
+            CachedResponseEvent.Set();
+            UpdateEvent.Set();
+        }
+
+        #endregion Callbacks
     }
 }

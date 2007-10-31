@@ -500,6 +500,21 @@ namespace libsecondlife
             /// <summary>
             /// 
             /// </summary>
+            /// <param name="index"></param>
+            /// <returns></returns>
+            public TextureEntryFace GetFace(uint index)
+            {
+                if (index >= MAX_FACES) throw new Exception(index + " is outside the range of MAX_FACES");
+
+                if (FaceTextures[index] != null)
+                    return FaceTextures[index];
+                else
+                    return DefaultTexture;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
             /// <returns></returns>
             public List<object> ToLLSD()
             {

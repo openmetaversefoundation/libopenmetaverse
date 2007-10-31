@@ -253,6 +253,10 @@ namespace libsecondlife
                 {
                     return name;
                 }
+                else if (NameValues == null || NameValues.Length == 0)
+                {
+                    return String.Empty;
+                }
                 else
                 {
                     string firstName = String.Empty;
@@ -277,8 +281,6 @@ namespace libsecondlife
                     }
                 }
             }
-            // FIXME: Get rid of this eventually
-            set { name = value; }
         }
 
         /// <summary>Active group</summary>
