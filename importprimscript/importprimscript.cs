@@ -22,12 +22,11 @@ namespace importprimscript
     {
         static SecondLife Client;
         static AssetManager Assets;
-        static AssetUpload CurrentUpload = null;
-        static AutoResetEvent UploadEvent = new AutoResetEvent(false);
         static Sculpt CurrentSculpt = null;
         static AutoResetEvent RezzedEvent = new AutoResetEvent(false);
         static LLVector3 RootPosition = LLVector3.Zero;
         static List<uint> RezzedPrims = new List<uint>();
+        static LLUUID UploadFolderID = LLUUID.Zero;
 
         static void Main(string[] args)
         {
@@ -45,8 +44,10 @@ namespace importprimscript
                 args[i] = args[i].Trim(new char[] { '"' });
 
             // Parse the primscript file
+            string scriptfilename = args[7];
             string error;
-            List<Sculpt> sculpties = ParsePrimscript(args[7], out error);
+            List<Sculpt> sculpties = ParsePrimscript(scriptfilename, out error);
+            scriptfilename = Path.GetFileNameWithoutExtension(scriptfilename);
 
             // Check for parsing errors
             if (error != String.Empty)
@@ -65,17 +66,15 @@ namespace importprimscript
             Assets = new AssetManager(Client);
 
             // Add callback handlers for asset uploads finishing. new prims spotted, and logging
-            Assets.OnAssetUploaded += new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
             Client.OnLogMessage += new SecondLife.LogCallback(Client_OnLogMessage);
 
             // Optimize the connection for our purposes
-            Client.Self.Movement.Camera.Far = 32.0f;
+            Client.Self.Movement.Camera.Far = 64f;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
-            Client.Settings.ENABLE_CAPS = false;
+            Client.Settings.CONTINUOUS_AGENT_UPDATES = true;
             Client.Settings.DEBUG = false;
-            Client.Settings.ENABLE_SIMSTATS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.ALWAYS_DECODE_OBJECTS = true;
             Client.Throttle.Land = 0;
@@ -86,27 +85,53 @@ namespace importprimscript
             Client.Throttle.Texture = 446000.0f;
             Client.Throttle.Task = 446000.0f;
 
+            // Create a handler for the event queue connecting, so we know when
+            // it is safe to start uploading
+            AutoResetEvent eventQueueEvent = new AutoResetEvent(false);
+            NetworkManager.EventQueueRunningCallback eventQueueCallback =
+                delegate(Simulator simulator)
+                {
+                    if (simulator == Client.Network.CurrentSim)
+                        eventQueueEvent.Set();
+                };
+            Client.Network.OnEventQueueRunning += eventQueueCallback;
+
             int x = Int32.Parse(args[4]);
             int y = Int32.Parse(args[5]);
             int z = Int32.Parse(args[6]);
             string start = NetworkManager.StartLocation(args[3], x, y, z);
 
             // Attempt to login
-            if (!Client.Network.Login(args[0], args[1], args[2], "importprimscript 1.0.0", start,
+            if (!Client.Network.Login(args[0], args[1], args[2], "importprimscript 1.1.0", start,
                 "John Hurliman <jhurliman@metaverseindustries.com>"))
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginMessage);
                 Environment.Exit(-4);
             }
 
-            // Wait a moment for the initial flood of packets to die down
-            Console.WriteLine("Login succeeded, pausing for a moment...");
-            System.Threading.Thread.Sleep(1000 * 10);
+            // Need to be connected to the event queue before we can upload
+            Console.WriteLine("Login succeeded, waiting for the event handler to connect...");
+            if (!eventQueueEvent.WaitOne(1000 * 90, false))
+            {
+                Console.WriteLine("Event queue connection timed out, disconnecting...");
+                Client.Network.Logout();
+                Environment.Exit(-5);
+            }
+
+            // Don't need this anymore
+            Client.Network.OnEventQueueRunning -= eventQueueCallback;
 
             // Set the root position for the import
             RootPosition = Client.Self.SimPosition;
             RootPosition.Z += 3.0f;
 
+            // TODO: Check if our account balance is high enough to upload everything
+            //
+
+            // Create a folder to hold all of our texture uploads
+            UploadFolderID = Client.Inventory.CreateFolder(Client.Inventory.Store.RootFolder.UUID, AssetType.Unknown, scriptfilename);
+
+            // Loop through each sculpty and do what we need to do
             for (int i = 0; i < sculpties.Count; i++)
             {
                 // Upload the sculpt map and texture
@@ -116,29 +141,28 @@ namespace importprimscript
                 // Check for failed uploads
                 if (sculpties[i].SculptID == LLUUID.Zero)
                 {
-                    Client.Log("Sculpt map " + sculpties[i].SculptFile + 
-                        " failed to upload, skipping " + sculpties[i].Name, Helpers.LogLevel.Warning);
+                    Console.WriteLine("Sculpt map " + sculpties[i].SculptFile + " failed to upload, skipping " + sculpties[i].Name);
                     continue;
                 }
                 else if (sculpties[i].TextureID == LLUUID.Zero)
                 {
-                    Client.Log("Texture " + sculpties[i].TextureFile +
-                        " failed to upload, skipping " + sculpties[i].Name, Helpers.LogLevel.Warning);
+                    Console.WriteLine("Texture " + sculpties[i].TextureFile + " failed to upload, skipping " + sculpties[i].Name);
                     continue;
                 }
 
-                LLObject.ObjectData prim = new LLObject.ObjectData();
-                prim.PCode = ObjectManager.PCode.Prim;
-                prim.Material = LLObject.MaterialType.Wood;
-                prim.PathScaleY = 0.5f;
-                prim.PathCurve = LLObject.PathCurve.Circle;
-                prim.ProfileCurve = LLObject.ProfileCurve.ProfileCircle;
+                // Create basic spherical volume parameters. It will be set to
+                // a scultpy in the callback for new objects being created
+                LLObject.ObjectData volume = new LLObject.ObjectData();
+                volume.PCode = ObjectManager.PCode.Prim;
+                volume.Material = LLObject.MaterialType.Wood;
+                volume.PathScaleY = 0.5f;
+                volume.PathCurve = LLObject.PathCurve.Circle;
+                volume.ProfileCurve = LLObject.ProfileCurve.ProfileCircle;
 
                 // Rez this prim
                 CurrentSculpt = sculpties[i];
-                Client.Objects.AddPrim(Client.Network.CurrentSim, prim, LLUUID.Zero,
-                    RootPosition + CurrentSculpt.Offset, CurrentSculpt.Scale,
-                    LLQuaternion.Identity);
+                Client.Objects.AddPrim(Client.Network.CurrentSim, volume, LLUUID.Zero, 
+                    RootPosition + CurrentSculpt.Offset, CurrentSculpt.Scale, LLQuaternion.Identity);
 
                 // Wait for the prim to rez and the properties be set for it
                 if (!RezzedEvent.WaitOne(1000 * 10, false))
@@ -152,11 +176,11 @@ namespace importprimscript
 
             lock (RezzedPrims)
             {
-                // Set the permissions
+                // Set full permissions for all of the objects
                 Client.Objects.SetPermissions(Client.Network.CurrentSim, RezzedPrims, PermissionWho.All,
                     PermissionMask.All, true);
 
-                // Link the object together
+                // Link the entire object together
                 Client.Objects.LinkPrims(Client.Network.CurrentSim, RezzedPrims);
             }
 
@@ -173,6 +197,7 @@ namespace importprimscript
 
         static LLUUID UploadImage(string filename, bool lossless)
         {
+            LLUUID newAssetID = LLUUID.Zero;
             byte[] jp2data = null;
 
             try
@@ -182,45 +207,33 @@ namespace importprimscript
             }
             catch (Exception ex)
             {
-                Client.Log("Failed to encode image file " + filename + ": " + ex.ToString(), Helpers.LogLevel.Error);
+                Console.WriteLine("Failed to encode image file " + filename + ": " + ex.ToString());
                 return LLUUID.Zero;
             }
 
-            CurrentUpload = null;
-            LLUUID transactionID = Assets.RequestUpload(AssetType.Texture, jp2data, false, false, true);
-
-            // The textures are small, 60 seconds should be plenty
-            UploadEvent.WaitOne(1000 * 60, false);
-
-            if (CurrentUpload != null)
-            {
-                if (CurrentUpload.Success)
+            AutoResetEvent uploadEvent = new AutoResetEvent(false);
+            Client.Inventory.RequestCreateItemFromAsset(jp2data, Path.GetFileNameWithoutExtension(filename),
+                "Uploaded with importprimscript", AssetType.Texture, InventoryType.Texture, UploadFolderID,
+                delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
                 {
-                    // Pay for the upload
-                    Client.Self.PayUploadFee("importprimscript");
+                    if (success)
+                    {
+                        Console.WriteLine("Finished uploading image " + filename + ", AssetID: " + assetID.ToStringHyphenated());
+                        newAssetID = assetID;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to upload image file " + filename + ": " + status);
+                    }
 
-                    Console.WriteLine("Finished uploading image " + filename + ", AssetID: " +
-                        CurrentUpload.AssetID.ToStringHyphenated());
-                    return CurrentUpload.AssetID;
+                    uploadEvent.Set();
                 }
-                else
-                {
-                    Client.Log("Upload rejected for image file " + filename, Helpers.LogLevel.Error);
-                    return LLUUID.Zero;
-                }
-            }
-            else
-            {
-                Client.Log("Failed to upload image file " + filename + ", upload timed out", Helpers.LogLevel.Error);
-                // TODO: Add a libsecondlife method for aborting a transfer
-                return LLUUID.Zero;
-            }
-        }
+            );
 
-        static void Assets_OnAssetUploaded(AssetUpload upload)
-        {
-            CurrentUpload = upload;
-            UploadEvent.Set();
+            // The images are small, 60 seconds should be plenty
+            uploadEvent.WaitOne(1000 * 60, false);
+
+            return newAssetID;
         }
 
         static void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
