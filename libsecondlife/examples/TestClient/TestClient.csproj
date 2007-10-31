@@ -75,7 +75,6 @@
     <Compile Include="Commands\Prims\ExportParticlesCommand.cs" />
     <Compile Include="Commands\Prims\FindTextureCommand.cs" />
     <Compile Include="Commands\Prims\ImportCommand.cs" />
-    <Compile Include="Commands\Prims\ManglePrimCommand.cs" />
     <Compile Include="Commands\Prims\PrimCountCommand.cs" />
     <Compile Include="Commands\Prims\PrimInfoCommand.cs" />
     <Compile Include="Commands\Stats\DilationCommand.cs" />

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
 using System.Threading;
 using System.IO;
 using libsecondlife;
@@ -59,22 +57,23 @@ namespace libsecondlife.TestClient
                 return "Usage: import inputfile.xml";
 
             string filename = args[0];
-            Dictionary<uint, Primitive> prims;
+            Dictionary<uint, Primitive> prims = new Dictionary<uint, Primitive>(); ;
 
             currentClient = Client;
 
+            return "This command is currently under construction";
+
             try
             {
-                XmlReader reader = XmlReader.Create(filename);
-                List<Primitive> listprims = Helpers.PrimListFromXml(reader);
-                reader.Close();
+                //XmlReader reader = XmlReader.Create(filename);
+                //List<Primitive> listprims = Helpers.PrimListFromXml(reader);
+                //reader.Close();
 
                 // Create a dictionary indexed by the old local ID of the prims
-                prims = new Dictionary<uint, Primitive>();
-                foreach (Primitive prim in listprims)
-                {
-                    prims.Add(prim.LocalID, prim);
-                }
+                //foreach (Primitive prim in listprims)
+                //{
+                //    prims.Add(prim.LocalID, prim);
+                //}
             }
             catch (Exception)
             {

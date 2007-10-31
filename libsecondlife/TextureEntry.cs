@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace libsecondlife
@@ -139,8 +140,7 @@ namespace libsecondlife
         /// A single textured face. Don't instantiate this class yourself, use the
         /// methods in TextureEntry
         /// </summary>
-        [Serializable]
-        public class TextureEntryFace : ICloneable
+        public class TextureEntryFace
         {
             // +----------+ S = Shiny
             // | SSFBBBBB | F = Fullbright
@@ -156,15 +156,15 @@ namespace libsecondlife
             private const byte MEDIA_MASK = 0x01;
             private const byte TEX_MAP_MASK = 0x06;
 
-            private uint rgba;
-            private float repeatU = 1.0f;
-            private float repeatV = 1.0f;
+            private LLColor rgba;
+            private float repeatU;
+            private float repeatV;
             private float offsetU;
             private float offsetV;
             private float rotation;
             private TextureAttributes hasAttribute;
             private LLUUID textureID;
-            private TextureEntryFace DefaultTexture = null;
+            private TextureEntryFace DefaultTexture;
 
             internal byte material;
             internal byte media;
@@ -172,7 +172,7 @@ namespace libsecondlife
             #region Properties
 
             /// <summary></summary>
-            public uint RGBA
+            public LLColor RGBA
             {
                 get
                 {
@@ -394,23 +394,36 @@ namespace libsecondlife
 
             #endregion Properties
 
-            public TextureEntryFace()
-            {
-            	DefaultTexture = null;
-            	hasAttribute = TextureAttributes.All;
-            }
-            
             /// <summary>
             /// Contains the definition for individual faces
             /// </summary>
             /// <param name="defaultTexture"></param>
             public TextureEntryFace(TextureEntryFace defaultTexture)
             {
+                repeatU = 1.0f;
+                repeatV = 1.0f;
+
                 DefaultTexture = defaultTexture;
                 if (DefaultTexture == null)
                     hasAttribute = TextureAttributes.All;
                 else
                     hasAttribute = TextureAttributes.None;
+            }
+
+            public Dictionary<string, object> ToLLSD()
+            {
+                Dictionary<string, object> tex = new Dictionary<string, object>(10);
+                tex["bump"] = (int)Bump;
+                tex["colors"] = RGBA.ToLLSD();
+                tex["fullbright"] = Fullbright;
+                tex["imageid"] = TextureID;
+                tex["imagerot"] = Rotation;
+                tex["media_flags"] = MediaFlags;
+                tex["offsets"] = OffsetU;
+                tex["offsett"] = OffsetV;
+                tex["scales"] = RepeatU;
+                tex["scalet"] = RepeatV;
+                return tex;
             }
 
             /// <summary>
@@ -423,28 +436,6 @@ namespace libsecondlife
                     "TextureAttributes: {6} Material: {7} Media: {8} ID: {9}", rgba, repeatU, repeatV, offsetU, 
                     offsetV, rotation, hasAttribute.ToString(), material, media, textureID.ToStringHyphenated());
             }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            object ICloneable.Clone()
-            {
-                return this.Clone();
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            public virtual TextureEntryFace Clone()
-            {
-                TextureEntryFace clone = this.MemberwiseClone() as TextureEntryFace;
-
-                // No extra deep copying needed
-
-                return clone;
-            }
         }
 
         /// <summary>
@@ -456,24 +447,14 @@ namespace libsecondlife
         /// has a texture UUID of Y, every face would be textured with X except for
         /// face 18 that uses Y. In practice however, primitives utilize a maximum
         /// of nine faces</remarks>
-        [Serializable]
-        public class TextureEntry : ICloneable
+        public class TextureEntry
         {
             /// <summary></summary>
             public TextureEntryFace DefaultTexture;
             /// <summary></summary>
-            public TextureEntryFace[] FaceTextures;
+            public TextureEntryFace[] FaceTextures = new TextureEntryFace[MAX_FACES];
 
             public const int MAX_FACES = 32;
-
-            /// <summary>
-            /// Default constructor, DefaultTexture will be null
-            /// </summary>
-            public TextureEntry()
-            {
-                DefaultTexture = null;
-                FaceTextures = new TextureEntryFace[0];
-            }
 
             /// <summary>
             /// Constructor that takes a default texture UUID
@@ -483,7 +464,6 @@ namespace libsecondlife
             {
                 DefaultTexture = new TextureEntryFace(null);
                 DefaultTexture.TextureID = defaultTextureID;
-                FaceTextures = new TextureEntryFace[MAX_FACES];
             }
 
             /// <summary>
@@ -517,12 +497,25 @@ namespace libsecondlife
                 return FaceTextures[index];
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public List<object> ToLLSD()
+            {
+                List<object> te = new List<object>();
+
+                for (int i = 0; i < MAX_FACES; i++)
+                {
+                    if (FaceTextures[i] != null)
+                        te.Add(FaceTextures[i].ToLLSD());
+                }
+
+                return te;
+            }
+
             private void FromBytes(byte[] data, int pos, int length)
             {
-                // Always initialize FaceTextures with MAX_FACES null pointers
-                // so new faces can be created without resizing the array
-                FaceTextures = new TextureEntryFace[MAX_FACES];
-
                 if (length <= 0)
                 {
                     // No TextureEntry to process
@@ -554,17 +547,17 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                DefaultTexture.RGBA = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
+                DefaultTexture.RGBA = new LLColor(data[i], data[i + 1], data[i + 2], data[i + 3]);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    uint tmpUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
+                    LLColor tmpColor = new LLColor(data[i], data[i + 1], data[i + 2], data[i + 3]);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
                         if ((faceBits & bit) != 0)
-                            CreateFace(face).RGBA = tmpUint;
+                            CreateFace(face).RGBA = tmpColor;
                 }
                 #endregion Color
 
@@ -774,13 +767,13 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                binWriter.Write(DefaultTexture.RGBA);
+                binWriter.Write(DefaultTexture.RGBA.GetBytes());
                 for (int i = 0; i < rgbas.Length; i++)
                 {
                     if (rgbas[i] != UInt32.MaxValue)
                     {
                         binWriter.Write(GetFaceBitfieldBytes(rgbas[i]));
-                        binWriter.Write(FaceTextures[i].RGBA);
+                        binWriter.Write(FaceTextures[i].RGBA.GetBytes());
                     }
                 }
                 binWriter.Write((byte)0);
@@ -898,34 +891,7 @@ namespace libsecondlife
                 return output;
             }
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            object ICloneable.Clone()
-            {
-                return this.Clone();
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            public virtual TextureEntry Clone()
-            {
-                TextureEntry clone = new TextureEntry();
-                clone.DefaultTexture = DefaultTexture.Clone();
-
-                clone.FaceTextures = new TextureEntryFace[FaceTextures.Length];
-
-                for (int i = 0; i < FaceTextures.Length; i++)
-                {
-                    if (FaceTextures[i] != null)
-                        clone.FaceTextures[i] = FaceTextures[i].Clone();
-                }
-
-                return clone;
-            }
+            #region Helpers
 
             private void InitializeArray(ref uint[] array)
             {
@@ -976,6 +942,8 @@ namespace libsecondlife
                 }
                 return bytes;
             }
+
+            #endregion Helpers
         }
     }
 }

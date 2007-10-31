@@ -36,7 +36,7 @@ namespace libsecondlife.Packets
     {
         public static string SerializeToXml(Packet packet)
         {
-            return LLSDParser.SerializeXml(SerializeToLLSD(packet));
+            return LLSDParser.SerializeXmlString(SerializeToLLSD(packet));
         }
 
         public static object SerializeToLLSD(Packet packet)

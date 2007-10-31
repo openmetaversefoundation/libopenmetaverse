@@ -26,8 +26,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
 using System.Text;
 using libsecondlife.Packets;
 
@@ -974,34 +972,6 @@ namespace libsecondlife
             }
 
             return "$1$" + digest.ToString();
-        }
-
-        public static void PacketListToXml(List<Packet> packets, XmlWriter xmlWriter)
-        {
-            //XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            //ns.Add("", "");
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Packet>));
-            serializer.Serialize(xmlWriter, packets);
-        }
-
-        public static void PrimListToXml(List<Primitive> list, XmlWriter xmlWriter)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Primitive>));
-            serializer.Serialize(xmlWriter, list);
-        }
-
-        public static List<Primitive> PrimListFromXml(XmlReader reader)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Primitive>));
-            object list = serializer.Deserialize(reader);
-            return (List<Primitive>)list;
-        }
-
-        public static List<Packet> PacketListFromXml(XmlReader reader)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Packet>));
-            object list = serializer.Deserialize(reader);
-            return (List<Packet>)list;
         }
 
         /// <summary>

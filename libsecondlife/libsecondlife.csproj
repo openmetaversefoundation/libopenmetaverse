@@ -156,9 +156,6 @@
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SerializableDictionary.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Simulator.cs" />
     <Compile Include="SoundManager.cs" />

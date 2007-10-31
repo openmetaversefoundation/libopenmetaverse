@@ -52,7 +52,7 @@ namespace libsecondlife.TestClient
 
             try
             {
-                Helpers.PacketListToXml(Packets, writer);
+                return "This command is currently under construction";
             }
             catch (Exception e)
             {

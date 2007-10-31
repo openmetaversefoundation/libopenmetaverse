@@ -106,9 +106,10 @@ namespace libsecondlife.TestClient
                         bool complete = RequestObjectProperties(prims, 250);
 						
                         //Serialize it!
-						Helpers.PrimListToXml(prims, writer);
+                        return "This command is currently under construction";
 
-                        if (!complete) {
+                        if (!complete)
+                        {
                             Console.WriteLine("Warning: Unable to retrieve full properties for:");
                             foreach (LLUUID uuid in PrimsWaiting.Keys)
                                 Console.WriteLine(uuid);

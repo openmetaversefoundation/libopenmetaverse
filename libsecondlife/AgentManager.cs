@@ -686,14 +686,6 @@ namespace libsecondlife
         public string StartLocation { get { return startLocation; } }
         /// <summary>The access level of this agent, usually M or PG</summary>
         public string AgentAccess { get { return agentAccess; } }
-        /// <summary>Positive and negative ratings</summary>
-        public Avatar.Statistics ProfileStatistics { get { return profileStatistics; } }
-        /// <summary>Avatar properties including about text, profile URL, image IDs and 
-        /// publishing settings</summary>
-        public Avatar.AvatarProperties ProfileProperties { get { return profileProperties; } }
-        /// <summary>Avatar interests including spoken languages, skills, and "want to"
-        /// choices</summary>
-        public Avatar.Interests ProfileInterests { get { return profileInterests; } }
         /// <summary></summary>
         public LLVector4 CollisionPlane { get { return collisionPlane; } }
         /// <summary></summary>
@@ -710,8 +702,6 @@ namespace libsecondlife
         public LLVector3 HomePosition { get { return homePosition; } }
         /// <summary>LookAt point saved/restored with HomePosition</summary>
         public LLVector3 HomeLookAt { get { return homeLookAt; } }
-        /// <summary>The UUID of your root inventory folder</summary>
-        public LLUUID InventoryRootID { get { return inventoryRootID; } }
         /// <summary>Avatar First Name (i.e. Philip)</summary>
         public string FirstName { get { return firstName; } }
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
@@ -838,13 +828,9 @@ namespace libsecondlife
         private LLUUID secureSessionID;
         private string startLocation = String.Empty;
         private string agentAccess = String.Empty;
-        private Avatar.Statistics profileStatistics;
-        private Avatar.AvatarProperties profileProperties;
-        private Avatar.Interests profileInterests;
         private LLVector3 lookAt;
         private LLVector3 homePosition;
         private LLVector3 homeLookAt;
-        private LLUUID inventoryRootID;
         private string firstName = String.Empty;
         private string lastName = String.Empty;
         private string fullName;

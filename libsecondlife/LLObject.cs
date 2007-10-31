@@ -26,8 +26,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -35,7 +33,6 @@ namespace libsecondlife
     /// <summary>
     /// Base class for primitives and avatars
     /// </summary>
-    [Serializable]
     public abstract partial class LLObject
     {
         #region Enumerations
@@ -153,7 +150,6 @@ namespace libsecondlife
         }
 
         #endregion Enumerations
-
 
         #region Structs
 
@@ -321,7 +317,6 @@ namespace libsecondlife
 
         #endregion Structs
 
-
         #region Public Members
 
         /// <summary></summary>
@@ -357,7 +352,6 @@ namespace libsecondlife
         /// <summary></summary>
         public ObjectProperties Properties;
         /// <summary></summary>
-        [XmlIgnore]
         public ObjectPropertiesFamily PropertiesFamily;
         /// <summary></summary>
         public NameValue[] NameValues;
@@ -365,10 +359,6 @@ namespace libsecondlife
         public ObjectData Data;
 
         #endregion Public Members
-
-
-        //internal DateTime lastInterpolation;
-
 
         /// <summary>
         /// 

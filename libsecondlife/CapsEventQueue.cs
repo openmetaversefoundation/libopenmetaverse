@@ -66,7 +66,7 @@ namespace libsecondlife
             request["ack"] = null;
             request["done"] = false;
 
-            byte[] postData = LLSDParser.SerializeXmlToBytes(request);
+            byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
             // Create a new HttpWebRequest
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
@@ -287,7 +287,7 @@ namespace libsecondlife
                 else request["ack"] = null;
                 request["done"] = _Dead;
 
-                byte[] postData = LLSDParser.SerializeXmlToBytes(request);
+                byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
                 MakeRequest(postData, "application/xml", 0, null);
 

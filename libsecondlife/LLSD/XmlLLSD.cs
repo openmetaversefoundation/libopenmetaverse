@@ -30,12 +30,12 @@ namespace libsecondlife.LLSD
             return ret;
         }
 
-        public static byte[] SerializeXmlToBytes(object data)
+        public static byte[] SerializeXmlBytes(object data)
         {
-            return Encoding.UTF8.GetBytes(SerializeXml(data));
+            return Encoding.UTF8.GetBytes(SerializeXmlString(data));
         }
 
-        public static string SerializeXml(object data)
+        public static string SerializeXmlString(object data)
         {
             StringWriter sw = new StringWriter();
             XmlTextWriter writer = new XmlTextWriter(sw);
@@ -48,6 +48,167 @@ namespace libsecondlife.LLSD
             writer.Close();
 
             return sw.ToString();
+        }
+
+        public static void SerializeXmlElement(XmlTextWriter writer, object obj)
+        {
+            if (obj == null)
+            {
+                writer.WriteStartElement(String.Empty, "undef", String.Empty);
+                writer.WriteEndElement();
+            }
+            else if (obj is string)
+            {
+                writer.WriteStartElement(String.Empty, "string", String.Empty);
+                writer.WriteString((string)obj);
+                writer.WriteEndElement();
+            }
+            else if (obj is int || obj is uint || obj is short || obj is ushort || obj is byte || obj is sbyte)
+            {
+                writer.WriteStartElement(String.Empty, "integer", String.Empty);
+                writer.WriteString(obj.ToString());
+                writer.WriteEndElement();
+            }
+            else if (obj is double)
+            {
+                double value = (double)obj;
+
+                writer.WriteStartElement(String.Empty, "real", String.Empty);
+                writer.WriteString(value.ToString(Helpers.EnUsCulture));
+                writer.WriteEndElement();
+            }
+            else if (obj is float)
+            {
+                float value = (float)obj;
+
+                writer.WriteStartElement(String.Empty, "real", String.Empty);
+                writer.WriteString(value.ToString(Helpers.EnUsCulture));
+                writer.WriteEndElement();
+            }
+            else if (obj is long)
+            {
+                // 64-bit integers are not natively supported in LLSD, so we convert to a byte array
+                long value = (long)obj;
+
+                byte[] bytes = BitConverter.GetBytes(value);
+
+                writer.WriteStartElement(String.Empty, "binary", String.Empty);
+
+                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
+                writer.WriteString("base64");
+                writer.WriteEndAttribute();
+
+                writer.WriteString(Convert.ToBase64String(bytes));
+                writer.WriteEndElement();
+            }
+            else if (obj is ulong)
+            {
+                // 64-bit integers are not natively supported in LLSD, so we convert to a byte array
+                ulong value = (ulong)obj;
+
+                byte[] bytes = BitConverter.GetBytes(value);
+
+                writer.WriteStartElement(String.Empty, "binary", String.Empty);
+
+                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
+                writer.WriteString("base64");
+                writer.WriteEndAttribute();
+
+                writer.WriteString(Convert.ToBase64String(bytes));
+                writer.WriteEndElement();
+            }
+            else if (obj is bool)
+            {
+                bool b = (bool)obj;
+                writer.WriteStartElement(String.Empty, "boolean", String.Empty);
+                writer.WriteString(b ? "1" : "0");
+                writer.WriteEndElement();
+            }
+            else if (obj is LLUUID)
+            {
+                LLUUID u = (LLUUID)obj;
+                writer.WriteStartElement(String.Empty, "uuid", String.Empty);
+                writer.WriteString(u.ToStringHyphenated());
+                writer.WriteEndElement();
+            }
+            else if (obj is Dictionary<string, object>)
+            {
+                Dictionary<string, object> d = obj as Dictionary<string, object>;
+
+                writer.WriteStartElement(String.Empty, "map", String.Empty);
+                foreach (string key in d.Keys)
+                {
+                    writer.WriteStartElement(String.Empty, "key", String.Empty);
+                    writer.WriteString(key);
+                    writer.WriteEndElement();
+
+                    SerializeXmlElement(writer, d[key]);
+                }
+                writer.WriteEndElement();
+            }
+            else if (obj is System.Collections.Hashtable)
+            {
+                System.Collections.Hashtable h = obj as System.Collections.Hashtable;
+
+                writer.WriteStartElement(String.Empty, "map", String.Empty);
+                foreach (string key in h.Keys)
+                {
+                    writer.WriteStartElement(String.Empty, "key", String.Empty);
+                    writer.WriteString(key);
+                    writer.WriteEndElement();
+
+                    SerializeXmlElement(writer, h[key]);
+                }
+                writer.WriteEndElement();
+            }
+            else if (obj is List<object>)
+            {
+                List<object> l = obj as List<object>;
+
+                writer.WriteStartElement(String.Empty, "array", String.Empty);
+                for (int i = 0; i < l.Count; i++)
+                {
+                    SerializeXmlElement(writer, l[i]);
+                }
+                writer.WriteEndElement();
+            }
+            else if (obj is System.Collections.ArrayList)
+            {
+                System.Collections.ArrayList a = obj as System.Collections.ArrayList;
+
+                writer.WriteStartElement(String.Empty, "array", String.Empty);
+                for (int i = 0; i < a.Count; i++)
+                {
+                    SerializeXmlElement(writer, a[i]);
+                }
+                writer.WriteEndElement();
+            }
+            else if (obj is byte[])
+            {
+                writer.WriteStartElement(String.Empty, "binary", String.Empty);
+
+                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
+                writer.WriteString("base64");
+                writer.WriteEndAttribute();
+
+                writer.WriteString(Convert.ToBase64String((byte[])obj));
+                writer.WriteEndElement();
+            }
+            else if (obj.GetType().IsArray)
+            {
+                Array a = (Array)obj;
+
+                writer.WriteStartElement(String.Empty, "array", String.Empty);
+                for (int i = 0; i < a.Length; i++)
+                {
+                    SerializeXmlElement(writer, a.GetValue(i));
+                }
+                writer.WriteEndElement();
+            }
+            else
+            {
+                throw new LLSDException("Unknown type " + obj.GetType().Name);
+            }
         }
 
         public static bool TryValidate(XmlTextReader xmlData, out string error)
@@ -352,157 +513,7 @@ namespace libsecondlife.LLSD
             }
 
             return list;
-        }
-
-        private static void SerializeXmlElement(XmlTextWriter writer, object obj)
-        {
-            if (obj == null)
-            {
-                writer.WriteStartElement(String.Empty, "undef", String.Empty);
-                writer.WriteEndElement();
-            }
-            else if (obj is string)
-            {
-                writer.WriteStartElement(String.Empty, "string", String.Empty);
-                writer.WriteString((string)obj);
-                writer.WriteEndElement();
-            }
-            else if (obj is int || obj is uint || obj is short || obj is ushort || obj is byte || obj is sbyte)
-            {
-                writer.WriteStartElement(String.Empty, "integer", String.Empty);
-                writer.WriteString(obj.ToString());
-                writer.WriteEndElement();
-            }
-            else if (obj is double)
-            {
-                double value = (double)obj;
-
-                writer.WriteStartElement(String.Empty, "real", String.Empty);
-                writer.WriteString(value.ToString(Helpers.EnUsCulture));
-                writer.WriteEndElement();
-            }
-            else if (obj is float)
-            {
-                float value = (float)obj;
-
-                writer.WriteStartElement(String.Empty, "real", String.Empty);
-                writer.WriteString(value.ToString(Helpers.EnUsCulture));
-                writer.WriteEndElement();
-            }
-            else if (obj is long)
-            {
-                // 64-bit integers are not natively supported in LLSD, so we convert to a byte array
-                long value = (long)obj;
-
-                byte[] bytes = BitConverter.GetBytes(value);
-
-                writer.WriteStartElement(String.Empty, "binary", String.Empty);
-
-                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
-                writer.WriteString("base64");
-                writer.WriteEndAttribute();
-
-                writer.WriteString(Convert.ToBase64String(bytes));
-                writer.WriteEndElement();
-            }
-            else if (obj is ulong)
-            {
-                // 64-bit integers are not natively supported in LLSD, so we convert to a byte array
-                ulong value = (ulong)obj;
-
-                byte[] bytes = BitConverter.GetBytes(value);
-
-                writer.WriteStartElement(String.Empty, "binary", String.Empty);
-
-                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
-                writer.WriteString("base64");
-                writer.WriteEndAttribute();
-
-                writer.WriteString(Convert.ToBase64String(bytes));
-                writer.WriteEndElement();
-            }
-            else if (obj is bool)
-            {
-                bool b = (bool)obj;
-                writer.WriteStartElement(String.Empty, "boolean", String.Empty);
-                writer.WriteString(b ? "1" : "0");
-                writer.WriteEndElement();
-            }
-            else if (obj is LLUUID)
-            {
-                LLUUID u = (LLUUID)obj;
-                writer.WriteStartElement(String.Empty, "uuid", String.Empty);
-                writer.WriteString(u.ToStringHyphenated());
-                writer.WriteEndElement();
-            }
-            else if (obj is Dictionary<string, object>)
-            {
-                Dictionary<string, object> d = obj as Dictionary<string, object>;
-
-                writer.WriteStartElement(String.Empty, "map", String.Empty);
-                foreach (string key in d.Keys)
-                {
-                    writer.WriteStartElement(String.Empty, "key", String.Empty);
-                    writer.WriteString(key);
-                    writer.WriteEndElement();
-
-                    SerializeXmlElement(writer, d[key]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is System.Collections.Hashtable)
-            {
-                System.Collections.Hashtable h = obj as System.Collections.Hashtable;
-
-                writer.WriteStartElement(String.Empty, "map", String.Empty);
-                foreach (string key in h.Keys)
-                {
-                    writer.WriteStartElement(String.Empty, "key", String.Empty);
-                    writer.WriteString(key);
-                    writer.WriteEndElement();
-
-                    SerializeXmlElement(writer, h[key]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is List<object>)
-            {
-                List<object> l = obj as List<object>;
-
-                writer.WriteStartElement(String.Empty, "array", String.Empty);
-                for (int i = 0; i < l.Count; i++)
-                {
-                    SerializeXmlElement(writer, l[i]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is System.Collections.ArrayList)
-            {
-                System.Collections.ArrayList a = obj as System.Collections.ArrayList;
-
-                writer.WriteStartElement(String.Empty, "array", String.Empty);
-                for (int i = 0; i < a.Count; i++)
-                {
-                    SerializeXmlElement(writer, a[i]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is byte[])
-            {
-                writer.WriteStartElement(String.Empty, "binary", String.Empty);
-
-                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
-                writer.WriteString("base64");
-                writer.WriteEndAttribute();
-
-                writer.WriteString(Convert.ToBase64String((byte[])obj));
-                writer.WriteEndElement();
-            }
-            else
-            {
-                throw new LLSDException("Unknown type " + obj.GetType().Name);
-            }
-        }
+        }        
 
         private static void SkipWhitespace(XmlTextReader reader)
         {
