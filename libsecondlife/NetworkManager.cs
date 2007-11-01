@@ -760,19 +760,6 @@ namespace libsecondlife
                     // Shutdown the network layer
                     Shutdown(DisconnectType.NetworkTimeout);
 
-                    if (OnDisconnected != null)
-                    {
-                        try
-                        {
-                            OnDisconnected(DisconnectType.NetworkTimeout, String.Empty);
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
-                    }
-
                     // We're completely logged out and shut down, leave this function
                     return;
                 }
