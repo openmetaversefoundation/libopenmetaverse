@@ -2362,14 +2362,15 @@ namespace libsecondlife
         {
             if (Client.Network.Connected)
             {
-                TimeSpan interval = DateTime.Now - Client.Self.lastInterpolation;
+                int interval = Environment.TickCount - Client.Self.lastInterpolation;
+                float seconds = (float)interval / 1000f;
 
                 // Iterate through all of the simulators
                 lock (Client.Network.Simulators)
                 {
                     for (int i = 0; i < Client.Network.Simulators.Count; i++)
                     {
-                        float adjSeconds = (float)interval.TotalSeconds * Client.Network.Simulators[i].Stats.Dilation;
+                        float adjSeconds = seconds * Client.Network.Simulators[i].Stats.Dilation;
 
                         // Iterate through all of this sims avatars
                         lock (Client.Network.Simulators[i].Objects.Avatars)
@@ -2440,7 +2441,7 @@ namespace libsecondlife
                 }
 
                 // Make sure the last interpolated time is always updated
-                Client.Self.lastInterpolation = DateTime.Now;
+                Client.Self.lastInterpolation = Environment.TickCount;
             }
         }
     }

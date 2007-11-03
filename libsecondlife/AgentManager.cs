@@ -819,7 +819,7 @@ namespace libsecondlife
         internal LLVector3 acceleration;
         internal LLVector3 angularVelocity;
         internal uint sittingOn;
-        internal DateTime lastInterpolation;
+        internal int lastInterpolation;
 
         #region Private Members
 
