@@ -13,6 +13,13 @@
 		402D03CE0C4846F300991307 /* InventoryNodeDictionary.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C80C4846F300991307 /* InventoryNodeDictionary.cs */; };
 		402D03CF0C4846F300991307 /* ObjectPoolBase.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C90C4846F300991307 /* ObjectPoolBase.cs */; };
 		402D03D00C4846F300991307 /* UDPBase.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03CA0C4846F300991307 /* UDPBase.cs */; };
+		403986FC0CDFF7FD00E3A90A /* AgentManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403986F90CDFF7FD00E3A90A /* AgentManager.cs */; };
+		403986FD0CDFF7FD00E3A90A /* AgentManagerMovement.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403986FA0CDFF7FD00E3A90A /* AgentManagerMovement.cs */; };
+		403986FE0CDFF7FD00E3A90A /* AgentManagerCamera.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403986FB0CDFF7FD00E3A90A /* AgentManagerCamera.cs */; };
+		403987050CDFF82D00E3A90A /* XmlLLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987010CDFF82D00E3A90A /* XmlLLSD.cs */; };
+		403987060CDFF82D00E3A90A /* NotationLLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987020CDFF82D00E3A90A /* NotationLLSD.cs */; };
+		403987070CDFF82D00E3A90A /* LLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987030CDFF82D00E3A90A /* LLSD.cs */; };
+		403987080CDFF82D00E3A90A /* BinaryLLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987040CDFF82D00E3A90A /* BinaryLLSD.cs */; };
 		403A91710C4FC4310020DD34 /* FriendsManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A91700C4FC4310020DD34 /* FriendsManager.cs */; };
 		403A91760C4FC4820020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */; };
 		403A91820C4FCAF00020DD34 /* OpenJPEG.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A91800C4FCAF00020DD34 /* OpenJPEG.cs */; };
@@ -59,7 +66,6 @@
 		4082AF1E0BE5CF73005601E2 /* TerrainManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF50BE5CF73005601E2 /* TerrainManager.cs */; };
 		4082AF1F0BE5CF73005601E2 /* Simulator.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF60BE5CF73005601E2 /* Simulator.cs */; };
 		4082AF200BE5CF73005601E2 /* Settings.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF70BE5CF73005601E2 /* Settings.cs */; };
-		4082AF210BE5CF73005601E2 /* SerializableDictionary.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF80BE5CF73005601E2 /* SerializableDictionary.cs */; };
 		4082AF220BE5CF73005601E2 /* SecondLife.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF90BE5CF73005601E2 /* SecondLife.cs */; };
 		4082AF230BE5CF73005601E2 /* ProtocolManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFA0BE5CF73005601E2 /* ProtocolManager.cs */; };
 		4082AF240BE5CF73005601E2 /* Prims.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFB0BE5CF73005601E2 /* Prims.cs */; };
@@ -68,10 +74,7 @@
 		4082AF270BE5CF73005601E2 /* ObjectManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFE0BE5CF73005601E2 /* ObjectManager.cs */; };
 		4082AF280BE5CF73005601E2 /* NetworkManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFF0BE5CF73005601E2 /* NetworkManager.cs */; };
 		4082AF290BE5CF73005601E2 /* NameValue.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF000BE5CF73005601E2 /* NameValue.cs */; };
-		4082AF2B0BE5CF73005601E2 /* MainAvatarStatus.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF020BE5CF73005601E2 /* MainAvatarStatus.cs */; };
-		4082AF2C0BE5CF73005601E2 /* MainAvatar.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF030BE5CF73005601E2 /* MainAvatar.cs */; };
 		4082AF2D0BE5CF73005601E2 /* Login.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF040BE5CF73005601E2 /* Login.cs */; };
-		4082AF2E0BE5CF73005601E2 /* LLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF050BE5CF73005601E2 /* LLSD.cs */; };
 		4082AF2F0BE5CF73005601E2 /* LLObject.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF060BE5CF73005601E2 /* LLObject.cs */; };
 		4082AF300BE5CF73005601E2 /* Helpers.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0C0BE5CF73005601E2 /* Helpers.cs */; };
 		4082AF310BE5CF73005601E2 /* GroupManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0D0BE5CF73005601E2 /* GroupManager.cs */; };
@@ -235,6 +238,13 @@
 		402D03C80C4846F300991307 /* InventoryNodeDictionary.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = InventoryNodeDictionary.cs; path = libsecondlife/InventoryNodeDictionary.cs; sourceTree = "<group>"; };
 		402D03C90C4846F300991307 /* ObjectPoolBase.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ObjectPoolBase.cs; path = libsecondlife/ObjectPoolBase.cs; sourceTree = "<group>"; };
 		402D03CA0C4846F300991307 /* UDPBase.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = UDPBase.cs; path = libsecondlife/UDPBase.cs; sourceTree = "<group>"; };
+		403986F90CDFF7FD00E3A90A /* AgentManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentManager.cs; path = libsecondlife/AgentManager.cs; sourceTree = "<group>"; };
+		403986FA0CDFF7FD00E3A90A /* AgentManagerMovement.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentManagerMovement.cs; path = libsecondlife/AgentManagerMovement.cs; sourceTree = "<group>"; };
+		403986FB0CDFF7FD00E3A90A /* AgentManagerCamera.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentManagerCamera.cs; path = libsecondlife/AgentManagerCamera.cs; sourceTree = "<group>"; };
+		403987010CDFF82D00E3A90A /* XmlLLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = XmlLLSD.cs; path = libsecondlife/LLSD/XmlLLSD.cs; sourceTree = "<group>"; };
+		403987020CDFF82D00E3A90A /* NotationLLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = NotationLLSD.cs; path = libsecondlife/LLSD/NotationLLSD.cs; sourceTree = "<group>"; };
+		403987030CDFF82D00E3A90A /* LLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = LLSD.cs; path = libsecondlife/LLSD/LLSD.cs; sourceTree = "<group>"; };
+		403987040CDFF82D00E3A90A /* BinaryLLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BinaryLLSD.cs; path = libsecondlife/LLSD/BinaryLLSD.cs; sourceTree = "<group>"; };
 		403A91700C4FC4310020DD34 /* FriendsManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = FriendsManager.cs; path = libsecondlife/FriendsManager.cs; sourceTree = "<group>"; };
 		403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */ = {isa = PBXFileReference; lastKnownFileType = compiled.mono.library; name = CookComputing.XmlRpcV2.dll; path = bin/CookComputing.XmlRpcV2.dll; sourceTree = "<group>"; };
 		403A91800C4FCAF00020DD34 /* OpenJPEG.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = OpenJPEG.cs; path = libsecondlife/OpenJPEG.cs; sourceTree = "<group>"; };
@@ -279,7 +289,6 @@
 		4082AEF50BE5CF73005601E2 /* TerrainManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TerrainManager.cs; path = libsecondlife/TerrainManager.cs; sourceTree = "<group>"; };
 		4082AEF60BE5CF73005601E2 /* Simulator.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Simulator.cs; path = libsecondlife/Simulator.cs; sourceTree = "<group>"; };
 		4082AEF70BE5CF73005601E2 /* Settings.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Settings.cs; path = libsecondlife/Settings.cs; sourceTree = "<group>"; };
-		4082AEF80BE5CF73005601E2 /* SerializableDictionary.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SerializableDictionary.cs; path = libsecondlife/SerializableDictionary.cs; sourceTree = "<group>"; };
 		4082AEF90BE5CF73005601E2 /* SecondLife.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SecondLife.cs; path = libsecondlife/SecondLife.cs; sourceTree = "<group>"; };
 		4082AEFA0BE5CF73005601E2 /* ProtocolManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ProtocolManager.cs; path = libsecondlife/ProtocolManager.cs; sourceTree = "<group>"; };
 		4082AEFB0BE5CF73005601E2 /* Prims.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Prims.cs; path = libsecondlife/Prims.cs; sourceTree = "<group>"; };
@@ -288,10 +297,7 @@
 		4082AEFE0BE5CF73005601E2 /* ObjectManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ObjectManager.cs; path = libsecondlife/ObjectManager.cs; sourceTree = "<group>"; };
 		4082AEFF0BE5CF73005601E2 /* NetworkManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = NetworkManager.cs; path = libsecondlife/NetworkManager.cs; sourceTree = "<group>"; };
 		4082AF000BE5CF73005601E2 /* NameValue.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = NameValue.cs; path = libsecondlife/NameValue.cs; sourceTree = "<group>"; };
-		4082AF020BE5CF73005601E2 /* MainAvatarStatus.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = MainAvatarStatus.cs; path = libsecondlife/MainAvatarStatus.cs; sourceTree = "<group>"; };
-		4082AF030BE5CF73005601E2 /* MainAvatar.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = MainAvatar.cs; path = libsecondlife/MainAvatar.cs; sourceTree = "<group>"; };
 		4082AF040BE5CF73005601E2 /* Login.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Login.cs; path = libsecondlife/Login.cs; sourceTree = "<group>"; };
-		4082AF050BE5CF73005601E2 /* LLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = LLSD.cs; path = libsecondlife/LLSD.cs; sourceTree = "<group>"; };
 		4082AF060BE5CF73005601E2 /* LLObject.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = LLObject.cs; path = libsecondlife/LLObject.cs; sourceTree = "<group>"; };
 		4082AF0C0BE5CF73005601E2 /* Helpers.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Helpers.cs; path = libsecondlife/Helpers.cs; sourceTree = "<group>"; };
 		4082AF0D0BE5CF73005601E2 /* GroupManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = GroupManager.cs; path = libsecondlife/GroupManager.cs; sourceTree = "<group>"; };
@@ -523,6 +529,13 @@
 		4054E2B50B5733D200B0667D /* libsecondlife */ = {
 			isa = PBXGroup;
 			children = (
+				403987010CDFF82D00E3A90A /* XmlLLSD.cs */,
+				403987020CDFF82D00E3A90A /* NotationLLSD.cs */,
+				403987030CDFF82D00E3A90A /* LLSD.cs */,
+				403987040CDFF82D00E3A90A /* BinaryLLSD.cs */,
+				403986F90CDFF7FD00E3A90A /* AgentManager.cs */,
+				403986FA0CDFF7FD00E3A90A /* AgentManagerMovement.cs */,
+				403986FB0CDFF7FD00E3A90A /* AgentManagerCamera.cs */,
 				409E5DC70CB9BD5000D3CDB4 /* CapsToPacket.cs */,
 				408666860CA4763900456058 /* ObjectTracker.cs */,
 				408666870CA4763900456058 /* Image.cs */,
@@ -554,7 +567,6 @@
 				4082AEF50BE5CF73005601E2 /* TerrainManager.cs */,
 				4082AEF60BE5CF73005601E2 /* Simulator.cs */,
 				4082AEF70BE5CF73005601E2 /* Settings.cs */,
-				4082AEF80BE5CF73005601E2 /* SerializableDictionary.cs */,
 				4082AEF90BE5CF73005601E2 /* SecondLife.cs */,
 				4082AEFA0BE5CF73005601E2 /* ProtocolManager.cs */,
 				4082AEFB0BE5CF73005601E2 /* Prims.cs */,
@@ -563,10 +575,7 @@
 				4082AEFE0BE5CF73005601E2 /* ObjectManager.cs */,
 				4082AEFF0BE5CF73005601E2 /* NetworkManager.cs */,
 				4082AF000BE5CF73005601E2 /* NameValue.cs */,
-				4082AF020BE5CF73005601E2 /* MainAvatarStatus.cs */,
-				4082AF030BE5CF73005601E2 /* MainAvatar.cs */,
 				4082AF040BE5CF73005601E2 /* Login.cs */,
-				4082AF050BE5CF73005601E2 /* LLSD.cs */,
 				4082AF060BE5CF73005601E2 /* LLObject.cs */,
 				4082AF0C0BE5CF73005601E2 /* Helpers.cs */,
 				4082AF0D0BE5CF73005601E2 /* GroupManager.cs */,
@@ -1033,10 +1042,7 @@
 				402D03CD0C4846F300991307 /* InventoryNode.cs in Sources */,
 				402D03CE0C4846F300991307 /* InventoryNodeDictionary.cs in Sources */,
 				4082AF2F0BE5CF73005601E2 /* LLObject.cs in Sources */,
-				4082AF2E0BE5CF73005601E2 /* LLSD.cs in Sources */,
 				4082AF2D0BE5CF73005601E2 /* Login.cs in Sources */,
-				4082AF2C0BE5CF73005601E2 /* MainAvatar.cs in Sources */,
-				4082AF2B0BE5CF73005601E2 /* MainAvatarStatus.cs in Sources */,
 				4082AF290BE5CF73005601E2 /* NameValue.cs in Sources */,
 				4082AF280BE5CF73005601E2 /* NetworkManager.cs in Sources */,
 				4082AF270BE5CF73005601E2 /* ObjectManager.cs in Sources */,
@@ -1048,7 +1054,6 @@
 				4082AF240BE5CF73005601E2 /* Prims.cs in Sources */,
 				4082AF230BE5CF73005601E2 /* ProtocolManager.cs in Sources */,
 				4082AF220BE5CF73005601E2 /* SecondLife.cs in Sources */,
-				4082AF210BE5CF73005601E2 /* SerializableDictionary.cs in Sources */,
 				4082AF200BE5CF73005601E2 /* Settings.cs in Sources */,
 				4082AF1F0BE5CF73005601E2 /* Simulator.cs in Sources */,
 				4082AF1E0BE5CF73005601E2 /* TerrainManager.cs in Sources */,
@@ -1069,6 +1074,13 @@
 				4086668A0CA4763900456058 /* Image.cs in Sources */,
 				4086668B0CA4763900456058 /* CoordinateFrame.cs in Sources */,
 				409E5DC80CB9BD5000D3CDB4 /* CapsToPacket.cs in Sources */,
+				403986FC0CDFF7FD00E3A90A /* AgentManager.cs in Sources */,
+				403986FD0CDFF7FD00E3A90A /* AgentManagerMovement.cs in Sources */,
+				403986FE0CDFF7FD00E3A90A /* AgentManagerCamera.cs in Sources */,
+				403987050CDFF82D00E3A90A /* XmlLLSD.cs in Sources */,
+				403987060CDFF82D00E3A90A /* NotationLLSD.cs in Sources */,
+				403987070CDFF82D00E3A90A /* LLSD.cs in Sources */,
+				403987080CDFF82D00E3A90A /* BinaryLLSD.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
