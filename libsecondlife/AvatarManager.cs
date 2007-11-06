@@ -150,13 +150,19 @@ namespace libsecondlife
             // Other callbacks
             Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
             Client.Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
-	    Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
+	        Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
         }
 
-	protected void AvatarAnimationHandler(Packet p, Simulator sim)
-	{
-		//FIXME
-	}
+        /// <summary>Tracks the specified avatar on your map</summary>
+        /// <param name="preyID">Avatar ID to track</param>
+        public void TrackAvatar(LLUUID preyID)
+        {
+            TrackAgentPacket p = new TrackAgentPacket();
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
+            p.TargetData.PreyID = preyID;
+            Client.Network.SendPacket(p);
+        }
 
         /// <summary>
         /// Request a single avatar name
@@ -198,8 +204,8 @@ namespace libsecondlife
         {
             AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();
             
-            aprp.AgentData.AgentID = Client.Network.AgentID;
-            aprp.AgentData.SessionID = Client.Network.SessionID;
+            aprp.AgentData.AgentID = Client.Self.AgentID;
+            aprp.AgentData.SessionID = Client.Self.SessionID;
             aprp.AgentData.AvatarID = avatarid;
 
             Client.Network.SendPacket(aprp);
@@ -214,8 +220,8 @@ namespace libsecondlife
         {
             AvatarPickerRequestPacket aprp = new AvatarPickerRequestPacket();
 
-            aprp.AgentData.AgentID = Client.Network.AgentID;
-            aprp.AgentData.SessionID = Client.Network.SessionID;
+            aprp.AgentData.AgentID = Client.Self.AgentID;
+            aprp.AgentData.SessionID = Client.Self.SessionID;
             aprp.AgentData.QueryID = queryID;
             aprp.Data.Name = Helpers.StringToField(name);
 
@@ -264,7 +270,17 @@ namespace libsecondlife
                 properties.AboutText = Helpers.FieldToUTF8String(reply.PropertiesData.AboutText);
                 properties.FirstLifeText = Helpers.FieldToUTF8String(reply.PropertiesData.FLAboutText);
                 properties.BornOn = Helpers.FieldToUTF8String(reply.PropertiesData.BornOn);
-                properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
+                //properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
+                uint charter = Helpers.BytesToUInt(reply.PropertiesData.CharterMember);
+                if ( charter == 0 ) {
+                    properties.CharterMember = "Resident";
+                } else if ( charter == 2 ) {
+                    properties.CharterMember = "Charter";
+                } else if ( charter == 3 ) {
+                    properties.CharterMember = "Linden";
+                } else {
+                    properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
+                }
                 properties.Flags = (Avatar.ProfileFlags)reply.PropertiesData.Flags;
                 properties.ProfileURL = Helpers.FieldToUTF8String(reply.PropertiesData.ProfileURL);
 
@@ -451,6 +467,11 @@ namespace libsecondlife
                         break;
                 }
             }
+        }
+
+        protected void AvatarAnimationHandler(Packet packet, Simulator sim)
+        {
+            //FIXME
         }
 
         #endregion Packet Handlers

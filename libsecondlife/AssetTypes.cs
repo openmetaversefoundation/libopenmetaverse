@@ -126,12 +126,20 @@ namespace libsecondlife
 
         public override void Encode()
         {
+#if PocketPC
+            throw new Exception("OpenJPEG encoding is not supported on the PocketPC");
+#else
             AssetData = OpenJPEGNet.OpenJPEG.Encode(Image);
+#endif
         }
         
         public override void Decode()
         {
+#if PocketPC
+            throw new Exception("OpenJPEG decoding is not supported on the PocketPC");
+#else
             Image = OpenJPEGNet.OpenJPEG.Decode(AssetData);
+#endif
         }
     }
 
@@ -174,41 +182,21 @@ namespace libsecondlife
         Invalid = 255
     };
 
-    public enum ForSale
-    {
-        /// <summary>Not for sale</summary>
-        Not = 0,
-        /// <summary>The original is for sale</summary>
-        Original = 1,
-        /// <summary>Copies are for sale</summary>
-        Copy = 2,
-        /// <summary>The contents of the object are for sale</summary>
-        Contents = 3
-    }
-
     public abstract class AssetWearable : Asset
     {
         public string Name = String.Empty;
         public string Description = String.Empty;
         public WearableType WearableType = WearableType.Shape;
-        public ForSale ForSale = ForSale.Not;
-        public int SalePrice = 0;
-        public LLUUID Creator = LLUUID.Zero;
-        public LLUUID Owner = LLUUID.Zero;
-        public LLUUID LastOwner = LLUUID.Zero;
-        public LLUUID Group = LLUUID.Zero;
-        public bool GroupOwned = false;
+        public SaleType ForSale;
+        public int SalePrice;
+        public LLUUID Creator;
+        public LLUUID Owner;
+        public LLUUID LastOwner;
+        public LLUUID Group;
+        public bool GroupOwned;
         public Permissions Permissions;
         public Dictionary<int, float> Params = new Dictionary<int, float>();
         public Dictionary<AppearanceManager.TextureIndex, LLUUID> Textures = new Dictionary<AppearanceManager.TextureIndex, LLUUID>();
-
-        private string[] ForSaleNames = new string[]
-        {
-            "not",
-            "orig",
-            "copy",
-            "cntn"
-        };
 
         public AssetWearable() { }
 
@@ -221,6 +209,8 @@ namespace libsecondlife
 
         public override void Decode()
         {
+            // FIXME: This doesn't appear to do any sanity checking at all, probably should and return a bool?
+
             int version = -1;
             int n = -1;
             string data = Helpers.FieldToUTF8String(AssetData);
@@ -241,13 +231,13 @@ namespace libsecondlife
             data = data.Remove(0, n);
 
             // Split in to an upper and lower half
-            string[] parts = data.Split(new string[] { "parameters" }, StringSplitOptions.None);
-            parts[1] = "parameters" + parts[1];
+            string upper, lower;
+            Helpers.StringSplitAt(data, "parameters", out upper, out lower);
 
             Permissions = new Permissions();
 
             // Parse the upper half
-            string[] lines = parts[0].Split('\n');
+            string[] lines = upper.Split('\n');
             foreach (string thisline in lines)
             {
                 string line = thisline.Trim();
@@ -302,14 +292,7 @@ namespace libsecondlife
                     }
                     else if (fields[0] == "sale_type")
                     {
-                        for (int i = 0; i < ForSaleNames.Length; i++)
-                        {
-                            if (fields[1] == ForSaleNames[i])
-                            {
-                                ForSale = (ForSale)i;
-                                break;
-                            }
-                        }
+                        ForSale = InventoryManager.StringToSaleType(fields[1]);
                     }
                     else if (fields[0] == "sale_price")
                     {
@@ -324,11 +307,11 @@ namespace libsecondlife
             }
 
             // Break up the lower half in to parameters and textures
-            string[] lowerparts = parts[1].Split(new string[] { "textures" }, StringSplitOptions.None);
-            lowerparts[1] = "textures" + lowerparts[1];
+            string parameters, textures;
+            Helpers.StringSplitAt(lower, "textures", out parameters, out textures);
 
             // Parse the parameters
-            lines = lowerparts[0].Split('\n');
+            lines = parameters.Split('\n');
             foreach (string line in lines)
             {
                 string[] fields = line.Split(' ');
@@ -348,7 +331,7 @@ namespace libsecondlife
             }
 
             // Parse the textures
-            lines = lowerparts[1].Split('\n');
+            lines = textures.Split('\n');
             foreach (string line in lines)
             {
                 string[] fields = line.Split(' ');
@@ -369,37 +352,39 @@ namespace libsecondlife
 
         public override void Encode()
         {
+            const string NL = "\n";
+
             StringBuilder data = new StringBuilder("LLWearable version 22\n");
-            data.Append(Name); data.Append("\n\n");
+            data.Append(Name); data.Append(NL); data.Append(NL);
             data.Append("\tpermissions 0\n\t{\n");
-            data.Append("\t\tbase_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.BaseMask)); data.Append("\n");
-            data.Append("\t\towner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.OwnerMask)); data.Append("\n");
-            data.Append("\t\tgroup_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.GroupMask)); data.Append("\n");
-            data.Append("\t\teveryone_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append("\n");
-            data.Append("\t\tnext_owner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append("\n");
-            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToStringHyphenated()); data.Append("\n");
-            data.Append("\t\towner_id\t"); data.Append(Owner.ToStringHyphenated()); data.Append("\n");
-            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToStringHyphenated()); data.Append("\n");
-            data.Append("\t\tgroup_id\t"); data.Append(Group.ToStringHyphenated()); data.Append("\n");
+            data.Append("\t\tbase_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.BaseMask)); data.Append(NL);
+            data.Append("\t\towner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.OwnerMask)); data.Append(NL);
+            data.Append("\t\tgroup_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.GroupMask)); data.Append(NL);
+            data.Append("\t\teveryone_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append(NL);
+            data.Append("\t\tnext_owner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append(NL);
+            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToStringHyphenated()); data.Append(NL);
+            data.Append("\t\towner_id\t"); data.Append(Owner.ToStringHyphenated()); data.Append(NL);
+            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToStringHyphenated()); data.Append(NL);
+            data.Append("\t\tgroup_id\t"); data.Append(Group.ToStringHyphenated()); data.Append(NL);
             if (GroupOwned) data.Append("\t\tgroup_owned\t1\n");
             data.Append("\t}\n");
             data.Append("\tsale_info\t0\n");
             data.Append("\t{\n");
-            data.Append("\t\tsale_type\t"); data.Append(ForSaleNames[(int)ForSale]); data.Append("\n");
-            data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append("\n");
+            data.Append("\t\tsale_type\t"); data.Append(InventoryManager.SaleTypeToString(ForSale)); data.Append(NL);
+            data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append(NL);
             data.Append("\t}\n");
-            data.Append("type "); data.Append((int)WearableType); data.Append("\n");
+            data.Append("type "); data.Append((int)WearableType); data.Append(NL);
 
-            data.Append("parameters "); data.Append(Params.Count); data.Append("\n");
+            data.Append("parameters "); data.Append(Params.Count); data.Append(NL);
             foreach (KeyValuePair<int, float> param in Params)
             {
-                data.Append(param.Key); data.Append(" "); data.Append(Helpers.FloatToTerseString(param.Value)); data.Append("\n");
+                data.Append(param.Key); data.Append(" "); data.Append(Helpers.FloatToTerseString(param.Value)); data.Append(NL);
             }
 
-            data.Append("textures "); data.Append(Textures.Count); data.Append("\n");
+            data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
             foreach (KeyValuePair<AppearanceManager.TextureIndex, LLUUID> texture in Textures)
             {
-                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToStringHyphenated()); data.Append("\n");
+                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToStringHyphenated()); data.Append(NL);
             }
 
             AssetData = Helpers.StringToField(data.ToString());

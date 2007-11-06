@@ -87,6 +87,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AgentManager.cs" />
+    <Compile Include="AgentManagerCamera.cs" />
+    <Compile Include="AgentManagerMovement.cs" />
     <Compile Include="AgentThrottle.cs" />
     <Compile Include="Animations.cs" />
     <Compile Include="AppearanceManager.cs" />
@@ -105,19 +108,22 @@
     <Compile Include="Capabilities.cs" />
     <Compile Include="CapsEventQueue.cs" />
     <Compile Include="CapsRequest.cs" />
+    <Compile Include="CapsToPacket.cs" />
     <Compile Include="CoordinateFrame.cs" />
     <Compile Include="EventDictionary.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendsManager.cs" />
-    <Compile Include="Image.cs" />
     <Compile Include="HttpBase.cs" />
+    <Compile Include="Image.cs" />
+    <Compile Include="Capabilities\HttpBase.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />
-    <Compile Include="LLSD.cs" />
+    <Compile Include="LLSD\BinaryLLSD.cs" />
+    <Compile Include="LLSD\LLSD.cs" />
+    <Compile Include="LLSD\NotationLLSD.cs" />
+    <Compile Include="LLSD\XmlLLSD.cs" />
     <Compile Include="Login.cs" />
-    <Compile Include="MainAvatarStatus.cs" />
-    <Compile Include="MainAvatar.cs" />
     <Compile Include="EstateTools.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -147,10 +153,8 @@
     <Compile Include="ProtocolManager.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ReaderWriterLock.cs" />
     <Compile Include="SecondLife.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="SerializableDictionary.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Settings.cs" />

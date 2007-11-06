@@ -26,8 +26,6 @@
 
 using System;
 using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
 using libsecondlife;
 
 namespace libsecondlife.Packets
@@ -58,24 +56,17 @@ namespace libsecondlife.Packets
     /// bytes in length at the beginning of the packet, and encapsulates any 
     /// appended ACKs at the end of the packet as well
     /// </summary>
-#if PACKETSERIALIZE
-    [XmlInclude(typeof(LowHeader))]
-    [XmlInclude(typeof(MediumHeader))]
-    [XmlInclude(typeof(HighHeader))]
-#endif
     public abstract class Header
     {
         /// <summary>Raw header data, does not include appended ACKs</summary>
         public byte[] Data;
         /// <summary>Raw value of the flags byte</summary>
-        [XmlIgnore]
         public byte Flags
         {
             get { return Data[0]; }
             set { Data[0] = value; }
         }
         /// <summary>Reliable flag, whether this packet requires an ACK</summary>
-        [XmlIgnore]
         public bool Reliable
         {
             get { return (Data[0] & Helpers.MSG_RELIABLE) != 0; }
@@ -83,7 +74,6 @@ namespace libsecondlife.Packets
         }
         /// <summary>Resent flag, whether this same packet has already been 
         /// sent</summary>
-        [XmlIgnore]
         public bool Resent
         {
             get { return (Data[0] & Helpers.MSG_RESENT) != 0; }
@@ -91,7 +81,6 @@ namespace libsecondlife.Packets
         }
         /// <summary>Zerocoded flag, whether this packet is compressed with 
         /// zerocoding</summary>
-        [XmlIgnore]
         public bool Zerocoded
         {
             get { return (Data[0] & Helpers.MSG_ZEROCODED) != 0; }
@@ -99,14 +88,12 @@ namespace libsecondlife.Packets
         }
         /// <summary>Appended ACKs flag, whether this packet has ACKs appended
         /// to the end</summary>
-        [XmlIgnore]
         public bool AppendedAcks
         {
             get { return (Data[0] & Helpers.MSG_APPENDED_ACKS) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_APPENDED_ACKS; } else { byte mask = (byte)Helpers.MSG_APPENDED_ACKS ^ 0xFF; Data[0] &= mask; } }
         }
         /// <summary>Packet sequence number, three bytes long</summary>
-        [XmlIgnore]
         public uint Sequence
         {
             get { return (uint)((Data[1] << 24) + (Data[2] << 16) + (Data[3] << 8) + Data[4]); }
@@ -116,11 +103,9 @@ namespace libsecondlife.Packets
 		}
         }
         /// <summary>Numeric ID number of this packet</summary>
-        [XmlIgnore]
         public abstract ushort ID { get; set; }
         /// <summary>Frequency classification of this packet, Low Medium or 
         /// High</summary>
-        [XmlIgnore]
         public abstract PacketFrequency Frequency { get; }
         /// <summary>Convert this header to a byte array, not including any
         /// appended ACKs</summary>
@@ -372,5 +357,48 @@ namespace libsecondlife.Packets
         {
             Buffer.BlockCopy(Data, 0, bytes, i, 7);
             i += 7;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class CapsHeader : Header
+    {
+        /// <summary>Does nothing, ID is irrelevant to capability packets</summary>
+        public override ushort ID
+        {
+            get { return (ushort)0; }
+            set { }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override PacketFrequency Frequency
+        {
+            get { return PacketFrequency.Caps; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public CapsHeader()
+        {
+			// Needed just in case someone tries to grab the sequence number or something
+            // weird from a capability packet
+            Data = new byte[8];
+            // No appended ACKs on capability packets
+            AckList = new uint[0];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="i"></param>
+        public override void ToBytes(byte[] bytes, ref int i)
+        {
+            i = 0;
         }
     }

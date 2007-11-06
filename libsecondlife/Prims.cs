@@ -25,9 +25,7 @@
  */
 
 using System;
-using System.ComponentModel;
-using System.Xml;
-using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace libsecondlife
 {
@@ -87,15 +85,38 @@ namespace libsecondlife
             Cylinder = 4
         }
 
-        #endregion Enums
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum FaceType : ushort
+        {
+            /// <summary></summary>
+            PathBegin = 0x1 << 0,
+            /// <summary></summary>
+            PathEnd = 0x1 << 1,
+            /// <summary></summary>
+            InnerSide = 0x1 << 2,
+            /// <summary></summary>
+            ProfileBegin = 0x1 << 3,
+            /// <summary></summary>
+            ProfileEnd = 0x1 << 4,
+            /// <summary></summary>
+            OuterSide0 = 0x1 << 5,
+            /// <summary></summary>
+            OuterSide1 = 0x1 << 6,
+            /// <summary></summary>
+            OuterSide2 = 0x1 << 7,
+            /// <summary></summary>
+            OuterSide3 = 0x1 << 8
+        }
 
+        #endregion Enums
 
         #region Subclasses
 
         /// <summary>
         /// Controls the texture animation of a particular prim
         /// </summary>
-        [Serializable]
         public struct TextureAnimation
         {
             /// <summary></summary>
@@ -169,7 +190,6 @@ namespace libsecondlife
         /// <summary>
         /// Information on the flexible properties of a primitive
         /// </summary>
-        [Serializable]
         public struct FlexibleData
         {
             /// <summary></summary>
@@ -241,7 +261,6 @@ namespace libsecondlife
         /// <summary>
         /// Information on the light properties of a primitive
         /// </summary>
-        [Serializable]
         public struct LightData
         {
             /// <summary></summary>
@@ -296,7 +315,6 @@ namespace libsecondlife
         /// <summary>
         /// Information on the sculpt properties of a sculpted primitive
         /// </summary>
-        [Serializable]
         public struct SculptData
         {
             public LLUUID SculptTexture;
@@ -328,7 +346,6 @@ namespace libsecondlife
         }
 
         #endregion Subclasses
-
 
         #region Public Members
 
@@ -369,7 +386,6 @@ namespace libsecondlife
 
         #endregion Public Members
 
-
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -384,16 +400,47 @@ namespace libsecondlife
                 Data.PCode, Data.Material);
         }
 
-        public void ToXml(XmlWriter xmlWriter)
+        public Dictionary<string, object> ToLLSD()
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(Primitive));
-            serializer.Serialize(xmlWriter, this);
-        }
+            Dictionary<string, object> path = new Dictionary<string, object>(14);
+            path["begin"] = Data.PathBegin;
+            path["curve"] = Data.PathCurve;
+            path["end"] = Data.PathEnd;
+            path["radius_offset"] = Data.PathRadiusOffset;
+            path["revolutions"] = Data.PathRevolutions;
+            path["scale_x"] = Data.PathScaleX;
+            path["scale_y"] = Data.PathScaleY;
+            path["shear_x"] = Data.PathShearX;
+            path["shear_y"] = Data.PathShearY;
+            path["skew"] = Data.PathSkew;
+            path["taper_x"] = Data.PathTaperX;
+            path["taper_y"] = Data.PathTaperY;
+            path["twist"] = Data.PathTwist;
+            path["twist_begin"] = Data.PathTwistBegin;
 
-        public static Primitive FromXml(XmlReader xmlReader)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(Primitive));
-            return (Primitive)serializer.Deserialize(xmlReader);
+            Dictionary<string, object> profile = new Dictionary<string, object>(4);
+            profile["begin"] = Data.ProfileBegin;
+            profile["curve"] = Data.ProfileCurve;
+            profile["end"] = Data.ProfileEnd;
+            profile["hollow"] = Data.ProfileHollow;
+
+            Dictionary<string, object> volume = new Dictionary<string, object>(2);
+            volume["path"] = path;
+            volume["profile"] = profile;
+
+            Dictionary<string, object> prim = new Dictionary<string, object>(9);
+            prim["phantom"] = ((Flags & ObjectFlags.Phantom) != 0);
+            prim["physical"] = ((Flags & ObjectFlags.Physics) != 0);
+            prim["position"] = Position.ToLLSD();
+            prim["rotation"] = Rotation.ToLLSD();
+            prim["scale"] = Scale.ToLLSD();
+            prim["shadows"] = ((Flags & ObjectFlags.CastShadows) != 0);
+            prim["textures"] = Textures.ToLLSD();
+            prim["volume"] = volume;
+            if (ParentID != 0)
+                prim["parentid"] = ParentID;
+
+            return prim;
         }
 
         internal int SetExtraParamsFromBytes(byte[] data, int pos)

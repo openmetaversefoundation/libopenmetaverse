@@ -26,8 +26,6 @@
 
 using System;
 using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
@@ -100,10 +98,16 @@ namespace libsecondlife
         /// <param name="wearables">A mapping of WearableTypes to KeyValuePairs
         /// with Asset ID of the wearable as key and Item ID as value</param>
         public delegate void AgentWearablesCallback(Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="textures">List of the textures our avatar is currently wearing</param>
+        public delegate void AppearanceUpdatedCallback(LLObject.TextureEntry te);
 
         /// <summary></summary>
         public event AgentWearablesCallback OnAgentWearables;
+        /// <summary></summary>
+        public event AppearanceUpdatedCallback OnAppearanceUpdated;
 
         /// <summary>Total number of wearables for each avatar</summary>
         public const int WEARABLE_COUNT = 13;
@@ -171,6 +175,7 @@ namespace libsecondlife
         private AutoResetEvent WearablesRequestEvent = new AutoResetEvent(false);
         private AutoResetEvent WearablesDownloadedEvent = new AutoResetEvent(false);
         private AutoResetEvent CachedResponseEvent = new AutoResetEvent(false);
+        private AutoResetEvent UpdateEvent = new AutoResetEvent(false);
         // FIXME: Create a class-level appearance thread so multiple threads can't be launched
 
         /// <summary>
@@ -189,15 +194,7 @@ namespace libsecondlife
 
             Client.Network.RegisterCallback(PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateHandler));
             Client.Network.RegisterCallback(PacketType.AgentCachedTextureResponse, new NetworkManager.PacketCallback(AgentCachedTextureResponseHandler));
-        }
-
-        /// <summary>
-        /// If the appearance thread is running it is terminated here
-        /// </summary>
-        ~AppearanceManager()
-        {
-            WearablesDownloadedEvent.Set();
-            CachedResponseEvent.Set();
+            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }
 
         private static AssetType WearableTypeToAssetType(WearableType type)
@@ -217,9 +214,10 @@ namespace libsecondlife
                 case WearableType.Gloves:
                 case WearableType.Undershirt:
                 case WearableType.Underpants:
+                case WearableType.Skirt:
                     return AssetType.Clothing;
                 default:
-                    return AssetType.Unknown;
+                    throw new Exception("Unhandled wearable type " + type);
             }
         }
 
@@ -248,16 +246,17 @@ namespace libsecondlife
 
         public void SetPreviousAppearance(bool bake)
         {
-            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartSetPreviousAppearance));
-            appearanceThread.Start(bake);
+            _bake = bake;
+            Thread appearanceThread = new Thread(new ThreadStart(StartSetPreviousAppearance));
+            appearanceThread.Start();
         }
 
-        private void StartSetPreviousAppearance(object _bake)
+        private bool _bake;
+        private void StartSetPreviousAppearance()
         {
-            bool bake = (bool)_bake;
             SendAgentWearablesRequest();
             WearablesRequestEvent.WaitOne();
-            UpdateAppearanceFromWearables(bake);
+            UpdateAppearanceFromWearables(_bake);
         }
 
         private class WearParams
@@ -271,54 +270,54 @@ namespace libsecondlife
                 Bake = bake;
             }
         }
-        
+
         /// <summary>
         /// Replace the current outfit with a list of wearables and set appearance
         /// </summary>
-        /// <param name="iws">List of wearables that define the new outfit</param>
-        public void WearOutfit(List<InventoryBase> ibs, bool bake)
-        {
-            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartWearOutfit));
-            appearanceThread.Start(new WearParams(ibs,bake));
-        }
-
+        /// <param name="ibs">List of wearables that define the new outfit</param>
         public void WearOutfit(List<InventoryBase> ibs)
         {
             WearOutfit(ibs, true);
         }
-
-        private void StartWearOutfit(object _wp)
+        
+        /// <summary>
+        /// Replace the current outfit with a list of wearables and set appearance
+        /// </summary>
+        /// <param name="ibs">List of wearables that define the new outfit</param>
+        /// <param name="bake">Whether to bake textures for the avatar or not</param>
+        public void WearOutfit(List<InventoryBase> ibs, bool bake)
         {
-            WearParams wp = (WearParams)_wp;
-            List<InventoryBase> ibs = (List<InventoryBase>)wp.Param;
+            _wearParams = new WearParams(ibs, bake);
+            Thread appearanceThread = new Thread(new ThreadStart(StartWearOutfit));
+            appearanceThread.Start();
+        }
+
+        private WearParams _wearParams;
+        private void StartWearOutfit()
+        {
+            List<InventoryBase> ibs = (List<InventoryBase>)_wearParams.Param;
             List<InventoryWearable> wearables = new List<InventoryWearable>();
-            List<InventoryAttachment> attachments = new List<InventoryAttachment>();
+            List<InventoryBase> attachments = new List<InventoryBase>();
 
             foreach (InventoryBase ib in ibs)
             {
                 if (ib is InventoryWearable)
                     wearables.Add((InventoryWearable)ib);
-                else if (ib is InventoryAttachment)
-                    attachments.Add((InventoryAttachment)ib);
+                else if (ib is InventoryAttachment || ib is InventoryObject)
+                    attachments.Add(ib);
             }
 
             SendAgentWearablesRequest();
             WearablesRequestEvent.WaitOne();
             ReplaceOutfitWearables(wearables);
-            UpdateAppearanceFromWearables(wp.Bake);
+            UpdateAppearanceFromWearables(_wearParams.Bake);
             AddAttachments(attachments, true);
         }
 
         /// <summary>
         /// Replace the current outfit with a folder and set appearance
         /// </summary>
-        /// <param name="folder">Folder containing the new outfit</param>
-        public void WearOutfit(LLUUID folder, bool bake)
-        {
-            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartWearOutfitFolder));
-            appearanceThread.Start(new WearParams(folder,bake));
-        }
-
+        /// <param name="folder">UUID of the inventory folder to wear</param>
         public void WearOutfit(LLUUID folder)
         {
             WearOutfit(folder, true);
@@ -327,71 +326,109 @@ namespace libsecondlife
         /// <summary>
         /// Replace the current outfit with a folder and set appearance
         /// </summary>
-        /// <param name="path">Path of folder containing the new outfit</param>
-        public void WearOutfit(string[] path, bool bake)
-        {
-            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartWearOutfitFolder));
-            appearanceThread.Start(new WearParams(path,bake));
-        }
-
+        /// <param name="path">Inventory path of the folder to wear</param>
         public void WearOutfit(string[] path)
         {
             WearOutfit(path, true);
         }
 
-        private void StartWearOutfitFolder(object _wp)
+        /// <summary>
+        /// Replace the current outfit with a folder and set appearance
+        /// </summary>
+        /// <param name="folder">Folder containing the new outfit</param>
+        /// <param name="bake">Whether to bake the avatar textures or not</param>
+        public void WearOutfit(LLUUID folder, bool bake)
         {
-            WearParams wp = (WearParams)_wp;
+            _wearOutfitParams = new WearParams(folder, bake);
+            Thread appearanceThread = new Thread(new ThreadStart(StartWearOutfitFolder));
+            appearanceThread.Start();
+        }
+
+        /// <summary>
+        /// Replace the current outfit with a folder and set appearance
+        /// </summary>
+        /// <param name="path">Path of folder containing the new outfit</param>
+        /// <param name="bake">Whether to bake the avatar textures or not</param>
+        public void WearOutfit(string[] path, bool bake)
+        {
+            _wearOutfitParams = new WearParams(path, bake);
+            Thread appearanceThread = new Thread(new ThreadStart(StartWearOutfitFolder));
+            appearanceThread.Start();
+        }
+
+        private WearParams _wearOutfitParams;
+        private void StartWearOutfitFolder()
+        {
             SendAgentWearablesRequest(); // request current wearables async
             List<InventoryWearable> wearables;
-            List<InventoryAttachment> attachments;
+            List<InventoryBase> attachments;
 
-            if (!GetFolderWearables(wp.Param, out wearables, out attachments)) // get wearables in outfit folder
+            if (!GetFolderWearables(_wearOutfitParams.Param, out wearables, out attachments)) // get wearables in outfit folder
                 return; // TODO: this error condition should be passed back to the client somehow
             
             WearablesRequestEvent.WaitOne(); // wait for current wearables
             ReplaceOutfitWearables(wearables); // replace current wearables with outfit folder
-            UpdateAppearanceFromWearables(wp.Bake);
+            UpdateAppearanceFromWearables(_wearOutfitParams.Bake);
             AddAttachments(attachments, true);
         }
 
-        private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryAttachment> attachments)
+        private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryBase> attachments)
         {
             LLUUID folder;
             wearables = null;
             attachments = null;
 
-            if (_folder is string[])
+            if (_folder.GetType() == typeof(string[]))
             {
-                List<InventoryBase> pathMatches = Client.Inventory.FindObjectsByPath(Client.Inventory.Store.RootFolder.UUID, (string[])_folder, true, true);
+                string[] path = (string[])_folder;
 
-                if (pathMatches.Count == 0)
+                folder = Client.Inventory.FindObjectByPath(
+                    Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, String.Join("/", path), 1000 * 20);
+
+                if (folder == LLUUID.Zero)
                 {
-                    Client.Log("Outfit path not found", Helpers.LogLevel.Error);
+                    Client.Log("Outfit path " + path + " not found", Helpers.LogLevel.Error);
                     return false;
                 }
-
-                if (!(pathMatches[0] is InventoryFolder))
-                {
-                    Client.Log("Outfit path is not a folder", Helpers.LogLevel.Error);
-                    return false;
-                }
-
-                folder = ((InventoryFolder)pathMatches[0]).UUID;
             }
             else
                 folder = (LLUUID)_folder;
 
             wearables = new List<InventoryWearable>();
-            attachments = new List<InventoryAttachment>();
-            Client.Inventory.RequestFolderContents(folder, Client.Network.AgentID, false, true, false, InventorySortOrder.ByName);
+            attachments = new List<InventoryBase>();
+            List<InventoryBase> objects = Client.Inventory.FolderContents(folder, Client.Self.AgentID, 
+                false, true, InventorySortOrder.ByName, 1000 * 20);
 
-            foreach (InventoryBase ib in Client.Inventory.Store.GetContents(folder))
+            if (objects != null)
             {
-                if (ib is InventoryWearable)
-                    wearables.Add((InventoryWearable)ib);
-                else if (ib is InventoryAttachment)
-                    attachments.Add((InventoryAttachment)ib);
+                foreach (InventoryBase ib in objects)
+                {
+                    if (ib is InventoryWearable)
+                    {
+                        Client.DebugLog("Adding wearable " + ib.Name);
+                        wearables.Add((InventoryWearable)ib);
+                    }
+                    else if (ib is InventoryAttachment)
+                    {
+                        Client.DebugLog("Adding attachment (attachment) " + ib.Name);
+                        attachments.Add(ib);
+                    }
+                    else if (ib is InventoryObject)
+                    {
+                        Client.DebugLog("Adding attachment (object) " + ib.Name);
+                        attachments.Add(ib);
+                    }
+                    else
+                    {
+                        Client.DebugLog("Ignoring inventory item " + ib.Name);
+                    }
+                }
+            }
+            else
+            {
+                Client.Log("Failed to download folder contents of + " + folder.ToStringHyphenated(), 
+                    Helpers.LogLevel.Error);
+                return false;
             }
 
             return true;
@@ -421,12 +458,15 @@ namespace libsecondlife
             }
         }
 
-        public void AddAttachments(List<InventoryAttachment> attachments, bool removeExistingFirst)
+        public void AddAttachments(List<InventoryBase> attachments, bool removeExistingFirst)
         {
+            // FIXME: Obey this
+            const int OBJECTS_PER_PACKET = 4;
+
             // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
             RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
-            attachmentsPacket.AgentData.AgentID = Client.Network.AgentID;
-            attachmentsPacket.AgentData.SessionID = Client.Network.SessionID;
+            attachmentsPacket.AgentData.AgentID = Client.Self.AgentID;
+            attachmentsPacket.AgentData.SessionID = Client.Self.SessionID;
 
             attachmentsPacket.HeaderData.CompoundMsgID = LLUUID.Random();
             attachmentsPacket.HeaderData.FirstDetachAll = true;
@@ -435,16 +475,41 @@ namespace libsecondlife
             attachmentsPacket.ObjectData = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock[attachments.Count];
             for (int i = 0; i < attachments.Count; i++)
             {
-                attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
-                attachmentsPacket.ObjectData[i].AttachmentPt = 0;
-                attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachments[i].Permissions.EveryoneMask;
-                attachmentsPacket.ObjectData[i].GroupMask = (uint)attachments[i].Permissions.GroupMask;
-                attachmentsPacket.ObjectData[i].ItemFlags = attachments[i].Flags;
-                attachmentsPacket.ObjectData[i].ItemID = attachments[i].UUID;
-                attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachments[i].Name);
-                attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachments[i].Description);
-                attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachments[i].Permissions.NextOwnerMask;
-                attachmentsPacket.ObjectData[i].OwnerID = attachments[i].OwnerID;
+                if (attachments[i] is InventoryAttachment)
+                {
+                    InventoryAttachment attachment = (InventoryAttachment)attachments[i];
+
+                    attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
+                    attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                    attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
+                    attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
+                    attachmentsPacket.ObjectData[i].ItemFlags = attachment.Flags;
+                    attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
+                    attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
+                    attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
+                    attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
+                    attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
+                }
+                else if (attachments[i] is InventoryObject)
+                {
+                    InventoryObject attachment = (InventoryObject)attachments[i];
+
+                    attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
+                    attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                    attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
+                    attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
+                    attachmentsPacket.ObjectData[i].ItemFlags = attachment.Flags;
+                    attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
+                    attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
+                    attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
+                    attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
+                    attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
+                }
+                else
+                {
+                    Client.Log("Cannot attach inventory item of type " + attachments[i].GetType().ToString(),
+                        Helpers.LogLevel.Warning);
+                }
             }
 
             Client.Network.SendPacket(attachmentsPacket);
@@ -464,8 +529,8 @@ namespace libsecondlife
 
             RezSingleAttachmentFromInvPacket attach = new RezSingleAttachmentFromInvPacket();
 
-            attach.AgentData.AgentID = Client.Network.AgentID;
-            attach.AgentData.SessionID = Client.Network.SessionID;
+            attach.AgentData.AgentID = Client.Self.AgentID;
+            attach.AgentData.SessionID = Client.Self.SessionID;
 
             attach.ObjectData.AttachmentPt = (byte)attachPoint;
             attach.ObjectData.Description = Helpers.StringToField(description);
@@ -488,7 +553,7 @@ namespace libsecondlife
         public void Detach(LLUUID itemID)
         {
             DetachAttachmentIntoInvPacket detach = new DetachAttachmentIntoInvPacket();
-            detach.ObjectData.AgentID = Client.Network.AgentID;
+            detach.ObjectData.AgentID = Client.Self.AgentID;
             detach.ObjectData.ItemID = itemID;
 
             Client.Network.SendPacket(detach);
@@ -517,14 +582,6 @@ namespace libsecondlife
             // Unregister the asset download callback
             Assets.OnAssetReceived -= assetCallback;
 
-            string tex = "";
-
-            for (int i = 0; i < AgentTextures.Length; i++)
-                if (AgentTextures[i] != LLUUID.Zero)
-                    tex += ((TextureIndex)i).ToString() + " = " + AgentTextures[i] + "\n";
-
-            Client.DebugLog("AgentTextures:\n" + tex);
-
             // Check if anything needs to be rebaked
             if (bake) RequestCachedBakes();
 
@@ -540,8 +597,74 @@ namespace libsecondlife
 
             Client.DebugLog("CachedResponseEvent completed");
 
+            #region Send Appearance
+
+            LLObject.TextureEntry te = null;
+
+            ObjectManager.NewAvatarCallback updateCallback =
+                delegate(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+                {
+                    if (avatar.LocalID == Client.Self.LocalID)
+                    {
+                        if (avatar.Textures.FaceTextures != null)
+                        {
+                            bool match = true;
+
+                            for (uint i = 0; i < AgentTextures.Length; i++)
+                            {
+                                LLObject.TextureEntryFace face = avatar.Textures.FaceTextures[i];
+
+                                if (face == null)
+                                {
+                                    // If the texture is LLUUID.Zero the face should be null
+                                    if (AgentTextures[i] != LLUUID.Zero)
+                                    {
+                                        match = false;
+                                        break;
+                                    }
+                                }
+                                else if (face.TextureID != AgentTextures[i])
+                                {
+                                    match = false;
+                                    break;
+                                }
+                            }
+
+                            if (!match)
+                                Client.Log("TextureEntry mismatch after updating our appearance", Helpers.LogLevel.Warning);
+
+                            te = avatar.Textures;
+                            UpdateEvent.Set();
+                        }
+                        else
+                        {
+                            Client.Log("Received an update for our avatar with a null FaceTextures array",
+                                Helpers.LogLevel.Warning);
+                        }
+                    }
+                };
+            Client.Objects.OnNewAvatar += updateCallback;
+
             // Send all of the visual params and textures for our agent
             SendAgentSetAppearance();
+
+            // Wait for the ObjectUpdate to come in for our avatar after changing appearance
+            if (UpdateEvent.WaitOne(1000 * 60, false))
+            {
+                if (OnAppearanceUpdated != null)
+                {
+                    try { OnAppearanceUpdated(te); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            else
+            {
+                Client.Log("Timed out waiting for our appearance to update on the simulator", Helpers.LogLevel.Warning);
+            }
+
+            Client.Objects.OnNewAvatar -= updateCallback;
+
+            #endregion Send Appearance
         }
 
         /// <summary>
@@ -555,8 +678,8 @@ namespace libsecondlife
             List<KeyValuePair<int, LLUUID>> hashes = new List<KeyValuePair<int,LLUUID>>();
 
             AgentCachedTexturePacket cache = new AgentCachedTexturePacket();
-            cache.AgentData.AgentID = Client.Network.AgentID;
-            cache.AgentData.SessionID = Client.Network.SessionID;
+            cache.AgentData.AgentID = Client.Self.AgentID;
+            cache.AgentData.SessionID = Client.Self.SessionID;
             cache.AgentData.SerialNum = CacheCheckSerialNum;
 
             // Build hashes for each of the bake layers from the individual components
@@ -617,8 +740,8 @@ namespace libsecondlife
         public void SendAgentWearablesRequest()
         {
             AgentWearablesRequestPacket request = new AgentWearablesRequestPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.AgentID = Client.Self.AgentID;
+            request.AgentData.SessionID = Client.Self.SessionID;
 
             Client.Network.SendPacket(request);
         }
@@ -656,8 +779,8 @@ namespace libsecondlife
         private void SendAgentSetAppearance()
         {
             AgentSetAppearancePacket set = new AgentSetAppearancePacket();
-            set.AgentData.AgentID = Client.Network.AgentID;
-            set.AgentData.SessionID = Client.Network.SessionID;
+            set.AgentData.AgentID = Client.Self.AgentID;
+            set.AgentData.SessionID = Client.Self.SessionID;
             set.AgentData.SerialNum = SetAppearanceSerialNum++;
             set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[VisualParams.Params.Count];
 
@@ -774,8 +897,8 @@ namespace libsecondlife
             Client.DebugLog("SendAgentIsNowWearing()");
 
             AgentIsNowWearingPacket wearing = new AgentIsNowWearingPacket();
-            wearing.AgentData.AgentID = Client.Network.AgentID;
-            wearing.AgentData.SessionID = Client.Network.SessionID;
+            wearing.AgentData.AgentID = Client.Self.AgentID;
+            wearing.AgentData.SessionID = Client.Self.SessionID;
             wearing.WearableData = new AgentIsNowWearingPacket.WearableDataBlock[WEARABLE_COUNT];
 
             for (int i = 0; i < WEARABLE_COUNT; i++)
@@ -814,10 +937,11 @@ namespace libsecondlife
 
         private void DownloadWearableAssets()
         {
-            Client.DebugLog("DownloadWearableAssets()");
-            
-            foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
+            foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables)
+            {
+                Client.DebugLog("Requesting asset for wearable item" + kvp.Value.Item.Name + " (" + kvp.Value.Item.AssetUUID + ")");
                 AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
+            }
 
             if (AssetDownloads.Count > 0)
             {
@@ -844,6 +968,38 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+
+        private void UploadBake(Baker bake)
+        {
+            // Upload the completed layer data
+            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
+
+            Client.DebugLog(String.Format("Bake {0} completed. Uploading asset {1}", bake.BakeType,
+                bake.BakedTexture.AssetID.ToStringHyphenated()));
+
+            // Add it to a pending uploads list
+            lock (PendingUploads) PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
+        }
+
+        private int AddImageDownload(TextureIndex index)
+        {
+            LLUUID image = AgentTextures[(int)index];
+
+            if (image != LLUUID.Zero)
+            {
+                if (!ImageDownloads.ContainsKey(image))
+                {
+                    Client.DebugLog("Downloading layer " + index.ToString());
+                    ImageDownloads.Add(image, index);
+                }
+
+                return 1;
+            }
+
+            return 0;
+        }
+
+        #region Callbacks
 
         private void AgentCachedTextureResponseHandler(Packet packet, Simulator simulator)
         {
@@ -991,28 +1147,8 @@ namespace libsecondlife
             }
         }
 
-        private int AddImageDownload(TextureIndex index)
-        {
-            LLUUID image = AgentTextures[(int)index];
-
-            if (image != LLUUID.Zero)
-            {
-                if (!ImageDownloads.ContainsKey(image))
-                {
-                    Client.DebugLog("Downloading layer " + index.ToString());
-                    ImageDownloads.Add(image, index);
-                }
-
-                return 1;
-            }
-
-            return 0;
-        }
-
         private void Assets_OnAssetReceived(AssetDownload download, Asset asset)
         {
-            Client.DebugLog("Assets_OnAssetReceived()");
-            
             lock (Wearables)
             {
                 // Check if this is a wearable we were waiting on
@@ -1025,6 +1161,8 @@ namespace libsecondlife
                         {
                             kvp.Value.Asset = (AssetWearable)asset;
                             kvp.Value.Asset.Decode();
+
+                            Client.DebugLog("Downloaded wearable asset " + kvp.Value.Asset.Name);
 
                             lock (AgentTextures)
                             {
@@ -1124,17 +1262,6 @@ namespace libsecondlife
             }
         }
 
-        private void UploadBake(Baker bake)
-        {
-            // Upload the completed layer data
-            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
-
-            Client.DebugLog("Bake " + bake.BakeType.ToString() + " completed. Uploading asset " + bake.BakedTexture.AssetID.ToStringHyphenated());
-
-            // Add it to a pending uploads list
-            lock (PendingUploads) PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
-        }
-
         private void Assets_OnAssetUploaded(AssetUpload upload)
         {
             lock (PendingUploads)
@@ -1175,5 +1302,18 @@ namespace libsecondlife
                 }
             }
         }
+
+        /// <summary>
+        /// Terminate any wait handles when the network layer disconnects
+        /// </summary>
+        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            WearablesRequestEvent.Set();
+            WearablesDownloadedEvent.Set();
+            CachedResponseEvent.Set();
+            UpdateEvent.Set();
+        }
+
+        #endregion Callbacks
     }
 }

@@ -26,8 +26,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -35,7 +33,6 @@ namespace libsecondlife
     /// <summary>
     /// Base class for primitives and avatars
     /// </summary>
-    [Serializable]
     public abstract partial class LLObject
     {
         #region Enumerations
@@ -106,6 +103,29 @@ namespace libsecondlife
             ZlibCompressed = 0x80000000
         }
 
+        [Flags]
+        public enum ProfileCurve : byte
+        {
+            ProfileCircle = 0x00,
+            ProfileSquare = 0x01,
+            ProfileIsoTriangle = 0x02,
+            ProfileEqualTriangle = 0x03,
+            ProfileRightTriangle = 0x04,
+            ProfileHalfCircle = 0x05,
+            HoleCircle = 0x10,
+            HoleSquare = 0x20,
+            HoleTriangle = 0x30
+        }
+
+        public enum PathCurve : byte
+        {
+            Line = 0x10,
+            Circle = 0x20,
+            Circle2 = 0x30,
+            Test = 0x40,
+            Flexible = 0x80
+        }
+
         /// <summary>
         /// Material type for a primitive
         /// </summary>
@@ -131,13 +151,11 @@ namespace libsecondlife
 
         #endregion Enumerations
 
-
         #region Structs
 
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
         public struct ObjectData
         {
             /// <summary></summary>
@@ -151,7 +169,7 @@ namespace libsecondlife
             /// <summary></summary>
             public float PathSkew;
             /// <summary></summary>
-            public uint ProfileCurve;
+            public ProfileCurve ProfileCurve;
             /// <summary></summary>
             public float PathScaleX;
             /// <summary></summary>
@@ -171,7 +189,7 @@ namespace libsecondlife
             /// <summary></summary>
             public float PathBegin;
             /// <summary></summary>
-            public uint PathCurve;
+            public PathCurve PathCurve;
             /// <summary></summary>
             public int PathTwist;
             /// <summary></summary>
@@ -200,15 +218,7 @@ namespace libsecondlife
             /// <summary></summary>
             public ulong CreationDate;
             /// <summary></summary>
-            public uint BaseMask;
-            /// <summary></summary>
-            public uint OwnerMask;
-            /// <summary></summary>
-            public uint GroupMask;
-            /// <summary></summary>
-            public uint EveryoneMask;
-            /// <summary></summary>
-            public uint NextOwnerMask;
+            public Permissions Permissions;
             /// <summary></summary>
             public int OwnershipCost;
             /// <summary></summary>
@@ -306,7 +316,6 @@ namespace libsecondlife
 
         #endregion Structs
 
-
         #region Public Members
 
         /// <summary></summary>
@@ -342,7 +351,6 @@ namespace libsecondlife
         /// <summary></summary>
         public ObjectProperties Properties;
         /// <summary></summary>
-        [XmlIgnore]
         public ObjectPropertiesFamily PropertiesFamily;
         /// <summary></summary>
         public NameValue[] NameValues;
@@ -350,10 +358,6 @@ namespace libsecondlife
         public ObjectData Data;
 
         #endregion Public Members
-
-
-        //internal DateTime lastInterpolation;
-
 
         /// <summary>
         /// 

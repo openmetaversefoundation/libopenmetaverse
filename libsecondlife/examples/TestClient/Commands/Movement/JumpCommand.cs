@@ -11,24 +11,24 @@ namespace libsecondlife.TestClient
         public JumpCommand(TestClient testClient)
 		{
 			Name = "jump";
-			Description = "Teleports to the specified height. (e.g. \"jump 1000\")";
+			Description = "Teleports to the specified height. (e.g. \"jump 10\")";
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length != 1)
-                return "usage: jump 1000";
+                return "Usage: jump 10";
 
 			float height = 0;
-			float.TryParse(args[0], out height);
+            if (!float.TryParse(args[0], out height))
+                return "Usage: jump 10";
 
-			Client.Self.Teleport
-			(
-				Client.Network.CurrentSim.Name,
-				new LLVector3(Client.Self.Position.X, Client.Self.Position.Y, Client.Self.Position.Z + height)
-			);
+            LLVector3 dest = Client.Self.SimPosition;
+            dest.Z += height;
 
-            return "Jumped " + height;
+			Client.Self.Teleport(Client.Network.CurrentSim.Name, dest);
+
+            return "Attempted to jump " + height + " meters";
 		}
     }
 }

@@ -23,25 +23,33 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-        
             Manager = Client.Inventory;
             Inventory = Manager.Store;
 
             StringBuilder result = new StringBuilder();
-            Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, true, true, true, InventorySortOrder.ByName);
-            //result.Append(Inventory.RootNode.Name);
-            PrintFolder(Inventory.RootNode, result, 0);
-            return result.ToString();
+
+            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID,
+            //    true, true, InventorySortOrder.ByName);
+
+            //PrintFolder(Inventory.RootNode, result, 0);
+
+            //return result.ToString();
+
+            //FIXME:
+            return "This function needs a blocking InventoryManager.FolderContents() to work";
         }
+
         void PrintFolder(InventoryNode f, StringBuilder result, int indent)
         {
-            foreach ( InventoryNode i in f.Nodes.Values ) {
+            foreach ( InventoryNode i in f.Nodes.Values )
+            {
                 result.Append(i.Data.Name + "\n");
-                if ( i.Nodes.Count > 0 ) {
+
+                if ( i.Nodes.Count > 0 )
                     PrintFolder(i, result, indent + 1);
-                }
             }
         }
+
         //void Indent(StringBuilder output, int indenting)
         //{
         //    for (int count = 0; count < indenting; count++)

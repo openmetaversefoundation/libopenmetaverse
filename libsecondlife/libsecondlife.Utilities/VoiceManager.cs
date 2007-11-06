@@ -503,7 +503,7 @@ namespace libsecondlife.Utilities
 
         #region Callbacks
 
-        private void RequiredVoiceVersionEventHandler(string message, System.Collections.Hashtable body, CapsEventQueue caps)
+        private void RequiredVoiceVersionEventHandler(string message, Dictionary<string, object> body, CapsEventQueue caps)
         {
             if (body.ContainsKey("major_version"))
             {

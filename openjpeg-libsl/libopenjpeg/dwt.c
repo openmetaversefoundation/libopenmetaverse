@@ -620,7 +620,7 @@ static void dwt_decode_tile(opj_tcd_tilecomp_t * tilec, int stop, DWT1DFN dwt_1D
 	a = tilec->data;
 
 	m = (int*)opj_malloc(sizeof(int) * (dwt_decode_max_resolution(tr, i)+5));
-	h.mem = v.mem = (int*)( (unsigned)m + 16 - ( (unsigned)m % 16 ) ) ;
+	h.mem = v.mem = (int*)( (uintptr_t)m + 16 - ( (uintptr_t)m % 16 ) ) ;
 
 	rw = tr->x1 - tr->x0;
 	rh = tr->y1 - tr->y0;

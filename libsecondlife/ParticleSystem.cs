@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Xml.Serialization;
 
 namespace libsecondlife
 {
@@ -10,7 +9,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
         public struct ParticleSystem
         {
             /// <summary>

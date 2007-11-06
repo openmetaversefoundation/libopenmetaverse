@@ -141,8 +141,10 @@ namespace libsecondlife
                 {
                     if (SimPatches.ContainsKey(regionHandle))
                     {
-                        int patchX = (int)Math.DivRem(x, 16, out x);
-                        int patchY = (int)Math.DivRem(y, 16, out y);
+                        int patchX = x / 16;
+                        int patchY = y / 16;
+                        x = x % 16;
+                        y = y % 16;
 
                         if (SimPatches[regionHandle][patchY * 16 + patchX] != null)
                         {

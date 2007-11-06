@@ -44,30 +44,30 @@ namespace libsecondlife
         public delegate void LogCallback(string message, Helpers.LogLevel level);
 
 
-        /// <summary>Networking Subsystem</summary>
+        /// <summary>Networking subsystem</summary>
         public NetworkManager Network;
         /// <summary>Settings class including constant values and changeable
         /// parameters for everything</summary>
         public Settings Settings;
-        /// <summary>Parcel (subdivided simulator lots) Subsystem</summary>
+        /// <summary>Parcel (subdivided simulator lots) subsystem</summary>
         public ParcelManager Parcels;
-        /// <summary>'Client's Avatar' Subsystem</summary>
-        public MainAvatar Self;
-        /// <summary>Other Avatars Subsystem</summary>
+        /// <summary>Our own avatars subsystem</summary>
+        public AgentManager Self;
+        /// <summary>Other avatars subsystem</summary>
         public AvatarManager Avatars;
-        /// <summary>Friends List Subsystem</summary>
+        /// <summary>Friends list subsystem</summary>
         public FriendsManager Friends;
-        /// <summary>Grid (aka simulator group) Subsystem</summary>
+        /// <summary>Grid (aka simulator group) subsystem</summary>
         public GridManager Grid;
-        /// <summary>Object Subsystem</summary>
+        /// <summary>Object subsystem</summary>
         public ObjectManager Objects;
-        /// <summary>Group Subsystem</summary>
+        /// <summary>Group subsystem</summary>
         public GroupManager Groups;
-        /// <summary>Asset Subsystem</summary>
+        /// <summary>Asset subsystem</summary>
         public AssetManager Assets;
-        /// <summary>Appearance Subsystem</summary>
+        /// <summary>Appearance subsystem</summary>
         public AppearanceManager Appearance;
-        /// <summary>Inventory Subsystem</summary>
+        /// <summary>Inventory subsystem</summary>
         public InventoryManager Inventory;
         /// <summary>Directory searches including classifieds, people, land 
         /// sales, etc</summary>
@@ -81,9 +81,8 @@ namespace libsecondlife
         public AgentThrottle Throttle;
         
 
-        /// <summary>Triggered whenever a message is logged.
-        /// If this is left null, log messages will go to 
-        /// the console</summary>
+        /// <summary>Triggered whenever a message is logged. If this is left
+        /// null, log messages will go to the console</summary>
         public event LogCallback OnLogMessage;
 
         /// <summary>
@@ -95,7 +94,7 @@ namespace libsecondlife
             Network = new NetworkManager(this);
             Settings = new Settings(this);
             Parcels = new ParcelManager(this);
-            Self = new MainAvatar(this);
+            Self = new AgentManager(this);
             Avatars = new AvatarManager(this);
             Friends = new FriendsManager(this);
             Grid = new GridManager(this);

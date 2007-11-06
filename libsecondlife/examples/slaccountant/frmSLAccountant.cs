@@ -424,8 +424,8 @@ namespace SLAccountant
                         appearance.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
                         appearance.VisualParam[i].ParamValue = (byte)rand.Next(255);
                     }
-                    appearance.AgentData.AgentID = client.Network.AgentID;
-                    appearance.AgentData.SessionID = client.Network.SessionID;
+                    appearance.AgentData.AgentID = client.Self.AgentID;
+                    appearance.AgentData.SessionID = client.Self.SessionID;
                     appearance.AgentData.SerialNum = 1;
                     appearance.AgentData.Size = new LLVector3(0.45F, 0.6F, 1.831094F);
                     appearance.ObjectData.TextureEntry = new byte[0];
@@ -464,8 +464,8 @@ namespace SLAccountant
 			lstFind.Items.Clear();
 
             DirFindQueryPacket query = new DirFindQueryPacket();
-            query.AgentData.AgentID = client.Network.AgentID;
-            query.AgentData.SessionID = client.Network.SessionID;
+            query.AgentData.AgentID = client.Self.AgentID;
+            query.AgentData.SessionID = client.Self.SessionID;
             query.QueryData.QueryFlags = 1;
             query.QueryData.QueryID = LLUUID.Random();
             query.QueryData.QueryStart = 0;

@@ -25,9 +25,7 @@
  */
 
 using System;
-using System.ComponentModel;
-using System.Net;
-using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace libsecondlife
 {
@@ -35,11 +33,9 @@ namespace libsecondlife
     /// A 128-bit Universally Unique Identifier, used throughout the Second
     /// Life networking protocol
     /// </summary>
-    [Serializable]
     public struct LLUUID : IComparable
     {
         /// <summary>The System.Guid object this struct wraps around</summary>
-        [XmlAttribute]
         public Guid UUID;
 
         #region Properties
@@ -173,6 +169,15 @@ namespace libsecondlife
         public string ToStringHyphenated()
         {
             return UUID.ToString();
+        }
+
+        /// <summary>
+        /// Get a 64-bit integer representation of the first half of this UUID
+        /// </summary>
+        /// <returns>An integer created from the first eight bytes of this UUID</returns>
+        public ulong ToULong()
+        {
+            return Helpers.BytesToUInt64(UUID.ToByteArray());
         }
 
         #endregion Public Methods
@@ -344,17 +349,13 @@ namespace libsecondlife
     /// <summary>
     /// A three-dimensional vector with floating-point values
     /// </summary>
-    [Serializable]
 	public struct LLVector3
 	{
         /// <summary>X value</summary>
-        [XmlAttribute]
         public float X;
 		/// <summary>Y value</summary>
-        [XmlAttribute]
         public float Y;
         /// <summary>Z value</summary>
-        [XmlAttribute]
         public float Z;
 
         #region Constructors
@@ -457,6 +458,15 @@ namespace libsecondlife
 			}
 
 			return byteArray;
+        }
+
+        public float[] ToLLSD()
+        {
+            float[] array = new float[3];
+            array[0] = X;
+            array[1] = Y;
+            array[2] = Z;
+            return array;
         }
 
         #endregion Public Methods
@@ -582,9 +592,10 @@ namespace libsecondlife
         /// in arrow brackets and separated by commas</param>
         public static LLVector3 Parse(string val)
         {
+            IFormatProvider formatProvider = Helpers.EnUsCulture;
             char[] splitChar = { ',', ' ' };
-            string[] split = val.Replace("<","").Replace(">","").Split(splitChar, StringSplitOptions.RemoveEmptyEntries);
-            return new LLVector3(float.Parse(split[0].Trim()), float.Parse(split[1].Trim()), float.Parse(split[2].Trim()));
+            string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
+            return new LLVector3(float.Parse( split[0].Trim(), formatProvider ), float.Parse(split[1].Trim(), formatProvider), float.Parse(split[2].Trim(), formatProvider));
         }
 
         public static bool TryParse(string val, out LLVector3 result)
@@ -635,7 +646,8 @@ namespace libsecondlife
         /// vector to string conversion in Second Life</returns>
         public override string ToString()
         {
-            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
+            IFormatProvider formatProvider = Helpers.EnUsCulture;
+            return String.Format(formatProvider, "<{0}, {1}, {2}>", X, Y, Z);
         }
 
         #endregion Overrides
@@ -732,17 +744,13 @@ namespace libsecondlife
     /// <summary>
     /// A double-precision three-dimensional vector
     /// </summary>
-    [Serializable]
 	public struct LLVector3d
 	{
         /// <summary>X value</summary>
-        [XmlAttribute]
         public double X;
         /// <summary>Y value</summary>
-        [XmlAttribute]
         public double Y;
         /// <summary>Z value</summary>
-        [XmlAttribute]
         public double Z;
 
         #region Constructors
@@ -823,6 +831,15 @@ namespace libsecondlife
             }
 
             return byteArray;
+        }
+
+        public double[] ToLLSD()
+        {
+            double[] array = new double[3];
+            array[0] = X;
+            array[1] = Y;
+            array[2] = Z;
+            return array;
         }
 
         #endregion Public Methods
@@ -911,20 +928,15 @@ namespace libsecondlife
     /// <summary>
     /// A four-dimensional vector
     /// </summary>
-    [Serializable]
 	public struct LLVector4
 	{
         /// <summary></summary>
-        [XmlAttribute]
         public float X;
         /// <summary></summary>
-        [XmlAttribute]
         public float Y;
         /// <summary></summary>
-        [XmlAttribute]
         public float Z;
         /// <summary></summary>
-        [XmlAttribute]
         public float S;
 
         #region Constructors
@@ -1003,6 +1015,16 @@ namespace libsecondlife
 			return byteArray;
         }
 
+        public float[] ToLLSD()
+        {
+            float[] array = new float[4];
+            array[0] = X;
+            array[1] = Y;
+            array[2] = Z;
+            array[3] = S;
+            return array;
+        }
+
         #endregion Public Methods
 
         #region Overrides
@@ -1025,20 +1047,15 @@ namespace libsecondlife
     /// <summary>
     /// An 8-bit color structure including an alpha channel
     /// </summary>
-    [Serializable]
     public struct LLColor
     {
         /// <summary>Red</summary>
-        [XmlAttribute]
         public float R;
         /// <summary>Green</summary>
-        [XmlAttribute]
         public float G;
         /// <summary>Blue</summary>
-        [XmlAttribute]
         public float B;
         /// <summary>Alpha</summary>
-        [XmlAttribute]
         public float A;
 
         #region Constructors
@@ -1104,6 +1121,20 @@ namespace libsecondlife
             return String.Format("<{0}, {1}, {2}>", R, G, B);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public float[] ToLLSD()
+        {
+            float[] array = new float[4];
+            array[0] = R;
+            array[1] = G;
+            array[2] = B;
+            array[3] = A;
+            return array;
+        }
+
         #endregion Public Methods
 
         #region Overrides
@@ -1117,7 +1148,58 @@ namespace libsecondlife
             return String.Format("<{0}, {1}, {2}, {3}>", R, G, B, A);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is LLColor)
+            {
+                LLColor c = (LLColor)obj;
+                return (R == c.R) && (G == c.G) && (B == c.B) && (A == c.A);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return R.GetHashCode() ^ G.GetHashCode() ^ B.GetHashCode() ^ A.GetHashCode();
+        }
+
         #endregion Overrides
+
+        #region Operators
+
+        /// <summary>
+        /// Comparison operator
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator ==(LLColor lhs, LLColor rhs)
+        {
+            // Return true if the fields match:
+            return lhs.R == rhs.R && lhs.G == rhs.G && lhs.B == rhs.B && lhs.A == rhs.A;
+        }
+
+        /// <summary>
+        /// Not comparison operator
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator !=(LLColor lhs, LLColor rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        #endregion Operators
 
         /// <summary>An LLColor with a value of 0,0,0,255</summary>
         public readonly static LLColor Black = new LLColor(0, 0, 0, 255);
@@ -1126,20 +1208,15 @@ namespace libsecondlife
     /// <summary>
     /// A quaternion, used for rotations
     /// </summary>
-    [Serializable]
 	public struct LLQuaternion
 	{
         /// <summary>X value</summary>
-        [XmlAttribute]
         public float X;
         /// <summary>Y value</summary>
-        [XmlAttribute]
         public float Y;
         /// <summary>Z value</summary>
-        [XmlAttribute]
         public float Z;
         /// <summary>W value</summary>
-        [XmlAttribute]
         public float W;
 
         #region Constructors
@@ -1295,6 +1372,16 @@ namespace libsecondlife
             }
 
             return bytes;
+        }
+
+        public float[] ToLLSD()
+        {
+            float[] array = new float[4];
+            array[0] = X;
+            array[1] = Y;
+            array[2] = Z;
+            array[3] = W;
+            return array;
         }
 
         #endregion Public Methods
@@ -1461,7 +1548,9 @@ namespace libsecondlife
         public readonly static LLQuaternion Identity = new LLQuaternion(0f, 0f, 0f, 1f);
 	}
 
-    [Serializable]
+    /// <summary>
+    /// 
+    /// </summary>
     public struct LLMatrix3
     {
         public float M11, M12, M13;

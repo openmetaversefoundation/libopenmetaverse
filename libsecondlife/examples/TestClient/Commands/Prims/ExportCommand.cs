@@ -78,9 +78,9 @@ namespace libsecondlife.TestClient
                 else
                 {
                     GotPermissions = false;
-                    if (Properties.OwnerID != Client.Network.AgentID && 
+                    if (Properties.OwnerID != Client.Self.AgentID && 
                         Properties.OwnerID != Client.MasterKey && 
-                        Client.Network.AgentID != Client.Self.ID)
+                        Client.Self.AgentID != Client.Self.AgentID)
                     {
                         return "That object is owned by " + Properties.OwnerID + ", we don't have permission " +
                             "to export it";
@@ -106,9 +106,10 @@ namespace libsecondlife.TestClient
                         bool complete = RequestObjectProperties(prims, 250);
 						
                         //Serialize it!
-						Helpers.PrimListToXml(prims, writer);
+                        return "This command is currently under construction";
 
-                        if (!complete) {
+                        if (!complete)
+                        {
                             Console.WriteLine("Warning: Unable to retrieve full properties for:");
                             foreach (LLUUID uuid in PrimsWaiting.Keys)
                                 Console.WriteLine(uuid);

@@ -128,8 +128,19 @@ namespace libsecondlife
                         new AsyncCallback(RequestStreamCallback), _RequestState);
 
                     // If there is a timeout, the callback fires and the request becomes aborted
+#if PocketPC
+                    Thread thread = new Thread(
+                        delegate()
+                        {
+                            if (!result.AsyncWaitHandle.WaitOne(HTTP_TIMEOUT, false))
+                                TimeoutCallback(_RequestState, true);
+                        }
+                    );
+                    thread.Start();
+#else
                     ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
                         _RequestState, HTTP_TIMEOUT, true);
+#endif
                 }
                 else
                 {
@@ -138,8 +149,19 @@ namespace libsecondlife
                         new AsyncCallback(ResponseCallback), _RequestState);
 
                     // If there is a timeout, the callback fires and the request becomes aborted
+#if PocketPC
+                    Thread thread = new Thread(
+                        delegate()
+                        {
+                            if (!result.AsyncWaitHandle.WaitOne(HTTP_TIMEOUT, false))
+                                TimeoutCallback(_RequestState, true);
+                        }
+                    );
+                    thread.Start();
+#else
                     ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
                         _RequestState, HTTP_TIMEOUT, true);
+#endif
 
                     // If we get here the request has been initialized, so fire the callback for a request being started
                     RequestSent(_RequestState);
@@ -151,9 +173,7 @@ namespace libsecondlife
             }
             catch (Exception e)
             {
-                Log(String.Format("HttpBase.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
-                    Helpers.LogLevel.Warning);
-
+                Log("HttpBase.MakeRequest(): " + e.ToString(), Helpers.LogLevel.Warning);
                 Abort(false, null);
             }
         }
@@ -181,25 +201,30 @@ namespace libsecondlife
                     _Aborted = true;
                     //Log("HttpBase.Abort(): HTTP request aborted", Helpers.LogLevel.Debug);
                 }
-                else if (exception.Message.Contains("404") || exception.Message.Contains("410"))
-                {
-                    _Aborted = true;
-                    Log("HttpBase.Abort(): HTTP request target is missing", Helpers.LogLevel.Debug);
-                }
-                else if (exception.Message.Contains("Aborted") || exception.Message.Contains("aborted"))
-                {
-                    // A callback threw an exception because the request is aborting, return to
-                    // avoid circular problems
-                    return;
-                }
-                else if (exception.Message.Contains("502"))
-                {
-                    // Don't log anything since 502 errors are so common
-                }
                 else
                 {
-                    Log(String.Format("HttpBase.Abort(): {0} (Status: {1})", exception.Message, exception.Status),
-                        Helpers.LogLevel.Warning);
+                    string message = exception.Message.ToLower();
+
+                    if (Helpers.StringContains(message, "502"))
+                    {
+                        // Don't log anything since 502 errors are so common
+                    }
+                    else if (Helpers.StringContains(message, "404") || Helpers.StringContains(message, "410"))
+                    {
+                        _Aborted = true;
+                        Log("HttpBase.Abort(): HTTP request target is missing", Helpers.LogLevel.Debug);
+                    }
+                    else if (Helpers.StringContains(message, "aborted"))
+                    {
+                        // A callback threw an exception because the request is aborting, return to
+                        // avoid circular problems
+                        return;
+                    }
+                    else
+                    {
+                        Log(String.Format("HttpBase.Abort(): {0} (Status: {1})", exception.Message, exception.Status),
+                            Helpers.LogLevel.Warning);
+                    }
                 }
             }
 
@@ -232,8 +257,19 @@ namespace libsecondlife
                 IAsyncResult newResult = _RequestState.WebRequest.BeginGetResponse(new AsyncCallback(ResponseCallback), _RequestState);
 
                 // If there is a timeout, the callback fires and the request becomes aborted
+#if PocketPC
+                Thread thread = new Thread(
+                    delegate()
+                    {
+                        if (!newResult.AsyncWaitHandle.WaitOne(HTTP_TIMEOUT, false))
+                            TimeoutCallback(_RequestState, true);
+                    }
+                );
+                thread.Start();
+#else
                 ThreadPool.RegisterWaitForSingleObject(newResult.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
                     _RequestState, HTTP_TIMEOUT, true);
+#endif
             }
             catch (WebException e)
             {
@@ -257,8 +293,19 @@ namespace libsecondlife
                     new AsyncCallback(ReadCallback), _RequestState);
 
                 // If there is a timeout, the callback fires and the request becomes aborted
+#if PocketPC
+                Thread thread = new Thread(
+                    delegate()
+                    {
+                        if (!asynchronousInputRead.AsyncWaitHandle.WaitOne(HTTP_TIMEOUT, false))
+                            TimeoutCallback(_RequestState, true);
+                    }
+                );
+                thread.Start();
+#else
                 ThreadPool.RegisterWaitForSingleObject(asynchronousInputRead.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
                     _RequestState, HTTP_TIMEOUT, true);
+#endif
             }
             catch (WebException e)
             {

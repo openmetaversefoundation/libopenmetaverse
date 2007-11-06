@@ -47,15 +47,17 @@ namespace libsecondlife
 
         ~WrappedObject()
         {
+#if !PocketPC
             // If the AppDomain is being unloaded, or the CLR is 
             // shutting down, just exit gracefully
             if (Environment.HasShutdownStarted)
                 return;
+#endif
 
-            //Object Reserrection in Action!
+            // Object Resurrection in Action!
             GC.ReRegisterForFinalize(this);
 
-            // return this instance back to the owning queue.
+            // Return this instance back to the owning queue
             _owningObjectPool.CheckIn(_owningSegment, _instance);
         }
 
@@ -73,7 +75,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Checkes the instance back into the object pool.
+        /// Checkes the instance back into the object pool
         /// </summary>
         public void Dispose()
         {

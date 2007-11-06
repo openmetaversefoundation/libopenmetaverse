@@ -72,23 +72,40 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public readonly InventoryFolder RootFolder;
+        public InventoryFolder RootFolder
+        {
+            get { return RootNode.Data as InventoryFolder; }
+            set 
+            {
+                UpdateNodeFor(value);
+                _RootNode = Items[value.UUID];
+            }
+        }
+        
+        private InventoryNode _RootNode;
+        
         /// <summary>
         /// 
         /// </summary>
-        public readonly InventoryNode RootNode;
+        public InventoryNode RootNode
+        {
+            get
+            {
+                if (_RootNode == null)
+                    throw new InventoryException("Root node unknown. Are you completely logged in?");
+                return _RootNode;
+            }
+        }
 
         private SecondLife Client;
         private InventoryManager Manager;
         private Dictionary<LLUUID, InventoryNode> Items = new Dictionary<LLUUID, InventoryNode>();
 
-        public Inventory(SecondLife client, InventoryManager manager, InventoryFolder rootFolder)
+        public Inventory(SecondLife client, InventoryManager manager)
         {
             Client = client;
             Manager = manager;
-            RootFolder = rootFolder;
-            RootNode = new InventoryNode(rootFolder);
-            Items[rootFolder.UUID] = RootNode;
+            Items = new Dictionary<LLUUID, InventoryNode>();
         }
 
         public List<InventoryBase> GetContents(InventoryFolder folder)
@@ -152,7 +169,7 @@ namespace libsecondlife
                         // Fetch the parent
                         List<LLUUID> fetchreq = new List<LLUUID>(1);
                         fetchreq.Add(item.ParentUUID);
-                        Manager.FetchInventory(fetchreq);
+                        //Manager.FetchInventory(fetchreq); // we cant fetch folder data! :-O
                     }
                 }
 
@@ -161,13 +178,18 @@ namespace libsecondlife
                 {
                     InventoryNode oldParent = itemNode.Parent;
                     // Handle parent change
-                    if (oldParent != null && itemParent.Data.UUID != oldParent.Data.UUID)
+                    if (oldParent == null || itemParent == null || itemParent.Data.UUID != oldParent.Data.UUID)
                     {
-                        lock (oldParent.Nodes.SyncRoot)
-                            oldParent.Nodes.Remove(item.UUID);
-
-                        lock (itemParent.Nodes.SyncRoot)
-                            itemParent.Nodes[item.UUID] = itemNode;
+                        if (oldParent != null)
+                        {
+                            lock (oldParent.Nodes.SyncRoot)
+                                oldParent.Nodes.Remove(item.UUID);
+                        }
+                        if (itemParent != null)
+                        {
+                            lock (itemParent.Nodes.SyncRoot)
+                                itemParent.Nodes[item.UUID] = itemNode;
+                        }
                     }
 
                     itemNode.Parent = itemParent;
@@ -179,12 +201,6 @@ namespace libsecondlife
                 }
                 else // We're adding.
                 {
-                    if (item.ParentUUID == LLUUID.Zero)
-                    {
-                        Client.Log("UpdateNodeFor(): Cannot add the root folder", Helpers.LogLevel.Warning);
-                        return;
-                    }
-
                     itemNode = new InventoryNode(item, itemParent);
                     Items.Add(item.UUID, itemNode);
                 }

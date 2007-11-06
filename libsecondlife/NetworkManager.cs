@@ -25,7 +25,6 @@
  */
 
 using System;
-using System.Timers;
 using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
@@ -77,7 +76,6 @@ namespace libsecondlife
             /// <summary>The last active simulator shut down</summary>
             SimShutdown
         }
-
 
         /// <summary>
         /// Coupled with RegisterCallback(), this is triggered whenever a packet
@@ -131,6 +129,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
         public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
+        /// <summary>
+        /// Triggered when an event queue makes the initial connection
+        /// </summary>
+        /// <param name="simulator">Simulator this event queue is tied to</param>
+        public delegate void EventQueueRunningCallback(Simulator simulator);
 
         /// <summary>
         /// Event raised when the client was able to connected successfully.
@@ -167,15 +170,11 @@ namespace libsecondlife
         /// An event for when CurrentSim changes
         /// </summary>
         public event CurrentSimChangedCallback OnCurrentSimChanged;
+        /// <summary>
+        /// Triggered when an event queue makes the initial connection
+        /// </summary>
+        public event EventQueueRunningCallback OnEventQueueRunning;
 
-
-        /// <summary>The permanent UUID for the logged in avatar</summary>
-        public LLUUID AgentID = LLUUID.Zero;
-        /// <summary>Temporary UUID assigned to this session, used for 
-        /// verifying our identity in packets</summary>
-        public LLUUID SessionID = LLUUID.Zero;
-        /// <summary>Shared secret UUID that is never sent over the wire</summary>
-        public LLUUID SecureSessionID = LLUUID.Zero;
         /// <summary>Uniquely identifier associated with our connections to
         /// simulators</summary>
         public uint CircuitCode;
@@ -191,6 +190,13 @@ namespace libsecondlife
         public bool Connected { get { return connected; } }
         public int InboxCount { get { return PacketInbox.Count; } }
 
+        [Obsolete("AgentID has been moved to Self.AgentID")]
+        public LLUUID AgentID { get { return Client.Self.AgentID; } }
+        [Obsolete("SessionID has been moved to Self.SessionID")]
+        public LLUUID SessionID { get { return Client.Self.SessionID; } }
+        [Obsolete("SecureSessionID has been mvoed to Self.SecureSessionID")]
+        public LLUUID SecureSessionID { get { return Client.Self.SecureSessionID; } }
+
         /// <summary>Handlers for incoming capability events</summary>
         internal CapsEventDictionary CapsEvents;
         /// <summary>Handlers for incoming packets</summary>
@@ -199,10 +205,8 @@ namespace libsecondlife
         internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
         private SecondLife Client;
-        private System.Timers.Timer DisconnectTimer, LogoutTimer;
+        private Timer DisconnectTimer;
         private bool connected = false;
-        private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
-
 
         /// <summary>
         /// Default constructor
@@ -227,8 +231,7 @@ namespace libsecondlife
 			RegisterCallback(PacketType.SimStats, new PacketCallback(SimStatsHandler));
 			
             // The proper timeout for this will get set again at Login
-            DisconnectTimer = new System.Timers.Timer();
-            DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
+            DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
 
             // GLOBAL SETTING: Don't force Expect-100: Continue headers on HTTP POST calls
             ServicePointManager.Expect100Continue = false;
@@ -330,6 +333,13 @@ namespace libsecondlife
                 simulator.SendPacket(payload, setSequence);
         }
 
+        public void SendCapsRequest(string uri, Hashtable body, CapsRequest.CapsResponseCallback callback)
+        {
+            CapsRequest request = new CapsRequest(uri, Client.Network.CurrentSim);
+            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(callback);
+            request.MakeRequest();
+        }
+
         /// <summary>
         /// Connect to a simulator
         /// </summary>
@@ -388,7 +398,7 @@ namespace libsecondlife
                 if (simulator.Connect(setDefault))
                 {
                     // Start a timer that checks if we've been disconnected
-                    DisconnectTimer.Start();
+                    DisconnectTimer.Change(Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
 
                     if (setDefault) SetCurrentSim(simulator, seedcaps);
 
@@ -421,7 +431,7 @@ namespace libsecondlife
 
                 // Send an initial AgentUpdate to complete our movement in to the sim
                 if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Status.SendUpdate(true, simulator);
+                    Client.Self.Movement.SendUpdate(true, simulator);
 
                 return simulator;
             }
@@ -435,59 +445,52 @@ namespace libsecondlife
 
         /// <summary>
         /// Initiate a blocking logout request. This will return when the logout
-        /// handshake has completed or when Settings.LOGOUT_TIMEOUT has expired
-        /// and a LogoutDemand packet has been sent
+        /// handshake has completed or when <code>Settings.LOGOUT_TIMEOUT</code>
+        /// has expired and the network layer is manually shut down
         /// </summary>
         public void Logout()
         {
-            LogoutReplyEvent.Reset();
+            AutoResetEvent logoutEvent = new AutoResetEvent(false);
+            LogoutCallback callback = 
+                delegate(List<LLUUID> inventoryItems) { logoutEvent.Set(); };
+            OnLogoutReply += callback;
+
+            // Send the packet requesting a clean logout
             RequestLogout();
-            LogoutReplyEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false);
+
+            // Wait for a logout response. If the response is received, shutdown
+            // will be fired in the callback. Otherwise we fire it manually with
+            // a NetworkTimeout type
+            if (!logoutEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false))
+                Shutdown(DisconnectType.NetworkTimeout);
+
+            OnLogoutReply -= callback;
         }
 
         /// <summary>
-        /// Initiate the logout process (three step process!)
+        /// Initiate the logout process. Check if logout succeeded with the
+        /// <code>OnLogoutReply</code> event, and if this does not fire the
+        /// <code>Shutdown()</code> function needs to be manually called
         /// </summary>
         public void RequestLogout()
         {
+            // No need to run the disconnect timer any more
+            DisconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
             {
-                LogoutReplyEvent.Set();
+                Client.Log("Ignoring RequestLogout(), client is already logged out", Helpers.LogLevel.Warning);
                 return;
             }
 
             Client.Log("Logging out", Helpers.LogLevel.Info);
 
-            DisconnectTimer.Stop();
-
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
-            logout.AgentData.AgentID = AgentID;
-            logout.AgentData.SessionID = SessionID;
+            logout.AgentData.AgentID = Client.Self.AgentID;
+            logout.AgentData.SessionID = Client.Self.SessionID;
             CurrentSim.SendPacket(logout, true);
-
-            LogoutTimer = new System.Timers.Timer(Client.Settings.LOGOUT_TIMEOUT);
-            LogoutTimer.AutoReset = false;
-            LogoutTimer.Elapsed += new ElapsedEventHandler(LogoutTimer_Elapsed);
-            LogoutTimer.Start();
-        }
-
-        /// <summary>
-        /// Uses a LogoutDemand packet to force initiate a logout
-        /// </summary>
-        public void ForceLogout()
-        {
-            Client.Log("Forcing a logout", Helpers.LogLevel.Info);
-
-            DisconnectTimer.Stop();
-
-            // Insist on shutdown
-            // LogoutDemandPacket logoutDemand = new LogoutDemandPacket(); // FIXME: packet is no more
-            // logoutDemand.LogoutBlock.SessionID = SessionID;
-            // CurrentSim.SendPacket(logoutDemand, true);
-
-            FinalizeLogout();
         }
 
         /// <summary>
@@ -517,158 +520,12 @@ namespace libsecondlife
             }
         }
 
-        private void PacketHandler()
-        {
-            IncomingPacket incomingPacket = new IncomingPacket();
-            Packet packet = null;
-            Simulator simulator = null;
-
-            while (connected)
-            {
-                // Reset packet to null for the check below
-                packet = null;
-
-                if (PacketInbox.Dequeue(500, ref incomingPacket))
-                {
-                    packet = incomingPacket.Packet;
-                    simulator = incomingPacket.Simulator;
-
-                    if (packet != null)
-                    {
-                        #region Archive Duplicate Search
-
-                        // TODO: Replace PacketArchive Queue<> with something more efficient
-
-                        // Check the archives to see whether we already received this packet
-                        lock (simulator.PacketArchive)
-                        {
-                            if (simulator.PacketArchive.Contains(packet.Header.Sequence))
-                            {
-                                if (packet.Header.Resent)
-                                {
-                                    Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
-                                }
-                                else
-                                {
-                                    Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
-                                        Helpers.LogLevel.Error);
-                                }
-
-                                // Avoid firing a callback twice for the same packet
-                                goto End;
-                            }
-                            else
-                            {
-                                // Keep the PacketArchive size within a certain capacity
-                                while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
-                                {
-                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                                }
-
-                                simulator.PacketArchive.Enqueue(packet.Header.Sequence);
-                            }
-                        }
-
-                        #endregion Archive Duplicate Search
-
-                        #region ACK handling
-
-                        // Handle appended ACKs
-                        if (packet.Header.AppendedAcks)
-                        {
-                            lock (simulator.NeedAck)
-                            {
-                                for (int i = 0; i < packet.Header.AckList.Length; i++)
-                                    simulator.NeedAck.Remove(packet.Header.AckList[i]);
-                            }
-                        }
-
-                        // Handle PacketAck packets
-                        if (packet.Type == PacketType.PacketAck)
-                        {
-                            PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                            lock (simulator.NeedAck)
-                            {
-                                for (int i = 0; i < ackPacket.Packets.Length; i++)
-                                    simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
-                            }
-                        }
-
-                        #endregion ACK handling
-
-                        #region FireCallbacks
-
-                        if (Client.Settings.SYNC_PACKETCALLBACKS)
-                        {
-                            PacketEvents.RaiseEvent(PacketType.Default, packet, simulator);
-                            PacketEvents.RaiseEvent(packet.Type, packet, simulator);
-                        }
-                        else
-                        {
-                            PacketEvents.BeginRaiseEvent(PacketType.Default, packet, simulator);
-                            PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
-                        }
-
-                        #endregion FireCallbacks
-
-                    End: ;
-                    }
-                }
-            }
-        }
-
-        private void SetCurrentSim(Simulator simulator, string seedcaps)
-        {
-            if (simulator != CurrentSim)
-            {
-                Simulator oldSim = CurrentSim;
-                lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
-
-		        simulator.SetSeedCaps(seedcaps);
-
-                // If the current simulator changed fire the callback
-                if (OnCurrentSimChanged != null && simulator != oldSim)
-                {
-                    try { OnCurrentSimChanged(oldSim); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Finalize the logout procedure. Close down sockets, etc.
-        /// </summary>
-        private void FinalizeLogout()
-        {
-            if (LogoutTimer != null) LogoutTimer.Stop();
-
-            // Shutdown the network layer
-            Shutdown(DisconnectType.ClientInitiated);
-
-            if (OnDisconnected != null)
-            {
-                try
-                {
-                    OnDisconnected(DisconnectType.ClientInitiated, String.Empty);
-                }
-                catch (Exception e)
-                {
-                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
-                        Helpers.LogLevel.Error);
-                }
-            }
-
-            // In case we are blocking in Logout()
-            LogoutReplyEvent.Set();
-        }
-
         /// <summary>
         /// Shutdown will disconnect all the sims except for the current sim
-        /// first, and then kill the connection to CurrentSim.
+        /// first, and then kill the connection to CurrentSim. This should only
+        /// be called if the logout process times out on <code>RequestLogout</code>
         /// </summary>
-        private void Shutdown(DisconnectType type)
+        public void Shutdown(DisconnectType type)
         {
             Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
 
@@ -709,13 +566,25 @@ namespace libsecondlife
                 }
             }
 
-
             // Clear out all of the packets that never had time to process
             lock (PacketInbox) PacketInbox.Clear();
 
             connected = false;
+
+            // Fire the disconnected callback
+            if (OnDisconnected != null)
+            {
+                try { OnDisconnected(DisconnectType.ClientInitiated, String.Empty); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
 
+        /// <summary>
+        /// Searches through the list of currently connected simulators to find
+        /// one attached to the given IPEndPoint
+        /// </summary>
+        /// <param name="endPoint">IPEndPoint of the Simulator to search for</param>
+        /// <returns>A Simulator reference on success, otherwise null</returns>
         public Simulator FindSimulator(IPEndPoint endPoint)
         {
             lock (Simulators)
@@ -730,25 +599,149 @@ namespace libsecondlife
             return null;
         }
 
-        #region Timers
-
         /// <summary>
-        /// Triggered if a LogoutReply is not received
+        /// Fire an event when an event queue connects for capabilities
         /// </summary>
-        private void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
+        /// <param name="simulator">Simulator the event queue is attached to</param>
+        internal void RaiseConnectedEvent(Simulator simulator)
         {
-            LogoutTimer.Stop();
-            Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
-            ForceLogout();
+            if (OnEventQueueRunning != null)
+            {
+                try { OnEventQueueRunning(simulator); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
 
-        private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
+        private void PacketHandler()
+        {
+            IncomingPacket incomingPacket = new IncomingPacket();
+            Packet packet = null;
+            Simulator simulator = null;
+
+            while (connected)
+            {
+                // Reset packet to null for the check below
+                packet = null;
+
+                if (PacketInbox.Dequeue(500, ref incomingPacket))
+                {
+                    packet = incomingPacket.Packet;
+                    simulator = incomingPacket.Simulator;
+
+                    if (packet != null)
+                    {
+                        if (packet.Header.Frequency != PacketFrequency.Caps)
+                        {
+                            #region Archive Duplicate Search
+
+                            // TODO: Replace PacketArchive Queue<> with something more efficient
+
+                            // Check the archives to see whether we already received this packet
+                            lock (simulator.PacketArchive)
+                            {
+                                if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                                {
+                                    if (packet.Header.Resent)
+                                    {
+                                        Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                    }
+                                    else
+                                    {
+                                        Client.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
+                                            packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning);
+                                    }
+
+                                    // Avoid firing a callback twice for the same packet
+                                    continue;
+                                }
+                                else
+                                {
+                                    // Keep the PacketArchive size within a certain capacity
+                                    while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
+                                    {
+                                        simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                        simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                    }
+
+                                    simulator.PacketArchive.Enqueue(packet.Header.Sequence);
+                                }
+                            }
+
+                            #endregion Archive Duplicate Search
+
+                            #region ACK handling
+
+                            // Handle appended ACKs
+                            if (packet.Header.AppendedAcks)
+                            {
+                                lock (simulator.NeedAck)
+                                {
+                                    for (int i = 0; i < packet.Header.AckList.Length; i++)
+                                        simulator.NeedAck.Remove(packet.Header.AckList[i]);
+                                }
+                            }
+
+                            // Handle PacketAck packets
+                            if (packet.Type == PacketType.PacketAck)
+                            {
+                                PacketAckPacket ackPacket = (PacketAckPacket)packet;
+
+                                lock (simulator.NeedAck)
+                                {
+                                    for (int i = 0; i < ackPacket.Packets.Length; i++)
+                                        simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
+                                }
+                            }
+
+                            #endregion ACK handling
+                        }
+
+                        #region FireCallbacks
+
+                        if (Client.Settings.SYNC_PACKETCALLBACKS)
+                        {
+                            PacketEvents.RaiseEvent(PacketType.Default, packet, simulator);
+                            PacketEvents.RaiseEvent(packet.Type, packet, simulator);
+                        }
+                        else
+                        {
+                            PacketEvents.BeginRaiseEvent(PacketType.Default, packet, simulator);
+                            PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
+                        }
+
+                        #endregion FireCallbacks
+                    }
+                }
+            }
+        }
+
+        private void SetCurrentSim(Simulator simulator, string seedcaps)
+        {
+            if (simulator != CurrentSim)
+            {
+                Simulator oldSim = CurrentSim;
+                lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
+
+		        simulator.SetSeedCaps(seedcaps);
+
+                // If the current simulator changed fire the callback
+                if (OnCurrentSimChanged != null && simulator != oldSim)
+                {
+                    try { OnCurrentSimChanged(oldSim); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+        }
+
+        #region Timers
+
+        private void DisconnectTimer_Elapsed(object obj)
         {
             if (connected)
             {
                 if (CurrentSim == null)
                 {
-                    DisconnectTimer.Stop();
+                    DisconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     connected = false;
                     return;
                 }
@@ -759,24 +752,11 @@ namespace libsecondlife
                     Client.Log("Network timeout for the current simulator (" +
                         CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning);
 
-                    DisconnectTimer.Stop();
+                    DisconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     connected = false;
 
                     // Shutdown the network layer
                     Shutdown(DisconnectType.NetworkTimeout);
-
-                    if (OnDisconnected != null)
-                    {
-                        try
-                        {
-                            OnDisconnected(DisconnectType.NetworkTimeout, "");
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
-                    }
 
                     // We're completely logged out and shut down, leave this function
                     return;
@@ -835,9 +815,9 @@ namespace libsecondlife
         {
             LogoutReplyPacket logout = (LogoutReplyPacket)packet;
 
-            if ((logout.AgentData.SessionID == SessionID) && (logout.AgentData.AgentID == AgentID))
+            if ((logout.AgentData.SessionID == Client.Self.SessionID) && (logout.AgentData.AgentID == Client.Self.AgentID))
             {
-                Client.Log("Logout negotiated with server", Helpers.LogLevel.Debug);
+                Client.DebugLog("Logout reply received");
 
                 // Deal with callbacks, if any
                 if (OnLogoutReply != null)
@@ -853,7 +833,8 @@ namespace libsecondlife
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
-                FinalizeLogout();
+                // If we are receiving a LogoutReply packet assume this is a client initiated shutdown
+                Shutdown(DisconnectType.ClientInitiated);
             }
             else
             {
@@ -1006,8 +987,8 @@ namespace libsecondlife
 
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
-            reply.AgentData.AgentID = AgentID;
-            reply.AgentData.SessionID = SessionID;
+            reply.AgentData.AgentID = Client.Self.AgentID;
+            reply.AgentData.SessionID = Client.Self.SessionID;
             reply.RegionInfo.Flags = 0;
             SendPacket(reply, simulator);
 
@@ -1069,14 +1050,15 @@ namespace libsecondlife
         {
             string message = Helpers.FieldToUTF8String(((KickUserPacket)packet).UserInfo.Reason);
 
-            // Shutdown the network layer
-            Shutdown(DisconnectType.ServerInitiated);
-
+            // Fire the callback to let client apps know we are shutting down
             if (OnDisconnected != null)
             {
                 try { OnDisconnected(DisconnectType.ServerInitiated, message); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
+
+            // Shutdown the network layer
+            Shutdown(DisconnectType.ServerInitiated);
         }
 
         #endregion Packet Callbacks

@@ -59,9 +59,8 @@ namespace libsecondlife.TestClient
                 return "Failed to retrieve a complete profile for that UUID";
 
             // Synchronize our profile
-            Client.Self.ProfileInterests = Interests;
-            Client.Self.ProfileProperties = Properties;
-            Client.Self.SetAvatarInformation();
+            Client.Self.UpdateInterests(Interests);
+            Client.Self.UpdateProfile(Properties);
 
             // TODO: Leave all the groups we're currently a member of? This could
             // break TestClient connectivity that might be relying on group authentication
@@ -69,7 +68,7 @@ namespace libsecondlife.TestClient
             // Attempt to join all the groups
             foreach (LLUUID groupID in Groups)
             {
-                Client.Self.RequestJoinGroup(groupID);
+                Client.Groups.RequestJoinGroup(groupID);
             }
 
             return "Synchronized our profile to the profile of " + targetID.ToStringHyphenated();
@@ -124,7 +123,7 @@ namespace libsecondlife.TestClient
             {
                 Console.WriteLine(Client.ToString() + " setting " + groupID.ToStringHyphenated() +
                     " as the active group");
-                Client.Self.ActivateGroup(groupID);
+                Client.Groups.ActivateGroup(groupID);
             }
         }
     }

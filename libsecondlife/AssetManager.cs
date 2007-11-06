@@ -156,32 +156,23 @@ namespace libsecondlife
     /// </summary>
     public class Transfer
     {
-        public delegate void Timeout(Transfer transfer);
-
-        public event Timeout OnTimeout;
-
-        public LLUUID ID = LLUUID.Zero;
-        public int Size = 0;
+        public LLUUID ID;
+        public int Size;
         public byte[] AssetData = new byte[0];
-        public int Transferred = 0;
-        public bool Success = false;
-        public AssetType AssetType = AssetType.Unknown;
+        public int Transferred;
+        public bool Success;
+        public AssetType AssetType;
 
-        internal System.Timers.Timer TransferTimer = new System.Timers.Timer(Settings.TRANSFER_TIMEOUT);
+        internal int transferStart;
+
+        /// <summary>Number of milliseconds passed since this transfer was
+        /// initialized</summary>
+        public int TransferTime { get { return Environment.TickCount - transferStart; } }
 
         public Transfer()
         {
-            TransferTimer.AutoReset = false;
-            TransferTimer.Elapsed += new System.Timers.ElapsedEventHandler(TransferTimer_Elapsed);
-        }
-
-        private void TransferTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (OnTimeout != null)
-            {
-                try { OnTimeout(this); }
-                catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
-            }
+            AssetData = new byte[0];
+            transferStart = Environment.TickCount;
         }
     }
 
@@ -190,15 +181,24 @@ namespace libsecondlife
     /// </summary>
     public class AssetDownload : Transfer
     {
-        public LLUUID AssetID = LLUUID.Zero;
-        public ChannelType Channel = ChannelType.Unknown;
-        public SourceType Source = SourceType.Unknown;
-        public TargetType Target = TargetType.Unknown;
-        public StatusCode Status = StatusCode.Unknown;
-        public float Priority = 0.0f;
+        public LLUUID AssetID;
+        public ChannelType Channel;
+        public SourceType Source;
+        public TargetType Target;
+        public StatusCode Status;
+        public float Priority;
         public Simulator Simulator;
 
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+    }
+
+    public class XferDownload : Transfer
+    {
+        public ulong XferID;
+        public LLUUID VFileID;
+        public AssetType Type;
+        public uint PacketNum;
+        public string Filename = String.Empty;
     }
 
     /// <summary>
@@ -206,12 +206,12 @@ namespace libsecondlife
     /// </summary>
     public class ImageDownload : Transfer
     {
-        public ushort PacketCount = 0;
-        public int Codec = 0;
-        public bool NotFound = false;
+        public ushort PacketCount;
+        public int Codec;
+        public bool NotFound;
         public Simulator Simulator;
 
-        internal int InitialDataSize = 0;
+        internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
     }
 
@@ -220,10 +220,10 @@ namespace libsecondlife
     /// </summary>
     public class AssetUpload : Transfer
     {
-        public LLUUID AssetID = LLUUID.Zero;
-        public AssetType Type = AssetType.Unknown;
-        public ulong XferID = 0;
-        public uint PacketNum = 0;
+        public LLUUID AssetID;
+        public AssetType Type;
+        public ulong XferID;
+        public uint PacketNum;
     }
 
     #endregion Transfer Classes
@@ -240,6 +240,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="asset"></param>
         public delegate void AssetReceivedCallback(AssetDownload transfer, Asset asset);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xfer"></param>
+        public delegate void XferReceivedCallback(XferDownload xfer);
         /// <summary>
         /// 
         /// </summary>
@@ -260,27 +265,23 @@ namespace libsecondlife
 
         #region Events
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary></summary>
         public event AssetReceivedCallback OnAssetReceived;
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary></summary>
+        public event XferReceivedCallback OnXferReceived;
+        /// <summary></summary>
         public event ImageReceivedCallback OnImageReceived;
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary></summary>
         public event AssetUploadedCallback OnAssetUploaded;
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary></summary>
         public event UploadProgressCallback OnUploadProgress;
 
         #endregion Events
 
         private SecondLife Client;
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
+        private AssetUpload PendingUpload;
+        private AutoResetEvent PendingUploadEvent = new AutoResetEvent(true);
 
         /// <summary>
         /// Default constructor
@@ -303,6 +304,9 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
             Client.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
             Client.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
+
+            // Xfer packet for downloading misc assets
+            Client.Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
         }
 
         /// <summary>
@@ -343,6 +347,48 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Request an asset download through the almost deprecated Xfer system
+        /// </summary>
+        /// <param name="filename">Filename of the asset to request</param>
+        /// <param name="deleteOnCompletion">Whether or not to delete the asset
+        /// off the server after it is retrieved</param>
+        /// <param name="useBigPackets">Use large transfer packets or not</param>
+        /// <param name="vFileID">UUID of the file to request, if filename is
+        /// left empty</param>
+        /// <param name="vFileType">Asset type of <code>vFileID</code>, or
+        /// <code>AssetType.Unknown</code> if filename is not empty</param>
+        /// <returns></returns>
+        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, LLUUID vFileID, AssetType vFileType)
+        {
+            LLUUID uuid = LLUUID.Random();
+            ulong id = uuid.ToULong();
+
+            XferDownload transfer = new XferDownload();
+            transfer.XferID = id;
+            transfer.ID = new LLUUID(id); // Our dictionary tracks transfers with LLUUIDs, so convert the ulong back
+            transfer.Filename = filename;
+            transfer.VFileID = vFileID;
+            transfer.AssetType = vFileType;
+
+            // Add this transfer to the dictionary
+            lock (Transfers) Transfers[transfer.ID] = transfer;
+
+            RequestXferPacket request = new RequestXferPacket();
+            request.XferID.ID = id;
+            request.XferID.Filename = Helpers.StringToField(filename);
+            request.XferID.FilePath = 4; // "Cache". This is a horrible thing that hardcodes a file path enumeration in to the
+                                         // protocol. For asset downloads we should only ever need this value
+            request.XferID.DeleteOnCompletion = deleteOnCompletion;
+            request.XferID.UseBigPackets = useBigPackets;
+            request.XferID.VFileID = vFileID;
+            request.XferID.VFileType = (short)vFileType;
+
+            Client.Network.SendPacket(request);
+
+            return id;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="assetID">Use LLUUID.Zero if you do not have the 
@@ -375,13 +421,13 @@ namespace libsecondlife
             request.TransferInfo.TransferID = transfer.ID;
 
             byte[] paramField = new byte[100];
-            Array.Copy(Client.Network.AgentID.GetBytes(), 0, paramField, 0, 16);
-            Array.Copy(Client.Network.SessionID.GetBytes(), 0, paramField, 16, 16);
-            Array.Copy(ownerID.GetBytes(), 0, paramField, 32, 16);
-            Array.Copy(taskID.GetBytes(), 0, paramField, 48, 16);
-            Array.Copy(itemID.GetBytes(), 0, paramField, 64, 16);
-            Array.Copy(assetID.GetBytes(), 0, paramField, 80, 16);
-            Array.Copy(Helpers.IntToBytes((int)type), 0, paramField, 96, 4);
+            Buffer.BlockCopy(Client.Self.AgentID.GetBytes(), 0, paramField, 0, 16);
+            Buffer.BlockCopy(Client.Self.SessionID.GetBytes(), 0, paramField, 16, 16);
+            Buffer.BlockCopy(ownerID.GetBytes(), 0, paramField, 32, 16);
+            Buffer.BlockCopy(taskID.GetBytes(), 0, paramField, 48, 16);
+            Buffer.BlockCopy(itemID.GetBytes(), 0, paramField, 64, 16);
+            Buffer.BlockCopy(assetID.GetBytes(), 0, paramField, 80, 16);
+            Buffer.BlockCopy(Helpers.IntToBytes((int)type), 0, paramField, 96, 4);
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);
@@ -419,8 +465,8 @@ namespace libsecondlife
 
                 // Build and send the request packet
                 RequestImagePacket request = new RequestImagePacket();
-                request.AgentData.AgentID = Client.Network.AgentID;
-                request.AgentData.SessionID = Client.Network.SessionID;
+                request.AgentData.AgentID = Client.Self.AgentID;
+                request.AgentData.SessionID = Client.Self.SessionID;
                 request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
                 request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
                 request.RequestImage[0].DiscardLevel = (sbyte)discardLevel;
@@ -473,12 +519,10 @@ namespace libsecondlife
             upload.AssetData = data;
             upload.AssetType = type;
             upload.ID = LLUUID.Random();
-            assetID = LLUUID.Combine(upload.ID, Client.Network.SecureSessionID);
+            assetID = LLUUID.Combine(upload.ID, Client.Self.SecureSessionID);
             upload.AssetID = assetID;
             upload.Size = data.Length;
             upload.XferID = 0;
-            upload.TransferTimer.Interval = 10 * 1000; // 10 second timeout for no upload packet confirmation
-            upload.OnTimeout += new Transfer.Timeout(Transfer_OnTimeout); 
 
             // Build and send the upload packet
             AssetUploadRequestPacket request = new AssetUploadRequestPacket();
@@ -511,14 +555,69 @@ namespace libsecondlife
 
             //Client.DebugLog(request.ToString());
 
+            /*
             // Add this upload to the Transfers dictionary using the assetID as the key.
             // Once the simulator assigns an actual identifier for this upload it will be
             // removed from Transfers and reinserted with the proper identifier
             lock (Transfers) Transfers[upload.AssetID] = upload;
+            */
 
-            Client.Network.SendPacket(request);
+            // Wait for the previous upload to receive a RequestXferPacket
+            if (PendingUploadEvent.WaitOne(10000, false))
+            {
+                PendingUpload = upload;
 
-            return upload.ID;
+                Client.Network.SendPacket(request);
+
+                return upload.ID;
+            }
+            else
+                throw new Exception("Timeout waiting for previous asset upload to begin");
+        }
+
+        #region Helpers
+
+        private Asset CreateAssetWrapper(AssetType type)
+        {
+            Asset asset;
+
+            switch (type)
+            {
+                case AssetType.Notecard:
+                    asset = new AssetNotecard();
+                    break;
+                case AssetType.LSLText:
+                    asset = new AssetScriptText();
+                    break;
+                case AssetType.LSLBytecode:
+                    asset = new AssetScriptBinary();
+                    break;
+                case AssetType.Texture:
+                    asset = new AssetTexture();
+                    break;
+                case AssetType.Primitive:
+                    asset = new AssetPrim();
+                    break;
+                case AssetType.Clothing:
+                    asset = new AssetClothing();
+                    break;
+                case AssetType.Bodypart:
+                    asset = new AssetBodypart();
+                    break;
+                default:
+                    Client.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error);
+                    return null;
+            }
+
+            return asset;
+        }
+
+        private Asset WrapAsset(AssetDownload download)
+        {
+            Asset asset = CreateAssetWrapper(download.AssetType);
+            asset.AssetID = download.AssetID;
+            asset.AssetData = download.AssetData;
+            return asset;
         }
 
         private void SendNextUploadPacket(AssetUpload upload)
@@ -564,40 +663,18 @@ namespace libsecondlife
             Client.Network.SendPacket(send);
         }
 
-        private void Transfer_OnTimeout(Transfer transfer)
+        private void SendConfirmXferPacket(ulong xferID, uint packetNum)
         {
-            if (transfer is AssetUpload)
-            {
-                AssetUpload upload = (AssetUpload)transfer;
-                LLUUID transferID = new LLUUID(upload.XferID);
+            ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
+            confirm.XferID.ID = xferID;
+            confirm.XferID.Packet = packetNum;
 
-                if (Transfers.ContainsKey(transferID))
-                {
-                    Client.Log(String.Format(
-                        "Timed out waiting for an ACK during asset upload {0}, rolling back to packet number {1}",
-                        upload.AssetID.ToStringHyphenated(), (upload.PacketNum - 1)), Helpers.LogLevel.Info);
-
-                    // Resend the last block of data and reset the timeout timer
-                    upload.PacketNum--;
-                    upload.Transferred -= 1000;
-                    upload.TransferTimer.Start();
-
-                    SendNextUploadPacket(upload);
-                }
-                else
-                {
-                    Client.Log(String.Format("Upload {0} (Type: {1}, Success: {2}) timed out but is not being tracked",
-                        upload.ID.ToStringHyphenated(), upload.AssetType, upload.Success), Helpers.LogLevel.Warning);
-                }
-            }
-            else
-            {
-                if (Transfers.ContainsKey(transfer.ID))
-                {
-                    // TODO: Implement something here when timeouts for downloads are turned on
-                }
-            }
+            Client.Network.SendPacket(confirm);
         }
+
+        #endregion Helpers
+
+        #region Transfer Callbacks
 
         private void TransferInfoHandler(Packet packet, Simulator simulator)
         {
@@ -684,10 +761,6 @@ namespace libsecondlife
             {
                 download = (AssetDownload)transfer;
 
-                // Reset the transfer timer
-                download.TransferTimer.Stop();
-                download.TransferTimer.Start();
-
                 if (download.Size == 0)
                 {
                     Client.DebugLog("TransferPacket received ahead of the transfer header, blocking...");
@@ -747,86 +820,29 @@ namespace libsecondlife
             }
         }
 
-        private Asset CreateAssetWrapper(AssetType type)
-        {
-            Asset asset;
+        #endregion Transfer Callbacks
 
-            switch (type)
-            {
-                case AssetType.Notecard:
-                    asset = new AssetNotecard();
-                    break;
-                case AssetType.LSLText:
-                    asset = new AssetScriptText();
-                    break;
-                case AssetType.LSLBytecode:
-                    asset = new AssetScriptBinary();
-                    break;
-                case AssetType.Texture:
-                    asset = new AssetTexture();
-                    break;
-                case AssetType.Primitive:
-                    asset = new AssetPrim();
-                    break;
-                case AssetType.Clothing:
-                    asset = new AssetClothing();
-                    break;
-                case AssetType.Bodypart:
-                    asset = new AssetBodypart();
-                    break;
-                default:
-                    Client.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error);
-                    return null;
-            }
-
-            return asset;
-        }
-
-        private Asset WrapAsset(AssetDownload download)
-        {
-            Asset asset = CreateAssetWrapper(download.AssetType);
-            asset.AssetID = download.AssetID;
-            asset.AssetData = download.AssetData;
-            return asset;
-        }
+        #region Xfer Callbacks
 
         private void RequestXferHandler(Packet packet, Simulator simulator)
         {
-            AssetUpload upload = null;
-            RequestXferPacket request = (RequestXferPacket)packet;
-
-            // The Xfer system sucks. This will thankfully die soon when uploads are
-            // moved to HTTP
-            lock (Transfers)
+            if (PendingUpload == null)
+                Client.Log("Received a RequestXferPacket for an unknown asset upload", Helpers.LogLevel.Warning);
+            else
             {
-                // Associate the XferID with an upload. If an upload is initiated
-                // before the previous one is associated with an XferID one or both
-                // of them will undoubtedly fail
-                foreach (Transfer transfer in Transfers.Values)
-                {
-                    if (transfer is AssetUpload)
-                    {
-                        if (((AssetUpload)transfer).XferID == 0)
-                        {
-                            // First match, use it
-                            upload = (AssetUpload)transfer;
-                            upload.XferID = request.XferID.ID;
-                            upload.Type = (AssetType)request.XferID.VFileType;
+                AssetUpload upload = PendingUpload;
+                PendingUpload = null;
+                PendingUploadEvent.Set();
+                RequestXferPacket request = (RequestXferPacket)packet;
 
-                            // Remove this upload from the Transfers dictionary and re-insert
-                            // it using the transferID as the key instead of the assetID
-                            Transfers.Remove(upload.AssetID);
+                upload.XferID = request.XferID.ID;
+                upload.Type = (AssetType)request.XferID.VFileType;
 
-                            LLUUID transferID = new LLUUID(upload.XferID);
-                            Transfers[transferID] = upload;
+                LLUUID transferID = new LLUUID(upload.XferID);
+                Transfers[transferID] = upload;
 
-                            // Send the first packet containing actual asset data
-                            SendNextUploadPacket(upload);
-
-                            return;
-                        }
-                    }
-                }
+                // Send the first packet containing actual asset data
+                SendNextUploadPacket(upload);
             }
         }
 
@@ -846,10 +862,6 @@ namespace libsecondlife
 
                 //Client.DebugLog(String.Format("ACK for upload {0} of asset type {1} ({2}/{3})",
                 //    upload.AssetID.ToStringHyphenated(), upload.Type, upload.Transferred, upload.Size));
-
-                // Reset the transfer timer
-                upload.TransferTimer.Stop();
-                upload.TransferTimer.Start();
 
                 if (OnUploadProgress != null)
                 {
@@ -882,9 +894,6 @@ namespace libsecondlife
 
                             if ((upload).AssetID == complete.AssetBlock.UUID)
                             {
-                                // Stop the resend timer for this transfer
-                                upload.TransferTimer.Stop();
-
                                 found = true;
                                 foundTransfer = transfer;
                                 upload.Success = complete.AssetBlock.Success;
@@ -906,12 +915,90 @@ namespace libsecondlife
             }
         }
 
+        private void SendXferPacketHandler(Packet packet, Simulator simulator)
+        {
+            SendXferPacketPacket xfer = (SendXferPacketPacket)packet;
+
+            // Lame ulong to LLUUID conversion, please go away Xfer system
+            LLUUID transferID = new LLUUID(xfer.XferID.ID);
+            Transfer transfer;
+            XferDownload download = null;
+
+            if (Transfers.TryGetValue(transferID, out transfer))
+            {
+                download = (XferDownload)transfer;
+
+                // Apply a mask to get rid of the "end of transfer" bit
+                uint packetNum = xfer.XferID.Packet & 0x0FFFFFFF;
+
+                // Check for out of order packets, possibly indicating a resend
+                if (packetNum != download.PacketNum)
+                {
+                    if (packetNum == download.PacketNum - 1)
+                    {
+                        Client.DebugLog("Resending Xfer download confirmation for packet " + packetNum);
+                        SendConfirmXferPacket(download.XferID, packetNum);
+                    }
+                    else
+                    {
+                        Client.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
+                            Helpers.LogLevel.Warning);
+                    }
+
+                    return;
+                }
+
+                if (packetNum == 0)
+                {
+                    // This is the first packet received in the download, the first four bytes are a network order size integer
+                    download.Size = (int)Helpers.BytesToUIntBig(xfer.DataPacket.Data);
+                    download.AssetData = new byte[download.Size];
+
+                    Buffer.BlockCopy(xfer.DataPacket.Data, 4, download.AssetData, 0, xfer.DataPacket.Data.Length - 4);
+                    download.Transferred += xfer.DataPacket.Data.Length - 4;
+                }
+                else
+                {
+                    Buffer.BlockCopy(xfer.DataPacket.Data, 0, download.AssetData, 1000 * (int)packetNum, xfer.DataPacket.Data.Length);
+                    download.Transferred += xfer.DataPacket.Data.Length;
+                }
+
+                // Increment the packet number to the packet we are expecting next
+                download.PacketNum++;
+
+                // Confirm receiving this packet
+                SendConfirmXferPacket(download.XferID, packetNum);
+
+                if ((xfer.XferID.Packet & 0x80000000) != 0)
+                {
+                    // This is the last packet in the transfer
+                    if (!String.IsNullOrEmpty(download.Filename))
+                        Client.DebugLog("Xfer download for asset " + download.Filename + " completed");
+                    else
+                        Client.DebugLog("Xfer download for asset " + download.VFileID.ToStringHyphenated() + " completed");
+
+                    download.Success = true;
+                    lock (Transfers) Transfers.Remove(download.ID);
+
+                    if (OnXferReceived != null)
+                    {
+                        try { OnXferReceived(download); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+                }
+            }
+        }
+
+        #endregion Xfer Callbacks
+
+        #region Image Callbacks
+
         /// <summary>
         /// Handles the Image Data packet which includes the ID and Size of the image,
         /// along with the first block of data for the image. If the image is small enough
         /// there will be no additional packets
         /// </summary>
-        public void ImageDataHandler(Packet packet, Simulator simulator)
+        private void ImageDataHandler(Packet packet, Simulator simulator)
         {
             ImageDataPacket data = (ImageDataPacket)packet;
             ImageDownload transfer = null;
@@ -958,7 +1045,7 @@ namespace libsecondlife
         /// <summary>
         /// Handles the remaining Image data that did not fit in the initial ImageData packet
         /// </summary>
-        public void ImagePacketHandler(Packet packet, Simulator simulator)
+        private void ImagePacketHandler(Packet packet, Simulator simulator)
         {
             ImagePacketPacket image = (ImagePacketPacket)packet;
             ImageDownload transfer = null;
@@ -1014,7 +1101,7 @@ namespace libsecondlife
         /// <summary>
         /// The requested image does not exist on the asset server
         /// </summary>
-        public void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
+        private void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
         {
             ImageNotInDatabasePacket notin = (ImageNotInDatabasePacket)packet;
             ImageDownload transfer = null;
@@ -1036,5 +1123,7 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+
+        #endregion Image Callbacks
     }
 }

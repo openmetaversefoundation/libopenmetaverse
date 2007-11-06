@@ -25,13 +25,12 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Net;
-using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using libsecondlife.LLSD;
 using libsecondlife.Packets;
 using CookComputing.XmlRpc;
 
@@ -157,24 +156,27 @@ namespace libsecondlife
                 StartLocation = reply.start_location;
                 AgentAccess = reply.agent_access;
 
-                ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);
+                List<object> look_at = (List<object>)LLSDParser.DeserializeNotation(reply.look_at);
                 LookAt = new LLVector3(
                     (float)(double)look_at[0],
                     (float)(double)look_at[1],
                     (float)(double)look_at[2]);
 
-                Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
-                ArrayList array = (ArrayList)home["position"];
-                HomePosition = new LLVector3(
-                    (float)(double)array[0],
-                    (float)(double)array[1],
-                    (float)(double)array[2]);
+                if (reply.home != null)
+                {
+                    Dictionary<string, object> home = (Dictionary<string, object>)LLSDParser.DeserializeNotation(reply.home);
+                    List<object> array = (List<object>)home["position"];
+                    HomePosition = new LLVector3(
+                        (float)(double)array[0],
+                        (float)(double)array[1],
+                        (float)(double)array[2]);
 
-                array = (ArrayList)home["look_at"];
-                HomeLookAt = new LLVector3(
-                    (float)(double)array[0],
-                    (float)(double)array[1],
-                    (float)(double)array[2]);
+                    array = (List<object>)home["look_at"];
+                    HomeLookAt = new LLVector3(
+                        (float)(double)array[0],
+                        (float)(double)array[1],
+                        (float)(double)array[2]);
+                }
 
                 CircuitCode = (uint)reply.circuit_code;
                 RegionX = (uint)reply.region_x;
@@ -233,9 +235,13 @@ namespace libsecondlife
                     }
                 }
 
-                foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren) {
-                    InventoryFolder parentFolder = Folders[pair.Key];
-                    parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
+                foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren)
+                {
+                    if (Folders.ContainsKey(pair.Key))
+                    {
+                        InventoryFolder parentFolder = Folders[pair.Key];
+                        parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
+                    }
                 }
 
                 // Should we do this or just return an IEnumerable?
@@ -455,7 +461,7 @@ namespace libsecondlife
                 CurrentContext.Params.Password = Helpers.MD5(CurrentContext.Params.Password);
 
             // Set the sim disconnect timer interval
-            DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
+            DisconnectTimer.Change(Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
 
             // Override SSL authentication mechanisms. DO NOT convert this to the 
             // .NET 2.0 preferred method, the equivalent function in Mono has a 
@@ -491,12 +497,15 @@ namespace libsecondlife
 
             try
             {
-                ILoginProxy proxy = XmlRpcProxyGen.Create<ILoginProxy>();
+                LoginProxy proxy = new LoginProxy();
+
                 proxy.KeepAlive = false;
-                proxy.Expect100Continue = false;
                 proxy.ResponseEvent += new XmlRpcResponseEventHandler(proxy_ResponseEvent);
                 proxy.Url = CurrentContext.Params.URI;
                 proxy.XmlRpcMethod = CurrentContext.Params.MethodName;
+#if !PocketPC
+                proxy.Expect100Continue = false;
+#endif
 
                 // Start the request
                 proxy.BeginLoginToSimulator(loginParams, new AsyncCallback(LoginMethodCallback), new object[] { proxy, CurrentContext });
@@ -579,7 +588,7 @@ namespace libsecondlife
         private void LoginMethodCallback(IAsyncResult result)
         {
             object[] asyncState = result.AsyncState as object[];
-            ILoginProxy proxy = asyncState[0] as ILoginProxy;
+            LoginProxy proxy = asyncState[0] as LoginProxy;
             LoginContext context = asyncState[1] as LoginContext;
             XmlRpcAsyncResult clientResult = result as XmlRpcAsyncResult;
             LoginMethodResponse reply;
@@ -596,8 +605,10 @@ namespace libsecondlife
                 if (context != CurrentContext)
                     return;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Client.DebugLog(ex.ToString());
+
                 UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server");
                 return;
             }
@@ -609,59 +620,19 @@ namespace libsecondlife
             {
                 loginSuccess = true;
 
-                // Remove the quotes around our first name.
-                if (reply.first_name[0] == '"')
-                    reply.first_name = reply.first_name.Remove(0, 1);
-                if (reply.first_name[reply.first_name.Length - 1] == '"')
-                    reply.first_name = reply.first_name.Remove(reply.first_name.Length - 1);
+                // FIXME: No information should be set here, everything can take care of itself
+                // through login reply handlers
 
                 #region Critical Information
 
                 try
                 {
-                    // Self
-                    Client.Self.ID = reply.agent_id;
-                    Client.Self.firstName = reply.first_name;
-                    Client.Self.lastName = reply.last_name;
-                    Client.Self.StartLocation = reply.start_location;
-                    Client.Self.AgentAccess = reply.agent_access;
-                    ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);
-                    Client.Self.LookAt = new LLVector3(
-                        (float)(double)look_at[0],
-                        (float)(double)look_at[1],
-                        (float)(double)look_at[2]);
-
-                    // Home
-                    if (reply.home != null)
-                    {
-                        Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
-                        ArrayList array = (ArrayList)home["position"];
-                        Client.Self.HomePosition = new LLVector3(
-                            (float)(double)array[0],
-                            (float)(double)array[1],
-                            (float)(double)array[2]);
-
-                        array = (ArrayList)home["look_at"];
-                        Client.Self.HomeLookAt = new LLVector3(
-                            (float)(double)array[0],
-                            (float)(double)array[1],
-                            (float)(double)array[2]);
-                    }
-                    else
-                    {
-                        Client.Self.HomePosition = LLVector3.Zero;
-                        Client.Self.HomeLookAt = LLVector3.Zero;
-                    }
-
                     // Networking
-                    Client.Network.AgentID = reply.agent_id;
-                    Client.Network.SessionID = reply.session_id;
-                    Client.Network.SecureSessionID = reply.secure_session_id;
                     Client.Network.CircuitCode = (uint)reply.circuit_code;
                     regionX = (uint)reply.region_x;
                     regionY = (uint)reply.region_y;
                     simPort = (ushort)reply.sim_port;
-                    IPAddress.TryParse(reply.sim_ip, out simIP);
+                    Helpers.TryParse(reply.sim_ip, out simIP);
                     LoginSeedCapability = reply.seed_capability;
                 }
                 catch (Exception)
@@ -671,10 +642,6 @@ namespace libsecondlife
                 }
 
                 #endregion Critical Information
-
-                // Inventory:
-                if (reply.inventory_root != null && reply.inventory_root.Length > 0 && reply.inventory_root[0].folder_id != null)
-                    Client.Inventory.InitializeRootNode(reply.inventory_root[0].folder_id);
 
                 // Buddies:
                 if (reply.buddy_list != null)
@@ -687,8 +654,8 @@ namespace libsecondlife
                 }
 
                 // Misc:
-                uint timestamp = (uint)reply.seconds_since_epoch;
-                DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
+                //uint timestamp = (uint)reply.seconds_since_epoch;
+                //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
 
                 // Unhandled:
                 // reply.gestures
@@ -786,16 +753,42 @@ namespace libsecondlife
             LoginMethodResponse LoginToSimulator(LoginMethodParams loginParams);
 
             [XmlRpcBegin("login_to_simulator")]
-            IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams);
-
-            [XmlRpcBegin("login_to_simulator")]
-            IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback);
-
-            [XmlRpcBegin("login_to_simulator")]
             IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback, object asyncState);
 
             [XmlRpcEnd("login_to_simulator")]
             LoginMethodResponse EndLoginToSimulator(IAsyncResult result);
+        }
+
+        public sealed class LoginProxy : XmlRpcClientProtocol, ILoginProxy
+        {
+            [XmlRpcMethod("login_to_simulator")]
+            public LoginMethodResponse LoginToSimulator(LoginMethodParams loginParams)
+            {
+                object xrtTemp = null;
+                LoginMethodResponse xrtReturn;
+                object[] xrtArray = new object[] {
+                    loginParams};
+                xrtTemp = this.Invoke("LoginToSimulator", xrtArray);
+                xrtReturn = ((LoginMethodResponse)(xrtTemp));
+                return xrtReturn;
+            }
+
+            [XmlRpcBegin("login_to_simulator")]
+            public IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback, 
+                object asyncState)
+            {
+                return BeginInvoke("LoginToSimulator", new object[] { loginParams }, this, callback, asyncState);
+            }
+
+            [XmlRpcEnd("login_to_simulator")]
+            public LoginMethodResponse EndLoginToSimulator(IAsyncResult xrtResult)
+            {
+                object xrtTemp = null;
+                LoginMethodResponse xrtReturn;
+                xrtTemp = this.EndInvoke(xrtResult);
+                xrtReturn = ((LoginMethodResponse)(xrtTemp));
+                return xrtReturn;
+            }
         }
 
         #region XML-RPC structs

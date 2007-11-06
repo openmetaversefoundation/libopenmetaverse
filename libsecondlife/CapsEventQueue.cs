@@ -25,11 +25,12 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.IO;
 using System.Threading;
+using libsecondlife.LLSD;
 
 namespace libsecondlife
 {
@@ -61,11 +62,11 @@ namespace libsecondlife
         public new void MakeRequest()
         {
             // Create an EventQueueGet request
-            Hashtable request = new Hashtable();
+            Dictionary<string, object> request = new Dictionary<string, object>();
             request["ack"] = null;
             request["done"] = false;
 
-            byte[] postData = LLSD.LLSDSerialize(request);
+            byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
             // Create a new HttpWebRequest
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
@@ -147,9 +148,7 @@ namespace libsecondlife
             }
             catch (Exception e)
             {
-                Log(String.Format("CapsEventQueue.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
-                    Helpers.LogLevel.Warning);
-
+                SecondLife.LogStatic("CapsEventQueue.MakeRequest(): " + e.ToString(), Helpers.LogLevel.Warning);
                 Abort(false, null);
             }
         }
@@ -175,19 +174,16 @@ namespace libsecondlife
             }
         }
 
-        protected override void Log(string message, Helpers.LogLevel level)
-        {
-            Simulator.Client.Log(String.Format("[Caps event queue for {0}] {1}", Simulator, message), level);
-        }
-
         protected void EventRequestStreamCallback(IAsyncResult result)
         {
+            bool raiseEvent = false;
+
             if (!_Dead)
             {
+                if (!_Running) raiseEvent = true;
+
                 // We are connected to the event queue
                 _Running = true;
-
-                Simulator.Client.DebugLog("Capabilities event queue connected for " + Simulator.ToString());
             }
 
             try
@@ -203,6 +199,15 @@ namespace libsecondlife
             catch (WebException e)
             {
                 Abort(false, e);
+                return;
+            }
+
+            if (raiseEvent)
+            {
+                Simulator.Client.DebugLog("Capabilities event queue connected for " + Simulator.ToString());
+
+                // The event queue is starting up for the first time
+                Simulator.Client.Network.RaiseConnectedEvent(Simulator);
             }
         }
 
@@ -229,15 +234,17 @@ namespace libsecondlife
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
-            ArrayList events = null;
+            List<object> events = null;
             int ack = 0;
 
             #region Exception Handling
 
             if (exception != null)
             {
+                string message = exception.Message.ToLower();
+
                 // Check what kind of exception happened
-                if (exception.Message.Contains("404") || exception.Message.Contains("410"))
+                if (Helpers.StringContains(message, "404") || Helpers.StringContains(message, "410"))
                 {
                     Simulator.Client.Log("Closing event queue for " + Simulator.ToString() + " due to missing caps URI",
                         Helpers.LogLevel.Info);
@@ -245,7 +252,7 @@ namespace libsecondlife
                     _Running = false;
                     _Dead = true;
                 }
-                else if (!exception.Message.ToLower().Contains("aborted") && !exception.Message.Contains("502"))
+                else if (!Helpers.StringContains(message, "aborted") && !Helpers.StringContains(message, "502"))
                 {
                     Simulator.Client.Log(String.Format("Unrecognized caps exception for {0}: {1}", Simulator, exception.Message),
                         Helpers.LogLevel.Warning);
@@ -259,12 +266,12 @@ namespace libsecondlife
             // Decode successful replies from the event queue
             if (success)
             {
-                Hashtable response = (Hashtable)LLSD.LLSDDeserialize(state.ResponseData);
+                Dictionary<string, object> response = (Dictionary<string, object>)LLSDParser.DeserializeXml(state.ResponseData);
 
                 if (response != null)
                 {
                     // Parse any events returned by the event queue
-                    events = (ArrayList)response["events"];
+                    events = (List<object>)response["events"];
                     ack = (int)response["id"];
                 }
             }
@@ -275,23 +282,21 @@ namespace libsecondlife
 
             if (_Running)
             {
-                Hashtable request = new Hashtable();
+                Dictionary<string, object> request = new Dictionary<string, object>();
                 if (ack != 0) request["ack"] = ack;
                 else request["ack"] = null;
                 request["done"] = _Dead;
 
-                byte[] postData = LLSD.LLSDSerialize(request);
+                byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
-                MakeRequest(postData, "application/xml", Simulator.udpPort, null);
+                MakeRequest(postData, "application/xml", 0, null);
 
                 // If the event queue is dead at this point, turn it off since
                 // that was the last thing we want to do
                 if (_Dead)
                 {
                     _Running = false;
-
-                    Simulator.Client.Log("Sent event queue shutdown message to " + Simulator.ToString(), 
-                        Helpers.LogLevel.Info);
+                    SecondLife.DebugLogStatic("Sent event queue shutdown message");
                 }
             }
 
@@ -302,24 +307,18 @@ namespace libsecondlife
             if (events != null && events.Count > 0)
             {
                 // Fire callbacks for each event received
-                foreach (Hashtable evt in events)
+                foreach (Dictionary<string, object> evt in events)
                 {
                     string msg = (string)evt["message"];
-                    Hashtable body = (Hashtable)evt["body"];
+                    Dictionary<string, object> body = (Dictionary<string, object>)evt["body"];
 
                     //Simulator.Client.DebugLog(
-                    //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));
+                    //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Helpers.NewLine, LLSD.LLSDDump(body, 0)));
 
                     if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
-                    {
-                        Simulator.Client.Network.CapsEvents.RaiseEvent(String.Empty, msg, body, this);
-                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, msg, body, this);
-                    }
+                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, body, this);
                     else
-                    {
-                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(String.Empty, msg, body, this);
-                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, msg, body, this);
-                    }
+                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, body, this);
                 }
             }
 

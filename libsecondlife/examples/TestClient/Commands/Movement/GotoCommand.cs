@@ -17,7 +17,7 @@ namespace libsecondlife.TestClient
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
-                return "usage: Destination should be specified as sim/x/y/z";
+                return "Usage: goto sim/x/y/z";
 
             string destination = String.Empty;
 
@@ -30,24 +30,21 @@ namespace libsecondlife.TestClient
 
             string[] tokens = destination.Split(new char[] { '/' });
             if (tokens.Length != 4)
-                return "usage: Destination should be specified as sim/x/y/z";
+                return "Usage: goto sim/x/y/z";
 
             string sim = tokens[0];
-			float x = Client.Self.Position.X;
-			float y = Client.Self.Position.Y;
-			float z = Client.Self.Position.Z;
-            float.TryParse(tokens[1], out x);
-            float.TryParse(tokens[2], out y);
-            float.TryParse(tokens[3], out z);
+            float x, y, z;
+            if (!float.TryParse(tokens[1], out x) ||
+                !float.TryParse(tokens[2], out y) ||
+                !float.TryParse(tokens[3], out z))
+            {
+                return "Usage: goto sim/x/y/z";
+            }
 
             if (Client.Self.Teleport(sim, new LLVector3(x, y, z)))
-            {
                 return "Teleported to " + Client.Network.CurrentSim;
-            }
             else
-            {
                 return "Teleport failed: " + Client.Self.TeleportMessage;
-            }
 		}
     }
 }

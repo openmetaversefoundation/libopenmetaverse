@@ -108,7 +108,7 @@ namespace Heightmap
             heading += 0.5d;
             if (heading > Math.PI) heading = -Math.PI;
 
-            Client.Self.Status.UpdateFromHeading(heading, false);
+            Client.Self.Movement.UpdateFromHeading(heading, false);
         }
 
         void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)

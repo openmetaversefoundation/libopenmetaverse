@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slaccountant", "examples\sl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "name2key", "examples\name2key\name2key.csproj", "{66FFD34E-652C-4EF5-81FE-06AD011169D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "primexport", "examples\primexport\primexport.csproj", "{77E5330D-8A8C-41B4-A2D1-6F06FE45ED6D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapgenerator", "mapgenerator\mapgenerator.csproj", "{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "groupmanager", "examples\groupmanager\groupmanager.csproj", "{F460FAB3-0D12-4873-89EB-2696818764B8}"
@@ -66,10 +64,6 @@ Global
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77E5330D-8A8C-41B4-A2D1-6F06FE45ED6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77E5330D-8A8C-41B4-A2D1-6F06FE45ED6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77E5330D-8A8C-41B4-A2D1-6F06FE45ED6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77E5330D-8A8C-41B4-A2D1-6F06FE45ED6D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Release|Any CPU.ActiveCfg = Release|Any CPU

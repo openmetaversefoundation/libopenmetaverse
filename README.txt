@@ -7,14 +7,14 @@ We're still working on getting some documentation prepared for our first
 have a couple of resources, the primary one being the #libsl IRC channel 
 on EFNet. There are also the web forums at 
 http://www.libsecondlife.org/forums/ and the libsecondlife-dev mailing 
-list at https://lists.berlios.de/mailman/listinfo/libsecondlife-dev and 
+list at http://opensecondlife.org/cgi-bin/mailman/listinfo/libsl-dev and 
 lastly you can use the e-mail contact@libsecondlife.org for any general 
 inquiries (although we prefer developer-related questions to go to IRC, 
 forums, or the mailing list). You can find us in-world at 
 http://tinyurl.com/y472fj.
 
 To checkout a copy of libsecondlife trunk see 
-https://developer.berlios.de/svn/?group_id=7710 for details. 
+http://www.libsecondlife.org/wiki/SVN for details
 
 
 Windows
@@ -93,7 +93,7 @@ Linux
 Software Needed
 ---------------
 
-mono - http://www.mono-project.com/
+mono 1.2.5 - http://www.mono-project.com/
 nAnt (0.85) - http://nant.sourceforge.net/
 nUnit Framework (2.2.8 or greater) - http://www.nunit.org/
 

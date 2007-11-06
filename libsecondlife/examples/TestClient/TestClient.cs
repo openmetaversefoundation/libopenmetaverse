@@ -39,6 +39,7 @@ namespace libsecondlife.TestClient
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
             Settings.DEBUG = true;
+            Settings.LOG_RESENDS = false;
             Settings.STORE_LAND_PATCHES = true;
             Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
@@ -46,9 +47,9 @@ namespace libsecondlife.TestClient
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
-            Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
+            Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
-            Inventory.OnInventoryObjectReceived += new InventoryManager.ObjectReceivedCallback(Inventory_OnInventoryObjectReceived);
+            Inventory.OnObjectOffered += new InventoryManager.ObjectOfferedCallback(Inventory_OnInventoryObjectReceived);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
             Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
@@ -137,7 +138,7 @@ namespace libsecondlife.TestClient
                 Array.Copy(tokens, 1, args, 0, args.Length);
                 string response = Commands[firstToken].Execute(args, fromAgentID);
 
-                if (response.Length > 0)
+                if (!String.IsNullOrEmpty(response))
                 {
                     Console.WriteLine(response);
 
@@ -161,7 +162,7 @@ namespace libsecondlife.TestClient
         private void AgentDataUpdateHandler(Packet packet, Simulator sim)
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
-            if (p.AgentData.AgentID == sim.Client.Network.AgentID)
+            if (p.AgentData.AgentID == sim.Client.Self.AgentID)
             {
                 Console.WriteLine("Got the group ID for " + sim.Client.ToString() + ", requesting group members...");
                 GroupID = p.AgentData.ActiveGroupID;

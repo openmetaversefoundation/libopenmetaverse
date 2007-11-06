@@ -14,8 +14,7 @@ namespace libsecondlife.TestClient
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe --first firstname --last lastname --pass password --contact \"youremail\" [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"]" +
-                    Environment.NewLine + "TestClient.exe --file filename --contact \"youremail\" [--master \"master name\"] [--masterkey \"master uuid\"]");
+                    "TestClient.exe --first firstname --last lastname --pass password --contact \"youremail\" [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] --loginuri=\"uri\"");
         }
 
         static void Main(string[] args)
@@ -29,6 +28,7 @@ namespace libsecondlife.TestClient
             LLUUID masterKey = LLUUID.Zero;
             string file = String.Empty;
 			string contact = String.Empty;
+			string loginuri = String.Empty;
 
             try
             {
@@ -42,10 +42,19 @@ namespace libsecondlife.TestClient
                     masterName = arguments["master"];
                 }
 
-                if (arguments["contact"] == null)
-                    throw new CommandLineArgumentsException();
+                if (arguments["contact"] != null)
+                {
+                    contact = arguments["contact"];
+                }
+                else
+                {
+                    contact = "anonymous";
+                }
 
-                contact = arguments["contact"];
+                if (arguments["loginuri"] != null)
+                {
+                    loginuri = arguments["loginuri"];
+                }
 
                 if (arguments["file"] != null)
                 {
@@ -123,6 +132,7 @@ namespace libsecondlife.TestClient
             {
                 a.MasterName = masterName;
                 a.MasterKey = masterKey;
+                a.URI = loginuri;
             }
 
             // Login the accounts and run the input loop

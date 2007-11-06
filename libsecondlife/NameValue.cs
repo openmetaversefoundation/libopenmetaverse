@@ -33,7 +33,6 @@ namespace libsecondlife
     /// A Name Value pair with additional settings, used in the protocol
     /// primarily to transmit avatar names and active group in object packets
     /// </summary>
-    [Serializable]
     public struct NameValue
     {
         /// <summary>Type of the value</summary>
@@ -212,36 +211,36 @@ namespace libsecondlife
                     break;
                 case ValueType.F32:
                 {
-                    float temp = 0.0f;
-                    Single.TryParse(value, System.Globalization.NumberStyles.Float, Helpers.EnUsCulture.NumberFormat, out temp);
+                    float temp;
+                    Helpers.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.S32:
                 {
-                    int temp = 0;
-                    Int32.TryParse(value, out temp);
+                    int temp;
+                    Helpers.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.U32:
                 {
-                    uint temp = 0;
-                    UInt32.TryParse(value, out temp);
+                    uint temp;
+                    Helpers.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.U64:
                 {
-                    ulong temp = 0;
-                    UInt64.TryParse(value, out temp);
+                    ulong temp;
+                    Helpers.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.VEC3:
                 {
-                    LLVector3 temp = LLVector3.Zero;
-                    LLVector3.TryParse(value, out temp);
+                    LLVector3 temp;
+                    Helpers.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }

@@ -23,8 +23,7 @@ namespace libsecondlife.TestClient
 		            string treeName = args[0].Trim(new char[] { ' ' });
 		            ObjectManager.Tree tree = (ObjectManager.Tree)Enum.Parse(typeof(ObjectManager.Tree), treeName);
 
-		            LLVector3 treePosition = new LLVector3(Client.Self.Position.X, Client.Self.Position.Y,
-		                Client.Self.Position.Z);
+		            LLVector3 treePosition = Client.Self.SimPosition;
 		            treePosition.Z += 3.0f;
 
 		            Client.Objects.AddTree(Client.Network.CurrentSim, new LLVector3(0.5f, 0.5f, 0.5f),

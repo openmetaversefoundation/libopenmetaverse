@@ -1,12 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace libsecondlife
 {
-    public class InventoryNodeDictionary : DictionaryBase
+    public class InventoryNodeDictionary
     {
+        protected Dictionary<LLUUID, InventoryNode> Dictionary = new Dictionary<LLUUID, InventoryNode>();
         protected InventoryNode parent;
         protected object syncRoot = new object();
 
@@ -17,6 +17,8 @@ namespace libsecondlife
         }
 
         public object SyncRoot { get { return syncRoot; } }
+
+        public int Count { get { return Dictionary.Count; } }
 
         public InventoryNodeDictionary(InventoryNode parentNode)
         {
@@ -33,8 +35,8 @@ namespace libsecondlife
             }
         }
 
-        public ICollection Keys { get { return this.Dictionary.Keys; } }
-        public ICollection Values { get { return this.Dictionary.Values; } }
+        public ICollection<LLUUID> Keys { get { return this.Dictionary.Keys; } }
+        public ICollection<InventoryNode> Values { get { return this.Dictionary.Values; } }
 
         public void Add(LLUUID key, InventoryNode value)
         {
@@ -49,7 +51,7 @@ namespace libsecondlife
 
         public bool Contains(LLUUID key)
         {
-            return this.Dictionary.Contains(key);
+            return this.Dictionary.ContainsKey(key);
         }
     }
 }

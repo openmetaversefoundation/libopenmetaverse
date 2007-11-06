@@ -137,7 +137,7 @@ namespace libsecondlife.TestClient
 
                 client.MasterKey = account.MasterKey;
 
-                Clients[client.Network.AgentID] = client;
+                Clients[client.Self.AgentID] = client;
 
                 Console.WriteLine("Logged in " + client.ToString());
             }
@@ -273,7 +273,7 @@ namespace libsecondlife.TestClient
         /// <param name="client"></param>
         public void Logout(TestClient client)
         {
-            Clients.Remove(client.Network.AgentID);
+            Clients.Remove(client.Self.AgentID);
             client.Network.Logout();
         }
 

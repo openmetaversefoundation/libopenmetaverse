@@ -47,7 +47,7 @@ public class Analyst : ProxyPlugin
     private ProxyFrame frame;
     private Proxy proxy;
     private Hashtable loggedPackets = new Hashtable();
-    // private string logGrep = null;
+    private string logGrep = null;
     private Hashtable modifiedPackets = new Hashtable();
     private Assembly libslAssembly;
 
@@ -78,7 +78,7 @@ public class Analyst : ProxyPlugin
     {
         frame.AddCommand("/log", new ProxyFrame.CommandDelegate(CmdLog));
         frame.AddCommand("/-log", new ProxyFrame.CommandDelegate(CmdNoLog));
-        // frame.AddCommand("/grep", new ProxyFrame.CommandDelegate(CmdGrep));
+        frame.AddCommand("/grep", new ProxyFrame.CommandDelegate(CmdGrep));
         frame.AddCommand("/set", new ProxyFrame.CommandDelegate(CmdSet));
         frame.AddCommand("/-set", new ProxyFrame.CommandDelegate(CmdNoSet));
         frame.AddCommand("/inject", new ProxyFrame.CommandDelegate(CmdInject));
@@ -143,7 +143,7 @@ public class Analyst : ProxyPlugin
         }
     }
 
-    /*	// CmdGrep: handle a /grep command
+    	// CmdGrep: handle a /grep command
         private void CmdGrep(string[] words) {
             if (words.Length == 1) {
                 logGrep = null;
@@ -154,7 +154,7 @@ public class Analyst : ProxyPlugin
                 logGrep = String.Join(" ", regexArray);
                 SayToUser("filtering log with " + logGrep);
             }
-        } */
+	} 
 
     // CmdSet: handle a /set command
     private void CmdSet(string[] words)
@@ -717,6 +717,7 @@ public class Analyst : ProxyPlugin
     // LogPacket: dump a packet to the console
     private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
+	    //if (logGrep != null && Regex.IsMatch(packet.ToString(),logGrep))
         Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
                  , direction == Direction.Incoming ? "<--" : "-->"
                  , endPoint

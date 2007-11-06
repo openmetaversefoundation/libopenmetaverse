@@ -25,10 +25,10 @@
  */
 
 using System;
+using System.Collections;
 using System.Threading;
-using libsecondlife;
 
-namespace System.Collections
+namespace libsecondlife
 {
     /// <summary>
     /// Same as Queue except Dequeue function blocks until there is an object to return.
@@ -36,7 +36,8 @@ namespace System.Collections
     /// </summary>
     public class BlockingQueue : Queue
     {
-        private bool open;
+        private bool open = true;
+        private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         /// <summary>
         /// Create new BlockingQueue.
@@ -45,7 +46,6 @@ namespace System.Collections
         public BlockingQueue(ICollection col)
             : base(col)
         {
-            open = true;
         }
 
         /// <summary>
@@ -56,7 +56,6 @@ namespace System.Collections
         public BlockingQueue(int capacity, float growFactor)
             : base(capacity, growFactor)
         {
-            open = true;
         }
 
         /// <summary>
@@ -66,7 +65,6 @@ namespace System.Collections
         public BlockingQueue(int capacity)
             : base(capacity)
         {
-            open = true;
         }
 
         /// <summary>
@@ -75,7 +73,6 @@ namespace System.Collections
         public BlockingQueue()
             : base()
         {
-            open = true;
         }
 
         /// <summary>
@@ -106,7 +103,7 @@ namespace System.Collections
             {
                 open = false;
                 base.Clear();
-                Monitor.PulseAll(base.SyncRoot); // resume any waiting threads
+                syncEvent.Set(); // resume any waiting threads
             }
         }
 
@@ -140,7 +137,7 @@ namespace System.Collections
             {
                 while (open && (base.Count == 0))
                 {
-                    if (!Monitor.Wait(base.SyncRoot, timeout))
+                    if (!syncEvent.WaitOne(timeout, false))
                         throw new InvalidOperationException("Timeout");
                 }
                 if (open)
@@ -156,7 +153,7 @@ namespace System.Collections
             {
                 while (open && (base.Count == 0))
                 {
-                    if (!Monitor.Wait(base.SyncRoot, timeout))
+                    if (!syncEvent.WaitOne(timeout, false))
                         return false;
                 }
                 if (open)
@@ -178,7 +175,7 @@ namespace System.Collections
             lock (base.SyncRoot)
             {
                 base.Enqueue(obj);
-                Monitor.Pulse(base.SyncRoot);
+                syncEvent.Set();
             }
         }
 

@@ -13,20 +13,19 @@ namespace SLImageUpload
     public partial class frmSLImageUpload : Form
     {
         private SecondLife Client;
-        private AssetManager Assets;
         private byte[] UploadData = null;
         private int Transferred = 0;
         private string FileName = String.Empty;
         private LLUUID SendToID;
+        private LLUUID AssetID;
 
         public frmSLImageUpload()
         {
             InitializeComponent();
 
             Client = new SecondLife();
-            Assets = new AssetManager(Client);
-            Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
-            Assets.OnAssetUploaded += new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
+            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
+            Client.Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
 
             // Turn almost everything off since we are only interested in uploading textures
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
@@ -36,15 +35,37 @@ namespace SLImageUpload
             Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.STORE_LAND_PATCHES = false;
             Client.Settings.MULTIPLE_SIMS = false;
-            Client.Self.Status.Camera.Far = 32.0f;
+            Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
             Client.Throttle.Land = 0.0f;
             Client.Throttle.Wind = 0.0f;
         }
 
-        private void EnableUpload(bool enable)
+        private void EnableUpload()
         {
-            if (UploadData != null) cmdUpload.Enabled = enable;
+            if (UploadData != null)
+            {
+                if (this.InvokeRequired)
+                    BeginInvoke(new MethodInvoker(EnableUpload));
+                else
+                    cmdUpload.Enabled = true;
+            }
+        }
+
+        private void DisableUpload()
+        {
+            if (this.InvokeRequired)
+                BeginInvoke(new MethodInvoker(DisableUpload));
+            else
+                cmdUpload.Enabled = false;
+        }
+
+        private void UpdateAssetID()
+        {
+            if (this.InvokeRequired)
+                BeginInvoke(new MethodInvoker(UpdateAssetID));
+            else
+                txtAssetID.Text = AssetID.ToStringHyphenated();
         }
 
         private void LoadImage()
@@ -143,18 +164,14 @@ namespace SLImageUpload
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                if (Client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "SL Image Upload",
+                if (!Client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "SL Image Upload",
                     "jhurliman@metaverseindustries.com"))
-                {
-                    EnableUpload(true);
-                }
-                else
                 {
                     MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
                         Client.Network.LoginMessage));
                     cmdConnect.Text = "Connect";
                     txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
-                    EnableUpload(false);
+                    DisableUpload();
                 }
             }
             else
@@ -162,7 +179,10 @@ namespace SLImageUpload
                 Client.Network.Logout();
                 cmdConnect.Text = "Connect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
-                EnableUpload(false);
+                DisableUpload();
+
+                // HACK: Create a new SecondLife object until it can clean up properly after itself
+                Client = new SecondLife();
             }
         }
 
@@ -230,41 +250,58 @@ namespace SLImageUpload
                 cmdUpload.Enabled = false;
                 grpLogin.Enabled = false;
 
-                LLUUID assetID;
                 string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
 
-                Client.Inventory.BeginCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
+                Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
                     InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
-                    delegate(bool success, InventoryItem item)
+                    delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
                     {
-                        if (success)
-                        {
-                            // Pay for the upload
-                            Client.Self.PayUploadFee("SL Image Upload");
-
-                            Client.Log("Created inventory item " + item.Name, Helpers.LogLevel.Info);
-
-                            if (SendToID != LLUUID.Zero)
-                            {
-                                Client.Log("Sending item to " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
-                                Client.Inventory.GiveItem(item.UUID, item.Name, item.AssetType, SendToID, true);
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show("Failed to create an inventory item for the upload, the asset exists but is not in " +
-                                "your inventory. You will not be charged for this upload");
-                        }
-
                         if (this.InvokeRequired)
                             BeginInvoke(new MethodInvoker(EnableControls));
                         else
                             EnableControls();
+
+                        if (success)
+                        {
+                            AssetID = assetID;
+                            UpdateAssetID();
+
+                            // Fix the permissions on the new upload since they are fscked by default
+                            InventoryItem item = Client.Inventory.FetchItem(itemID, Client.Self.AgentID, 1000 * 15);
+
+                            if (item != null)
+                            {
+                                item.Permissions.EveryoneMask = PermissionMask.All;
+                                item.Permissions.NextOwnerMask = PermissionMask.All;
+                                Client.Inventory.RequestUpdateItem(item);
+
+                                Client.Log("Created inventory item " + itemID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                                MessageBox.Show("Created inventory item " + itemID.ToStringHyphenated());
+
+                                // FIXME: We should be watching the callback for RequestUpdateItem instead of a dumb sleep
+                                System.Threading.Thread.Sleep(2000);
+
+                                if (SendToID != LLUUID.Zero)
+                                {
+                                    Client.Log("Sending item to " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                                    Client.Inventory.GiveItem(itemID, name, AssetType.Texture, SendToID, true);
+                                    MessageBox.Show("Sent item to " + SendToID.ToStringHyphenated());
+                                }
+                            }
+                            else
+                            {
+                                Client.DebugLog("Created inventory item " + itemID.ToStringHyphenated() + " but failed to fetch it," +
+                                    " cannot update permissions or send to another avatar");
+                                MessageBox.Show("Created inventory item " + itemID.ToStringHyphenated() + " but failed to fetch it," +
+                                    " cannot update permissions or send to another avatar");
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Asset upload failed: " + status);
+                        }
                     }
                 );
-
-                //LLUUID transactionid = Assets.RequestUpload(out assetID, AssetType.Texture, UploadData, false, false, true);
-                //txtAssetID.Text = assetID.ToStringHyphenated();
             }
         }
 
@@ -283,48 +320,10 @@ namespace SLImageUpload
             prgUpload.Value = Transferred;
         }
 
-        private void Assets_OnAssetUploaded(AssetUpload upload)
+        private void Network_OnEventQueueRunning(Simulator simulator)
         {
-            if (this.InvokeRequired)
-                BeginInvoke(new MethodInvoker(EnableControls));
-            else
-                EnableControls();
-
-            if (upload.Success)
-            {
-                MessageBox.Show("Image uploaded successfully");
-
-                string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
-
-                //// Save this image to inventory
-                //Client.Inventory.BeginCreateItemFromAsset(name, "Uploaded with SL Image Upload", AssetType.Texture, InventoryType.Texture,
-                //    delegate(bool success, InventoryItem item)
-                //    {
-                //        if (success)
-                //        {
-                //            // Pay for the upload
-                //            Client.Self.PayUploadFee("SL Image Upload");
-
-                //            Client.Log("Created inventory item " + item.Name, Helpers.LogLevel.Info);
-
-                //            if (SendToID != LLUUID.Zero)
-                //            {
-                //                Client.Log("Sending item to " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
-                //                Client.Inventory.GiveItem(item.UUID, item.Name, item.AssetType, SendToID, true);
-                //            }
-                //        }
-                //        else
-                //        {
-                //            MessageBox.Show("Failed to create an inventory item for the upload, the asset exists but is not in " +
-                //                "your inventory. You will not be charged for this upload");
-                //        }
-                //    }
-                //);
-            }
-            else
-            {
-                MessageBox.Show("Image upload rejected (unknown cause)");
-            }
+            Client.DebugLog("Event queue is running for " + simulator.ToString() + ", enabling uploads");
+            EnableUpload();
         }
 
         private void EnableControls()

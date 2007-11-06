@@ -42,6 +42,7 @@
     <Compile Include="Commands\Communication\SayCommand.cs" />
     <Compile Include="Commands\Communication\ShoutCommand.cs" />
     <Compile Include="Commands\Communication\WhisperCommand.cs" />
+    <Compile Include="Commands\DetectBotCommand.cs" />
     <Compile Include="Commands\GoHome.cs" />
     <Compile Include="Commands\GotoLandmark.cs" />
     <Compile Include="Commands\Inventory\AppearanceCommand.cs" />
@@ -53,8 +54,12 @@
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />
     <Compile Include="Commands\Inventory\ImportOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
+    <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
     <Compile Include="Commands\Inventory\WearCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
+    <Compile Include="Commands\Land\AgentLocationsCommand.cs" />
+    <Compile Include="Commands\Land\GridLayerCommand.cs" />
+    <Compile Include="Commands\Land\GridMapCommand.cs" />
     <Compile Include="Commands\Land\ParcelInfoCommand.cs" />
     <Compile Include="Commands\Movement\FollowCommand.cs" />
     <Compile Include="Commands\Movement\GotoCommand.cs" />
@@ -65,11 +70,11 @@
     <Compile Include="Commands\Movement\SitCommand.cs" />
     <Compile Include="Commands\Movement\SitOnCommand.cs" />
     <Compile Include="Commands\Movement\StandCommand.cs" />
+    <Compile Include="Commands\Prims\ChangePermsCommand.cs" />
     <Compile Include="Commands\Prims\ExportCommand.cs" />
     <Compile Include="Commands\Prims\ExportParticlesCommand.cs" />
     <Compile Include="Commands\Prims\FindTextureCommand.cs" />
     <Compile Include="Commands\Prims\ImportCommand.cs" />
-    <Compile Include="Commands\Prims\ManglePrimCommand.cs" />
     <Compile Include="Commands\Prims\PrimCountCommand.cs" />
     <Compile Include="Commands\Prims\PrimInfoCommand.cs" />
     <Compile Include="Commands\Stats\DilationCommand.cs" />

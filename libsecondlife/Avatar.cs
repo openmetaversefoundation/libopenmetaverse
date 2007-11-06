@@ -25,9 +25,9 @@
  */
 
 using System;
-using System.Timers;
 using System.Net;
 using System.Collections.Generic;
+using System.Threading;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -210,10 +210,12 @@ namespace libsecondlife
             /// <summary>Languages profile field</summary>
             public string LanguagesText;
             /// <summary></summary>
+            // FIXME:
             public uint SkillsMask;
             /// <summary></summary>
             public string SkillsText;
             /// <summary></summary>
+            // FIXME:
             public uint WantToMask;
             /// <summary></summary>
             public string WantToText;
@@ -251,6 +253,10 @@ namespace libsecondlife
                 {
                     return name;
                 }
+                else if (NameValues == null || NameValues.Length == 0)
+                {
+                    return String.Empty;
+                }
                 else
                 {
                     string firstName = String.Empty;
@@ -275,8 +281,6 @@ namespace libsecondlife
                     }
                 }
             }
-            // FIXME: Get rid of this eventually
-            set { name = value; }
         }
 
         /// <summary>Active group</summary>
@@ -304,7 +308,18 @@ namespace libsecondlife
 
         internal string name = String.Empty;
         internal string groupName = String.Empty;
-        internal uint sittingOn = 0;
+        internal uint sittingOn
+        {
+            get
+            {
+                return ParentID;
+            }
+ 
+            set
+            {
+                ParentID = value;
+            }
+        }
 
 
         /// <summary>

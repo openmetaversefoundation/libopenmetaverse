@@ -56,6 +56,8 @@ namespace libsecondlife
     public enum PermissionWho : byte
     {
         /// <summary></summary>
+        Base = 0x01,
+        /// <summary></summary>
         Owner = 0x02,
         /// <summary></summary>
         Group = 0x04,
@@ -64,7 +66,7 @@ namespace libsecondlife
         /// <summary></summary>
         NextOwner = 0x10,
         /// <summary></summary>
-        All = 0x1E
+        All = 0x1F
     }
 
     /// <summary>
@@ -92,5 +94,7 @@ namespace libsecondlife
             return String.Format("Base: {0}, Everyone: {1}, Group: {2}, NextOwner: {3}, Owner: {4}",
                 BaseMask, EveryoneMask, GroupMask, NextOwnerMask, OwnerMask);
         }
+
+        public static Permissions NoPermissions = new Permissions();
     }
 }

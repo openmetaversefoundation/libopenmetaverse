@@ -104,7 +104,9 @@ namespace libsecondlife
             /// <summary></summary>
             AllowParcelChanges = 1 << 26,
             /// <summary></summary>
-            AbuseEmailToEstateOwner = 1 << 27
+            AbuseEmailToEstateOwner = 1 << 27,
+            /// <summary>Region is Voice Enabled</summary>
+            AllowVoice = 1 << 28
         }
 
         /// <summary>
@@ -304,7 +306,7 @@ namespace libsecondlife
         internal bool DisconnectCandidate = false;
         /// <summary>Event that is triggered when the simulator successfully
         /// establishes a connection</summary>
-        internal ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
+        internal AutoResetEvent ConnectedEvent = new AutoResetEvent(false);
         /// <summary>Whether this sim is currently connected or not. Hooked up
         /// to the property Connected</summary>
         internal bool connected;
@@ -325,9 +327,9 @@ namespace libsecondlife
         // ACKs that are queued up to be sent to the simulator
         private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
         private IPEndPoint ipEndPoint;
-        private System.Timers.Timer AckTimer;
-        private System.Timers.Timer PingTimer;
-        private System.Timers.Timer StatsTimer;
+        private Timer AckTimer;
+        private Timer PingTimer;
+        private Timer StatsTimer;
 
         #endregion Internal/Private Members
 
@@ -350,14 +352,11 @@ namespace libsecondlife
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
 
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new System.Timers.Timer(Settings.NETWORK_TICK_LENGTH);
-            AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
+            AckTimer = new Timer(new TimerCallback(AckTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
             // Timer for recording simulator connection statistics
-            StatsTimer = new System.Timers.Timer(1000);
-            StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
+            StatsTimer = new Timer(new TimerCallback(StatsTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
             // Timer for periodically pinging the simulator
-            PingTimer = new System.Timers.Timer(Settings.PING_INTERVAL);
-            PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
+            PingTimer = new Timer(new TimerCallback(PingTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
         }
 
         /// <summary>
@@ -387,16 +386,15 @@ namespace libsecondlife
             }
 
             // Start the timers
-            AckTimer.Start();
-            StatsTimer.Start();
-            PingTimer.Enabled = Client.Settings.SEND_PINGS;
+            AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
+            StatsTimer.Change(1000, 1000);
+            if (Client.Settings.SEND_PINGS)
+                PingTimer.Change(Settings.PING_INTERVAL, Settings.PING_INTERVAL);
 
             Client.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info);
 
             try
             {
-                ConnectedEvent.Reset();
-
                 // Create the UDP connection
                 Start();
 
@@ -406,8 +404,8 @@ namespace libsecondlife
                 // Send the UseCircuitCode packet to initiate the connection
                 UseCircuitCodePacket use = new UseCircuitCodePacket();
                 use.CircuitCode.Code = Network.CircuitCode;
-                use.CircuitCode.ID = Network.AgentID;
-                use.CircuitCode.SessionID = Network.SessionID;
+                use.CircuitCode.ID = Client.Self.AgentID;
+                use.CircuitCode.SessionID = Client.Self.SessionID;
 
                 // Send the initial packet out
                 SendPacket(use, true);
@@ -418,7 +416,7 @@ namespace libsecondlife
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
                 if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Status.SendUpdate(true, this);
+                    Client.Self.Movement.SendUpdate(true, this);
 
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
@@ -467,9 +465,10 @@ namespace libsecondlife
             {
                 connected = false;
 
-                AckTimer.Stop();
-                StatsTimer.Stop();
-                if (Client.Settings.SEND_PINGS) PingTimer.Stop();
+                AckTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                StatsTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                if (Client.Settings.SEND_PINGS)
+                    PingTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
                 // Kill the current CAPS system
                 if (Caps != null)
@@ -845,13 +844,13 @@ namespace libsecondlife
             }
         }
 
-        private void AckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
+        private void AckTimer_Elapsed(object obj)
         {
             SendAcks();
             ResendUnacked();
         }
 
-        private void StatsTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
+        private void StatsTimer_Elapsed(object obj)
         {
             ulong old_in = 0, old_out = 0;
 
@@ -873,7 +872,7 @@ namespace libsecondlife
             }
         }
 
-        private void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
+        private void PingTimer_Elapsed(object obj)
         {
             SendPing();
             Stats.SentPings++;
