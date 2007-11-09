@@ -839,13 +839,16 @@ namespace libsecondlife
 
                 foreach (WearableData data in Wearables.Values)
                 {
-                    foreach (KeyValuePair<TextureIndex, LLUUID> texture in data.Asset.Textures)
+                    if (data.Asset != null)
                     {
-                        LLObject.TextureEntryFace face = te.CreateFace((uint)texture.Key);
-                        face.TextureID = texture.Value;
+                        foreach (KeyValuePair<TextureIndex, LLUUID> texture in data.Asset.Textures)
+                        {
+                            LLObject.TextureEntryFace face = te.CreateFace((uint)texture.Key);
+                            face.TextureID = texture.Value;
 
-                        Client.DebugLog("Setting texture " + ((TextureIndex)texture.Key).ToString() + " to " +
-                            texture.Value.ToStringHyphenated());
+                            Client.DebugLog("Setting texture " + ((TextureIndex)texture.Key).ToString() + " to " +
+                                texture.Value.ToStringHyphenated());
+                        }
                     }
                 }
 
