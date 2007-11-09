@@ -134,7 +134,7 @@ namespace libsecondlife
         {
             EnterMyLock();
             Debug.Assert(owners == -1, "Calling ReleaseWriterLock when no write lock is held");
-            Debug.Assert(numUpgradeWaiters > 0);
+            //Debug.Assert(numUpgradeWaiters > 0);
             owners++;
             ExitAndWakeUpAppropriateWaiters();
         }
