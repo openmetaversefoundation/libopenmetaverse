@@ -1,0 +1,60 @@
+Decoder is a tool that decodes packet dumps according to the Second
+Life network protocol.  Decoder tries to be semi-intelligent about
+finding packet data in its input, and for example supports parsing
+Second Life's console output or acting as a filter for tcpdump.
+
+BUILDING
+========
+
+To build Decoder, you must check out the entire libsecondlife trunk
+with subversion:
+
+  svn co svn://svn.gna.org/svn/libsecondlife/trunk libsecondlife
+
+The libsecondlife-cs project must be built first; see
+libsecondlife-cs/README for instructions.  Building SLProxy should be
+straightforward with Microsoft Visual Studio.  If you're using Mono,
+you can build the solution with the included build script:
+
+  perl build
+
+The SLProxy library and its example applications will be built in
+bin/Debug.  In order to run the example applications, you must first
+add the libsecondlife-cs build directory to your MONO_PATH environment
+variable.  For example, if your libsecondlife-cs directory is
+~/libsecondlife/libsecondlife-cs and your shell is bash, you can type:
+
+  export MONO_PATH=$MONO_PATH:~/libsecondlife/libsecondlife-cs/bin/Debug/
+
+USAGE
+=====
+
+You can use Decoder by either copying and pasting packet dumps
+directly, or piping it a logfile, as below:
+
+  Decoder.exe < some.log
+
+Decoder will attempt to automatically extract the packet data from the
+rest of the input.  If you paste the packet dump directly rather than
+piping in a logfile, you may have to press enter a couple times to
+indicate that the packet dump is complete.
+
+You can filter packets by providing a regular expression as a
+command-line argument.  In this case, at least one field in the form
+"PacketName.BlockName.FieldName = FieldValue" must match (case
+insensitive) for the packet to be displayed.  In the case of
+variable-length fields, the FieldValue will be rendered as a
+hexadecimal numeral preceeded by 0x, and if that doesn't match,
+as a UTF-8 string if possible.
+
+USAGE WITH TCPDUMP
+==================
+
+Decoder has enhanced support for tcpdump output.  Traffic not related
+to SL will be filtered, and the endpoints for each packet will be
+displayed.  To generate output suitable for Decoder, you must run
+tcpdump with the options `-x -s0'.  For example:
+
+  $ sudo tcpdump -x -s0 | mono Decoder.exe > ~/sldump
+
+See the manpage for tcpdump(1) for more information.

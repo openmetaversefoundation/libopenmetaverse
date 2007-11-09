@@ -1,0 +1,1588 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		402D03CB0C4846F300991307 /* Inventory.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C50C4846F300991307 /* Inventory.cs */; };
+		402D03CC0C4846F300991307 /* InventoryManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C60C4846F300991307 /* InventoryManager.cs */; };
+		402D03CD0C4846F300991307 /* InventoryNode.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C70C4846F300991307 /* InventoryNode.cs */; };
+		402D03CE0C4846F300991307 /* InventoryNodeDictionary.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C80C4846F300991307 /* InventoryNodeDictionary.cs */; };
+		402D03CF0C4846F300991307 /* ObjectPoolBase.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C90C4846F300991307 /* ObjectPoolBase.cs */; };
+		402D03D00C4846F300991307 /* UDPBase.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03CA0C4846F300991307 /* UDPBase.cs */; };
+		403986FC0CDFF7FD00E3A90A /* AgentManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403986F90CDFF7FD00E3A90A /* AgentManager.cs */; };
+		403986FD0CDFF7FD00E3A90A /* AgentManagerMovement.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403986FA0CDFF7FD00E3A90A /* AgentManagerMovement.cs */; };
+		403986FE0CDFF7FD00E3A90A /* AgentManagerCamera.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403986FB0CDFF7FD00E3A90A /* AgentManagerCamera.cs */; };
+		403987050CDFF82D00E3A90A /* XmlLLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987010CDFF82D00E3A90A /* XmlLLSD.cs */; };
+		403987060CDFF82D00E3A90A /* NotationLLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987020CDFF82D00E3A90A /* NotationLLSD.cs */; };
+		403987070CDFF82D00E3A90A /* LLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987030CDFF82D00E3A90A /* LLSD.cs */; };
+		403987080CDFF82D00E3A90A /* BinaryLLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403987040CDFF82D00E3A90A /* BinaryLLSD.cs */; };
+		403A91710C4FC4310020DD34 /* FriendsManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A91700C4FC4310020DD34 /* FriendsManager.cs */; };
+		403A91760C4FC4820020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */; };
+		403A91820C4FCAF00020DD34 /* OpenJPEG.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A91800C4FCAF00020DD34 /* OpenJPEG.cs */; };
+		403A91830C4FCAF00020DD34 /* TGALoader.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A91810C4FCAF00020DD34 /* TGALoader.cs */; };
+		403A918E0C4FCCA40020DD34 /* AssetTypes.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A918D0C4FCCA40020DD34 /* AssetTypes.cs */; };
+		403A91970C4FCD960020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */; };
+		403BAC790CC0B25200983A86 /* FindObjectsCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403BAC750CC0B25200983A86 /* FindObjectsCommand.cs */; };
+		403BAC7A0CC0B25200983A86 /* PrimInfoCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403BAC760CC0B25200983A86 /* PrimInfoCommand.cs */; };
+		403BAC7B0CC0B25200983A86 /* ManglePrimCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403BAC770CC0B25200983A86 /* ManglePrimCommand.cs */; };
+		403BAC7C0CC0B25200983A86 /* FindTextureCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403BAC780CC0B25200983A86 /* FindTextureCommand.cs */; };
+		403BAC840CC0B2CE00983A86 /* CookComputing.XmlRpcV2.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */; };
+		4041F33A0BED7D8E0084F948 /* Analyst.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30F0BED7D550084F948 /* Analyst.cs */; };
+		4041F33B0BED7D8E0084F948 /* Logger.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2F90BED7D550084F948 /* Logger.cs */; };
+		4041F33C0BED7D8E0084F948 /* SimpleHttpRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FA0BED7D550084F948 /* SimpleHttpRequest.cs */; };
+		4041F33D0BED7D8E0084F948 /* SLProxy.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30E0BED7D550084F948 /* SLProxy.cs */; };
+		4041F33E0BED7D8E0084F948 /* SLProxyLoader.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30D0BED7D550084F948 /* SLProxyLoader.cs */; };
+		4041F33F0BED7D8E0084F948 /* SLProxyMain.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30C0BED7D550084F948 /* SLProxyMain.cs */; };
+		4041F3400BED7D8E0084F948 /* XmlRpcBoxcarRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FB0BED7D550084F948 /* XmlRpcBoxcarRequest.cs */; };
+		4041F3410BED7D8E0084F948 /* XmlRpcClientProxy.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FC0BED7D550084F948 /* XmlRpcClientProxy.cs */; };
+		4041F3420BED7D8E0084F948 /* XmlRpcDeserializer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FD0BED7D550084F948 /* XmlRpcDeserializer.cs */; };
+		4041F3430BED7D8E0084F948 /* XmlRpcErrorCodes.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FE0BED7D550084F948 /* XmlRpcErrorCodes.cs */; };
+		4041F3440BED7D8E0084F948 /* XmlRpcException.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FF0BED7D550084F948 /* XmlRpcException.cs */; };
+		4041F3450BED7D8E0084F948 /* XmlRpcExposedAttribute.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3000BED7D550084F948 /* XmlRpcExposedAttribute.cs */; };
+		4041F3460BED7D8E0084F948 /* XmlRpcRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3010BED7D550084F948 /* XmlRpcRequest.cs */; };
+		4041F3470BED7D8E0084F948 /* XmlRpcRequestDeserializer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3020BED7D550084F948 /* XmlRpcRequestDeserializer.cs */; };
+		4041F3480BED7D8E0084F948 /* XmlRpcRequestSerializer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3030BED7D550084F948 /* XmlRpcRequestSerializer.cs */; };
+		4041F3490BED7D8E0084F948 /* XmlRpcResponder.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3040BED7D550084F948 /* XmlRpcResponder.cs */; };
+		4041F34A0BED7D8E0084F948 /* XmlRpcResponse.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3050BED7D550084F948 /* XmlRpcResponse.cs */; };
+		4041F34B0BED7D8E0084F948 /* XmlRpcResponseDeserializer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3060BED7D550084F948 /* XmlRpcResponseDeserializer.cs */; };
+		4041F34C0BED7D8E0084F948 /* XmlRpcResponseSerializer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3070BED7D550084F948 /* XmlRpcResponseSerializer.cs */; };
+		4041F34D0BED7D8E0084F948 /* XmlRpcSerializer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3080BED7D550084F948 /* XmlRpcSerializer.cs */; };
+		4041F34E0BED7D8E0084F948 /* XmlRpcServer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3090BED7D550084F948 /* XmlRpcServer.cs */; };
+		4041F34F0BED7D8E0084F948 /* XmlRpcSystemObject.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30A0BED7D550084F948 /* XmlRpcSystemObject.cs */; };
+		4041F3500BED7D8E0084F948 /* XmlRpcXmlTokens.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30B0BED7D550084F948 /* XmlRpcXmlTokens.cs */; };
+		4041F3560BED7DB50084F948 /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4041F40F0BED8EE40084F948 /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E3740B5737BA00B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E38D0B57399200B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E3A00B573A3700B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E3A10B573A3700B0667D /* libsecondlife.Utilities.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */; };
+		4054E4060B573A9F00B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4082AF1B0BE5CF73005601E2 /* Types.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF20BE5CF73005601E2 /* Types.cs */; };
+		4082AF1C0BE5CF73005601E2 /* ThreadUtil.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */; };
+		4082AF1E0BE5CF73005601E2 /* TerrainManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF50BE5CF73005601E2 /* TerrainManager.cs */; };
+		4082AF1F0BE5CF73005601E2 /* Simulator.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF60BE5CF73005601E2 /* Simulator.cs */; };
+		4082AF200BE5CF73005601E2 /* Settings.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF70BE5CF73005601E2 /* Settings.cs */; };
+		4082AF220BE5CF73005601E2 /* SecondLife.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF90BE5CF73005601E2 /* SecondLife.cs */; };
+		4082AF230BE5CF73005601E2 /* ProtocolManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFA0BE5CF73005601E2 /* ProtocolManager.cs */; };
+		4082AF240BE5CF73005601E2 /* Prims.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFB0BE5CF73005601E2 /* Prims.cs */; };
+		4082AF250BE5CF73005601E2 /* ParticleSystem.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFC0BE5CF73005601E2 /* ParticleSystem.cs */; };
+		4082AF260BE5CF73005601E2 /* ParcelManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFD0BE5CF73005601E2 /* ParcelManager.cs */; };
+		4082AF270BE5CF73005601E2 /* ObjectManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFE0BE5CF73005601E2 /* ObjectManager.cs */; };
+		4082AF280BE5CF73005601E2 /* NetworkManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEFF0BE5CF73005601E2 /* NetworkManager.cs */; };
+		4082AF290BE5CF73005601E2 /* NameValue.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF000BE5CF73005601E2 /* NameValue.cs */; };
+		4082AF2D0BE5CF73005601E2 /* Login.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF040BE5CF73005601E2 /* Login.cs */; };
+		4082AF2F0BE5CF73005601E2 /* LLObject.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF060BE5CF73005601E2 /* LLObject.cs */; };
+		4082AF300BE5CF73005601E2 /* Helpers.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0C0BE5CF73005601E2 /* Helpers.cs */; };
+		4082AF310BE5CF73005601E2 /* GroupManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0D0BE5CF73005601E2 /* GroupManager.cs */; };
+		4082AF320BE5CF73005601E2 /* GridManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0E0BE5CF73005601E2 /* GridManager.cs */; };
+		4082AF330BE5CF73005601E2 /* EstateTools.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0F0BE5CF73005601E2 /* EstateTools.cs */; };
+		4082AF340BE5CF73005601E2 /* DirectoryManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF100BE5CF73005601E2 /* DirectoryManager.cs */; };
+		4082AF360BE5CF73005601E2 /* BlockingQueue.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF120BE5CF73005601E2 /* BlockingQueue.cs */; };
+		4082AF370BE5CF73005601E2 /* BitPack.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF130BE5CF73005601E2 /* BitPack.cs */; };
+		4082AF380BE5CF73005601E2 /* BakeLayer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF140BE5CF73005601E2 /* BakeLayer.cs */; };
+		4082AF390BE5CF73005601E2 /* AvatarManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF150BE5CF73005601E2 /* AvatarManager.cs */; };
+		4082AF3A0BE5CF73005601E2 /* Avatar.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF160BE5CF73005601E2 /* Avatar.cs */; };
+		4082AF3B0BE5CF73005601E2 /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF170BE5CF73005601E2 /* AssemblyInfo.cs */; };
+		4082AF3C0BE5CF73005601E2 /* AgentThrottle.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF180BE5CF73005601E2 /* AgentThrottle.cs */; };
+		4082AF3D0BE5CF73005601E2 /* _VisualParam_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF190BE5CF73005601E2 /* _VisualParam_.cs */; };
+		4082AF3E0BE5CF73005601E2 /* _Packets_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF1A0BE5CF73005601E2 /* _Packets_.cs */; };
+		4082AF430BE5CF96005601E2 /* ProtocolManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF3F0BE5CF96005601E2 /* ProtocolManager.cs */; };
+		4082AF440BE5CF96005601E2 /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF410BE5CF96005601E2 /* AssemblyInfo.cs */; };
+		4082AF450BE5CF96005601E2 /* mapgenerator.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF420BE5CF96005601E2 /* mapgenerator.cs */; };
+		4082AF8C0BE5D032005601E2 /* TestClient.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF500BE5D032005601E2 /* TestClient.cs */; };
+		4082AF8D0BE5D032005601E2 /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF520BE5D032005601E2 /* AssemblyInfo.cs */; };
+		4082AF8E0BE5D032005601E2 /* Program.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF530BE5D032005601E2 /* Program.cs */; };
+		4082AF8F0BE5D032005601E2 /* Parsing.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF540BE5D032005601E2 /* Parsing.cs */; };
+		4082AFC00BE5D032005601E2 /* Command.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF890BE5D032005601E2 /* Command.cs */; };
+		4082AFC10BE5D032005601E2 /* ClientManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF8A0BE5D032005601E2 /* ClientManager.cs */; };
+		4082AFC20BE5D032005601E2 /* Arguments.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF8B0BE5D032005601E2 /* Arguments.cs */; };
+		4082AFC40BE5D04D005601E2 /* key2name.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC30BE5D04D005601E2 /* key2name.cs */; };
+		4082AFC60BE5D064005601E2 /* name2key.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC50BE5D064005601E2 /* name2key.cs */; };
+		4082AFCD0BE5D099005601E2 /* Utilities.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC70BE5D099005601E2 /* Utilities.cs */; };
+		4082AFCE0BE5D099005601E2 /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC90BE5D099005601E2 /* AssemblyInfo.cs */; };
+		408666890CA4763900456058 /* ObjectTracker.cs in Sources */ = {isa = PBXBuildFile; fileRef = 408666860CA4763900456058 /* ObjectTracker.cs */; };
+		4086668A0CA4763900456058 /* Image.cs in Sources */ = {isa = PBXBuildFile; fileRef = 408666870CA4763900456058 /* Image.cs */; };
+		4086668B0CA4763900456058 /* CoordinateFrame.cs in Sources */ = {isa = PBXBuildFile; fileRef = 408666880CA4763900456058 /* CoordinateFrame.cs */; };
+		4086669E0CA47D5C00456058 /* libsecondlife.Utilities.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */; };
+		40894F870C77CE970028E9FE /* SoundManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F800C77CE970028E9FE /* SoundManager.cs */; };
+		40894F880C77CE970028E9FE /* HttpBase.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F810C77CE970028E9FE /* HttpBase.cs */; };
+		40894F890C77CE970028E9FE /* EventDictionary.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F820C77CE970028E9FE /* EventDictionary.cs */; };
+		40894F8A0C77CE970028E9FE /* CapsRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F830C77CE970028E9FE /* CapsRequest.cs */; };
+		40894F8B0C77CE970028E9FE /* Capabilities.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F840C77CE970028E9FE /* Capabilities.cs */; };
+		40894F8C0C77CE970028E9FE /* Animations.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F850C77CE970028E9FE /* Animations.cs */; };
+		40894F8D0C77CE970028E9FE /* CapsEventQueue.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F860C77CE970028E9FE /* CapsEventQueue.cs */; };
+		408D586B0BFA25DB0076F241 /* TextureEntry.cs in Sources */ = {isa = PBXBuildFile; fileRef = 408D586A0BFA25DB0076F241 /* TextureEntry.cs */; };
+		409E5DC80CB9BD5000D3CDB4 /* CapsToPacket.cs in Sources */ = {isa = PBXBuildFile; fileRef = 409E5DC70CB9BD5000D3CDB4 /* CapsToPacket.cs */; };
+		40F4CB9B0C45924C00F4B9CD /* AppearanceManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F4CB9A0C45924C00F4B9CD /* AppearanceManager.cs */; };
+		40F4CBA20C45928000F4B9CD /* AssetManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F4CBA10C45928000F4B9CD /* AssetManager.cs */; };
+		40F4CBAA0C4592DD00F4B9CD /* Permissions.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F4CBA90C4592DD00F4B9CD /* Permissions.cs */; };
+		40FBA7AA0C016AC800073A37 /* CloneProfileCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7700C016AC800073A37 /* CloneProfileCommand.cs */; };
+		40FBA7AB0C016AC800073A37 /* EchoMasterCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7720C016AC800073A37 /* EchoMasterCommand.cs */; };
+		40FBA7AC0C016AC800073A37 /* IMCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7730C016AC800073A37 /* IMCommand.cs */; };
+		40FBA7AD0C016AC800073A37 /* SayCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7740C016AC800073A37 /* SayCommand.cs */; };
+		40FBA7AE0C016AC800073A37 /* ShoutCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7750C016AC800073A37 /* ShoutCommand.cs */; };
+		40FBA7B00C016AC800073A37 /* WhisperCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7770C016AC800073A37 /* WhisperCommand.cs */; };
+		40FBA7B10C016AC800073A37 /* GoHome.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7780C016AC800073A37 /* GoHome.cs */; };
+		40FBA7B20C016AC800073A37 /* GotoLandmark.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7790C016AC800073A37 /* GotoLandmark.cs */; };
+		40FBA7B30C016AC800073A37 /* AppearanceCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA77B0C016AC800073A37 /* AppearanceCommand.cs */; };
+		40FBA7B40C016AC800073A37 /* BalanceCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA77C0C016AC800073A37 /* BalanceCommand.cs */; };
+		40FBA7B50C016AC800073A37 /* DeleteFolderCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA77D0C016AC800073A37 /* DeleteFolderCommand.cs */; };
+		40FBA7B60C016AC800073A37 /* DumpOutfitCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA77E0C016AC800073A37 /* DumpOutfitCommand.cs */; };
+		40FBA7B70C016AC800073A37 /* ExportOutfitCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA77F0C016AC800073A37 /* ExportOutfitCommand.cs */; };
+		40FBA7B80C016AC800073A37 /* GiveAllCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7800C016AC800073A37 /* GiveAllCommand.cs */; };
+		40FBA7B90C016AC800073A37 /* ImportOutfitCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7810C016AC800073A37 /* ImportOutfitCommand.cs */; };
+		40FBA7BA0C016AC800073A37 /* InventoryCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7820C016AC800073A37 /* InventoryCommand.cs */; };
+		40FBA7BB0C016AC800073A37 /* WearCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7830C016AC800073A37 /* WearCommand.cs */; };
+		40FBA7BC0C016AC800073A37 /* FindSimCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7850C016AC800073A37 /* FindSimCommand.cs */; };
+		40FBA7BD0C016AC800073A37 /* ParcelInfoCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7860C016AC800073A37 /* ParcelInfoCommand.cs */; };
+		40FBA7BE0C016AC800073A37 /* FollowCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7880C016AC800073A37 /* FollowCommand.cs */; };
+		40FBA7BF0C016AC800073A37 /* GotoCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7890C016AC800073A37 /* GotoCommand.cs */; };
+		40FBA7C00C016AC800073A37 /* JumpCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA78A0C016AC800073A37 /* JumpCommand.cs */; };
+		40FBA7C10C016AC800073A37 /* LocationCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA78B0C016AC800073A37 /* LocationCommand.cs */; };
+		40FBA7C20C016AC800073A37 /* MoveToCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA78C0C016AC800073A37 /* MoveToCommand.cs */; };
+		40FBA7C30C016AC800073A37 /* SetHome.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA78D0C016AC800073A37 /* SetHome.cs */; };
+		40FBA7C40C016AC800073A37 /* SitCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA78E0C016AC800073A37 /* SitCommand.cs */; };
+		40FBA7C50C016AC800073A37 /* SitOnCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA78F0C016AC800073A37 /* SitOnCommand.cs */; };
+		40FBA7C60C016AC800073A37 /* StandCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7900C016AC800073A37 /* StandCommand.cs */; };
+		40FBA7C70C016AC800073A37 /* ExportCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7920C016AC800073A37 /* ExportCommand.cs */; };
+		40FBA7C80C016AC800073A37 /* ExportParticlesCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7930C016AC800073A37 /* ExportParticlesCommand.cs */; };
+		40FBA7C90C016AC800073A37 /* ImportCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7940C016AC800073A37 /* ImportCommand.cs */; };
+		40FBA7CA0C016AC800073A37 /* PrimCountCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7950C016AC800073A37 /* PrimCountCommand.cs */; };
+		40FBA7CB0C016AC800073A37 /* DilationCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7970C016AC800073A37 /* DilationCommand.cs */; };
+		40FBA7CC0C016AC800073A37 /* RegionInfoCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7980C016AC800073A37 /* RegionInfoCommand.cs */; };
+		40FBA7CD0C016AC800073A37 /* StatsCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7990C016AC800073A37 /* StatsCommand.cs */; };
+		40FBA7CE0C016AC800073A37 /* UptimeCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA79A0C016AC800073A37 /* UptimeCommand.cs */; };
+		40FBA7CF0C016AC800073A37 /* DebugCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA79C0C016AC800073A37 /* DebugCommand.cs */; };
+		40FBA7D00C016AC800073A37 /* HelpCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA79D0C016AC800073A37 /* HelpCommand.cs */; };
+		40FBA7D10C016AC800073A37 /* LoadCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA79E0C016AC800073A37 /* LoadCommand.cs */; };
+		40FBA7D20C016AC800073A37 /* LoginCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA79F0C016AC800073A37 /* LoginCommand.cs */; };
+		40FBA7D30C016AC800073A37 /* LogoutCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A00C016AC800073A37 /* LogoutCommand.cs */; };
+		40FBA7D40C016AC800073A37 /* MD5Command.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A10C016AC800073A37 /* MD5Command.cs */; };
+		40FBA7D50C016AC800073A37 /* PacketLogCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A20C016AC800073A37 /* PacketLogCommand.cs */; };
+		40FBA7D60C016AC800073A37 /* QuitCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A30C016AC800073A37 /* QuitCommand.cs */; };
+		40FBA7D70C016AC800073A37 /* SetMasterCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A40C016AC800073A37 /* SetMasterCommand.cs */; };
+		40FBA7D80C016AC800073A37 /* SetMasterKeyCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A50C016AC800073A37 /* SetMasterKeyCommand.cs */; };
+		40FBA7D90C016AC800073A37 /* ShowEffectsCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A60C016AC800073A37 /* ShowEffectsCommand.cs */; };
+		40FBA7DA0C016AC800073A37 /* TouchCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A70C016AC800073A37 /* TouchCommand.cs */; };
+		40FBA7DB0C016AC800073A37 /* TreeCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A80C016AC800073A37 /* TreeCommand.cs */; };
+		40FBA7DC0C016AC800073A37 /* WhoCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA7A90C016AC800073A37 /* WhoCommand.cs */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		403A919A0C4FCDC60020DD34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E36E0B57375B00B0667D;
+			remoteInfo = libsecondlife.Utilities;
+		};
+		4041F3520BED7DA90084F948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E3040B57345B00B0667D;
+			remoteInfo = libsecondlife;
+		};
+		4041F44E0BED938B0084F948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E3040B57345B00B0667D;
+			remoteInfo = libsecondlife;
+		};
+		4054E3750B5737C600B0667D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E3040B57345B00B0667D;
+			remoteInfo = "libsecondlife-cs";
+		};
+		4054E3850B57395D00B0667D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E3040B57345B00B0667D;
+			remoteInfo = "libsecondlife-cs";
+		};
+		4054E39A0B573A1000B0667D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E3040B57345B00B0667D;
+			remoteInfo = "libsecondlife-cs";
+		};
+		4054E39C0B573A1000B0667D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E36E0B57375B00B0667D;
+			remoteInfo = libsecondlife.Utilities;
+		};
+		4054E3AD0B573A7600B0667D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4054E3040B57345B00B0667D;
+			remoteInfo = "libsecondlife-cs";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		402D03C50C4846F300991307 /* Inventory.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Inventory.cs; path = libsecondlife/Inventory.cs; sourceTree = "<group>"; };
+		402D03C60C4846F300991307 /* InventoryManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = InventoryManager.cs; path = libsecondlife/InventoryManager.cs; sourceTree = "<group>"; };
+		402D03C70C4846F300991307 /* InventoryNode.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = InventoryNode.cs; path = libsecondlife/InventoryNode.cs; sourceTree = "<group>"; };
+		402D03C80C4846F300991307 /* InventoryNodeDictionary.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = InventoryNodeDictionary.cs; path = libsecondlife/InventoryNodeDictionary.cs; sourceTree = "<group>"; };
+		402D03C90C4846F300991307 /* ObjectPoolBase.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ObjectPoolBase.cs; path = libsecondlife/ObjectPoolBase.cs; sourceTree = "<group>"; };
+		402D03CA0C4846F300991307 /* UDPBase.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = UDPBase.cs; path = libsecondlife/UDPBase.cs; sourceTree = "<group>"; };
+		403986F90CDFF7FD00E3A90A /* AgentManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentManager.cs; path = libsecondlife/AgentManager.cs; sourceTree = "<group>"; };
+		403986FA0CDFF7FD00E3A90A /* AgentManagerMovement.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentManagerMovement.cs; path = libsecondlife/AgentManagerMovement.cs; sourceTree = "<group>"; };
+		403986FB0CDFF7FD00E3A90A /* AgentManagerCamera.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentManagerCamera.cs; path = libsecondlife/AgentManagerCamera.cs; sourceTree = "<group>"; };
+		403987010CDFF82D00E3A90A /* XmlLLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = XmlLLSD.cs; path = libsecondlife/LLSD/XmlLLSD.cs; sourceTree = "<group>"; };
+		403987020CDFF82D00E3A90A /* NotationLLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = NotationLLSD.cs; path = libsecondlife/LLSD/NotationLLSD.cs; sourceTree = "<group>"; };
+		403987030CDFF82D00E3A90A /* LLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = LLSD.cs; path = libsecondlife/LLSD/LLSD.cs; sourceTree = "<group>"; };
+		403987040CDFF82D00E3A90A /* BinaryLLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BinaryLLSD.cs; path = libsecondlife/LLSD/BinaryLLSD.cs; sourceTree = "<group>"; };
+		403A91700C4FC4310020DD34 /* FriendsManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = FriendsManager.cs; path = libsecondlife/FriendsManager.cs; sourceTree = "<group>"; };
+		403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */ = {isa = PBXFileReference; lastKnownFileType = compiled.mono.library; name = CookComputing.XmlRpcV2.dll; path = bin/CookComputing.XmlRpcV2.dll; sourceTree = "<group>"; };
+		403A91800C4FCAF00020DD34 /* OpenJPEG.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = OpenJPEG.cs; path = libsecondlife/OpenJPEG.cs; sourceTree = "<group>"; };
+		403A91810C4FCAF00020DD34 /* TGALoader.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TGALoader.cs; path = libsecondlife/TGALoader.cs; sourceTree = "<group>"; };
+		403A918D0C4FCCA40020DD34 /* AssetTypes.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssetTypes.cs; path = libsecondlife/AssetTypes.cs; sourceTree = "<group>"; };
+		403BAC750CC0B25200983A86 /* FindObjectsCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = FindObjectsCommand.cs; sourceTree = "<group>"; };
+		403BAC760CC0B25200983A86 /* PrimInfoCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = PrimInfoCommand.cs; sourceTree = "<group>"; };
+		403BAC770CC0B25200983A86 /* ManglePrimCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ManglePrimCommand.cs; sourceTree = "<group>"; };
+		403BAC780CC0B25200983A86 /* FindTextureCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = FindTextureCommand.cs; sourceTree = "<group>"; };
+		4041F2F90BED7D550084F948 /* Logger.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = Logger.cs; sourceTree = "<group>"; };
+		4041F2FA0BED7D550084F948 /* SimpleHttpRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SimpleHttpRequest.cs; sourceTree = "<group>"; };
+		4041F2FB0BED7D550084F948 /* XmlRpcBoxcarRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcBoxcarRequest.cs; sourceTree = "<group>"; };
+		4041F2FC0BED7D550084F948 /* XmlRpcClientProxy.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcClientProxy.cs; sourceTree = "<group>"; };
+		4041F2FD0BED7D550084F948 /* XmlRpcDeserializer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcDeserializer.cs; sourceTree = "<group>"; };
+		4041F2FE0BED7D550084F948 /* XmlRpcErrorCodes.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcErrorCodes.cs; sourceTree = "<group>"; };
+		4041F2FF0BED7D550084F948 /* XmlRpcException.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcException.cs; sourceTree = "<group>"; };
+		4041F3000BED7D550084F948 /* XmlRpcExposedAttribute.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcExposedAttribute.cs; sourceTree = "<group>"; };
+		4041F3010BED7D550084F948 /* XmlRpcRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcRequest.cs; sourceTree = "<group>"; };
+		4041F3020BED7D550084F948 /* XmlRpcRequestDeserializer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcRequestDeserializer.cs; sourceTree = "<group>"; };
+		4041F3030BED7D550084F948 /* XmlRpcRequestSerializer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcRequestSerializer.cs; sourceTree = "<group>"; };
+		4041F3040BED7D550084F948 /* XmlRpcResponder.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcResponder.cs; sourceTree = "<group>"; };
+		4041F3050BED7D550084F948 /* XmlRpcResponse.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcResponse.cs; sourceTree = "<group>"; };
+		4041F3060BED7D550084F948 /* XmlRpcResponseDeserializer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcResponseDeserializer.cs; sourceTree = "<group>"; };
+		4041F3070BED7D550084F948 /* XmlRpcResponseSerializer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcResponseSerializer.cs; sourceTree = "<group>"; };
+		4041F3080BED7D550084F948 /* XmlRpcSerializer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcSerializer.cs; sourceTree = "<group>"; };
+		4041F3090BED7D550084F948 /* XmlRpcServer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcServer.cs; sourceTree = "<group>"; };
+		4041F30A0BED7D550084F948 /* XmlRpcSystemObject.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcSystemObject.cs; sourceTree = "<group>"; };
+		4041F30B0BED7D550084F948 /* XmlRpcXmlTokens.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = XmlRpcXmlTokens.cs; sourceTree = "<group>"; };
+		4041F30C0BED7D550084F948 /* SLProxyMain.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SLProxyMain.cs; path = SLProxy/SLProxyMain.cs; sourceTree = "<group>"; };
+		4041F30D0BED7D550084F948 /* SLProxyLoader.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SLProxyLoader.cs; path = SLProxy/SLProxyLoader.cs; sourceTree = "<group>"; };
+		4041F30E0BED7D550084F948 /* SLProxy.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SLProxy.cs; path = SLProxy/SLProxy.cs; sourceTree = "<group>"; };
+		4041F30F0BED7D550084F948 /* Analyst.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Analyst.cs; path = SLProxy/Analyst.cs; sourceTree = "<group>"; };
+		4041F3130BED7D640084F948 /* slproxy.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = slproxy.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4041F3E50BED8C0C0084F948 /* IA_LandmarkTool.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = IA_LandmarkTool.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3050B57345B00B0667D /* libsecondlife.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = libsecondlife.dll; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = libsecondlife.Utilities.dll; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3830B57394E00B0667D /* name2key.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = name2key.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3980B573A0900B0667D /* Key2Name.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = Key2Name.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3AB0B573A6500B0667D /* TestClient.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = TestClient.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4082AEF20BE5CF73005601E2 /* Types.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Types.cs; path = libsecondlife/Types.cs; sourceTree = "<group>"; };
+		4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ThreadUtil.cs; path = libsecondlife/ThreadUtil.cs; sourceTree = "<group>"; };
+		4082AEF50BE5CF73005601E2 /* TerrainManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TerrainManager.cs; path = libsecondlife/TerrainManager.cs; sourceTree = "<group>"; };
+		4082AEF60BE5CF73005601E2 /* Simulator.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Simulator.cs; path = libsecondlife/Simulator.cs; sourceTree = "<group>"; };
+		4082AEF70BE5CF73005601E2 /* Settings.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Settings.cs; path = libsecondlife/Settings.cs; sourceTree = "<group>"; };
+		4082AEF90BE5CF73005601E2 /* SecondLife.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SecondLife.cs; path = libsecondlife/SecondLife.cs; sourceTree = "<group>"; };
+		4082AEFA0BE5CF73005601E2 /* ProtocolManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ProtocolManager.cs; path = libsecondlife/ProtocolManager.cs; sourceTree = "<group>"; };
+		4082AEFB0BE5CF73005601E2 /* Prims.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Prims.cs; path = libsecondlife/Prims.cs; sourceTree = "<group>"; };
+		4082AEFC0BE5CF73005601E2 /* ParticleSystem.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ParticleSystem.cs; path = libsecondlife/ParticleSystem.cs; sourceTree = "<group>"; };
+		4082AEFD0BE5CF73005601E2 /* ParcelManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ParcelManager.cs; path = libsecondlife/ParcelManager.cs; sourceTree = "<group>"; };
+		4082AEFE0BE5CF73005601E2 /* ObjectManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ObjectManager.cs; path = libsecondlife/ObjectManager.cs; sourceTree = "<group>"; };
+		4082AEFF0BE5CF73005601E2 /* NetworkManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = NetworkManager.cs; path = libsecondlife/NetworkManager.cs; sourceTree = "<group>"; };
+		4082AF000BE5CF73005601E2 /* NameValue.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = NameValue.cs; path = libsecondlife/NameValue.cs; sourceTree = "<group>"; };
+		4082AF040BE5CF73005601E2 /* Login.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Login.cs; path = libsecondlife/Login.cs; sourceTree = "<group>"; };
+		4082AF060BE5CF73005601E2 /* LLObject.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = LLObject.cs; path = libsecondlife/LLObject.cs; sourceTree = "<group>"; };
+		4082AF0C0BE5CF73005601E2 /* Helpers.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Helpers.cs; path = libsecondlife/Helpers.cs; sourceTree = "<group>"; };
+		4082AF0D0BE5CF73005601E2 /* GroupManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = GroupManager.cs; path = libsecondlife/GroupManager.cs; sourceTree = "<group>"; };
+		4082AF0E0BE5CF73005601E2 /* GridManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = GridManager.cs; path = libsecondlife/GridManager.cs; sourceTree = "<group>"; };
+		4082AF0F0BE5CF73005601E2 /* EstateTools.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = EstateTools.cs; path = libsecondlife/EstateTools.cs; sourceTree = "<group>"; };
+		4082AF100BE5CF73005601E2 /* DirectoryManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = DirectoryManager.cs; path = libsecondlife/DirectoryManager.cs; sourceTree = "<group>"; };
+		4082AF120BE5CF73005601E2 /* BlockingQueue.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BlockingQueue.cs; path = libsecondlife/BlockingQueue.cs; sourceTree = "<group>"; };
+		4082AF130BE5CF73005601E2 /* BitPack.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BitPack.cs; path = libsecondlife/BitPack.cs; sourceTree = "<group>"; };
+		4082AF140BE5CF73005601E2 /* BakeLayer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BakeLayer.cs; path = libsecondlife/BakeLayer.cs; sourceTree = "<group>"; };
+		4082AF150BE5CF73005601E2 /* AvatarManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AvatarManager.cs; path = libsecondlife/AvatarManager.cs; sourceTree = "<group>"; };
+		4082AF160BE5CF73005601E2 /* Avatar.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Avatar.cs; path = libsecondlife/Avatar.cs; sourceTree = "<group>"; };
+		4082AF170BE5CF73005601E2 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssemblyInfo.cs; path = libsecondlife/AssemblyInfo.cs; sourceTree = "<group>"; };
+		4082AF180BE5CF73005601E2 /* AgentThrottle.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AgentThrottle.cs; path = libsecondlife/AgentThrottle.cs; sourceTree = "<group>"; };
+		4082AF190BE5CF73005601E2 /* _VisualParam_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = _VisualParam_.cs; path = libsecondlife/_VisualParam_.cs; sourceTree = "<group>"; };
+		4082AF1A0BE5CF73005601E2 /* _Packets_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = _Packets_.cs; path = libsecondlife/_Packets_.cs; sourceTree = "<group>"; };
+		4082AF3F0BE5CF96005601E2 /* ProtocolManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ProtocolManager.cs; path = libsecondlife/mapgenerator/ProtocolManager.cs; sourceTree = "<group>"; };
+		4082AF410BE5CF96005601E2 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
+		4082AF420BE5CF96005601E2 /* mapgenerator.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = mapgenerator.cs; path = libsecondlife/mapgenerator/mapgenerator.cs; sourceTree = "<group>"; };
+		4082AF500BE5D032005601E2 /* TestClient.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TestClient.cs; path = libsecondlife/examples/TestClient/TestClient.cs; sourceTree = "<group>"; };
+		4082AF520BE5D032005601E2 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
+		4082AF530BE5D032005601E2 /* Program.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Program.cs; path = libsecondlife/examples/TestClient/Program.cs; sourceTree = "<group>"; };
+		4082AF540BE5D032005601E2 /* Parsing.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Parsing.cs; path = libsecondlife/examples/TestClient/Parsing.cs; sourceTree = "<group>"; };
+		4082AF890BE5D032005601E2 /* Command.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Command.cs; path = libsecondlife/examples/TestClient/Command.cs; sourceTree = "<group>"; };
+		4082AF8A0BE5D032005601E2 /* ClientManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ClientManager.cs; path = libsecondlife/examples/TestClient/ClientManager.cs; sourceTree = "<group>"; };
+		4082AF8B0BE5D032005601E2 /* Arguments.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Arguments.cs; path = libsecondlife/examples/TestClient/Arguments.cs; sourceTree = "<group>"; };
+		4082AFC30BE5D04D005601E2 /* key2name.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = key2name.cs; path = libsecondlife/examples/Key2Name/key2name.cs; sourceTree = "<group>"; };
+		4082AFC50BE5D064005601E2 /* name2key.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = name2key.cs; path = libsecondlife/examples/name2key/name2key.cs; sourceTree = "<group>"; };
+		4082AFC70BE5D099005601E2 /* Utilities.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Utilities.cs; path = libsecondlife/libsecondlife.Utilities/Utilities.cs; sourceTree = "<group>"; };
+		4082AFC90BE5D099005601E2 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
+		408666860CA4763900456058 /* ObjectTracker.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ObjectTracker.cs; path = libsecondlife/ObjectTracker.cs; sourceTree = "<group>"; };
+		408666870CA4763900456058 /* Image.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Image.cs; path = libsecondlife/Image.cs; sourceTree = "<group>"; };
+		408666880CA4763900456058 /* CoordinateFrame.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = CoordinateFrame.cs; path = libsecondlife/CoordinateFrame.cs; sourceTree = "<group>"; };
+		40894F800C77CE970028E9FE /* SoundManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SoundManager.cs; path = libsecondlife/SoundManager.cs; sourceTree = "<group>"; };
+		40894F810C77CE970028E9FE /* HttpBase.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = HttpBase.cs; path = libsecondlife/HttpBase.cs; sourceTree = "<group>"; };
+		40894F820C77CE970028E9FE /* EventDictionary.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = EventDictionary.cs; path = libsecondlife/EventDictionary.cs; sourceTree = "<group>"; };
+		40894F830C77CE970028E9FE /* CapsRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = CapsRequest.cs; path = libsecondlife/CapsRequest.cs; sourceTree = "<group>"; };
+		40894F840C77CE970028E9FE /* Capabilities.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Capabilities.cs; path = libsecondlife/Capabilities.cs; sourceTree = "<group>"; };
+		40894F850C77CE970028E9FE /* Animations.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Animations.cs; path = libsecondlife/Animations.cs; sourceTree = "<group>"; };
+		40894F860C77CE970028E9FE /* CapsEventQueue.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = CapsEventQueue.cs; path = libsecondlife/CapsEventQueue.cs; sourceTree = "<group>"; };
+		408D586A0BFA25DB0076F241 /* TextureEntry.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TextureEntry.cs; path = libsecondlife/TextureEntry.cs; sourceTree = "<group>"; };
+		409E5DC70CB9BD5000D3CDB4 /* CapsToPacket.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = CapsToPacket.cs; path = libsecondlife/CapsToPacket.cs; sourceTree = "<group>"; };
+		40AAAB5B0B60C03C00EC04F0 /* mapgenerator.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = mapgenerator.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		40F4CB9A0C45924C00F4B9CD /* AppearanceManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AppearanceManager.cs; path = libsecondlife/AppearanceManager.cs; sourceTree = "<group>"; };
+		40F4CBA10C45928000F4B9CD /* AssetManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssetManager.cs; path = libsecondlife/AssetManager.cs; sourceTree = "<group>"; };
+		40F4CBA90C4592DD00F4B9CD /* Permissions.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Permissions.cs; path = libsecondlife/Permissions.cs; sourceTree = "<group>"; };
+		40FBA7700C016AC800073A37 /* CloneProfileCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = CloneProfileCommand.cs; sourceTree = "<group>"; };
+		40FBA7720C016AC800073A37 /* EchoMasterCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = EchoMasterCommand.cs; sourceTree = "<group>"; };
+		40FBA7730C016AC800073A37 /* IMCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = IMCommand.cs; sourceTree = "<group>"; };
+		40FBA7740C016AC800073A37 /* SayCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SayCommand.cs; sourceTree = "<group>"; };
+		40FBA7750C016AC800073A37 /* ShoutCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ShoutCommand.cs; sourceTree = "<group>"; };
+		40FBA7760C016AC800073A37 /* TtsCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = TtsCommand.cs; sourceTree = "<group>"; };
+		40FBA7770C016AC800073A37 /* WhisperCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = WhisperCommand.cs; sourceTree = "<group>"; };
+		40FBA7780C016AC800073A37 /* GoHome.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = GoHome.cs; sourceTree = "<group>"; };
+		40FBA7790C016AC800073A37 /* GotoLandmark.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = GotoLandmark.cs; sourceTree = "<group>"; };
+		40FBA77B0C016AC800073A37 /* AppearanceCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AppearanceCommand.cs; sourceTree = "<group>"; };
+		40FBA77C0C016AC800073A37 /* BalanceCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = BalanceCommand.cs; sourceTree = "<group>"; };
+		40FBA77D0C016AC800073A37 /* DeleteFolderCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = DeleteFolderCommand.cs; sourceTree = "<group>"; };
+		40FBA77E0C016AC800073A37 /* DumpOutfitCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = DumpOutfitCommand.cs; sourceTree = "<group>"; };
+		40FBA77F0C016AC800073A37 /* ExportOutfitCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ExportOutfitCommand.cs; sourceTree = "<group>"; };
+		40FBA7800C016AC800073A37 /* GiveAllCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = GiveAllCommand.cs; sourceTree = "<group>"; };
+		40FBA7810C016AC800073A37 /* ImportOutfitCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ImportOutfitCommand.cs; sourceTree = "<group>"; };
+		40FBA7820C016AC800073A37 /* InventoryCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = InventoryCommand.cs; sourceTree = "<group>"; };
+		40FBA7830C016AC800073A37 /* WearCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = WearCommand.cs; sourceTree = "<group>"; };
+		40FBA7850C016AC800073A37 /* FindSimCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = FindSimCommand.cs; sourceTree = "<group>"; };
+		40FBA7860C016AC800073A37 /* ParcelInfoCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ParcelInfoCommand.cs; sourceTree = "<group>"; };
+		40FBA7880C016AC800073A37 /* FollowCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = FollowCommand.cs; sourceTree = "<group>"; };
+		40FBA7890C016AC800073A37 /* GotoCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = GotoCommand.cs; sourceTree = "<group>"; };
+		40FBA78A0C016AC800073A37 /* JumpCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = JumpCommand.cs; sourceTree = "<group>"; };
+		40FBA78B0C016AC800073A37 /* LocationCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = LocationCommand.cs; sourceTree = "<group>"; };
+		40FBA78C0C016AC800073A37 /* MoveToCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = MoveToCommand.cs; sourceTree = "<group>"; };
+		40FBA78D0C016AC800073A37 /* SetHome.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SetHome.cs; sourceTree = "<group>"; };
+		40FBA78E0C016AC800073A37 /* SitCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SitCommand.cs; sourceTree = "<group>"; };
+		40FBA78F0C016AC800073A37 /* SitOnCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SitOnCommand.cs; sourceTree = "<group>"; };
+		40FBA7900C016AC800073A37 /* StandCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = StandCommand.cs; sourceTree = "<group>"; };
+		40FBA7920C016AC800073A37 /* ExportCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ExportCommand.cs; sourceTree = "<group>"; };
+		40FBA7930C016AC800073A37 /* ExportParticlesCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ExportParticlesCommand.cs; sourceTree = "<group>"; };
+		40FBA7940C016AC800073A37 /* ImportCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ImportCommand.cs; sourceTree = "<group>"; };
+		40FBA7950C016AC800073A37 /* PrimCountCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = PrimCountCommand.cs; sourceTree = "<group>"; };
+		40FBA7970C016AC800073A37 /* DilationCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = DilationCommand.cs; sourceTree = "<group>"; };
+		40FBA7980C016AC800073A37 /* RegionInfoCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = RegionInfoCommand.cs; sourceTree = "<group>"; };
+		40FBA7990C016AC800073A37 /* StatsCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = StatsCommand.cs; sourceTree = "<group>"; };
+		40FBA79A0C016AC800073A37 /* UptimeCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = UptimeCommand.cs; sourceTree = "<group>"; };
+		40FBA79C0C016AC800073A37 /* DebugCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = DebugCommand.cs; sourceTree = "<group>"; };
+		40FBA79D0C016AC800073A37 /* HelpCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = HelpCommand.cs; sourceTree = "<group>"; };
+		40FBA79E0C016AC800073A37 /* LoadCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = LoadCommand.cs; sourceTree = "<group>"; };
+		40FBA79F0C016AC800073A37 /* LoginCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = LoginCommand.cs; sourceTree = "<group>"; };
+		40FBA7A00C016AC800073A37 /* LogoutCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = LogoutCommand.cs; sourceTree = "<group>"; };
+		40FBA7A10C016AC800073A37 /* MD5Command.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = MD5Command.cs; sourceTree = "<group>"; };
+		40FBA7A20C016AC800073A37 /* PacketLogCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = PacketLogCommand.cs; sourceTree = "<group>"; };
+		40FBA7A30C016AC800073A37 /* QuitCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = QuitCommand.cs; sourceTree = "<group>"; };
+		40FBA7A40C016AC800073A37 /* SetMasterCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SetMasterCommand.cs; sourceTree = "<group>"; };
+		40FBA7A50C016AC800073A37 /* SetMasterKeyCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = SetMasterKeyCommand.cs; sourceTree = "<group>"; };
+		40FBA7A60C016AC800073A37 /* ShowEffectsCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ShowEffectsCommand.cs; sourceTree = "<group>"; };
+		40FBA7A70C016AC800073A37 /* TouchCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = TouchCommand.cs; sourceTree = "<group>"; };
+		40FBA7A80C016AC800073A37 /* TreeCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = TreeCommand.cs; sourceTree = "<group>"; };
+		40FBA7A90C016AC800073A37 /* WhoCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = WhoCommand.cs; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4041F3110BED7D640084F948 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4041F3560BED7DB50084F948 /* libsecondlife.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4041F3E30BED8C0C0084F948 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4041F40F0BED8EE40084F948 /* libsecondlife.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3030B57345B00B0667D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				403A91760C4FC4820020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E36D0B57375B00B0667D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				403BAC840CC0B2CE00983A86 /* CookComputing.XmlRpcV2.dll in Frameworks */,
+				4054E3740B5737BA00B0667D /* libsecondlife.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3810B57394E00B0667D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4054E38D0B57399200B0667D /* libsecondlife.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3960B573A0900B0667D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4054E3A00B573A3700B0667D /* libsecondlife.dll in Frameworks */,
+				4054E3A10B573A3700B0667D /* libsecondlife.Utilities.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3A90B573A6500B0667D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4086669E0CA47D5C00456058 /* libsecondlife.Utilities.dll in Frameworks */,
+				403A91970C4FCD960020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */,
+				4054E4060B573A9F00B0667D /* libsecondlife.dll in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		40AAAB590B60C03C00EC04F0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		403A918C0C4FCC850020DD34 /* AssetSystem */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = AssetSystem;
+			sourceTree = "<group>";
+		};
+		4041F2F70BED7CE00084F948 /* slproxy */ = {
+			isa = PBXGroup;
+			children = (
+				4041F2F80BED7D550084F948 /* XmlRpcCS */,
+				4041F30C0BED7D550084F948 /* SLProxyMain.cs */,
+				4041F30D0BED7D550084F948 /* SLProxyLoader.cs */,
+				4041F30E0BED7D550084F948 /* SLProxy.cs */,
+				4041F30F0BED7D550084F948 /* Analyst.cs */,
+			);
+			name = slproxy;
+			sourceTree = "<group>";
+		};
+		4041F2F80BED7D550084F948 /* XmlRpcCS */ = {
+			isa = PBXGroup;
+			children = (
+				4041F2F90BED7D550084F948 /* Logger.cs */,
+				4041F2FA0BED7D550084F948 /* SimpleHttpRequest.cs */,
+				4041F2FB0BED7D550084F948 /* XmlRpcBoxcarRequest.cs */,
+				4041F2FC0BED7D550084F948 /* XmlRpcClientProxy.cs */,
+				4041F2FD0BED7D550084F948 /* XmlRpcDeserializer.cs */,
+				4041F2FE0BED7D550084F948 /* XmlRpcErrorCodes.cs */,
+				4041F2FF0BED7D550084F948 /* XmlRpcException.cs */,
+				4041F3000BED7D550084F948 /* XmlRpcExposedAttribute.cs */,
+				4041F3010BED7D550084F948 /* XmlRpcRequest.cs */,
+				4041F3020BED7D550084F948 /* XmlRpcRequestDeserializer.cs */,
+				4041F3030BED7D550084F948 /* XmlRpcRequestSerializer.cs */,
+				4041F3040BED7D550084F948 /* XmlRpcResponder.cs */,
+				4041F3050BED7D550084F948 /* XmlRpcResponse.cs */,
+				4041F3060BED7D550084F948 /* XmlRpcResponseDeserializer.cs */,
+				4041F3070BED7D550084F948 /* XmlRpcResponseSerializer.cs */,
+				4041F3080BED7D550084F948 /* XmlRpcSerializer.cs */,
+				4041F3090BED7D550084F948 /* XmlRpcServer.cs */,
+				4041F30A0BED7D550084F948 /* XmlRpcSystemObject.cs */,
+				4041F30B0BED7D550084F948 /* XmlRpcXmlTokens.cs */,
+			);
+			name = XmlRpcCS;
+			path = SLProxy/XmlRpcCS;
+			sourceTree = "<group>";
+		};
+		4054E2A50B5733B200B0667D = {
+			isa = PBXGroup;
+			children = (
+				403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */,
+				4041F2F70BED7CE00084F948 /* slproxy */,
+				4054E2B50B5733D200B0667D /* libsecondlife */,
+				40AAAB570B60C02700EC04F0 /* mapgenerator */,
+				4054E4730B575DBD00B0667D /* examples */,
+				4054E3680B5736FE00B0667D /* libsecondlife.Utilities */,
+				4054E3060B57345B00B0667D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4054E2B50B5733D200B0667D /* libsecondlife */ = {
+			isa = PBXGroup;
+			children = (
+				403987010CDFF82D00E3A90A /* XmlLLSD.cs */,
+				403987020CDFF82D00E3A90A /* NotationLLSD.cs */,
+				403987030CDFF82D00E3A90A /* LLSD.cs */,
+				403987040CDFF82D00E3A90A /* BinaryLLSD.cs */,
+				403986F90CDFF7FD00E3A90A /* AgentManager.cs */,
+				403986FA0CDFF7FD00E3A90A /* AgentManagerMovement.cs */,
+				403986FB0CDFF7FD00E3A90A /* AgentManagerCamera.cs */,
+				409E5DC70CB9BD5000D3CDB4 /* CapsToPacket.cs */,
+				408666860CA4763900456058 /* ObjectTracker.cs */,
+				408666870CA4763900456058 /* Image.cs */,
+				408666880CA4763900456058 /* CoordinateFrame.cs */,
+				40894F800C77CE970028E9FE /* SoundManager.cs */,
+				40894F810C77CE970028E9FE /* HttpBase.cs */,
+				40894F820C77CE970028E9FE /* EventDictionary.cs */,
+				40894F830C77CE970028E9FE /* CapsRequest.cs */,
+				40894F840C77CE970028E9FE /* Capabilities.cs */,
+				40894F850C77CE970028E9FE /* Animations.cs */,
+				40894F860C77CE970028E9FE /* CapsEventQueue.cs */,
+				403A918D0C4FCCA40020DD34 /* AssetTypes.cs */,
+				403A918C0C4FCC850020DD34 /* AssetSystem */,
+				403A91800C4FCAF00020DD34 /* OpenJPEG.cs */,
+				403A91810C4FCAF00020DD34 /* TGALoader.cs */,
+				403A91700C4FC4310020DD34 /* FriendsManager.cs */,
+				402D03C50C4846F300991307 /* Inventory.cs */,
+				402D03C60C4846F300991307 /* InventoryManager.cs */,
+				402D03C70C4846F300991307 /* InventoryNode.cs */,
+				402D03C80C4846F300991307 /* InventoryNodeDictionary.cs */,
+				402D03C90C4846F300991307 /* ObjectPoolBase.cs */,
+				402D03CA0C4846F300991307 /* UDPBase.cs */,
+				40F4CBA90C4592DD00F4B9CD /* Permissions.cs */,
+				40F4CBA10C45928000F4B9CD /* AssetManager.cs */,
+				40F4CB9A0C45924C00F4B9CD /* AppearanceManager.cs */,
+				408D586A0BFA25DB0076F241 /* TextureEntry.cs */,
+				4082AEF20BE5CF73005601E2 /* Types.cs */,
+				4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */,
+				4082AEF50BE5CF73005601E2 /* TerrainManager.cs */,
+				4082AEF60BE5CF73005601E2 /* Simulator.cs */,
+				4082AEF70BE5CF73005601E2 /* Settings.cs */,
+				4082AEF90BE5CF73005601E2 /* SecondLife.cs */,
+				4082AEFA0BE5CF73005601E2 /* ProtocolManager.cs */,
+				4082AEFB0BE5CF73005601E2 /* Prims.cs */,
+				4082AEFC0BE5CF73005601E2 /* ParticleSystem.cs */,
+				4082AEFD0BE5CF73005601E2 /* ParcelManager.cs */,
+				4082AEFE0BE5CF73005601E2 /* ObjectManager.cs */,
+				4082AEFF0BE5CF73005601E2 /* NetworkManager.cs */,
+				4082AF000BE5CF73005601E2 /* NameValue.cs */,
+				4082AF040BE5CF73005601E2 /* Login.cs */,
+				4082AF060BE5CF73005601E2 /* LLObject.cs */,
+				4082AF0C0BE5CF73005601E2 /* Helpers.cs */,
+				4082AF0D0BE5CF73005601E2 /* GroupManager.cs */,
+				4082AF0E0BE5CF73005601E2 /* GridManager.cs */,
+				4082AF0F0BE5CF73005601E2 /* EstateTools.cs */,
+				4082AF100BE5CF73005601E2 /* DirectoryManager.cs */,
+				4082AF120BE5CF73005601E2 /* BlockingQueue.cs */,
+				4082AF130BE5CF73005601E2 /* BitPack.cs */,
+				4082AF140BE5CF73005601E2 /* BakeLayer.cs */,
+				4082AF150BE5CF73005601E2 /* AvatarManager.cs */,
+				4082AF160BE5CF73005601E2 /* Avatar.cs */,
+				4082AF170BE5CF73005601E2 /* AssemblyInfo.cs */,
+				4082AF180BE5CF73005601E2 /* AgentThrottle.cs */,
+				4082AF190BE5CF73005601E2 /* _VisualParam_.cs */,
+				4082AF1A0BE5CF73005601E2 /* _Packets_.cs */,
+			);
+			name = libsecondlife;
+			sourceTree = "<group>";
+		};
+		4054E3060B57345B00B0667D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4054E3050B57345B00B0667D /* libsecondlife.dll */,
+				4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */,
+				4054E3830B57394E00B0667D /* name2key.exe */,
+				4054E3980B573A0900B0667D /* Key2Name.exe */,
+				4054E3AB0B573A6500B0667D /* TestClient.exe */,
+				40AAAB5B0B60C03C00EC04F0 /* mapgenerator.exe */,
+				4041F3130BED7D640084F948 /* slproxy.exe */,
+				4041F3E50BED8C0C0084F948 /* IA_LandmarkTool.exe */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4054E3680B5736FE00B0667D /* libsecondlife.Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				4082AFC70BE5D099005601E2 /* Utilities.cs */,
+				4082AFC80BE5D099005601E2 /* Properties */,
+			);
+			name = libsecondlife.Utilities;
+			sourceTree = "<group>";
+		};
+		4054E3870B57396400B0667D /* name2key */ = {
+			isa = PBXGroup;
+			children = (
+				4082AFC50BE5D064005601E2 /* name2key.cs */,
+			);
+			name = name2key;
+			sourceTree = "<group>";
+		};
+		4054E3910B5739E100B0667D /* Key2Name */ = {
+			isa = PBXGroup;
+			children = (
+				4082AFC30BE5D04D005601E2 /* key2name.cs */,
+			);
+			name = Key2Name;
+			sourceTree = "<group>";
+		};
+		4054E3AF0B573A7D00B0667D /* TestClient */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA76F0C016AC800073A37 /* Commands */,
+				4082AF500BE5D032005601E2 /* TestClient.cs */,
+				4082AF510BE5D032005601E2 /* Properties */,
+				4082AF530BE5D032005601E2 /* Program.cs */,
+				4082AF540BE5D032005601E2 /* Parsing.cs */,
+				4082AF890BE5D032005601E2 /* Command.cs */,
+				4082AF8A0BE5D032005601E2 /* ClientManager.cs */,
+				4082AF8B0BE5D032005601E2 /* Arguments.cs */,
+			);
+			name = TestClient;
+			sourceTree = "<group>";
+		};
+		4054E4730B575DBD00B0667D /* examples */ = {
+			isa = PBXGroup;
+			children = (
+				4054E3AF0B573A7D00B0667D /* TestClient */,
+				4054E3910B5739E100B0667D /* Key2Name */,
+				4054E3870B57396400B0667D /* name2key */,
+			);
+			name = examples;
+			sourceTree = "<group>";
+		};
+		4082AF400BE5CF96005601E2 /* Properties */ = {
+			isa = PBXGroup;
+			children = (
+				4082AF410BE5CF96005601E2 /* AssemblyInfo.cs */,
+			);
+			name = Properties;
+			path = libsecondlife/mapgenerator/Properties;
+			sourceTree = "<group>";
+		};
+		4082AF510BE5D032005601E2 /* Properties */ = {
+			isa = PBXGroup;
+			children = (
+				4082AF520BE5D032005601E2 /* AssemblyInfo.cs */,
+			);
+			name = Properties;
+			path = libsecondlife/examples/TestClient/Properties;
+			sourceTree = "<group>";
+		};
+		4082AFC80BE5D099005601E2 /* Properties */ = {
+			isa = PBXGroup;
+			children = (
+				4082AFC90BE5D099005601E2 /* AssemblyInfo.cs */,
+			);
+			name = Properties;
+			path = libsecondlife/libsecondlife.Utilities/Properties;
+			sourceTree = "<group>";
+		};
+		40AAAB570B60C02700EC04F0 /* mapgenerator */ = {
+			isa = PBXGroup;
+			children = (
+				4082AF3F0BE5CF96005601E2 /* ProtocolManager.cs */,
+				4082AF400BE5CF96005601E2 /* Properties */,
+				4082AF420BE5CF96005601E2 /* mapgenerator.cs */,
+			);
+			name = mapgenerator;
+			sourceTree = "<group>";
+		};
+		40FBA76F0C016AC800073A37 /* Commands */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA7700C016AC800073A37 /* CloneProfileCommand.cs */,
+				40FBA7710C016AC800073A37 /* Communication */,
+				40FBA7780C016AC800073A37 /* GoHome.cs */,
+				40FBA7790C016AC800073A37 /* GotoLandmark.cs */,
+				40FBA77A0C016AC800073A37 /* Inventory */,
+				40FBA7840C016AC800073A37 /* Land */,
+				40FBA7870C016AC800073A37 /* Movement */,
+				40FBA7910C016AC800073A37 /* Prims */,
+				40FBA7960C016AC800073A37 /* Stats */,
+				40FBA79B0C016AC800073A37 /* System */,
+				40FBA7A70C016AC800073A37 /* TouchCommand.cs */,
+				40FBA7A80C016AC800073A37 /* TreeCommand.cs */,
+				40FBA7A90C016AC800073A37 /* WhoCommand.cs */,
+			);
+			name = Commands;
+			path = libsecondlife/examples/TestClient/Commands;
+			sourceTree = "<group>";
+		};
+		40FBA7710C016AC800073A37 /* Communication */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA7720C016AC800073A37 /* EchoMasterCommand.cs */,
+				40FBA7730C016AC800073A37 /* IMCommand.cs */,
+				40FBA7740C016AC800073A37 /* SayCommand.cs */,
+				40FBA7750C016AC800073A37 /* ShoutCommand.cs */,
+				40FBA7760C016AC800073A37 /* TtsCommand.cs */,
+				40FBA7770C016AC800073A37 /* WhisperCommand.cs */,
+			);
+			path = Communication;
+			sourceTree = "<group>";
+		};
+		40FBA77A0C016AC800073A37 /* Inventory */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA77B0C016AC800073A37 /* AppearanceCommand.cs */,
+				40FBA77C0C016AC800073A37 /* BalanceCommand.cs */,
+				40FBA77D0C016AC800073A37 /* DeleteFolderCommand.cs */,
+				40FBA77E0C016AC800073A37 /* DumpOutfitCommand.cs */,
+				40FBA77F0C016AC800073A37 /* ExportOutfitCommand.cs */,
+				40FBA7800C016AC800073A37 /* GiveAllCommand.cs */,
+				40FBA7810C016AC800073A37 /* ImportOutfitCommand.cs */,
+				40FBA7820C016AC800073A37 /* InventoryCommand.cs */,
+				40FBA7830C016AC800073A37 /* WearCommand.cs */,
+			);
+			path = Inventory;
+			sourceTree = "<group>";
+		};
+		40FBA7840C016AC800073A37 /* Land */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA7850C016AC800073A37 /* FindSimCommand.cs */,
+				40FBA7860C016AC800073A37 /* ParcelInfoCommand.cs */,
+			);
+			path = Land;
+			sourceTree = "<group>";
+		};
+		40FBA7870C016AC800073A37 /* Movement */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA7880C016AC800073A37 /* FollowCommand.cs */,
+				40FBA7890C016AC800073A37 /* GotoCommand.cs */,
+				40FBA78A0C016AC800073A37 /* JumpCommand.cs */,
+				40FBA78B0C016AC800073A37 /* LocationCommand.cs */,
+				40FBA78C0C016AC800073A37 /* MoveToCommand.cs */,
+				40FBA78D0C016AC800073A37 /* SetHome.cs */,
+				40FBA78E0C016AC800073A37 /* SitCommand.cs */,
+				40FBA78F0C016AC800073A37 /* SitOnCommand.cs */,
+				40FBA7900C016AC800073A37 /* StandCommand.cs */,
+			);
+			path = Movement;
+			sourceTree = "<group>";
+		};
+		40FBA7910C016AC800073A37 /* Prims */ = {
+			isa = PBXGroup;
+			children = (
+				403BAC750CC0B25200983A86 /* FindObjectsCommand.cs */,
+				403BAC760CC0B25200983A86 /* PrimInfoCommand.cs */,
+				403BAC770CC0B25200983A86 /* ManglePrimCommand.cs */,
+				403BAC780CC0B25200983A86 /* FindTextureCommand.cs */,
+				40FBA7920C016AC800073A37 /* ExportCommand.cs */,
+				40FBA7930C016AC800073A37 /* ExportParticlesCommand.cs */,
+				40FBA7940C016AC800073A37 /* ImportCommand.cs */,
+				40FBA7950C016AC800073A37 /* PrimCountCommand.cs */,
+			);
+			path = Prims;
+			sourceTree = "<group>";
+		};
+		40FBA7960C016AC800073A37 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA7970C016AC800073A37 /* DilationCommand.cs */,
+				40FBA7980C016AC800073A37 /* RegionInfoCommand.cs */,
+				40FBA7990C016AC800073A37 /* StatsCommand.cs */,
+				40FBA79A0C016AC800073A37 /* UptimeCommand.cs */,
+			);
+			path = Stats;
+			sourceTree = "<group>";
+		};
+		40FBA79B0C016AC800073A37 /* System */ = {
+			isa = PBXGroup;
+			children = (
+				40FBA79C0C016AC800073A37 /* DebugCommand.cs */,
+				40FBA79D0C016AC800073A37 /* HelpCommand.cs */,
+				40FBA79E0C016AC800073A37 /* LoadCommand.cs */,
+				40FBA79F0C016AC800073A37 /* LoginCommand.cs */,
+				40FBA7A00C016AC800073A37 /* LogoutCommand.cs */,
+				40FBA7A10C016AC800073A37 /* MD5Command.cs */,
+				40FBA7A20C016AC800073A37 /* PacketLogCommand.cs */,
+				40FBA7A30C016AC800073A37 /* QuitCommand.cs */,
+				40FBA7A40C016AC800073A37 /* SetMasterCommand.cs */,
+				40FBA7A50C016AC800073A37 /* SetMasterKeyCommand.cs */,
+				40FBA7A60C016AC800073A37 /* ShowEffectsCommand.cs */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4041F3120BED7D640084F948 /* slproxy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4041F3370BED7D710084F948 /* Build configuration list for PBXNativeTarget "slproxy" */;
+			buildPhases = (
+				4041F3100BED7D640084F948 /* Sources */,
+				4041F3110BED7D640084F948 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4041F3530BED7DA90084F948 /* PBXTargetDependency */,
+			);
+			name = slproxy;
+			productName = slproxy;
+			productReference = 4041F3130BED7D640084F948 /* slproxy.exe */;
+			productType = "com.mono.product-type.executable";
+		};
+		4041F3E40BED8C0C0084F948 /* IA_LandmarkTool */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4041F3E90BED8C210084F948 /* Build configuration list for PBXNativeTarget "IA_LandmarkTool" */;
+			buildPhases = (
+				4041F3E20BED8C0C0084F948 /* Sources */,
+				4041F3E30BED8C0C0084F948 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4041F44F0BED938B0084F948 /* PBXTargetDependency */,
+			);
+			name = IA_LandmarkTool;
+			productName = IA_LandmarkTool;
+			productReference = 4041F3E50BED8C0C0084F948 /* IA_LandmarkTool.exe */;
+			productType = "com.mono.product-type.executable";
+		};
+		4054E3040B57345B00B0667D /* libsecondlife */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4054E3080B57345B00B0667D /* Build configuration list for PBXNativeTarget "libsecondlife" */;
+			buildPhases = (
+				4054E3020B57345B00B0667D /* Sources */,
+				4054E3030B57345B00B0667D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = libsecondlife;
+			productName = "libsecondlife-cs";
+			productReference = 4054E3050B57345B00B0667D /* libsecondlife.dll */;
+			productType = "com.mono.product-type.library";
+		};
+		4054E36E0B57375B00B0667D /* libsecondlife.Utilities */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4054E3710B57376D00B0667D /* Build configuration list for PBXNativeTarget "libsecondlife.Utilities" */;
+			buildPhases = (
+				4054E36C0B57375B00B0667D /* Sources */,
+				4054E36D0B57375B00B0667D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4054E3760B5737C600B0667D /* PBXTargetDependency */,
+			);
+			name = libsecondlife.Utilities;
+			productName = libsecondlife.Utilities;
+			productReference = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */;
+			productType = "com.mono.product-type.library";
+		};
+		4054E3820B57394E00B0667D /* name2key */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4054E3880B57396400B0667D /* Build configuration list for PBXNativeTarget "name2key" */;
+			buildPhases = (
+				4054E3800B57394E00B0667D /* Sources */,
+				4054E3810B57394E00B0667D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4054E3860B57395D00B0667D /* PBXTargetDependency */,
+			);
+			name = name2key;
+			productName = name2key;
+			productReference = 4054E3830B57394E00B0667D /* name2key.exe */;
+			productType = "com.mono.product-type.executable";
+		};
+		4054E3970B573A0900B0667D /* Key2Name */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4054E3A50B573A4C00B0667D /* Build configuration list for PBXNativeTarget "Key2Name" */;
+			buildPhases = (
+				4054E3950B573A0900B0667D /* Sources */,
+				4054E3960B573A0900B0667D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4054E39B0B573A1000B0667D /* PBXTargetDependency */,
+				4054E39D0B573A1000B0667D /* PBXTargetDependency */,
+			);
+			name = Key2Name;
+			productName = Key2Name;
+			productReference = 4054E3980B573A0900B0667D /* Key2Name.exe */;
+			productType = "com.mono.product-type.executable";
+		};
+		4054E3AA0B573A6500B0667D /* TestClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4054E3B00B573A7D00B0667D /* Build configuration list for PBXNativeTarget "TestClient" */;
+			buildPhases = (
+				4054E3A80B573A6500B0667D /* Sources */,
+				4054E3A90B573A6500B0667D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4054E3AE0B573A7600B0667D /* PBXTargetDependency */,
+				403A919B0C4FCDC60020DD34 /* PBXTargetDependency */,
+			);
+			name = TestClient;
+			productName = TestClient;
+			productReference = 4054E3AB0B573A6500B0667D /* TestClient.exe */;
+			productType = "com.mono.product-type.executable";
+		};
+		40AAAB5A0B60C03C00EC04F0 /* mapgenerator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 40AAAB660B60C06800EC04F0 /* Build configuration list for PBXNativeTarget "mapgenerator" */;
+			buildPhases = (
+				40AAAB580B60C03C00EC04F0 /* Sources */,
+				40AAAB590B60C03C00EC04F0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = mapgenerator;
+			productName = mapgenerator;
+			productReference = 40AAAB5B0B60C03C00EC04F0 /* mapgenerator.exe */;
+			productType = "com.mono.product-type.executable";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4054E2A70B5733B200B0667D /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 4054E2A80B5733B200B0667D /* Build configuration list for PBXProject "libsecondlife" */;
+			hasScannedForEncodings = 0;
+			mainGroup = 4054E2A50B5733B200B0667D;
+			productRefGroup = 4054E3060B57345B00B0667D /* Products */;
+			projectDirPath = "";
+			targets = (
+				4054E3040B57345B00B0667D /* libsecondlife */,
+				4054E36E0B57375B00B0667D /* libsecondlife.Utilities */,
+				4054E3820B57394E00B0667D /* name2key */,
+				4054E3970B573A0900B0667D /* Key2Name */,
+				4054E3AA0B573A6500B0667D /* TestClient */,
+				40AAAB5A0B60C03C00EC04F0 /* mapgenerator */,
+				4041F3120BED7D640084F948 /* slproxy */,
+				4041F3E40BED8C0C0084F948 /* IA_LandmarkTool */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4041F3100BED7D640084F948 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4041F33A0BED7D8E0084F948 /* Analyst.cs in Sources */,
+				4041F33B0BED7D8E0084F948 /* Logger.cs in Sources */,
+				4041F33C0BED7D8E0084F948 /* SimpleHttpRequest.cs in Sources */,
+				4041F33D0BED7D8E0084F948 /* SLProxy.cs in Sources */,
+				4041F33E0BED7D8E0084F948 /* SLProxyLoader.cs in Sources */,
+				4041F33F0BED7D8E0084F948 /* SLProxyMain.cs in Sources */,
+				4041F3400BED7D8E0084F948 /* XmlRpcBoxcarRequest.cs in Sources */,
+				4041F3410BED7D8E0084F948 /* XmlRpcClientProxy.cs in Sources */,
+				4041F3420BED7D8E0084F948 /* XmlRpcDeserializer.cs in Sources */,
+				4041F3430BED7D8E0084F948 /* XmlRpcErrorCodes.cs in Sources */,
+				4041F3440BED7D8E0084F948 /* XmlRpcException.cs in Sources */,
+				4041F3450BED7D8E0084F948 /* XmlRpcExposedAttribute.cs in Sources */,
+				4041F3460BED7D8E0084F948 /* XmlRpcRequest.cs in Sources */,
+				4041F3470BED7D8E0084F948 /* XmlRpcRequestDeserializer.cs in Sources */,
+				4041F3480BED7D8E0084F948 /* XmlRpcRequestSerializer.cs in Sources */,
+				4041F3490BED7D8E0084F948 /* XmlRpcResponder.cs in Sources */,
+				4041F34A0BED7D8E0084F948 /* XmlRpcResponse.cs in Sources */,
+				4041F34B0BED7D8E0084F948 /* XmlRpcResponseDeserializer.cs in Sources */,
+				4041F34C0BED7D8E0084F948 /* XmlRpcResponseSerializer.cs in Sources */,
+				4041F34D0BED7D8E0084F948 /* XmlRpcSerializer.cs in Sources */,
+				4041F34E0BED7D8E0084F948 /* XmlRpcServer.cs in Sources */,
+				4041F34F0BED7D8E0084F948 /* XmlRpcSystemObject.cs in Sources */,
+				4041F3500BED7D8E0084F948 /* XmlRpcXmlTokens.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4041F3E20BED8C0C0084F948 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3020B57345B00B0667D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4082AF3E0BE5CF73005601E2 /* _Packets_.cs in Sources */,
+				4082AF3D0BE5CF73005601E2 /* _VisualParam_.cs in Sources */,
+				4082AF3C0BE5CF73005601E2 /* AgentThrottle.cs in Sources */,
+				40F4CB9B0C45924C00F4B9CD /* AppearanceManager.cs in Sources */,
+				4082AF3B0BE5CF73005601E2 /* AssemblyInfo.cs in Sources */,
+				40F4CBA20C45928000F4B9CD /* AssetManager.cs in Sources */,
+				4082AF3A0BE5CF73005601E2 /* Avatar.cs in Sources */,
+				4082AF390BE5CF73005601E2 /* AvatarManager.cs in Sources */,
+				4082AF380BE5CF73005601E2 /* BakeLayer.cs in Sources */,
+				4082AF370BE5CF73005601E2 /* BitPack.cs in Sources */,
+				4082AF360BE5CF73005601E2 /* BlockingQueue.cs in Sources */,
+				4082AF340BE5CF73005601E2 /* DirectoryManager.cs in Sources */,
+				4082AF330BE5CF73005601E2 /* EstateTools.cs in Sources */,
+				403A91710C4FC4310020DD34 /* FriendsManager.cs in Sources */,
+				4082AF320BE5CF73005601E2 /* GridManager.cs in Sources */,
+				4082AF310BE5CF73005601E2 /* GroupManager.cs in Sources */,
+				4082AF300BE5CF73005601E2 /* Helpers.cs in Sources */,
+				402D03CB0C4846F300991307 /* Inventory.cs in Sources */,
+				402D03CC0C4846F300991307 /* InventoryManager.cs in Sources */,
+				402D03CD0C4846F300991307 /* InventoryNode.cs in Sources */,
+				402D03CE0C4846F300991307 /* InventoryNodeDictionary.cs in Sources */,
+				4082AF2F0BE5CF73005601E2 /* LLObject.cs in Sources */,
+				4082AF2D0BE5CF73005601E2 /* Login.cs in Sources */,
+				4082AF290BE5CF73005601E2 /* NameValue.cs in Sources */,
+				4082AF280BE5CF73005601E2 /* NetworkManager.cs in Sources */,
+				4082AF270BE5CF73005601E2 /* ObjectManager.cs in Sources */,
+				402D03CF0C4846F300991307 /* ObjectPoolBase.cs in Sources */,
+				403A91820C4FCAF00020DD34 /* OpenJPEG.cs in Sources */,
+				4082AF260BE5CF73005601E2 /* ParcelManager.cs in Sources */,
+				4082AF250BE5CF73005601E2 /* ParticleSystem.cs in Sources */,
+				40F4CBAA0C4592DD00F4B9CD /* Permissions.cs in Sources */,
+				4082AF240BE5CF73005601E2 /* Prims.cs in Sources */,
+				4082AF230BE5CF73005601E2 /* ProtocolManager.cs in Sources */,
+				4082AF220BE5CF73005601E2 /* SecondLife.cs in Sources */,
+				4082AF200BE5CF73005601E2 /* Settings.cs in Sources */,
+				4082AF1F0BE5CF73005601E2 /* Simulator.cs in Sources */,
+				4082AF1E0BE5CF73005601E2 /* TerrainManager.cs in Sources */,
+				408D586B0BFA25DB0076F241 /* TextureEntry.cs in Sources */,
+				403A91830C4FCAF00020DD34 /* TGALoader.cs in Sources */,
+				4082AF1C0BE5CF73005601E2 /* ThreadUtil.cs in Sources */,
+				4082AF1B0BE5CF73005601E2 /* Types.cs in Sources */,
+				402D03D00C4846F300991307 /* UDPBase.cs in Sources */,
+				403A918E0C4FCCA40020DD34 /* AssetTypes.cs in Sources */,
+				40894F870C77CE970028E9FE /* SoundManager.cs in Sources */,
+				40894F880C77CE970028E9FE /* HttpBase.cs in Sources */,
+				40894F890C77CE970028E9FE /* EventDictionary.cs in Sources */,
+				40894F8A0C77CE970028E9FE /* CapsRequest.cs in Sources */,
+				40894F8B0C77CE970028E9FE /* Capabilities.cs in Sources */,
+				40894F8C0C77CE970028E9FE /* Animations.cs in Sources */,
+				40894F8D0C77CE970028E9FE /* CapsEventQueue.cs in Sources */,
+				408666890CA4763900456058 /* ObjectTracker.cs in Sources */,
+				4086668A0CA4763900456058 /* Image.cs in Sources */,
+				4086668B0CA4763900456058 /* CoordinateFrame.cs in Sources */,
+				409E5DC80CB9BD5000D3CDB4 /* CapsToPacket.cs in Sources */,
+				403986FC0CDFF7FD00E3A90A /* AgentManager.cs in Sources */,
+				403986FD0CDFF7FD00E3A90A /* AgentManagerMovement.cs in Sources */,
+				403986FE0CDFF7FD00E3A90A /* AgentManagerCamera.cs in Sources */,
+				403987050CDFF82D00E3A90A /* XmlLLSD.cs in Sources */,
+				403987060CDFF82D00E3A90A /* NotationLLSD.cs in Sources */,
+				403987070CDFF82D00E3A90A /* LLSD.cs in Sources */,
+				403987080CDFF82D00E3A90A /* BinaryLLSD.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E36C0B57375B00B0667D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4082AFCD0BE5D099005601E2 /* Utilities.cs in Sources */,
+				4082AFCE0BE5D099005601E2 /* AssemblyInfo.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3800B57394E00B0667D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4082AFC60BE5D064005601E2 /* name2key.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3950B573A0900B0667D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4082AFC40BE5D04D005601E2 /* key2name.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4054E3A80B573A6500B0667D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4082AF8C0BE5D032005601E2 /* TestClient.cs in Sources */,
+				4082AF8D0BE5D032005601E2 /* AssemblyInfo.cs in Sources */,
+				4082AF8E0BE5D032005601E2 /* Program.cs in Sources */,
+				4082AF8F0BE5D032005601E2 /* Parsing.cs in Sources */,
+				4082AFC00BE5D032005601E2 /* Command.cs in Sources */,
+				4082AFC10BE5D032005601E2 /* ClientManager.cs in Sources */,
+				4082AFC20BE5D032005601E2 /* Arguments.cs in Sources */,
+				40FBA7AA0C016AC800073A37 /* CloneProfileCommand.cs in Sources */,
+				40FBA7AB0C016AC800073A37 /* EchoMasterCommand.cs in Sources */,
+				40FBA7AC0C016AC800073A37 /* IMCommand.cs in Sources */,
+				40FBA7AD0C016AC800073A37 /* SayCommand.cs in Sources */,
+				40FBA7AE0C016AC800073A37 /* ShoutCommand.cs in Sources */,
+				40FBA7B00C016AC800073A37 /* WhisperCommand.cs in Sources */,
+				40FBA7B10C016AC800073A37 /* GoHome.cs in Sources */,
+				40FBA7B20C016AC800073A37 /* GotoLandmark.cs in Sources */,
+				40FBA7B30C016AC800073A37 /* AppearanceCommand.cs in Sources */,
+				40FBA7B40C016AC800073A37 /* BalanceCommand.cs in Sources */,
+				40FBA7B50C016AC800073A37 /* DeleteFolderCommand.cs in Sources */,
+				40FBA7B60C016AC800073A37 /* DumpOutfitCommand.cs in Sources */,
+				40FBA7B70C016AC800073A37 /* ExportOutfitCommand.cs in Sources */,
+				40FBA7B80C016AC800073A37 /* GiveAllCommand.cs in Sources */,
+				40FBA7B90C016AC800073A37 /* ImportOutfitCommand.cs in Sources */,
+				40FBA7BA0C016AC800073A37 /* InventoryCommand.cs in Sources */,
+				40FBA7BB0C016AC800073A37 /* WearCommand.cs in Sources */,
+				40FBA7BC0C016AC800073A37 /* FindSimCommand.cs in Sources */,
+				40FBA7BD0C016AC800073A37 /* ParcelInfoCommand.cs in Sources */,
+				40FBA7BE0C016AC800073A37 /* FollowCommand.cs in Sources */,
+				40FBA7BF0C016AC800073A37 /* GotoCommand.cs in Sources */,
+				40FBA7C00C016AC800073A37 /* JumpCommand.cs in Sources */,
+				40FBA7C10C016AC800073A37 /* LocationCommand.cs in Sources */,
+				40FBA7C20C016AC800073A37 /* MoveToCommand.cs in Sources */,
+				40FBA7C30C016AC800073A37 /* SetHome.cs in Sources */,
+				40FBA7C40C016AC800073A37 /* SitCommand.cs in Sources */,
+				40FBA7C50C016AC800073A37 /* SitOnCommand.cs in Sources */,
+				40FBA7C60C016AC800073A37 /* StandCommand.cs in Sources */,
+				40FBA7C70C016AC800073A37 /* ExportCommand.cs in Sources */,
+				40FBA7C80C016AC800073A37 /* ExportParticlesCommand.cs in Sources */,
+				40FBA7C90C016AC800073A37 /* ImportCommand.cs in Sources */,
+				40FBA7CA0C016AC800073A37 /* PrimCountCommand.cs in Sources */,
+				40FBA7CB0C016AC800073A37 /* DilationCommand.cs in Sources */,
+				40FBA7CC0C016AC800073A37 /* RegionInfoCommand.cs in Sources */,
+				40FBA7CD0C016AC800073A37 /* StatsCommand.cs in Sources */,
+				40FBA7CE0C016AC800073A37 /* UptimeCommand.cs in Sources */,
+				40FBA7CF0C016AC800073A37 /* DebugCommand.cs in Sources */,
+				40FBA7D00C016AC800073A37 /* HelpCommand.cs in Sources */,
+				40FBA7D10C016AC800073A37 /* LoadCommand.cs in Sources */,
+				40FBA7D20C016AC800073A37 /* LoginCommand.cs in Sources */,
+				40FBA7D30C016AC800073A37 /* LogoutCommand.cs in Sources */,
+				40FBA7D40C016AC800073A37 /* MD5Command.cs in Sources */,
+				40FBA7D50C016AC800073A37 /* PacketLogCommand.cs in Sources */,
+				40FBA7D60C016AC800073A37 /* QuitCommand.cs in Sources */,
+				40FBA7D70C016AC800073A37 /* SetMasterCommand.cs in Sources */,
+				40FBA7D80C016AC800073A37 /* SetMasterKeyCommand.cs in Sources */,
+				40FBA7D90C016AC800073A37 /* ShowEffectsCommand.cs in Sources */,
+				40FBA7DA0C016AC800073A37 /* TouchCommand.cs in Sources */,
+				40FBA7DB0C016AC800073A37 /* TreeCommand.cs in Sources */,
+				40FBA7DC0C016AC800073A37 /* WhoCommand.cs in Sources */,
+				403BAC790CC0B25200983A86 /* FindObjectsCommand.cs in Sources */,
+				403BAC7A0CC0B25200983A86 /* PrimInfoCommand.cs in Sources */,
+				403BAC7B0CC0B25200983A86 /* ManglePrimCommand.cs in Sources */,
+				403BAC7C0CC0B25200983A86 /* FindTextureCommand.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		40AAAB580B60C03C00EC04F0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4082AF430BE5CF96005601E2 /* ProtocolManager.cs in Sources */,
+				4082AF440BE5CF96005601E2 /* AssemblyInfo.cs in Sources */,
+				4082AF450BE5CF96005601E2 /* mapgenerator.cs in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		403A919B0C4FCDC60020DD34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E36E0B57375B00B0667D /* libsecondlife.Utilities */;
+			targetProxy = 403A919A0C4FCDC60020DD34 /* PBXContainerItemProxy */;
+		};
+		4041F3530BED7DA90084F948 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E3040B57345B00B0667D /* libsecondlife */;
+			targetProxy = 4041F3520BED7DA90084F948 /* PBXContainerItemProxy */;
+		};
+		4041F44F0BED938B0084F948 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E3040B57345B00B0667D /* libsecondlife */;
+			targetProxy = 4041F44E0BED938B0084F948 /* PBXContainerItemProxy */;
+		};
+		4054E3760B5737C600B0667D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E3040B57345B00B0667D /* libsecondlife */;
+			targetProxy = 4054E3750B5737C600B0667D /* PBXContainerItemProxy */;
+		};
+		4054E3860B57395D00B0667D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E3040B57345B00B0667D /* libsecondlife */;
+			targetProxy = 4054E3850B57395D00B0667D /* PBXContainerItemProxy */;
+		};
+		4054E39B0B573A1000B0667D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E3040B57345B00B0667D /* libsecondlife */;
+			targetProxy = 4054E39A0B573A1000B0667D /* PBXContainerItemProxy */;
+		};
+		4054E39D0B573A1000B0667D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E36E0B57375B00B0667D /* libsecondlife.Utilities */;
+			targetProxy = 4054E39C0B573A1000B0667D /* PBXContainerItemProxy */;
+		};
+		4054E3AE0B573A7600B0667D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4054E3040B57345B00B0667D /* libsecondlife */;
+			targetProxy = 4054E3AD0B573A7600B0667D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4041F3380BED7D710084F948 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = slproxy;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+			};
+			name = Debug;
+		};
+		4041F3390BED7D710084F948 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = slproxy;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		4041F3EA0BED8C210084F948 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = IA_LandmarkTool;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+			};
+			name = Debug;
+		};
+		4041F3EB0BED8C210084F948 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = IA_LandmarkTool;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		4054E2A90B5733B200B0667D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		4054E2AA0B5733B200B0667D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Release;
+		};
+		4054E3090B57345B00B0667D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				CS_DEBUG = YES;
+				CS_DEFINE = DEBUG;
+				CS_REFERENCEDASSEMBLIES = "System;System.Data;System.Xml;System.Drawing";
+				CS_UNSAFE = YES;
+				EXECUTABLE_EXTENSION = dll;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = libsecondlife;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:library";
+			};
+			name = Debug;
+		};
+		4054E30A0B57345B00B0667D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				CS_REFERENCEDASSEMBLIES = "System;System.Data;System.Xml;System.Drawing";
+				CS_UNSAFE = YES;
+				EXECUTABLE_EXTENSION = dll;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = libsecondlife;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:library";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		4054E3720B57376D00B0667D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				CS_REFERENCEDASSEMBLIES = "System;System.Data;System.Xml;System.Drawing";
+				EXECUTABLE_EXTENSION = dll;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = libsecondlife.Utilities;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:library";
+			};
+			name = Debug;
+		};
+		4054E3730B57376D00B0667D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				CS_REFERENCEDASSEMBLIES = "System;System.Data;System.Xml;System.Drawing";
+				EXECUTABLE_EXTENSION = dll;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = libsecondlife.Utilities;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:library";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		4054E3890B57396400B0667D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = name2key;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+			};
+			name = Debug;
+		};
+		4054E38A0B57396400B0667D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = name2key;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		4054E3A60B573A4C00B0667D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = Key2Name;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+			};
+			name = Debug;
+		};
+		4054E3A70B573A4C00B0667D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = Key2Name;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		4054E3B10B573A7D00B0667D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				CS_LIBRARIES = "";
+				EXECUTABLE_EXTENSION = exe;
+				FRAMEWORK_SEARCH_PATHS = bin;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = bin;
+				PRODUCT_NAME = TestClient;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+			};
+			name = Debug;
+		};
+		4054E3B20B573A7D00B0667D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = TestClient;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		40AAAB670B60C06800EC04F0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = mapgenerator;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+			};
+			name = Debug;
+		};
+		40AAAB680B60C06800EC04F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = exe;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = mapgenerator;
+				SYMROOT = bin;
+				TARGET_TYPE = "-target:exe";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4041F3370BED7D710084F948 /* Build configuration list for PBXNativeTarget "slproxy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4041F3380BED7D710084F948 /* Debug */,
+				4041F3390BED7D710084F948 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4041F3E90BED8C210084F948 /* Build configuration list for PBXNativeTarget "IA_LandmarkTool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4041F3EA0BED8C210084F948 /* Debug */,
+				4041F3EB0BED8C210084F948 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4054E2A80B5733B200B0667D /* Build configuration list for PBXProject "libsecondlife" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4054E2A90B5733B200B0667D /* Debug */,
+				4054E2AA0B5733B200B0667D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4054E3080B57345B00B0667D /* Build configuration list for PBXNativeTarget "libsecondlife" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4054E3090B57345B00B0667D /* Debug */,
+				4054E30A0B57345B00B0667D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4054E3710B57376D00B0667D /* Build configuration list for PBXNativeTarget "libsecondlife.Utilities" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4054E3720B57376D00B0667D /* Debug */,
+				4054E3730B57376D00B0667D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4054E3880B57396400B0667D /* Build configuration list for PBXNativeTarget "name2key" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4054E3890B57396400B0667D /* Debug */,
+				4054E38A0B57396400B0667D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4054E3A50B573A4C00B0667D /* Build configuration list for PBXNativeTarget "Key2Name" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4054E3A60B573A4C00B0667D /* Debug */,
+				4054E3A70B573A4C00B0667D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4054E3B00B573A7D00B0667D /* Build configuration list for PBXNativeTarget "TestClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4054E3B10B573A7D00B0667D /* Debug */,
+				4054E3B20B573A7D00B0667D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		40AAAB660B60C06800EC04F0 /* Build configuration list for PBXNativeTarget "mapgenerator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				40AAAB670B60C06800EC04F0 /* Debug */,
+				40AAAB680B60C06800EC04F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4054E2A70B5733B200B0667D /* Project object */;
+}

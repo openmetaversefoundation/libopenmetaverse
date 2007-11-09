@@ -1,0 +1,8 @@
+out ChatFromViewer
+[AgentData]
+AgentID = $AgentID
+SessionID = $SessionID
+[ChatData]
+Message = $Value
+Type = 0
+Channel = 0

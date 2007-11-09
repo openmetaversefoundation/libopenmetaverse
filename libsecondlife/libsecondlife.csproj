@@ -1,0 +1,181 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>libsecondlife</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>libsecondlife</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>..\bin\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>..\bin\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CookComputing.XmlRpcV2, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AgentManager.cs" />
+    <Compile Include="AgentManagerCamera.cs" />
+    <Compile Include="AgentManagerMovement.cs" />
+    <Compile Include="AgentThrottle.cs" />
+    <Compile Include="Animations.cs" />
+    <Compile Include="AppearanceManager.cs" />
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssetManager.cs" />
+    <Compile Include="AssetTypes.cs" />
+    <Compile Include="Avatar.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AvatarManager.cs" />
+    <Compile Include="BakeLayer.cs" />
+    <Compile Include="BitPack.cs" />
+    <Compile Include="BlockingQueue.cs" />
+    <Compile Include="Capabilities.cs" />
+    <Compile Include="CapsEventQueue.cs" />
+    <Compile Include="CapsRequest.cs" />
+    <Compile Include="CapsToPacket.cs" />
+    <Compile Include="CoordinateFrame.cs" />
+    <Compile Include="EventDictionary.cs" />
+    <Compile Include="DirectoryManager.cs" />
+    <Compile Include="FriendsManager.cs" />
+    <Compile Include="HttpBase.cs" />
+    <Compile Include="Image.cs" />
+    <Compile Include="Capabilities\HttpBase.cs" />
+    <Compile Include="Inventory.cs" />
+    <Compile Include="InventoryManager.cs" />
+    <Compile Include="LLObject.cs" />
+    <Compile Include="LLSD\BinaryLLSD.cs" />
+    <Compile Include="LLSD\LLSD.cs" />
+    <Compile Include="LLSD\NotationLLSD.cs" />
+    <Compile Include="LLSD\XmlLLSD.cs" />
+    <Compile Include="Login.cs" />
+    <Compile Include="EstateTools.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GridManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GroupManager.cs" />
+    <Compile Include="Helpers.cs" />
+    <Compile Include="NameValue.cs" />
+    <Compile Include="NetworkManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ObjectManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ObjectPoolBase.cs" />
+    <Compile Include="ObjectTracker.cs" />
+    <Compile Include="OpenJPEG.cs" />
+    <Compile Include="ParcelManager.cs" />
+    <Compile Include="ParticleSystem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Permissions.cs" />
+    <Compile Include="Prims.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProtocolManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SecondLife.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="Simulator.cs" />
+    <Compile Include="SoundManager.cs" />
+    <Compile Include="TerrainManager.cs" />
+    <Compile Include="TextureEntry.cs" />
+    <Compile Include="TGALoader.cs" />
+    <Compile Include="ThreadUtil.cs" />
+    <Compile Include="InventoryNode.cs" />
+    <Compile Include="InventoryNodeDictionary.cs" />
+    <Compile Include="Types.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UDPBase.cs" />
+    <Compile Include="_Packets_.cs" />
+    <Compile Include="_VisualParam_.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)avatar_data" /i /d /y</PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,145 @@
+﻿<?xml version="1.0"?>
+<project name="libsecondlife" default="build">
+	<sysinfo />
+
+	<!-- global framework settings -->
+	<property name="target.framework" value="${framework::get-target-framework()}" />
+	<property name="assembly.dir" value="${framework::get-assembly-directory(target.framework)}" />
+
+	<!-- global project settings -->
+	<xmlpeek verbose="false"
+	  file="../libsecondlife.build"
+	  xpath="/project/property[@name = 'project.version']/@value"
+	  property="project.version" />
+	<property name="build.number"
+	   value="${math::abs(math::floor(timespan::get-total-days(datetime::now() - datetime::parse('01/01/2002'))))}" />
+	<property name="assembly" value="libsecondlife" />
+	<property name="bin_dir" value="../bin" />
+
+	<!-- default configuration -->
+	<property name="project.config" value="debug" />
+	<!-- debug|release -->
+
+	<!-- named configurations -->
+	<target name="init" description="Initializes build properties">
+		<call target="${project.config}" />
+	</target>
+
+	<target name="debug" description="configures a debug build">
+		<property name="build.debug" value="true" />
+		<property name="package.name"
+		  value="${project::get-name()}-${project.version}-${project.config}" />
+		<property name="assembly.configuration"
+		  value="${framework::get-target-framework()}.${platform::get-name()} [${project.config}]" />
+	</target>
+
+	<target name="release" description="configures a release build">
+		<property name="project.config" value="release" />
+		<property name="build.debug"    value="false" />
+		<property name="package.name"   value="${project::get-name()}-${project.version}" />
+		<property name="assembly.configuration"
+		  value="${framework::get-target-framework()}.${platform::get-name()}" />
+	</target>
+
+	<!-- build tasks -->
+	<target name="map" depends="init" description="generates the packet map source code">
+		<mkdir dir="${bin_dir}" failonerror="true"/>
+
+		<csc target="exe" output="../bin/mapgenerator.exe" debug="${build.debug}">
+			<sources>
+				<include name="mapgenerator/mapgenerator.cs" />
+				<include name="mapgenerator/ProtocolManager.cs" />
+			</sources>
+			<resources dynamicprefix="true" prefix="libsecondlife" basedir="." failonempty="true">
+			    <include name="Resources/*.tga" />
+			</resources>
+		</csc>
+		<!-- Does _Packets_.cs really need to be reproduced? -->
+		<!-- Don't do it unless we have must, otherwise lots of stuff recompiles. -->
+		<uptodate property="_Packets_.cs.uptodate">
+			<sourcefiles>
+				<include name="../bin/mapgenerator.exe" />
+				<include name="../data/message_template.msg mapgenerator/template.cs" />
+			</sourcefiles>
+			<targetfiles>
+				<include name="_Packets_.cs" />
+			</targetfiles>
+		</uptodate>
+		<exec program="../bin/mapgenerator.exe" output="_Packets_.cs" useruntimeengine="true" unless="${_Packets_.cs.uptodate}">
+			<arg line="../data/message_template.msg mapgenerator/template.cs mapgenerator/unusedpackets.txt _Packets_.cs" />
+		</exec>
+	</target>
+
+	<target name="build" depends="init map" description="compiles the source code">
+	    <if test="${property::exists('CCNetLabel')}">
+			<!-- Produce AssemblyInfo.cs for libsecondlife.dll -->
+			<asminfo output="AssemblyInfo.cs" language="CSharp">
+				<imports>
+					<import namespace="System" />
+					<import namespace="System.Reflection" />
+					<import namespace="System.Runtime.InteropServices" />
+				</imports>
+				<attributes>
+					<attribute type="ComVisibleAttribute" value="false" />
+					<attribute type="CLSCompliantAttribute" value="false" />
+					<attribute type="AssemblyVersionAttribute" value="${CCNetLabel}" />
+					<attribute type="AssemblyTitleAttribute" value="libsecondlife" />
+					<attribute type="AssemblyDescriptionAttribute" value="Networking layer for Second Life" />
+					<attribute type="AssemblyCopyrightAttribute" value="Copyright © libsecondlife 2006" />
+				</attributes>
+			</asminfo>
+		</if>
+
+		<!-- Make sure the bin/ directory exists -->
+		<mkdir dir="${bin_dir}" failonerror="true"/>
+		
+		<!-- Compile the library -->
+		<csc target="library" unsafe="true" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
+			<sources>
+				<include name="*.cs" />
+				<include name="LLSD/*.cs" />
+				<include name="Capabilities/*.cs" />
+				<include name="libsecondlife.Utilities/*.cs" />
+			</sources>
+			<references basedir="${bin_dir}/"> 
+				<include name="../bin/CookComputing.XmlRpcV2.dll" />
+				<include name="System.Drawing.dll" />
+			</references>
+			<nowarn>
+			    <warning number="1591" />
+			</nowarn>
+		</csc>
+		
+		<!-- Create the avatar_data directory -->
+		<mkdir dir="${bin_dir}/avatar_data" failonerror="false"/>
+		
+		<!-- Copy the resource files to the avatar_data dir -->
+		<copy todir="${bin_dir}/avatar_data">
+    		<fileset basedir="Resources">
+        		<include name="*.*" />
+    		</fileset>
+		</copy>
+	</target>
+
+	<target name="test-dll" depends="init build" description="makes the test dll">
+		<csc target="library" output="libsecondlife.Tests/tests.dll">
+			<sources>
+				<include name="libsecondlife.Tests/*.cs" />
+			</sources>
+			<references>
+				<include name="libsecondlife.dll" />
+				<include name="NUnit.dll" />
+			</references>
+		</csc>
+	</target>
+
+	<target name="clean" description="remove build output">
+		<delete failonerror="false">
+			<fileset basedir="${bin_dir}/">
+				<include name="libsecondlife.dll" />
+				<include name="libsecondlife.dll.mdb" />
+				<include name="mapgenerator.exe" />
+			</fileset>
+		</delete>
+	</target>
+</project>
