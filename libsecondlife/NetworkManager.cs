@@ -641,7 +641,7 @@ namespace libsecondlife
                             // Check the archives to see whether we already received this packet
                             lock (simulator.PacketArchive)
                             {
-                                if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                                if (packet.Header.Sequence != 0 && simulator.PacketArchive.Contains(packet.Header.Sequence))
                                 {
                                     if (packet.Header.Resent)
                                     {

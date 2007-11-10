@@ -932,8 +932,8 @@ namespace libsecondlife
     /// A four-dimensional vector
     /// </summary>
     [Serializable]
-	public struct LLVector4
-	{
+    public struct LLVector4
+    {
         /// <summary></summary>
         public float X;
         /// <summary></summary>
@@ -965,8 +965,8 @@ namespace libsecondlife
         /// </summary>
         /// <param name="byteArray"></param>
         /// <param name="pos"></param>
-		public LLVector4(byte[] byteArray, int pos)
-		{
+        public LLVector4(byte[] byteArray, int pos)
+        {
             if (!BitConverter.IsLittleEndian)
             {
                 byte[] newArray = new byte[16];
@@ -999,24 +999,24 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-		public byte[] GetBytes()
-		{
-			byte[] byteArray = new byte[16];
+        public byte[] GetBytes()
+        {
+            byte[] byteArray = new byte[16];
 
             Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
             Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
             Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
             Buffer.BlockCopy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
 
-			if(!BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
             {
-				Array.Reverse(byteArray, 0, 4);
-				Array.Reverse(byteArray, 4, 4);
-				Array.Reverse(byteArray, 8, 4);
-				Array.Reverse(byteArray, 12, 4);
-			}
+                Array.Reverse(byteArray, 0, 4);
+                Array.Reverse(byteArray, 4, 4);
+                Array.Reverse(byteArray, 8, 4);
+                Array.Reverse(byteArray, 12, 4);
+            }
 
-			return byteArray;
+            return byteArray;
         }
 
         public float[] ToLLSD()
@@ -1034,20 +1034,114 @@ namespace libsecondlife
         #region Overrides
 
         /// <summary>
+        /// A hash of the vector, used by .NET for hash tables
+        /// </summary>
+        /// <returns>The hashes of the individual components XORed together</returns>
+        public override int GetHashCode()
+        {
+            return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode() ^ S.GetHashCode());
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
+        public override bool Equals(object o)
+        {
+            if (!(o is LLVector4)) return false;
+
+            LLVector4 vector = (LLVector4)o;
+            return (X == vector.X && Y == vector.Y && Z == vector.Z && S == vector.S);
+        }
+        /// <summary>        
         /// 
         /// </summary>
         /// <returns></returns>
-		public override string ToString()
-		{
+        public override string ToString()
+        {
             return String.Format("<{0}, {1}, {2}, {3}>", X, Y, Z, S);
         }
 
         #endregion Overrides
 
+        #region Operators
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator ==(LLVector4 lhs, LLVector4 rhs)
+        {
+            return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.S == rhs.S);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator !=(LLVector4 lhs, LLVector4 rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public static LLVector4 operator +(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.S + rhs.S);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector4 operator -(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z, lhs.S - rhs.S);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vec"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static LLVector4 operator *(LLVector4 vec, float val)
+        {
+            return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="vec"></param>
+        /// <returns></returns>
+        public static LLVector4 operator *(float val, LLVector4 vec)
+        {
+            return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector4 operator *(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
+        }
+
+
+        #endregion Operators
         /// <summary>An LLVector4 with a value of 0,0,0,0</summary>
         public readonly static LLVector4 Zero = new LLVector4();
-	}
-
+    }
     /// <summary>
     /// An 8-bit color structure including an alpha channel
     /// </summary>
