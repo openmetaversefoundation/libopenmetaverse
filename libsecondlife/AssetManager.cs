@@ -225,7 +225,20 @@ namespace libsecondlife
         public ulong XferID;
         public uint PacketNum;
     }
-
+    public class ImageRequest
+    {
+        public ImageRequest(LLUUID imageid, ImageType type, float priority, int discardLevel)
+        {
+            ImageID = imageid;
+            Type = type;
+            Priority = priority;
+            DiscardLevel = discardLevel;
+        }
+        public LLUUID ImageID;
+        public ImageType Type;
+        public float Priority;
+        public int DiscardLevel;
+    }
     #endregion Transfer Classes
 
     /// <summary>
@@ -480,6 +493,53 @@ namespace libsecondlife
             else
             {
                 Client.Log("RequestImage() called for an image we are already downloading, ignoring",
+                    Helpers.LogLevel.Info);
+            }
+        }
+        /// <summary>
+        /// Requests multiple Images
+        /// </summary>
+        /// <param name="Images">List of requested images</param>
+        public void RequestImages(List<ImageRequest> Images)
+        {
+            for (int iri = Images.Count; iri > 0; --iri)
+            {
+                if (Transfers.ContainsKey(Images[iri].ImageID))
+                {
+                    Images.RemoveAt(iri);
+                }
+            }
+
+            if (Images.Count > 0)
+            {
+
+                // Build and send the request packet
+                RequestImagePacket request = new RequestImagePacket();
+                request.AgentData.AgentID = Client.Self.AgentID;
+                request.AgentData.SessionID = Client.Self.SessionID;
+                request.RequestImage = new RequestImagePacket.RequestImageBlock[Images.Count];
+
+                for (int iru = 0; iru < Images.Count; ++iru)
+                {
+                    ImageDownload transfer = new ImageDownload();
+                    //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
+                    transfer.ID = Images[iru].ImageID;
+                    transfer.Simulator = Client.Network.CurrentSim;
+
+                    // Add this transfer to the dictionary
+                    lock (Transfers) Transfers[transfer.ID] = transfer;
+                    request.RequestImage[iru] = new RequestImagePacket.RequestImageBlock();
+                    request.RequestImage[iru].DiscardLevel = (sbyte)Images[iru].DiscardLevel;
+                    request.RequestImage[iru].DownloadPriority = Images[iru].Priority;
+                    request.RequestImage[iru].Packet = 0;
+                    request.RequestImage[iru].Image = Images[iru].ImageID;
+                    request.RequestImage[iru].Type = (byte)Images[iru].Type;
+                }
+                Client.Network.SendPacket(request, Client.Network.CurrentSim);
+            }
+            else
+            {
+                Client.Log("RequestImages() called for an image(s) we are already downloading or an empty list, ignoring",
                     Helpers.LogLevel.Info);
             }
         }

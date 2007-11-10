@@ -645,7 +645,7 @@ namespace libsecondlife
                                     {
                                         Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
                                     }
-                                    else
+                                    else if(packet.Header.Sequence != 0)
                                     {
                                         Client.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
                                             packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning);

@@ -1030,6 +1030,26 @@ namespace libsecondlife
         #region Overrides
 
         /// <summary>
+        /// A hash of the vector, used by .NET for hash tables
+        /// </summary>
+        /// <returns>The hashes of the individual components XORed together</returns>
+        public override int GetHashCode()
+        {
+            return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode() ^ S.GetHashCode());
+        }
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="o"></param>
+         /// <returns></returns>
+        public override bool Equals(object o)
+        {
+            if (!(o is LLVector4)) return false;
+
+            LLVector4 vector = (LLVector4)o;
+            return (X == vector.X && Y == vector.Y && Z == vector.Z && S == vector.S);
+        }
+        /// <summary>        
         /// 
         /// </summary>
         /// <returns></returns>
@@ -1040,6 +1060,81 @@ namespace libsecondlife
 
         #endregion Overrides
 
+                #region Operators
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator ==(LLVector4 lhs, LLVector4 rhs)
+        {
+            return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.S == rhs.S);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator !=(LLVector4 lhs, LLVector4 rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public static LLVector4 operator +(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.S + rhs.S);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector4 operator -(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z, lhs.S - rhs.S);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vec"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static LLVector4 operator *(LLVector4 vec, float val)
+        {
+            return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="vec"></param>
+        /// <returns></returns>
+        public static LLVector4 operator *(float val, LLVector4 vec)
+        {
+            return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector4 operator *(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
+        }
+
+
+        #endregion Operators
         /// <summary>An LLVector4 with a value of 0,0,0,0</summary>
         public readonly static LLVector4 Zero = new LLVector4();
 	}
