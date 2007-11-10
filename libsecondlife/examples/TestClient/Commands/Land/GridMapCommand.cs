@@ -20,7 +20,7 @@ namespace libsecondlife.TestClient
             //    return "";
 
             Client.Grid.RequestMainlandSims(GridLayerType.Objects);
-
+            
             return "Sent.";
         }
     }

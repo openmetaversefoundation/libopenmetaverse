@@ -45,6 +45,7 @@
     <Compile Include="Commands\DetectBotCommand.cs" />
     <Compile Include="Commands\GoHome.cs" />
     <Compile Include="Commands\GotoLandmark.cs" />
+    <Compile Include="Commands\Groups\GroupsCommand.cs" />
     <Compile Include="Commands\Inventory\AppearanceCommand.cs" />
     <Compile Include="Commands\Inventory\BackupCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
