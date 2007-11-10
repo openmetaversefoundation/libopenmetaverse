@@ -391,14 +391,14 @@ namespace libsecondlife
 
         private void MapLayerResponseHandler(object response, HttpRequestState state)
         {
-            Hashtable body = (Hashtable)response;
-            ArrayList layerData = (ArrayList)body["LayerData"];
+            Dictionary<string, Object> body = (Dictionary<string, Object>)response;
+            List<Object> layerData = (List<Object>)body["LayerData"];
 
             if (OnGridLayer != null)
             {
                 for (int i = 0; i < layerData.Count; i++)
                 {
-                    Hashtable thisLayerData = (Hashtable)layerData[i];
+                    Dictionary<string, Object> thisLayerData = (Dictionary<string, Object>)layerData[i];
 
                     GridLayer layer;
                     layer.Bottom = (int)thisLayerData["Bottom"];
