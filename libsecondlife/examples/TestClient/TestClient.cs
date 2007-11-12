@@ -19,8 +19,8 @@ namespace libsecondlife.TestClient
 		public ClientManager ClientManager;
 
         //internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
-
-        private LLQuaternion bodyRotation = LLQuaternion.Identity;
+        
+        //private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
         private LLVector3 left = new LLVector3(0.9999f, 0, 0);
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
@@ -142,7 +142,7 @@ namespace libsecondlife.TestClient
                 {
                     Console.WriteLine(response);
 
-                    if (fromAgentID != null && Network.Connected)
+                    if (fromAgentID != LLUUID.Zero && Network.Connected)
                     {
                         // IMs don't like \r\n line endings, clean them up first
                         response = response.Replace("\r", "");
