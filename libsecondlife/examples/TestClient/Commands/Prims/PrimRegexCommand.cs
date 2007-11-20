@@ -35,7 +35,17 @@ namespace libsecondlife.TestClient
                     delegate(Primitive prim)
                     {
                         if (prim.Text != null && regexPrimName.IsMatch(prim.Text.ToLower()))
-                            Client.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\n", prim.PropertiesFamily.Nameprim.ID, prim.Flags.ToString(), prim.Text), Helpers.LogLevel.Info);
+                        {
+                            Client.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.PropertiesFamily.Name, prim.ID, prim.Flags.ToString(), prim.Text, prim.PropertiesFamily.Description), Helpers.LogLevel.Info);
+                        }
+                        else if (prim.PropertiesFamily.Name != null && regexPrimName.IsMatch(prim.PropertiesFamily.Name.ToLower()))
+                        {
+                            Client.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.PropertiesFamily.Name, prim.ID, prim.Flags.ToString(), prim.Text, prim.PropertiesFamily.Description), Helpers.LogLevel.Info);
+                        }
+                        else if (prim.PropertiesFamily.Description != null && regexPrimName.IsMatch(prim.PropertiesFamily.Description.ToLower()))
+                        {
+                            Client.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.PropertiesFamily.Name, prim.ID, prim.Flags.ToString(), prim.Text, prim.PropertiesFamily.Description), Helpers.LogLevel.Info);
+                        }
                     }
                 );
             }
