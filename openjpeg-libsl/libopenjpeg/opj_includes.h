@@ -40,7 +40,13 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <ctype.h>
+
+/*
+inttypes.h is part of C99 which MSVC doesn't properly support
+*/
+#ifndef _MSC_VER
 #include <inttypes.h>
+#endif
 
 /*
  ==========================================================

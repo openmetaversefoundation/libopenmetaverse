@@ -6,8 +6,6 @@ extern "C" {
 }
 #include <algorithm>
 
-#define NULL 0
-
 
 struct image_wrapper
 {
