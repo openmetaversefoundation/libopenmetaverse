@@ -2132,19 +2132,22 @@ namespace libsecondlife
                 for (int j = 0; j < numTextures; ++j)
                     props.TextureIDs[j] = new LLUUID(objectData.TextureID, j * 16);
 
-                Primitive findPrim = sim.Objects.Find(
-                    delegate(Primitive prim) { return prim.ID == props.ObjectID; });
-
-                if (findPrim != null)
+                if (Client.Settings.OBJECT_TRACKING)
                 {
-                    lock (sim.Objects.Prims)
-                    {
-                        if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
-                            sim.Objects.Prims[findPrim.LocalID].Properties = props;
-                    }
-                }
+                    Primitive findPrim = sim.Objects.Find(
+                        delegate(Primitive prim) { return prim.ID == props.ObjectID; });
 
-                FireOnObjectProperties(sim, props);
+                    if (findPrim != null)
+                    {
+                        lock (sim.Objects.Prims)
+                        {
+                            if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
+                                sim.Objects.Prims[findPrim.LocalID].Properties = props;
+                        }
+                    }
+
+                    FireOnObjectProperties(sim, props);
+                }
             }
         }
 
@@ -2169,6 +2172,21 @@ namespace libsecondlife
             props.Permissions.GroupMask = (PermissionMask)op.ObjectData.GroupMask;
             props.Permissions.NextOwnerMask = (PermissionMask)op.ObjectData.NextOwnerMask;
             props.Permissions.OwnerMask = (PermissionMask)op.ObjectData.OwnerMask;
+
+            if (Client.Settings.OBJECT_TRACKING)
+            {
+                Primitive findPrim = sim.Objects.Find(
+                        delegate(Primitive prim) { return prim.ID == props.ObjectID; });
+
+                if (findPrim != null)
+                {
+                    lock (sim.Objects.Prims)
+                    {
+                        if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
+                            sim.Objects.Prims[findPrim.LocalID].PropertiesFamily = props;
+                    }
+                }
+            }
 
             FireOnObjectPropertiesFamily(sim, props);
         }
