@@ -252,19 +252,26 @@ namespace libsecondlife
         public delegate void FriendshipOfferedEvent(LLUUID agentID, string agentName, LLUUID imSessionID);
 
         /// <summary>
-        /// Trigger when your friendship offer has been excepted
+        /// Trigger when your friendship offer has been accepted or declined
         /// </summary>
         /// <param name="agentID">System ID of the avatar who accepted your friendship offer</param>
         /// <param name="agentName">Full name of the avatar who accepted your friendship offer</param>
         /// <param name="accepted">Whether the friendship request was accepted or declined</param>
         public delegate void FriendshipResponseEvent(LLUUID agentID, string agentName, bool accepted);
+        
+        /// <summary>
+        /// Trigger when someone terminates your friendship.
+        /// </summary>
+        /// <param name="agentID">System ID of the avatar who terminated your friendship</param>
+        /// <param name="agentName">Full name of the avatar who terminated your friendship</param>
+        public delegate void FriendshipTerminatedEvent(LLUUID agentID, string agentName);
 
         public event FriendOnlineEvent OnFriendOnline;
         public event FriendOfflineEvent OnFriendOffline;
         public event FriendRightsEvent OnFriendRights;
         public event FriendshipOfferedEvent OnFriendshipOffered;
         public event FriendshipResponseEvent OnFriendshipResponse;
-
+        public event FriendshipTerminatedEvent OnFriendshipTerminated;
 
         private SecondLife Client;
         private Dictionary<LLUUID, FriendInfo> _Friends = new Dictionary<LLUUID, FriendInfo>();
@@ -421,10 +428,18 @@ namespace libsecondlife
         private void TerminateFriendshipHandler(Packet packet, Simulator simulator)
         {
             TerminateFriendshipPacket itsOver = (TerminateFriendshipPacket)packet;
+            string name = String.Empty;
             lock (_Friends)
             {
                 if (_Friends.ContainsKey(itsOver.ExBlock.OtherID))
+                {
+                    name = _Friends[itsOver.ExBlock.OtherID].Name;
                     _Friends.Remove(itsOver.ExBlock.OtherID);
+                }
+            }
+            if (OnFriendshipTerminated != null)
+            {
+                OnFriendshipTerminated(itsOver.ExBlock.OtherID, name);
             }
         }
         /// <summary>
