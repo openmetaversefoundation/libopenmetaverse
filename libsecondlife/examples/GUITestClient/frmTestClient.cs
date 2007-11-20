@@ -102,7 +102,7 @@ namespace libsecondlife.GUITestClient
 
             if (!Interfaces.ContainsKey(iface))
             {
-                lock(Interfaces) Interfaces.Add(iface, page);
+                lock (Interfaces) Interfaces.Add(iface, page);
             }
 
             iface.Initialize();
