@@ -143,7 +143,11 @@ namespace libsecondlife
         // wait until all outstanding operations are completed before shutting down.
         // this avoids the problem of closing the socket with outstanding operations
         // and trying to catch the inevitable ObjectDisposedException.
+#if PocketPC
         private libsecondlife.ReaderWriterLock rwLock = new libsecondlife.ReaderWriterLock();
+#else
+        private ReaderWriterLock rwLock = new ReaderWriterLock();
+#endif
 
         // number of outstanding operations.  This is a reference count
         // which we use to ensure that the threads exit cleanly. Note that

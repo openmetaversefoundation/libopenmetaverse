@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
+#if PocketPC
+
+// FIXME: This class was very likely broken when converting things to Auto/Manual ResetEvents
+
 namespace libsecondlife
 {
     /// <summary>
@@ -134,7 +138,7 @@ namespace libsecondlife
         {
             EnterMyLock();
             Debug.Assert(owners == -1, "Calling ReleaseWriterLock when no write lock is held");
-            //Debug.Assert(numUpgradeWaiters > 0);
+            Debug.Assert(numUpgradeWaiters > 0);
             owners++;
             ExitAndWakeUpAppropriateWaiters();
         }
@@ -268,3 +272,5 @@ namespace libsecondlife
 
     };
 }
+
+#endif
