@@ -285,6 +285,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.OnlineNotification, OnlineNotificationHandler);
             Client.Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);
             Client.Network.RegisterCallback(PacketType.ChangeUserRights, ChangeUserRightsHandler);
+            Client.Network.RegisterCallback(PacketType.TerminateFriendship, TerminateFriendshipHandler);
         }
 
 
@@ -345,7 +346,10 @@ namespace libsecondlife
 
             FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline,
                 RightsFlags.CanSeeOnline);
-            lock (_Friends) _Friends.Add(friend.UUID, friend);
+            lock (_Friends)
+            {
+                if(!_Friends.ContainsKey(fromAgentID))  _Friends.Add(friend.UUID, friend);
+            }
             lock (_Requests) { if (_Requests.ContainsKey(fromAgentID)) _Requests.Remove(fromAgentID); }
 
             Client.Avatars.RequestAvatarName(fromAgentID);
@@ -408,8 +412,21 @@ namespace libsecondlife
                 }
             }
         }
-
-
+        /// <summary>
+        /// Fired when another friend terminates friendship. We need to remove them from
+        /// our cached list.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void TerminateFriendshipHandler(Packet packet, Simulator simulator)
+        {
+            TerminateFriendshipPacket itsOver = (TerminateFriendshipPacket)packet;
+            lock (_Friends)
+            {
+                if (_Friends.ContainsKey(itsOver.ExBlock.OtherID))
+                    _Friends.Remove(itsOver.ExBlock.OtherID);
+            }
+        }
         /// <summary>
         /// Change the rights of a friend avatar.  To use this routine, first change the right of the
         /// avatar stored in the item property.

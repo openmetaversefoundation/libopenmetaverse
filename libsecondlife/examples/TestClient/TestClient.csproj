@@ -43,6 +43,7 @@
     <Compile Include="Commands\Communication\ShoutCommand.cs" />
     <Compile Include="Commands\Communication\WhisperCommand.cs" />
     <Compile Include="Commands\DetectBotCommand.cs" />
+    <Compile Include="Commands\Friends\FriendsCommand.cs" />
     <Compile Include="Commands\GoHome.cs" />
     <Compile Include="Commands\GotoLandmark.cs" />
     <Compile Include="Commands\Groups\GroupsCommand.cs" />
