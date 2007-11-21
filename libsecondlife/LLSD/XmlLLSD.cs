@@ -5,7 +5,7 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Text;
 
-namespace libsecondlife.LLSD
+namespace libsecondlife.StructuredData
 {
     public static partial class LLSDParser
     {
@@ -14,28 +14,28 @@ namespace libsecondlife.LLSD
         private static string LastXmlErrors = String.Empty;
         private static object XmlValidationLock = new object();
 
-        public static object DeserializeXml(byte[] xmlData)
+        public static LLSD DeserializeXml(byte[] xmlData)
         {
             return DeserializeXml(new XmlTextReader(new MemoryStream(xmlData, false)));
         }
 
-        public static object DeserializeXml(XmlTextReader xmlData)
+        public static LLSD DeserializeXml(XmlTextReader xmlData)
         {
             xmlData.Read();
             SkipWhitespace(xmlData);
 
             xmlData.Read();
-            object ret = ParseXmlElement(xmlData);
+            LLSD ret = ParseXmlElement(xmlData);
 
             return ret;
         }
 
-        public static byte[] SerializeXmlBytes(object data)
+        public static byte[] SerializeXmlBytes(LLSD data)
         {
             return Encoding.UTF8.GetBytes(SerializeXmlString(data));
         }
 
-        public static string SerializeXmlString(object data)
+        public static string SerializeXmlString(LLSD data)
         {
             StringWriter sw = new StringWriter();
             XmlTextWriter writer = new XmlTextWriter(sw);
@@ -50,164 +50,79 @@ namespace libsecondlife.LLSD
             return sw.ToString();
         }
 
-        public static void SerializeXmlElement(XmlTextWriter writer, object obj)
+        public static void SerializeXmlElement(XmlTextWriter writer, LLSD data)
         {
-            if (obj == null)
+            switch (data.Type)
             {
-                writer.WriteStartElement(String.Empty, "undef", String.Empty);
-                writer.WriteEndElement();
-            }
-            else if (obj is string)
-            {
-                writer.WriteStartElement(String.Empty, "string", String.Empty);
-                writer.WriteString((string)obj);
-                writer.WriteEndElement();
-            }
-            else if (obj is int || obj is uint || obj is short || obj is ushort || obj is byte || obj is sbyte)
-            {
-                writer.WriteStartElement(String.Empty, "integer", String.Empty);
-                writer.WriteString(obj.ToString());
-                writer.WriteEndElement();
-            }
-            else if (obj is double)
-            {
-                double value = (double)obj;
-
-                writer.WriteStartElement(String.Empty, "real", String.Empty);
-                writer.WriteString(value.ToString(Helpers.EnUsCulture));
-                writer.WriteEndElement();
-            }
-            else if (obj is float)
-            {
-                float value = (float)obj;
-
-                writer.WriteStartElement(String.Empty, "real", String.Empty);
-                writer.WriteString(value.ToString(Helpers.EnUsCulture));
-                writer.WriteEndElement();
-            }
-            else if (obj is long)
-            {
-                // 64-bit integers are not natively supported in LLSD, so we convert to a byte array
-                long value = (long)obj;
-
-                byte[] bytes = BitConverter.GetBytes(value);
-
-                writer.WriteStartElement(String.Empty, "binary", String.Empty);
-
-                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
-                writer.WriteString("base64");
-                writer.WriteEndAttribute();
-
-                writer.WriteString(Convert.ToBase64String(bytes));
-                writer.WriteEndElement();
-            }
-            else if (obj is ulong)
-            {
-                // 64-bit integers are not natively supported in LLSD, so we convert to a byte array
-                ulong value = (ulong)obj;
-
-                byte[] bytes = BitConverter.GetBytes(value);
-
-                writer.WriteStartElement(String.Empty, "binary", String.Empty);
-
-                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
-                writer.WriteString("base64");
-                writer.WriteEndAttribute();
-
-                writer.WriteString(Convert.ToBase64String(bytes));
-                writer.WriteEndElement();
-            }
-            else if (obj is bool)
-            {
-                bool b = (bool)obj;
-                writer.WriteStartElement(String.Empty, "boolean", String.Empty);
-                writer.WriteString(b ? "1" : "0");
-                writer.WriteEndElement();
-            }
-            else if (obj is LLUUID)
-            {
-                LLUUID u = (LLUUID)obj;
-                writer.WriteStartElement(String.Empty, "uuid", String.Empty);
-                writer.WriteString(u.ToStringHyphenated());
-                writer.WriteEndElement();
-            }
-            else if (obj is Dictionary<string, object>)
-            {
-                Dictionary<string, object> d = obj as Dictionary<string, object>;
-
-                writer.WriteStartElement(String.Empty, "map", String.Empty);
-                foreach (string key in d.Keys)
-                {
-                    writer.WriteStartElement(String.Empty, "key", String.Empty);
-                    writer.WriteString(key);
+                case LLSDType.Unknown:
+                    writer.WriteStartElement(String.Empty, "undef", String.Empty);
                     writer.WriteEndElement();
-
-                    SerializeXmlElement(writer, d[key]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is System.Collections.Hashtable)
-            {
-                System.Collections.Hashtable h = obj as System.Collections.Hashtable;
-
-                writer.WriteStartElement(String.Empty, "map", String.Empty);
-                foreach (string key in h.Keys)
-                {
-                    writer.WriteStartElement(String.Empty, "key", String.Empty);
-                    writer.WriteString(key);
+                    break;
+                case LLSDType.Boolean:
+                    writer.WriteStartElement(String.Empty, "boolean", String.Empty);
+                    writer.WriteString(data.AsString());
                     writer.WriteEndElement();
+                    break;
+                case LLSDType.Integer:
+                    writer.WriteStartElement(String.Empty, "integer", String.Empty);
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.Real:
+                    writer.WriteStartElement(String.Empty, "real", String.Empty);
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.String:
+                    writer.WriteStartElement(String.Empty, "string", String.Empty);
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.UUID:
+                    writer.WriteStartElement(String.Empty, "uuid", String.Empty);
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.Date:
+                    writer.WriteStartElement(String.Empty, "date", String.Empty);
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.URI:
+                    writer.WriteStartElement(String.Empty, "uri", String.Empty);
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.Binary:
+                    writer.WriteStartElement(String.Empty, "binary", String.Empty);
+                        writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
+                        writer.WriteString("base64");
+                        writer.WriteEndAttribute();
+                    writer.WriteString(data.AsString());
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.Map:
+                    LLSDMap map = (LLSDMap)data;
+                    writer.WriteStartElement(String.Empty, "map", String.Empty);
+                    foreach (KeyValuePair<string, LLSD> kvp in map)
+                    {
+                        writer.WriteStartElement(String.Empty, "key", String.Empty);
+                        writer.WriteString(kvp.Key);
+                        writer.WriteEndElement();
 
-                    SerializeXmlElement(writer, h[key]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is List<object>)
-            {
-                List<object> l = obj as List<object>;
-
-                writer.WriteStartElement(String.Empty, "array", String.Empty);
-                for (int i = 0; i < l.Count; i++)
-                {
-                    SerializeXmlElement(writer, l[i]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is System.Collections.ArrayList)
-            {
-                System.Collections.ArrayList a = obj as System.Collections.ArrayList;
-
-                writer.WriteStartElement(String.Empty, "array", String.Empty);
-                for (int i = 0; i < a.Count; i++)
-                {
-                    SerializeXmlElement(writer, a[i]);
-                }
-                writer.WriteEndElement();
-            }
-            else if (obj is byte[])
-            {
-                writer.WriteStartElement(String.Empty, "binary", String.Empty);
-
-                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
-                writer.WriteString("base64");
-                writer.WriteEndAttribute();
-
-                writer.WriteString(Convert.ToBase64String((byte[])obj));
-                writer.WriteEndElement();
-            }
-            else if (obj.GetType().IsArray)
-            {
-                Array a = (Array)obj;
-
-                writer.WriteStartElement(String.Empty, "array", String.Empty);
-                for (int i = 0; i < a.Length; i++)
-                {
-                    SerializeXmlElement(writer, a.GetValue(i));
-                }
-                writer.WriteEndElement();
-            }
-            else
-            {
-                throw new LLSDException("Unknown type " + obj.GetType().Name);
+                        SerializeXmlElement(writer, kvp.Value);
+                    }
+                    writer.WriteEndElement();
+                    break;
+                case LLSDType.Array:
+                    LLSDArray array = (LLSDArray)data;
+                    writer.WriteStartElement(String.Empty, "array", String.Empty);
+                    for (int i = 0; i < array.Count; i++)
+                    {
+                        SerializeXmlElement(writer, array[i]);
+                    }
+                    writer.WriteEndElement();
+                    break;
             }
         }
 
@@ -250,7 +165,7 @@ namespace libsecondlife.LLSD
             }
         }
 
-        private static object ParseXmlElement(XmlTextReader reader)
+        private static LLSD ParseXmlElement(XmlTextReader reader)
         {
             SkipWhitespace(reader);
 
@@ -258,7 +173,7 @@ namespace libsecondlife.LLSD
                 throw new LLSDException("Expected an element");
 
             string type = reader.LocalName;
-            object ret = null;
+            LLSD ret;
 
             switch (type)
             {
@@ -266,18 +181,18 @@ namespace libsecondlife.LLSD
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return null;
+                        return new LLSD();
                     }
 
                     reader.Read();
                     SkipWhitespace(reader);
-                    ret = null;
+                    ret = new LLSD();
                     break;
                 case "boolean":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return false;
+                        return LLSD.FromBoolean(false);
                     }
 
                     if (reader.Read())
@@ -286,35 +201,35 @@ namespace libsecondlife.LLSD
 
                         if (!String.IsNullOrEmpty(s) && (s == "true" || s == "1"))
                         {
-                            ret = true;
+                            ret = LLSD.FromBoolean(true);
                             break;
                         }
                     }
 
-                    ret = false;
+                    ret = LLSD.FromBoolean(false);
                     break;
                 case "integer":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return 0;
+                        return LLSD.FromInteger(0);
                     }
 
                     if (reader.Read())
                     {
                         int value = 0;
                         Helpers.TryParse(reader.ReadString().Trim(), out value);
-                        ret = value;
+                        ret = LLSD.FromInteger(value);
                         break;
                     }
 
-                    ret = 0;
+                    ret = LLSD.FromInteger(0);
                     break;
                 case "real":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return 0d;
+                        return LLSD.FromReal(0d);
                     }
 
                     if (reader.Read())
@@ -327,66 +242,66 @@ namespace libsecondlife.LLSD
                         else
                             Helpers.TryParse(str, out value);
 
-                        ret = value;
+                        ret = LLSD.FromReal(value);
                         break;
                     }
 
-                    ret = 0d;
+                    ret = LLSD.FromReal(0d);
                     break;
                 case "uuid":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLUUID.Zero;
+                        return LLSD.FromUUID(LLUUID.Zero);
                     }
 
                     if (reader.Read())
                     {
                         LLUUID value = LLUUID.Zero;
                         LLUUID.TryParse(reader.ReadString().Trim(), out value);
-                        ret = value;
+                        ret = LLSD.FromUUID(value);
                         break;
                     }
 
-                    ret = LLUUID.Zero;
+                    ret = LLSD.FromUUID(LLUUID.Zero);
                     break;
                 case "date":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return Helpers.Epoch;
+                        return LLSD.FromDate(Helpers.Epoch);
                     }
 
                     if (reader.Read())
                     {
                         DateTime value = Helpers.Epoch;
                         Helpers.TryParse(reader.ReadString().Trim(), out value);
-                        ret = value;
+                        ret = LLSD.FromDate(value);
                         break;
                     }
 
-                    ret = Helpers.Epoch;
+                    ret = LLSD.FromDate(Helpers.Epoch);
                     break;
                 case "string":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return String.Empty;
+                        return LLSD.FromString(String.Empty);
                     }
 
                     if (reader.Read())
                     {
-                        ret = reader.ReadString();
+                        ret = LLSD.FromString(reader.ReadString());
                         break;
                     }
 
-                    ret = String.Empty;
+                    ret = LLSD.FromString(String.Empty);
                     break;
                 case "binary":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return new byte[0];
+                        return LLSD.FromBinary(new byte[0]);
                     }
 
                     if (reader.GetAttribute("encoding") != null && reader.GetAttribute("encoding") != "base64")
@@ -396,7 +311,7 @@ namespace libsecondlife.LLSD
                     {
                         try
                         {
-                            ret = Convert.FromBase64String(reader.ReadString().Trim());
+                            ret = LLSD.FromBinary(Convert.FromBase64String(reader.ReadString().Trim()));
                             break;
                         }
                         catch (FormatException ex)
@@ -405,7 +320,7 @@ namespace libsecondlife.LLSD
                         }
                     }
 
-                    ret = new byte[0];
+                    ret = LLSD.FromBinary(new byte[0]);
                     break;
                 case "map":
                     return ParseXmlMap(reader);
@@ -428,23 +343,17 @@ namespace libsecondlife.LLSD
             }
         }
 
-        private static Dictionary<string, object> ParseXmlMap(XmlTextReader reader)
+        private static LLSDMap ParseXmlMap(XmlTextReader reader)
         {
-            Dictionary<string, object> dict = new Dictionary<string, object>();
-
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "map")
                 throw new NotImplementedException("Expected <map>");
 
-            //while (reader.NodeType != XmlNodeType.Element && reader.LocalName != "map")
-            //{
-            //    if (!reader.Read())
-            //        throw new LLSDException("Couldn't find a map to parse");
-            //}
+            LLSDMap map = new LLSDMap();
 
             if (reader.IsEmptyElement)
             {
                 reader.Read();
-                return dict;
+                return map;
             }
 
             if (reader.Read())
@@ -468,32 +377,26 @@ namespace libsecondlife.LLSD
                         throw new LLSDException("Expected </key>");
 
                     if (reader.Read())
-                        dict[key] = ParseXmlElement(reader);
+                        map[key] = ParseXmlElement(reader);
                     else
                         throw new LLSDException("Failed to parse a value for key " + key);
                 }
             }
 
-            return dict;
+            return map;
         }
 
-        private static List<object> ParseXmlArray(XmlTextReader reader)
+        private static LLSDArray ParseXmlArray(XmlTextReader reader)
         {
-            List<object> list = new List<object>();
-
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "array")
                 throw new LLSDException("Expected <array>");
 
-            //while (reader.NodeType != XmlNodeType.Element && reader.LocalName != "array")
-            //{
-            //    if (!reader.Read())
-            //        throw new LLSDException("Couldn't find an array to parse");
-            //}
+            LLSDArray array = new LLSDArray();
 
             if (reader.IsEmptyElement)
             {
                 reader.Read();
-                return list;
+                return array;
             }
 
             if (reader.Read())
@@ -508,11 +411,11 @@ namespace libsecondlife.LLSD
                         break;
                     }
 
-                    list.Add(ParseXmlElement(reader));
+                    array.Add(ParseXmlElement(reader));
                 }
             }
 
-            return list;
+            return array;
         }        
 
         private static void SkipWhitespace(XmlTextReader reader)

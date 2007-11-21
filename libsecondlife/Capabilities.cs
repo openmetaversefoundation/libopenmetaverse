@@ -28,7 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using libsecondlife.LLSD;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -46,14 +46,14 @@ namespace libsecondlife
         /// <param name="message">Event name</param>
         /// <param name="body">Decoded event data</param>
         /// <param name="caps">The CAPS system that made the call</param>
-        public delegate void EventQueueCallback(string message, Dictionary<string, object> body, CapsEventQueue eventQueue);
+        public delegate void EventQueueCallback(string message, StructuredData.LLSD body, CapsEventQueue eventQueue);
         /// <summary>
         /// Triggered when an HTTP call in the queue is executed and a response
         /// is received
         /// </summary>
         /// <param name="body">Decoded response</param>
         /// <param name="request">Original capability request</param>
-        public delegate void CapsResponseCallback(Dictionary<string, object> body, HttpRequestState request);
+        public delegate void CapsResponseCallback(StructuredData.LLSD body, HttpRequestState request);
 
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
@@ -134,7 +134,7 @@ namespace libsecondlife
                 return;
 
             // Create a request list
-            List<object> req = new List<object>();
+            LLSDArray req = new LLSDArray();
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
@@ -165,11 +165,11 @@ namespace libsecondlife
             _SeedRequest.MakeRequest(postData, "application/xml", 0, null);
         }
 
-        private void seedRequest_OnCapsResponse(object response, HttpRequestState state)
+        private void seedRequest_OnCapsResponse(LLSD response, HttpRequestState state)
         {
-            if (response is Dictionary<string, object>)
+            if (response.Type == LLSDType.Map)
             {
-                Dictionary<string, object> respTable = (Dictionary<string, object>)response;
+                LLSDMap respTable = (LLSDMap)response;
 
                 StringBuilder capsList = new StringBuilder();
 
@@ -178,7 +178,7 @@ namespace libsecondlife
                     capsList.Append(cap);
                     capsList.Append(' ');
 
-                    _Caps[cap] = (string)respTable[cap];
+                    _Caps[cap] = respTable[cap].AsString();
                 }
 
                 Simulator.Client.DebugLog("Got capabilities: " + capsList.ToString());

@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -439,6 +440,64 @@ namespace libsecondlife
             prim["volume"] = volume;
             if (ParentID != 0)
                 prim["parentid"] = ParentID;
+
+            return prim;
+        }
+
+        public static Primitive FromLLSD(LLSD llsd)
+        {
+            Primitive prim = new Primitive();
+            LLObject.ObjectData data = new ObjectData();
+
+            LLSDMap map = (LLSDMap)llsd;
+            LLSDMap volume = (LLSDMap)map["volume"];
+            LLSDMap path = (LLSDMap)volume["path"];
+            LLSDMap profile = (LLSDMap)volume["profile"];
+
+            #region Path/Profile
+
+            data.PathBegin = (float)path["begin"].AsReal();
+            data.PathCurve = (PathCurve)path["curve"].AsReal();
+            data.PathEnd = (float)path["end"].AsReal();
+            data.PathRadiusOffset = (float)path["radius_offset"].AsReal();
+            data.PathRevolutions = (float)path["revolutions"].AsReal();
+            data.PathScaleX = (float)path["scale_x"].AsReal();
+            data.PathScaleY = (float)path["scale_y"].AsReal();
+            data.PathShearX = (float)path["shear_x"].AsReal();
+            data.PathShearY = (float)path["shear_y"].AsReal();
+            data.PathSkew = (float)path["skew"].AsReal();
+            data.PathTaperX = (float)path["taper_x"].AsReal();
+            data.PathTaperY = (float)path["taper_y"].AsReal();
+            data.PathTwist = path["twist"].AsInteger();
+            data.PathTwistBegin = path["twist_begin"].AsInteger();
+
+            data.ProfileBegin = (float)profile["begin"].AsReal();
+            data.ProfileCurve = (ProfileCurve)profile["curve"].AsReal();
+            data.ProfileEnd = (float)profile["end"].AsReal();
+            data.ProfileHollow = (float)profile["hollow"].AsReal();
+
+            #endregion Path/Profile
+
+            prim.Data = data;
+
+            if (map["phantom"].AsBoolean())
+                prim.Flags |= ObjectFlags.Phantom;
+
+            if (map["physical"].AsBoolean())
+                prim.Flags |= ObjectFlags.Physics;
+
+            if (map["shadows"].AsBoolean())
+                prim.Flags |= ObjectFlags.CastShadows;
+
+            prim.Position = LLVector3.FromLLSD(map["position"]);
+            prim.Rotation = LLQuaternion.FromLLSD(map["rotation"]);
+            prim.Scale = LLVector3.FromLLSD(map["scale"]);
+
+            prim.Textures = TextureEntry.FromLLSD(map["textures"]);
+
+            LLSD parentID;
+            if (map.TryGetValue("parentid", out parentID))
+                prim.ParentID = (uint)parentID.AsInteger();
 
             return prim;
         }

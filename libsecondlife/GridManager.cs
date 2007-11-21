@@ -192,12 +192,11 @@ namespace libsecondlife
         /// <param name="items"></param>
         public delegate void GridItemsCallback(GridItemType type, List<GridItem> items);
 
-
-        /// <summary>
-        /// Triggered when a new region is discovered through GridManager
-        /// </summary>
+        /// <summary>Triggered when a new region is discovered through GridManager</summary>
         public event GridRegionCallback OnGridRegion;
+        /// <summary></summary>
         public event GridLayerCallback OnGridLayer;
+        /// <summary></summary>
         public event GridItemsCallback OnGridItems;
 
         /// <summary>Unknown</summary>
@@ -213,10 +212,9 @@ namespace libsecondlife
         internal Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong, GridRegion>();
 
 		private SecondLife Client;
-        private float sunPhase = 0.0f;
-        private LLVector3 sunDirection = LLVector3.Zero;
-        private LLVector3 sunAngVelocity = LLVector3.Zero;
-        private Dictionary<string, ManualResetEvent> RequestingRegions = new Dictionary<string, ManualResetEvent>();
+        private float sunPhase;
+        private LLVector3 sunDirection;
+        private LLVector3 sunAngVelocity;
 
         /// <summary>
         /// Constructor
@@ -232,6 +230,10 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="layer"></param>
         public void RequestMapLayer(GridLayerType layer)
         {
             string url = Client.Network.CurrentSim.Caps.CapabilityURI("MapLayer");
@@ -246,6 +248,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionName"></param>
+        /// <param name="layer"></param>
         public void RequestMapRegion(string regionName, GridLayerType layer)
         {
             MapNameRequestPacket request = new MapNameRequestPacket();
@@ -260,6 +267,15 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="minX"></param>
+        /// <param name="minY"></param>
+        /// <param name="maxX"></param>
+        /// <param name="maxY"></param>
+        /// <param name="returnNonExistent"></param>
         public void RequestMapBlocks(GridLayerType layer, ushort minX, ushort minY, ushort maxX, ushort maxY, 
             bool returnNonExistent)
         {
@@ -280,6 +296,14 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="item"></param>
+        /// <param name="layer"></param>
+        /// <param name="timeoutMS"></param>
+        /// <returns></returns>
         public List<GridItem> MapItems(ulong regionHandle, GridItemType item, GridLayerType layer, int timeoutMS)
         {
             List<GridItem> itemList = null;
@@ -305,6 +329,12 @@ namespace libsecondlife
             return itemList;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="item"></param>
+        /// <param name="layer"></param>
         public void RequestMapItems(ulong regionHandle, GridItemType item, GridLayerType layer)
         {
             MapItemRequestPacket request = new MapItemRequestPacket();
@@ -340,6 +370,14 @@ namespace libsecondlife
         /// false</returns>
         public bool GetGridRegion(string name, GridLayerType layer, out GridRegion region)
         {
+            if (String.IsNullOrEmpty(name))
+            {
+                Client.Log("GetGridRegion called with a null or empty region name", Helpers.LogLevel.Error);
+                region = new GridRegion();
+                return false;
+            }
+
+            // All lookups are done using lowercase sim names
             name = name.ToLower();
 
             if (Regions.ContainsKey(name))
@@ -350,29 +388,19 @@ namespace libsecondlife
             }
             else
             {
-                ManualResetEvent requestEvent = new ManualResetEvent(false);
+                AutoResetEvent regionEvent = new AutoResetEvent(false);
+                GridRegionCallback callback =
+                    delegate(GridRegion gridRegion)
+                    {
+                        if (gridRegion.Name == name)
+                            regionEvent.Set();
+                    };
+                OnGridRegion += callback;
 
-                if (RequestingRegions.ContainsKey(name))
-                {
-                    Client.Log("GetGridRegion called for " + name + " multiple times, ignoring", 
-                        Helpers.LogLevel.Warning);
-                    region = new GridRegion();
-                    return false;
-                }
-                else
-                {
-                    // Add this region request to the list of requests we are tracking
-                    lock (RequestingRegions) RequestingRegions.Add(name, requestEvent);
-                }
-
-                // Make the request
                 RequestMapRegion(name, layer);
+                regionEvent.WaitOne(Client.Settings.MAP_REQUEST_TIMEOUT, false);
 
-                // Wait until an answer is retrieved
-                requestEvent.WaitOne(Client.Settings.MAP_REQUEST_TIMEOUT, false);
-
-                // Remove the dictionary entry for this lookup
-                lock (RequestingRegions) RequestingRegions.Remove(name);
+                OnGridRegion -= callback;
 
                 if (Regions.ContainsKey(name))
                 {
@@ -445,12 +473,10 @@ namespace libsecondlife
                     region.MapImageID = block.MapImageID;
                     region.RegionHandle = Helpers.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
 
-                    lock (Regions) Regions[region.Name.ToLower()] = region;
-                    lock (RegionsByHandle) RegionsByHandle[region.RegionHandle] = region;
-                    lock (RequestingRegions)
+                    lock (Regions)
                     {
-                        if (RequestingRegions.ContainsKey(region.Name.ToLower()))
-                            RequestingRegions[region.Name.ToLower()].Set();
+                        Regions[region.Name.ToLower()] = region;
+                        RegionsByHandle[region.RegionHandle] = region;
                     }
 
                     if (OnGridRegion != null)
@@ -530,7 +556,7 @@ namespace libsecondlife
             sunPhase = time.TimeInfo.SunPhase;
             sunDirection = time.TimeInfo.SunDirection;
             sunAngVelocity = time.TimeInfo.SunAngVelocity;
-            
+
             // TODO: Does anyone have a use for the time stuff?
         }
 

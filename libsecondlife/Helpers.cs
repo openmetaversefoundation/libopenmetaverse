@@ -36,6 +36,23 @@ namespace libsecondlife
     /// </summary>
     public class Helpers
     {
+        /// <summary>
+        /// Operating system enumeration
+        /// </summary>
+        public enum Platform
+        {
+            /// <summary>Unknown</summary>
+            Unknown,
+            /// <summary>Microsoft Windows</summary>
+            Windows,
+            /// <summary>Microsoft Windows CE</summary>
+            WindowsCE,
+            /// <summary>Linux</summary>
+            Linux,
+            /// <summary>Apple OSX</summary>
+            OSX
+        }
+
         /// <summary>This header flag signals that ACKs are appended to the packet</summary>
         public const byte MSG_APPENDED_ACKS = 0x10;
         /// <summary>This header flag signals that this packet has been sent before</summary>
@@ -1051,6 +1068,64 @@ namespace libsecondlife
             return null;
         }
 
+        public static Platform GetRunningPlatform()
+        {
+            const string OSX_CHECK_FILE = "/Library/Extensions.kextcache";
+
+            if (Environment.OSVersion.Platform == PlatformID.WinCE)
+            {
+                return Platform.WindowsCE;
+            }
+            else
+            {
+                int plat = (int)Environment.OSVersion.Platform;
+
+                if ((plat != 4) && (plat != 128))
+                {
+                    return Platform.Windows;
+                }
+                else
+                {
+                    if (System.IO.File.Exists(OSX_CHECK_FILE))
+                        return Platform.OSX;
+                    else
+                        return Platform.Linux;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts a list of primitives to an object that can be serialized
+        /// with the LLSD system
+        /// </summary>
+        /// <param name="prims">Primitives to convert to a serializable object</param>
+        /// <returns>An object that can be serialized with LLSD</returns>
+        public static Dictionary<string, object> PrimListToLLSD(List<Primitive> prims)
+        {
+            Dictionary<string, object> llsd = new Dictionary<string, object>(prims.Count);
+
+            for (int i = 0; i < prims.Count; i++)
+                llsd.Add(prims[i].LocalID.ToString(), prims[i].ToLLSD());
+
+            return llsd;
+        }
+
+        public static List<Primitive> LLSDToPrimList(Dictionary<string, object> llsd)
+        {
+            List<Primitive> prims = new List<Primitive>();
+
+            foreach (object obj in llsd.Values)
+            {
+                Dictionary<string, object> primLLSD = (Dictionary<string, object>)obj;
+                ;
+            }
+
+            //FIXME:
+            return null;
+        }
+
+        #region Platform Helper Functions
+
         public static bool TryParse(string s, out DateTime result)
         {
 #if PocketPC
@@ -1167,5 +1242,7 @@ namespace libsecondlife
                 return false;
             }
         }
+
+        #endregion Platform Helper Functions
     }
 }

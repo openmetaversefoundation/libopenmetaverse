@@ -20,8 +20,7 @@ namespace importprimscript
 
     class importprimscript
     {
-        static SecondLife Client;
-        static AssetManager Assets;
+        static SecondLife Client = new SecondLife();
         static Sculpt CurrentSculpt = null;
         static AutoResetEvent RezzedEvent = new AutoResetEvent(false);
         static LLVector3 RootPosition = LLVector3.Zero;
@@ -61,10 +60,6 @@ namespace importprimscript
                 Environment.Exit(-3);
             }
 
-            // Initialize libsecondlife
-            Client = new SecondLife();
-            Assets = new AssetManager(Client);
-
             // Add callback handlers for asset uploads finishing. new prims spotted, and logging
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
             Client.OnLogMessage += new SecondLife.LogCallback(Client_OnLogMessage);
@@ -102,7 +97,7 @@ namespace importprimscript
             string start = NetworkManager.StartLocation(args[3], x, y, z);
 
             // Attempt to login
-            if (!Client.Network.Login(args[0], args[1], args[2], "importprimscript 1.1.0", start,
+            if (!Client.Network.Login(args[0], args[1], args[2], "importprimscript 1.3.0", start,
                 "John Hurliman <jhurliman@metaverseindustries.com>"))
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginMessage);

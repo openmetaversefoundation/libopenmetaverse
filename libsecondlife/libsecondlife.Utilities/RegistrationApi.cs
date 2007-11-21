@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
-using libsecondlife.LLSD;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -217,9 +217,9 @@ namespace libsecondlife
                 throw new InvalidOperationException("access denied; only approved developers have access to the registration api");
 
             // Create the POST data
-            Dictionary<string, object> query = new Dictionary<string, object>();
-            query.Add("username", firstName);
-            query.Add("last_name_id", lastName.ID);
+            LLSDMap query = new LLSDMap();
+            query.Add("username", LLSD.FromString(firstName));
+            query.Add("last_name_id", LLSD.FromInteger(lastName.ID));
             byte[] postData = LLSDParser.SerializeXmlBytes(query);
 
             CapsRequest request = new CapsRequest(_caps.CheckName.AbsoluteUri, String.Empty, null);
@@ -258,31 +258,31 @@ namespace libsecondlife
                 throw new InvalidOperationException("access denied; only approved developers have access to the registration api");
 
             // Create the POST data
-            Dictionary<string, object> query = new Dictionary<string, object>();
-            query.Add("username", user.FirstName);
-            query.Add("last_name_id", user.LastName.ID);
-            query.Add("email", user.Email);
-            query.Add("password", user.Password);
-            query.Add("dob", user.Birthdate.ToString("yyyy-MM-dd"));
+            LLSDMap query = new LLSDMap();
+            query.Add("username", LLSD.FromString(user.FirstName));
+            query.Add("last_name_id", LLSD.FromInteger(user.LastName.ID));
+            query.Add("email", LLSD.FromString(user.Email));
+            query.Add("password", LLSD.FromString(user.Password));
+            query.Add("dob", LLSD.FromString(user.Birthdate.ToString("yyyy-MM-dd")));
 
             if (user.LimitedToEstate != null)
-                query.Add("limited_to_estate", user.LimitedToEstate.Value);
+                query.Add("limited_to_estate", LLSD.FromInteger(user.LimitedToEstate.Value));
 
             if (!string.IsNullOrEmpty(user.StartRegionName))
-                query.Add("start_region_name", user.LimitedToEstate.Value);
+                query.Add("start_region_name", LLSD.FromInteger(user.LimitedToEstate.Value));
 
             if (user.StartLocation != null)
             {
-                query.Add("start_local_x", user.StartLocation.Value.X);
-                query.Add("start_local_y", user.StartLocation.Value.Y);
-                query.Add("start_local_z", user.StartLocation.Value.Z);
+                query.Add("start_local_x", LLSD.FromReal(user.StartLocation.Value.X));
+                query.Add("start_local_y", LLSD.FromReal(user.StartLocation.Value.Y));
+                query.Add("start_local_z", LLSD.FromReal(user.StartLocation.Value.Z));
             }
 
             if (user.StartLookAt != null)
             {
-                query.Add("start_look_at_x", user.StartLookAt.Value.X);
-                query.Add("start_look_at_y", user.StartLookAt.Value.Y);
-                query.Add("start_look_at_z", user.StartLookAt.Value.Z);
+                query.Add("start_look_at_x", LLSD.FromReal(user.StartLookAt.Value.X));
+                query.Add("start_look_at_y", LLSD.FromReal(user.StartLookAt.Value.Y));
+                query.Add("start_look_at_z", LLSD.FromReal(user.StartLookAt.Value.Z));
             }
 
             byte[] postData = LLSDParser.SerializeXmlBytes(query);

@@ -42,8 +42,6 @@ namespace libsecondlife
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
         public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
 
-        /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
-        public string VERSION = "libsecondlife 0.0.9";
         /// <summary>XML-RPC login server to connect to</summary>
         public string LOGIN_SERVER = AGNI_LOGIN_SERVER;
         /// <summary>The relative directory where files needed for baking are kept</summary>

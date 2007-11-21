@@ -30,6 +30,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
 using libsecondlife;
+using libsecondlife.StructuredData;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -1160,14 +1161,14 @@ namespace libsecondlife
 
             if (url != String.Empty)
             {
-                Dictionary<string, object> query = new Dictionary<string, object>();
-                query.Add("folder_id", folderID);
-                query.Add("asset_type", AssetTypeToString(assetType));
-                query.Add("inventory_type", InventoryTypeToString(invType));
-                query.Add("name", name);
-                query.Add("description", description);
+                LLSDMap query = new LLSDMap();
+                query.Add("folder_id", LLSD.FromUUID(folderID));
+                query.Add("asset_type", LLSD.FromString(AssetTypeToString(assetType)));
+                query.Add("inventory_type", LLSD.FromString(InventoryTypeToString(invType)));
+                query.Add("name", LLSD.FromString(name));
+                query.Add("description", LLSD.FromString(description));
 
-                byte[] postData = LLSD.LLSDParser.SerializeXmlBytes(query);
+                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(query);
 
                 // Make the request
                 CapsRequest request = new CapsRequest(url, _Client.Network.CurrentSim);

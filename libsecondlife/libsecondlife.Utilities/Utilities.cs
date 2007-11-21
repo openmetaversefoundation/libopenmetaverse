@@ -22,36 +22,6 @@ namespace libsecondlife.Utilities
         Underwater
     }
 
-    public enum Platform
-    {
-        Unknown,
-        Windows,
-        Linux,
-        OSX
-    }
-
-    public static class SLPlatformTools
-    {
-        public const string OSX_CHECK_FILE = "/Library/Extensions.kextcache";
-
-        public static Platform GetRunningPlatform()
-        {
-            int plat = (int)Environment.OSVersion.Platform;
-
-            if ((plat != 4) && (plat != 128))
-            {
-                return Platform.Windows;
-            }
-            else
-            {
-                if (System.IO.File.Exists(OSX_CHECK_FILE))
-                    return Platform.OSX;
-                else
-                    return Platform.Linux;
-            }
-        }
-    }
-
     public static class Realism
     {
         /// <summary>

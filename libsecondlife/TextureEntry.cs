@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -410,20 +411,39 @@ namespace libsecondlife
                     hasAttribute = TextureAttributes.None;
             }
 
-            public Dictionary<string, object> ToLLSD()
+            public LLSD ToLLSD()
             {
-                Dictionary<string, object> tex = new Dictionary<string, object>(10);
-                tex["bump"] = (int)Bump;
+                LLSDMap tex = new LLSDMap(10);
+                tex["bump"] = LLSD.FromInteger((int)Bump);
                 tex["colors"] = RGBA.ToLLSD();
-                tex["fullbright"] = Fullbright;
-                tex["imageid"] = TextureID;
-                tex["imagerot"] = Rotation;
-                tex["media_flags"] = MediaFlags;
-                tex["offsets"] = OffsetU;
-                tex["offsett"] = OffsetV;
-                tex["scales"] = RepeatU;
-                tex["scalet"] = RepeatV;
+                tex["fullbright"] = LLSD.FromBoolean(Fullbright);
+                tex["imageid"] = LLSD.FromUUID(TextureID);
+                tex["imagerot"] = LLSD.FromReal(Rotation);
+                tex["media_flags"] = LLSD.FromInteger(Convert.ToInt32(MediaFlags));
+                tex["offsets"] = LLSD.FromReal(OffsetU);
+                tex["offsett"] = LLSD.FromReal(OffsetV);
+                tex["scales"] = LLSD.FromReal(RepeatU);
+                tex["scalet"] = LLSD.FromReal(RepeatV);
                 return tex;
+            }
+
+            public static TextureEntryFace FromLLSD(LLSD llsd, TextureEntryFace defaultFace)
+            {
+                LLSDMap map = (LLSDMap)llsd;
+
+                TextureEntryFace face = new TextureEntryFace(defaultFace);
+                face.Bump = (Bumpiness)map["bump"].AsInteger();
+                face.RGBA = LLColor.FromLLSD(map["colors"]);
+                face.Fullbright = map["fullbright"].AsBoolean();
+                face.TextureID = map["imageid"].AsUUID();
+                face.Rotation = (float)map["imagerot"].AsReal();
+                face.MediaFlags = map["media_flags"].AsBoolean();
+                face.OffsetU = (float)map["offsets"].AsReal();
+                face.OffsetV = (float)map["offsett"].AsReal();
+                face.RepeatU = (float)map["scales"].AsReal();
+                face.RepeatV = (float)map["scalet"].AsReal();
+
+                return face;
             }
 
             /// <summary>
@@ -464,6 +484,28 @@ namespace libsecondlife
             {
                 DefaultTexture = new TextureEntryFace(null);
                 DefaultTexture.TextureID = defaultTextureID;
+            }
+
+            /// <summary>
+            /// Constructor that takes a <code>TextureEntryFace</code> for the
+            /// default face
+            /// </summary>
+            /// <param name="defaultFace">Face to use as the default face</param>
+            public TextureEntry(TextureEntryFace defaultFace)
+            {
+                DefaultTexture = new TextureEntryFace(null);
+                DefaultTexture.Bump = defaultFace.Bump;
+                DefaultTexture.Fullbright = defaultFace.Fullbright;
+                DefaultTexture.MediaFlags = defaultFace.MediaFlags;
+                DefaultTexture.OffsetU = defaultFace.OffsetU;
+                DefaultTexture.OffsetV = defaultFace.OffsetV;
+                DefaultTexture.RepeatU = defaultFace.RepeatU;
+                DefaultTexture.RepeatV = defaultFace.RepeatV;
+                DefaultTexture.RGBA = defaultFace.RGBA;
+                DefaultTexture.Rotation = defaultFace.Rotation;
+                DefaultTexture.Shiny = defaultFace.Shiny;
+                DefaultTexture.TexMapType = defaultFace.TexMapType;
+                DefaultTexture.TextureID = defaultFace.TextureID;
             }
 
             /// <summary>
@@ -516,17 +558,41 @@ namespace libsecondlife
             /// 
             /// </summary>
             /// <returns></returns>
-            public List<object> ToLLSD()
+            public LLSD ToLLSD()
             {
-                List<object> te = new List<object>();
+                LLSDArray array = new LLSDArray();
 
                 for (int i = 0; i < MAX_FACES; i++)
                 {
                     if (FaceTextures[i] != null)
-                        te.Add(FaceTextures[i].ToLLSD());
+                        array.Add(FaceTextures[i].ToLLSD());
                 }
 
-                return te;
+                return array;
+            }
+
+            public static TextureEntry FromLLSD(LLSD llsd)
+            {
+                LLSDArray array = (LLSDArray)llsd;
+                LLSDMap faceLLSD;
+
+                if (array.Count > 0)
+                {
+                    faceLLSD = (LLSDMap)array[0];
+                    TextureEntryFace defaultFace = TextureEntryFace.FromLLSD(faceLLSD, null);
+                    TextureEntry te = new TextureEntry(defaultFace);
+
+                    for (int i = 0; i < array.Count; i++)
+                    {
+                        te.FaceTextures[i] = TextureEntryFace.FromLLSD(array[i], defaultFace);
+                    }
+
+                    return te;
+                }
+                else
+                {
+                    throw new ArgumentException("LLSD contains no elements");
+                }
             }
 
             private void FromBytes(byte[] data, int pos, int length)

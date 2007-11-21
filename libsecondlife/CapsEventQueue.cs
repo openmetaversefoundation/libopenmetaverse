@@ -30,7 +30,7 @@ using System.Net;
 using System.Text;
 using System.IO;
 using System.Threading;
-using libsecondlife.LLSD;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -62,9 +62,9 @@ namespace libsecondlife
         public new void MakeRequest()
         {
             // Create an EventQueueGet request
-            Dictionary<string, object> request = new Dictionary<string, object>();
-            request["ack"] = null;
-            request["done"] = false;
+            LLSDMap request = new LLSDMap();
+            request["ack"] = new LLSD();
+            request["done"] = LLSD.FromBoolean(false);
 
             byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
@@ -234,7 +234,7 @@ namespace libsecondlife
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
-            List<object> events = null;
+            LLSDArray events = null;
             int ack = 0;
 
             #region Exception Handling
@@ -266,13 +266,13 @@ namespace libsecondlife
             // Decode successful replies from the event queue
             if (success)
             {
-                Dictionary<string, object> response = (Dictionary<string, object>)LLSDParser.DeserializeXml(state.ResponseData);
+                LLSDMap response = (LLSDMap)LLSDParser.DeserializeXml(state.ResponseData);
 
                 if (response != null)
                 {
                     // Parse any events returned by the event queue
-                    events = (List<object>)response["events"];
-                    ack = (int)response["id"];
+                    events = (LLSDArray)response["events"];
+                    ack = response["id"].AsInteger();
                 }
             }
 
@@ -282,10 +282,10 @@ namespace libsecondlife
 
             if (_Running)
             {
-                Dictionary<string, object> request = new Dictionary<string, object>();
-                if (ack != 0) request["ack"] = ack;
-                else request["ack"] = null;
-                request["done"] = _Dead;
+                LLSDMap request = new LLSDMap();
+                if (ack != 0) request["ack"] = LLSD.FromInteger(ack);
+                else request["ack"] = new LLSD();
+                request["done"] = LLSD.FromBoolean(_Dead);
 
                 byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
@@ -307,10 +307,10 @@ namespace libsecondlife
             if (events != null && events.Count > 0)
             {
                 // Fire callbacks for each event received
-                foreach (Dictionary<string, object> evt in events)
+                foreach (LLSDMap evt in events)
                 {
-                    string msg = (string)evt["message"];
-                    Dictionary<string, object> body = (Dictionary<string, object>)evt["body"];
+                    string msg = evt["message"].AsString();
+                    LLSDMap body = (LLSDMap)evt["body"];
 
                     //Simulator.Client.DebugLog(
                     //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Helpers.NewLine, LLSD.LLSDDump(body, 0)));

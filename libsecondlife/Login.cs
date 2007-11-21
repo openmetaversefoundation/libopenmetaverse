@@ -30,7 +30,7 @@ using System.Threading;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using libsecondlife.LLSD;
+using libsecondlife.StructuredData;
 using libsecondlife.Packets;
 using CookComputing.XmlRpc;
 
@@ -112,10 +112,6 @@ namespace libsecondlife
             public string MAC;
             /// <summary></summary>
             public string ViewerDigest;
-            /// <summary></summary>
-            public string UserAgent;
-            /// <summary></summary>
-            public string Author;
             /// <summary></summary>
             public List<string> Options;
         }
@@ -328,11 +324,11 @@ namespace libsecondlife
         /// <param name="firstName">Account first name</param>
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password</param>
-        /// <param name="userAgent">Client application name and version</param>
-        /// <param name="author">Client application author</param>
+        /// <param name="userAgent">Client application name</param>
+        /// <param name="userVersion">Client application version</param>
         /// <returns></returns>
         public LoginParams DefaultLoginParams(string firstName, string lastName, string password,
-            string userAgent, string author)
+            string userAgent, string userVersion)
         {
             List<string> options = new List<string>();
             options.Add("inventory-root");
@@ -359,13 +355,11 @@ namespace libsecondlife
             loginParams.LastName = lastName;
             loginParams.Password = password;
             loginParams.Start = "last";
-            loginParams.Channel = "libsecondlife";
-            loginParams.Version = Client.Settings.VERSION;
+            loginParams.Channel = userAgent + " (libsecondlife)";
+            loginParams.Version = userVersion;
             loginParams.Platform = "Win";
             loginParams.MAC = String.Empty;
             loginParams.ViewerDigest = String.Empty;
-            loginParams.UserAgent = userAgent;
-            loginParams.Author = author;
             loginParams.Options = options;
 
             return loginParams;
@@ -445,8 +439,6 @@ namespace libsecondlife
                 CurrentContext.Params.ViewerDigest = String.Empty;
             if (CurrentContext.Params.Version == null)
                 CurrentContext.Params.Version = String.Empty;
-            if (CurrentContext.Params.UserAgent == null)
-                CurrentContext.Params.UserAgent = String.Empty;
             if (CurrentContext.Params.Platform == null)
                 CurrentContext.Params.Platform = String.Empty;
             if (CurrentContext.Params.Options == null)
@@ -478,8 +470,6 @@ namespace libsecondlife
             loginParams.version = CurrentContext.Params.Version;
             loginParams.platform = CurrentContext.Params.Platform;
             loginParams.mac = CurrentContext.Params.MAC;
-            loginParams.user_agent = CurrentContext.Params.UserAgent;
-            loginParams.author = CurrentContext.Params.Author;
             loginParams.agree_to_tos = "true";
             loginParams.read_critical = "true";
             loginParams.viewer_digest = CurrentContext.Params.ViewerDigest;
@@ -803,9 +793,6 @@ namespace libsecondlife
             public string version;
             public string platform;
             public string mac;
-            [XmlRpcMember("user-agent")]
-            public string user_agent;
-            public string author;
             public string agree_to_tos;
             public string read_critical;
             public string viewer_digest;

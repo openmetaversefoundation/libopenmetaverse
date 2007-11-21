@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -460,18 +461,33 @@ namespace libsecondlife
 			return byteArray;
         }
 
-        public float[] ToLLSD()
+        public LLSD ToLLSD()
         {
-            float[] array = new float[3];
-            array[0] = X;
-            array[1] = Y;
-            array[2] = Z;
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(X));
+            array.Add(LLSD.FromReal(Y));
+            array.Add(LLSD.FromReal(Z));
             return array;
         }
 
         #endregion Public Methods
 
         #region Static Methods
+
+        public static LLVector3 FromLLSD(LLSD llsd)
+        {
+            if (llsd.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)llsd;
+
+                if (array.Count == 3)
+                {
+                    return new LLVector3((float)array[0].AsReal(), (float)array[1].AsReal(), (float)array[2].AsReal());
+                }
+            }
+
+            return LLVector3.Zero;
+        }
 
         /// <summary>
         /// Calculate the magnitude of the supplied vector
@@ -833,18 +849,33 @@ namespace libsecondlife
             return byteArray;
         }
 
-        public double[] ToLLSD()
+        public LLSD ToLLSD()
         {
-            double[] array = new double[3];
-            array[0] = X;
-            array[1] = Y;
-            array[2] = Z;
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(X));
+            array.Add(LLSD.FromReal(Y));
+            array.Add(LLSD.FromReal(Z));
             return array;
         }
 
         #endregion Public Methods
 
         #region Static Methods
+
+        public static LLVector3d FromLLSD(LLSD llsd)
+        {
+            if (llsd.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)llsd;
+
+                if (array.Count == 3)
+                {
+                    return new LLVector3d(array[0].AsReal(), array[1].AsReal(), array[2].AsReal());
+                }
+            }
+
+            return LLVector3d.Zero;
+        }
 
         /// <summary>
         /// Calculates the distance between two vectors
@@ -1015,17 +1046,40 @@ namespace libsecondlife
 			return byteArray;
         }
 
-        public float[] ToLLSD()
+        public LLSD ToLLSD()
         {
-            float[] array = new float[4];
-            array[0] = X;
-            array[1] = Y;
-            array[2] = Z;
-            array[3] = S;
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(X));
+            array.Add(LLSD.FromReal(Y));
+            array.Add(LLSD.FromReal(Z));
+            array.Add(LLSD.FromReal(S));
             return array;
         }
 
         #endregion Public Methods
+
+        #region Static Methods
+
+        public static LLVector4 FromLLSD(LLSD llsd)
+        {
+            if (llsd.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)llsd;
+
+                if (array.Count == 3)
+                {
+                    return new LLVector4(
+                        (float)array[0].AsReal(),
+                        (float)array[1].AsReal(),
+                        (float)array[2].AsReal(),
+                        (float)array[3].AsReal());
+                }
+            }
+
+            return LLVector4.Zero;
+        }
+
+        #endregion Static Methods
 
         #region Overrides
 
@@ -1060,7 +1114,7 @@ namespace libsecondlife
 
         #endregion Overrides
 
-                #region Operators
+        #region Operators
 
         /// <summary>
         /// 
@@ -1133,8 +1187,8 @@ namespace libsecondlife
             return new LLVector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
         }
 
-
         #endregion Operators
+
         /// <summary>An LLVector4 with a value of 0,0,0,0</summary>
         public readonly static LLVector4 Zero = new LLVector4();
 	}
@@ -1170,6 +1224,15 @@ namespace libsecondlife
             G = (float)g * quanta;
             B = (float)b * quanta;
             A = (float)a * quanta;
+        }
+
+        public LLColor(float r, float g, float b, float a)
+        {
+            // Valid range is from 0.0 to 1.0
+            R = Helpers.Clamp(r, 0f, 1f);
+            G = Helpers.Clamp(g, 0f, 1f);
+            B = Helpers.Clamp(b, 0f, 1f);
+            A = Helpers.Clamp(a, 0f, 1f);
         }
 
         /// <summary>
@@ -1220,17 +1283,40 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-        public float[] ToLLSD()
+        public LLSD ToLLSD()
         {
-            float[] array = new float[4];
-            array[0] = R;
-            array[1] = G;
-            array[2] = B;
-            array[3] = A;
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(R));
+            array.Add(LLSD.FromReal(G));
+            array.Add(LLSD.FromReal(B));
+            array.Add(LLSD.FromReal(A));
             return array;
         }
 
         #endregion Public Methods
+
+        #region Static Methods
+
+        public static LLColor FromLLSD(LLSD llsd)
+        {
+            if (llsd.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)llsd;
+
+                if (array.Count == 3)
+                {
+                    return new LLColor(
+                        (float)array[0].AsReal(),
+                        (float)array[1].AsReal(),
+                        (float)array[2].AsReal(),
+                        (float)array[3].AsReal());
+                }
+            }
+
+            return LLColor.Black;
+        }
+
+        #endregion Static Methods
 
         #region Overrides
 
@@ -1469,19 +1555,38 @@ namespace libsecondlife
             return bytes;
         }
 
-        public float[] ToLLSD()
+        public LLSD ToLLSD()
         {
-            float[] array = new float[4];
-            array[0] = X;
-            array[1] = Y;
-            array[2] = Z;
-            array[3] = W;
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(X));
+            array.Add(LLSD.FromReal(Y));
+            array.Add(LLSD.FromReal(Z));
+            array.Add(LLSD.FromReal(W));
             return array;
         }
 
         #endregion Public Methods
 
         #region Static Methods
+
+        public static LLQuaternion FromLLSD(LLSD llsd)
+        {
+            if (llsd.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)llsd;
+
+                if (array.Count == 4)
+                {
+                    return new LLQuaternion(
+                        (float)array[0].AsReal(),
+                        (float)array[1].AsReal(),
+                        (float)array[2].AsReal(),
+                        (float)array[3].AsReal());
+                }
+            }
+
+            return LLQuaternion.Identity;
+        }
 
         /// <summary>
         /// Calculate the magnitude of the supplied quaternion

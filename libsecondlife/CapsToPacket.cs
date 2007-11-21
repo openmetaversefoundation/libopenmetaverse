@@ -28,7 +28,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using libsecondlife.LLSD;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife.Packets
 {
@@ -39,9 +39,9 @@ namespace libsecondlife.Packets
             return LLSDParser.SerializeXmlString(SerializeToLLSD(packet));
         }
 
-        public static object SerializeToLLSD(Packet packet)
+        public static LLSD SerializeToLLSD(Packet packet)
         {
-            Dictionary<string, object> body = new Dictionary<string, object>();
+            LLSDMap body = new LLSDMap();
             Type type = packet.GetType();
 
             foreach (FieldInfo field in type.GetFields())
@@ -54,7 +54,7 @@ namespace libsecondlife.Packets
                     {
                         object blockArray = field.GetValue(packet);
                         Array array = (Array)blockArray;
-                        List<object> blockList = new List<object>(array.Length);
+                        LLSDArray blockList = new LLSDArray(array.Length);
                         IEnumerator ie = array.GetEnumerator();
 
                         while (ie.MoveNext())
@@ -88,7 +88,7 @@ namespace libsecondlife.Packets
         /// packet name for a Packet to be successfully built</param>
         /// <param name="body">LLSD to convert to a Packet</param>
         /// <returns>A Packet on success, otherwise null</returns>
-        public static Packet BuildPacket(string capsEventName, Dictionary<string, object> body)
+        public static Packet BuildPacket(string capsEventName, LLSDMap body)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
 
@@ -113,22 +113,22 @@ namespace libsecondlife.Packets
 
                         if (blockType.IsArray)
                         {
-                            List<object> array = (List<object>)body[field.Name];
+                            LLSDArray array = (LLSDArray)body[field.Name];
                             Type elementType = blockType.GetElementType();
                             object[] blockArray = (object[])Array.CreateInstance(elementType, array.Count);
 
                             for (int i = 0; i < array.Count; i++)
                             {
-                                Dictionary<string, object> hashtable = (Dictionary<string, object>)array[i];
-                                blockArray[i] = ParseLLSDBlock(hashtable, elementType);
+                                LLSDMap map = (LLSDMap)array[i];
+                                blockArray[i] = ParseLLSDBlock(map, elementType);
                             }
 
                             field.SetValue(packet, blockArray);
                         }
                         else
                         {
-                            Dictionary<string, object> hashtable = (Dictionary<string, object>)((List<object>)body[field.Name])[0];
-                            field.SetValue(packet, ParseLLSDBlock(hashtable, blockType));
+                            LLSDMap map = (LLSDMap)((LLSDArray)body[field.Name])[0];
+                            field.SetValue(packet, ParseLLSDBlock(map, blockType));
                         }
                     }
                 }
@@ -141,7 +141,7 @@ namespace libsecondlife.Packets
             return (Packet)packet;
         }
 
-        private static object ParseLLSDBlock(Dictionary<string, object> blockData, Type blockType)
+        private static object ParseLLSDBlock(LLSDMap blockData, Type blockType)
         {
             object block = Activator.CreateInstance(blockType);
 
@@ -155,34 +155,66 @@ namespace libsecondlife.Packets
                     if (fieldType == typeof(ulong))
                     {
                         // ulongs come in as a byte array, convert it manually here
-                        byte[] bytes = (byte[])blockData[field.Name];
+                        byte[] bytes = blockData[field.Name].AsBinary();
                         ulong value = Helpers.BytesToUInt64(bytes);
                         field.SetValue(block, value);
                     }
                     else if (fieldType == typeof(uint))
                     {
                         // uints come in as a byte array, convert it manually here
-                        byte[] bytes = (byte[])blockData[field.Name];
+                        byte[] bytes = blockData[field.Name].AsBinary();
                         uint value = Helpers.BytesToUIntBig(bytes);
                         field.SetValue(block, value);
                     }
                     else if (fieldType == typeof(ushort))
                     {
                         // Just need a bit of manual typecasting love here
-                        field.SetValue(block, (ushort)(int)blockData[field.Name]);
+                        field.SetValue(block, (ushort)blockData[field.Name].AsInteger());
                     }
                     else if (fieldType == typeof(byte))
                     {
                         // Just need a bit of manual typecasting love here
-                        field.SetValue(block, (byte)(int)blockData[field.Name]);
+                        field.SetValue(block, (byte)blockData[field.Name].AsInteger());
                     }
                     else if (fieldType == typeof(short))
                     {
-                        field.SetValue(block, (short)(int)blockData[field.Name]);
+                        field.SetValue(block, (short)blockData[field.Name].AsInteger());
                     }
-                    else
+                    else if (fieldType == typeof(LLUUID))
                     {
-                        field.SetValue(block, blockData[field.Name]);
+                        field.SetValue(block, blockData[field.Name].AsUUID());
+                    }
+                    else if (fieldType == typeof(LLVector3))
+                    {
+                        field.SetValue(block, LLVector3.FromLLSD(blockData[field.Name]));
+                    }
+                    else if (fieldType == typeof(LLVector4))
+                    {
+                        field.SetValue(block, LLVector4.FromLLSD(blockData[field.Name]));
+                    }
+                    else if (fieldType == typeof(LLQuaternion))
+                    {
+                        field.SetValue(block, LLQuaternion.FromLLSD(blockData[field.Name]));
+                    }
+                    else if (fieldType == typeof(string))
+                    {
+                        field.SetValue(block, blockData[field.Name].AsString());
+                    }
+                    else if (fieldType == typeof(bool))
+                    {
+                        field.SetValue(block, blockData[field.Name].AsBoolean());
+                    }
+                    else if (fieldType == typeof(float))
+                    {
+                        field.SetValue(block, (float)blockData[field.Name].AsReal());
+                    }
+                    else if (fieldType == typeof(double))
+                    {
+                        field.SetValue(block, blockData[field.Name].AsReal());
+                    }
+                    else if (fieldType == typeof(int))
+                    {
+                        field.SetValue(block, blockData[field.Name].AsInteger());
                     }
                 }
             }
@@ -193,35 +225,33 @@ namespace libsecondlife.Packets
                 if (blockData.ContainsKey(property.Name))
                 {
                     MethodInfo set = property.GetSetMethod();
-                    set.Invoke(block, new object[] { Helpers.StringToField((string)blockData[property.Name]) });
+                    set.Invoke(block, new object[] { Helpers.StringToField(blockData[property.Name].AsString()) });
                 }
             }
 
             return block;
         }
 
-        private static Dictionary<string, object> BuildLLSDBlock(object block)
+        private static LLSD BuildLLSDBlock(object block)
         {
-            Dictionary<string, object> dict = new Dictionary<string, object>();
+            LLSDMap map = new LLSDMap();
             Type blockType = block.GetType();
 
             foreach (FieldInfo field in blockType.GetFields())
             {
                 if (field.IsPublic)
-                {
-                    dict[field.Name] = field.GetValue(block);
-                }
+                    map[field.Name] = LLSD.FromObject(field.GetValue(block));
             }
 
             foreach (PropertyInfo property in blockType.GetProperties())
             {
                 if (property.Name != "Length")
                 {
-                    dict[property.Name] = property.GetValue(block, null);
+                    map[property.Name] = LLSD.FromObject(property.GetValue(block, null));
                 }
             }
 
-            return dict;
+            return map;
         }
     }
 }

@@ -163,7 +163,7 @@ namespace libsecondlife
             /// <summary>Name of the CAPS event</summary>
             public string CapsEvent;
             /// <summary>Decoded body of the CAPS event</summary>
-            public Dictionary<string, object> Body;
+            public StructuredData.LLSD Body;
             /// <summary>Reference to the event queue that generated this event</summary>
             public CapsEventQueue EventQueue;
         }
@@ -225,7 +225,7 @@ namespace libsecondlife
         /// <param name="body">Decoded event body</param>
         /// <param name="eventQueue">Reference to the event queue that 
         /// generated this event</param>
-        internal void RaiseEvent(string capsEvent, Dictionary<string, object> body, CapsEventQueue eventQueue)
+        internal void RaiseEvent(string capsEvent, StructuredData.LLSD body, CapsEventQueue eventQueue)
         {
             bool specialHandler = false;
             Capabilities.EventQueueCallback callback;
@@ -241,17 +241,21 @@ namespace libsecondlife
             }
 
             // Generic parser next
-            Packet packet = Packet.BuildPacket(capsEvent, body);
-            if (packet != null)
+            if (body.Type == StructuredData.LLSDType.Map)
             {
-                NetworkManager.IncomingPacket incomingPacket;
-                incomingPacket.Simulator = eventQueue.Simulator;
-                incomingPacket.Packet = packet;
+                StructuredData.LLSDMap map = (StructuredData.LLSDMap)body;
+                Packet packet = Packet.BuildPacket(capsEvent, map);
+                if (packet != null)
+                {
+                    NetworkManager.IncomingPacket incomingPacket;
+                    incomingPacket.Simulator = eventQueue.Simulator;
+                    incomingPacket.Packet = packet;
 
-                Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
+                    Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
 
-                Client.Network.PacketInbox.Enqueue(incomingPacket);
-                specialHandler = true;
+                    Client.Network.PacketInbox.Enqueue(incomingPacket);
+                    specialHandler = true;
+                }
             }
 
             // Explicit handler next
@@ -274,7 +278,7 @@ namespace libsecondlife
         /// <param name="body">Decoded event body</param>
         /// <param name="eventQueue">Reference to the event queue that 
         /// generated this event</param>
-        internal void BeginRaiseEvent(string capsEvent, Dictionary<string, object> body, CapsEventQueue eventQueue)
+        internal void BeginRaiseEvent(string capsEvent, StructuredData.LLSD body, CapsEventQueue eventQueue)
         {
             bool specialHandler = false;
             Capabilities.EventQueueCallback callback;
@@ -294,17 +298,21 @@ namespace libsecondlife
             }
 
             // Generic parser next
-            Packet packet = Packet.BuildPacket(capsEvent, body);
-            if (packet != null)
+            if (body.Type == StructuredData.LLSDType.Map)
             {
-                NetworkManager.IncomingPacket incomingPacket;
-                incomingPacket.Simulator = eventQueue.Simulator;
-                incomingPacket.Packet = packet;
+                StructuredData.LLSDMap map = (StructuredData.LLSDMap)body;
+                Packet packet = Packet.BuildPacket(capsEvent, map);
+                if (packet != null)
+                {
+                    NetworkManager.IncomingPacket incomingPacket;
+                    incomingPacket.Simulator = eventQueue.Simulator;
+                    incomingPacket.Packet = packet;
 
-                Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
+                    Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
 
-                Client.Network.PacketInbox.Enqueue(incomingPacket);
-                specialHandler = true;
+                    Client.Network.PacketInbox.Enqueue(incomingPacket);
+                    specialHandler = true;
+                }
             }
             
             // Explicit handler next

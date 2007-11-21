@@ -66,15 +66,12 @@ namespace libsecondlife.Caps
         protected const int HTTP_TIMEOUT = 1 * 30 * 1000;
 
         protected HttpRequestState _RequestState;
-        protected HttpListener _Listener;
-        protected int _ListenPort;
         protected string _RequestURL;
         protected string _ProxyURL;
         protected string _ContentType;
         protected byte[] _PostData;
         protected object _State;
         protected bool _Aborted = false;
-        protected AsyncCallback _ServerCallback;
 
         public HttpBase(string requestURL)
             : this(requestURL, null, null, null, null)
@@ -82,6 +79,9 @@ namespace libsecondlife.Caps
 
         public HttpBase(string requestURL, string proxyURL, string contentType, byte[] postData, object state)
         {
+            if (String.IsNullOrEmpty(_RequestURL))
+                throw new ArgumentException("requestURL cannot be null or emtpy");
+
             _RequestURL = requestURL;
             _ProxyURL = proxyURL;
             _ContentType = contentType;
@@ -89,89 +89,66 @@ namespace libsecondlife.Caps
             _State = state;
         }
 
-        public HttpBase(int listeningPort)
-        {
-            _ServerCallback = new AsyncCallback(ListenerCallback);
-
-            _ListenPort = listeningPort;
-            _Listener = new HttpListener();
-            _Listener.Prefixes.Add("http://+:" + _ListenPort + "/");
-        }
-
         public void Start()
         {
-            if (_Listener != null)
+            // Client mode
+            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
+            IAsyncResult result;
+
+            // Always disable keep-alive for our purposes
+            httpRequest.KeepAlive = false;
+
+            // Create a state object to track this request in async callbacks
+            _RequestState = new HttpRequestState(httpRequest);
+            _RequestState.State = _State;
+
+            if (!String.IsNullOrEmpty(_ProxyURL))
             {
-                // Server mode
-                _Listener.Start();
-                _Listener.BeginGetContext(_ServerCallback, _Listener);
+                // Create a proxy object
+                WebProxy proxy = new WebProxy();
+
+                // Associate a new Uri object to the _wProxy object, using the proxy address
+                // selected by the user
+                proxy.Address = new Uri(_ProxyURL);
+
+                // Finally, initialize the Web request object proxy property with the _wProxy
+                // object
+                httpRequest.Proxy = proxy;
             }
-            else if (!String.IsNullOrEmpty(_RequestURL))
+
+            try
             {
-                // Client mode
-                HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
-                IAsyncResult result;
-
-                // Always disable keep-alive for our purposes
-                httpRequest.KeepAlive = false;
-
-                // Create a state object to track this request in async callbacks
-                _RequestState = new HttpRequestState(httpRequest);
-                _RequestState.State = _State;
-
-                if (!String.IsNullOrEmpty(_ProxyURL))
+                if (_PostData != null)
                 {
-                    // Create a proxy object
-                    WebProxy proxy = new WebProxy();
+                    // POST request
+                    _RequestState.WebRequest.Method = "POST";
+                    _RequestState.WebRequest.ContentLength = _PostData.Length;
+                    if (!String.IsNullOrEmpty(_ContentType))
+                        _RequestState.WebRequest.ContentType = _ContentType;
+                    _RequestState.RequestData = _PostData;
 
-                    // Associate a new Uri object to the _wProxy object, using the proxy address
-                    // selected by the user
-                    proxy.Address = new Uri(_ProxyURL);
-
-                    // Finally, initialize the Web request object proxy property with the _wProxy
-                    // object
-                    httpRequest.Proxy = proxy;
+                    result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
+                        new AsyncCallback(RequestStreamCallback), _RequestState);
+                }
+                else
+                {
+                    // GET request
+                    result = (IAsyncResult)_RequestState.WebRequest.BeginGetResponse(
+                        new AsyncCallback(ResponseCallback), _RequestState);
                 }
 
-                try
-                {
-                    if (_PostData != null)
-                    {
-                        // POST request
-                        _RequestState.WebRequest.Method = "POST";
-                        _RequestState.WebRequest.ContentLength = _PostData.Length;
-                        if (!String.IsNullOrEmpty(_ContentType))
-                            _RequestState.WebRequest.ContentType = _ContentType;
-                        _RequestState.RequestData = _PostData;
-
-                        result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
-                            new AsyncCallback(RequestStreamCallback), _RequestState);
-                    }
-                    else
-                    {
-                        // GET request
-                        result = (IAsyncResult)_RequestState.WebRequest.BeginGetResponse(
-                            new AsyncCallback(ResponseCallback), _RequestState);
-                    }
-
-                    // If there is a timeout, the callback fires and the request becomes aborted
-                    ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
-                        _RequestState, HTTP_TIMEOUT, true);
-                }
-                catch (WebException e)
-                {
-                    Stop(false, e);
-                    return;
-                }
-
-                // If we get here the request has been initialized, so fire the callback for a request being started
-                RequestSent(_RequestState);
+                // If there is a timeout, the callback fires and the request becomes aborted
+                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                    _RequestState, HTTP_TIMEOUT, true);
             }
-            else
+            catch (WebException e)
             {
-                SecondLife.LogStatic("HttpBase.Start() called with no client or server mode initialized",
-                    Helpers.LogLevel.Error);
+                Stop(false, e);
+                return;
             }
+
+            // If we get here the request has been initialized, so fire the callback for a request being started
+            RequestSent(_RequestState);
         }
 
         public void Stop()
@@ -224,23 +201,6 @@ namespace libsecondlife.Caps
         protected void TimeoutCallback(object state, bool timedOut)
         {
             if (timedOut) Stop(true, null);
-        }
-
-        protected void ListenerCallback(IAsyncResult result)
-        {
-            try
-            {
-                HttpListenerContext context = _Listener.EndGetContext(result);
-                // Start listening again immediately
-                _Listener.BeginGetContext(_ServerCallback, _Listener);
-
-                // FIXME: Fire a callback
-                // Need http method, URL and/or parameters, POST data
-            }
-            catch (Exception e)
-            {
-                SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Error);
-            }
         }
 
         protected void RequestStreamCallback(IAsyncResult result)

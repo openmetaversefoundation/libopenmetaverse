@@ -32,6 +32,7 @@ using System.IO;
 using System.Xml;
 using System.Threading;
 using libsecondlife;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife.Utilities
 {
@@ -503,11 +504,13 @@ namespace libsecondlife.Utilities
 
         #region Callbacks
 
-        private void RequiredVoiceVersionEventHandler(string message, Dictionary<string, object> body, CapsEventQueue caps)
+        private void RequiredVoiceVersionEventHandler(string message, LLSD llsd, CapsEventQueue caps)
         {
+            LLSDMap body = (LLSDMap)llsd;
+
             if (body.ContainsKey("major_version"))
             {
-                int majorVersion = (int)body["major_version"];
+                int majorVersion = body["major_version"].AsInteger();
 
                 if (VOICE_MAJOR_VERSION != majorVersion)
                 {

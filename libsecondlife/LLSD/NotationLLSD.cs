@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace libsecondlife.LLSD
+namespace libsecondlife.StructuredData
 {
     public static partial class LLSDParser
     {

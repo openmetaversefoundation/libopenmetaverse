@@ -693,9 +693,6 @@ namespace libsecondlife
         public LLVector3 Acceleration { get { return acceleration; } }
         /// <summary></summary>
         public LLVector3 AngularVelocity { get { return angularVelocity; } }
-        /// <summary>The point the avatar is currently looking at
-        /// (may not stay updated)</summary>
-        public LLVector3 LookAt { get { return lookAt; } }
         /// <summary>Position avatar client will goto when login to 'home' or during
         /// teleport request to 'home' region.</summary>
         public LLVector3 HomePosition { get { return homePosition; } }
@@ -827,7 +824,6 @@ namespace libsecondlife
         private LLUUID secureSessionID;
         private string startLocation = String.Empty;
         private string agentAccess = String.Empty;
-        private LLVector3 lookAt;
         private LLVector3 homePosition;
         private LLVector3 homeLookAt;
         private string firstName = String.Empty;
@@ -1329,8 +1325,11 @@ namespace libsecondlife
                 Movement.UpPos = false;
                 Movement.FinishAnim = true;
                 Movement.SendUpdate(true);
+
+                // HACK: Try and give enough time for the jump animation to finish
+                System.Threading.Thread.Sleep(1000);
+
                 Movement.FinishAnim = false;
-                Movement.SendUpdate(true);
                 return true;
             }
             else
@@ -1947,7 +1946,7 @@ namespace libsecondlife
             s.StartLocationData.LocationPos = Client.Self.SimPosition;
             s.StartLocationData.LocationID = 1;
             s.StartLocationData.SimName = Helpers.StringToField(String.Empty);
-            s.StartLocationData.LocationLookAt = Client.Self.lookAt;
+            s.StartLocationData.LocationLookAt = Movement.Camera.AtAxis;
             Client.Network.SendPacket(s);
         }
 
@@ -2110,8 +2109,8 @@ namespace libsecondlife
         {
             AgentMovementCompletePacket movement = (AgentMovementCompletePacket)packet;
 
-            this.relativePosition = movement.Data.Position;
-            this.lookAt = movement.Data.LookAt;
+            relativePosition = movement.Data.Position;
+            Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
         }
 
@@ -2180,11 +2179,13 @@ namespace libsecondlife
             }
         }
 
-        private void EstablishAgentCommunicationEventHandler(string message, Dictionary<string, object> body, CapsEventQueue caps)
+        private void EstablishAgentCommunicationEventHandler(string message, StructuredData.LLSD llsd, CapsEventQueue caps)
         {
+            StructuredData.LLSDMap body = (StructuredData.LLSDMap)llsd;
+
             if (Client.Settings.MULTIPLE_SIMS && body.ContainsKey("sim-ip-and-port"))
             {
-                string ipAndPort = (string)body["sim-ip-and-port"];
+                string ipAndPort = body["sim-ip-and-port"].AsString();
                 string[] pieces = ipAndPort.Split(':');
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(pieces[0]), Convert.ToInt32(pieces[1]));
                 Simulator sim = Client.Network.FindSimulator(endPoint);
@@ -2201,7 +2202,7 @@ namespace libsecondlife
                     Client.Log("Got EstablishAgentCommunication for " + sim.ToString(),
                         Helpers.LogLevel.Info);
 
-                    sim.SetSeedCaps((string)body["seed-capability"]);
+                    sim.SetSeedCaps(body["seed-capability"].AsString());
                 }
             }
         }
@@ -2296,8 +2297,8 @@ namespace libsecondlife
                 teleportMessage = "Teleport finished";
                 flags = (TeleportFlags)local.Info.TeleportFlags;
                 teleportStat = TeleportStatus.Finished;
-                lookAt = local.Info.LookAt;
                 relativePosition = local.Info.Position;
+                Movement.Camera.LookDirection(local.Info.LookAt);
                 // This field is apparently not used for anything
                 //local.Info.LocationID;
                 finished = true;
@@ -2324,7 +2325,7 @@ namespace libsecondlife
             lastName = reply.LastName;
             startLocation = reply.StartLocation;
             agentAccess = reply.AgentAccess;
-            lookAt = reply.LookAt;
+            Movement.Camera.LookDirection(reply.LookAt);
             homePosition = reply.HomePosition;
             homeLookAt = reply.HomeLookAt;
         }

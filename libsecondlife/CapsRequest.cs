@@ -28,13 +28,13 @@ using System;
 using System.Collections;
 using System.Net;
 using System.Text;
-using libsecondlife.LLSD;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
     public class CapsRequest : HttpBase
     {
-        public delegate void CapsResponseCallback(object response, HttpRequestState state);
+        public delegate void CapsResponseCallback(LLSD response, HttpRequestState state);
 
         public event CapsResponseCallback OnCapsResponse;
 
@@ -73,7 +73,7 @@ namespace libsecondlife
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
-            object response = null;
+            LLSD response = null;
 
             if (success)
             {
