@@ -2145,9 +2145,9 @@ namespace libsecondlife
                                 sim.Objects.Prims[findPrim.LocalID].Properties = props;
                         }
                     }
-
-                    FireOnObjectProperties(sim, props);
                 }
+
+                FireOnObjectProperties(sim, props);
             }
         }
 
