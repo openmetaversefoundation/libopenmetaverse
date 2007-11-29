@@ -63,6 +63,8 @@
     <Compile Include="Commands\Land\GridLayerCommand.cs" />
     <Compile Include="Commands\Land\GridMapCommand.cs" />
     <Compile Include="Commands\Land\ParcelInfoCommand.cs" />
+    <Compile Include="Commands\Movement\CrouchCommand.cs" />
+    <Compile Include="Commands\Movement\FlyCommand.cs" />
     <Compile Include="Commands\Movement\FollowCommand.cs" />
     <Compile Include="Commands\Movement\GotoCommand.cs" />
     <Compile Include="Commands\Movement\JumpCommand.cs" />

@@ -30,7 +30,7 @@ namespace libsecondlife.TestClient
             string searchString = (args.Length > 1)? args[1] : "";
 
             // *** get current location ***
-            LLVector3 location = Client.Self.Position;
+            LLVector3 location = Client.Self.SimPosition;
 
             // *** find all objects in radius ***
             List<Primitive> prims = Client.Network.CurrentSim.Objects.FindAll(

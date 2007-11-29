@@ -643,6 +643,13 @@ namespace libsecondlife
         public delegate void AgentDataCallback(string firstName, string lastName, LLUUID activeGroupID, 
             string groupTitle, GroupPowers groupPowers, string groupName);
 
+        /// <summary>
+        /// Triggered when the current agent animations change
+        /// </summary>
+        /// <param name="agentAnimations">A convenience reference to the
+        /// SignaledAnimations collection</param>
+        public delegate void AnimationsChangedCallback(SafeDictionary<LLUUID, int> agentAnimations);
+
 
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -658,9 +665,11 @@ namespace libsecondlife
         public event BalanceCallback OnBalanceUpdated;
         /// <summary>Callback for incoming Money Balance Replies</summary>
         public event MoneyBalanceReplyCallback OnMoneyBalanceReplyReceived;
-        /// <summary>Callback reply for agent data updates, such as the active
+        /// <summary>Callback for agent data updates, such as the active
         /// group changing</summary>
         public event AgentDataCallback OnAgentDataUpdated;
+        /// <summary>Callback for the current agent animations changing</summary>
+        public event AnimationsChangedCallback OnAnimationsChanged;
 
         #endregion
 
@@ -668,6 +677,7 @@ namespace libsecondlife
         public readonly SecondLife Client;
         /// <summary>Used for movement and camera tracking</summary>
         public readonly AgentMovement Movement;
+        public SafeDictionary<LLUUID, int> SignaledAnimations = new SafeDictionary<LLUUID, int>();
 
         #region Properties
 
@@ -860,7 +870,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.TeleportCancel, callback);
             Client.Network.RegisterCallback(PacketType.TeleportLocal, callback);
 
-            // Instant Message callback
+            // Instant message callback
             Client.Network.RegisterCallback(PacketType.ImprovedInstantMessage, new NetworkManager.PacketCallback(InstantMessageHandler));
             // Chat callback
             Client.Network.RegisterCallback(PacketType.ChatFromSimulator, new NetworkManager.PacketCallback(ChatHandler));
@@ -874,8 +884,10 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.HealthMessage, new NetworkManager.PacketCallback(HealthHandler));
             // Money callback
             Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
-			//Agent Update Callback
+			//Agent update callback
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
+            // Animation callback
+            Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
 
 	        // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Capabilities.EventQueueCallback(EstablishAgentCommunicationEventHandler));
@@ -1211,25 +1223,7 @@ namespace libsecondlife
             Client.Network.SendPacket(requestSit);
         }
 
-        /// <summary>Stands up from sitting on a prim or the ground</summary>
-        public bool Stand()
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Movement.StandUp = true;
-                Movement.SendUpdate();
-                Movement.StandUp = false;
-                Movement.SendUpdate();
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted Stand but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
-        }
-
-		/// <summary>
+        /// <summary>
         /// Follows a call to RequestSit() to actually sit on the object
         /// </summary>
         public void Sit()
@@ -1240,103 +1234,67 @@ namespace libsecondlife
             Client.Network.SendPacket(sit);
         }
 
+        /// <summary>Stands up from sitting on a prim or the ground</summary>
+        public bool Stand()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Movement.StandUp = true;
+                Movement.SendUpdate();
+                return true;
+            }
+            else
+            {
+                Client.Log("Attempted Stand but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Does a "ground sit" at the avatar's current position
         /// </summary>
-        public bool SitOnGround()
+        public void SitOnGround()
         {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Movement.SitOnGround = true;
-                Movement.SendUpdate(true);
-                Movement.SitOnGround = false;
-                Movement.SendUpdate(true);
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted SitOnGround but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
+            Movement.SitOnGround = true;
+            Movement.SendUpdate(true);
         }
 
+        /// <summary>
+        /// Starts or stops flying
+        /// </summary>
+        /// <param name="start">True to start flying, false to stop flying</param>
+        public void Fly(bool start)
+        {
+            if (start)
+                Movement.Fly = true;
+            else
+                Movement.Fly = false;
+
+            Movement.SendUpdate(true);
+        }
 
         /// <summary>
-        /// Starts crouching (begin holding the crouch key)
+        /// Starts or stops crouching
         /// </summary>
-        public bool StartCrouch()
+        /// <param name="start">True to start crouching, false to stop crouching</param>
+        public void Crouch(bool start)
         {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
+            if (start)
                 Movement.UpNeg = true;
-                Movement.SendUpdate(true);
-                return true;
-            }
             else
-            {
-                Client.Log("Attempted StartCrouch but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Finishes crouching (releases the crouch key)
-        /// </summary>
-        public bool StopCrouch()
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
                 Movement.UpNeg = false;
-                Movement.SendUpdate(true);
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted StopCrouch but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
+
+            Movement.SendUpdate(true);
         }
 
         /// <summary>
         /// Starts a jump (begin holding the jump key)
         /// </summary>
-        public bool StartJump()
+        public void Jump()
         {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Movement.UpPos = true;
-                Movement.SendUpdate(true);
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted StartJump but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Finishes a jump (release the jump key)
-        /// </summary>
-        public bool StopJump()
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Movement.UpPos = false;
-                Movement.FinishAnim = true;
-                Movement.SendUpdate(true);
-
-                // HACK: Try and give enough time for the jump animation to finish
-                System.Threading.Thread.Sleep(1000);
-
-                Movement.FinishAnim = false;
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted StopJump but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
+            Movement.UpPos = true;
+            Movement.FastUp = true;
+            Movement.SendUpdate(true);
         }
 
         /// <summary>
@@ -2313,6 +2271,66 @@ namespace libsecondlife
             }
 
             if (finished) teleportEvent.Set();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="sim"></param>
+        protected void AvatarAnimationHandler(Packet packet, Simulator sim)
+        {
+            AvatarAnimationPacket animation = (AvatarAnimationPacket)packet;
+
+            if (animation.Sender.ID == Client.Self.AgentID)
+            {
+                lock (SignaledAnimations.Dictionary)
+                {
+                    // Reset the signaled animation list
+                    SignaledAnimations.Dictionary.Clear();
+
+                    for (int i = 0; i < animation.AnimationList.Length; i++)
+                    {
+                        LLUUID animID = animation.AnimationList[i].AnimID;
+                        int sequenceID = animation.AnimationList[i].AnimSequenceID;
+
+                        // Add this animation to the list of currently signaled animations
+                        SignaledAnimations.Dictionary[animID] = sequenceID;
+
+                        if (i < animation.AnimationSourceList.Length)
+                        {
+                            // FIXME: The server tells us which objects triggered our animations,
+                            // we should store this info
+
+                            //animation.AnimationSourceList[i].ObjectID
+                        }
+
+                        if (i < animation.PhysicalAvatarEventList.Length)
+                        {
+                            // FIXME: What is this?
+                        }
+
+                        if (Client.Settings.SEND_AGENT_UPDATES)
+                        {
+                            // We have to manually tell the server to stop playing some animations
+                            if (animID == Animations.STANDUP ||
+                                animID == Animations.PRE_JUMP ||
+                                animID == Animations.LAND ||
+                                animID == Animations.MEDIUM_LAND)
+                            {
+                                Movement.FinishAnim = true;
+                                Movement.SendUpdate(true);
+                            }
+                        }
+                    }
+                }
+
+                if (OnAnimationsChanged != null)
+                {
+                    try { OnAnimationsChanged(SignaledAnimations); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
         }
 
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,

@@ -633,6 +633,8 @@ namespace libsecondlife
                     update.AgentData.Flags = (byte)Flags;
 
                     Client.Network.SendPacket(update, simulator);
+
+                    ResetControlFlags();
                 }
             }
 
@@ -674,15 +676,26 @@ namespace libsecondlife
                 Client.Network.SendPacket(update);
             }
 
-            private bool GetControlFlag(AgentManager.ControlFlags flag)
+            private bool GetControlFlag(ControlFlags flag)
             {
                 return (agentControls & (uint)flag) != 0;
             }
 
-            private void SetControlFlag(AgentManager.ControlFlags flag, bool value)
+            private void SetControlFlag(ControlFlags flag, bool value)
             {
                 if (value) agentControls |= (uint)flag;
                 else agentControls &= ~((uint)flag);
+            }
+
+            private void ResetControlFlags()
+            {
+                // Reset all of the flags except for persistent settings like
+                // away, fly, mouselook, and crouching
+                agentControls &=
+                    (uint)(ControlFlags.AGENT_CONTROL_AWAY |
+                    ControlFlags.AGENT_CONTROL_FLY |
+                    ControlFlags.AGENT_CONTROL_MOUSELOOK |
+                    ControlFlags.AGENT_CONTROL_UP_NEG);
             }
 
             private void UpdateTimer_Elapsed(object obj)
