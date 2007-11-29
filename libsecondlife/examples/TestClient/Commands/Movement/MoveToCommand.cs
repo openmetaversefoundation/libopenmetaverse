@@ -21,9 +21,16 @@ namespace libsecondlife.TestClient.Commands.Movement
             Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out regionX, out regionY);
 
             double x, y, z;
-            Double.TryParse(args[0], out x);
-            Double.TryParse(args[1], out y);
-            Double.TryParse(args[2], out z);
+            if (!Double.TryParse(args[0], out x) ||
+                !Double.TryParse(args[1], out y) ||
+                !Double.TryParse(args[2], out z))
+            {
+                return "Usage: moveto x y z";
+            }
+
+            // Convert the local coordinates to global ones by adding the region handle parts to x and y
+            x += (double)regionX;
+            y += (double)regionY;
 
             Client.Self.AutoPilot(x, y, z);
 
