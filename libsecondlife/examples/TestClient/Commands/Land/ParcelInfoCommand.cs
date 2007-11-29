@@ -9,7 +9,7 @@ namespace libsecondlife.TestClient
     public class ParcelInfoCommand : Command
     {
         private ParcelDownloader ParcelDownloader;
-        private ManualResetEvent ParcelsDownloaded = new ManualResetEvent(false);
+        private AutoResetEvent ParcelsDownloaded = new AutoResetEvent(false);
         private int ParcelCount = 0;
 
         public ParcelInfoCommand(TestClient testClient)
@@ -27,12 +27,10 @@ namespace libsecondlife.TestClient
             ParcelDownloader.DownloadSimParcels(Client.Network.CurrentSim);
 
             ParcelsDownloaded.Reset();
-            ParcelsDownloaded.WaitOne(20000, false);
-
-            if (Client.Network.CurrentSim != null)
+            if (ParcelsDownloaded.WaitOne(20000, false) && Client.Network.Connected)
                 return "Downloaded information for " + ParcelCount + " parcels in " + Client.Network.CurrentSim.Name;
             else
-                return String.Empty;
+                return "Failed to retrieve information on all the simulator parcels";
         }
 
         void Parcels_OnParcelsDownloaded(Simulator simulator, Dictionary<int, Parcel> Parcels, int[,] map)
@@ -50,7 +48,6 @@ namespace libsecondlife.TestClient
             }
 
             ParcelCount = Parcels.Count;
-
             ParcelsDownloaded.Set();
         }
 

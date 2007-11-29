@@ -1068,6 +1068,10 @@ namespace libsecondlife
             return null;
         }
 
+        /// <summary>
+        /// Get the current running platform
+        /// </summary>
+        /// <returns>Enumeration of the current platform we are running on</returns>
         public static Platform GetRunningPlatform()
         {
             const string OSX_CHECK_FILE = "/Library/Extensions.kextcache";
@@ -1120,8 +1124,34 @@ namespace libsecondlife
                 ;
             }
 
-            //FIXME:
+            //FIXME: I'm working on it (jhurliman)
             return null;
+        }
+
+        /// <summary>
+        /// Looks up parcel localID from ParcelTracker Dictionary based on parcel bounding box.
+        /// </summary>
+        /// <param name="sim">Simulator parcel is in</param>
+        /// <param name="location">llVector3 location</param>
+        /// <returns>parcel localID, 0 = not found</returns>
+        /// <remarks>Bounding box is defined by parcel landing point.</remarks>
+        public static int VecToParcelLocalID(Simulator sim, LLVector3 location)
+        {
+            int localID = 0;
+            sim.Parcels.ForEach(delegate(Parcel parcel)
+            {
+                if (location.X <= parcel.AABBMax.X &&
+                    location.X >= parcel.AABBMin.X &&
+                    location.Y <= parcel.AABBMax.Y &&
+                    location.Y >= parcel.AABBMin.Y)
+                {
+                    // FIXME: This only checks the AABB of parcels. For non-rectangular parcels
+                    // it will return random results
+                    localID = parcel.LocalID;
+                }
+            });
+
+            return localID;
         }
 
         #region Platform Helper Functions

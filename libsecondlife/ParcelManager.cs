@@ -77,7 +77,7 @@ namespace libsecondlife
     /// <summary>
     /// Parcel of land, a portion of virtual real estate in a simulator
     /// </summary>
-    public class Parcel
+    public struct Parcel
     {
         #region Enums
 
@@ -224,7 +224,7 @@ namespace libsecondlife
         /// <summary></summary>
         public int PublicCount;
         /// <summary>Simulator-local ID of this parcel</summary>
-        public int LocalID { get { return localid; } }
+        public int LocalID;
         /// <summary>UUID of the owner of this parcel</summary>
         public LLUUID OwnerID;
         /// <summary>Whether the land is deeded to a group or not</summary>
@@ -326,9 +326,6 @@ namespace libsecondlife
         /// parcel</summary>
         public List<ParcelManager.ParcelAccessEntry> AccessList;
 
-        private int localid;
-
-
         /// <summary>
         /// Defalt constructor
         /// </summary>
@@ -337,7 +334,58 @@ namespace libsecondlife
         public Parcel(Simulator simulator, int localID)
         {
             Simulator = simulator;
-            localid = localID;
+            LocalID = localID;
+
+            RequestResult = 0;
+            SequenceID = 0;
+            SnapSelection = false;
+            SelfCount = 0;
+            OtherCount = 0;
+            PublicCount = 0;
+            OwnerID = LLUUID.Zero;
+            IsGroupOwned = false;
+            AuctionID = 0;
+            ClaimDate = Helpers.Epoch;
+            ClaimPrice = 0;
+            RentPrice = 0;
+            AABBMin = LLVector3.Zero;
+            AABBMax = LLVector3.Zero;
+            Bitmap = new byte[0];
+            Area = 0;
+            Status = ParcelStatus.None;
+            SimWideMaxPrims = 0;
+            SimWideTotalPrims = 0;
+            MaxPrims = 0;
+            TotalPrims = 0;
+            OwnerPrims = 0;
+            GroupPrims = 0;
+            OtherPrims = 0;
+            SelectedPrims = 0;
+            ParcelPrimBonus = 0;
+            OtherCleanTime = 0;
+            Flags = ParcelFlags.None;
+            SalePrice = 0;
+            Name = String.Empty;
+            Desc = String.Empty;
+            MusicURL = String.Empty;
+            MediaURL = String.Empty;
+            MediaID = LLUUID.Zero;
+            MediaAutoScale = 0x0;
+            GroupID = LLUUID.Zero;
+            PassPrice = 0;
+            PassHours = 0;
+            Category = ParcelCategory.None;
+            AuthBuyerID = LLUUID.Zero;
+            SnapshotID = LLUUID.Zero;
+            UserLocation = LLVector3.Zero;
+            UserLookAt = LLVector3.Zero;
+            LandingType = 0x0;
+            Dwell = 0;
+            RegionDenyAnonymous = false;
+            RegionDenyIdentified = false;
+            RegionDenyTransacted = false;
+            RegionPushOverride = false;
+            AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
         }
 
         /// <summary>
@@ -648,6 +696,25 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Request all simulator parcel properties (used for populating the <code>Simulator.Parcels</code> 
+        /// dictionary)
+        /// </summary>
+        /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
+        public void RequestAllSimParcels(Simulator simulator)
+        {
+            for (int y = 0; y < 8; ++y)
+            {
+                for (int x = 0; x < 8; ++x)
+                {
+                    Client.Parcels.PropertiesRequest(simulator, y * 32, x * 32, y * 32, x * 32, 0, false);
+
+                    // Pause for a moment after every request to avoid flooding the sim
+                    System.Threading.Thread.Sleep(50);
+                }
+            }
+        }
+
+        /// <summary>
         /// Request the dwell value for a parcel
         /// </summary>
         /// <param name="simulator">Simulator containing the parcel</param>
@@ -834,6 +901,16 @@ namespace libsecondlife
             {
                 ParcelDwellReplyPacket dwell = (ParcelDwellReplyPacket)packet;
 
+                lock (simulator.Parcels.Dictionary)
+                {
+                    if (simulator.Parcels.Dictionary.ContainsKey(dwell.Data.LocalID))
+                    {
+                        Parcel parcel = simulator.Parcels.Dictionary[dwell.Data.LocalID];
+                        parcel.Dwell = dwell.Data.Dwell;
+                        simulator.Parcels.Dictionary[dwell.Data.LocalID] = parcel;
+                    }
+                }
+
                 try { OnParcelDwell(dwell.Data.ParcelID, dwell.Data.LocalID, dwell.Data.Dwell); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
@@ -923,6 +1000,13 @@ namespace libsecondlife
                 parcel.UserLocation = properties.ParcelData.UserLocation;
                 parcel.UserLookAt = properties.ParcelData.UserLookAt;
 
+                // store parcel in dictionary
+                if (Client.Settings.PARCEL_TRACKING)
+                {
+                    lock (simulator.Parcels.Dictionary)
+                        simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
+                }
+
                 // Fire the callback
                 try
                 {
@@ -950,7 +1034,17 @@ namespace libsecondlife
                     accessList.Add(pae);
                 }
 
-                try { OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags, 
+                lock (simulator.Parcels.Dictionary)
+                {
+                    if (simulator.Parcels.Dictionary.ContainsKey(reply.Data.LocalID))
+                    {
+                        Parcel parcel = simulator.Parcels.Dictionary[reply.Data.LocalID];
+                        parcel.AccessList = accessList;
+                        simulator.Parcels.Dictionary[reply.Data.LocalID] = parcel;
+                    }
+                }
+
+                try { OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
                     accessList); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }

@@ -172,6 +172,9 @@ namespace libsecondlife
         /// false, a new Avatar or Primitive object will be created each time
         /// an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
+        /// <summary>If true, parcel details will be stored in the 
+        /// <code>Simulator.Parcels</code> dictionary as they are received</summary>
+        public bool PARCEL_TRACKING = true;
 
         // Misc
 

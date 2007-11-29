@@ -282,6 +282,12 @@ namespace libsecondlife
         /// useful for applications manipulating sequence numbers</summary>
         public volatile uint Sequence;
 
+        /// <summary>
+        /// Provides access to an internal thread-safe dictionary containing parcel
+        /// information found in this simulator
+        /// </summary>
+        public SafeDictionary<int, Parcel> Parcels = new SafeDictionary<int, Parcel>();
+
         #endregion Public Members
 
         #region Properties
