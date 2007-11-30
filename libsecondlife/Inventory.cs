@@ -161,7 +161,7 @@ namespace libsecondlife
                     // while we're waiting for the parent's data to come in.
                     // As soon as we get the parent, the tree repairs itself.
                     Client.DebugLog("Attempting to update inventory child of " +
-                        item.ParentUUID.ToStringHyphenated() +
+                        item.ParentUUID.ToString() +
                         " when we have no local reference to that folder");
 
                     if (Client.Settings.FETCH_MISSING_INVENTORY)
@@ -275,8 +275,8 @@ namespace libsecondlife
                 {
                     // Log a warning if there is a UUID mismatch, this will cause problems
                     if (value.UUID != uuid)
-                        Client.Log("Inventory[uuid]: uuid " + uuid.ToStringHyphenated() + " is not equal to value.UUID " +
-                            value.UUID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                        Client.Log("Inventory[uuid]: uuid " + uuid.ToString() + " is not equal to value.UUID " +
+                            value.UUID.ToString(), Helpers.LogLevel.Warning);
 
                     UpdateNodeFor(value);
                 }

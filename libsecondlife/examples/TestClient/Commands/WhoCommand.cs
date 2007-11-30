@@ -28,7 +28,7 @@ namespace libsecondlife.TestClient
                             result.AppendLine();
                             result.AppendFormat("{0} (Group: {1}, Location: {2}/{3}, UUID: {4})", av.Name,
                                 av.GroupName, (av.CurrentSim != null ? av.CurrentSim.Name : String.Empty),
-                                av.Position, av.ID.ToStringHyphenated());
+                                av.Position, av.ID.ToString());
                         }
                     );
                 }

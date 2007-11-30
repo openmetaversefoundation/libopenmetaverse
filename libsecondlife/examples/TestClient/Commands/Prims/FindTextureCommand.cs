@@ -31,7 +31,7 @@ namespace libsecondlife.TestClient
                             if (prim.Textures.FaceTextures[faceIndex].TextureID == textureID)
                             {
                                 Client.Log(String.Format("Primitive {0} ({1}) has face index {2} set to {3}",
-                                    prim.ID.ToStringHyphenated(), prim.LocalID, faceIndex, textureID.ToStringHyphenated()),
+                                    prim.ID.ToString(), prim.LocalID, faceIndex, textureID.ToString()),
                                     Helpers.LogLevel.Info);
                             }
                         }

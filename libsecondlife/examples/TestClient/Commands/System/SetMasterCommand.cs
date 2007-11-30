@@ -54,7 +54,7 @@ namespace libsecondlife.TestClient
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Online, Client.Self.SimPosition,
                 Client.Network.CurrentSim.ID, new byte[0]);
 
-            return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToStringHyphenated());
+            return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToString());
 		}
 
         private void KeyResolvHandler(LLUUID queryid, List<DirectoryManager.AgentSearchData> matches)

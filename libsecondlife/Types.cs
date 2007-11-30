@@ -162,17 +162,6 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Get a hyphenated string representation of this UUID
-        /// </summary>
-        /// <returns>A string representation of this UUID, lowercase and 
-        /// with hyphens</returns>
-        /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
-        public string ToStringHyphenated()
-        {
-            return UUID.ToString();
-        }
-
-        /// <summary>
         /// Get a 64-bit integer representation of the first half of this UUID
         /// </summary>
         /// <returns>An integer created from the first eight bytes of this UUID</returns>
@@ -273,15 +262,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Get a string representation of this UUID
+        /// Get a hyphenated string representation of this UUID
         /// </summary>
         /// <returns>A string representation of this UUID, lowercase and 
-        /// without hyphens</returns>
-        /// <example>11f8aa9cb0714242836b13b7abe0d489</example>
+        /// with hyphens</returns>
+        /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
         public override string ToString()
         {
-            string uuid = UUID.ToString();
-            return uuid.Replace("-", String.Empty);
+            return UUID.ToString();
         }
 
         #endregion Overrides
@@ -1235,19 +1223,24 @@ namespace libsecondlife
             A = Helpers.Clamp(a, 0f, 1f);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="byteArray"></param>
-        /// <param name="pos"></param>
-        public LLColor(byte[] byteArray, int pos)
-		{
-            float quanta = 1.0f / 255.0f;
+        public LLColor(byte[] byteArray, int pos, bool inverted)
+        {
+            const float quanta = 1.0f / 255.0f;
 
-            R = (float)byteArray[pos] * quanta;
-            G = (float)byteArray[pos + 1] * quanta;
-            B = (float)byteArray[pos + 2] * quanta;
-            A = (float)byteArray[pos + 3] * quanta;
+            if (inverted)
+            {
+                R = (float)(255 - byteArray[pos]) * quanta;
+                G = (float)(255 - byteArray[pos + 1]) * quanta;
+                B = (float)(255 - byteArray[pos + 2]) * quanta;
+                A = (float)(255 - byteArray[pos + 3]) * quanta;
+            }
+            else
+            {
+                R = (float)byteArray[pos] * quanta;
+                G = (float)byteArray[pos + 1] * quanta;
+                B = (float)byteArray[pos + 2] * quanta;
+                A = (float)byteArray[pos + 3] * quanta;
+            }
         }
 
         #endregion Constructors
@@ -1262,10 +1255,22 @@ namespace libsecondlife
         {
             byte[] byteArray = new byte[4];
 
-            byteArray[0] = Helpers.FloatToByte(R, 0.0f, 255.0f);
-            byteArray[1] = Helpers.FloatToByte(G, 0.0f, 255.0f);
-            byteArray[2] = Helpers.FloatToByte(B, 0.0f, 255.0f);
-            byteArray[3] = Helpers.FloatToByte(A, 0.0f, 255.0f);
+            byteArray[0] = Helpers.FloatToByte(R, 0f, 1f);
+            byteArray[1] = Helpers.FloatToByte(G, 0f, 1f);
+            byteArray[2] = Helpers.FloatToByte(B, 0f, 1f);
+            byteArray[3] = Helpers.FloatToByte(A, 0f, 1f);
+
+            return byteArray;
+        }
+
+        public byte[] GetInvertedBytes()
+        {
+            byte[] byteArray = GetBytes();
+
+            byteArray[0] = (byte)(255 - byteArray[0]);
+            byteArray[1] = (byte)(255 - byteArray[1]);
+            byteArray[2] = (byte)(255 - byteArray[2]);
+            byteArray[3] = (byte)(255 - byteArray[3]);
 
             return byteArray;
         }
@@ -1303,7 +1308,7 @@ namespace libsecondlife
             {
                 LLSDArray array = (LLSDArray)llsd;
 
-                if (array.Count == 3)
+                if (array.Count == 4)
                 {
                     return new LLColor(
                         (float)array[0].AsReal(),

@@ -181,7 +181,7 @@ namespace libsecondlife.TestClient
                     {
                         if ((qdi.WhenRequested + TimeSpan.FromSeconds(60)) < DateTime.Now)
                         {
-                            Client.DebugLog(Name + ": timeout on asset " + qdi.AssetID.ToStringHyphenated());
+                            Client.DebugLog(Name + ": timeout on asset " + qdi.AssetID.ToString());
                             // submit request again
                             qdi.TransferID = Client.Assets.RequestInventoryAsset(
                                 qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true);
@@ -336,7 +336,7 @@ namespace libsecondlife.TestClient
                     {
                         TextItemErrors++;
                         Console.WriteLine("{0}: Download of asset {1} ({2}) failed with status {3}", Name, r.FileName, 
-                            r.AssetID.ToStringHyphenated(), asset.Status.ToString());
+                            r.AssetID.ToString(), asset.Status.ToString());
                     }
 
                     // remove the entry

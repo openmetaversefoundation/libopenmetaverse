@@ -32,22 +32,13 @@ namespace libsecondlife.TestClient
                     Client.Log("TextureEntry:", Helpers.LogLevel.Info);
                     if (target.Textures != null)
                     {
-                        if (target.Textures.DefaultTexture != null)
-                        {
-                            Client.Log("DefaultTexture: " + target.Textures.DefaultTexture.TextureID.ToStringHyphenated(),
-                                Helpers.LogLevel.Info);
-                        }
-                        else
-                        {
-                            Client.Log("DefaultTexture: null", Helpers.LogLevel.Info);
-                        }
-
                         for (int i = 0; i < target.Textures.FaceTextures.Length; i++)
                         {
                             if (target.Textures.FaceTextures[i] != null)
                             {
                                 Client.Log(String.Format("Face {0}: {1}", i,
-                                    target.Textures.FaceTextures[i].TextureID.ToStringHyphenated()), Helpers.LogLevel.Info);
+                                    target.Textures.FaceTextures[i].TextureID.ToString()),
+                                    Helpers.LogLevel.Info);
                             }
                         }
                     }
@@ -60,7 +51,7 @@ namespace libsecondlife.TestClient
                 }
                 else
                 {
-                    return "Could not find prim " + primID.ToStringHyphenated();
+                    return "Could not find prim " + primID.ToString();
                 }
             }
             else

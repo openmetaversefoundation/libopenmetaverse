@@ -41,8 +41,8 @@ namespace libsecondlife.Tests
             string one = a.ToString();
             string two = b.ToString();
             Assert.IsTrue(a == b);
-            one = a.ToStringHyphenated();
-            two = b.ToStringHyphenated();
+            one = a.ToString();
+            two = b.ToString();
             Assert.IsTrue(a == b);
             Assert.IsTrue(a == zeroonetwo);
 

@@ -19,6 +19,12 @@ namespace libsecondlife.StructuredData
             return DeserializeXml(new XmlTextReader(new MemoryStream(xmlData, false)));
         }
 
+        public static LLSD DeserializeXml(string xmlData)
+        {
+            byte[] bytes = Helpers.StringToField(xmlData);
+            return DeserializeXml(new XmlTextReader(new MemoryStream(bytes, false)));
+        }
+
         public static LLSD DeserializeXml(XmlTextReader xmlData)
         {
             xmlData.Read();

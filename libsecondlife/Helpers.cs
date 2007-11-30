@@ -157,6 +157,16 @@ namespace libsecondlife
             return (float)((bytes[pos] | (bytes[pos + 1] << 8)) / 32767.0f) * TWO_PI;
         }
 
+        public static byte TEGlowByte(float glow)
+        {
+            return (byte)(glow * 255.0f);
+        }
+
+        public static float TEGlowFloat(byte[] bytes, int pos)
+        {
+            return (float)bytes[pos] / 255.0f;
+        }
+
         /// <summary>
         /// Converts an unsigned integer to a hexadecimal string
         /// </summary>
@@ -1128,8 +1138,12 @@ namespace libsecondlife
             StructuredData.LLSDMap map = (StructuredData.LLSDMap)llsd;
             List<Primitive> prims = new List<Primitive>(map.Count);
 
-            foreach (StructuredData.LLSD value in map.Values)
-                prims.Add(Primitive.FromLLSD(value));
+            foreach (KeyValuePair<string, StructuredData.LLSD> kvp in map)
+            {
+                Primitive prim = Primitive.FromLLSD(kvp.Value);
+                prim.LocalID = UInt32.Parse(kvp.Key);
+                prims.Add(prim);
+            }
 
             return prims;
         }

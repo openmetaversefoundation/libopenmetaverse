@@ -57,7 +57,7 @@ namespace groupmanager
 
                 foreach (Group group in Groups.Values)
                 {
-                    Console.WriteLine(String.Format("Adding group {0} ({1})", group.Name, group.ID.ToStringHyphenated()));
+                    Console.WriteLine(String.Format("Adding group {0} ({1})", group.Name, group.ID.ToString()));
                     lstGroups.Items.Add(group);
                 }
             }

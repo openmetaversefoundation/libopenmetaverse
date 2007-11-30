@@ -63,9 +63,9 @@ namespace libsecondlife.TestClient
             // Find the requested prim
             rootPrim = Client.Network.CurrentSim.Objects.Find(delegate(Primitive prim) { return prim.ID == rootID; });
             if (rootPrim == null)
-                return "Cannot find requested prim " + rootID.ToStringHyphenated();
+                return "Cannot find requested prim " + rootID.ToString();
             else
-                Client.DebugLog("Found requested prim " + rootPrim.ID.ToStringHyphenated());
+                Client.DebugLog("Found requested prim " + rootPrim.ID.ToString());
 
             if (rootPrim.ParentID != 0)
             {
@@ -73,7 +73,7 @@ namespace libsecondlife.TestClient
                 if (!Client.Network.CurrentSim.Objects.TryGetPrimitive(rootPrim.ParentID, out rootPrim))
                     return "Cannot find root prim for requested object";
                 else
-                    Client.DebugLog("Set root prim to " + rootPrim.ID.ToStringHyphenated());
+                    Client.DebugLog("Set root prim to " + rootPrim.ID.ToString());
             }
 
             // Find all of the child objects linked to this root

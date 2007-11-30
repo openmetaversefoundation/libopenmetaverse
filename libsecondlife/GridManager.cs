@@ -96,7 +96,7 @@ namespace libsecondlife
             output.Append(Name); output.Append(Helpers.NewLine);
             output.Append("RegionHandle: " + RegionHandle); output.Append(Helpers.NewLine);
             output.Append(String.Format("X: {0} Y: {1}", X, Y)); output.Append(Helpers.NewLine);
-            output.Append("MapImageID: " + MapImageID.ToStringHyphenated()); output.Append(Helpers.NewLine);
+            output.Append("MapImageID: " + MapImageID.ToString()); output.Append(Helpers.NewLine);
             output.Append("Access: " + Access); output.Append(Helpers.NewLine);
             output.Append("RegionFlags: " + RegionFlags); output.Append(Helpers.NewLine);
             output.Append("WaterHeight: " + WaterHeight); output.Append(Helpers.NewLine);

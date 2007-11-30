@@ -254,7 +254,7 @@ namespace libsecondlife
         /// <param name="prey">Key of Avatar to kick</param>
 		public void KickUser(LLUUID userID) 
 		{
-            EstateOwnerMessage("kickestate", userID.ToStringHyphenated());
+            EstateOwnerMessage("kickestate", userID.ToString());
 		}
 
         /// <summary>Ban an avatar from an estate</summary>
@@ -262,9 +262,9 @@ namespace libsecondlife
         {
             List<string> listParams = new List<string>();
             uint flag = (uint)EstateAccessDelta.BanUser;
-            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
-            listParams.Add(userID.ToStringHyphenated());
+            listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
         }
 
@@ -273,9 +273,9 @@ namespace libsecondlife
         {
             List<string> listParams = new List<string>();
             uint flag = (uint)EstateAccessDelta.BanUser;
-            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
-            listParams.Add(userID.ToStringHyphenated());
+            listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
         }
 
@@ -300,7 +300,7 @@ namespace libsecondlife
             List<string> listParams = new List<string>();
             listParams.Add("-1");
             listParams.Add("-1");
-            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(Client.Self.FirstName + " " + Client.Self.LastName);
             listParams.Add(message);
             EstateOwnerMessage("simulatormessage", listParams);
@@ -313,8 +313,8 @@ namespace libsecondlife
         public void TeleportHomeUser(LLUUID pest)
         {
             List<string> listParams = new List<string>();
-            listParams.Add(Client.Self.AgentID.ToStringHyphenated());
-            listParams.Add(pest.ToStringHyphenated());
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(pest.ToString());
             EstateOwnerMessage("teleporthomeuser", listParams);
         }
 

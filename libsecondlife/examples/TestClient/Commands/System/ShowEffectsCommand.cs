@@ -49,8 +49,8 @@ namespace libsecondlife.TestClient
             if (ShowEffects)
                 Console.WriteLine(
                 "ViewerEffect [PointAt]: SourceID: {0} TargetID: {1} TargetPos: {2} Type: {3} Duration: {4} ID: {5}",
-                sourceID.ToStringHyphenated(), targetID.ToStringHyphenated(), targetPos, pointType, duration, 
-                id.ToStringHyphenated());
+                sourceID.ToString(), targetID.ToString(), targetPos, pointType, duration, 
+                id.ToString());
         }
 
         private void Avatars_OnLookAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
@@ -59,8 +59,8 @@ namespace libsecondlife.TestClient
             if (ShowEffects)
                 Console.WriteLine(
                 "ViewerEffect [LookAt]: SourceID: {0} TargetID: {1} TargetPos: {2} Type: {3} Duration: {4} ID: {5}",
-                sourceID.ToStringHyphenated(), targetID.ToStringHyphenated(), targetPos, lookType, duration,
-                id.ToStringHyphenated());
+                sourceID.ToString(), targetID.ToString(), targetPos, lookType, duration,
+                id.ToString());
         }
 
         private void Avatars_OnEffect(EffectType type, LLUUID sourceID, LLUUID targetID, 
@@ -69,8 +69,8 @@ namespace libsecondlife.TestClient
             if (ShowEffects)
                 Console.WriteLine(
                 "ViewerEffect [{0}]: SourceID: {1} TargetID: {2} TargetPos: {3} Duration: {4} ID: {5}",
-                type, sourceID.ToStringHyphenated(), targetID.ToStringHyphenated(), targetPos, duration,
-                id.ToStringHyphenated());
+                type, sourceID.ToString(), targetID.ToString(), targetPos, duration,
+                id.ToString());
         }
     }
 }

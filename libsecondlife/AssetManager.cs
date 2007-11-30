@@ -595,7 +595,7 @@ namespace libsecondlife
             {
                 Client.Log(
                     String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
-                    upload.ID.ToStringHyphenated(), upload.AssetID.ToStringHyphenated(), upload.Size),
+                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size),
                     Helpers.LogLevel.Info);
 
                 // The whole asset will fit in this packet, makes things easy
@@ -606,7 +606,7 @@ namespace libsecondlife
             {
                 Client.Log(
                     String.Format("Beginning asset upload [Multiple Packets], ID: {0}, AssetID: {1}, Size: {2}",
-                    upload.ID.ToStringHyphenated(), upload.AssetID.ToStringHyphenated(), upload.Size),
+                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size),
                     Helpers.LogLevel.Info);
 
                 // Asset is too big, send in multiple packets
@@ -831,7 +831,7 @@ namespace libsecondlife
                     if (download.Size == 0)
                     {
                         Client.Log("Timed out while waiting for the asset header to download for " +
-                            download.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                            download.ID.ToString(), Helpers.LogLevel.Warning);
 
                         // Abort the transfer
                         TransferAbortPacket abort = new TransferAbortPacket();
@@ -861,12 +861,12 @@ namespace libsecondlife
 
                 //Client.DebugLog(String.Format("Transfer packet {0}, received {1}/{2}/{3} bytes for asset {4}",
                 //    asset.TransferData.Packet, asset.TransferData.Data.Length, transfer.Transferred, transfer.Size,
-                //    transfer.AssetID.ToStringHyphenated()));
+                //    transfer.AssetID.ToString()));
 
                 // Check if we downloaded the full asset
                 if (download.Transferred >= download.Size)
                 {
-                    Client.DebugLog("Transfer for asset " + download.AssetID.ToStringHyphenated() + " completed");
+                    Client.DebugLog("Transfer for asset " + download.AssetID.ToString() + " completed");
 
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
@@ -921,7 +921,7 @@ namespace libsecondlife
                 upload = (AssetUpload)transfer;
 
                 //Client.DebugLog(String.Format("ACK for upload {0} of asset type {1} ({2}/{3})",
-                //    upload.AssetID.ToStringHyphenated(), upload.Type, upload.Transferred, upload.Size));
+                //    upload.AssetID.ToString(), upload.Type, upload.Transferred, upload.Size));
 
                 if (OnUploadProgress != null)
                 {
@@ -1035,7 +1035,7 @@ namespace libsecondlife
                     if (!String.IsNullOrEmpty(download.Filename))
                         Client.DebugLog("Xfer download for asset " + download.Filename + " completed");
                     else
-                        Client.DebugLog("Xfer download for asset " + download.VFileID.ToStringHyphenated() + " completed");
+                        Client.DebugLog("Xfer download for asset " + download.VFileID.ToString() + " completed");
 
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
@@ -1070,7 +1070,7 @@ namespace libsecondlife
                     transfer = (ImageDownload)Transfers[data.ImageID.ID];
 
                     //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
-                    //    data.ImageID.ID.ToStringHyphenated());
+                    //    data.ImageID.ID.ToString());
 
                     transfer.Codec = data.ImageID.Codec;
                     transfer.PacketCount = data.ImageID.Packets;
@@ -1124,7 +1124,7 @@ namespace libsecondlife
                         if (transfer.Size == 0)
                         {
                             Client.Log("Timed out while waiting for the image header to download for " +
-                                transfer.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                                transfer.ID.ToString(), Helpers.LogLevel.Warning);
 
                             transfer.Success = false;
                             Transfers.Remove(transfer.ID);
@@ -1138,7 +1138,7 @@ namespace libsecondlife
                     transfer.Transferred += image.ImageData.Data.Length;
 
                     //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
-                    //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToStringHyphenated());
+                    //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToString());
 
                     // Check if we downloaded the full image
                     if (transfer.Transferred >= transfer.Size)

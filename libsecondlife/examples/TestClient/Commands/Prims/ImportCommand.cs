@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using libsecondlife;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife.TestClient
 {
@@ -34,20 +35,18 @@ namespace libsecondlife.TestClient
 
         Primitive currentPrim;
         LLVector3 currentPosition;
-        AutoResetEvent primDone;
+        AutoResetEvent primDone = new AutoResetEvent(false);
         List<Primitive> primsCreated;
         List<uint> linkQueue;
-        uint rootLocalID = 0;
-        bool registeredCreateEvent = false;
-
+        uint rootLocalID;
         ImporterState state = ImporterState.Idle;
 
         public ImportCommand(TestClient testClient)
         {
             Name = "import";
             Description = "Import prims from an exported xml file. Usage: import inputfile.xml";
-            primDone = new AutoResetEvent(false);
-            registeredCreateEvent = false;
+
+            testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -56,37 +55,21 @@ namespace libsecondlife.TestClient
                 return "Usage: import inputfile.xml";
 
             string filename = args[0];
-            Dictionary<uint, Primitive> prims = new Dictionary<uint, Primitive>();
+            string xml;
+            List<Primitive> prims;
 
-            return "This command is currently under construction";
+            try { xml = File.ReadAllText(filename); }
+            catch (Exception e) { return e.Message; }
 
-            try
-            {
-                //XmlReader reader = XmlReader.Create(filename);
-                //List<Primitive> listprims = Helpers.PrimListFromXml(reader);
-                //reader.Close();
-
-                // Create a dictionary indexed by the old local ID of the prims
-                //foreach (Primitive prim in listprims)
-                //{
-                //    prims.Add(prim.LocalID, prim);
-                //}
-            }
-            catch (Exception)
-            {
-                return "Failed to import the object XML file, maybe it doesn't exist or is in the wrong format?";
-            }
-
-            if (!registeredCreateEvent)
-            {
-                Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-                registeredCreateEvent = true;
-            }
+            try { prims = Helpers.LLSDToPrimList(LLSDParser.DeserializeXml(xml)); }
+            catch (Exception e) { return "Failed to deserialize " + filename + ": " + e.Message; }
 
             // Build an organized structure from the imported prims
             Dictionary<uint, Linkset> linksets = new Dictionary<uint, Linkset>();
-            foreach (Primitive prim in prims.Values)
+            for (int i = 0; i < prims.Count; i++)
             {
+                Primitive prim = prims[i];
+
                 if (prim.ParentID == 0)
                 {
                     if (linksets.ContainsKey(prim.LocalID))
@@ -112,13 +95,11 @@ namespace libsecondlife.TestClient
                 {
                     state = ImporterState.RezzingParent;
                     currentPrim = linkset.RootPrim;
-                    // HACK: Offset the root prim position so it's not lying on top of the original
+                    // HACK: Import the structure just above our head
                     // We need a more elaborate solution for importing with relative or absolute offsets
                     linkset.RootPrim.Position = Client.Self.SimPosition;
                     linkset.RootPrim.Position.Z += 3.0f;
                     currentPosition = linkset.RootPrim.Position;
-                    // A better solution would move the bot to the desired position.
-                    // or to check if we are within a certain distance of the desired position.
 
                     // Rez the root prim with no rotation
                     LLQuaternion rootRotation = linkset.RootPrim.Rotation;
@@ -161,18 +142,15 @@ namespace libsecondlife.TestClient
                         // Link and set the permissions + rotation
                         state = ImporterState.Linking;
                         Client.Objects.LinkPrims(Client.Network.CurrentSim, linkQueue);
-                        if (primDone.WaitOne(100000 * linkset.Children.Count, false))
-                        {
-                            Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
-                                PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
-                                PermissionMask.All, true);
 
+                        if (primDone.WaitOne(1000 * linkset.Children.Count, false))
                             Client.Objects.SetRotation(Client.Network.CurrentSim, rootLocalID, rootRotation);
-                        }
                         else
-                        {
                             Console.WriteLine("Warning: Failed to link {0} prims", linkQueue.Count);
-                        }
+
+                        Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
+                            PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
+                            PermissionMask.All, true);
                     }
                     else
                     {

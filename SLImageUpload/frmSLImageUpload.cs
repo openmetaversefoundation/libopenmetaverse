@@ -65,7 +65,7 @@ namespace SLImageUpload
             if (this.InvokeRequired)
                 BeginInvoke(new MethodInvoker(UpdateAssetID));
             else
-                txtAssetID.Text = AssetID.ToStringHyphenated();
+                txtAssetID.Text = AssetID.ToString();
         }
 
         private void LoadImage()
@@ -234,7 +234,7 @@ namespace SLImageUpload
 
                 if (eventSuccess && lookupSuccess)
                 {
-                    Client.Log("Will send uploaded image to avatar " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                    Client.Log("Will send uploaded image to avatar " + SendToID.ToString(), Helpers.LogLevel.Info);
                 }
                 else
                 {
@@ -275,24 +275,24 @@ namespace SLImageUpload
                                 item.Permissions.NextOwnerMask = PermissionMask.All;
                                 Client.Inventory.RequestUpdateItem(item);
 
-                                Client.Log("Created inventory item " + itemID.ToStringHyphenated(), Helpers.LogLevel.Info);
-                                MessageBox.Show("Created inventory item " + itemID.ToStringHyphenated());
+                                Client.Log("Created inventory item " + itemID.ToString(), Helpers.LogLevel.Info);
+                                MessageBox.Show("Created inventory item " + itemID.ToString());
 
                                 // FIXME: We should be watching the callback for RequestUpdateItem instead of a dumb sleep
                                 System.Threading.Thread.Sleep(2000);
 
                                 if (SendToID != LLUUID.Zero)
                                 {
-                                    Client.Log("Sending item to " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                                    Client.Log("Sending item to " + SendToID.ToString(), Helpers.LogLevel.Info);
                                     Client.Inventory.GiveItem(itemID, name, AssetType.Texture, SendToID, true);
-                                    MessageBox.Show("Sent item to " + SendToID.ToStringHyphenated());
+                                    MessageBox.Show("Sent item to " + SendToID.ToString());
                                 }
                             }
                             else
                             {
-                                Client.DebugLog("Created inventory item " + itemID.ToStringHyphenated() + " but failed to fetch it," +
+                                Client.DebugLog("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
                                     " cannot update permissions or send to another avatar");
-                                MessageBox.Show("Created inventory item " + itemID.ToStringHyphenated() + " but failed to fetch it," +
+                                MessageBox.Show("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
                                     " cannot update permissions or send to another avatar");
                             }
                         }

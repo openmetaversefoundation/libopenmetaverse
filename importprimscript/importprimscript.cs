@@ -213,7 +213,7 @@ namespace importprimscript
                 {
                     if (success)
                     {
-                        Console.WriteLine("Finished uploading image " + filename + ", AssetID: " + assetID.ToStringHyphenated());
+                        Console.WriteLine("Finished uploading image " + filename + ", AssetID: " + assetID.ToString());
                         newAssetID = assetID;
                     }
                     else

@@ -102,8 +102,8 @@ namespace libsecondlife.TestClient
                             lsl.Append("         PSYS_SRC_INNERANGLE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.InnerAngle) + "," + Environment.NewLine);
                             lsl.Append("         PSYS_SRC_OUTERANGLE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.OuterAngle) + "," + Environment.NewLine);
                             lsl.Append("         PSYS_SRC_OMEGA, " + exportPrim.ParticleSys.AngularVelocity.ToString() + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_TEXTURE, (key)\"" + exportPrim.ParticleSys.Texture.ToStringHyphenated() + "\"," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_TARGET_KEY, (key)\"" + exportPrim.ParticleSys.Target.ToStringHyphenated() + "\"" + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_TEXTURE, (key)\"" + exportPrim.ParticleSys.Texture.ToString() + "\"," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_TARGET_KEY, (key)\"" + exportPrim.ParticleSys.Target.ToString() + "\"" + Environment.NewLine);
 
                             lsl.Append("         ]);" + Environment.NewLine);
                             lsl.Append("    }" + Environment.NewLine);
@@ -121,7 +121,7 @@ namespace libsecondlife.TestClient
                 }
             }
 
-            return "Couldn't find prim " + id.ToStringHyphenated();
+            return "Couldn't find prim " + id.ToString();
         }
     }
 }

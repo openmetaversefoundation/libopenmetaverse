@@ -71,7 +71,7 @@ namespace libsecondlife.TestClient
                 Client.Groups.RequestJoinGroup(groupID);
             }
 
-            return "Synchronized our profile to the profile of " + targetID.ToStringHyphenated();
+            return "Synchronized our profile to the profile of " + targetID.ToString();
         }
 
         void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.AvatarProperties properties)
@@ -117,11 +117,11 @@ namespace libsecondlife.TestClient
         void Groups_OnGroupJoined(LLUUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
-                groupID.ToStringHyphenated());
+                groupID.ToString());
 
             if (success)
             {
-                Console.WriteLine(Client.ToString() + " setting " + groupID.ToStringHyphenated() +
+                Console.WriteLine(Client.ToString() + " setting " + groupID.ToString() +
                     " as the active group");
                 Client.Groups.ActivateGroup(groupID);
             }

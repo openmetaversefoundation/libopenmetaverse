@@ -80,7 +80,7 @@ namespace libsecondlife.TestClient
                 }
             }
 
-            return "Couldn't find avatar " + target.ToStringHyphenated();
+            return "Couldn't find avatar " + target.ToString();
         }
 
         private void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
@@ -93,12 +93,12 @@ namespace libsecondlife.TestClient
                     {
                         try
                         {
-                            File.WriteAllBytes(image.ID.ToStringHyphenated() + ".jp2", image.AssetData);
-                            Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToStringHyphenated() + ".jp2");
+                            File.WriteAllBytes(image.ID.ToString() + ".jp2", image.AssetData);
+                            Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToString() + ".jp2");
 
                             byte[] tgaFile = OpenJPEGNet.OpenJPEG.DecodeToTGA(image.AssetData);
-                            File.WriteAllBytes(image.ID.ToStringHyphenated() + ".tga", tgaFile);
-                            Console.WriteLine("Wrote TGA image " + image.ID.ToStringHyphenated() + ".tga");
+                            File.WriteAllBytes(image.ID.ToString() + ".tga", tgaFile);
+                            Console.WriteLine("Wrote TGA image " + image.ID.ToString() + ".tga");
                         }
                         catch (Exception e)
                         {
@@ -107,7 +107,7 @@ namespace libsecondlife.TestClient
                     }
                     else
                     {
-                        Console.WriteLine("Failed to download image " + image.ID.ToStringHyphenated());
+                        Console.WriteLine("Failed to download image " + image.ID.ToString());
                     }
 
                     OutfitAssets.Remove(image.ID);

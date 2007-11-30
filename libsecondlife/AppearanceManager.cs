@@ -426,7 +426,7 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Failed to download folder contents of + " + folder.ToStringHyphenated(), 
+                Client.Log("Failed to download folder contents of + " + folder.ToString(), 
                     Helpers.LogLevel.Error);
                 return false;
             }
@@ -847,7 +847,7 @@ namespace libsecondlife
                             face.TextureID = texture.Value;
 
                             Client.DebugLog("Setting texture " + ((TextureIndex)texture.Key).ToString() + " to " +
-                                texture.Value.ToStringHyphenated());
+                                texture.Value.ToString());
                         }
                     }
                 }
@@ -978,7 +978,7 @@ namespace libsecondlife
             LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
 
             Client.DebugLog(String.Format("Bake {0} completed. Uploading asset {1}", bake.BakeType,
-                bake.BakedTexture.AssetID.ToStringHyphenated()));
+                bake.BakedTexture.AssetID.ToString()));
 
             // Add it to a pending uploads list
             lock (PendingUploads) PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
@@ -1038,7 +1038,7 @@ namespace libsecondlife
                 {
                     // For each missing element we need to bake our own texture
                     Client.DebugLog("Cache response, index: " + block.TextureIndex + ", ID: " +
-                        block.TextureID.ToStringHyphenated());
+                        block.TextureID.ToString());
 
                     // FIXME: Use this. Right now we treat baked images on other sims as if they were missing
                     string host = Helpers.FieldToUTF8String(block.HostName);
@@ -1181,7 +1181,7 @@ namespace libsecondlife
                         }
                         else
                         {
-                            Client.Log("Wearable " + kvp.Key + "(" + download.AssetID.ToStringHyphenated() + ") failed to download, " + download.Status.ToString(),Helpers.LogLevel.Warning);
+                            Client.Log("Wearable " + kvp.Key + "(" + download.AssetID.ToString() + ") failed to download, " + download.Status.ToString(),Helpers.LogLevel.Warning);
                         }
 
                         break;
@@ -1261,7 +1261,7 @@ namespace libsecondlife
                     }
                 }
                 else
-                    Client.Log("Received an image download callback for an image we did not request " + image.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                    Client.Log("Received an image download callback for an image we did not request " + image.ID.ToString(), Helpers.LogLevel.Warning);
             }
         }
 
@@ -1278,11 +1278,11 @@ namespace libsecondlife
                         AgentTextures[(int)index] = upload.AssetID;
 
                         Client.DebugLog("Upload complete, AgentTextures " + index.ToString() + " set to " + 
-                            upload.AssetID.ToStringHyphenated());
+                            upload.AssetID.ToString());
                     }
                     else
                     {
-                        Client.Log("Asset upload " + upload.AssetID.ToStringHyphenated() + " failed", 
+                        Client.Log("Asset upload " + upload.AssetID.ToString() + " failed", 
                             Helpers.LogLevel.Warning);
                     }
 
@@ -1301,7 +1301,7 @@ namespace libsecondlife
                 else
                 {
                     // TEMP
-                    Client.DebugLog("Upload " + upload.AssetID.ToStringHyphenated() + " was not found in PendingUploads");
+                    Client.DebugLog("Upload " + upload.AssetID.ToString() + " was not found in PendingUploads");
                 }
             }
         }

@@ -282,7 +282,7 @@ namespace libsecondlife
             {
                 if (data.Length >= 16)
                 {
-                    Color = new LLColor(data, 0);
+                    Color = new LLColor(data, 0, false);
                     Radius = Helpers.BytesToFloat(data, 4);
                     Cutoff = Helpers.BytesToFloat(data, 8);
                     Falloff = Helpers.BytesToFloat(data, 12);

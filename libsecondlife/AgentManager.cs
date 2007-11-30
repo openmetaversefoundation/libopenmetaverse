@@ -2133,8 +2133,8 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Got an AgentDataUpdate packet for avatar " + p.AgentData.AgentID.ToStringHyphenated() +
-                    " instead of " + Client.Self.AgentID.ToStringHyphenated() + ", this shouldn't happen", Helpers.LogLevel.Error);
+                Client.Log("Got an AgentDataUpdate packet for avatar " + p.AgentData.AgentID.ToString() +
+                    " instead of " + Client.Self.AgentID.ToString() + ", this shouldn't happen", Helpers.LogLevel.Error);
             }
         }
 

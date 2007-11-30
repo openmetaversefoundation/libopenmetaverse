@@ -31,7 +31,7 @@ namespace Key2Name
             LLUUID lookup = new LLUUID();
             LLUUID.TryParse(args[3], out lookup);
 
-            Console.WriteLine("Looking up name for " + lookup.ToStringHyphenated());
+            Console.WriteLine("Looking up name for " + lookup.ToString());
 
             client.Avatars.RequestAvatarName(lookup);
 

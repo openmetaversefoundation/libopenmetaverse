@@ -137,7 +137,7 @@ namespace libsecondlife.TestClient
         {
             if (sourceID == Client.MasterKey)
             {
-                //Client.DebugLog("Master is now selecting " + targetID.ToStringHyphenated());
+                //Client.DebugLog("Master is now selecting " + targetID.ToString());
                 SelectedObject = targetID;
             }
         }

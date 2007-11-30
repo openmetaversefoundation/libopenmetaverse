@@ -253,7 +253,7 @@ namespace groupmanager
                 {
                     foreach (KeyValuePair<LLUUID, GroupTitle> kvp in Titles)
                     {
-                        Console.Write("Title: " + kvp.Value.Title + " = " + kvp.Key.ToStringHyphenated());
+                        Console.Write("Title: " + kvp.Value.Title + " = " + kvp.Key.ToString());
                         if (kvp.Value.Selected)
                             Console.WriteLine(" (Selected)");
                         else

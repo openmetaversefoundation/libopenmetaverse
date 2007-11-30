@@ -1466,8 +1466,8 @@ namespace libsecondlife
                         prim.OwnerID = block.OwnerID;
                         prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
                         prim.Text = Helpers.FieldToUTF8String(block.Text);
-                        prim.TextColor = new LLColor(block.TextColor, 0);
-                        // Alpha is inversed to help zero encoding
+                        prim.TextColor = new LLColor(block.TextColor, 0, false);
+                        // Only alpha is inversed
                         prim.TextColor.A = (byte)(255 - prim.TextColor.A);
 
                         // Sound information
@@ -1485,10 +1485,8 @@ namespace libsecondlife
                         prim.Data = data;
 
                         // Textures, texture animations, particle system, and extra params
-                        prim.Textures = new LLObject.TextureEntry(block.TextureEntry, 0, 
+                        prim.Textures = new LLObject.TextureEntry(block.TextureEntry, 0,
                             block.TextureEntry.Length);
-
-                        LLUUID test = new LLUUID("73818c3a-acc3-30b8-5060-0e6cf693cddf");
 
                         prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
                         prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
@@ -1699,7 +1697,8 @@ namespace libsecondlife
 
                     // Textures
                     // FIXME: Why are we ignoring the first four bytes here?
-                    update.Textures = new LLObject.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
+                    if (block.TextureEntry.Length != 0)
+                        update.Textures = new LLObject.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
                     #endregion Decode update data
 
@@ -1896,7 +1895,8 @@ namespace libsecondlife
                                 prim.Text = text;
 
                                 // Text color
-                                prim.TextColor = new LLColor(block.Data, i);
+                                prim.TextColor = new LLColor(block.Data, i, false);
+                                // FIXME: Is alpha inversed here as well?
                                 i += 4;
                             }
                             else

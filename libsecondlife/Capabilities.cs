@@ -167,7 +167,7 @@ namespace libsecondlife
 
         private void seedRequest_OnCapsResponse(LLSD response, HttpRequestState state)
         {
-            if (response.Type == LLSDType.Map)
+            if (response != null && response.Type == LLSDType.Map)
             {
                 LLSDMap respTable = (LLSDMap)response;
 

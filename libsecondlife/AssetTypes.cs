@@ -362,10 +362,10 @@ namespace libsecondlife
             data.Append("\t\tgroup_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.GroupMask)); data.Append(NL);
             data.Append("\t\teveryone_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append(NL);
             data.Append("\t\tnext_owner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append(NL);
-            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToStringHyphenated()); data.Append(NL);
-            data.Append("\t\towner_id\t"); data.Append(Owner.ToStringHyphenated()); data.Append(NL);
-            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToStringHyphenated()); data.Append(NL);
-            data.Append("\t\tgroup_id\t"); data.Append(Group.ToStringHyphenated()); data.Append(NL);
+            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToString()); data.Append(NL);
+            data.Append("\t\towner_id\t"); data.Append(Owner.ToString()); data.Append(NL);
+            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToString()); data.Append(NL);
+            data.Append("\t\tgroup_id\t"); data.Append(Group.ToString()); data.Append(NL);
             if (GroupOwned) data.Append("\t\tgroup_owned\t1\n");
             data.Append("\t}\n");
             data.Append("\tsale_info\t0\n");
@@ -384,7 +384,7 @@ namespace libsecondlife
             data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
             foreach (KeyValuePair<AppearanceManager.TextureIndex, LLUUID> texture in Textures)
             {
-                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToStringHyphenated()); data.Append(NL);
+                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
             }
 
             AssetData = Helpers.StringToField(data.ToString());

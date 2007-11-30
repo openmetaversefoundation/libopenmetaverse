@@ -186,7 +186,7 @@ namespace libsecondlife.StructuredData
             this.value = value;
         }
 
-        public override string AsString() { return value.ToStringHyphenated(); }
+        public override string AsString() { return value.ToString(); }
         public override LLUUID AsUUID() { return value; }
     }
 

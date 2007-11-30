@@ -34,7 +34,7 @@ namespace libsecondlife.TestClient
                 {
                     Client.Self.RequestSit(targetPrim.ID, LLVector3.Zero);
                     Client.Self.Sit();
-                    return "Requested to sit on prim " + targetPrim.ID.ToStringHyphenated() +
+                    return "Requested to sit on prim " + targetPrim.ID.ToString() +
                         " (" + targetPrim.LocalID + ")";
                 }
             }

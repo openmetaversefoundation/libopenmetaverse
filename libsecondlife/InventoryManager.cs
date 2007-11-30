@@ -2147,7 +2147,7 @@ namespace libsecondlife
             }
             else
             {
-                _Client.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToStringHyphenated() +
+                _Client.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToString() +
                     " or it is not a folder", Helpers.LogLevel.Error);
                 return;
             }
@@ -2314,7 +2314,7 @@ namespace libsecondlife
 
                 _Client.Log(String.Format(
                     "MoveInventoryItemHandler: Item {0} is moving to Folder {1} with new name \"{2}\". Someone write this function!",
-                    move.InventoryData[i].ItemID.ToStringHyphenated(), move.InventoryData[i].FolderID.ToStringHyphenated(),
+                    move.InventoryData[i].ItemID.ToString(), move.InventoryData[i].FolderID.ToString(),
                     newName), Helpers.LogLevel.Warning);
             }
         }
@@ -2565,7 +2565,7 @@ namespace libsecondlife
         {
             if (loginSuccess)
             {
-                _Client.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToStringHyphenated());
+                _Client.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString());
                 InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
                 rootFolder.Name = String.Empty;
                 rootFolder.ParentUUID = LLUUID.Zero;

@@ -32,7 +32,7 @@ namespace libsecondlife.TestClient
                 IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.SkirtBaked]) &&
                 IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.UpperBaked]))
             {
-                Console.WriteLine("Avatar " + appearance.Sender.ID.ToStringHyphenated() + " may be a bot");
+                Console.WriteLine("Avatar " + appearance.Sender.ID.ToString() + " may be a bot");
             }
         }
 

@@ -23,7 +23,7 @@ namespace libsecondlife.TestClient
         private void Grid_OnGridLayer(GridLayer layer)
         {
             Console.WriteLine(String.Format("Layer({0}) Bottom: {1} Left: {2} Top: {3} Right: {4}",
-                layer.ImageID.ToStringHyphenated(), layer.Bottom, layer.Left, layer.Top, layer.Right));
+                layer.ImageID.ToString(), layer.Bottom, layer.Left, layer.Top, layer.Right));
         }
     }
 }

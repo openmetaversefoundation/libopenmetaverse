@@ -26,7 +26,7 @@ namespace libsecondlife.TestClient
             if (found != null)
                 objectLocalID = found.LocalID;
             else
-                return "Couldn't find prim " + objectID.ToStringHyphenated();
+                return "Couldn't find prim " + objectID.ToString();
 
             List<InventoryBase> items = Client.Inventory.GetTaskInventory(objectID, objectLocalID, 1000 * 30);
 

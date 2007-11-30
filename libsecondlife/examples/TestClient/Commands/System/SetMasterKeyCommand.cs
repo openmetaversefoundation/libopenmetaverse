@@ -40,7 +40,7 @@ namespace libsecondlife.TestClient
                 }
             }
 
-            return "Master set to " + Client.MasterKey.ToStringHyphenated();
+            return "Master set to " + Client.MasterKey.ToString();
         }
     }
 }

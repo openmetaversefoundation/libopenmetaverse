@@ -46,7 +46,7 @@ namespace libsecondlife.TestClient
             foreach (Primitive p in prims) {
                 string name = p.Properties.Name;
                 if ((name != null) && (name.Contains(searchString)))
-                    Console.WriteLine(String.Format("Object '{0}': {1}", name, p.ID.ToStringHyphenated()));
+                    Console.WriteLine(String.Format("Object '{0}': {1}", name, p.ID.ToString()));
             }
 
             if (!complete) {
