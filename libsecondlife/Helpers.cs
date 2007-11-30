@@ -1155,6 +1155,7 @@ namespace libsecondlife
         /// <param name="location">llVector3 location</param>
         /// <returns>parcel localID, 0 = not found</returns>
         /// <remarks>Bounding box is defined by parcel landing point.</remarks>
+        [Obsolete("Replaced by ParcelManager.GetParcelLocalID")]
         public static int VecToParcelLocalID(Simulator sim, LLVector3 location)
         {
             int localID = 0;
@@ -1180,6 +1181,32 @@ namespace libsecondlife
             uint fixedState = (((byte)state & ATTACHMENT_MASK) >> 4) | (((byte)state & ~ATTACHMENT_MASK) << 4);
             return (AttachmentPoint)fixedState;
         }
+
+        /// <summary>
+        /// checks simulator parcel map to make sure its downloaded all data successfully
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <returns></returns>
+        public static bool IsMapFull(Simulator sim)
+        {
+            int i = 0;
+            int j = 0;
+            
+            while (i < sim.ParcelMap.GetLength(0))
+            {
+                while (j < sim.ParcelMap.GetLength(1))
+                {
+                    if (sim.ParcelMap[i, j] == 0)
+                    {
+                        return false;
+                    }
+                    j++;
+                }
+                i++;
+            }
+            return true;
+        }
+
 
         #region Platform Helper Functions
 

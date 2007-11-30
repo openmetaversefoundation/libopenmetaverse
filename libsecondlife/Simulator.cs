@@ -288,6 +288,21 @@ namespace libsecondlife
         /// </summary>
         public SafeDictionary<int, Parcel> Parcels = new SafeDictionary<int, Parcel>();
 
+        /// <summary>
+        /// Provides access to an internal thread-safe multidimensional array containing a x,y grid mapped
+        /// each 64x64 parcel's LocalID.
+        /// </summary>
+        public int[,] ParcelMap
+        {
+            get { 
+                lock (this)
+                    return _ParcelMap; 
+            }
+            set { lock (this)
+                _ParcelMap = value; 
+            }
+        }
+        
         #endregion Public Members
 
         #region Properties
@@ -307,7 +322,6 @@ namespace libsecondlife
         #endregion Properties
 
         #region Internal/Private Members
-
         /// <summary>Used internally to track sim disconnections</summary>
         internal bool DisconnectCandidate = false;
         /// <summary>Event that is triggered when the simulator successfully
@@ -336,7 +350,8 @@ namespace libsecondlife
         private Timer AckTimer;
         private Timer PingTimer;
         private Timer StatsTimer;
-
+        // simulator <> parcel LocalID Map
+        private int[,] _ParcelMap = new int[64, 64];
         #endregion Internal/Private Members
 
         /// <summary>

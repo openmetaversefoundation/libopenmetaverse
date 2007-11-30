@@ -505,6 +505,23 @@ namespace libsecondlife
             Both = Access | Ban
         }
 
+        /// <summary>
+        /// Simulator sent Sequence IDs for ParcelPropertiesReply packets
+        /// </summary>
+        public enum SequenceStatus : int
+        {
+            /// <summary>Parcel currently selected</summary>
+            ParcelSelected = -10000,
+            /// <summary>Parcel restricted to group avatar not member of</summary>
+            Collision_Not_In_Group = -20000,
+            /// <summary>Avatar banned from parcel</summary>
+            Collision_Banned = -30000,
+            /// <summary>Parcel restricted to access list in which avatar is not on.</summary>
+            Collision_Not_On_AccessList = -40000,
+            /// <summary>response to hovered over parcel</summary>
+            Hovered_Over_Parcel = -50000
+        }
+
         #endregion Enums
 
         #region Structs
@@ -529,7 +546,6 @@ namespace libsecondlife
             public int Count;
             public bool OnlineStatus;
         }
-
         #endregion Structs
 
         #region Delegates
@@ -572,6 +588,14 @@ namespace libsecondlife
         /// <param name="primownersEntries">List containing details or prim ownership.</param>
         public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator,  List<ParcelPrimOwners> primOwners);
 
+        /// <summary>
+        /// Fired when all parcels are downloaded from simulator.
+        /// </summary>
+        /// <param name="simulator">simulator parcel is in</param>
+        /// <param name="simParcels">Dictionary containing parcel details in simulator.</param>
+        /// <param name="parcelMap">64,64 array containing sim position -> localID mapping.</param>
+        public delegate void SimParcelsDownloaded(Simulator simulator, Dictionary<int, Parcel> simParcels, int[,] parcelMap);
+
         #endregion Delegates
 
         #region Events
@@ -586,6 +610,8 @@ namespace libsecondlife
         public event ParcelAccessListReplyCallback OnAccessListReply;
         /// <summary></summary>
         public event ParcelObjectOwnersListReplyCallback OnPrimOwnersListReply;
+        /// <summary></summary>
+        public event SimParcelsDownloaded OnSimParcelsDownloaded;
 
         #endregion Events
 
@@ -702,15 +728,29 @@ namespace libsecondlife
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
         public void RequestAllSimParcels(Simulator simulator)
         {
-            for (int y = 0; y < 8; ++y)
+            int y,x;
+            for (y = 0; y < 64; y++)
             {
-                for (int x = 0; x < 8; ++x)
+                for (x = 0; x < 64; x++)
                 {
-                    Client.Parcels.PropertiesRequest(simulator, y * 32, x * 32, y * 32, x * 32, 0, false);
-
-                    // Pause for a moment after every request to avoid flooding the sim
-                    System.Threading.Thread.Sleep(50);
+                    if(simulator.ParcelMap[y,x] == 0)
+                    {
+                        Client.Parcels.PropertiesRequest(simulator,
+                                                         (y + 1) * 4.0f, (x + 1) * 4.0f,
+                                                         y * 4.0f, x * 4.0f, 0, false);
+                        // Pause for 50 ms after every request to avoid flooding the sim
+                        System.Threading.Thread.Sleep(50);
+                    }
                 }
+            }
+
+            if (OnSimParcelsDownloaded != null && Helpers.IsMapFull(simulator))
+            {
+                try
+                {
+                    OnSimParcelsDownloaded(simulator, simulator.Parcels.Dictionary, simulator.ParcelMap);
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -891,6 +931,19 @@ namespace libsecondlife
             Client.Network.SendPacket(join, simulator);
         }
 
+        /// <summary>
+        /// Gets a parcel LocalID
+        /// </summary>
+        /// <param name="simulator">Simulator parcel is in</param>
+        /// <param name="position">llVector3 position in simulator (Z not used)</param>
+        /// <returns>0 on failure, or parcel LocalID on success.</returns>
+        /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map &
+        /// dictionary.</remarks>
+        public int GetParcelLocalID(Simulator simulator, LLVector3 position)
+        {
+            return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+        }
+
         #endregion Public Methods
 
         #region Packet Handlers
@@ -947,7 +1000,7 @@ namespace libsecondlife
 
         private void ParcelPropertiesHandler(Packet packet, Simulator simulator)
         {
-            if (OnParcelProperties != null)
+            if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
                 ParcelPropertiesPacket properties = (ParcelPropertiesPacket)packet;
 
@@ -1005,15 +1058,36 @@ namespace libsecondlife
                 {
                     lock (simulator.Parcels.Dictionary)
                         simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
+
+                    int y, x, index, bit;
+                    for (y = 0; y < simulator.ParcelMap.GetLength(0); y++)
+                    {
+                        for (x = 0; x < simulator.ParcelMap.GetLength(1); x++)
+                        {
+                            if (simulator.ParcelMap[y, x] == 0)
+                            {
+                                index = (y * 64) + x;
+                                bit = index % 8;
+                                index >>= 3;
+
+                                if ((parcel.Bitmap[index] & (1 << bit)) != 0)
+                                    simulator.ParcelMap[y, x] = parcel.LocalID;
+                            }
+                        }
+
+                    }
                 }
 
                 // Fire the callback
-                try
+                if (OnParcelProperties != null)
                 {
-                    OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
-                        properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
+                    try
+                    {
+                        OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
+                            properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
+                    }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
