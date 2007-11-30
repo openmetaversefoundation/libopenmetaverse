@@ -361,7 +361,7 @@ namespace libsecondlife
         /// <summary></summary>
         public ParticleSystem ParticleSys;
         /// <summary></summary>
-        public ObjectManager.ClickAction ClickAction;
+        public ClickAction ClickAction;
         /// <summary></summary>
         public LLUUID Sound;
         /// <summary>Identifies the owner of the audio or particle system</summary>

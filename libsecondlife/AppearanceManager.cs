@@ -515,14 +515,14 @@ namespace libsecondlife
             Client.Network.SendPacket(attachmentsPacket);
         }
 
-        public void Attach(InventoryItem item, ObjectManager.AttachmentPoint attachPoint)
+        public void Attach(InventoryItem item, AttachmentPoint attachPoint)
         {
             Attach(item.UUID, item.OwnerID, item.Name, item.Description, item.Permissions, item.Flags, 
                 attachPoint);
         }
 
         public void Attach(LLUUID itemID, LLUUID ownerID, string name, string description,
-            Permissions perms, uint itemFlags, ObjectManager.AttachmentPoint attachPoint)
+            Permissions perms, uint itemFlags, AttachmentPoint attachPoint)
         {
             // TODO: At some point it might be beneficial to have AppearanceManager track what we
             // are currently wearing for attachments to make enumeration and detachment easier

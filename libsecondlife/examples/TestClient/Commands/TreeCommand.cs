@@ -21,7 +21,7 @@ namespace libsecondlife.TestClient
 		        try
 		        {
 		            string treeName = args[0].Trim(new char[] { ' ' });
-		            ObjectManager.Tree tree = (ObjectManager.Tree)Enum.Parse(typeof(ObjectManager.Tree), treeName);
+		            Tree tree = (Tree)Enum.Parse(typeof(Tree), treeName);
 
 		            LLVector3 treePosition = Client.Self.SimPosition;
 		            treePosition.Z += 3.0f;
@@ -38,7 +38,7 @@ namespace libsecondlife.TestClient
 		    }
 
 		    string usage = "Usage: !tree [";
-		    foreach (string value in Enum.GetNames(typeof(ObjectManager.Tree)))
+		    foreach (string value in Enum.GetNames(typeof(Tree)))
 		    {
 		        usage += value + ",";
 		    }

@@ -36,6 +36,9 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="ClientManager.cs" />
+    <Compile Include="Commands\Appearance\AppearanceCommand.cs" />
+    <Compile Include="Commands\Appearance\AttachmentsCommand.cs" />
+    <Compile Include="Commands\Appearance\WearCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
     <Compile Include="Commands\Communication\EchoMasterCommand.cs" />
     <Compile Include="Commands\Communication\IMCommand.cs" />
@@ -47,7 +50,6 @@
     <Compile Include="Commands\GoHome.cs" />
     <Compile Include="Commands\GotoLandmark.cs" />
     <Compile Include="Commands\Groups\GroupsCommand.cs" />
-    <Compile Include="Commands\Inventory\AppearanceCommand.cs" />
     <Compile Include="Commands\Inventory\BackupCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
@@ -57,7 +59,6 @@
     <Compile Include="Commands\Inventory\ImportOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
     <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
-    <Compile Include="Commands\Inventory\WearCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
     <Compile Include="Commands\Land\AgentLocationsCommand.cs" />
     <Compile Include="Commands\Land\GridLayerCommand.cs" />

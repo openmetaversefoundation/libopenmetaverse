@@ -31,6 +31,228 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    #region Enums
+
+    /// <summary>
+    /// Identifier code for object types
+    /// </summary>
+    public enum PCode : byte
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        Prim = 9,
+        /// <summary></summary>
+        Avatar = 47,
+        /// <summary></summary>
+        Grass = 95,
+        /// <summary></summary>
+        NewTree = 111,
+        /// <summary></summary>
+        ParticleSystem = 143,
+        /// <summary></summary>
+        Tree = 255
+    }
+
+    /// <summary>
+    /// Attachment points for objects on avatar bodies
+    /// </summary>
+    public enum AttachmentPoint : byte
+    {
+        /// <summary></summary>
+        Default = 0,
+        /// <summary></summary>
+        Chest = 1,
+        /// <summary></summary>
+        Skull,
+        /// <summary></summary>
+        LeftShoulder,
+        /// <summary></summary>
+        RightShoulder,
+        /// <summary></summary>
+        LeftHand,
+        /// <summary></summary>
+        RightHand,
+        /// <summary></summary>
+        LeftFoot,
+        /// <summary></summary>
+        RightFoot,
+        /// <summary></summary>
+        Spine,
+        /// <summary></summary>
+        Pelvis,
+        /// <summary></summary>
+        Mouth,
+        /// <summary></summary>
+        Chin,
+        /// <summary></summary>
+        LeftEar,
+        /// <summary></summary>
+        RightEar,
+        /// <summary></summary>
+        LeftEyeball,
+        /// <summary></summary>
+        RightEyeball,
+        /// <summary></summary>
+        Nose,
+        /// <summary></summary>
+        RightUpperArm,
+        /// <summary></summary>
+        RightForearm,
+        /// <summary></summary>
+        LeftUpperArm,
+        /// <summary></summary>
+        LeftForearm,
+        /// <summary></summary>
+        RightHip,
+        /// <summary></summary>
+        RightUpperLeg,
+        /// <summary></summary>
+        RightLowerLeg,
+        /// <summary></summary>
+        LeftHip,
+        /// <summary></summary>
+        LeftUpperLeg,
+        /// <summary></summary>
+        LeftLowerLeg,
+        /// <summary></summary>
+        Stomach,
+        /// <summary></summary>
+        LeftPec,
+        /// <summary></summary>
+        RightPec,
+        /// <summary></summary>
+        HUDCenter2,
+        /// <summary></summary>
+        HUDTopRight,
+        /// <summary></summary>
+        HUDTop,
+        /// <summary></summary>
+        HUDTopLeft,
+        /// <summary></summary>
+        HUDCenter,
+        /// <summary></summary>
+        HUDBottomLeft,
+        /// <summary></summary>
+        HUDBottom,
+        /// <summary></summary>
+        HUDBottomRight
+    }
+
+    /// <summary>
+    /// Bitflag field for ObjectUpdateCompressed data blocks, describing 
+    /// which options are present for each object
+    /// </summary>
+    [Flags]
+    public enum CompressedFlags : uint
+    {
+        /// <summary>Hasn't been spotted in the wild yet</summary>
+        ScratchPad = 0x01,
+        /// <summary>This may be incorrect</summary>
+        Tree = 0x02,
+        /// <summary>Whether the object has floating text ala llSetText</summary>
+        HasText = 0x04,
+        /// <summary>Whether the object has an active particle system</summary>
+        HasParticles = 0x08,
+        /// <summary>Whether the object has sound attached to it</summary>
+        HasSound = 0x10,
+        /// <summary>Whether the object is attached to a root object or not</summary>
+        HasParent = 0x20,
+        /// <summary>Whether the object has texture animation settings</summary>
+        TextureAnimation = 0x40,
+        /// <summary>Whether the object has an angular velocity</summary>
+        HasAngularVelocity = 0x80,
+        /// <summary>Whether the object has a name value pairs string</summary>
+        HasNameValues = 0x100,
+        /// <summary>Whether the object has a Media URL set</summary>
+        MediaURL = 0x200
+    }
+
+    /// <summary>
+    /// Tree foliage types
+    /// </summary>
+    public enum Tree : byte
+    {
+        /// <summary></summary>
+        Pine1 = 0,
+        /// <summary></summary>
+        Oak,
+        /// <summary></summary>
+        TropicalBush1,
+        /// <summary></summary>
+        Palm1,
+        /// <summary></summary>
+        Dogwood,
+        /// <summary></summary>
+        TropicalBush2,
+        /// <summary></summary>
+        Palm2,
+        /// <summary></summary>
+        Cypress1,
+        /// <summary></summary>
+        Cypress2,
+        /// <summary></summary>
+        Pine2,
+        /// <summary></summary>
+        Plumeria,
+        /// <summary></summary>
+        WinterPine1,
+        /// <summary></summary>
+        WinterAspen,
+        /// <summary></summary>
+        WinterPine2,
+        /// <summary></summary>
+        Eucalyptus,
+        /// <summary></summary>
+        Fern,
+        /// <summary></summary>
+        Eelgrass,
+        /// <summary></summary>
+        SeaSword,
+        /// <summary></summary>
+        Kelp1,
+        /// <summary></summary>
+        BeachGrass1,
+        /// <summary></summary>
+        Kelp2
+    }
+
+    /// <summary>
+    /// Grass foliage types
+    /// </summary>
+    public enum Grass : byte
+    {
+        /// <summary></summary>
+        Grass0 = 0,
+        /// <summary></summary>
+        Grass1,
+        /// <summary></summary>
+        Grass2,
+        /// <summary></summary>
+        Grass3,
+        /// <summary></summary>
+        Grass4,
+        /// <summary></summary>
+        Undergrowth1
+    }
+
+    /// <summary>
+    /// Action associated with clicking on an object
+    /// </summary>
+    public enum ClickAction : byte
+    {
+        /// <summary></summary>
+        Touch = 0,
+        /// <summary></summary>
+        Sit = 1,
+        /// <summary></summary>
+        Buy = 2
+    }
+
+    #endregion Enums
+
+    #region Structs
+
     /// <summary>
     /// Contains the variables sent in an object update packet for objects. 
     /// Used to track position and movement of prims and avatars
@@ -59,6 +281,8 @@ namespace libsecondlife
         public LLObject.TextureEntry Textures;
     }
 
+    #endregion Structs
+
     /// <summary>
     /// Handles all network traffic related to prims and avatar positions and 
     /// movement.
@@ -67,7 +291,8 @@ namespace libsecondlife
     {
         public const float HAVOK_TIMESTEP = 1.0f / 45.0f;
 
-        #region CallBack Definitions
+        #region Delegates
+
         /// <summary>
         /// 
         /// </summary>
@@ -140,227 +365,7 @@ namespace libsecondlife
         /// on. If this is zero the avatar is not sitting on an object</param>
         public delegate void AvatarSitChanged(Simulator simulator, Avatar avatar, uint sittingOn, uint oldSeat);
 		
-        #endregion
-
-        #region Object/Prim Enums
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum PCode : byte
-        {
-            /// <summary></summary>
-            None = 0,
-            /// <summary></summary>
-            Prim = 9,
-            /// <summary></summary>
-            Avatar = 47,
-            /// <summary></summary>
-            Grass = 95,
-            /// <summary></summary>
-            NewTree = 111,
-            /// <summary></summary>
-            ParticleSystem = 143,
-            /// <summary></summary>
-            Tree = 255
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum AttachmentPoint : byte
-        {
-            /// <summary></summary>
-            Default = 0,
-            /// <summary></summary>
-            Chest = 1,
-            /// <summary></summary>
-            Skull,
-            /// <summary></summary>
-            LeftShoulder,
-            /// <summary></summary>
-            RightShoulder,
-            /// <summary></summary>
-            LeftHand,
-            /// <summary></summary>
-            RightHand,
-            /// <summary></summary>
-            LeftFoot,
-            /// <summary></summary>
-            RightFoot,
-            /// <summary></summary>
-            Spine,
-            /// <summary></summary>
-            Pelvis,
-            /// <summary></summary>
-            Mouth,
-            /// <summary></summary>
-            Chin,
-            /// <summary></summary>
-            LeftEar,
-            /// <summary></summary>
-            RightEar,
-            /// <summary></summary>
-            LeftEyeball,
-            /// <summary></summary>
-            RightEyeball,
-            /// <summary></summary>
-            Nose,
-            /// <summary></summary>
-            RightUpperArm,
-            /// <summary></summary>
-            RightForearm,
-            /// <summary></summary>
-            LeftUpperArm,
-            /// <summary></summary>
-            LeftForearm,
-            /// <summary></summary>
-            RightHip,
-            /// <summary></summary>
-            RightUpperLeg,
-            /// <summary></summary>
-            RightLowerLeg,
-            /// <summary></summary>
-            LeftHip,
-            /// <summary></summary>
-            LeftUpperLeg,
-            /// <summary></summary>
-            LeftLowerLeg,
-            /// <summary></summary>
-            Stomach,
-            /// <summary></summary>
-            LeftPec,
-            /// <summary></summary>
-            RightPec,
-            /// <summary></summary>
-            HUDCenter2,
-            /// <summary></summary>
-            HUDTopRight,
-            /// <summary></summary>
-            HUDTop,
-            /// <summary></summary>
-            HUDTopLeft,
-            /// <summary></summary>
-            HUDCenter,
-            /// <summary></summary>
-            HUDBottomLeft,
-            /// <summary></summary>
-            HUDBottom,
-            /// <summary></summary>
-            HUDBottomRight
-        }
-
-        /// <summary>
-        /// Bitflag field for ObjectUpdateCompressed data blocks, describing 
-        /// which options are present for each object
-        /// </summary>
-        [Flags]
-        public enum CompressedFlags : uint
-        {
-            /// <summary>Hasn't been spotted in the wild yet</summary>
-            ScratchPad = 0x01,
-            /// <summary>This may be incorrect</summary>
-            Tree = 0x02,
-            /// <summary>Whether the object has floating text ala llSetText</summary>
-            HasText = 0x04,
-            /// <summary>Whether the object has an active particle system</summary>
-            HasParticles = 0x08,
-            /// <summary>Whether the object has sound attached to it</summary>
-            HasSound = 0x10,
-            /// <summary>Whether the object is attached to a root object or not</summary>
-            HasParent = 0x20,
-            /// <summary>Whether the object has texture animation settings</summary>
-            TextureAnimation = 0x40,
-            /// <summary>Whether the object has an angular velocity</summary>
-            HasAngularVelocity = 0x80,
-            /// <summary>Whether the object has a name value pairs string</summary>
-            HasNameValues = 0x100,
-            /// <summary>Whether the object has a Media URL set</summary>
-            MediaURL = 0x200
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum Tree : byte
-        {
-            /// <summary></summary>
-            Pine1 = 0,
-            /// <summary></summary>
-            Oak,
-            /// <summary></summary>
-            TropicalBush1,
-            /// <summary></summary>
-            Palm1,
-            /// <summary></summary>
-            Dogwood,
-            /// <summary></summary>
-            TropicalBush2,
-            /// <summary></summary>
-            Palm2,
-            /// <summary></summary>
-            Cypress1,
-            /// <summary></summary>
-            Cypress2,
-            /// <summary></summary>
-            Pine2,
-            /// <summary></summary>
-            Plumeria,
-            /// <summary></summary>
-            WinterPine1,
-            /// <summary></summary>
-            WinterAspen,
-            /// <summary></summary>
-            WinterPine2,
-            /// <summary></summary>
-            Eucalyptus,
-            /// <summary></summary>
-            Fern,
-            /// <summary></summary>
-            Eelgrass,
-            /// <summary></summary>
-            SeaSword,
-            /// <summary></summary>
-            Kelp1,
-            /// <summary></summary>
-            BeachGrass1,
-            /// <summary></summary>
-            Kelp2
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum Grass : byte
-        {
-            /// <summary></summary>
-            Grass0 = 0,
-            /// <summary></summary>
-            Grass1,
-            /// <summary></summary>
-            Grass2,
-            /// <summary></summary>
-            Grass3,
-            /// <summary></summary>
-            Grass4,
-            /// <summary></summary>
-            Undergrowth1
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum ClickAction : byte
-        {
-            /// <summary></summary>
-            Touch = 0,
-            /// <summary></summary>
-            Sit = 1,
-            /// <summary></summary>
-            Buy = 2
-        }
-
-        #endregion
+        #endregion Delegates
 
         #region Events
 
@@ -683,7 +688,7 @@ namespace libsecondlife
             packet.AgentData.SessionID = Client.Self.SessionID;
             packet.AgentData.GroupID = groupID;
 
-            packet.ObjectData.State = (byte)prim.State;
+            packet.ObjectData.State = prim.State;
             packet.ObjectData.AddFlags = (uint)LLObject.ObjectFlags.CreateSelected;
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
@@ -1790,7 +1795,7 @@ namespace libsecondlife
                             #region Foliage Decoding
 
                             // State
-                            prim.Data.State = (uint)block.Data[i++];
+                            prim.Data.State = block.Data[i++];
                             // CRC
                             i += 4;
                             // Material
@@ -1819,7 +1824,7 @@ namespace libsecondlife
                         case PCode.Prim:
                             #region Decode block and update Prim
                             // State
-                            prim.Data.State = (uint)block.Data[i++];
+                            prim.Data.State = block.Data[i++];
                             // CRC
                             i += 4;
                             // Material
@@ -2016,8 +2021,7 @@ namespace libsecondlife
                             #region Fire Events
 
                             // Fire the appropriate callback
-                            // TODO: We should use a better check to see if this is actually an attachment
-                            if ((flags & CompressedFlags.HasNameValues) != 0)
+                            if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
                                 FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
                                     update.RegionData.TimeDilation);
                             else if ((flags & CompressedFlags.Tree) != 0)
@@ -2203,7 +2207,7 @@ namespace libsecondlife
         {
             LLObject.ObjectData prim = new LLObject.ObjectData();
 
-            prim.PCode = ObjectManager.PCode.Prim;
+            prim.PCode = PCode.Prim;
             prim.Material = LLObject.MaterialType.Wood;
             prim.ProfileCurve = LLObject.ProfileCurve.ProfileSquare;
             prim.PathCurve = LLObject.PathCurve.Line;

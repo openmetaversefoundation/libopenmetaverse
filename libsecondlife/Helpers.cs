@@ -1154,6 +1154,13 @@ namespace libsecondlife
             return localID;
         }
 
+        public static AttachmentPoint StateToAttachmentPoint(uint state)
+        {
+            const uint ATTACHMENT_MASK = 0xF0;
+            uint fixedState = (((byte)state & ATTACHMENT_MASK) >> 4) | (((byte)state & ~ATTACHMENT_MASK) << 4);
+            return (AttachmentPoint)fixedState;
+        }
+
         #region Platform Helper Functions
 
         public static bool TryParse(string s, out DateTime result)

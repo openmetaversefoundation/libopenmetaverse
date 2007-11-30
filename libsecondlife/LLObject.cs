@@ -197,9 +197,9 @@ namespace libsecondlife
             /// <summary></summary>
             public float PathRevolutions;
             /// <summary></summary>
-            public uint State;
+            public byte State;
             /// <summary></summary>
-            public ObjectManager.PCode PCode;
+            public PCode PCode;
         }
 
         /// <summary>
