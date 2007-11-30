@@ -12,6 +12,10 @@
 		400A2CC60D012C27003AF834 /* WearCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CC30D012C27003AF834 /* WearCommand.cs */; };
 		400A2CC70D012C27003AF834 /* AttachmentsCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CC40D012C27003AF834 /* AttachmentsCommand.cs */; };
 		400A2CC80D012C27003AF834 /* AppearanceCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CC50D012C27003AF834 /* AppearanceCommand.cs */; };
+		400A2CCC0D01975E003AF834 /* ChangePermsCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CCA0D01975E003AF834 /* ChangePermsCommand.cs */; };
+		400A2CCD0D01975E003AF834 /* PrimRegexCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CCB0D01975E003AF834 /* PrimRegexCommand.cs */; };
+		400A2CD00D01976C003AF834 /* ObjectInventoryCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CCE0D01976C003AF834 /* ObjectInventoryCommand.cs */; };
+		400A2CD10D01976C003AF834 /* BackupCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 400A2CCF0D01976C003AF834 /* BackupCommand.cs */; };
 		402D03CB0C4846F300991307 /* Inventory.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C50C4846F300991307 /* Inventory.cs */; };
 		402D03CC0C4846F300991307 /* InventoryManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C60C4846F300991307 /* InventoryManager.cs */; };
 		402D03CD0C4846F300991307 /* InventoryNode.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402D03C70C4846F300991307 /* InventoryNode.cs */; };
@@ -239,6 +243,10 @@
 		400A2CC30D012C27003AF834 /* WearCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = WearCommand.cs; path = Appearance/WearCommand.cs; sourceTree = "<group>"; };
 		400A2CC40D012C27003AF834 /* AttachmentsCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AttachmentsCommand.cs; path = Appearance/AttachmentsCommand.cs; sourceTree = "<group>"; };
 		400A2CC50D012C27003AF834 /* AppearanceCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AppearanceCommand.cs; path = Appearance/AppearanceCommand.cs; sourceTree = "<group>"; };
+		400A2CCA0D01975E003AF834 /* ChangePermsCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ChangePermsCommand.cs; sourceTree = "<group>"; };
+		400A2CCB0D01975E003AF834 /* PrimRegexCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = PrimRegexCommand.cs; sourceTree = "<group>"; };
+		400A2CCE0D01976C003AF834 /* ObjectInventoryCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = ObjectInventoryCommand.cs; sourceTree = "<group>"; };
+		400A2CCF0D01976C003AF834 /* BackupCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = BackupCommand.cs; sourceTree = "<group>"; };
 		402D03C50C4846F300991307 /* Inventory.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Inventory.cs; path = libsecondlife/Inventory.cs; sourceTree = "<group>"; };
 		402D03C60C4846F300991307 /* InventoryManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = InventoryManager.cs; path = libsecondlife/InventoryManager.cs; sourceTree = "<group>"; };
 		402D03C70C4846F300991307 /* InventoryNode.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = InventoryNode.cs; path = libsecondlife/InventoryNode.cs; sourceTree = "<group>"; };
@@ -751,6 +759,8 @@
 		40FBA77A0C016AC800073A37 /* Inventory */ = {
 			isa = PBXGroup;
 			children = (
+				400A2CCE0D01976C003AF834 /* ObjectInventoryCommand.cs */,
+				400A2CCF0D01976C003AF834 /* BackupCommand.cs */,
 				40FBA77C0C016AC800073A37 /* BalanceCommand.cs */,
 				40FBA77D0C016AC800073A37 /* DeleteFolderCommand.cs */,
 				40FBA77E0C016AC800073A37 /* DumpOutfitCommand.cs */,
@@ -790,6 +800,8 @@
 		40FBA7910C016AC800073A37 /* Prims */ = {
 			isa = PBXGroup;
 			children = (
+				400A2CCA0D01975E003AF834 /* ChangePermsCommand.cs */,
+				400A2CCB0D01975E003AF834 /* PrimRegexCommand.cs */,
 				403BAC750CC0B25200983A86 /* FindObjectsCommand.cs */,
 				403BAC760CC0B25200983A86 /* PrimInfoCommand.cs */,
 				403BAC780CC0B25200983A86 /* FindTextureCommand.cs */,
@@ -1190,6 +1202,10 @@
 				400A2CC60D012C27003AF834 /* WearCommand.cs in Sources */,
 				400A2CC70D012C27003AF834 /* AttachmentsCommand.cs in Sources */,
 				400A2CC80D012C27003AF834 /* AppearanceCommand.cs in Sources */,
+				400A2CCC0D01975E003AF834 /* ChangePermsCommand.cs in Sources */,
+				400A2CCD0D01975E003AF834 /* PrimRegexCommand.cs in Sources */,
+				400A2CD00D01976C003AF834 /* ObjectInventoryCommand.cs in Sources */,
+				400A2CD10D01976C003AF834 /* BackupCommand.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
