@@ -506,6 +506,38 @@ namespace libsecondlife
             return transactionID;
         }
 
+        #region Blocking Functions
+
+        public bool PeopleSearch(DirFindFlags findFlags, string searchText, int queryStart,
+            int timeoutMS, out List<AgentSearchData> results)
+        {
+            AutoResetEvent searchEvent = new AutoResetEvent(false);
+            LLUUID id = LLUUID.Random();
+            List<AgentSearchData> people = null;
+
+            DirPeopleReplyCallback callback =
+                delegate(LLUUID queryid, List<AgentSearchData> matches)
+                {
+                    if (id == queryid)
+                    {
+                        people = matches;
+                        searchEvent.Set();
+                    }
+                };
+
+            OnDirPeopleReply += callback;
+            StartPeopleSearch(findFlags, searchText, queryStart, id);
+            searchEvent.WaitOne(timeoutMS, false);
+            OnDirPeopleReply -= callback;
+
+            results = people;
+            return (results != null);
+        }
+
+        #endregion Blocking Functions
+
+        #region Packet Handlers
+
         private void DirClassifiedReplyHandler(Packet packet, Simulator simulator)
         {
             if (OnClassifiedReply != null)
@@ -626,5 +658,7 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+
+        #endregion Packet Handlers
     }
 }

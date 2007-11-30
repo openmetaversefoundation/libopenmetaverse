@@ -39,13 +39,15 @@ namespace libsecondlife
     /// happen at login or dynamically</remarks>
     public class Settings
     {
+        /// <summary>Main grid login server</summary>
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+        /// <summary>Beta grid login server</summary>
         public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
+        /// <summary>The relative directory where external resources are kept</summary>
+        public const string RESOURCE_DIR = "libsl_data";
 
         /// <summary>XML-RPC login server to connect to</summary>
         public string LOGIN_SERVER = AGNI_LOGIN_SERVER;
-        /// <summary>The relative directory where files needed for baking are kept</summary>
-        public string RESOURCE_DIR = "avatar_data";
 
 	    // Timeouts and Intervals
 

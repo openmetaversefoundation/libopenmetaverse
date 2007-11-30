@@ -178,6 +178,6 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)avatar_data" /i /d /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)libsl_data" /i /d /y</PostBuildEvent>
   </PropertyGroup>
 </Project>

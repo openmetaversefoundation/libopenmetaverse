@@ -1041,7 +1041,7 @@ namespace libsecondlife
         /// was not successfully loaded</returns>
         public static System.IO.Stream GetResourceStream(string resourceName)
         {
-            return GetResourceStream(resourceName, String.Empty);
+            return GetResourceStream(resourceName, Settings.RESOURCE_DIR);
         }
         
         /// <summary>
@@ -1068,7 +1068,8 @@ namespace libsecondlife
 
             try
             {
-                return new System.IO.FileStream(searchPath + System.IO.Path.DirectorySeparatorChar + resourceName,System.IO.FileMode.Open);
+                return new System.IO.FileStream(searchPath + System.IO.Path.DirectorySeparatorChar + resourceName,
+                    System.IO.FileMode.Open);
             }
             catch (Exception)
             {

@@ -7,8 +7,7 @@ using libsecondlife;
 
 namespace OpenJPEGNet
 {
-#if NO_UNSAFE
-#else
+#if !NO_UNSAFE
 
     public class OpenJPEG
     {

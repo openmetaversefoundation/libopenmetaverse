@@ -2,8 +2,7 @@ using System;
 
 namespace OpenJPEGNet
 {
-#if NO_UNSAFE
-#else
+#if !NO_UNSAFE
 
     /// <summary>
     /// Capability to load TGAs to Bitmap 

@@ -50,9 +50,6 @@
 				<include name="mapgenerator/mapgenerator.cs" />
 				<include name="mapgenerator/ProtocolManager.cs" />
 			</sources>
-			<resources dynamicprefix="true" prefix="libsecondlife" basedir="." failonempty="true">
-			    <include name="Resources/*.tga" />
-			</resources>
 		</csc>
 		<!-- Does _Packets_.cs really need to be reproduced? -->
 		<!-- Don't do it unless we have must, otherwise lots of stuff recompiles. -->
@@ -101,6 +98,10 @@
 				<include name="Capabilities/*.cs" />
 				<include name="libsecondlife.Utilities/*.cs" />
 			</sources>
+                        <resources dynamicprefix="true" prefix="libsecondlife" basedir="." failonempty="true">
+                            <include name="Resources/*.tga" />
+                            <include name="Resources/*.xml" />
+			</resources>
 			<references basedir="${bin_dir}/"> 
 				<include name="../bin/CookComputing.XmlRpcV2.dll" />
 				<include name="System.Drawing.dll" />

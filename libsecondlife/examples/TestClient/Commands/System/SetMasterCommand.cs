@@ -17,7 +17,7 @@ namespace libsecondlife.TestClient
         public SetMasterCommand(TestClient testClient)
 		{
 			Name = "setmaster";
-            Description = "Sets the user name of the master user. The master user can IM to run commands. Usage: setmaster name";
+            Description = "Sets the user name of the master user. The master user can IM to run commands. Usage: setmaster [name]";
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -28,7 +28,7 @@ namespace libsecondlife.TestClient
             masterName = masterName.TrimEnd();
 
             if (masterName.Length == 0)
-                return "Usage: setmaster name";
+                return "Usage: setmaster [name]";
 
             DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
             Client.Directory.OnDirPeopleReply += callback;
@@ -61,7 +61,7 @@ namespace libsecondlife.TestClient
         {
             if (query != queryid)
                 return;
-            // We can't handle ambiguities here as nicely as we can in ClientManager.
+
             resolvedMasterKey = matches[0].AgentID;
             keyResolution.Set();
             query = LLUUID.Zero;
