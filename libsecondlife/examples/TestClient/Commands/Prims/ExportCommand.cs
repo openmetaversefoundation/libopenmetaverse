@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml;
-using System.Text;
 using System.Threading;
 using libsecondlife;
-using libsecondlife.Packets;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife.TestClient
 {
@@ -36,7 +34,6 @@ namespace libsecondlife.TestClient
 
             LLUUID id;
             uint localid;
-            int count;
             string file;
 
             if (args.Length == 2)
@@ -54,10 +51,7 @@ namespace libsecondlife.TestClient
             Primitive exportPrim;
 
             exportPrim = Client.Network.CurrentSim.Objects.Find(
-                delegate(Primitive prim)
-                {
-                    return prim.ID == id;
-                }
+                delegate(Primitive prim) { return prim.ID == id; }
             );
 
             if (exportPrim != null)
@@ -87,49 +81,27 @@ namespace libsecondlife.TestClient
                     }
                 }
 
-                try
-                {
-					XmlWriterSettings settings = new XmlWriterSettings();
-					settings.Indent = true;
-                    XmlWriter writer = XmlWriter.Create(file, settings);
-
-					try
-					{
-                        List<Primitive> prims = Client.Network.CurrentSim.Objects.FindAll(
-                            delegate(Primitive prim)
-                            {
-                                return (prim.LocalID == localid || prim.ParentID == localid);
-                            }
-                        );
-                        count = prims.Count;
-
-                        bool complete = RequestObjectProperties(prims, 250);
-						
-                        //Serialize it!
-                        return "This command is currently under construction";
-
-                        if (!complete)
-                        {
-                            Console.WriteLine("Warning: Unable to retrieve full properties for:");
-                            foreach (LLUUID uuid in PrimsWaiting.Keys)
-                                Console.WriteLine(uuid);
-                        }
-					}
-					finally
-					{
-						writer.Close();
-					}
-                }
-                catch (Exception e)
-                {
-                    string ret = "Failed to write to " + file + ":" + e.ToString();
-                    if (ret.Length > 1000)
+                List<Primitive> prims = Client.Network.CurrentSim.Objects.FindAll(
+                    delegate(Primitive prim)
                     {
-                        ret = ret.Remove(1000);
+                        return (prim.LocalID == localid || prim.ParentID == localid);
                     }
-                    return ret;
+                );
+
+                bool complete = RequestObjectProperties(prims, 250);
+
+                if (!complete)
+                {
+                    Console.WriteLine("Warning: Unable to retrieve full properties for:");
+                    foreach (LLUUID uuid in PrimsWaiting.Keys)
+                        Console.WriteLine(uuid);
                 }
-                return "Exported " + count + " prims to " + file;
+
+                string output = LLSDParser.SerializeXmlString(Helpers.PrimListToLLSD(prims));
+                try { File.WriteAllText(file, output); }
+                catch (Exception e) { return e.Message; }
+
+                return "Exported " + prims.Count + " prims to " + file;
             }
             else
             {
@@ -181,11 +153,6 @@ namespace libsecondlife.TestClient
         {
             lock (PrimsWaiting)
             {
-                Primitive prim;
-                if (PrimsWaiting.TryGetValue(properties.ObjectID, out prim))
-                {
-                    prim.Properties = properties;
-                }
                 PrimsWaiting.Remove(properties.ObjectID);
 
                 if (PrimsWaiting.Count == 0)

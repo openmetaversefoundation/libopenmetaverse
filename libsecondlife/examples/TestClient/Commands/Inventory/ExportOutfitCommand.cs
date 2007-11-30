@@ -39,7 +39,7 @@ namespace libsecondlife.TestClient
                 {
                     try
                     {
-                        File.WriteAllText(path, Packet.SerializeToXml(Client.Appearances[id]));
+                        File.WriteAllText(path, Packet.ToXmlString(Client.Appearances[id]));
                     }
                     catch (Exception e)
                     {

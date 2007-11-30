@@ -1104,28 +1104,34 @@ namespace libsecondlife
         /// </summary>
         /// <param name="prims">Primitives to convert to a serializable object</param>
         /// <returns>An object that can be serialized with LLSD</returns>
-        public static Dictionary<string, object> PrimListToLLSD(List<Primitive> prims)
+        public static StructuredData.LLSD PrimListToLLSD(List<Primitive> prims)
         {
-            Dictionary<string, object> llsd = new Dictionary<string, object>(prims.Count);
+            StructuredData.LLSDMap map = new libsecondlife.StructuredData.LLSDMap(prims.Count);
 
             for (int i = 0; i < prims.Count; i++)
-                llsd.Add(prims[i].LocalID.ToString(), prims[i].ToLLSD());
+                map.Add(prims[i].LocalID.ToString(), prims[i].ToLLSD());
 
-            return llsd;
+            return map;
         }
 
-        public static List<Primitive> LLSDToPrimList(Dictionary<string, object> llsd)
+        /// <summary>
+        /// Deserializes LLSD in to a list of primitives
+        /// </summary>
+        /// <param name="llsd">Structure holding the serialized primitive list,
+        /// must be of the LLSDMap type</param>
+        /// <returns>A list of deserialized primitives</returns>
+        public static List<Primitive> LLSDToPrimList(StructuredData.LLSD llsd)
         {
-            List<Primitive> prims = new List<Primitive>();
+            if (llsd.Type != StructuredData.LLSDType.Map)
+                throw new ArgumentException("LLSD must be in the Map structure");
 
-            foreach (object obj in llsd.Values)
-            {
-                Dictionary<string, object> primLLSD = (Dictionary<string, object>)obj;
-                ;
-            }
+            StructuredData.LLSDMap map = (StructuredData.LLSDMap)llsd;
+            List<Primitive> prims = new List<Primitive>(map.Count);
 
-            //FIXME: I'm working on it (jhurliman)
-            return null;
+            foreach (StructuredData.LLSD value in map.Values)
+                prims.Add(Primitive.FromLLSD(value));
+
+            return prims;
         }
 
         /// <summary>

@@ -34,7 +34,6 @@ namespace libsecondlife.TestClient
 
         Primitive currentPrim;
         LLVector3 currentPosition;
-        SecondLife currentClient;
         AutoResetEvent primDone;
         List<Primitive> primsCreated;
         List<uint> linkQueue;
@@ -57,9 +56,7 @@ namespace libsecondlife.TestClient
                 return "Usage: import inputfile.xml";
 
             string filename = args[0];
-            Dictionary<uint, Primitive> prims = new Dictionary<uint, Primitive>(); ;
-
-            currentClient = Client;
+            Dictionary<uint, Primitive> prims = new Dictionary<uint, Primitive>();
 
             return "This command is currently under construction";
 
@@ -211,16 +208,15 @@ namespace libsecondlife.TestClient
                     {
                         Console.WriteLine("Setting properties for " + prim.LocalID);
                         // TODO: Is there a way to set all of this at once, and update more ObjectProperties stuff?
-                        currentClient.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
-                        currentClient.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
-                        currentClient.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
-                        currentClient.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
+                        Client.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
+                        Client.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
+                        Client.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+                        Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
 
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
-                            currentClient.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
+                            Client.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Description))
-                            currentClient.Objects.SetDescription(simulator, prim.LocalID,
-                                currentPrim.Properties.Description);
+                            Client.Objects.SetDescription(simulator, prim.LocalID, currentPrim.Properties.Description);
 
                         primsCreated.Add(prim);
                         primDone.Set();

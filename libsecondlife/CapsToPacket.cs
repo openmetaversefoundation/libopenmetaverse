@@ -34,12 +34,14 @@ namespace libsecondlife.Packets
 {
     public abstract partial class Packet
     {
-        public static string SerializeToXml(Packet packet)
+        #region Serialization/Deserialization
+
+        public static string ToXmlString(Packet packet)
         {
-            return LLSDParser.SerializeXmlString(SerializeToLLSD(packet));
+            return LLSDParser.SerializeXmlString(ToLLSD(packet));
         }
 
-        public static LLSD SerializeToLLSD(Packet packet)
+        public static LLSD ToLLSD(Packet packet)
         {
             LLSDMap body = new LLSDMap();
             Type type = packet.GetType();
@@ -76,10 +78,26 @@ namespace libsecondlife.Packets
             return body;
         }
 
-        public static string SerializeToBinary(Packet packet)
+        public static byte[] ToBinary(Packet packet)
         {
             throw new NotImplementedException("Need to finish BinaryLLSD first");
         }
+
+        public static Packet FromXmlString(string xml)
+        {
+            System.Xml.XmlTextReader reader =
+                new System.Xml.XmlTextReader(new System.IO.MemoryStream(Helpers.StringToField(xml)));
+
+            return FromLLSD(LLSDParser.DeserializeXml(reader));
+        }
+
+        public static Packet FromLLSD(LLSD llsd)
+        {
+            // FIXME: Need the inverse of the reflection magic above done here
+            throw new NotImplementedException();
+        }
+
+        #endregion Serialization/Deserialization
 
         /// <summary>
         /// Attempts to convert an LLSD structure to a known Packet type

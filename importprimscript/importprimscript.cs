@@ -148,7 +148,7 @@ namespace importprimscript
                 // Create basic spherical volume parameters. It will be set to
                 // a scultpy in the callback for new objects being created
                 LLObject.ObjectData volume = new LLObject.ObjectData();
-                volume.PCode = ObjectManager.PCode.Prim;
+                volume.PCode = PCode.Prim;
                 volume.Material = LLObject.MaterialType.Wood;
                 volume.PathScaleY = 0.5f;
                 volume.PathCurve = LLObject.PathCurve.Circle;

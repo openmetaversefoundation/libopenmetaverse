@@ -383,6 +383,16 @@ namespace libsecondlife
         ContributionRemoval = 16
     }
 
+    public enum MeanCollisionType : byte
+    {
+        None,
+        Bump,
+        LLPushObject,
+        SelectedObjectCollide,
+        ScriptedObjectCollide,
+        PhysicalObjectCollide
+    }
+
     #endregion Enums
     
     #region Structs
@@ -650,6 +660,17 @@ namespace libsecondlife
         /// SignaledAnimations collection</param>
         public delegate void AnimationsChangedCallback(SafeDictionary<LLUUID, int> agentAnimations);
 
+        /// <summary>
+        /// Triggered when an object or avatar forcefully collides with our
+        /// agent
+        /// </summary>
+        /// <param name="type">Collision type</param>
+        /// <param name="perp">Colliding object or avatar ID</param>
+        /// <param name="victim">Victim ID, should be our own AgentID</param>
+        /// <param name="magnitude">Velocity or total force of the collision</param>
+        /// <param name="time">Time the collision occurred</param>
+        public delegate void MeanCollisionCallback(MeanCollisionType type, LLUUID perp, LLUUID victim,
+            float magnitude, DateTime time);
 
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -670,6 +691,9 @@ namespace libsecondlife
         public event AgentDataCallback OnAgentDataUpdated;
         /// <summary>Callback for the current agent animations changing</summary>
         public event AnimationsChangedCallback OnAnimationsChanged;
+        /// <summary>Callback for an object or avatar forcefully colliding
+        /// with the agent</summary>
+        public event MeanCollisionCallback OnMeanCollision;
 
         #endregion
 
@@ -677,6 +701,10 @@ namespace libsecondlife
         public readonly SecondLife Client;
         /// <summary>Used for movement and camera tracking</summary>
         public readonly AgentMovement Movement;
+        /// <summary>Currently playing animations for the agent. Can be used to
+        /// check the current movement status such as walking, hovering, aiming,
+        /// etc. by checking for system animations in the <code>Animations</code>
+        /// class</summary>
         public SafeDictionary<LLUUID, int> SignaledAnimations = new SafeDictionary<LLUUID, int>();
 
         #region Properties
@@ -888,6 +916,8 @@ namespace libsecondlife
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
             // Animation callback
             Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
+            // Object colliding into our agent callback
+            Client.Network.RegisterCallback(PacketType.MeanCollisionAlert, new NetworkManager.PacketCallback(MeanCollisionAlertHandler));
 
 	        // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Capabilities.EventQueueCallback(EstablishAgentCommunicationEventHandler));
@@ -2278,7 +2308,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="sim"></param>
-        protected void AvatarAnimationHandler(Packet packet, Simulator sim)
+        private void AvatarAnimationHandler(Packet packet, Simulator sim)
         {
             AvatarAnimationPacket animation = (AvatarAnimationPacket)packet;
 
@@ -2328,6 +2358,25 @@ namespace libsecondlife
                 if (OnAnimationsChanged != null)
                 {
                     try { OnAnimationsChanged(SignaledAnimations); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+        }
+
+        private void MeanCollisionAlertHandler(Packet packet, Simulator sim)
+        {
+            if (OnMeanCollision != null)
+            {
+                MeanCollisionAlertPacket collision = (MeanCollisionAlertPacket)packet;
+
+                for (int i = 0; i < collision.MeanCollision.Length; i++)
+                {
+                    MeanCollisionAlertPacket.MeanCollisionBlock block = collision.MeanCollision[i];
+
+                    DateTime time = Helpers.UnixTimeToDateTime(block.Time);
+                    MeanCollisionType type = (MeanCollisionType)block.Type;
+
+                    try { OnMeanCollision(type, block.Perp, block.Victim, block.Mag, time); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }

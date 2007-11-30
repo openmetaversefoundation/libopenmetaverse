@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -23,12 +21,14 @@ namespace libsecondlife.TestClient
             if (args.Length != 1)
                 return "Usage: importoutfit inputfile.xml";
 
+            return "LLSD packet import is under construction";
+
             try
             {
-                XmlReader reader = XmlReader.Create(args[0]);
-                XmlSerializer serializer = new XmlSerializer(typeof(Packet));
-                AvatarAppearancePacket appearance = (AvatarAppearancePacket)serializer.Deserialize(reader);
-                reader.Close();
+                Packet packet = Packet.FromXmlString((File.ReadAllText(args[0])));
+                if (packet.Type != PacketType.AvatarAppearance)
+                    return "Deserialized a " + packet.Type + " packet instead of an AvatarAppearance packet";
+                AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
 
                 AgentSetAppearancePacket set = new AgentSetAppearancePacket();
 
@@ -36,6 +36,7 @@ namespace libsecondlife.TestClient
                 set.AgentData.SessionID = Client.Self.SessionID;
                 set.AgentData.SerialNum = SerialNum++;
 
+                // HACK: Weak hack to calculate size
                 float AV_Height_Range = 2.025506f - 1.50856f;
                 float AV_Height = 1.50856f + (((float)appearance.VisualParam[25].ParamValue / 255.0f) * AV_Height_Range);
                 set.AgentData.Size = new LLVector3(0.45f, 0.6f, AV_Height);
