@@ -2031,18 +2031,18 @@ namespace libsecondlife
 
         #region Callbacks
 
-        private void CreateItemFromAssetResponse(object response, HttpRequestState state)
+        private void CreateItemFromAssetResponse(LLSD response, HttpRequestState state)
         {
-            Dictionary<string, object> contents = (Dictionary<string, object>)response;
+            LLSDMap contents = (LLSDMap)response;
             KeyValuePair<ItemCreatedFromAssetCallback, byte[]> kvp = (KeyValuePair<ItemCreatedFromAssetCallback, byte[]>)state.State;
             ItemCreatedFromAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
-            string status = (string)contents["state"];
+            string status = contents["state"].AsString();
 
             if (status == "upload")
             {
-                string uploadURL = (string)contents["uploader"];
+                string uploadURL = contents["uploader"].AsString();
 
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
@@ -2054,7 +2054,7 @@ namespace libsecondlife
             {
                 if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
                 {
-                    try { callback(true, String.Empty, (LLUUID)contents["new_inventory_item"], (LLUUID)contents["new_asset"]); }
+                    try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
                     catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
                 else
