@@ -328,6 +328,21 @@ namespace libsecondlife.StructuredData
 
                     ret = LLSD.FromBinary(new byte[0]);
                     break;
+                case "uri":
+                    if (reader.IsEmptyElement)
+                    {
+                        reader.Read();
+                        return LLSD.FromUri(new Uri(String.Empty, UriKind.RelativeOrAbsolute));
+                    }
+
+                    if (reader.Read())
+                    {
+                        ret = LLSD.FromUri(new Uri(reader.ReadString(), UriKind.RelativeOrAbsolute));
+                        break;
+                    }
+
+                    ret = LLSD.FromUri(new Uri(String.Empty, UriKind.RelativeOrAbsolute));
+                    break;
                 case "map":
                     return ParseXmlMap(reader);
                 case "array":
