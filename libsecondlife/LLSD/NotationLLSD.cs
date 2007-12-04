@@ -6,13 +6,13 @@ namespace libsecondlife.StructuredData
 {
     public static partial class LLSDParser
     {
-        public static object DeserializeNotation(string notationData)
+        public static LLSD DeserializeNotation(string notationData)
         {
             int unused;
             return ParseNotationElement(notationData, out unused);
         }
 
-        private static object ParseNotationElement(string notationData, out int endPos)
+        private static LLSD ParseNotationElement(string notationData, out int endPos)
         {
             if (notationData.Length == 0)
             {
@@ -25,60 +25,60 @@ namespace libsecondlife.StructuredData
             {
                 case '!':
                     endPos = 1;
-                    return null;
+                    return new LLSD();
                 case '1':
                     endPos = 1;
-                    return true;
+                    return LLSD.FromBoolean(true);
                 case '0':
                     endPos = 1;
-                    return false;
+                    return LLSD.FromBoolean(false);
                 case 'i':
                 {
                     if (notationData.Length < 2)
                     {
                         endPos = notationData.Length;
-                        return 0;
+                        return LLSD.FromInteger(0);
                     }
 
                     int value;
                     endPos = FindEnd(notationData, 1);
 
                     if (Helpers.TryParse(notationData.Substring(1, endPos - 1), out value))
-                        return value;
+                        return LLSD.FromInteger(value);
                     else
-                        return 0;
+                        return LLSD.FromInteger(0);
                 }
                 case 'r':
                 {
                     if (notationData.Length < 2)
                     {
                         endPos = notationData.Length;
-                        return 0d;
+                        return LLSD.FromReal(0d);
                     }
 
                     double value;
                     endPos = FindEnd(notationData, 1);
 
                     if (Helpers.TryParse(notationData.Substring(1, endPos - 1), out value))
-                        return value;
+                        return LLSD.FromReal(value);
                     else
-                        return 0d;
+                        return LLSD.FromReal(0d);
                 }
                 case 'u':
                 {
                     if (notationData.Length < 17)
                     {
                         endPos = notationData.Length;
-                        return LLUUID.Zero;
+                        return LLSD.FromUUID(LLUUID.Zero);
                     }
 
                     LLUUID value;
                     endPos = FindEnd(notationData, 1);
 
                     if (Helpers.TryParse(notationData.Substring(1, endPos - 1), out value))
-                        return value;
+                        return LLSD.FromUUID(value);
                     else
-                        return LLUUID.Zero;
+                        return LLSD.FromUUID(LLUUID.Zero);
                 }
                 case 'b':
                     throw new NotImplementedException("Notation binary type is unimplemented");
@@ -88,11 +88,11 @@ namespace libsecondlife.StructuredData
                     if (notationData.Length < 2)
                     {
                         endPos = notationData.Length;
-                        return String.Empty;
+                        return LLSD.FromString(String.Empty);
                     }
 
                     endPos = FindEnd(notationData, 1);
-                    return notationData.Substring(1, endPos - 1).Trim(new char[] { '"', '\'' });
+                    return LLSD.FromString(notationData.Substring(1, endPos - 1).Trim(new char[] { '"', '\'' }));
                 case 'l':
                     throw new NotImplementedException("Notation URI type is unimplemented");
                 case 'd':
@@ -103,7 +103,7 @@ namespace libsecondlife.StructuredData
                         throw new LLSDException("Invalid notation array");
 
                     int pos = 0;
-                    List<object> array = new List<object>();
+                    LLSDArray array = new LLSDArray();
 
                     while (notationData[pos] != ']')
                     {
@@ -129,7 +129,7 @@ namespace libsecondlife.StructuredData
                         throw new LLSDException("Invalid notation map");
 
                     int pos = 0;
-                    Dictionary<string, object> hashtable = new Dictionary<string, object>();
+                    LLSDMap hashtable = new LLSDMap();
 
                     while (notationData[pos] != '}')
                     {

@@ -152,26 +152,26 @@ namespace libsecondlife
                 StartLocation = reply.start_location;
                 AgentAccess = reply.agent_access;
 
-                List<object> look_at = (List<object>)LLSDParser.DeserializeNotation(reply.look_at);
+                LLSDArray look_at = (LLSDArray)LLSDParser.DeserializeNotation(reply.look_at);
                 LookAt = new LLVector3(
-                    (float)(double)look_at[0],
-                    (float)(double)look_at[1],
-                    (float)(double)look_at[2]);
+                    (float)look_at[0].AsReal(),
+                    (float)look_at[1].AsReal(),
+                    (float)look_at[2].AsReal());
 
                 if (reply.home != null)
                 {
-                    Dictionary<string, object> home = (Dictionary<string, object>)LLSDParser.DeserializeNotation(reply.home);
-                    List<object> array = (List<object>)home["position"];
+                    LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply.home);
+                    LLSDArray array = (LLSDArray)home["position"];
                     HomePosition = new LLVector3(
-                        (float)(double)array[0],
-                        (float)(double)array[1],
-                        (float)(double)array[2]);
+                        (float)array[0].AsReal(),
+                        (float)array[1].AsReal(),
+                        (float)array[2].AsReal());
 
-                    array = (List<object>)home["look_at"];
+                    array = (LLSDArray)home["look_at"];
                     HomeLookAt = new LLVector3(
-                        (float)(double)array[0],
-                        (float)(double)array[1],
-                        (float)(double)array[2]);
+                        (float)array[0].AsReal(),
+                        (float)array[1].AsReal(),
+                        (float)array[2].AsReal());
                 }
 
                 CircuitCode = (uint)reply.circuit_code;

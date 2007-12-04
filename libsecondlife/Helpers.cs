@@ -365,15 +365,13 @@ namespace libsecondlife
         {
             string s = string.Format("{0:.00}", val);
 
-            // FIXME: Confirm that the .Remove() statements here work correctly
-
             // Trim trailing zeroes
             while (s[s.Length - 1] == '0')
-                s = s.Remove(0, s.Length - 1);
+                s = s.Remove(s.Length - 1, 1);
 
             // Remove superfluous decimal places after the trim
             if (s[s.Length - 1] == '.')
-                s = s.Remove(0, s.Length - 1);
+                s = s.Remove(s.Length - 1, 1);
             // Remove leading zeroes after a negative sign
             else if (s[0] == '-' && s[1] == '0')
                 s = s.Remove(1, 1);

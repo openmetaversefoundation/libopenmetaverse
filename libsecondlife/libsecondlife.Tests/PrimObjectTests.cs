@@ -155,28 +155,28 @@ namespace libsecondlife.Tests
             }
         }
 
-        [Test]
-        public void TextureEntryRotations()
-        {
-            ;
-        }
+        //[Test]
+        //public void TextureEntryRotations()
+        //{
+        //    ;
+        //}
 
         [Test]
         public void TextureEntry()
         {
             LLObject.TextureEntry te = new LLObject.TextureEntry(LLUUID.Random());
             LLObject.TextureEntryFace face = te.CreateFace(0);
-            face.Bump = LLObject.Bumpiness.Concrete;
+            face.Bump = Bumpiness.Concrete;
             face.Fullbright = true;
             face.MediaFlags = true;
             face.OffsetU = 0.5f;
             face.OffsetV = -0.5f;
             face.RepeatU = 3.0f;
             face.RepeatV = 4.0f;
-            face.RGBA = 1234;
+            face.RGBA = new LLColor(0f, 0.25f, 0.75f, 1f);
             face.Rotation = 1.5f;
-            face.Shiny = LLObject.Shininess.Medium;
-            face.TexMapType = LLObject.Mapping.Planar;
+            face.Shiny = Shininess.Medium;
+            face.TexMapType = MappingType.Planar;
             face.TextureID = LLUUID.Random();
 
             byte[] teBytes = te.ToBytes();

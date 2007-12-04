@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using libsecondlife;
 using libsecondlife.Packets;
+using libsecondlife.StructuredData;
 using NUnit.Framework;
 
 namespace libsecondlife.Tests
@@ -175,36 +176,36 @@ namespace libsecondlife.Tests
             string testTwo = "[[r1,r1,r1],r0]";
             string testThree = "{'region_handle':[r255232, r256512], 'position':[r33.6, r33.71, r43.13], 'look_at':[r34.6, r33.71, r43.13]}";
 
-            object obj = LLSD.ParseTerseLLSD(testOne);
-            Assert.IsInstanceOfType(typeof(ArrayList), obj, "Expected ArrayList, got " + obj.GetType().ToString());
-            ArrayList array = (ArrayList)obj;
+            LLSD obj = LLSDParser.DeserializeNotation(testOne);
+            Assert.IsInstanceOfType(typeof(LLSDArray), obj, "Expected LLSDArray, got " + obj.GetType().ToString());
+            LLSDArray array = (LLSDArray)obj;
             Assert.IsTrue(array.Count == 3, "Expected three contained objects, got " + array.Count);
-            Assert.IsTrue((double)array[0] > 0.9d && (double)array[0] < 1.0d, "Unexpected value for first real " + (double)array[0]);
-            Assert.IsTrue((double)array[1] < 0.0d && (double)array[1] > -0.03d, "Unexpected value for second real " + (double)array[1]);
-            Assert.IsTrue((double)array[2] == 0.0d, "Unexpected value for third real " + (double)array[2]);
+            Assert.IsTrue(array[0].AsReal() > 0.9d && array[0].AsReal() < 1.0d, "Unexpected value for first real " + array[0].AsReal());
+            Assert.IsTrue(array[1].AsReal() < 0.0d && array[1].AsReal() > -0.03d, "Unexpected value for second real " + array[1].AsReal());
+            Assert.IsTrue(array[2].AsReal() == 0.0d, "Unexpected value for third real " + array[2].AsReal());
 
-            obj = LLSD.ParseTerseLLSD(testTwo);
-            Assert.IsInstanceOfType(typeof(ArrayList), obj, "Expected ArrayList, got " + obj.GetType().ToString());
-            array = (ArrayList)obj;
+            obj = LLSDParser.DeserializeNotation(testTwo);
+            Assert.IsInstanceOfType(typeof(LLSDArray), obj, "Expected LLSDArray, got " + obj.GetType().ToString());
+            array = (LLSDArray)obj;
             Assert.IsTrue(array.Count == 2, "Expected two contained objects, got " + array.Count);
-            Assert.IsTrue((double)array[1] == 0.0d, "Unexpected value for real " + (double)array[1]);
+            Assert.IsTrue(array[1].AsReal() == 0.0d, "Unexpected value for real " + array[1].AsReal());
             obj = array[0];
-            Assert.IsInstanceOfType(typeof(ArrayList), obj, "Expected ArrayList, got " + obj.GetType().ToString());
-            array = (ArrayList)obj;
-            Assert.IsTrue((double)array[0] == 1.0d && (double)array[1] == 1.0d && (double)array[2] == 1.0d,
-                "Unexpected value(s) for nested array: " + (double)array[0] + ", " + (double)array[1] + ", " + 
-                (double)array[2]);
+            Assert.IsInstanceOfType(typeof(LLSDArray), obj, "Expected ArrayList, got " + obj.GetType().ToString());
+            array = (LLSDArray)obj;
+            Assert.IsTrue(array[0].AsReal() == 1.0d && array[1].AsReal() == 1.0d && array[2].AsReal() == 1.0d,
+                "Unexpected value(s) for nested array: " + array[0].AsReal() + ", " + array[1].AsReal() + ", " +
+                array[2].AsReal());
 
-            obj = LLSD.ParseTerseLLSD(testThree);
-            Assert.IsInstanceOfType(typeof(Hashtable), obj, "Expected Hashtable, got " + obj.GetType().ToString());
-            Hashtable hashtable = (Hashtable)obj;
+            obj = LLSDParser.DeserializeNotation(testThree);
+            Assert.IsInstanceOfType(typeof(LLSDMap), obj, "Expected LLSDMap, got " + obj.GetType().ToString());
+            LLSDMap hashtable = (LLSDMap)obj;
             Assert.IsTrue(hashtable.Count == 3, "Expected three contained objects, got " + hashtable.Count);
-            Assert.IsInstanceOfType(typeof(ArrayList), hashtable["region_handle"]);
-            Assert.IsTrue(((ArrayList)hashtable["region_handle"]).Count == 2);
-            Assert.IsInstanceOfType(typeof(ArrayList), hashtable["position"]);
-            Assert.IsTrue(((ArrayList)hashtable["position"]).Count == 3);
-            Assert.IsInstanceOfType(typeof(ArrayList), hashtable["look_at"]);
-            Assert.IsTrue(((ArrayList)hashtable["look_at"]).Count == 3);
+            Assert.IsInstanceOfType(typeof(LLSDArray), hashtable["region_handle"]);
+            Assert.IsTrue(((LLSDArray)hashtable["region_handle"]).Count == 2);
+            Assert.IsInstanceOfType(typeof(LLSDArray), hashtable["position"]);
+            Assert.IsTrue(((LLSDArray)hashtable["position"]).Count == 3);
+            Assert.IsInstanceOfType(typeof(LLSDArray), hashtable["look_at"]);
+            Assert.IsTrue(((LLSDArray)hashtable["look_at"]).Count == 3);
         }
     }
 }
