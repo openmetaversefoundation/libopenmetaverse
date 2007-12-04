@@ -1181,32 +1181,6 @@ namespace libsecondlife
             return (AttachmentPoint)fixedState;
         }
 
-        /// <summary>
-        /// checks simulator parcel map to make sure its downloaded all data successfully
-        /// </summary>
-        /// <param name="sim"></param>
-        /// <returns></returns>
-        public static bool IsMapFull(Simulator sim)
-        {
-            int i = 0;
-            int j = 0;
-            
-            while (i < sim.ParcelMap.GetLength(0))
-            {
-                while (j < sim.ParcelMap.GetLength(1))
-                {
-                    if (sim.ParcelMap[i, j] == 0)
-                    {
-                        return false;
-                    }
-                    j++;
-                }
-                i++;
-            }
-            return true;
-        }
-
-
         #region Platform Helper Functions
 
         public static bool TryParse(string s, out DateTime result)

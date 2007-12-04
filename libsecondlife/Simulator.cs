@@ -302,7 +302,33 @@ namespace libsecondlife
                 _ParcelMap = value; 
             }
         }
-        
+
+        /// <summary>
+        /// Checks simulator parcel map to make sure its downloaded all data successfully
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <returns></returns>
+        public bool IsParcelMapFull()
+        {
+            int i = 0;
+            int j = 0;
+
+            while (i < this.ParcelMap.GetLength(0))
+            {
+                while (j < this.ParcelMap.GetLength(1))
+                {
+                    if (this.ParcelMap[i, j] == 0)
+                        return false;
+
+                    j++;
+                }
+
+                i++;
+            }
+
+            return true;
+        }
+
         #endregion Public Members
 
         #region Properties

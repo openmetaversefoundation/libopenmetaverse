@@ -581,20 +581,20 @@ namespace libsecondlife
         public delegate void ParcelAccessListReplyCallback(Simulator simulator, int sequenceID, int localID, uint flags, List<ParcelAccessEntry> accessEntries);
 
         /// <summary>
-        /// Responses to a request for prim owners on a parcel.
+        /// Responses to a request for prim owners on a parcel
         /// </summary>
         /// <param name="simulator">simulator parcel is in</param>
-        /// <param name="localID">LocalID of parcel.</param>
-        /// <param name="primownersEntries">List containing details or prim ownership.</param>
+        /// <param name="localID">LocalID of parcel</param>
+        /// <param name="primownersEntries">List containing details or prim ownership</param>
         public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator,  List<ParcelPrimOwners> primOwners);
 
         /// <summary>
-        /// Fired when all parcels are downloaded from simulator.
+        /// Fired when all parcels are downloaded from simulator
         /// </summary>
-        /// <param name="simulator">simulator parcel is in</param>
-        /// <param name="simParcels">Dictionary containing parcel details in simulator.</param>
-        /// <param name="parcelMap">64,64 array containing sim position -> localID mapping.</param>
-        public delegate void SimParcelsDownloaded(Simulator simulator, Dictionary<int, Parcel> simParcels, int[,] parcelMap);
+        /// <param name="simulator">Simulator the parcel is in</param>
+        /// <param name="simParcels">Read-only dictionary containing parcel details for the simulator</param>
+        /// <param name="parcelMap">64,64 array containing sim position to localID mapping</param>
+        public delegate void SimParcelsDownloaded(Simulator simulator, SafeDictionary<int, Parcel> simParcels, int[,] parcelMap);
 
         #endregion Delegates
 
@@ -728,30 +728,25 @@ namespace libsecondlife
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
         public void RequestAllSimParcels(Simulator simulator)
         {
-            int y,x;
-            for (y = 0; y < 64; y++)
+            Thread th = new Thread(delegate()
             {
-                for (x = 0; x < 64; x++)
+                int y, x;
+                for (y = 0; y < 64; y++)
                 {
-                    if(simulator.ParcelMap[y,x] == 0)
+                    for (x = 0; x < 64; x++)
                     {
-                        Client.Parcels.PropertiesRequest(simulator,
-                                                         (y + 1) * 4.0f, (x + 1) * 4.0f,
-                                                         y * 4.0f, x * 4.0f, 0, false);
-                        // Pause for 50 ms after every request to avoid flooding the sim
-                        System.Threading.Thread.Sleep(50);
+                        if (simulator.ParcelMap[y, x] == 0)
+                        {
+                            Client.Parcels.PropertiesRequest(simulator,
+                                                             (y + 1) * 4.0f, (x + 1) * 4.0f,
+                                                             y * 4.0f, x * 4.0f, 0, false);
+                            // Pause for 50 ms after every request to avoid flooding the sim
+                            System.Threading.Thread.Sleep(50);
+                        }
                     }
                 }
-            }
-
-            if (OnSimParcelsDownloaded != null && Helpers.IsMapFull(simulator))
-            {
-                try
-                {
-                    OnSimParcelsDownloaded(simulator, simulator.Parcels.Dictionary, simulator.ParcelMap);
-                }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-            }
+            });
+            th.Start();
         }
 
         /// <summary>
@@ -1078,7 +1073,7 @@ namespace libsecondlife
                     }
                 }
 
-                // Fire the callback
+                // Fire the callback for parcel properties being received
                 if (OnParcelProperties != null)
                 {
                     try
@@ -1086,6 +1081,13 @@ namespace libsecondlife
                         OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
                             properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
                     }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+
+                // Check if all of the simulator parcels have been retrieved, if so fire another callback
+                if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
+                {
+                    try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
