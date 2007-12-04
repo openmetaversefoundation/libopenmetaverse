@@ -1557,8 +1557,7 @@ namespace libsecondlife
 
                         SetAvatarSittingOn(simulator, avatar, block.ParentID, oldSeatID);
 
-                        // Set this avatar online and in a region
-                        avatar.Online = true;
+                        // Set the current simulator for this avatar
                         avatar.CurrentSim = simulator;
 
                         // Textures

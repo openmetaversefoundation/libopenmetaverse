@@ -267,6 +267,8 @@ namespace libsecondlife
             /// <summary></summary>
             public LLColor Color;
             /// <summary></summary>
+            public float Intensity;
+            /// <summary></summary>
             public float Radius;
             /// <summary></summary>
             public float Cutoff;
@@ -280,19 +282,24 @@ namespace libsecondlife
             /// <param name="pos"></param>
             public LightData(byte[] data, int pos)
             {
-                if (data.Length >= 16)
+                if (data.Length - pos >= 16)
                 {
-                    Color = new LLColor(data, 0, false);
-                    Radius = Helpers.BytesToFloat(data, 4);
-                    Cutoff = Helpers.BytesToFloat(data, 8);
-                    Falloff = Helpers.BytesToFloat(data, 12);
+                    Color = new LLColor(data, pos, false);
+                    Radius = Helpers.BytesToFloat(data, pos + 4);
+                    Cutoff = Helpers.BytesToFloat(data, pos + 8);
+                    Falloff = Helpers.BytesToFloat(data, pos + 12);
+
+                    // Alpha in color is actually intensity
+                    Intensity = Color.A;
+                    Color.A = 1f;
                 }
                 else
                 {
                     Color = LLColor.Black;
-                    Radius = 0.0f;
-                    Cutoff = 0.0f;
-                    Falloff = 0.0f;
+                    Radius = 0f;
+                    Cutoff = 0f;
+                    Falloff = 0f;
+                    Intensity = 0f;
                 }
             }
 
@@ -304,12 +311,25 @@ namespace libsecondlife
             {
                 byte[] data = new byte[16];
 
-                Color.GetBytes().CopyTo(data, 0);
+                // Alpha channel in color is intensity
+                LLColor tmpColor = Color;
+                tmpColor.A = Intensity;
+                tmpColor.GetBytes().CopyTo(data, 0);
                 Helpers.FloatToBytes(Radius).CopyTo(data, 4);
                 Helpers.FloatToBytes(Cutoff).CopyTo(data, 8);
                 Helpers.FloatToBytes(Falloff).CopyTo(data, 12);
 
                 return data;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return String.Format("Color: {0} Intensity: {1} Radius: {2} Cutoff: {3} Falloff: {4}",
+                    Color, Intensity, Radius, Cutoff, Falloff);
             }
         }
 

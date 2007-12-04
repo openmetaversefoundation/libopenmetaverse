@@ -228,8 +228,6 @@ namespace libsecondlife
 
         /// <summary>Groups that this avatar is a member of</summary>
         public List<LLUUID> Groups = new List<LLUUID>();
-        /// <summary>Online status</summary>
-        public bool Online = false;
         /// <summary>Positive and negative ratings</summary>
         public Statistics ProfileStatistics = new Statistics();
         /// <summary>Avatar properties including about text, profile URL, image IDs and 
