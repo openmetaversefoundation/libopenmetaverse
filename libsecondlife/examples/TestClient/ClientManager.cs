@@ -13,6 +13,7 @@ namespace libsecondlife.TestClient
         public string FirstName;
         public string LastName;
         public string Password;
+        public string WebLoginKey;
         public string StartLocation;
         public string MasterName;
         public LLUUID MasterKey;
@@ -100,6 +101,7 @@ namespace libsecondlife.TestClient
 
             NetworkManager.LoginParams loginParams = client.Network.DefaultLoginParams(
                     account.FirstName, account.LastName, account.Password, "TestClient", contactPerson);
+            loginParams.WebLoginKey = account.WebLoginKey;
 
             if (!String.IsNullOrEmpty(account.StartLocation))
                 loginParams.Start = account.StartLocation;
