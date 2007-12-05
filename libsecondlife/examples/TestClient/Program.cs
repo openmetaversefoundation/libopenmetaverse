@@ -109,22 +109,13 @@ namespace libsecondlife.TestClient
                 else if (arguments["first"] != null && arguments["last"] != null && arguments["pass"] != null)
                 {
                     // Taking a single login off the command-line
-                    account = new LoginDetails();
-                    account.FirstName = arguments["first"];
-                    account.LastName = arguments["last"];
-                    account.Password = arguments["pass"];
-
-                    accounts.Add(account);
-                }
-                else if (arguments["first"] != null && arguments["last"] != null && arguments["loginkey"] != null)
-                {
-                    // Taking a single login off the command-line
-                    account = new LoginDetails();
-                    account.FirstName = arguments["first"];
-                    account.LastName = arguments["last"];
-                    account.WebLoginKey = arguments["loginkey"];
-
-                    accounts.Add(account);
+                      account = new LoginDetails();
+                      account.FirstName = arguments["first"];
+                      account.LastName = arguments["last"];
+                      account.Password = arguments["pass"];
+  
+                      accounts.Add(account);
+              
                 }
                 else
                 {

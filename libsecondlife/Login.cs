@@ -101,8 +101,6 @@ namespace libsecondlife
             /// <summary></summary>
             public string Password;
             /// <summary></summary>
-            public string WebLoginKey;
-            /// <summary></summary>
             public string Start;
             /// <summary></summary>
             public string Channel;
@@ -469,7 +467,6 @@ namespace libsecondlife
             loginParams.first = CurrentContext.Params.FirstName;
             loginParams.last = CurrentContext.Params.LastName;
             loginParams.passwd = CurrentContext.Params.Password;
-            loginParams.web_login_key = CurrentContext.Params.WebLoginKey;
             loginParams.start = CurrentContext.Params.Start;
             loginParams.channel = CurrentContext.Params.Channel;
             loginParams.version = CurrentContext.Params.Version;
@@ -793,7 +790,6 @@ namespace libsecondlife
             public string first;
             public string last;
             public string passwd;
-            public string web_login_key;
             public string start;
             public string channel;
             public string version;
