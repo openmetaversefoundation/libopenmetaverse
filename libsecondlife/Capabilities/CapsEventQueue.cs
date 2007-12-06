@@ -32,14 +32,42 @@ using System.IO;
 using System.Threading;
 using libsecondlife.StructuredData;
 
-namespace libsecondlife
+namespace libsecondlife.Capabilities
 {
-    public class CapsEventQueue : HttpBase
+    public class HttpRequestState
     {
+        const int BUFFER_SIZE = 1024;
+        public byte[] RequestData;
+        public byte[] ResponseData;
+        public byte[] BufferRead;
+        public HttpWebRequest WebRequest;
+        public HttpWebResponse WebResponse;
+        public Stream ResponseStream;
+        public object State;
+
+        internal int ResponseDataPos = 0;
+
+        public HttpRequestState(HttpWebRequest webRequest)
+        {
+            WebRequest = webRequest;
+            BufferRead = new byte[BUFFER_SIZE];
+        }
+    }
+
+    public class CapsEventQueue
+    {
+        public const int HTTP_TIMEOUT = 1 * 30 * 1000;
+        public const int BUFFER_SIZE = 1024;
+
         public Simulator Simulator;
 
         protected bool _Running = false;
         protected bool _Dead = false;
+
+        protected HttpRequestState _RequestState;
+        protected string _RequestURL;
+        protected string _ProxyURL;
+        protected bool _Aborted = false;
 
         public bool Running { get { return _Running; } }
 
@@ -49,17 +77,13 @@ namespace libsecondlife
         }
 
         public CapsEventQueue(Simulator simulator, string eventQueueURI, string proxy)
-            : base(eventQueueURI, proxy)
         {
             Simulator = simulator;
+            _RequestURL = eventQueueURI;
+            _ProxyURL = proxy;
         }
 
-        protected override void RequestSent(HttpRequestState request)
-        {
-            ;
-        }
-
-        public new void MakeRequest()
+        public void MakeRequest()
         {
             // Create an EventQueueGet request
             LLSDMap request = new LLSDMap();
@@ -68,39 +92,10 @@ namespace libsecondlife
 
             byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
-            // Create a new HttpWebRequest
-            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
-            _RequestState = new HttpRequestState(httpRequest);
-
-            if (_ProxyURL != String.Empty)
-            {
-                // Create a proxy object
-                WebProxy proxy = new WebProxy();
-
-                // Associate a new Uri object to the _wProxy object, using the proxy address
-                // selected by the user
-                proxy.Address = new Uri(_ProxyURL);
-
-                // Finally, initialize the Web request object proxy property with the _wProxy
-                // object
-                httpRequest.Proxy = proxy;
-            }
-
-            // Always disable keep-alive for our purposes
-            httpRequest.KeepAlive = false;
-
-            // POST request
-            _RequestState.WebRequest.Method = "POST";
-            _RequestState.WebRequest.ContentLength = postData.Length;
-            _RequestState.WebRequest.Headers.Add("X-SecondLife-UDP-Listen-Port", Simulator.udpPort.ToString());
-            _RequestState.WebRequest.ContentType = "application/xml";
-            _RequestState.RequestData = postData;
-
-            IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
-                new AsyncCallback(EventRequestStreamCallback), _RequestState);
+            SendRequest(postData, "application/xml", null);
         }
 
-        public new void MakeRequest(byte[] postData, string contentType, int udpListeningPort, object state)
+        private void SendRequest(byte[] postData, string contentType, object state)
         {
             // Create a new HttpWebRequest
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
@@ -130,7 +125,6 @@ namespace libsecondlife
                     // POST request
                     _RequestState.WebRequest.Method = "POST";
                     _RequestState.WebRequest.ContentLength = postData.Length;
-                    _RequestState.WebRequest.Headers.Add("X-SecondLife-UDP-Listen-Port", Simulator.udpPort.ToString());
                     _RequestState.WebRequest.ContentType = "application/xml";
                     _RequestState.RequestData = postData;
 
@@ -153,12 +147,142 @@ namespace libsecondlife
             }
         }
 
-        public new void Abort()
+        public void Abort()
         {
-            Disconnect(true);
+            Stop(true);
         }
 
-        public void Disconnect(bool immediate)
+        protected void TimeoutCallback(object state, bool timedOut)
+        {
+            if (timedOut) Abort(true, null);
+        }
+
+        protected void Abort(bool fromTimeout, WebException exception)
+        {
+            if (fromTimeout)
+            {
+                Log("HttpBase.Abort(): HTTP request timed out", Helpers.LogLevel.Debug);
+            }
+            else
+            {
+                if (exception == null)
+                {
+                    _Aborted = true;
+                    //Log("HttpBase.Abort(): HTTP request aborted", Helpers.LogLevel.Debug);
+                }
+                else
+                {
+                    string message = exception.Message.ToLower();
+
+                    if (Helpers.StringContains(message, "502"))
+                    {
+                        // Don't log anything since 502 errors are so common
+                    }
+                    else if (Helpers.StringContains(message, "404") || Helpers.StringContains(message, "410"))
+                    {
+                        _Aborted = true;
+                        Log("HttpBase.Abort(): HTTP request target is missing", Helpers.LogLevel.Debug);
+                    }
+                    else if (Helpers.StringContains(message, "aborted"))
+                    {
+                        // A callback threw an exception because the request is aborting, return to
+                        // avoid circular problems
+                        return;
+                    }
+                    else
+                    {
+                        Log(String.Format("HttpBase.Abort(): {0} (Status: {1})", exception.Message, exception.Status),
+                            Helpers.LogLevel.Warning);
+                    }
+                }
+            }
+
+            // Abort the callback if it hasn't been already
+            _RequestState.WebRequest.Abort();
+
+            // Fire the callback for the request completing
+            try { RequestReply(_RequestState, false, exception); }
+            catch (Exception e) { Log(e.ToString(), Helpers.LogLevel.Error); }
+        }
+
+        protected virtual void Log(string message, Helpers.LogLevel level)
+        {
+            if (level == Helpers.LogLevel.Debug)
+                SecondLife.DebugLogStatic(message);
+            else
+                SecondLife.LogStatic(message, level);
+        }
+
+        protected void RequestStreamCallback(IAsyncResult result)
+        {
+            try
+            {
+                _RequestState = (HttpRequestState)result.AsyncState;
+                Stream reqStream = _RequestState.WebRequest.EndGetRequestStream(result);
+
+                reqStream.Write(_RequestState.RequestData, 0, _RequestState.RequestData.Length);
+                reqStream.Close();
+
+                IAsyncResult newResult = _RequestState.WebRequest.BeginGetResponse(new AsyncCallback(ResponseCallback), _RequestState);
+
+                // If there is a timeout, the callback fires and the request becomes aborted
+#if PocketPC
+                Thread thread = new Thread(
+                    delegate()
+                    {
+                        if (!newResult.AsyncWaitHandle.WaitOne(HTTP_TIMEOUT, false))
+                            TimeoutCallback(_RequestState, true);
+                    }
+                );
+                thread.Start();
+#else
+                ThreadPool.RegisterWaitForSingleObject(newResult.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                    _RequestState, HTTP_TIMEOUT, true);
+#endif
+            }
+            catch (WebException e)
+            {
+                Abort(false, e);
+            }
+        }
+
+        private void ResponseCallback(IAsyncResult result)
+        {
+            try
+            {
+                _RequestState = (HttpRequestState)result.AsyncState;
+                _RequestState.WebResponse = (HttpWebResponse)_RequestState.WebRequest.EndGetResponse(result);
+
+                // Read the response into a Stream object
+                Stream responseStream = _RequestState.WebResponse.GetResponseStream();
+                _RequestState.ResponseStream = responseStream;
+
+                // Begin reading of the contents of the response
+                IAsyncResult asynchronousInputRead = responseStream.BeginRead(_RequestState.BufferRead, 0, BUFFER_SIZE,
+                    new AsyncCallback(ReadCallback), _RequestState);
+
+                // If there is a timeout, the callback fires and the request becomes aborted
+#if PocketPC
+                Thread thread = new Thread(
+                    delegate()
+                    {
+                        if (!asynchronousInputRead.AsyncWaitHandle.WaitOne(HTTP_TIMEOUT, false))
+                            TimeoutCallback(_RequestState, true);
+                    }
+                );
+                thread.Start();
+#else
+                ThreadPool.RegisterWaitForSingleObject(asynchronousInputRead.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                    _RequestState, HTTP_TIMEOUT, true);
+#endif
+            }
+            catch (WebException e)
+            {
+                Abort(false, e);
+            }
+        }
+
+        public void Stop(bool immediate)
         {
             Simulator.Client.Log(String.Format("Event queue for {0} is {1}", Simulator, 
                 (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info);
@@ -232,7 +356,48 @@ namespace libsecondlife
             }
         }
 
-        protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
+        protected void ReadCallback(IAsyncResult result)
+        {
+            try
+            {
+                _RequestState = (HttpRequestState)result.AsyncState;
+                Stream responseStream = _RequestState.ResponseStream;
+                int read = responseStream.EndRead(result);
+
+                // Check if we have read the entire response
+                if (read > 0)
+                {
+                    // Create the byte array if it hasn't been created yet
+                    if (_RequestState.ResponseData == null || _RequestState.ResponseData.Length != _RequestState.WebResponse.ContentLength)
+                        _RequestState.ResponseData = new byte[_RequestState.WebResponse.ContentLength];
+
+                    // Copy the current buffer data in to the response variable
+                    Buffer.BlockCopy(_RequestState.BufferRead, 0, _RequestState.ResponseData, _RequestState.ResponseDataPos, read);
+                    // Increment our writing position in the response variable
+                    _RequestState.ResponseDataPos += read;
+
+                    // Continue reading the response until EndRead() returns 0
+                    IAsyncResult asynchronousResult = responseStream.BeginRead(_RequestState.BufferRead, 0, BUFFER_SIZE,
+                        new AsyncCallback(ReadCallback), _RequestState);
+
+                    return;
+                }
+                else
+                {
+                    // Fire the callback for receiving a response
+                    try { RequestReply(_RequestState, true, null); }
+                    catch (Exception e) { Log(e.ToString(), Helpers.LogLevel.Error); }
+
+                    responseStream.Close();
+                }
+            }
+            catch (WebException e)
+            {
+                Abort(false, e);
+            }
+        }
+
+        protected void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
             LLSDArray events = null;
             int ack = 0;
@@ -289,7 +454,7 @@ namespace libsecondlife
 
                 byte[] postData = LLSDParser.SerializeXmlBytes(request);
 
-                MakeRequest(postData, "application/xml", 0, null);
+                SendRequest(postData, "application/xml", null);
 
                 // If the event queue is dead at this point, turn it off since
                 // that was the last thing we want to do
@@ -312,13 +477,10 @@ namespace libsecondlife
                     string msg = evt["message"].AsString();
                     LLSDMap body = (LLSDMap)evt["body"];
 
-                    //Simulator.Client.DebugLog(
-                    //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Helpers.NewLine, LLSD.LLSDDump(body, 0)));
-
                     if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
-                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, body, this);
+                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, body, Simulator);
                     else
-                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, body, this);
+                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, body, Simulator);
                 }
             }
 

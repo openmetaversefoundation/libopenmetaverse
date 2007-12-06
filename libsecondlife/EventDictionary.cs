@@ -159,20 +159,20 @@ namespace libsecondlife
         private struct CapsCallbackWrapper
         {
             /// <summary>Callback to fire for this packet</summary>
-            public Capabilities.EventQueueCallback Callback;
+            public Caps.EventQueueCallback Callback;
             /// <summary>Name of the CAPS event</summary>
             public string CapsEvent;
             /// <summary>Decoded body of the CAPS event</summary>
             public StructuredData.LLSD Body;
-            /// <summary>Reference to the event queue that generated this event</summary>
-            public CapsEventQueue EventQueue;
+            /// <summary>Reference to the simulator that generated this event</summary>
+            public Simulator Simulator;
         }
 
         /// <summary>Reference to the SecondLife client</summary>
         public SecondLife Client;
 
-        private Dictionary<string, Capabilities.EventQueueCallback> _EventTable = 
-            new Dictionary<string, Capabilities.EventQueueCallback>();
+        private Dictionary<string, Caps.EventQueueCallback> _EventTable =
+            new Dictionary<string, Caps.EventQueueCallback>();
         private WaitCallback _ThreadPoolCallback;
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace libsecondlife
         /// <param name="capsEvent">Capability event name to register the 
         /// handler for</param>
         /// <param name="eventHandler">Callback to fire</param>
-        public void RegisterEvent(string capsEvent, Capabilities.EventQueueCallback eventHandler)
+        public void RegisterEvent(string capsEvent, Caps.EventQueueCallback eventHandler)
         {
             lock (_EventTable)
             {
@@ -209,7 +209,7 @@ namespace libsecondlife
         /// <param name="capsEvent">Capability event name unregister the 
         /// handler for</param>
         /// <param name="eventHandler">Callback to unregister</param>
-        public void UnregisterEvent(string capsEvent, Capabilities.EventQueueCallback eventHandler)
+        public void UnregisterEvent(string capsEvent, Caps.EventQueueCallback eventHandler)
         {
             lock (_EventTable)
             {
@@ -223,19 +223,19 @@ namespace libsecondlife
         /// </summary>
         /// <param name="capsEvent">Capability name</param>
         /// <param name="body">Decoded event body</param>
-        /// <param name="eventQueue">Reference to the event queue that 
+        /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
-        internal void RaiseEvent(string capsEvent, StructuredData.LLSD body, CapsEventQueue eventQueue)
+        internal void RaiseEvent(string capsEvent, StructuredData.LLSD body, Simulator simulator)
         {
             bool specialHandler = false;
-            Capabilities.EventQueueCallback callback;
+            Caps.EventQueueCallback callback;
 
             // Default handler first, if one exists
             if (_EventTable.TryGetValue(capsEvent, out callback))
             {
                 if (callback != null)
                 {
-                    try { callback(capsEvent, body, eventQueue); }
+                    try { callback(capsEvent, body, simulator); }
                     catch (Exception ex) { Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
                 }
             }
@@ -248,7 +248,7 @@ namespace libsecondlife
                 if (packet != null)
                 {
                     NetworkManager.IncomingPacket incomingPacket;
-                    incomingPacket.Simulator = eventQueue.Simulator;
+                    incomingPacket.Simulator = simulator;
                     incomingPacket.Packet = packet;
 
                     Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
@@ -261,7 +261,7 @@ namespace libsecondlife
             // Explicit handler next
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
             {
-                try { callback(capsEvent, body, eventQueue); }
+                try { callback(capsEvent, body, simulator); }
                 catch (Exception ex) { Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
 
                 specialHandler = true;
@@ -276,12 +276,12 @@ namespace libsecondlife
         /// </summary>
         /// <param name="capsEvent">Capability name</param>
         /// <param name="body">Decoded event body</param>
-        /// <param name="eventQueue">Reference to the event queue that 
+        /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
-        internal void BeginRaiseEvent(string capsEvent, StructuredData.LLSD body, CapsEventQueue eventQueue)
+        internal void BeginRaiseEvent(string capsEvent, StructuredData.LLSD body, Simulator simulator)
         {
             bool specialHandler = false;
-            Capabilities.EventQueueCallback callback;
+            Caps.EventQueueCallback callback;
 
             // Default handler first, if one exists
             if (_EventTable.TryGetValue(String.Empty, out callback))
@@ -292,7 +292,7 @@ namespace libsecondlife
                     wrapper.Callback = callback;
                     wrapper.CapsEvent = capsEvent;
                     wrapper.Body = body;
-                    wrapper.EventQueue = eventQueue;
+                    wrapper.Simulator = simulator;
                     ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
                 }
             }
@@ -305,7 +305,7 @@ namespace libsecondlife
                 if (packet != null)
                 {
                     NetworkManager.IncomingPacket incomingPacket;
-                    incomingPacket.Simulator = eventQueue.Simulator;
+                    incomingPacket.Simulator = simulator;
                     incomingPacket.Packet = packet;
 
                     Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
@@ -322,7 +322,7 @@ namespace libsecondlife
                 wrapper.Callback = callback;
                 wrapper.CapsEvent = capsEvent;
                 wrapper.Body = body;
-                wrapper.EventQueue = eventQueue;
+                wrapper.Simulator = simulator;
                 ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
 
                 specialHandler = true;
@@ -338,7 +338,7 @@ namespace libsecondlife
 
             try
             {
-                wrapper.Callback(wrapper.CapsEvent, wrapper.Body, wrapper.EventQueue);
+                wrapper.Callback(wrapper.CapsEvent, wrapper.Body, wrapper.Simulator);
             }
             catch (Exception ex)
             {

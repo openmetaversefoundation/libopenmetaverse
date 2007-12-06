@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Text;
 using libsecondlife.StructuredData;
+using libsecondlife.Capabilities;
 
 namespace libsecondlife
 {
@@ -103,31 +104,29 @@ namespace libsecondlife
 
         private void GatherCaps()
         {
-            CapsRequest request = new CapsRequest(RegistrationApiCaps.AbsoluteUri, String.Empty, null);
-            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(GatherCapsResponse);
-
             // build post data
             byte[] postData = Encoding.ASCII.GetBytes(
                 String.Format("first_name={0}&last_name={1}&password={2}", _userInfo.FirstName, _userInfo.LastName, 
                 _userInfo.Password));
 
-            // send
-            request.MakeRequest(postData, "application/xml", 0, null);
+            CapsClient request = new CapsClient(RegistrationApiCaps);
+            request.OnComplete += new CapsClient.CompleteCallback(GatherCapsResponse);
+            request.StartRequest(postData);
         }
 
-        private void GatherCapsResponse(object response, HttpRequestState state)
+        private void GatherCapsResponse(CapsClient client, LLSD response, Exception error)
         {
-            if (response is Dictionary<string, object>)
+            if (response is LLSDMap)
             {
-                Dictionary<string, object> respTable = (Dictionary<string, object>)response;
+                LLSDMap respTable = (LLSDMap)response;
 
                 // parse
                 _caps = new RegistrationCaps();
 
-                _caps.CreateUser = new Uri((string)respTable["create_user"]);
-                _caps.CheckName = new Uri((string)respTable["check_name"]);
-                _caps.GetLastNames = new Uri((string)respTable["get_last_names"]);
-                _caps.GetErrorCodes = new Uri((string)respTable["get_error_codes"]);
+                _caps.CreateUser = respTable["create_user"].AsUri();
+                _caps.CheckName = respTable["check_name"].AsUri();
+                _caps.GetLastNames = respTable["get_last_names"].AsUri();
+                _caps.GetErrorCodes = respTable["get_error_codes"].AsUri();
 
                 // finalize
                 _initializing++;
@@ -141,20 +140,20 @@ namespace libsecondlife
             if (_caps.GetErrorCodes == null)
                 throw new InvalidOperationException("access denied");	// this should work even for not-approved users
 
-            CapsRequest request = new CapsRequest(_caps.GetErrorCodes.AbsoluteUri, String.Empty, null);
-            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(GatherErrorMessagesResponse);
-            request.MakeRequest();
+            CapsClient request = new CapsClient(_caps.GetErrorCodes);
+            request.OnComplete += new CapsClient.CompleteCallback(GatherErrorMessagesResponse);
+            request.StartRequest();
         }
 
-        private void GatherErrorMessagesResponse(object response, HttpRequestState state)
+        private void GatherErrorMessagesResponse(CapsClient client, LLSD response, Exception error)
         {
-            if (response is Dictionary<string, object>)
+            if (response is LLSDMap)
             {
                 // parse
 
                 //FIXME: wtf?
-                foreach (KeyValuePair<string, object> error in (Dictionary<string, object>)response)
-                {
+                //foreach (KeyValuePair<string, object> error in (Dictionary<string, object>)response)
+                //{
                     //StringBuilder sb = new StringBuilder();
 
                     //sb.Append(error[1]);
@@ -164,7 +163,7 @@ namespace libsecondlife
                     //sb.Append(error[2]);
 
                     //_errors.Add((int)error[0], sb.ToString());
-                }
+                //}
 
                 // finalize
                 _initializing++;
@@ -179,32 +178,33 @@ namespace libsecondlife
             if (_caps.GetLastNames == null)
                 throw new InvalidOperationException("access denied: only approved developers have access to the registration api");
 
-            CapsRequest request = new CapsRequest(_caps.GetLastNames.AbsoluteUri, String.Empty, null);
-            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(GatherLastNamesResponse);
-            request.MakeRequest();
+            CapsClient request = new CapsClient(_caps.GetLastNames);
+            request.OnComplete += new CapsClient.CompleteCallback(GatherLastNamesResponse);
+            request.StartRequest();
 
             // FIXME: Block
         }
 
-        private void GatherLastNamesResponse(object response, HttpRequestState state)
+        private void GatherLastNamesResponse(CapsClient client, LLSD response, Exception error)
         {
-            if (response is Dictionary<string, object>)
+            if (response is LLSDMap)
             {
-                Dictionary<string, object> respTable = (Dictionary<string, object>)response;
+                LLSDMap respTable = (LLSDMap)response;
 
-                _lastNames = new List<LastName>(respTable.Count);
+                //FIXME:
+                //_lastNames = new List<LastName>(respTable.Count);
 
-                for (Dictionary<string, object>.Enumerator it = respTable.GetEnumerator(); it.MoveNext(); )
-                {
-                    LastName ln = new LastName();
+                //for (Dictionary<string, object>.Enumerator it = respTable.GetEnumerator(); it.MoveNext(); )
+                //{
+                //    LastName ln = new LastName();
 
-                    ln.ID = int.Parse(it.Current.Key.ToString());
-                    ln.Name = it.Current.Value.ToString();
+                //    ln.ID = int.Parse(it.Current.Key.ToString());
+                //    ln.Name = it.Current.Value.ToString();
 
-                    _lastNames.Add(ln);
-                }
+                //    _lastNames.Add(ln);
+                //}
 
-                _lastNames.Sort(new Comparison<LastName>(delegate(LastName a, LastName b) { return a.Name.CompareTo(b.Name); }));
+                //_lastNames.Sort(new Comparison<LastName>(delegate(LastName a, LastName b) { return a.Name.CompareTo(b.Name); }));
             }
         }
 
@@ -222,17 +222,17 @@ namespace libsecondlife
             query.Add("last_name_id", LLSD.FromInteger(lastName.ID));
             byte[] postData = LLSDParser.SerializeXmlBytes(query);
 
-            CapsRequest request = new CapsRequest(_caps.CheckName.AbsoluteUri, String.Empty, null);
-            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CheckNameResponse);
-            request.MakeRequest(postData, "application/xml", 0, null);
+            CapsClient request = new CapsClient(_caps.CheckName);
+            request.OnComplete += new CapsClient.CompleteCallback(CheckNameResponse);
+            request.StartRequest();
 
             // FIXME:
             return false;
         }
 
-        private void CheckNameResponse(object response, HttpRequestState state)
+        private void CheckNameResponse(CapsClient client, LLSD response, Exception error)
         {
-            if (response is bool)
+            if (response.Type == LLSDType.Boolean)
             {
                 // FIXME:
                 //(bool)response;
@@ -288,17 +288,17 @@ namespace libsecondlife
             byte[] postData = LLSDParser.SerializeXmlBytes(query);
 
             // Make the request
-            CapsRequest request = new CapsRequest(_caps.CreateUser.AbsoluteUri, String.Empty, null);
-            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateUserResponse);
-            request.MakeRequest(postData, "application/xml", 0, null);
+            CapsClient request = new CapsClient(_caps.CreateUser);
+            request.OnComplete += new CapsClient.CompleteCallback(CreateUserResponse);
+            request.StartRequest();
 
             // FIXME: Block
             return LLUUID.Zero;
         }
 
-        private void CreateUserResponse(object response, HttpRequestState state)
+        private void CreateUserResponse(CapsClient client, LLSD response, Exception error)
         {
-            if (response is Dictionary<string, object>)
+            if (response is LLSDMap)
             {
                 // everything is okay
                 // FIXME:
@@ -307,16 +307,16 @@ namespace libsecondlife
             else
             {
                 // an error happened
-                List<object> al = (List<object>)response;
+                LLSDArray al = (LLSDArray)response;
 
                 StringBuilder sb = new StringBuilder();
 
-                foreach (int ec in al)
+                foreach (LLSD ec in al)
                 {
                     if (sb.Length > 0)
                         sb.Append("; ");
 
-                    sb.Append(_errors[ec]);
+                    sb.Append(_errors[ec.AsInteger()]);
                 }
 
                 // FIXME:

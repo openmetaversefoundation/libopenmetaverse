@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using libsecondlife.StructuredData;
+using libsecondlife.Capabilities;
 
 namespace libsecondlife
 {
@@ -37,7 +38,7 @@ namespace libsecondlife
     /// Second Life uses to communicate transactions such as teleporting or
     /// group messaging
     /// </summary>
-    public class Capabilities
+    public class Caps
     {
         /// <summary>
         /// Triggered when an event is received via the EventQueueGet 
@@ -45,28 +46,21 @@ namespace libsecondlife
         /// </summary>
         /// <param name="message">Event name</param>
         /// <param name="body">Decoded event data</param>
-        /// <param name="caps">The CAPS system that made the call</param>
-        public delegate void EventQueueCallback(string message, StructuredData.LLSD body, CapsEventQueue eventQueue);
-        /// <summary>
-        /// Triggered when an HTTP call in the queue is executed and a response
-        /// is received
-        /// </summary>
-        /// <param name="body">Decoded response</param>
-        /// <param name="request">Original capability request</param>
-        public delegate void CapsResponseCallback(StructuredData.LLSD body, HttpRequestState request);
+        /// <param name="simulator">The simulator that generated the event</param>
+        public delegate void EventQueueCallback(string message, StructuredData.LLSD body, Simulator simulator);
 
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
 
         internal string _SeedCapsURI;
-        internal Dictionary<string, string> _Caps = new Dictionary<string, string>();
+        internal Dictionary<string, Uri> _Caps = new Dictionary<string, Uri>();
 
-        private CapsRequest _SeedRequest;
+        private CapsClient _SeedRequest;
+        //private Capabilities2.EventQueueClient _EventQueueCap = null;
         private CapsEventQueue _EventQueueCap = null;
 
         /// <summary>Capabilities URI this system was initialized with</summary>
         public string SeedCapsURI { get { return _SeedCapsURI; } }
-        public ManualResetEvent CapsReceivedEvent = new ManualResetEvent(false);
 
         /// <summary>Whether the capabilities event queue is connected and
         /// listening for incoming events</summary>
@@ -88,7 +82,7 @@ namespace libsecondlife
         /// <param name="client"></param>
         /// <param name="simulator"></param>
         /// <param name="seedcaps"></param>
-        internal Capabilities(Simulator simulator, string seedcaps)
+        internal Caps(Simulator simulator, string seedcaps)
         {
             Simulator = simulator;
             _SeedCapsURI = seedcaps;
@@ -102,14 +96,10 @@ namespace libsecondlife
                 (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info);
 
             if (_SeedRequest != null)
-            {
-                _SeedRequest.Abort();
-            }
+                _SeedRequest.Cancel();
 
             if (_EventQueueCap != null)
-            {
-                _EventQueueCap.Disconnect(immediate);
-            }
+                _EventQueueCap.Stop(immediate);
         }
 
         /// <summary>
@@ -118,14 +108,14 @@ namespace libsecondlife
         /// <param name="capability">Name of the capability to request</param>
         /// <returns>The URI of the requested capability, or String.Empty if
         /// the capability does not exist</returns>
-        public string CapabilityURI(string capability)
+        public Uri CapabilityURI(string capability)
         {
-            string cap;
+            Uri cap;
 
             if (_Caps.TryGetValue(capability, out cap))
                 return cap;
             else
-                return String.Empty;
+                return null;
         }
 
         private void MakeSeedRequest()
@@ -160,16 +150,16 @@ namespace libsecondlife
 
             Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
 
-            _SeedRequest = new CapsRequest(_SeedCapsURI, String.Empty, null);
-            _SeedRequest.OnCapsResponse += new CapsRequest.CapsResponseCallback(seedRequest_OnCapsResponse);
-            _SeedRequest.MakeRequest(postData, "application/xml", 0, null);
+            _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
+            _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
+            _SeedRequest.StartRequest(postData);
         }
 
-        private void seedRequest_OnCapsResponse(LLSD response, HttpRequestState state)
+        private void SeedRequestCompleteHandler(CapsClient client, LLSD result, Exception error)
         {
-            if (response != null && response.Type == LLSDType.Map)
+            if (result != null && result.Type == LLSDType.Map)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                LLSDMap respTable = (LLSDMap)result;
 
                 StringBuilder capsList = new StringBuilder();
 
@@ -178,20 +168,23 @@ namespace libsecondlife
                     capsList.Append(cap);
                     capsList.Append(' ');
 
-                    _Caps[cap] = respTable[cap].AsString();
+                    _Caps[cap] = respTable[cap].AsUri();
                 }
 
                 Simulator.Client.DebugLog("Got capabilities: " + capsList.ToString());
 
-                // Signal that we have connected to the CAPS server and received a list of capability URIs
-                CapsReceivedEvent.Set();
-
                 if (_Caps.ContainsKey("EventQueueGet"))
                 {
-                    _EventQueueCap = new CapsEventQueue(Simulator, _Caps["EventQueueGet"]);
                     Simulator.Client.DebugLog("Starting event queue for " + Simulator.ToString());
 
+                    _EventQueueCap = new CapsEventQueue(Simulator, _Caps["EventQueueGet"].AbsoluteUri);
                     _EventQueueCap.MakeRequest();
+
+                    // FIXME: Get the new event queue client working
+                    //_EventQueueCap = new Capabilities2.EventQueueClient(_Caps["EventQueueGet"]);
+                    //_EventQueueCap.OnConnected += new Capabilities2.EventQueueClient.ConnectedCallback(EventQueueConnectedHandler);
+                    //_EventQueueCap.OnEvent += new Capabilities2.EventQueueClient.EventCallback(EventQueueEventHandler);
+                    //_EventQueueCap.Start();
                 }
             }
             else
@@ -199,6 +192,19 @@ namespace libsecondlife
                 // The initial CAPS connection failed, try again
                 MakeSeedRequest();
             }
+        }
+
+        private void EventQueueConnectedHandler()
+        {
+            Simulator.Client.Network.RaiseConnectedEvent(Simulator);
+        }
+
+        private void EventQueueEventHandler(string eventName, LLSDMap body)
+        {
+            if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
+                Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, body, Simulator);
+            else
+                Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, body, Simulator);
         }
     }
 }

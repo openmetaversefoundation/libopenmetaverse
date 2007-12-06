@@ -88,7 +88,7 @@ namespace VoiceTest
                         Console.WriteLine("Voice connector handle: " + connectorHandle);
 
                         // Wait for the simulator capabilities to show up
-                        client.Network.CurrentSim.Caps.CapsReceivedEvent.WaitOne(45 * 1000, false);
+                        // FIXME: Use client.Network.OnEventQueueRunning to continue here
 
                         Console.WriteLine("Asking the current simulator to create a provisional account...");
 

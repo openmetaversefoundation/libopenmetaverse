@@ -30,6 +30,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Text;
 using System.Reflection;
+using libsecondlife.StructuredData;
+using libsecondlife.Capabilities;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -920,7 +922,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.MeanCollisionAlert, new NetworkManager.PacketCallback(MeanCollisionAlertHandler));
 
 	        // CAPS callbacks
-            Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Capabilities.EventQueueCallback(EstablishAgentCommunicationEventHandler));
+            Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
 
             // Login
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse));
@@ -1784,7 +1786,9 @@ namespace libsecondlife
         /// <param name="lookAt">Target to look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null && Client.Network.CurrentSim.Caps.IsEventQueueRunning)
+            if (Client.Network.CurrentSim != null &&
+                Client.Network.CurrentSim.Caps != null &&
+                Client.Network.CurrentSim.Caps.IsEventQueueRunning)
             {
                 TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
                 teleport.AgentData.AgentID = Client.Self.AgentID;
@@ -2167,7 +2171,7 @@ namespace libsecondlife
             }
         }
 
-        private void EstablishAgentCommunicationEventHandler(string message, StructuredData.LLSD llsd, CapsEventQueue caps)
+        private void EstablishAgentCommunicationEventHandler(string message, LLSD llsd, Simulator simulator)
         {
             StructuredData.LLSDMap body = (StructuredData.LLSDMap)llsd;
 

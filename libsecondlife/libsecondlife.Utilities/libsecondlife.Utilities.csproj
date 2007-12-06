@@ -40,8 +40,12 @@
     <Compile Include="TCPPipe.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VoiceManager.cs" />
-    <Compile Include="VoiceManagerBlocking.cs" />
+    <Compile Include="VoiceManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="VoiceManagerBlocking.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libsecondlife.csproj">

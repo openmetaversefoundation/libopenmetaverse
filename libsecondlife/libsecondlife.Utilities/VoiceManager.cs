@@ -33,6 +33,7 @@ using System.Xml;
 using System.Threading;
 using libsecondlife;
 using libsecondlife.StructuredData;
+using libsecondlife.Capabilities;
 
 namespace libsecondlife.Utilities
 {
@@ -147,7 +148,7 @@ namespace libsecondlife.Utilities
         public VoiceManager(SecondLife client)
         {
             Client = client;
-            Client.Network.RegisterEventCallback("RequiredVoiceVersion", new Capabilities.EventQueueCallback(RequiredVoiceVersionEventHandler));
+            Client.Network.RegisterEventCallback("RequiredVoiceVersion", new Caps.EventQueueCallback(RequiredVoiceVersionEventHandler));
 
             // Register callback handlers for the blocking functions
             RegisterCallbacks();
@@ -323,13 +324,13 @@ namespace libsecondlife.Utilities
             {
                 if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null)
                 {
-                    string requestURI = Client.Network.CurrentSim.Caps.CapabilityURI("ProvisionVoiceAccountRequest");
+                    Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("ProvisionVoiceAccountRequest");
 
-                    if (requestURI != String.Empty)
+                    if (url != null)
                     {
-                        CapsRequest request = new CapsRequest(requestURI, Client.Network.CurrentSim);
-                        request.OnCapsResponse += new CapsRequest.CapsResponseCallback(ProvisionCapsResponse);
-                        request.MakeRequest();
+                        CapsClient request = new CapsClient(url);
+                        request.OnComplete += new CapsClient.CompleteCallback(ProvisionCapsResponse);
+                        request.StartRequest();
 
                         return true;
                     }
@@ -504,7 +505,7 @@ namespace libsecondlife.Utilities
 
         #region Callbacks
 
-        private void RequiredVoiceVersionEventHandler(string message, LLSD llsd, CapsEventQueue caps)
+        private void RequiredVoiceVersionEventHandler(string message, LLSD llsd, Simulator simulator)
         {
             LLSDMap body = (LLSDMap)llsd;
 
@@ -525,13 +526,17 @@ namespace libsecondlife.Utilities
             }
         }
 
-        private void ProvisionCapsResponse(object response, HttpRequestState state)
+        private void ProvisionCapsResponse(CapsClient client, LLSD response, Exception error)
         {
-            if (response is System.Collections.Hashtable)
+            if (response is LLSDMap)
             {
-                System.Collections.Hashtable respTable = (System.Collections.Hashtable)response;
+                LLSDMap respTable = (LLSDMap)response;
 
-                if (OnProvisionAccount != null) OnProvisionAccount((string)respTable["username"], (string)respTable["password"]);
+                if (OnProvisionAccount != null)
+                {
+                    try { OnProvisionAccount(respTable["username"].AsString(), respTable["password"].AsString()); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
 

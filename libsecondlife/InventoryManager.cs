@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
-using libsecondlife;
+using libsecondlife.Capabilities;
 using libsecondlife.StructuredData;
 using libsecondlife.Packets;
 
@@ -1157,9 +1157,9 @@ namespace libsecondlife
             if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
                 throw new Exception("NewFileAgentInventory capability is not currently available");
 
-            string url = _Client.Network.CurrentSim.Caps.CapabilityURI("NewFileAgentInventory");
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("NewFileAgentInventory");
 
-            if (url != String.Empty)
+            if (url != null)
             {
                 LLSDMap query = new LLSDMap();
                 query.Add("folder_id", LLSD.FromUUID(folderID));
@@ -1171,9 +1171,10 @@ namespace libsecondlife
                 byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(query);
 
                 // Make the request
-                CapsRequest request = new CapsRequest(url, _Client.Network.CurrentSim);
-                request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateItemFromAssetResponse);
-                request.MakeRequest(postData, "application/xml", 0, new KeyValuePair<ItemCreatedFromAssetCallback, byte[]>(callback, data));
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
+                request.UserData = new KeyValuePair<ItemCreatedFromAssetCallback, byte[]>(callback, data);
+                request.StartRequest(postData);
             }
             else
             {
@@ -2031,10 +2032,10 @@ namespace libsecondlife
 
         #region Callbacks
 
-        private void CreateItemFromAssetResponse(LLSD response, HttpRequestState state)
+        private void CreateItemFromAssetResponse(CapsClient client, LLSD result, Exception error)
         {
-            LLSDMap contents = (LLSDMap)response;
-            KeyValuePair<ItemCreatedFromAssetCallback, byte[]> kvp = (KeyValuePair<ItemCreatedFromAssetCallback, byte[]>)state.State;
+            LLSDMap contents = (LLSDMap)result;
+            KeyValuePair<ItemCreatedFromAssetCallback, byte[]> kvp = (KeyValuePair<ItemCreatedFromAssetCallback, byte[]>)client.UserData;
             ItemCreatedFromAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
@@ -2046,9 +2047,10 @@ namespace libsecondlife
 
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
-                CapsRequest upload = new CapsRequest(uploadURL, _Client.Network.CurrentSim);
-                upload.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateItemFromAssetResponse);
-                upload.MakeRequest(itemData, "application/octet-stream", 0, kvp);
+                CapsClient upload = new CapsClient(new Uri(uploadURL));
+                upload.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
+                upload.UserData = kvp;
+                upload.StartRequest(itemData, "application/octet-stream");
             }
             else if (status == "complete")
             {

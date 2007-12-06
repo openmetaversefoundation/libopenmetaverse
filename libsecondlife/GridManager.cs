@@ -29,6 +29,8 @@ using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using libsecondlife.StructuredData;
+using libsecondlife.Capabilities;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -236,15 +238,16 @@ namespace libsecondlife
         /// <param name="layer"></param>
         public void RequestMapLayer(GridLayerType layer)
         {
-            string url = Client.Network.CurrentSim.Caps.CapabilityURI("MapLayer");
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("MapLayer");
 
-            if (!String.IsNullOrEmpty(url))
+            if (url != null)
             {
-                Hashtable body = new Hashtable();
-                body["Flags"] = (int)layer;
+                LLSDMap body = new LLSDMap();
+                body["Flags"] = LLSD.FromInteger((int)layer);
 
-                Client.Network.SendCapsRequest(url, body,
-                    new CapsRequest.CapsResponseCallback(MapLayerResponseHandler));
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += new CapsClient.CompleteCallback(MapLayerResponseHandler);
+                request.StartRequest(body);
             }
         }
 
@@ -417,23 +420,23 @@ namespace libsecondlife
             }
         }
 
-        private void MapLayerResponseHandler(object response, HttpRequestState state)
+        private void MapLayerResponseHandler(CapsClient client, LLSD result, Exception error)
         {
-            Dictionary<string, Object> body = (Dictionary<string, Object>)response;
-            List<Object> layerData = (List<Object>)body["LayerData"];
+            LLSDMap body = (LLSDMap)result;
+            LLSDArray layerData = (LLSDArray)body["LayerData"];
 
             if (OnGridLayer != null)
             {
                 for (int i = 0; i < layerData.Count; i++)
                 {
-                    Dictionary<string, Object> thisLayerData = (Dictionary<string, Object>)layerData[i];
+                    LLSDMap thisLayerData = (LLSDMap)layerData[i];
 
                     GridLayer layer;
-                    layer.Bottom = (int)thisLayerData["Bottom"];
-                    layer.Left = (int)thisLayerData["Left"];
-                    layer.Top = (int)thisLayerData["Top"];
-                    layer.Right = (int)thisLayerData["Right"];
-                    layer.ImageID = (LLUUID)thisLayerData["ImageID"];
+                    layer.Bottom = thisLayerData["Bottom"].AsInteger();
+                    layer.Left = thisLayerData["Left"].AsInteger();
+                    layer.Top = thisLayerData["Top"].AsInteger();
+                    layer.Right = thisLayerData["Right"].AsInteger();
+                    layer.ImageID = thisLayerData["ImageID"].AsUUID();
 
                     try { OnGridLayer(layer); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }

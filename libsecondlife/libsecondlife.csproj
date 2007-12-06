@@ -105,17 +105,21 @@
     <Compile Include="BakeLayer.cs" />
     <Compile Include="BitPack.cs" />
     <Compile Include="BlockingQueue.cs" />
-    <Compile Include="Capabilities.cs" />
-    <Compile Include="CapsEventQueue.cs" />
-    <Compile Include="CapsRequest.cs" />
+    <Compile Include="Capabilities\CapsClient.cs" />
+    <Compile Include="Capabilities\CapsEventQueue.cs" />
+    <Compile Include="Capabilities\CapsListener.cs" />
+    <Compile Include="Capabilities\CapsBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Capabilities\EventQueueClient.cs" />
+    <Compile Include="Capabilities\EventQueueListener.cs" />
+    <Compile Include="Caps.cs" />
     <Compile Include="CapsToPacket.cs" />
     <Compile Include="CoordinateFrame.cs" />
     <Compile Include="EventDictionary.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendsManager.cs" />
-    <Compile Include="HttpBase.cs" />
     <Compile Include="Image.cs" />
-    <Compile Include="Capabilities\HttpBase.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />

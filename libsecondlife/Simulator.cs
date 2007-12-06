@@ -209,7 +209,7 @@ namespace libsecondlife
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
-        public Capabilities Caps = null;
+        public Caps Caps = null;
         /// <summary></summary>
         public ulong Handle;
         /// <summary></summary>
@@ -496,7 +496,7 @@ namespace libsecondlife
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))
-                    Caps = new Capabilities(this, seedcaps);
+                    Caps = new Caps(this, seedcaps);
                 else
                     Client.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
             }

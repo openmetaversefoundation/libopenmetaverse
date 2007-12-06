@@ -269,7 +269,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="eventName">Name of the CAPS event to register a handler for</param>
         /// <param name="callback">Callback to fire when a CAPS event is received</param>
-        public void RegisterEventCallback(string capsEvent, Capabilities.EventQueueCallback callback)
+        public void RegisterEventCallback(string capsEvent, Caps.EventQueueCallback callback)
         {
             CapsEvents.RegisterEvent(capsEvent, callback);
         }
@@ -282,7 +282,7 @@ namespace libsecondlife
         /// <param name="capsEvent">Name of the CAPS event this callback is
         /// registered with</param>
         /// <param name="callback">Callback to stop firing events for</param>
-        public void UnregisterEventCallback(string capsEvent, Capabilities.EventQueueCallback callback)
+        public void UnregisterEventCallback(string capsEvent, Caps.EventQueueCallback callback)
         {
             CapsEvents.UnregisterEvent(capsEvent, callback);
         }
@@ -331,13 +331,6 @@ namespace libsecondlife
         {
             if (simulator != null)
                 simulator.SendPacket(payload, setSequence);
-        }
-
-        public void SendCapsRequest(string uri, Hashtable body, CapsRequest.CapsResponseCallback callback)
-        {
-            CapsRequest request = new CapsRequest(uri, Client.Network.CurrentSim);
-            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(callback);
-            request.MakeRequest();
         }
 
         /// <summary>
