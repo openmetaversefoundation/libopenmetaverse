@@ -75,7 +75,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Checkes the instance back into the object pool
+        /// Checks the instance back into the object pool
         /// </summary>
         public void Dispose()
         {

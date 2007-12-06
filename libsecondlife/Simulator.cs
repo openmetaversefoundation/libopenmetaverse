@@ -397,13 +397,6 @@ namespace libsecondlife
             PacketArchive = new Queue<uint>(Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-
-            // Timer for sending out queued packet acknowledgements
-            AckTimer = new Timer(new TimerCallback(AckTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
-            // Timer for recording simulator connection statistics
-            StatsTimer = new Timer(new TimerCallback(StatsTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
-            // Timer for periodically pinging the simulator
-            PingTimer = new Timer(new TimerCallback(PingTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
         }
 
         /// <summary>
@@ -432,11 +425,24 @@ namespace libsecondlife
                 return true;
             }
 
-            // Start the timers
-            AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
-            StatsTimer.Change(1000, 1000);
+            #region Start Timers
+
+            // Destroy the timers
+            if (AckTimer != null) AckTimer.Dispose();
+            if (StatsTimer != null) StatsTimer.Dispose();
+            if (PingTimer != null) PingTimer.Dispose();
+
+            // Timer for sending out queued packet acknowledgements
+            AckTimer = new Timer(new TimerCallback(AckTimer_Elapsed), null, Settings.NETWORK_TICK_INTERVAL,
+                Settings.NETWORK_TICK_INTERVAL);
+            // Timer for recording simulator connection statistics
+            StatsTimer = new Timer(new TimerCallback(StatsTimer_Elapsed), null, 1000, 1000);
+            // Timer for periodically pinging the simulator
             if (Client.Settings.SEND_PINGS)
-                PingTimer.Change(Settings.PING_INTERVAL, Settings.PING_INTERVAL);
+                PingTimer = new Timer(new TimerCallback(PingTimer_Elapsed), null, Settings.PING_INTERVAL,
+                    Settings.PING_INTERVAL);
+
+            #endregion Start Timers
 
             Client.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info);
 
@@ -512,10 +518,10 @@ namespace libsecondlife
             {
                 connected = false;
 
-                AckTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                StatsTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                if (Client.Settings.SEND_PINGS)
-                    PingTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                // Destroy the timers
+                if (AckTimer != null) AckTimer.Dispose();
+                if (StatsTimer != null) StatsTimer.Dispose();
+                if (PingTimer != null) PingTimer.Dispose();
 
                 // Kill the current CAPS system
                 if (Caps != null)

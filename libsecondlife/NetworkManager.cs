@@ -229,9 +229,6 @@ namespace libsecondlife
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
             RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
 			RegisterCallback(PacketType.SimStats, new PacketCallback(SimStatsHandler));
-			
-            // The proper timeout for this will get set again at Login
-            DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null, Timeout.Infinite, Timeout.Infinite);
 
             // GLOBAL SETTING: Don't force Expect-100: Continue headers on HTTP POST calls
             ServicePointManager.Expect100Continue = false;
@@ -391,7 +388,9 @@ namespace libsecondlife
                 if (simulator.Connect(setDefault))
                 {
                     // Start a timer that checks if we've been disconnected
-                    DisconnectTimer.Change(Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
+                    if (DisconnectTimer != null) DisconnectTimer.Dispose();
+                    DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null, 
+                        Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
 
                     if (setDefault) SetCurrentSim(simulator, seedcaps);
 
@@ -468,7 +467,7 @@ namespace libsecondlife
         public void RequestLogout()
         {
             // No need to run the disconnect timer any more
-            DisconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            if (DisconnectTimer != null) DisconnectTimer.Dispose();
 
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
@@ -632,13 +631,22 @@ namespace libsecondlife
                             // Check the archives to see whether we already received this packet
                             lock (simulator.PacketArchive)
                             {
-                                if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                                if (packet.Header.Sequence == 0)
+                                {
+                                    Client.Log(
+                                        String.Format("Received a packet with a sequence number of 0, type: {0}",
+                                        packet.Type), Helpers.LogLevel.Warning);
+
+                                    // Not sure what to do with this, skip it
+                                    continue;
+                                }
+                                else if (simulator.PacketArchive.Contains(packet.Header.Sequence))
                                 {
                                     if (packet.Header.Resent)
                                     {
                                         Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
                                     }
-                                    else if(packet.Header.Sequence != 0)
+                                    else
                                     {
                                         Client.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
                                             packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning);
@@ -730,31 +738,30 @@ namespace libsecondlife
 
         private void DisconnectTimer_Elapsed(object obj)
         {
-            if (connected)
+            if (!connected || CurrentSim == null)
             {
-                if (CurrentSim == null)
-                {
-                    DisconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                    connected = false;
-                    return;
-                }
+                if (DisconnectTimer != null) DisconnectTimer.Dispose();
+                connected = false;
+            }
+            else if (CurrentSim.DisconnectCandidate)
+            {
+                // The currently occupied simulator hasn't sent us any traffic in a while, shutdown
+                Client.Log("Network timeout for the current simulator (" +
+                    CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning);
 
-                // If the current simulator is disconnected, shutdown+callback+return
-                if (CurrentSim.DisconnectCandidate)
-                {
-                    Client.Log("Network timeout for the current simulator (" +
-                        CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning);
+                if (DisconnectTimer != null) DisconnectTimer.Dispose();
+                connected = false;
 
-                    DisconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                    connected = false;
+                // Shutdown the network layer
+                Shutdown(DisconnectType.NetworkTimeout);
+            }
+            else
+            {
+                #region Check for timed out simulators
 
-                    // Shutdown the network layer
-                    Shutdown(DisconnectType.NetworkTimeout);
-
-                    // We're completely logged out and shut down, leave this function
-                    return;
-                }
-
+                // Figure out which sims need to be disconnected, then fire
+                // all of the events to avoid calling DisconnectSim() inside
+                // the Simulators lock
                 List<Simulator> disconnectedSims = null;
 
                 // Check all of the connected sims for disconnects
@@ -764,6 +771,8 @@ namespace libsecondlife
                     {
                         if (Simulators[i].DisconnectCandidate)
                         {
+                            // Avoid initializing a new List<> every time the timer
+                            // fires with this piece of code
                             if (disconnectedSims == null)
                                 disconnectedSims = new List<Simulator>();
 
@@ -792,6 +801,8 @@ namespace libsecondlife
                         }
                     }
                 }
+
+                #endregion Check for timed out simulators
             }
         }
 

@@ -21,12 +21,12 @@ namespace libsecondlife.TestClient
             if (start)
             {
                 Client.Self.Fly(true);
-                return "Started crouching";
+                return "Started flying";
             }
             else
             {
                 Client.Self.Fly(false);
-                return "Stopped crouching";
+                return "Stopped flying";
             }
         }
     }
