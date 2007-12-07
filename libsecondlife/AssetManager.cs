@@ -461,9 +461,22 @@ namespace libsecondlife
         /// Initiate an image download. This is an asynchronous function
         /// </summary>
         /// <param name="imageID">The image to download</param>
-        /// <param name="type"></param>
-        /// <param name="priority"></param>
-        /// <param name="discardLevel"></param>
+        /// <param name="type">Type of the image to download, either a baked
+        /// avatar texture or a normal texture</param>
+        public void RequestImage(LLUUID imageID, ImageType type)
+        {
+            RequestImage(imageID, type, 1013000.0f, 0);
+        }
+
+        /// <summary>
+        /// Initiate an image download. This is an asynchronous function
+        /// </summary>
+        /// <param name="imageID">The image to download</param>
+        /// <param name="type">Type of the image to download, either a baked
+        /// avatar texture or a normal texture</param>
+        /// <param name="priority">Priority level of the download. Default is
+        /// <code>1,013,000.0f</code></param>
+        /// <param name="discardLevel">Number of quality layers to discard</param>
         public void RequestImage(LLUUID imageID, ImageType type, float priority, int discardLevel)
         {
             if (!Transfers.ContainsKey(imageID))
