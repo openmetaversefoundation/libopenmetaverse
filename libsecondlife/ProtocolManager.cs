@@ -14,9 +14,7 @@ namespace libsecondlife
         /// <summary></summary>
 		Medium,
         /// <summary></summary>
-		High,
-        /// <summary></summary>
-        Caps
+		High
 	}
 
     /// <summary>

@@ -115,12 +115,12 @@ namespace libsecondlife.Packets
             if (type == null)
                 return null;
 
-            object packet = null;
+            Packet packet = null;
 
             try
             {
                 // Create an instance of the object
-                packet = Activator.CreateInstance(type);
+                packet = (Packet)Activator.CreateInstance(type);
 
                 // Iterate over all of the fields in the packet class, looking for matches in the LLSD
                 foreach (FieldInfo field in type.GetFields())
@@ -156,7 +156,7 @@ namespace libsecondlife.Packets
                 SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Warning);
             }
 
-            return (Packet)packet;
+            return packet;
         }
 
         private static object ParseLLSDBlock(LLSDMap blockData, Type blockType)
