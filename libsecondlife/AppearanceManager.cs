@@ -1163,9 +1163,14 @@ namespace libsecondlife
                         if (download.Success)
                         {
                             kvp.Value.Asset = (AssetWearable)asset;
-                            kvp.Value.Asset.Decode();
 
                             Client.DebugLog("Downloaded wearable asset " + kvp.Value.Asset.Name);
+
+                            if (!kvp.Value.Asset.Decode())
+                            {
+                                Client.Log("Failed to decode asset:" + Environment.NewLine +
+                                    Helpers.FieldToUTF8String(asset.AssetData), Helpers.LogLevel.Error);
+                            }
 
                             lock (AgentTextures)
                             {

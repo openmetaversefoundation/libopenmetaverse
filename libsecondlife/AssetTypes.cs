@@ -4,6 +4,24 @@ using System.Collections.Generic;
 
 namespace libsecondlife
 {
+    public enum WearableType : byte
+    {
+        Shape = 0,
+        Skin,
+        Hair,
+        Eyes,
+        Shirt,
+        Pants,
+        Shoes,
+        Socks,
+        Jacket,
+        Gloves,
+        Undershirt,
+        Underpants,
+        Skirt,
+        Invalid = 255
+    };
+
     public abstract class Asset
     {
         public byte[] AssetData;
@@ -37,7 +55,8 @@ namespace libsecondlife
         /// Decodes the AssetData, placing it in appropriate properties of the derived
         /// class.
         /// </summary>
-        public abstract void Decode();
+        /// <returns>True if the asset decoding succeeded, otherwise false</returns>
+        public abstract bool Decode();
     }
 
     public class AssetNotecard : Asset
@@ -60,9 +79,10 @@ namespace libsecondlife
             AssetData = Helpers.StringToField(Text);
         }
         
-        public override void Decode()
+        public override bool Decode()
         {
             Text = Helpers.FieldToUTF8String(AssetData);
+            return true;
         }
     }
 
@@ -86,9 +106,10 @@ namespace libsecondlife
             AssetData = Helpers.StringToField(Source);
         }
 
-        public override void Decode()
+        public override bool Decode()
         {
             Source = Helpers.FieldToUTF8String(AssetData);
+            return true;
         }
     }
 
@@ -106,7 +127,7 @@ namespace libsecondlife
         }
 
         public override void Encode() { AssetData = Bytecode; }
-        public override void Decode() { Bytecode = AssetData; }
+        public override bool Decode() { Bytecode = AssetData; return true; }
     }
 
     public class AssetTexture : Asset
@@ -133,12 +154,13 @@ namespace libsecondlife
 #endif
         }
         
-        public override void Decode()
+        public override bool Decode()
         {
 #if PocketPC
             throw new Exception("OpenJPEG decoding is not supported on the PocketPC");
 #else
             Image = OpenJPEGNet.OpenJPEG.Decode(AssetData);
+            return true;
 #endif
         }
     }
@@ -150,7 +172,7 @@ namespace libsecondlife
         public AssetPrim() { }
 
         public override void Encode() { }
-        public override void Decode() { }
+        public override bool Decode() { return false; }
     }
 
     public class AssetSound : Asset
@@ -161,26 +183,8 @@ namespace libsecondlife
 
         // TODO: Sometime we could add OGG encoding/decoding?
         public override void Encode() { }
-        public override void Decode() { }
+        public override bool Decode() { return false; }
     }
-
-    public enum WearableType : byte
-    {
-        Shape = 0,
-        Skin,
-        Hair,
-        Eyes,
-        Shirt,
-        Pants,
-        Shoes,
-        Socks,
-        Jacket,
-        Gloves,
-        Undershirt,
-        Underpants,
-        Skirt,
-        Invalid = 255
-    };
 
     public abstract class AssetWearable : Asset
     {
@@ -207,147 +211,128 @@ namespace libsecondlife
             AssetData = Helpers.StringToField(source);
         }
 
-        public override void Decode()
+        public override bool Decode()
         {
-            // FIXME: This doesn't appear to do any sanity checking at all, probably should and return a bool?
-
             int version = -1;
-            int n = -1;
+            Permissions = new Permissions();
             string data = Helpers.FieldToUTF8String(AssetData);
 
-            n = data.IndexOf('\n');
-            version = Int32.Parse(data.Substring(19, n - 18));
-            data = data.Remove(0, n);
-
-            if (version != 22)
-                throw new Exception("Wearable asset has unrecognized version " + version);
-
-            n = data.IndexOf('\n');
-            Name = data.Substring(0, n);
-            data = data.Remove(0, n);
-
-            n = data.IndexOf('\n');
-            Description = data.Substring(0, n);
-            data = data.Remove(0, n);
-
-            // Split in to an upper and lower half
-            string upper, lower;
-            Helpers.StringSplitAt(data, "parameters", out upper, out lower);
-
-            Permissions = new Permissions();
-
-            // Parse the upper half
-            string[] lines = upper.Split('\n');
-            foreach (string thisline in lines)
+            string[] lines = data.Split('\n');
+            for (int stri = 0; stri < lines.Length; stri++)
             {
-                string line = thisline.Trim();
-                string[] fields = line.Split('\t');
-
-                if (fields.Length == 2)
+                if (stri == 0)
                 {
-                    if (fields[0] == "creator_mask")
-                    {
-                        // Deprecated, apply this as the base mask
-                        Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (fields[0] == "base_mask")
-                    {
-                        Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (fields[0] == "owner_mask")
-                    {
-                        Permissions.OwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (fields[0] == "group_mask")
-                    {
-                        Permissions.GroupMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (fields[0] == "everyone_mask")
-                    {
-                        Permissions.EveryoneMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (fields[0] == "next_owner_mask")
-                    {
-                        Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (fields[0] == "creator_id")
-                    {
-                        Creator = new LLUUID(fields[1]);
-                    }
-                    else if (fields[0] == "owner_id")
-                    {
-                        Owner = new LLUUID(fields[1]);
-                    }
-                    else if (fields[0] == "last_owner_id")
-                    {
-                        LastOwner = new LLUUID(fields[1]);
-                    }
-                    else if (fields[0] == "group_id")
-                    {
-                        Group = new LLUUID(fields[1]);
-                    }
-                    else if (fields[0] == "group_owned")
-                    {
-                        GroupOwned = (Int32.Parse(fields[1]) != 0);
-                    }
-                    else if (fields[0] == "sale_type")
-                    {
-                        ForSale = InventoryManager.StringToSaleType(fields[1]);
-                    }
-                    else if (fields[0] == "sale_price")
-                    {
-                        SalePrice = Int32.Parse(fields[1]);
-                    }
+                    string versionstring = lines[stri];
+                    version = Int32.Parse(versionstring.Split(' ')[2]);
+                    if (version != 22 && version != 18)
+                        return false;
                 }
-                else if (line.StartsWith("type "))
+                else if (stri == 1)
                 {
-                    WearableType = (WearableType)Int32.Parse(line.Substring(5));
-                    break;
+                    Name = lines[stri];
+                }
+                else if (stri == 2)
+                {
+                    Description = lines[stri];
+                }
+                else
+                {
+                    string line = lines[stri].Trim();
+                    string[] fields = line.Split('\t');
+
+                    if (fields.Length == 1)
+                    {
+                        fields = line.Split(' ');
+                        if (fields[0] == "parameters")
+                        {
+
+                            int count = Int32.Parse(fields[1]) + stri;
+                            for (; stri < count; )
+                            {
+                                stri++;
+                                line = lines[stri].Trim();
+                                fields = line.Split(' ');
+
+                                int id = Int32.Parse(fields[0]);
+                                float weight = float.Parse(fields[1], System.Globalization.NumberStyles.Float,
+                                    Helpers.EnUsCulture.NumberFormat);
+
+                                Params[id] = weight;
+                            }
+                        }
+                        else if (fields[0] == "textures")
+                        {
+                            int count = Int32.Parse(fields[1]) + stri;
+                            for (; stri < count; )
+                            {
+                                stri++;
+                                line = lines[stri].Trim();
+                                fields = line.Split(' ');
+
+                                AppearanceManager.TextureIndex id = (AppearanceManager.TextureIndex)Int32.Parse(fields[0]);
+                                LLUUID texture = new LLUUID(fields[1]);
+
+                                Textures[id] = texture;
+                            }
+                        }
+                        else if (fields[0] == "type")
+                        {
+                            WearableType = (WearableType)Int32.Parse(fields[1]);
+                        }
+
+                    }
+                    else if (fields.Length == 2)
+                    {
+                        switch (fields[0])
+                        {
+                            case "creator_mask":
+                                // Deprecated, apply this as the base mask
+                                Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                break;
+                            case "base_mask":
+                                Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                break;
+                            case "owner_mask":
+                                Permissions.OwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                break;
+                            case "group_mask":
+                                Permissions.GroupMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                break;
+                            case "everyone_mask":
+                                Permissions.EveryoneMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                break;
+                            case "next_owner_mask":
+                                Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                break;
+                            case "creator_id":
+                                Creator = new LLUUID(fields[1]);
+                                break;
+                            case "owner_id":
+                                Owner = new LLUUID(fields[1]);
+                                break;
+                            case "last_owner_id":
+                                LastOwner = new LLUUID(fields[1]);
+                                break;
+                            case "group_id":
+                                Group = new LLUUID(fields[1]);
+                                break;
+                            case "group_owned":
+                                GroupOwned = (Int32.Parse(fields[1]) != 0);
+                                break;
+                            case "sale_type":
+                                ForSale = InventoryManager.StringToSaleType(fields[1]);
+                                break;
+                            case "sale_price":
+                                SalePrice = Int32.Parse(fields[1]);
+                                break;
+                            default:
+                                return false;
+                        }
+                    }
                 }
             }
 
-            // Break up the lower half in to parameters and textures
-            string parameters, textures;
-            Helpers.StringSplitAt(lower, "textures", out parameters, out textures);
-
-            // Parse the parameters
-            lines = parameters.Split('\n');
-            foreach (string line in lines)
-            {
-                string[] fields = line.Split(' ');
-
-                // Use exception handling to deal with all the lines we aren't interested in
-                try
-                {
-                    int id = Int32.Parse(fields[0]);
-                    float weight = Single.Parse(fields[1], System.Globalization.NumberStyles.Float,
-                        Helpers.EnUsCulture.NumberFormat);
-
-                    Params[id] = weight;
-                }
-                catch (Exception)
-                {
-                }
-            }
-
-            // Parse the textures
-            lines = textures.Split('\n');
-            foreach (string line in lines)
-            {
-                string[] fields = line.Split(' ');
-
-                // Use exception handling to deal with all the lines we aren't interested in
-                try
-                {
-                    AppearanceManager.TextureIndex id = (AppearanceManager.TextureIndex)Int32.Parse(fields[0]);
-                    LLUUID texture = new LLUUID(fields[1]);
-
-                    Textures[id] = texture;
-                }
-                catch (Exception)
-                {
-                }
-            }
+            return true;
         }
 
         public override void Encode()
