@@ -697,24 +697,24 @@ namespace libsecondlife
             packet.ObjectData.Rotation = rotation;
 
             packet.ObjectData.PathCurve = (byte)prim.PathCurve;
-            packet.ObjectData.PathBegin = LLObject.PathBeginUInt16(prim.PathBegin);
-            packet.ObjectData.PathEnd = LLObject.PathEndUInt16(prim.PathEnd);
-            packet.ObjectData.PathRadiusOffset = LLObject.PathRadiusOffsetByte(prim.PathRadiusOffset);
-            packet.ObjectData.PathRevolutions = LLObject.PathRevolutionsByte(prim.PathRevolutions);
-            packet.ObjectData.PathScaleX = LLObject.PathScaleByte(prim.PathScaleX);
-            packet.ObjectData.PathScaleY = LLObject.PathScaleByte(prim.PathScaleY);
-            packet.ObjectData.PathShearX = LLObject.PathShearByte(prim.PathShearX);
-            packet.ObjectData.PathShearY = LLObject.PathShearByte(prim.PathShearY);
-            packet.ObjectData.PathSkew = LLObject.PathSkewByte(prim.PathSkew);
-            packet.ObjectData.PathTaperX = LLObject.PathTaperByte(prim.PathTaperX);
-            packet.ObjectData.PathTaperY = LLObject.PathTaperByte(prim.PathTaperY);
-            packet.ObjectData.PathTwist = (sbyte)prim.PathTwist;
-            packet.ObjectData.PathTwistBegin = (sbyte)prim.PathTwistBegin;
+            packet.ObjectData.PathBegin = LLObject.PackBeginCut(prim.PathBegin);
+            packet.ObjectData.PathEnd = LLObject.PackEndCut(prim.PathEnd);
+            packet.ObjectData.PathRadiusOffset = LLObject.PackPathTwist(prim.PathRadiusOffset);
+            packet.ObjectData.PathRevolutions = LLObject.PackPathRevolutions(prim.PathRevolutions);
+            packet.ObjectData.PathScaleX = LLObject.PackPathScale(prim.PathScaleX);
+            packet.ObjectData.PathScaleY = LLObject.PackPathScale(prim.PathScaleY);
+            packet.ObjectData.PathShearX = LLObject.PackPathShear(prim.PathShearX);
+            packet.ObjectData.PathShearY = LLObject.PackPathShear(prim.PathShearY);
+            packet.ObjectData.PathSkew = LLObject.PackPathTwist(prim.PathSkew);
+            packet.ObjectData.PathTaperX = LLObject.PackPathTaper(prim.PathTaperX);
+            packet.ObjectData.PathTaperY = LLObject.PackPathTaper(prim.PathTaperY);
+            packet.ObjectData.PathTwist = LLObject.PackPathTwist(prim.PathTwist);
+            packet.ObjectData.PathTwistBegin = LLObject.PackPathTwist(prim.PathTwistBegin);
 
             packet.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
-            packet.ObjectData.ProfileBegin = LLObject.ProfileBeginUInt16(prim.ProfileBegin);
-            packet.ObjectData.ProfileEnd = LLObject.ProfileEndUInt16(prim.ProfileEnd);
-            packet.ObjectData.ProfileHollow = LLObject.ProfileHollowUInt16(prim.ProfileHollow);
+            packet.ObjectData.ProfileBegin = LLObject.PackBeginCut(prim.ProfileBegin);
+            packet.ObjectData.ProfileEnd = LLObject.PackEndCut(prim.ProfileEnd);
+            packet.ObjectData.ProfileHollow = LLObject.PackProfileHollow(prim.ProfileHollow);
 
             packet.ObjectData.RayStart = position;
             packet.ObjectData.RayEnd = position;
@@ -1302,23 +1302,23 @@ namespace libsecondlife
                 data.State = block.State;
                 data.Material = (LLObject.MaterialType)block.Material;
                 data.PathCurve = (LLObject.PathCurve)block.PathCurve;
-                data.ProfileCurve = (LLObject.ProfileCurve)block.ProfileCurve;
-                data.PathBegin = LLObject.PathBeginFloat(block.PathBegin);
-                data.PathEnd = LLObject.PathEndFloat(block.PathEnd);
-                data.PathScaleX = LLObject.PathScaleFloat(block.PathScaleX);
-                data.PathScaleY = LLObject.PathScaleFloat(block.PathScaleY);
-                data.PathShearX = LLObject.PathShearFloat(block.PathShearX);
-                data.PathShearY = LLObject.PathShearFloat(block.PathShearY);
-                data.PathTwist = block.PathTwist;
-                data.PathTwistBegin = block.PathTwistBegin;
-                data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                data.PathTaperX = LLObject.PathTaperFloat(block.PathTaperX);
-                data.PathTaperY = LLObject.PathTaperFloat(block.PathTaperY);
-                data.PathRevolutions = LLObject.PathRevolutionsFloat(block.PathRevolutions);
-                data.PathSkew = LLObject.PathSkewFloat(block.PathSkew);
-                data.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
-                data.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
-                data.ProfileHollow = LLObject.ProfileHollowFloat(block.ProfileHollow);
+                data.profileCurve = block.ProfileCurve;
+                data.PathBegin = LLObject.UnpackBeginCut(block.PathBegin);
+                data.PathEnd = LLObject.UnpackEndCut(block.PathEnd);
+                data.PathScaleX = LLObject.UnpackPathScale(block.PathScaleX);
+                data.PathScaleY = LLObject.UnpackPathScale(block.PathScaleY);
+                data.PathShearX = LLObject.UnpackPathShear(block.PathShearX);
+                data.PathShearY = LLObject.UnpackPathShear(block.PathShearY);
+                data.PathTwist = LLObject.UnpackPathTwist(block.PathTwist);
+                data.PathTwistBegin = LLObject.UnpackPathTwist(block.PathTwistBegin);
+                data.PathRadiusOffset = LLObject.UnpackPathTwist(block.PathRadiusOffset);
+                data.PathTaperX = LLObject.UnpackPathTaper(block.PathTaperX);
+                data.PathTaperY = LLObject.UnpackPathTaper(block.PathTaperY);
+                data.PathRevolutions = LLObject.UnpackPathRevolutions(block.PathRevolutions);
+                data.PathSkew = LLObject.UnpackPathTwist(block.PathSkew);
+                data.ProfileBegin = LLObject.UnpackBeginCut(block.ProfileBegin);
+                data.ProfileEnd = LLObject.UnpackEndCut(block.ProfileEnd);
+                data.ProfileHollow = LLObject.UnpackProfileHollow(block.ProfileHollow);
                 data.PCode = pcode;
                 #endregion
 
@@ -1976,30 +1976,28 @@ namespace libsecondlife
 
                             prim.Data.PathCurve = (LLObject.PathCurve)block.Data[i++];
                             ushort pathBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.PathBegin = LLObject.PathBeginFloat(pathBegin);
+                            prim.Data.PathBegin = LLObject.UnpackBeginCut(pathBegin);
                             ushort pathEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.PathEnd = LLObject.PathEndFloat(pathEnd);
-                            prim.Data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
-                            prim.Data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
-                            prim.Data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
-                            prim.Data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
-                            prim.Data.PathTwist = (int)block.Data[i++];
-                            prim.Data.PathTwistBegin = (int)block.Data[i++];
-                            prim.Data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                            prim.Data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.Data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.Data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
-                            prim.Data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
+                            prim.Data.PathEnd = LLObject.UnpackEndCut(pathEnd);
+                            prim.Data.PathScaleX = LLObject.UnpackPathScale(block.Data[i++]);
+                            prim.Data.PathScaleY = LLObject.UnpackPathScale(block.Data[i++]);
+                            prim.Data.PathShearX = LLObject.UnpackPathShear(block.Data[i++]);
+                            prim.Data.PathShearY = LLObject.UnpackPathShear(block.Data[i++]);
+                            prim.Data.PathTwist = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.Data.PathTwistBegin = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.Data.PathRadiusOffset = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.Data.PathTaperX = LLObject.UnpackPathTaper((sbyte)block.Data[i++]);
+                            prim.Data.PathTaperY = LLObject.UnpackPathTaper((sbyte)block.Data[i++]);
+                            prim.Data.PathRevolutions = LLObject.UnpackPathRevolutions(block.Data[i++]);
+                            prim.Data.PathSkew = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
 
-                            prim.Data.ProfileCurve = (LLObject.ProfileCurve)block.Data[i++];
+                            prim.Data.profileCurve = block.Data[i++];
                             ushort profileBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileBegin = LLObject.ProfileBeginFloat(profileBegin);
+                            prim.Data.ProfileBegin = LLObject.UnpackBeginCut(profileBegin);
                             ushort profileEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileEnd = LLObject.ProfileEndFloat(profileEnd);
+                            prim.Data.ProfileEnd = LLObject.UnpackEndCut(profileEnd);
                             ushort profileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileHollow = LLObject.ProfileHollowFloat(profileHollow);
-
-                            LLUUID test = new LLUUID("73818c3a-acc3-30b8-5060-0e6cf693cddf");
+                            prim.Data.ProfileHollow = LLObject.UnpackProfileHollow(profileHollow);
 
                             // TextureEntry
                             int textureEntryLength = (int)Helpers.BytesToUIntBig(block.Data, i);
@@ -2208,7 +2206,7 @@ namespace libsecondlife
 
             prim.PCode = PCode.Prim;
             prim.Material = LLObject.MaterialType.Wood;
-            prim.ProfileCurve = LLObject.ProfileCurve.ProfileSquare;
+            prim.ProfileCurve = LLObject.ProfileCurve.Square;
             prim.PathCurve = LLObject.PathCurve.Line;
             prim.ProfileEnd = 1.0f;
             prim.PathEnd = 1.0f;

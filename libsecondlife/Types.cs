@@ -336,6 +336,158 @@ namespace libsecondlife
 	}
 
     /// <summary>
+    /// A two-dimensional vector with floating-point values
+    /// </summary>
+    public struct LLVector2
+    {
+        /// <summary>X value</summary>
+        public float X;
+        /// <summary>Y value</summary>
+        public float Y;
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor, copies a single-precision vector
+        /// </summary>
+        /// <param name="vector">Single-precision vector to copy</param>
+        public LLVector2(LLVector2 vector)
+        {
+            X = vector.X;
+            Y = vector.Y;
+        }
+
+        /// <summary>
+        /// Constructor, builds a vector for individual float values
+        /// </summary>
+        /// <param name="x">X value</param>
+        /// <param name="y">Y value</param>
+        /// <param name="z">Z value</param>
+		public LLVector2(float x, float y)
+		{
+			X = x;
+			Y = y;
+        }
+
+        #endregion Constructors
+
+        #region Overrides
+
+        /// <summary>
+        /// A hash of the vector, used by .NET for hash tables
+        /// </summary>
+        /// <returns>The hashes of the individual components XORed together</returns>
+        public override int GetHashCode()
+        {
+            return (X.GetHashCode() ^ Y.GetHashCode());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
+        public override bool Equals(object o)
+        {
+            if (!(o is LLVector2)) return false;
+
+            LLVector2 vector = (LLVector2)o;
+
+            return (X == vector.X && Y == vector.Y);
+        }
+
+        /// <summary>
+        /// Get a formatted string representation of the vector
+        /// </summary>
+        /// <returns>A string representation of the vector, similar to the LSL
+        /// vector to string conversion in Second Life</returns>
+        public override string ToString()
+        {
+            return String.Format(Helpers.EnUsCulture, "<{0}, {1}>", X, Y);
+        }
+
+        #endregion Overrides
+
+        #region Operators
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator ==(LLVector2 lhs, LLVector2 rhs)
+        {
+            return (lhs.X == rhs.X && lhs.Y == rhs.Y);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator !=(LLVector2 lhs, LLVector2 rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public static LLVector2 operator +(LLVector2 lhs, LLVector2 rhs)
+        {
+            return new LLVector2(lhs.X + rhs.X, lhs.Y + rhs.Y);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector2 operator -(LLVector2 lhs, LLVector2 rhs)
+        {
+            return new LLVector2(lhs.X - rhs.X, lhs.Y - rhs.Y);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vec"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static LLVector2 operator *(LLVector2 vec, float val)
+        {
+            return new LLVector2(vec.X * val, vec.Y * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="vec"></param>
+        /// <returns></returns>
+        public static LLVector2 operator *(float val, LLVector2 vec)
+        {
+            return new LLVector2(vec.X * val, vec.Y * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector2 operator *(LLVector2 lhs, LLVector2 rhs)
+        {
+            return new LLVector2(lhs.X * rhs.X, lhs.Y * rhs.Y);
+        }
+
+        #endregion Operators
+
+        /// <summary>An LLVector2 with a value of 0,0,0</summary>
+        public readonly static LLVector2 Zero = new LLVector2();
+    }
+
+    /// <summary>
     /// A three-dimensional vector with floating-point values
     /// </summary>
 	public struct LLVector3
@@ -596,10 +748,12 @@ namespace libsecondlife
         /// in arrow brackets and separated by commas</param>
         public static LLVector3 Parse(string val)
         {
-            IFormatProvider formatProvider = Helpers.EnUsCulture;
             char[] splitChar = { ',', ' ' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new LLVector3(float.Parse( split[0].Trim(), formatProvider ), float.Parse(split[1].Trim(), formatProvider), float.Parse(split[2].Trim(), formatProvider));
+            return new LLVector3(
+                float.Parse(split[0].Trim(), Helpers.EnUsCulture),
+                float.Parse(split[1].Trim(), Helpers.EnUsCulture),
+                float.Parse(split[2].Trim(), Helpers.EnUsCulture));
         }
 
         public static bool TryParse(string val, out LLVector3 result)
@@ -650,8 +804,7 @@ namespace libsecondlife
         /// vector to string conversion in Second Life</returns>
         public override string ToString()
         {
-            IFormatProvider formatProvider = Helpers.EnUsCulture;
-            return String.Format(formatProvider, "<{0}, {1}, {2}>", X, Y, Z);
+            return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}>", X, Y, Z);
         }
 
         #endregion Overrides

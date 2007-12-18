@@ -95,38 +95,9 @@ namespace libsecondlife.Capabilities
                 _Client.Headers.Add(HttpRequestHeader.ContentType, "application/xml");
 
             if (postData == null)
-            {
                 _Client.DownloadStringAsync(_Client.Location);
-            }
             else
-            {
                 _Client.UploadDataAsync(_Client.Location, postData);
-
-                //if (postData.Length == 292)
-                //{
-                //    CapsRequest request = new CapsRequest(_Client.Location.AbsoluteUri);
-                //    request.OnCapsResponse += new CapsRequest.CapsResponseCallback(request_OnCapsResponse);
-                //    request.MakeRequest(postData, "application/xml", null);
-
-                //    //HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(_Client.Location);
-                //    //request.KeepAlive = false;
-                //    //request.Method = "POST";
-                //    //request.ContentLength = postData.Length;
-                //    //request.ContentType = "application/xml";
-                //    //System.IO.Stream stream = request.GetRequestStream();
-
-                //    //stream = _Client.OpenWrite(_Client.Location);
-                //    //stream.Write(postData, 0, 292);
-                //    //stream.Close();
-
-                //    //WebResponse response = request.GetResponse();
-                //    //SecondLife.LogStatic(response.ContentLength.ToString(), Helpers.LogLevel.Info);
-
-                //    //_Client.Timeout = 10000;
-                //    //byte[] lol = _Client.UploadData(_Client.Location, postData);
-                //    //Console.WriteLine("Done?");
-                //}
-            }
         }
 
         public void Cancel()
@@ -186,10 +157,26 @@ namespace libsecondlife.Capabilities
         {
             if (OnComplete != null && !e.Cancelled)
             {
-                LLSD result = LLSDParser.DeserializeXml(e.Result);
+                if (e.Error == null)
+                {
+                    LLSD result = LLSDParser.DeserializeXml(e.Result);
 
-                try { OnComplete(this, result, e.Error); }
-                catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                    try { OnComplete(this, result, e.Error); }
+                    catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                }
+                else
+                {
+                    if (Helpers.StringContains(e.Error.Message, "502"))
+                    {
+                        // These are normal, retry the request automatically
+                        StartRequest(_PostData, _ContentType);
+                    }
+                    else
+                    {
+                        try { OnComplete(this, null, e.Error); }
+                        catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                    }
+                }
             }
         }
 

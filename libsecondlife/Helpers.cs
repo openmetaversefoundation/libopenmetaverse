@@ -797,6 +797,43 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static int Round(float val)
+        {
+            return (int)Math.Floor(val + 0.5f);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="u"></param>
+        /// <returns></returns>
+        public static float Lerp(float a, float b, float u)
+        {
+            return a + ((b - a) * u);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="u"></param>
+        /// <returns></returns>
+        public static LLVector3 Lerp(LLVector3 a, LLVector3 b, float u)
+        {
+            return new LLVector3(
+                a.X + (b.X - a.X) * u,
+                a.Y + (b.Y - a.Y) * u,
+                a.Z + (b.Z - a.Z) * u);
+        }
+
+        /// <summary>
         /// Decode a zerocoded byte array, used to decompress packets marked
         /// with the zerocoded flag
         /// </summary>

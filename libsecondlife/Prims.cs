@@ -436,12 +436,13 @@ namespace libsecondlife
             path["skew"] = LLSD.FromReal(Data.PathSkew);
             path["taper_x"] = LLSD.FromReal(Data.PathTaperX);
             path["taper_y"] = LLSD.FromReal(Data.PathTaperY);
-            path["twist"] = LLSD.FromInteger(Data.PathTwist);
-            path["twist_begin"] = LLSD.FromInteger(Data.PathTwistBegin);
+            path["twist"] = LLSD.FromReal(Data.PathTwist);
+            path["twist_begin"] = LLSD.FromReal(Data.PathTwistBegin);
 
             LLSDMap profile = new LLSDMap(4);
             profile["begin"] = LLSD.FromReal(Data.ProfileBegin);
             profile["curve"] = LLSD.FromInteger((int)Data.ProfileCurve);
+            profile["hole"] = LLSD.FromInteger((int)Data.ProfileHole);
             profile["end"] = LLSD.FromReal(Data.ProfileEnd);
             profile["hollow"] = LLSD.FromReal(Data.ProfileHollow);
 
@@ -477,7 +478,7 @@ namespace libsecondlife
             #region Path/Profile
 
             data.PathBegin = (float)path["begin"].AsReal();
-            data.PathCurve = (PathCurve)path["curve"].AsReal();
+            data.PathCurve = (PathCurve)path["curve"].AsInteger();
             data.PathEnd = (float)path["end"].AsReal();
             data.PathRadiusOffset = (float)path["radius_offset"].AsReal();
             data.PathRevolutions = (float)path["revolutions"].AsReal();
@@ -492,7 +493,8 @@ namespace libsecondlife
             data.PathTwistBegin = path["twist_begin"].AsInteger();
 
             data.ProfileBegin = (float)profile["begin"].AsReal();
-            data.ProfileCurve = (ProfileCurve)profile["curve"].AsReal();
+            data.ProfileCurve = (ProfileCurve)profile["curve"].AsInteger();
+            data.ProfileHole = (HoleType)profile["hole"].AsInteger();
             data.ProfileEnd = (float)profile["end"].AsReal();
             data.ProfileHollow = (float)profile["hollow"].AsReal();
 

@@ -35,6 +35,14 @@ namespace libsecondlife
     /// </summary>
     public abstract partial class LLObject
     {
+        // Used for packing and unpacking parameters
+        protected const float CUT_QUANTA = 0.00002f;
+        protected const float SCALE_QUANTA = 0.01f;
+        protected const float SHEAR_QUANTA = 0.01f;
+        protected const float TAPER_QUANTA = 0.01f;
+        protected const float REV_QUANTA = 0.015f;
+        protected const float HOLLOW_QUANTA = 0.00002f;
+
         #region Enumerations
 
         /// <summary>
@@ -103,18 +111,22 @@ namespace libsecondlife
             ZlibCompressed = 0x80000000
         }
 
-        [Flags]
         public enum ProfileCurve : byte
         {
-            ProfileCircle = 0x00,
-            ProfileSquare = 0x01,
-            ProfileIsoTriangle = 0x02,
-            ProfileEqualTriangle = 0x03,
-            ProfileRightTriangle = 0x04,
-            ProfileHalfCircle = 0x05,
-            HoleCircle = 0x10,
-            HoleSquare = 0x20,
-            HoleTriangle = 0x30
+            Circle = 0x00,
+            Square = 0x01,
+            IsoTriangle = 0x02,
+            EqualTriangle = 0x03,
+            RightTriangle = 0x04,
+            HalfCircle = 0x05
+        }
+
+        public enum HoleType : byte
+        {
+            Same = 0x00,
+            Circle = 0x10,
+            Square = 0x20,
+            Triangle = 0x30
         }
 
         public enum PathCurve : byte
@@ -158,24 +170,24 @@ namespace libsecondlife
         /// </summary>
         public struct ObjectData
         {
+            private const byte PROFILE_MASK = 0x0F;
+            private const byte HOLE_MASK = 0xF0;
+
             /// <summary></summary>
-            public int PathTwistBegin;
+            internal byte profileCurve;
+
+            /// <summary></summary>
+            public PathCurve PathCurve;
             /// <summary></summary>
             public float PathEnd;
-            /// <summary></summary>
-            public float ProfileBegin;
             /// <summary></summary>
             public float PathRadiusOffset;
             /// <summary></summary>
             public float PathSkew;
             /// <summary></summary>
-            public ProfileCurve ProfileCurve;
-            /// <summary></summary>
             public float PathScaleX;
             /// <summary></summary>
             public float PathScaleY;
-            /// <summary></summary>
-            public MaterialType Material;
             /// <summary></summary>
             public float PathShearX;
             /// <summary></summary>
@@ -185,21 +197,76 @@ namespace libsecondlife
             /// <summary></summary>
             public float PathTaperY;
             /// <summary></summary>
-            public float ProfileEnd;
-            /// <summary></summary>
             public float PathBegin;
             /// <summary></summary>
-            public PathCurve PathCurve;
+            public float PathTwist;
             /// <summary></summary>
-            public int PathTwist;
-            /// <summary></summary>
-            public float ProfileHollow;
+            public float PathTwistBegin;
             /// <summary></summary>
             public float PathRevolutions;
+            /// <summary></summary>
+            public float ProfileBegin;
+            /// <summary></summary>
+            public float ProfileEnd;
+            /// <summary></summary>
+            public float ProfileHollow;
+
+            /// <summary></summary>
+            public MaterialType Material;
             /// <summary></summary>
             public byte State;
             /// <summary></summary>
             public PCode PCode;
+
+            /// <summary></summary>
+            public ProfileCurve ProfileCurve
+            {
+                get { return (ProfileCurve)(profileCurve & PROFILE_MASK); }
+                set
+                {
+                    profileCurve &= HOLE_MASK;
+                    profileCurve |= (byte)value;
+                }
+            }
+
+            /// <summary></summary>
+            public HoleType ProfileHole
+            {
+                get { return (HoleType)(profileCurve & HOLE_MASK); }
+                set
+                {
+                    profileCurve &= PROFILE_MASK;
+                    profileCurve |= (byte)value;
+                }
+            }
+
+            /// <summary></summary>
+            public LLVector2 PathBeginScale
+            {
+                get
+                {
+                    LLVector2 begin = new LLVector2(1f, 1f);
+                    if (PathScaleX > 1f)
+                        begin.X = 2f - PathScaleX;
+                    if (PathScaleY > 1f)
+                        begin.Y = 2f - PathScaleY;
+                    return begin;
+                }
+            }
+
+            /// <summary></summary>
+            public LLVector2 PathEndScale
+            {
+                get
+                {
+                    LLVector2 end = new LLVector2(1f, 1f);
+                    if (PathScaleX < 1f)
+                        end.X = PathScaleX;
+                    if (PathScaleY < 1f)
+                        end.Y = PathScaleY;
+                    return end;
+                }
+            }
         }
 
         /// <summary>
@@ -381,255 +448,104 @@ namespace libsecondlife
             return ID.GetHashCode();
         }
 
-        #region Static Methods
+        #region Parameter Packing Methods
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathScale"></param>
-        /// <returns></returns>
-        public static byte PathScaleByte(float pathScale)
+        public static ushort PackBeginCut(float beginCut)
         {
-            // Y = 100 + 100X
-            int scale = (int)Math.Round(100.0f * pathScale);
-            return (byte)(100 + scale);
+            return (ushort)Math.Round(beginCut / CUT_QUANTA);
+        }
+
+        public static ushort PackEndCut(float endCut)
+        {
+            return (ushort)(50000 - (ushort)Math.Round(endCut / CUT_QUANTA));
+        }
+
+        public static byte PackPathScale(float pathScale)
+        {
+            return (byte)(200 - (byte)Math.Round(pathScale / SCALE_QUANTA));
+        }
+
+        public static byte PackPathShear(float pathShear)
+        {
+            return (byte)Math.Round(pathShear / SHEAR_QUANTA);
         }
 
         /// <summary>
-        /// 
+        /// Packs PathTwist, PathTwistBegin, PathRadiusOffset, and PathSkew
+        /// parameters in to signed eight bit values
         /// </summary>
-        /// <param name="pathScale"></param>
-        /// <returns></returns>
-        public static float PathScaleFloat(byte pathScale)
+        /// <param name="pathTwist">Floating point parameter to pack</param>
+        /// <returns>Signed eight bit value containing the packed parameter</returns>
+        public static sbyte PackPathTwist(float pathTwist)
         {
-            // Y = -1 + 0.01X
-            return (float)Math.Round((double)pathScale * 0.01d - 1.0d, 6);
+            return (sbyte)Math.Round(pathTwist / SCALE_QUANTA);
+        }
+
+        public static sbyte PackPathTaper(float pathTaper)
+        {
+            return (sbyte)Math.Round(pathTaper / TAPER_QUANTA);
+        }
+
+        public static byte PackPathRevolutions(float pathRevolutions)
+        {
+            return (byte)Math.Round((pathRevolutions - 1f) / REV_QUANTA);
+        }
+
+        public static ushort PackProfileHollow(float profileHollow)
+        {
+            return (ushort)Math.Round(profileHollow / HOLLOW_QUANTA);
+        }
+
+        #endregion Parameter Packing Methods
+
+        #region Parameter Unpacking Methods
+
+        public static float UnpackBeginCut(ushort beginCut)
+        {
+            return (float)beginCut * CUT_QUANTA;
+        }
+
+        public static float UnpackEndCut(ushort endCut)
+        {
+            return (float)(50000 - endCut) * CUT_QUANTA;
+        }
+
+        public static float UnpackPathScale(byte pathScale)
+        {
+            return (float)(200 - pathScale) * SCALE_QUANTA;
+        }
+
+        public static float UnpackPathShear(byte pathShear)
+        {
+            return (float)pathShear * SHEAR_QUANTA;
         }
 
         /// <summary>
-        /// 
+        /// Unpacks PathTwist, PathTwistBegin, PathRadiusOffset, and PathSkew
+        /// parameters from signed eight bit integers to floating point values
         /// </summary>
-        /// <param name="pathShear"></param>
-        /// <returns></returns>
-        public static byte PathShearByte(float pathShear)
+        /// <param name="pathTwist">Signed eight bit value to unpack</param>
+        /// <returns>Unpacked floating point value</returns>
+        public static float UnpackPathTwist(sbyte pathTwist)
         {
-            // Y = 256 + 100X
-            int shear = (int)Math.Round(100.0f * pathShear);
-            shear += 256;
-            return (byte)(shear % 256);
+            return (float)pathTwist * SCALE_QUANTA;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathShear"></param>
-        /// <returns></returns>
-        public static float PathShearFloat(byte pathShear)
+        public static float UnpackPathTaper(sbyte pathTaper)
         {
-            if (pathShear == 0) return 0.0f;
-
-            if (pathShear > 150)
-            {
-                // Negative value
-                return ((float)pathShear - 256.0f) / 100.0f;
-            }
-            else
-            {
-                // Positive value
-                return (float)pathShear / 100.0f;
-            }
+            return (float)pathTaper * TAPER_QUANTA;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="profileBegin"></param>
-        /// <returns></returns>
-        public static ushort ProfileBeginUInt16(float profileBegin)
+        public static float UnpackPathRevolutions(byte pathRevolutions)
         {
-            return Convert.ToUInt16(profileBegin / 0.00002f);
+            return (float)pathRevolutions * REV_QUANTA + 1f;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="profileBegin"></param>
-        /// <returns></returns>
-        public static float ProfileBeginFloat(ushort profileBegin)
+        public static float UnpackProfileHollow(ushort profileHollow)
         {
-            return (float)Math.Round((double)profileBegin * 0.00002d, 6);
+            return (float)profileHollow * HOLLOW_QUANTA;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="profileEnd"></param>
-        /// <returns></returns>
-        public static ushort ProfileEndUInt16(float profileEnd)
-        {
-            return (ushort)(50000 - Convert.ToInt32(profileEnd / 0.00002f));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="profileEnd"></param>
-        /// <returns></returns>
-        public static float ProfileEndFloat(ushort profileEnd)
-        {
-            float temp = (float)Math.Round(profileEnd * 0.00002f, 6);
-            if (temp > 1.0f) temp = 1.0f;
-            return 1.0f - temp;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="profileHollow"></param>
-        /// <returns></returns>
-        public static ushort ProfileHollowUInt16(float profileHollow)
-        {
-            return Convert.ToUInt16(profileHollow / 0.002f);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="profileHollow"></param>
-        /// <returns></returns>
-        public static float ProfileHollowFloat(ushort profileHollow)
-        {
-            float temp = profileHollow * 0.002f;
-            if (temp > 100.0f) temp = 0.0f;
-            return temp;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathBegin"></param>
-        /// <returns></returns>
-        public static ushort PathBeginUInt16(float pathBegin)
-        {
-            return Convert.ToUInt16(pathBegin / 0.00002f);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathBegin"></param>
-        /// <returns></returns>
-        public static float PathBeginFloat(ushort pathBegin)
-        {
-            return (float)pathBegin * 0.00002f;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathEnd"></param>
-        /// <returns></returns>
-        public static ushort PathEndUInt16(float pathEnd)
-        {
-            return (ushort)(50000 - Convert.ToInt32(pathEnd / 0.00002f));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathEnd"></param>
-        /// <returns></returns>
-        public static float PathEndFloat(ushort pathEnd)
-        {
-            return (float)(50000 - pathEnd) * 0.00002f;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathRadiusOffset"></param>
-        /// <returns></returns>
-        public static sbyte PathRadiusOffsetByte(float pathRadiusOffset)
-        {
-            // Y = 256 + 100X
-            return (sbyte)PathShearByte(pathRadiusOffset);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathRadiusOffset"></param>
-        /// <returns></returns>
-        public static float PathRadiusOffsetFloat(sbyte pathRadiusOffset)
-        {
-            // Y = X / 100
-            return (float)pathRadiusOffset / 100.0f;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathRevolutions"></param>
-        /// <returns></returns>
-        public static byte PathRevolutionsByte(float pathRevolutions)
-        {
-            // Y = 66.5X - 66
-            int revolutions = (int)Math.Round(66.5d * (double)pathRevolutions);
-            return (byte)(revolutions - 66);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathRevolutions"></param>
-        /// <returns></returns>
-        public static float PathRevolutionsFloat(byte pathRevolutions)
-        {
-            // Y = 1 + 0.015X
-            return (float)Math.Round(1.0d + (double)pathRevolutions * 0.015d, 6);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathSkew"></param>
-        /// <returns></returns>
-        public static sbyte PathSkewByte(float pathSkew)
-        {
-            return PathTaperByte(pathSkew);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathSkew"></param>
-        /// <returns></returns>
-        public static float PathSkewFloat(sbyte pathSkew)
-        {
-            return PathTaperFloat(pathSkew);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathTaper"></param>
-        /// <returns></returns>
-        public static sbyte PathTaperByte(float pathTaper)
-        {
-            // Y = 256 + 100X
-            return (sbyte)PathShearByte(pathTaper);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathTaper"></param>
-        /// <returns></returns>
-        public static float PathTaperFloat(sbyte pathTaper)
-        {
-            return (float)pathTaper / 100.0f;
-        }
-
-        #endregion Static Methods
+        #endregion Parameter Unpacking Methods
     }
 }
