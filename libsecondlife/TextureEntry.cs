@@ -881,7 +881,7 @@ namespace libsecondlife
 
                 #region Texture
                 binWriter.Write(FaceTextures[0].TextureID.GetBytes());
-                for (int i = 0; i < textures.Length; i++)
+                for (int i = 1; i < textures.Length; i++)
                 {
                     if (textures[i] != UInt32.MaxValue)
                     {
@@ -894,7 +894,7 @@ namespace libsecondlife
 
                 #region Color
                 binWriter.Write(FaceTextures[0].RGBA.GetInvertedBytes());
-                for (int i = 0; i < rgbas.Length; i++)
+                for (int i = 1; i < rgbas.Length; i++)
                 {
                     if (rgbas[i] != UInt32.MaxValue)
                     {
@@ -907,7 +907,7 @@ namespace libsecondlife
 
                 #region RepeatU
                 binWriter.Write(FaceTextures[0].RepeatU);
-                for (int i = 0; i < repeatus.Length; i++)
+                for (int i = 1; i < repeatus.Length; i++)
                 {
                     if (repeatus[i] != UInt32.MaxValue)
                     {
@@ -920,7 +920,7 @@ namespace libsecondlife
 
                 #region RepeatV
                 binWriter.Write(FaceTextures[0].RepeatV);
-                for (int i = 0; i < repeatvs.Length; i++)
+                for (int i = 1; i < repeatvs.Length; i++)
                 {
                     if (repeatvs[i] != UInt32.MaxValue)
                     {
@@ -933,7 +933,7 @@ namespace libsecondlife
 
                 #region OffsetU
                 binWriter.Write(Helpers.TEOffsetShort(FaceTextures[0].OffsetU));
-                for (int i = 0; i < offsetus.Length; i++)
+                for (int i = 1; i < offsetus.Length; i++)
                 {
                     if (offsetus[i] != UInt32.MaxValue)
                     {
@@ -946,7 +946,7 @@ namespace libsecondlife
 
                 #region OffsetV
                 binWriter.Write(Helpers.TEOffsetShort(FaceTextures[0].OffsetV));
-                for (int i = 0; i < offsetvs.Length; i++)
+                for (int i = 1; i < offsetvs.Length; i++)
                 {
                     if (offsetvs[i] != UInt32.MaxValue)
                     {
@@ -959,7 +959,7 @@ namespace libsecondlife
 
                 #region Rotation
                 binWriter.Write(Helpers.TERotationShort(FaceTextures[0].Rotation));
-                for (int i = 0; i < rotations.Length; i++)
+                for (int i = 1; i < rotations.Length; i++)
                 {
                     if (rotations[i] != UInt32.MaxValue)
                     {
@@ -972,7 +972,7 @@ namespace libsecondlife
 
                 #region Material
                 binWriter.Write(FaceTextures[0].material);
-                for (int i = 0; i < materials.Length; i++)
+                for (int i = 1; i < materials.Length; i++)
                 {
                     if (materials[i] != UInt32.MaxValue)
                     {
@@ -985,7 +985,7 @@ namespace libsecondlife
 
                 #region Media
                 binWriter.Write(FaceTextures[0].media);
-                for (int i = 0; i < medias.Length; i++)
+                for (int i = 1; i < medias.Length; i++)
                 {
                     if (medias[i] != UInt32.MaxValue)
                     {
@@ -998,7 +998,7 @@ namespace libsecondlife
 
                 #region Glow
                 binWriter.Write(Helpers.TEGlowByte(FaceTextures[0].Glow));
-                for (int i = 0; i < glows.Length; i++)
+                for (int i = 1; i < glows.Length; i++)
                 {
                     if (glows[i] != UInt32.MaxValue)
                     {
