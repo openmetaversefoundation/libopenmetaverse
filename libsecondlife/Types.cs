@@ -719,7 +719,13 @@ namespace libsecondlife
             LLVector3 axis = Norm(crossProduct);
             float s = (float)Math.Sin(angle / 2);
 
-            return new LLQuaternion(axis.X * s, axis.Y * s, axis.Z * s, (float)Math.Cos(angle / 2));
+            LLQuaternion quat = new LLQuaternion();
+            quat.X = axis.X * s;
+            quat.Y = axis.Y * s;
+            quat.Z = axis.Z * s;
+            quat.W = (float)Math.Cos(angle / 2);
+
+            return quat;
         }
 
         /// <summary>
@@ -811,23 +817,11 @@ namespace libsecondlife
 
         #region Operators
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
 		public static bool operator==(LLVector3 lhs, LLVector3 rhs)
 		{
 			return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
 		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)
 		{
 			return !(lhs == rhs);
@@ -838,58 +832,38 @@ namespace libsecondlife
             return new LLVector3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static LLVector3 operator -(LLVector3 lhs, LLVector3 rhs)
         {
             return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vec"></param>
-        /// <param name="val"></param>
-        /// <returns></returns>
         public static LLVector3 operator *(LLVector3 vec, float val)
         {
             return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
-        /// <param name="vec"></param>
-        /// <returns></returns>
         public static LLVector3 operator *(float val, LLVector3 vec)
         {
             return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static LLVector3 operator *(LLVector3 lhs, LLVector3 rhs)
         {
             return new LLVector3(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
         }
 
-        public static LLVector3 operator *(LLVector3 vec, LLQuaternion quat)
+        public static LLVector3 operator *(LLVector3 vec, LLQuaternion rot)
         {
-            LLQuaternion vq = new LLQuaternion(vec.X, vec.Y, vec.Z, 0);
-            LLQuaternion nq = new LLQuaternion(-quat.X, -quat.Y, -quat.Z, quat.W);
+            float rw = -rot.X * vec.X - rot.Y * vec.Y - rot.Z * vec.Z;
+            float rx =  rot.W * vec.X + rot.Y * vec.Z - rot.Z * vec.Y;
+            float ry =  rot.W * vec.Y + rot.Z * vec.X - rot.X * vec.Z;
+            float rz =  rot.W * vec.Z + rot.X * vec.Y - rot.Y * vec.X;
 
-            LLQuaternion result = (quat * vq) * nq;
+            float nx = -rw * rot.X + rx * rot.W - ry * rot.Z + rz * rot.Y;
+            float ny = -rw * rot.Y + ry * rot.W - rz * rot.X + rx * rot.Z;
+            float nz = -rw * rot.Z + rz * rot.W - rx * rot.Y + ry * rot.X;
 
-            return new LLVector3(result.X, result.Y, result.Z);
+            return new LLVector3(nx, ny, nz);
         }
 
         #endregion Operators
@@ -1645,13 +1619,13 @@ namespace libsecondlife
         /// <param name="y">Y value</param>
         /// <param name="z">Z value</param>
         /// <param name="w">W value</param>
-		public LLQuaternion(float x, float y, float z, float w)
-		{
-			X = x;
-			Y = y;
-			Z = z;
-			W = w;
-		}
+        public LLQuaternion(float x, float y, float z, float w)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
+        }
 
         /// <summary>
         /// Build a quaternion from an angle and a vector
@@ -1735,11 +1709,11 @@ namespace libsecondlife
 
                 if (array.Count == 4)
                 {
-                    return new LLQuaternion(
-                        (float)array[0].AsReal(),
-                        (float)array[1].AsReal(),
-                        (float)array[2].AsReal(),
-                        (float)array[3].AsReal());
+                    LLQuaternion quat = new LLQuaternion();
+                    quat.X = (float)array[0].AsReal();
+                    quat.Y = (float)array[1].AsReal();
+                    quat.Z = (float)array[2].AsReal();
+                    quat.W = (float)array[3].AsReal();
                 }
             }
 
@@ -1819,6 +1793,30 @@ namespace libsecondlife
             m.M33 = 1f - 2f * (xx + yy);
 
             return m;
+        }
+
+        public static LLQuaternion SetQuaternion(float angle, float x, float y, float z)
+        {
+            LLVector3 vec = new LLVector3(x, y, z);
+            return SetQuaternion(angle, vec);
+        }
+
+        public static LLQuaternion SetQuaternion(float angle, LLVector3 vec)
+        {
+            LLQuaternion quat = new LLQuaternion();
+            vec = LLVector3.Norm(vec);
+
+            angle *= 0.5f;
+            float c = (float)Math.Cos(angle);
+            float s = (float)Math.Sin(angle);
+
+            quat.X = vec.X * s;
+            quat.Y = vec.Y * s;
+            quat.Z = vec.Z * s;
+            quat.W = c;
+
+            quat = LLQuaternion.Norm(quat);
+            return quat;
         }
 
         #endregion Static Methods

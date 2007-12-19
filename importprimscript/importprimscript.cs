@@ -152,7 +152,7 @@ namespace importprimscript
                 volume.Material = LLObject.MaterialType.Wood;
                 volume.PathScaleY = 0.5f;
                 volume.PathCurve = LLObject.PathCurve.Circle;
-                volume.ProfileCurve = LLObject.ProfileCurve.ProfileCircle;
+                volume.ProfileCurve = LLObject.ProfileCurve.Circle;
 
                 // Rez this prim
                 CurrentSculpt = sculpties[i];

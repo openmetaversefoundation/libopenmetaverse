@@ -2208,9 +2208,11 @@ namespace libsecondlife
             prim.Material = LLObject.MaterialType.Wood;
             prim.ProfileCurve = LLObject.ProfileCurve.Square;
             prim.PathCurve = LLObject.PathCurve.Line;
-            prim.ProfileEnd = 1.0f;
-            prim.PathEnd = 1.0f;
-            prim.PathRevolutions = 1.0f;
+            prim.ProfileEnd = 1f;
+            prim.PathEnd = 1f;
+            prim.PathScaleX = 1f;
+            prim.PathScaleY = 1f;
+            prim.PathRevolutions = 1f;
 
             return prim;
         }

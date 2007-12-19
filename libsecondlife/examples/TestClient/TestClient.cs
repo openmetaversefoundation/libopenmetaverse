@@ -18,8 +18,6 @@ namespace libsecondlife.TestClient
         public LLUUID MasterKey = LLUUID.Zero;
 		public ClientManager ClientManager;
 
-        //internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
-
         private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
         private LLVector3 left = new LLVector3(0.9999f, 0, 0);

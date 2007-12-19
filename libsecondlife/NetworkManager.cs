@@ -559,7 +559,7 @@ namespace libsecondlife
             }
 
             // Clear out all of the packets that never had time to process
-            lock (PacketInbox) PacketInbox.Clear();
+            PacketInbox.Close();
 
             connected = false;
 
