@@ -910,22 +910,32 @@ namespace mapgenerator
             foreach (MapPacket packet in protocol.LowMaps)
                 if (packet != null)
                     writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
-            writer.WriteLine("            return null;\n");
-            writer.WriteLine("        }\n");
+            writer.WriteLine("            return null;" + Environment.NewLine);
+            writer.WriteLine("        }" + Environment.NewLine);
 
             // Write the Packet.BuildPacket() function
             writer.WriteLine(
-                "        public static Packet BuildPacket(byte[] bytes, ref int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
-                "        {" + Environment.NewLine + "            ushort id; PacketFrequency freq;" + Environment.NewLine + 
+                "        public static Packet BuildPacket(byte[] packetBuffer, ref int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
+                "        {" + Environment.NewLine +
+                "            byte[] bytes; ushort id; PacketFrequency freq;" + Environment.NewLine + 
                 "            int i = 0;" + Environment.NewLine +
-                "            Header header = Header.BuildHeader(bytes, ref i, ref packetEnd);" + Environment.NewLine +
-                "            if (header.Zerocoded)" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;" + Environment.NewLine +
-                "                bytes = zeroBuffer;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
-                "            if (bytes[6] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                if (bytes[7] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
+                "            Header header = Header.BuildHeader(packetBuffer, ref i, ref packetEnd);" + Environment.NewLine +
+                "            if (header.Zerocoded)" + Environment.NewLine +
+                "            {" + Environment.NewLine +
+                "                packetEnd = Helpers.ZeroDecode(packetBuffer, packetEnd + 1, zeroBuffer) - 1;" + Environment.NewLine +
+                "                bytes = zeroBuffer;" + Environment.NewLine +
+                "            }" + Environment.NewLine +
+                "            else" + Environment.NewLine +
+                "            {" + Environment.NewLine +
+                "                bytes = packetBuffer;" + Environment.NewLine +
+                "            }" + Environment.NewLine + Environment.NewLine +
+                "            if (bytes[6] == 0xFF)" + Environment.NewLine +
+                "            {" + Environment.NewLine +
+                "                if (bytes[7] == 0xFF)" + Environment.NewLine +
+                "                {" + Environment.NewLine +
                 "                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;" + Environment.NewLine +
-                "                    switch (id)" + Environment.NewLine + "                    {");
+                "                    switch (id)" + Environment.NewLine +
+                "                    {");
             foreach (MapPacket packet in protocol.LowMaps)
                 if (packet != null)
                     writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");

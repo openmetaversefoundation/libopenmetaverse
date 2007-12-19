@@ -1621,15 +1621,19 @@ namespace libsecondlife.Packets
 
         }
 
-        public static Packet BuildPacket(byte[] bytes, ref int packetEnd, byte[] zeroBuffer)
+        public static Packet BuildPacket(byte[] packetBuffer, ref int packetEnd, byte[] zeroBuffer)
         {
-            ushort id; PacketFrequency freq;
+            byte[] bytes; ushort id; PacketFrequency freq;
             int i = 0;
-            Header header = Header.BuildHeader(bytes, ref i, ref packetEnd);
+            Header header = Header.BuildHeader(packetBuffer, ref i, ref packetEnd);
             if (header.Zerocoded)
             {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
+                packetEnd = Helpers.ZeroDecode(packetBuffer, packetEnd + 1, zeroBuffer) - 1;
                 bytes = zeroBuffer;
+            }
+            else
+            {
+                bytes = packetBuffer;
             }
 
             if (bytes[6] == 0xFF)

@@ -615,7 +615,7 @@ namespace libsecondlife
                 // Reset packet to null for the check below
                 packet = null;
 
-                if (PacketInbox.Dequeue(500, ref incomingPacket))
+                if (PacketInbox.Dequeue(200, ref incomingPacket))
                 {
                     packet = incomingPacket.Packet;
                     simulator = incomingPacket.Simulator;

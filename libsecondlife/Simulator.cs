@@ -362,7 +362,7 @@ namespace libsecondlife
         internal int positionIndexYou = -1;
         /// <summary>AvatarPositions index representing TrackAgent target</summary>
         internal int positionIndexPrey = -1;
-        /// <summary>Sequence numbers of packets we've finished processing 
+        /// <summary>Sequence numbers of packets we've received
         /// (for duplicate checking)</summary>
         internal Queue<uint> PacketArchive;
         /// <summary>Packets we sent out that need ACKs from the simulator</summary>
@@ -714,10 +714,10 @@ namespace libsecondlife
         /// <returns></returns>
         public override string ToString()
         {
-            if (Name.Length > 0)
-                return Name + " (" + ipEndPoint.ToString() + ")";
+            if (!String.IsNullOrEmpty(Name))
+                return String.Format("{0} ({1})", Name, ipEndPoint);
             else
-                return "(" + ipEndPoint.ToString() + ")";
+                return String.Format("({0})", ipEndPoint);
         }
 
         /// <summary>

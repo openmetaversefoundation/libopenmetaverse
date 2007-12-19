@@ -133,7 +133,7 @@ namespace libsecondlife
         // the UDP socket
         private Socket udpSocket;
 
-        //private PacketBufferPool _bufferPool;
+        private PacketBufferPool _bufferPool;
 
         // the ReaderWriterLock is used solely for the purposes of shutdown (Stop()).
         // since there are potentially many "reader" threads in the internal .NET IOCP
@@ -169,7 +169,7 @@ namespace libsecondlife
         public UDPBase(int port)
         {
             udpPort = port;
-            //_bufferPool = new PacketBufferPool(udpPort, 64, 1);
+            _bufferPool = new PacketBufferPool(new IPEndPoint(IPAddress.Any, udpPort), 64, 1);
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace libsecondlife
         {
             remoteEndPoint = endPoint;
             udpPort = 0;
-            //_bufferPool = new PacketBufferPool(endPoint, 64, 1);
+            _bufferPool = new PacketBufferPool(endPoint, 64, 1);
         }
 
         /// <summary>
@@ -268,19 +268,19 @@ namespace libsecondlife
                 Interlocked.Increment(ref rwOperationCount);
 
                 // allocate a packet buffer
-                //WrappedObject<UDPPacketBuffer> buf = _bufferPool.CheckOut();
-                UDPPacketBuffer buf = new UDPPacketBuffer();
+                WrappedObject<UDPPacketBuffer> buf = _bufferPool.CheckOut();
+                //UDPPacketBuffer buf = new UDPPacketBuffer();
 
                 try
                 {
                     // kick off an async read
                     udpSocket.BeginReceiveFrom(
-                        //buf.Instance.Data,
-                        buf.Data,
+                        buf.Instance.Data,
+                        //buf.Data,
                         0,
                         UDPPacketBuffer.BUFFER_SIZE,
                         SocketFlags.None,
-                        ref buf.RemoteEndPoint,
+                        ref buf.Instance.RemoteEndPoint,
                         new AsyncCallback(AsyncEndReceive),
                         buf);
                 }
@@ -315,9 +315,9 @@ namespace libsecondlife
 
                 // get the buffer that was created in AsyncBeginReceive
                 // this is the received data
-                //WrappedObject<UDPPacketBuffer> wrappedBuffer = (WrappedObject<UDPPacketBuffer>)iar.AsyncState;
-                //UDPPacketBuffer buffer = wrappedBuffer.Instance;
-                UDPPacketBuffer buffer = (UDPPacketBuffer)iar.AsyncState;
+                WrappedObject<UDPPacketBuffer> wrappedBuffer = (WrappedObject<UDPPacketBuffer>)iar.AsyncState;
+                UDPPacketBuffer buffer = wrappedBuffer.Instance;
+                //UDPPacketBuffer buffer = (UDPPacketBuffer)iar.AsyncState;
 
                 try
                 {
@@ -349,7 +349,7 @@ namespace libsecondlife
                     rwLock.ReleaseReaderLock();
                 }
 
-                //wrappedBuffer.Dispose();
+                wrappedBuffer.Dispose();
             }
             else
             {
