@@ -325,6 +325,9 @@ namespace libsecondlife
                             case "sale_price":
                                 SalePrice = Int32.Parse(fields[1]);
                                 break;
+                            case "sale_info":
+                                // Container for sale_type and sale_price, ignore
+                                break;
                             default:
                                 return false;
                         }
