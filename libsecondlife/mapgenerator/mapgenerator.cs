@@ -128,24 +128,19 @@ namespace mapgenerator
                         " = (ushort)(bytes[i++] + (bytes[i++] << 8));");
                     break;
                 case FieldType.LLQuaternion:
-                    writer.WriteLine("                    " + field.Name +
-                        " = new LLQuaternion(bytes, i, true); i += 12;");
+                    writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i, true); i += 12;");
                     break;
                 case FieldType.LLUUID:
-                    writer.WriteLine("                    " + field.Name +
-                        " = new LLUUID(bytes, i); i += 16;");
+                    writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 16;");
                     break;
                 case FieldType.LLVector3:
-                    writer.WriteLine("                    " + field.Name +
-                        " = new LLVector3(bytes, i); i += 12;");
+                    writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 12;");
                     break;
                 case FieldType.LLVector3d:
-                    writer.WriteLine("                    " + field.Name +
-                        " = new LLVector3d(bytes, i); i += 24;");
+                    writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 24;");
                     break;
                 case FieldType.LLVector4:
-                    writer.WriteLine("                    " + field.Name +
-                        " = new LLVector4(bytes, i); i += 16;");
+                    writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 16;");
                     break;
                 case FieldType.S16:
                     writer.WriteLine("                    " + field.Name +
@@ -383,6 +378,12 @@ namespace mapgenerator
             // Constructor for building the class from bytes
             //writer.WriteLine("            /// <summary>Constructor for building the block from a byte array</summary>");
             writer.WriteLine("            public " + block.Name + "Block(byte[] bytes, ref int i)" + Environment.NewLine + 
+                "            {" + Environment.NewLine + 
+                "                FromBytes(bytes, ref i);" + Environment.NewLine + 
+                "            }" + Environment.NewLine);
+
+            // Initiates instance variables from a byte message
+            writer.WriteLine("            public void FromBytes(byte[] bytes, ref int i)" + Environment.NewLine + 
                 "            {");
 
             // Declare a length variable if we need it for variable fields in this constructor
@@ -505,8 +506,7 @@ namespace mapgenerator
                 else
                 {
                     // Multiple count block
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + 
-                        "Block[" + block.Count + "];");
+                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + "Block[" + block.Count + "];");
                 }
             }
             writer.WriteLine("        }" + Environment.NewLine);
@@ -514,10 +514,20 @@ namespace mapgenerator
             // Constructor that takes a byte array and beginning position only (no prebuilt header)
             bool seenVariable = false;
             //writer.WriteLine("        /// <summary>Constructor that takes a byte array and beginning position (no prebuilt header)</summary>");
-            writer.WriteLine("        public " + packet.Name + "Packet(byte[] bytes, ref int i)" + Environment.NewLine + "        {");
-            writer.WriteLine("            int packetEnd = bytes.Length - 1;");
-            writer.WriteLine("            Header = new " + packet.Frequency.ToString() + 
-                "Header(bytes, ref i, ref packetEnd);");
+            writer.WriteLine("        public " + packet.Name + "Packet(byte[] bytes, ref int i) : this()" + Environment.NewLine +
+                "        {" + Environment.NewLine +
+                "            int packetEnd = bytes.Length - 1;" + Environment.NewLine +
+                "            FromBytes(bytes, ref i, ref packetEnd, null);" + Environment.NewLine +
+                "        }" + Environment.NewLine);
+
+            writer.WriteLine("        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)" + Environment.NewLine + "        {");
+            writer.WriteLine("            header.FromBytes(bytes, ref i, ref packetEnd);");
+            writer.WriteLine("            if (header.Zerocoded && zeroBuffer != null)");
+            writer.WriteLine("            {");
+            writer.WriteLine("                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;");
+            writer.WriteLine("                bytes = zeroBuffer;");
+            writer.WriteLine("            }");
+
             foreach (MapBlock block in packet.Blocks)
             {
                 if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
@@ -526,7 +536,7 @@ namespace mapgenerator
                 if (block.Count == 1)
                 {
                     // Single count block
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + "Block(bytes, ref i);");
+                    writer.WriteLine("            " + sanitizedName + ".FromBytes(bytes, ref i);");
                 }
                 else if (block.Count == -1)
                 {
@@ -540,19 +550,22 @@ namespace mapgenerator
                     {
                         writer.WriteLine("            count = (int)bytes[i++];");
                     }
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + "Block[count];");
+                    writer.WriteLine("            if(" + sanitizedName + ".Length < count) {");
+                    writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[count];");
+                    writer.WriteLine("                for(int j = 0; j < count; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < count; j++)");
-                    writer.WriteLine("            { " + sanitizedName + "[j] = new " +
-                        block.Name + "Block(bytes, ref i); }");
+                    writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
                 }
                 else
                 {
                     // Multiple count block
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + 
-                        "Block[" + block.Count + "];");
+                    writer.WriteLine("            if(" + sanitizedName + ".Length < " + block.Count+") {");
+                    writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[" + block.Count + "];");
+                    writer.WriteLine("                for(int j = 0; j < " + block.Count + "; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < " + block.Count + "; j++)");
-                    writer.WriteLine("            { " + sanitizedName + "[j] = new " + 
-                        block.Name + "Block(bytes, ref i); }");
+                    writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
                 }
             }
             writer.WriteLine("        }" + Environment.NewLine);
@@ -561,9 +574,19 @@ namespace mapgenerator
 
             // Constructor that takes a byte array and a prebuilt header
             //writer.WriteLine("        /// <summary>Constructor that takes a byte array and a prebuilt header</summary>");
-            writer.WriteLine("        public " + packet.Name + 
-                "Packet(Header head, byte[] bytes, ref int i)" + Environment.NewLine + "        {");
+            writer.WriteLine("        public " + packet.Name + "Packet(Header head, byte[] bytes, ref int i): this()" + Environment.NewLine +
+                "        {" + Environment.NewLine +
+                "            int packetEnd = bytes.Length - 1;" + Environment.NewLine +
+                "            FromBytes(head, bytes, ref i, ref packetEnd, null);" + Environment.NewLine +
+                "        }" + Environment.NewLine);
+
+            writer.WriteLine("        override public void FromBytes(Header head, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)" + Environment.NewLine + "        {");
             writer.WriteLine("            Header = head;");
+            writer.WriteLine("            if (head.Zerocoded && zeroBuffer != null)");
+            writer.WriteLine("            {");
+            writer.WriteLine("                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;");
+            writer.WriteLine("                bytes = zeroBuffer;");
+            writer.WriteLine("            }");
             foreach (MapBlock block in packet.Blocks)
             {
                 if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
@@ -572,7 +595,7 @@ namespace mapgenerator
                 if (block.Count == 1)
                 {
                     // Single count block
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + "Block(bytes, ref i);");
+                    writer.WriteLine("            " + sanitizedName + ".FromBytes(bytes, ref i);");
                 }
                 else if (block.Count == -1)
                 {
@@ -586,19 +609,22 @@ namespace mapgenerator
                     {
                         writer.WriteLine("            count = (int)bytes[i++];");
                     }
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + "Block[count];");
+                    writer.WriteLine("            if(" + sanitizedName + ".Length < count) {");
+                    writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[count];");
+                    writer.WriteLine("                for(int j = 0; j < count; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < count; j++)");
-                    writer.WriteLine("            { " + sanitizedName + "[j] = new " +
-                        block.Name + "Block(bytes, ref i); }");
+                    writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
                 }
                 else
                 {
                     // Multiple count block
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name +
-                        "Block[" + block.Count + "];");
+                    writer.WriteLine("            if(" + sanitizedName + ".Length < " + block.Count+") {");
+                    writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[" + block.Count + "];");
+                    writer.WriteLine("                for(int j = 0; j < " + block.Count + "; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < " + block.Count + "; j++)");
-                    writer.WriteLine("            { " + sanitizedName + "[j] = new " +
-                        block.Name + "Block(bytes, ref i); }");
+                    writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
                 }
             }
             writer.WriteLine("        }" + Environment.NewLine);
@@ -808,7 +834,9 @@ namespace mapgenerator
                 "    public abstract partial class Packet" + Environment.NewLine + "    {" + Environment.NewLine + 
                 "        public abstract Header Header { get; set; }" + Environment.NewLine +
                 "        public abstract PacketType Type { get; }" + Environment.NewLine +
-                "        internal int TickCount;" + Environment.NewLine + Environment.NewLine +
+                "        public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine + 
+                "        public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine + 
+                "        public int TickCount;" + Environment.NewLine + Environment.NewLine +
                 "        public abstract byte[] ToBytes();" //+ Environment.NewLine + Environment.NewLine +
                 //"        public void ToXml(XmlWriter xmlWriter)" + Environment.NewLine +
                 //"        {" + Environment.NewLine +
@@ -848,6 +876,42 @@ namespace mapgenerator
                 "                    break;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
                 "            return PacketType.Default;" + Environment.NewLine + "        }" + Environment.NewLine);
             
+            // Write the Packet.GetType() function
+            writer.WriteLine(
+                "        public static PacketType GetType(byte[] bytes, int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
+                "        {" + Environment.NewLine + "            ushort id; PacketFrequency freq;" + Environment.NewLine + 
+                "            int i = 0, end = packetEnd;" + Environment.NewLine +
+                "            Header header = Header.BuildHeader(bytes, ref i, ref end);" + Environment.NewLine +
+                "            if (header.Zerocoded)" + Environment.NewLine + "            {" + Environment.NewLine +
+                "                end = Helpers.ZeroDecode(bytes, end + 1, zeroBuffer) - 1;" + Environment.NewLine +
+                "                bytes = zeroBuffer;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
+                "            if (bytes[6] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
+                "                if (bytes[7] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
+                "                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;" + Environment.NewLine +
+                "                }" + Environment.NewLine + 
+                "                else" + Environment.NewLine +
+                "                {" + Environment.NewLine + "                    id = (ushort)bytes[7];  freq = PacketFrequency.Medium;" +
+                Environment.NewLine + "                }" + Environment.NewLine + "            }" + Environment.NewLine +
+                "            else" + Environment.NewLine + "            {" + Environment.NewLine +
+                "                id = (ushort)bytes[6];  freq = PacketFrequency.High;" + Environment.NewLine +
+                "            }" + Environment.NewLine +
+                "            return GetType(id, freq);" + Environment.NewLine +
+                "        }" + Environment.NewLine);
+
+            // Write the Packet.BuildPacket(PacketType) function
+            writer.WriteLine("        public static Packet BuildPacket(PacketType type)");
+            writer.WriteLine("        {");
+            foreach (MapPacket packet in protocol.HighMaps)
+                if (packet != null)
+                    writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
+            foreach (MapPacket packet in protocol.MediumMaps)
+                if (packet != null)
+                    writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
+            foreach (MapPacket packet in protocol.LowMaps)
+                if (packet != null)
+                    writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
+            writer.WriteLine("            return null;\n");
+            writer.WriteLine("        }\n");
 
             // Write the Packet.BuildPacket() function
             writer.WriteLine(

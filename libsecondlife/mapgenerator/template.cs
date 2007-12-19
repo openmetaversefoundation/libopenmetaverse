@@ -113,6 +113,8 @@ namespace libsecondlife.Packets
         /// <summary>Array containing all the appended ACKs of this packet</summary>
         public uint[] AckList;
 
+        public abstract void FromBytes(byte[] bytes, ref int pos, ref int packetEnd);
+
         /// <summary>
         /// Convert the AckList to a byte array, used for packet serializing
         /// </summary>
@@ -227,6 +229,11 @@ namespace libsecondlife.Packets
         /// <param name="packetEnd"></param>
         public LowHeader(byte[] bytes, ref int pos, ref int packetEnd)
         {
+            FromBytes(bytes, ref pos, ref packetEnd);
+        }
+
+        override public void FromBytes(byte[] bytes, ref int pos, ref int packetEnd)
+        {
             if (bytes.Length < 10) { throw new MalformedDataException(); }
             Data = new byte[10];
             Buffer.BlockCopy(bytes, 0, Data, 0, 10);
@@ -291,6 +298,11 @@ namespace libsecondlife.Packets
         /// <param name="packetEnd"></param>
         public MediumHeader(byte[] bytes, ref int pos, ref int packetEnd)
         {
+            FromBytes(bytes, ref pos, ref packetEnd);
+        }
+
+        override public void FromBytes(byte[] bytes, ref int pos, ref int packetEnd)
+        {
             if (bytes.Length < 8) { throw new MalformedDataException(); }
             Data = new byte[8];
             Buffer.BlockCopy(bytes, 0, Data, 0, 8);
@@ -340,6 +352,11 @@ namespace libsecondlife.Packets
         /// <param name="pos"></param>
         /// <param name="packetEnd"></param>
         public HighHeader(byte[] bytes, ref int pos, ref int packetEnd)
+        {
+            FromBytes(bytes, ref pos, ref packetEnd);
+        }
+
+        override public void FromBytes(byte[] bytes, ref int pos, ref int packetEnd)
         {
             if (bytes.Length < 7) { throw new MalformedDataException(); }
             Data = new byte[7];

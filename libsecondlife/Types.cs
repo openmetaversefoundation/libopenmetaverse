@@ -79,12 +79,8 @@ namespace libsecondlife
         /// <param name="pos">Beginning offset in the array</param>
         public LLUUID(byte[] source, int pos)
         {
-            UUID = new Guid(
-                (source[pos + 0] << 24) | (source[pos + 1] << 16) | (source[pos + 2] << 8) | source[pos + 3],
-                (short)((source[pos + 4] << 8) | source[pos + 5]),
-                (short)((source[pos + 6] << 8) | source[pos + 7]),
-                source[pos + 8], source[pos + 9], source[pos + 10], source[pos + 11],
-                source[pos + 12], source[pos + 13], source[pos + 14], source[pos + 15]);
+            UUID = LLUUID.Zero.UUID;
+            FromBytes(source, pos);
         }
 
         /// <summary>
@@ -100,6 +96,21 @@ namespace libsecondlife
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="pos"></param>
+        public void FromBytes(byte[] source, int pos)
+        {
+            UUID = new Guid(
+                (source[pos + 0] << 24) | (source[pos + 1] << 16) | (source[pos + 2] << 8) | source[pos + 3],
+                (short)((source[pos + 4] << 8) | source[pos + 5]),
+                (short)((source[pos + 6] << 8) | source[pos + 7]),
+                source[pos + 8], source[pos + 9], source[pos + 10], source[pos + 11],
+                source[pos + 12], source[pos + 13], source[pos + 14], source[pos + 15]);
+        }
 
         /// <summary>
         /// IComparable.CompareTo implementation.
@@ -499,6 +510,9 @@ namespace libsecondlife
         /// <summary>Z value</summary>
         public float Z;
 
+        // Used for little to big endian conversion on big endian architectures
+        private byte[] conversionBuffer;
+
         #region Constructors
 
         /// <summary>
@@ -507,6 +521,7 @@ namespace libsecondlife
         /// <param name="vector">Single-precision vector to copy</param>
         public LLVector3(LLVector3 vector)
         {
+            conversionBuffer = null;
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
@@ -519,6 +534,7 @@ namespace libsecondlife
         /// <param name="vector">A double-precision vector</param>
 		public LLVector3(LLVector3d vector)
 		{
+            conversionBuffer = null;
 			X = (float)vector.X;
 			Y = (float)vector.Y;
 			Z = (float)vector.Z;
@@ -531,26 +547,10 @@ namespace libsecondlife
         /// <param name="pos">Beginning position in the byte array</param>
 		public LLVector3(byte[] byteArray, int pos)
 		{
-            if (!BitConverter.IsLittleEndian)
-            {
-                byte[] newArray = new byte[12];
-                Buffer.BlockCopy(byteArray, pos, newArray, 0, 12);
-
-                Array.Reverse(newArray, 0, 4);
-                Array.Reverse(newArray, 4, 4);
-                Array.Reverse(newArray, 8, 4);
-
-				X = BitConverter.ToSingle(newArray, 0);
-                Y = BitConverter.ToSingle(newArray, 4);
-                Z = BitConverter.ToSingle(newArray, 8);
-            }
-            else
-            {
-                X = BitConverter.ToSingle(byteArray, pos);
-                Y = BitConverter.ToSingle(byteArray, pos + 4);
-                Z = BitConverter.ToSingle(byteArray, pos + 8);
-            }
-		}
+            conversionBuffer = null;
+            X = Y = Z = 0;
+            FromBytes(byteArray, pos);
+        }
 
         /// <summary>
         /// Constructor, builds a vector for individual float values
@@ -560,6 +560,7 @@ namespace libsecondlife
         /// <param name="z">Z value</param>
 		public LLVector3(float x, float y, float z)
 		{
+            conversionBuffer = null;
 			X = x;
 			Y = y;
 			Z = z;
@@ -568,6 +569,38 @@ namespace libsecondlife
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// Builds a vector from a byte array
+        /// </summary>
+        /// <param name="byteArray">Byte array containing a 12 byte vector</param>
+        /// <param name="pos">Beginning position in the byte array</param>
+        public void FromBytes(byte[] byteArray, int pos)
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                // Big endian architecture
+                if (conversionBuffer == null)
+                    conversionBuffer = new byte[12];
+
+                Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 12);
+
+                Array.Reverse(conversionBuffer, 0, 4);
+                Array.Reverse(conversionBuffer, 4, 4);
+                Array.Reverse(conversionBuffer, 8, 4);
+
+                X = BitConverter.ToSingle(conversionBuffer, 0);
+                Y = BitConverter.ToSingle(conversionBuffer, 4);
+                Z = BitConverter.ToSingle(conversionBuffer, 8);
+            }
+            else
+            {
+                // Little endian architecture
+                X = BitConverter.ToSingle(byteArray, pos);
+                Y = BitConverter.ToSingle(byteArray, pos + 4);
+                Z = BitConverter.ToSingle(byteArray, pos + 8);
+            }
+        }
 
         /// <summary>
         /// Test if this vector is composed of all finite numbers
@@ -884,6 +917,9 @@ namespace libsecondlife
         /// <summary>Z value</summary>
         public double Z;
 
+        // Used for little to big endian conversion on big endian architectures
+        private byte[] conversionBuffer;
+
         #region Constructors
 
         /// <summary>
@@ -894,6 +930,7 @@ namespace libsecondlife
         /// <param name="z"></param>
 		public LLVector3d(double x, double y, double z)
 		{
+            conversionBuffer = null;
 			X = x;
 			Y = y;
 			Z = z;
@@ -905,6 +942,7 @@ namespace libsecondlife
         /// <param name="llv3"></param>
         public LLVector3d(LLVector3 llv3)
         {
+            conversionBuffer = null;
             X = llv3.X;
             Y = llv3.Y;
             Z = llv3.Z;
@@ -917,30 +955,46 @@ namespace libsecondlife
         /// <param name="pos"></param>
 		public LLVector3d(byte[] byteArray, int pos)
 		{
-            if (!BitConverter.IsLittleEndian)
-            {
-                byte[] newArray = new byte[24];
-                Buffer.BlockCopy(byteArray, pos, newArray, 0, 24);
-
-                Array.Reverse(newArray, 0, 8);
-                Array.Reverse(newArray, 8, 8);
-                Array.Reverse(newArray, 16, 8);
-
-                X = BitConverter.ToDouble(newArray, 0);
-                Y = BitConverter.ToDouble(newArray, 8);
-                Z = BitConverter.ToDouble(newArray, 16);
-            }
-            else
-            {
-                X = BitConverter.ToDouble(byteArray, pos);
-                Y = BitConverter.ToDouble(byteArray, pos + 8);
-                Z = BitConverter.ToDouble(byteArray, pos + 16);
-            }
+            conversionBuffer = null;
+            X = Y = Z = 0;
+            FromBytes(byteArray, pos);
         }
 
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
+        public void FromBytes(byte[] byteArray, int pos)
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                // Big endian architecture
+                if (conversionBuffer == null)
+                    conversionBuffer = new byte[24];
+
+                Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 24);
+
+                Array.Reverse(conversionBuffer, 0, 8);
+                Array.Reverse(conversionBuffer, 8, 8);
+                Array.Reverse(conversionBuffer, 16, 8);
+
+                X = BitConverter.ToDouble(conversionBuffer, 0);
+                Y = BitConverter.ToDouble(conversionBuffer, 8);
+                Z = BitConverter.ToDouble(conversionBuffer, 16);
+            }
+            else
+            {
+                // Little endian architecture
+                X = BitConverter.ToDouble(byteArray, pos);
+                Y = BitConverter.ToDouble(byteArray, pos + 8);
+                Z = BitConverter.ToDouble(byteArray, pos + 16);
+            }
+        }
 
         /// <summary>
         /// 
@@ -1085,6 +1139,9 @@ namespace libsecondlife
         /// <summary></summary>
         public float S;
 
+        // Used for little to big endian conversion on big endian architectures
+        private byte[] conversionBuffer;
+
         #region Constructors
 
         /// <summary>
@@ -1096,6 +1153,7 @@ namespace libsecondlife
         /// <param name="s">S value</param>
         public LLVector4(float x, float y, float z, float s)
         {
+            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -1109,33 +1167,49 @@ namespace libsecondlife
         /// <param name="pos"></param>
 		public LLVector4(byte[] byteArray, int pos)
 		{
+            conversionBuffer = null;
+            X = Y = Z = S = 0;
+            FromBytes(byteArray, pos);
+        }
+
+        #endregion Constructors
+
+        #region Public Methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
+        public void FromBytes(byte[] byteArray, int pos)
+        {
             if (!BitConverter.IsLittleEndian)
             {
-                byte[] newArray = new byte[16];
-                Buffer.BlockCopy(byteArray, pos, newArray, 0, 16);
+                // Big endian architecture
+                if (conversionBuffer == null)
+                    conversionBuffer = new byte[16];
 
-                Array.Reverse(newArray, 0, 4);
-                Array.Reverse(newArray, 4, 4);
-                Array.Reverse(newArray, 8, 4);
-                Array.Reverse(newArray, 12, 4);
+                Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 16);
 
-                X = BitConverter.ToSingle(newArray, 0);
-                Y = BitConverter.ToSingle(newArray, 4);
-                Z = BitConverter.ToSingle(newArray, 8);
-                S = BitConverter.ToSingle(newArray, 12);
+                Array.Reverse(conversionBuffer, 0, 4);
+                Array.Reverse(conversionBuffer, 4, 4);
+                Array.Reverse(conversionBuffer, 8, 4);
+                Array.Reverse(conversionBuffer, 12, 4);
+
+                X = BitConverter.ToSingle(conversionBuffer, 0);
+                Y = BitConverter.ToSingle(conversionBuffer, 4);
+                Z = BitConverter.ToSingle(conversionBuffer, 8);
+                S = BitConverter.ToSingle(conversionBuffer, 12);
             }
             else
             {
+                // Little endian architecture
                 X = BitConverter.ToSingle(byteArray, pos);
                 Y = BitConverter.ToSingle(byteArray, pos + 4);
                 Z = BitConverter.ToSingle(byteArray, pos + 8);
                 S = BitConverter.ToSingle(byteArray, pos + 12);
             }
         }
-
-        #endregion Constructors
-
-        #region Public Methods
 
         /// <summary>
         /// 
@@ -1532,10 +1606,13 @@ namespace libsecondlife
         /// <summary>W value</summary>
         public float W;
 
+        // Used for little to big endian conversion on big endian architectures
+        private byte[] conversionBuffer;
+
         #region Constructors
 
         /// <summary>
-        /// Build a quaternion object from a byte array
+        /// Constructor, builds a quaternion object from a byte array
         /// </summary>
         /// <param name="byteArray">The source byte array</param>
         /// <param name="pos">Offset in the byte array to start reading at</param>
@@ -1544,56 +1621,9 @@ namespace libsecondlife
         /// be read.</param>
         public LLQuaternion(byte[] byteArray, int pos, bool normalized)
         {
-            if (!normalized)
-            {
-                if (!BitConverter.IsLittleEndian)
-                {
-                    byte[] newArray = new byte[16];
-                    Buffer.BlockCopy(byteArray, pos, newArray, 0, 16);
-
-                    Array.Reverse(newArray, 0, 4);
-                    Array.Reverse(newArray, 4, 4);
-                    Array.Reverse(newArray, 8, 4);
-                    Array.Reverse(newArray, 12, 4);
-
-                    X = BitConverter.ToSingle(newArray, 0);
-                    Y = BitConverter.ToSingle(newArray, 4);
-                    Z = BitConverter.ToSingle(newArray, 8);
-                    W = BitConverter.ToSingle(newArray, 12);
-                }
-                else
-                {
-                    X = BitConverter.ToSingle(byteArray, pos);
-                    Y = BitConverter.ToSingle(byteArray, pos + 4);
-                    Z = BitConverter.ToSingle(byteArray, pos + 8);
-                    W = BitConverter.ToSingle(byteArray, pos + 12);
-                }
-            }
-            else
-            {
-                if (!BitConverter.IsLittleEndian)
-                {
-                    byte[] newArray = new byte[12];
-                    Buffer.BlockCopy(byteArray, pos, newArray, 0, 12);
-
-                    Array.Reverse(newArray, 0, 4);
-                    Array.Reverse(newArray, 4, 4);
-                    Array.Reverse(newArray, 8, 4);
-
-                    X = BitConverter.ToSingle(newArray, 0);
-                    Y = BitConverter.ToSingle(newArray, 4);
-                    Z = BitConverter.ToSingle(newArray, 8);
-                }
-                else
-                {
-                    X = BitConverter.ToSingle(byteArray, pos);
-                    Y = BitConverter.ToSingle(byteArray, pos + 4);
-                    Z = BitConverter.ToSingle(byteArray, pos + 8);
-                }
-
-                float xyzsum = 1 - X * X - Y * Y - Z * Z;
-                W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
-            }
+            conversionBuffer = null;
+            X = Y = Z = W = 0;
+            FromBytes(byteArray, pos, normalized);
         }
 
         /// <summary>
@@ -1604,6 +1634,7 @@ namespace libsecondlife
         /// <param name="z">Z value from -1.0 to 1.0</param>
         public LLQuaternion(float x, float y, float z)
         {
+            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -1621,6 +1652,7 @@ namespace libsecondlife
         /// <param name="w">W value</param>
         public LLQuaternion(float x, float y, float z, float w)
         {
+            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -1634,6 +1666,8 @@ namespace libsecondlife
         /// <param name="vector">Vector value</param>
         public LLQuaternion(float angle, LLVector3 vector)
         {
+            conversionBuffer = null;
+
             vector = LLVector3.Norm(vector);
             angle *= 0.5f;
 
@@ -1651,6 +1685,76 @@ namespace libsecondlife
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// Builds a quaternion object from a byte array
+        /// </summary>
+        /// <param name="byteArray">The source byte array</param>
+        /// <param name="pos">Offset in the byte array to start reading at</param>
+        /// <param name="normalized">Whether the source data is normalized or
+        /// not. If this is true 12 bytes will be read, otherwise 16 bytes will
+        /// be read.</param>
+        public void FromBytes(byte[] byteArray, int pos, bool normalized)
+        {
+            if (!normalized)
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    // Big endian architecture
+                    if (conversionBuffer == null)
+                        conversionBuffer = new byte[16];
+
+                    Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 16);
+
+                    Array.Reverse(conversionBuffer, 0, 4);
+                    Array.Reverse(conversionBuffer, 4, 4);
+                    Array.Reverse(conversionBuffer, 8, 4);
+                    Array.Reverse(conversionBuffer, 12, 4);
+
+                    X = BitConverter.ToSingle(conversionBuffer, 0);
+                    Y = BitConverter.ToSingle(conversionBuffer, 4);
+                    Z = BitConverter.ToSingle(conversionBuffer, 8);
+                    W = BitConverter.ToSingle(conversionBuffer, 12);
+                }
+                else
+                {
+                    // Little endian architecture
+                    X = BitConverter.ToSingle(byteArray, pos);
+                    Y = BitConverter.ToSingle(byteArray, pos + 4);
+                    Z = BitConverter.ToSingle(byteArray, pos + 8);
+                    W = BitConverter.ToSingle(byteArray, pos + 12);
+                }
+            }
+            else
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    // Big endian architecture
+                    if (conversionBuffer == null)
+                        conversionBuffer = new byte[16];
+
+                    Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 12);
+
+                    Array.Reverse(conversionBuffer, 0, 4);
+                    Array.Reverse(conversionBuffer, 4, 4);
+                    Array.Reverse(conversionBuffer, 8, 4);
+
+                    X = BitConverter.ToSingle(conversionBuffer, 0);
+                    Y = BitConverter.ToSingle(conversionBuffer, 4);
+                    Z = BitConverter.ToSingle(conversionBuffer, 8);
+                }
+                else
+                {
+                    // Little endian architecture
+                    X = BitConverter.ToSingle(byteArray, pos);
+                    Y = BitConverter.ToSingle(byteArray, pos + 4);
+                    Z = BitConverter.ToSingle(byteArray, pos + 8);
+                }
+
+                float xyzsum = 1 - X * X - Y * Y - Z * Z;
+                W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
+            }
+        }
 
         /// <summary>
         /// Normalize this quaternion and serialize it to a byte array
