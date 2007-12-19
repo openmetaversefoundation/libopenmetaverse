@@ -102,8 +102,8 @@
                             <include name="Resources/*.tga" />
                             <include name="Resources/*.xml" />
 			</resources>
-			<references basedir="${bin_dir}/"> 
-				<include name="../bin/CookComputing.XmlRpcV2.dll" />
+			<references> 
+				<include name="${bin_dir}/CookComputing.XmlRpcV2.dll" />
 				<include name="System.Drawing.dll" />
 			</references>
 			<nowarn>
