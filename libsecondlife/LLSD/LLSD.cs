@@ -91,6 +91,8 @@ namespace libsecondlife.StructuredData
         public override int AsInteger() { return value ? 1 : 0; }
         public override double AsReal() { return value ? 1d : 0d; }
         public override string AsString() { return value ? "1" : "0"; }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDInteger : LLSD
@@ -108,6 +110,8 @@ namespace libsecondlife.StructuredData
         public override int AsInteger() { return value; }
         public override double AsReal() { return (double)value; }
         public override string AsString() { return value.ToString(); }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDReal : LLSD
@@ -122,9 +126,11 @@ namespace libsecondlife.StructuredData
         }
 
         public override bool AsBoolean() { return (!Double.IsNaN(value) && value != 0d); }
-        public override int AsInteger() { return Double.IsNaN(value) ? (int)value : 0; }
+        public override int AsInteger() { return !Double.IsNaN(value) ? (int)value : 0; }
         public override double AsReal() { return value; }
         public override string AsString() { return value.ToString(Helpers.EnUsCulture); }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDString : LLSD
@@ -173,6 +179,8 @@ namespace libsecondlife.StructuredData
                 return Helpers.Epoch;
         }
         public override Uri AsUri() { return new Uri(value); }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDUUID : LLSD
@@ -188,6 +196,8 @@ namespace libsecondlife.StructuredData
 
         public override string AsString() { return value.ToString(); }
         public override LLUUID AsUUID() { return value; }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDDate : LLSD
@@ -203,6 +213,8 @@ namespace libsecondlife.StructuredData
 
         public override string AsString() { return value.ToString(); }
         public override DateTime AsDate() { return value; }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDURI : LLSD
@@ -218,6 +230,8 @@ namespace libsecondlife.StructuredData
 
         public override string AsString() { return value.ToString(); }
         public override Uri AsUri() { return value; }
+
+        public override string ToString() { return AsString(); }
     }
 
     public class LLSDBinary : LLSD
@@ -246,6 +260,13 @@ namespace libsecondlife.StructuredData
 
         public override string AsString() { return Convert.ToBase64String(value); }
         public override byte[] AsBinary() { return value; }
+
+        public override string ToString()
+        {
+            // TODO: ToString() is only meant for friendly display, a hex string would
+            // be more friendly then a base64 string
+            return AsString();
+        }
     }
 
     public class LLSDMap : LLSD, IDictionary<string, LLSD>
@@ -273,6 +294,19 @@ namespace libsecondlife.StructuredData
         }
 
         public override bool AsBoolean() { return value.Count > 0; }
+
+        public override string ToString()
+        {
+            System.Text.StringBuilder output = new System.Text.StringBuilder("{");
+
+            foreach (KeyValuePair<string, LLSD> kvp in value)
+            {
+                output.AppendFormat("(\"{0}\": \"{1}\")", kvp.Key, kvp.Value);
+            }
+            output.Append("}");
+
+            return output.ToString();
+        }
 
         #region IDictionary Implementation
 
@@ -377,6 +411,20 @@ namespace libsecondlife.StructuredData
 
         public override bool AsBoolean() { return value.Count > 0; }
 
+        public override string ToString()
+        {
+            System.Text.StringBuilder output = new System.Text.StringBuilder("[");
+            for (int i = 0; i < value.Count; i++)
+            {
+                output.AppendFormat("\"{0}\"", value[i]);
+                if (i != value.Count - 1)
+                    output.Append(",");
+            }
+            output.Append("]");
+
+            return output.ToString();
+        }
+
         #region IList Implementation
 
         public int Count { get { return value.Count; } }
@@ -421,6 +469,17 @@ namespace libsecondlife.StructuredData
         public bool Contains(LLSD llsd)
         {
             return value.Contains(llsd);
+        }
+
+        public bool Contains(string element)
+        {
+            for (int i = 0; i < value.Count; i++)
+            {
+                if (value[i].Type == LLSDType.String && value[i].AsString() == element)
+                    return true;
+            }
+
+            return false;
         }
 
         public void CopyTo(LLSD[] array, int index)

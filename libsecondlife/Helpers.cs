@@ -730,16 +730,12 @@ namespace libsecondlife
         /// the given timestamp</returns>
         public static DateTime UnixTimeToDateTime(uint timestamp)
         {
-#if PocketPC
             System.DateTime dateTime = Epoch;
 
             // Add the number of seconds in our UNIX timestamp
             dateTime = dateTime.AddSeconds(timestamp);
 
             return dateTime;
-#else
-            return DateTime.FromBinary(timestamp);
-#endif
         }
 
         /// <summary>

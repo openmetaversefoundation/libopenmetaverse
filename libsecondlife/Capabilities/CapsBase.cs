@@ -52,6 +52,7 @@ namespace libsecondlife.Capabilities
 
             // Disable keep-alive
             request.KeepAlive = false;
+            request.ServicePoint.Expect100Continue = false;
 
             // Set the timeout
             if (Timeout > 0)
