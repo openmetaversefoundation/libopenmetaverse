@@ -25,10 +25,10 @@
  */
 
 using System;
-using System.Collections;
 using System.Threading;
+using libsecondlife;
 
-namespace libsecondlife
+namespace System.Collections
 {
     /// <summary>
     /// Same as Queue except Dequeue function blocks until there is an object to return.
@@ -36,8 +36,7 @@ namespace libsecondlife
     /// </summary>
     public class BlockingQueue : Queue
     {
-        private bool open = true;
-        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        private bool open;
 
         /// <summary>
         /// Create new BlockingQueue.
@@ -46,6 +45,7 @@ namespace libsecondlife
         public BlockingQueue(ICollection col)
             : base(col)
         {
+            open = true;
         }
 
         /// <summary>
@@ -56,6 +56,7 @@ namespace libsecondlife
         public BlockingQueue(int capacity, float growFactor)
             : base(capacity, growFactor)
         {
+            open = true;
         }
 
         /// <summary>
@@ -65,6 +66,7 @@ namespace libsecondlife
         public BlockingQueue(int capacity)
             : base(capacity)
         {
+            open = true;
         }
 
         /// <summary>
@@ -73,6 +75,7 @@ namespace libsecondlife
         public BlockingQueue()
             : base()
         {
+            open = true;
         }
 
         /// <summary>
@@ -103,7 +106,7 @@ namespace libsecondlife
             {
                 open = false;
                 base.Clear();
-                syncEvent.Set(); // resume any waiting threads
+                Monitor.PulseAll(base.SyncRoot); // resume any waiting threads
             }
         }
 
@@ -137,7 +140,7 @@ namespace libsecondlife
             {
                 while (open && (base.Count == 0))
                 {
-                    if (!syncEvent.WaitOne(timeout, false))
+                    if (!Monitor.Wait(base.SyncRoot, timeout))
                         throw new InvalidOperationException("Timeout");
                 }
                 if (open)
@@ -153,7 +156,7 @@ namespace libsecondlife
             {
                 while (open && (base.Count == 0))
                 {
-                    if (!syncEvent.WaitOne(timeout, false))
+                    if (!Monitor.Wait(base.SyncRoot, timeout))
                         return false;
                 }
                 if (open)
@@ -175,7 +178,7 @@ namespace libsecondlife
             lock (base.SyncRoot)
             {
                 base.Enqueue(obj);
-                syncEvent.Set();
+                Monitor.Pulse(base.SyncRoot);
             }
         }
 
