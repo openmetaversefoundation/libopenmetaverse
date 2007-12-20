@@ -44,17 +44,18 @@ namespace libsecondlife.TestClient
         public ImportCommand(TestClient testClient)
         {
             Name = "import";
-            Description = "Import prims from an exported xml file. Usage: import inputfile.xml";
+            Description = "Import prims from an exported xml file. Usage: import inputfile.xml [usegroup]";
 
             testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            if (args.Length != 1)
-                return "Usage: import inputfile.xml";
+            if (args.Length < 1)
+                return "Usage: import inputfile.xml [usegroup]";
 
             string filename = args[0];
+            LLUUID GroupID = (args.Length > 1) ? Client.GroupID : LLUUID.Zero;
             string xml;
             List<Primitive> prims;
 
@@ -105,7 +106,7 @@ namespace libsecondlife.TestClient
                     LLQuaternion rootRotation = linkset.RootPrim.Rotation;
                     linkset.RootPrim.Rotation = LLQuaternion.Identity;
 
-                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.Data, LLUUID.Zero,
+                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.Data, GroupID,
                         linkset.RootPrim.Position, linkset.RootPrim.Scale, linkset.RootPrim.Rotation);
 
                     if (!primDone.WaitOne(10000, false))
@@ -119,7 +120,7 @@ namespace libsecondlife.TestClient
                         currentPrim = prim;
                         currentPosition = prim.Position + linkset.RootPrim.Position;
 
-                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim.Data, LLUUID.Zero, currentPosition,
+                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim.Data, GroupID, currentPosition,
                             prim.Scale, prim.Rotation);
 
                         if (!primDone.WaitOne(10000, false))
