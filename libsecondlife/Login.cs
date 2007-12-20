@@ -454,11 +454,6 @@ namespace libsecondlife
             if (CurrentContext.Params.Password.Length != 35 && !CurrentContext.Params.Password.StartsWith("$1$"))
                 CurrentContext.Params.Password = Helpers.MD5(CurrentContext.Params.Password);
 
-            // Set the sim disconnect timer interval
-            if (DisconnectTimer != null) DisconnectTimer.Dispose();
-            DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null, 
-                Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
-
             // Override SSL authentication mechanisms. DO NOT convert this to the 
             // .NET 2.0 preferred method, the equivalent function in Mono has a 
             // different name and it will break compatibility!

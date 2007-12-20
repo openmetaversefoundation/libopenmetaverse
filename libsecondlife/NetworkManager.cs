@@ -387,10 +387,12 @@ namespace libsecondlife
                 // Attempt to establish a connection to the simulator
                 if (simulator.Connect(setDefault))
                 {
-                    // Start a timer that checks if we've been disconnected
-                    if (DisconnectTimer != null) DisconnectTimer.Dispose();
-                    DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null, 
-                        Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
+                    if (DisconnectTimer == null)
+                    {
+                        // Start a timer that checks if we've been disconnected
+                        DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null,
+                            Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
+                    }
 
                     if (setDefault) SetCurrentSim(simulator, seedcaps);
 
