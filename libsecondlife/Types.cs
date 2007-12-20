@@ -1255,7 +1255,7 @@ namespace libsecondlife
             {
                 LLSDArray array = (LLSDArray)llsd;
 
-                if (array.Count == 3)
+                if (array.Count == 4)
                 {
                     return new LLVector4(
                         (float)array[0].AsReal(),
@@ -1813,11 +1813,11 @@ namespace libsecondlife
 
                 if (array.Count == 4)
                 {
-                    LLQuaternion quat = new LLQuaternion();
-                    quat.X = (float)array[0].AsReal();
-                    quat.Y = (float)array[1].AsReal();
-                    quat.Z = (float)array[2].AsReal();
-                    quat.W = (float)array[3].AsReal();
+                    return new LLQuaternion(
+                        (float)array[0].AsReal(),
+                        (float)array[1].AsReal(),
+                        (float)array[2].AsReal(),
+                        (float)array[3].AsReal());
                 }
             }
 
