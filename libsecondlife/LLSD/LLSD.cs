@@ -141,7 +141,11 @@ namespace libsecondlife.StructuredData
 
         public LLSDString(string value)
         {
-            this.value = value;
+            // Refuse to hold null pointers
+            if (value != null)
+                this.value = value;
+            else
+                this.value = String.Empty;
         }
 
         public override bool AsBoolean() { return !String.IsNullOrEmpty(value); }

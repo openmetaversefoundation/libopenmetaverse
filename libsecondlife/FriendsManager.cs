@@ -31,217 +31,222 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// This class is used to add and remove avatars from your friends list and to manage their permission.  
+    /// 
     /// </summary>
-
-    public class FriendsManager
+    [Flags]
+    public enum FriendRights : int
     {
-        [Flags]
-        public enum RightsFlags : int
+        /// <summary>The avatar has no rights</summary>
+        None = 0,
+        /// <summary>The avatar can see the online status of the target avatar</summary>
+        CanSeeOnline = 1,
+        /// <summary>The avatar can see the location of the target avatar on the map</summary>
+        CanSeeOnMap = 2,
+        /// <summary>The avatar can modify the ojects of the target avatar </summary>
+        CanModifyObjects = 4
+    }
+
+    /// <summary>
+    /// This class holds information about an avatar in the friends list.  There are two ways 
+    /// to interface to this class.  The first is through the set of boolean properties.  This is the typical
+    /// way clients of this class will use it.  The second interface is through two bitmap properties.  While 
+    /// the bitmap interface is public, it is intended for use the libsecondlife framework.
+    /// </summary>
+    public class FriendInfo
+    {
+        private LLUUID m_id;
+        private string m_name;
+        private bool m_isOnline;
+        private bool m_canSeeMeOnline;
+        private bool m_canSeeMeOnMap;
+        private bool m_canModifyMyObjects;
+        private bool m_canSeeThemOnline;
+        private bool m_canSeeThemOnMap;
+        private bool m_canModifyTheirObjects;
+
+        /// <summary>
+        /// Used by the libsecondlife framework when building the initial list of friends
+        /// at login time.  This constructor should not be called by consummer of this class.
+        /// </summary>
+        /// <param name="id">System ID of the avatar being prepesented</param>
+        /// <param name="theirRights">Rights the friend has to see you online and to modify your objects</param>
+        /// <param name="myRights">Rights you have to see your friend online and to modify their objects</param>
+        public FriendInfo(LLUUID id, FriendRights theirRights, FriendRights myRights)
         {
-            /// <summary>The avatar has no rights</summary>
-            None = 0,
-            /// <summary>The avatar can see the online status of the target avatar</summary>
-            CanSeeOnline = 1,
-            /// <summary>The avatar can see the location of the target avatar on the map</summary>
-            CanSeeOnMap = 2,
-            /// <summary>The avatar can modify the ojects of the target avatar </summary>
-            CanModifyObjects = 4
+            m_id = id;
+            m_canSeeMeOnline = (theirRights & FriendRights.CanSeeOnline) != 0;
+            m_canSeeMeOnMap = (theirRights & FriendRights.CanSeeOnMap) != 0;
+            m_canModifyMyObjects = (theirRights & FriendRights.CanModifyObjects) != 0;
+
+            m_canSeeThemOnline = (myRights & FriendRights.CanSeeOnline) != 0;
+            m_canSeeThemOnMap = (myRights & FriendRights.CanSeeOnMap) != 0;
+            m_canModifyTheirObjects = (myRights & FriendRights.CanModifyObjects) != 0;
         }
 
         /// <summary>
-        /// This class holds information about an avatar in the friends list.  There are two ways 
-        /// to interface to this class.  The first is through the set of boolean properties.  This is the typical
-        /// way clients of this class will use it.  The second interface is through two bitmap properties.  While 
-        /// the bitmap interface is public, it is intended for use the libsecondlife framework.
+        /// System ID of the avatar
         /// </summary>
-        public class FriendInfo
+        public LLUUID UUID { get { return m_id; } }
+
+        /// <summary>
+        /// full name of the avatar
+        /// </summary>
+        public string Name
         {
-            private LLUUID m_id;
-            private string m_name;
-            private bool m_isOnline;
-            private bool m_canSeeMeOnline;
-            private bool m_canSeeMeOnMap;
-            private bool m_canModifyMyObjects;
-            private bool m_canSeeThemOnline;
-            private bool m_canSeeThemOnMap;
-            private bool m_canModifyTheirObjects;
+            get { return m_name; }
+            set { m_name = value; }
+        }
 
-            /// <summary>
-            /// Used by the libsecondlife framework when building the initial list of friends
-            /// at login time.  This constructor should not be called by consummer of this class.
-            /// </summary>
-            /// <param name="id">System ID of the avatar being prepesented</param>
-            /// <param name="theirRights">Rights the friend has to see you online and to modify your objects</param>
-            /// <param name="myRights">Rights you have to see your friend online and to modify their objects</param>
-            public FriendInfo(LLUUID id, RightsFlags theirRights, RightsFlags myRights)
+        /// <summary>
+        /// True if the avatar is online
+        /// </summary>
+        public bool IsOnline
+        {
+            get { return m_isOnline; }
+            set { m_isOnline = value; }
+        }
+
+        /// <summary>
+        /// True if the friend can see if I am online
+        /// </summary>
+        public bool CanSeeMeOnline
+        {
+            get { return m_canSeeMeOnline; }
+            set
             {
-                m_id = id;
-                m_canSeeMeOnline = (theirRights & RightsFlags.CanSeeOnline) != 0;
-                m_canSeeMeOnMap = (theirRights & RightsFlags.CanSeeOnMap) != 0;
-                m_canModifyMyObjects = (theirRights & RightsFlags.CanModifyObjects) != 0;
+                m_canSeeMeOnline = value;
 
-                m_canSeeThemOnline = (myRights & RightsFlags.CanSeeOnline) != 0;
-                m_canSeeThemOnMap = (myRights & RightsFlags.CanSeeOnMap) != 0;
-                m_canModifyTheirObjects = (myRights & RightsFlags.CanModifyObjects) != 0;
-            }
-
-            /// <summary>
-            /// System ID of the avatar
-            /// </summary>
-            public LLUUID UUID { get { return m_id; } }
-
-            /// <summary>
-            /// full name of the avatar
-            /// </summary>
-            public string Name
-            {
-                get { return m_name; }
-                set { m_name = value; }
-            }
-
-            /// <summary>
-            /// True if the avatar is online
-            /// </summary>
-            public bool IsOnline
-            {
-                get { return m_isOnline; }
-                set { m_isOnline = value; }
-            }
-
-            /// <summary>
-            /// True if the friend can see if I am online
-            /// </summary>
-            public bool CanSeeMeOnline
-            {
-                get { return m_canSeeMeOnline; }
-                set
-                {
-                    m_canSeeMeOnline = value;
-
-                    // if I can't see them online, then I can't see them on the map
-                    if (!m_canSeeMeOnline)
-                        m_canSeeMeOnMap = false;
-                }
-            }
-
-            /// <summary>
-            /// True if the friend can see me on the map 
-            /// </summary>
-            public bool CanSeeMeOnMap
-            {
-                get { return m_canSeeMeOnMap; }
-                set
-                {
-                    // if I can't see them online, then I can't see them on the map
-                    if (m_canSeeMeOnline)
-                        m_canSeeMeOnMap = value;
-                }
-            }
-
-            /// <summary>
-            /// True if the freind can modify my objects
-            /// </summary>
-            public bool CanModifyMyObjects
-            {
-                get { return m_canModifyMyObjects; }
-                set { m_canModifyMyObjects = value; }
-            }
-
-            /// <summary>
-            /// True if I can see if my friend is online
-            /// </summary>
-            public bool CanSeeThemOnline { get { return m_canSeeThemOnline; } }
-
-            /// <summary>
-            /// True if I can see if my friend is on the map
-            /// </summary>
-            public bool CanSeeThemOnMap { get { return m_canSeeThemOnMap; } }
-
-            /// <summary>
-            /// True if I can modify my friend's objects
-            /// </summary>
-            public bool CanModifyTheirObjects { get { return m_canModifyTheirObjects; } }
-
-            /// <summary>
-            /// My friend's rights represented as bitmapped flags
-            /// </summary>
-            public RightsFlags TheirRightsFlags
-            {
-                get
-                {
-                    RightsFlags results = RightsFlags.None;
-                    if (m_canSeeMeOnline)
-                        results |= RightsFlags.CanSeeOnline;
-                    if (m_canSeeMeOnMap)
-                        results |= RightsFlags.CanSeeOnMap;
-                    if (m_canModifyMyObjects)
-                        results |= RightsFlags.CanModifyObjects;
-
-                    return results;
-                }
-                set
-                {
-                    m_canSeeMeOnline = (value & RightsFlags.CanSeeOnline) != 0;
-                    m_canSeeMeOnMap = (value & RightsFlags.CanSeeOnMap) != 0;
-                    m_canModifyMyObjects = (value & RightsFlags.CanModifyObjects) != 0;
-                }
-            }
-
-            /// <summary>
-            /// My rights represented as bitmapped flags
-            /// </summary>
-            public RightsFlags MyRightsFlags
-            {
-                get
-                {
-                    RightsFlags results = RightsFlags.None;
-                    if (m_canSeeThemOnline)
-                        results |= RightsFlags.CanSeeOnline;
-                    if (m_canSeeThemOnMap)
-                        results |= RightsFlags.CanSeeOnMap;
-                    if (m_canModifyTheirObjects)
-                        results |= RightsFlags.CanModifyObjects;
-
-                    return results;
-                }
-                set
-                {
-                    m_canSeeThemOnline = (value & RightsFlags.CanSeeOnline) != 0;
-                    m_canSeeThemOnMap = (value & RightsFlags.CanSeeOnMap) != 0;
-                    m_canModifyTheirObjects = (value & RightsFlags.CanModifyObjects) != 0;
-                }
-            }
-
-            /// <summary>
-            /// This class represented as a string.
-            /// </summary>
-            /// <returns>A string reprentation of both my rights and my friend's righs</returns>
-            public override string ToString()
-            {
-                return String.Format("{0} (Their Rights: {1}, My Rights: {2})", m_name, TheirRightsFlags, 
-                    MyRightsFlags);
+                // if I can't see them online, then I can't see them on the map
+                if (!m_canSeeMeOnline)
+                    m_canSeeMeOnMap = false;
             }
         }
+
+        /// <summary>
+        /// True if the friend can see me on the map 
+        /// </summary>
+        public bool CanSeeMeOnMap
+        {
+            get { return m_canSeeMeOnMap; }
+            set
+            {
+                // if I can't see them online, then I can't see them on the map
+                if (m_canSeeMeOnline)
+                    m_canSeeMeOnMap = value;
+            }
+        }
+
+        /// <summary>
+        /// True if the freind can modify my objects
+        /// </summary>
+        public bool CanModifyMyObjects
+        {
+            get { return m_canModifyMyObjects; }
+            set { m_canModifyMyObjects = value; }
+        }
+
+        /// <summary>
+        /// True if I can see if my friend is online
+        /// </summary>
+        public bool CanSeeThemOnline { get { return m_canSeeThemOnline; } }
+
+        /// <summary>
+        /// True if I can see if my friend is on the map
+        /// </summary>
+        public bool CanSeeThemOnMap { get { return m_canSeeThemOnMap; } }
+
+        /// <summary>
+        /// True if I can modify my friend's objects
+        /// </summary>
+        public bool CanModifyTheirObjects { get { return m_canModifyTheirObjects; } }
+
+        /// <summary>
+        /// My friend's rights represented as bitmapped flags
+        /// </summary>
+        public FriendRights TheirFriendRights
+        {
+            get
+            {
+                FriendRights results = FriendRights.None;
+                if (m_canSeeMeOnline)
+                    results |= FriendRights.CanSeeOnline;
+                if (m_canSeeMeOnMap)
+                    results |= FriendRights.CanSeeOnMap;
+                if (m_canModifyMyObjects)
+                    results |= FriendRights.CanModifyObjects;
+
+                return results;
+            }
+            set
+            {
+                m_canSeeMeOnline = (value & FriendRights.CanSeeOnline) != 0;
+                m_canSeeMeOnMap = (value & FriendRights.CanSeeOnMap) != 0;
+                m_canModifyMyObjects = (value & FriendRights.CanModifyObjects) != 0;
+            }
+        }
+
+        /// <summary>
+        /// My rights represented as bitmapped flags
+        /// </summary>
+        public FriendRights MyFriendRights
+        {
+            get
+            {
+                FriendRights results = FriendRights.None;
+                if (m_canSeeThemOnline)
+                    results |= FriendRights.CanSeeOnline;
+                if (m_canSeeThemOnMap)
+                    results |= FriendRights.CanSeeOnMap;
+                if (m_canModifyTheirObjects)
+                    results |= FriendRights.CanModifyObjects;
+
+                return results;
+            }
+            set
+            {
+                m_canSeeThemOnline = (value & FriendRights.CanSeeOnline) != 0;
+                m_canSeeThemOnMap = (value & FriendRights.CanSeeOnMap) != 0;
+                m_canModifyTheirObjects = (value & FriendRights.CanModifyObjects) != 0;
+            }
+        }
+
+        /// <summary>
+        /// FriendInfo represented as a string
+        /// </summary>
+        /// <returns>A string reprentation of both my rights and my friends rights</returns>
+        public override string ToString()
+        {
+            if (!String.IsNullOrEmpty(m_name))
+                return String.Format("{0} (Their Rights: {1}, My Rights: {2})", m_name, TheirFriendRights,
+                    MyFriendRights);
+            else
+                return String.Format("{0} (Their Rights: {1}, My Rights: {2})", m_id, TheirFriendRights,
+                    MyFriendRights);
+        }
+    }
+
+    /// <summary>
+    /// This class is used to add and remove avatars from your friends list and to manage their permission.  
+    /// </summary>
+    public class FriendsManager
+    {
+        #region Delegates
 
         /// <summary>
         /// Triggered when an avatar in your friends list comes online
         /// </summary>
         /// <param name="friend"> System ID of the avatar</param>
         public delegate void FriendOnlineEvent(FriendInfo friend);
-
         /// <summary>
         /// Triggered when an avatar in your friends list goes offline
         /// </summary>
         /// <param name="friend"> System ID of the avatar</param>
         public delegate void FriendOfflineEvent(FriendInfo friend);
-
         /// <summary>
         /// Triggered in response to a call to the GrantRighs() method, or when a friend changes your rights
         /// </summary>
         /// <param name="friend"> System ID of the avatar you changed the right of</param>
         public delegate void FriendRightsEvent(FriendInfo friend);
-
         /// <summary>
         /// Triggered when someone offers you friendship
         /// </summary>
@@ -250,7 +255,6 @@ namespace libsecondlife
         /// <param name="IMSessionID">session ID need when accepting/declining the offer</param>
         /// <returns>Return true to accept the friendship, false to deny it</returns>
         public delegate void FriendshipOfferedEvent(LLUUID agentID, string agentName, LLUUID imSessionID);
-
         /// <summary>
         /// Trigger when your friendship offer has been accepted or declined
         /// </summary>
@@ -258,7 +262,6 @@ namespace libsecondlife
         /// <param name="agentName">Full name of the avatar who accepted your friendship offer</param>
         /// <param name="accepted">Whether the friendship request was accepted or declined</param>
         public delegate void FriendshipResponseEvent(LLUUID agentID, string agentName, bool accepted);
-        
         /// <summary>
         /// Trigger when someone terminates your friendship.
         /// </summary>
@@ -266,12 +269,18 @@ namespace libsecondlife
         /// <param name="agentName">Full name of the avatar who terminated your friendship</param>
         public delegate void FriendshipTerminatedEvent(LLUUID agentID, string agentName);
 
+        #endregion Delegates
+
+        #region Events
+
         public event FriendOnlineEvent OnFriendOnline;
         public event FriendOfflineEvent OnFriendOffline;
         public event FriendRightsEvent OnFriendRights;
         public event FriendshipOfferedEvent OnFriendshipOffered;
         public event FriendshipResponseEvent OnFriendshipResponse;
         public event FriendshipTerminatedEvent OnFriendshipTerminated;
+
+        #endregion Events
 
         private SecondLife Client;
         private Dictionary<LLUUID, FriendInfo> _Friends = new Dictionary<LLUUID, FriendInfo>();
@@ -293,8 +302,10 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);
             Client.Network.RegisterCallback(PacketType.ChangeUserRights, ChangeUserRightsHandler);
             Client.Network.RegisterCallback(PacketType.TerminateFriendship, TerminateFriendshipHandler);
-        }
 
+            Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
+                new string[] { "buddy-list" });
+        }
 
         /// <summary>
         /// Get a list of all the friends we are currently aware of
@@ -351,8 +362,8 @@ namespace libsecondlife
 
             Client.Network.SendPacket(request);
 
-            FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline,
-                RightsFlags.CanSeeOnline);
+            FriendInfo friend = new FriendInfo(fromAgentID, FriendRights.CanSeeOnline,
+                FriendRights.CanSeeOnline);
             lock (_Friends)
             {
                 if(!_Friends.ContainsKey(fromAgentID))  _Friends.Add(friend.UUID, friend);
@@ -455,31 +466,10 @@ namespace libsecondlife
             request.Rights = new GrantUserRightsPacket.RightsBlock[1];
             request.Rights[0] = new GrantUserRightsPacket.RightsBlock();
             request.Rights[0].AgentRelated = agentID;
-            request.Rights[0].RelatedRights = (int)(_Friends[agentID].TheirRightsFlags);
+            request.Rights[0].RelatedRights = (int)(_Friends[agentID].TheirFriendRights);
 
             Client.Network.SendPacket(request);
         }
-
-
-        /// <summary>
-        /// Adds a friend. Intended for use by the libsecondlife framework to build the  
-        /// initial list of friends from the buddy-list in the login reply XML
-        /// </summary>
-        /// <param name="agentID">ID of the agent being added to the list of friends</param>
-        /// <param name="theirRights">rights the friend has</param>
-        /// <param name="myRights">rights you have</param>
-        internal void AddFriend(LLUUID agentID, RightsFlags theirRights, RightsFlags myRights)
-        {
-            lock (_Friends)
-            {
-                if (!_Friends.ContainsKey(agentID))
-                {
-                    FriendInfo friend = new FriendInfo(agentID, theirRights, myRights);
-                    _Friends[agentID] = friend;
-                }
-            }
-        }
-
 
         /// <summary>
         /// Called when a connection to the SL server is established.  The list of friend avatars 
@@ -543,8 +533,8 @@ namespace libsecondlife
                     {
                         if (!_Friends.ContainsKey(block.AgentID))
                         {
-                            friend = new FriendInfo(block.AgentID, RightsFlags.CanSeeOnline,
-                                RightsFlags.CanSeeOnline);
+                            friend = new FriendInfo(block.AgentID, FriendRights.CanSeeOnline,
+                                FriendRights.CanSeeOnline);
                             _Friends.Add(block.AgentID, friend);
                         }
                         else
@@ -584,7 +574,7 @@ namespace libsecondlife
                     lock (_Friends)
                     {
                         if (!_Friends.ContainsKey(block.AgentID))
-                            _Friends.Add(block.AgentID, new FriendInfo(block.AgentID, RightsFlags.CanSeeOnline, RightsFlags.CanSeeOnline));
+                            _Friends.Add(block.AgentID, new FriendInfo(block.AgentID, FriendRights.CanSeeOnline, FriendRights.CanSeeOnline));
 
                         friend = _Friends[block.AgentID];
                         friend.IsOnline = false;
@@ -615,10 +605,10 @@ namespace libsecondlife
 
                 foreach (ChangeUserRightsPacket.RightsBlock block in rights.Rights)
                 {
-                    RightsFlags newRights = (RightsFlags)block.RelatedRights;
+                    FriendRights newRights = (FriendRights)block.RelatedRights;
                     if (_Friends.TryGetValue(block.AgentRelated, out friend))
                     {
-                        friend.TheirRightsFlags = newRights;
+                        friend.TheirFriendRights = newRights;
                         if (OnFriendRights != null)
                         {
                             try { OnFriendRights(friend); }
@@ -629,7 +619,7 @@ namespace libsecondlife
                     {
                         if (_Friends.TryGetValue(rights.AgentData.AgentID, out friend))
                         {
-                            friend.MyRightsFlags = newRights;
+                            friend.MyFriendRights = newRights;
                             if (OnFriendRights != null)
                             {
                                 try { OnFriendRights(friend); }
@@ -678,7 +668,8 @@ namespace libsecondlife
             }
             else if (im.Dialog == InstantMessageDialog.FriendshipAccepted)
             {
-                FriendInfo friend = new FriendInfo(im.FromAgentID, RightsFlags.CanSeeOnline, RightsFlags.CanSeeOnline);
+                FriendInfo friend = new FriendInfo(im.FromAgentID, FriendRights.CanSeeOnline,
+                    FriendRights.CanSeeOnline);
                 friend.Name = im.FromAgentName;
                 lock (_Friends) _Friends[friend.UUID] = friend;
 
@@ -694,6 +685,22 @@ namespace libsecondlife
                 {
                     try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, false); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+        }
+
+        private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
+            LoginResponseData replyData)
+        {
+            if (loginSuccess)
+            {
+                lock (_Friends)
+                {
+                    for (int i = 0; i < replyData.BuddyList.Length; i++)
+                    {
+                        FriendInfo friend = replyData.BuddyList[i];
+                        _Friends[friend.UUID] = friend;
+                    }
                 }
             }
         }

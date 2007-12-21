@@ -27,7 +27,6 @@ namespace libsecondlife.TestClient
             string masterName = String.Empty;
             LLUUID masterKey = LLUUID.Zero;
             string file = String.Empty;
-			string contact = String.Empty;
 			string loginuri = String.Empty;
 
             try
@@ -40,15 +39,6 @@ namespace libsecondlife.TestClient
                 if (arguments["master"] != null)
                 {
                     masterName = arguments["master"];
-                }
-
-                if (arguments["contact"] != null)
-                {
-                    contact = arguments["contact"];
-                }
-                else
-                {
-                    contact = "anonymous";
                 }
 
                 if (arguments["loginuri"] != null)
@@ -139,11 +129,11 @@ namespace libsecondlife.TestClient
             // Login the accounts and run the input loop
             if (arguments["startpos"] != null)
             {
-                manager = new ClientManager(accounts, contact, arguments["startpos"]);
+                manager = new ClientManager(accounts, arguments["startpos"]);
             }
             else
             {
-                manager = new ClientManager(accounts, contact);
+                manager = new ClientManager(accounts);
             }
 
             manager.Run();

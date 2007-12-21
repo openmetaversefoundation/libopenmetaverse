@@ -2387,7 +2387,7 @@ namespace libsecondlife
         }
 
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
-            NetworkManager.LoginResponseData reply)
+            LoginResponseData reply)
         {
             id = reply.AgentID;
             sessionID = reply.SessionID;

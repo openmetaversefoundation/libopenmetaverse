@@ -257,6 +257,24 @@ namespace libsecondlife
 
                 return data;
             }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public LLSD ToLLSD()
+            {
+                LLSDMap map = new LLSDMap();
+
+                map["softness"] = LLSD.FromInteger(Softness);
+                map["gravity"] = LLSD.FromReal(Gravity);
+                map["drag"] = LLSD.FromReal(Drag);
+                map["wind"] = LLSD.FromReal(Wind);
+                map["tension"] = LLSD.FromReal(Tension);
+                map["force"] = Force.ToLLSD();
+
+                return map;
+            }
         }
 
         /// <summary>
@@ -322,6 +340,19 @@ namespace libsecondlife
                 return data;
             }
 
+            public LLSD ToLLSD()
+            {
+                LLSDMap map = new LLSDMap();
+
+                map["color"] = Color.ToLLSD();
+                map["intensity"] = LLSD.FromReal(Intensity);
+                map["radius"] = LLSD.FromReal(Radius);
+                map["cutoff"] = LLSD.FromReal(Cutoff);
+                map["falloff"] = LLSD.FromReal(Falloff);
+
+                return map;
+            }
+
             /// <summary>
             /// 
             /// </summary>
@@ -363,6 +394,16 @@ namespace libsecondlife
                 data[16] = (byte)Type;
 
                 return data;
+            }
+
+            public LLSD ToLLSD()
+            {
+                LLSDMap map = new LLSDMap();
+
+                map["texture"] = LLSD.FromUUID(SculptTexture);
+                map["type"] = LLSD.FromInteger((int)Type);
+
+                return map;
             }
         }
 
@@ -461,6 +502,10 @@ namespace libsecondlife
             prim["volume"] = volume;
             if (ParentID != 0)
                 prim["parentid"] = LLSD.FromInteger(ParentID);
+
+            prim["light"] = Light.ToLLSD();
+            prim["flex"] = Flexible.ToLLSD();
+            prim["sculpt"] = Sculpt.ToLLSD();
 
             return prim;
         }

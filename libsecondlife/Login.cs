@@ -36,6 +36,60 @@ using CookComputing.XmlRpc;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum LoginStatus
+    {
+        /// <summary></summary>
+        Failed = -1,
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        ConnectingToLogin,
+        /// <summary></summary>
+        ReadingResponse,
+        /// <summary></summary>
+        ConnectingToSim,
+        /// <summary></summary>
+        Redirecting,
+        /// <summary></summary>
+        Success
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public struct LoginParams
+    {
+        /// <summary></summary>
+        public string URI;
+        /// <summary></summary>
+        public int Timeout;
+        /// <summary></summary>
+        public string MethodName;
+        /// <summary></summary>
+        public string FirstName;
+        /// <summary></summary>
+        public string LastName;
+        /// <summary></summary>
+        public string Password;
+        /// <summary></summary>
+        public string Start;
+        /// <summary></summary>
+        public string Channel;
+        /// <summary></summary>
+        public string Version;
+        /// <summary></summary>
+        public string Platform;
+        /// <summary></summary>
+        public string MAC;
+        /// <summary></summary>
+        public string ViewerDigest;
+        /// <summary></summary>
+        public List<string> Options;
+    }
+
     // TODO: Remove me when MONO can handle ServerCertificateValidationCallback
     internal class AcceptAllCertificatePolicy : ICertificatePolicy
     {
@@ -52,22 +106,144 @@ namespace libsecondlife
         }
     }
 
+    public struct LoginResponseData
+    {
+        public LLUUID AgentID;
+        public LLUUID SessionID;
+        public LLUUID SecureSessionID;
+        public string FirstName;
+        public string LastName;
+        public string StartLocation;
+        public string AgentAccess;
+        public LLVector3 LookAt;
+        public LLVector3 HomePosition;
+        public LLVector3 HomeLookAt;
+        public uint CircuitCode;
+        public uint RegionX;
+        public uint RegionY;
+        public ushort SimPort;
+        public IPAddress SimIP;
+        public string SeedCapability;
+        public FriendInfo[] BuddyList;
+        public DateTime SecondsSinceEpoch;
+        public LLUUID InventoryRoot;
+        public LLUUID LibraryRoot;
+        public InventoryFolder[] InventorySkeleton;
+        public InventoryFolder[] LibrarySkeleton;
+        public LLUUID LibraryOwner;
+
+        public void Parse(NetworkManager.LoginMethodResponse reply)
+        {
+            AgentID = LLUUID.Parse(reply.agent_id);
+            SessionID = LLUUID.Parse(reply.session_id);
+            SecureSessionID = LLUUID.Parse(reply.secure_session_id);
+            FirstName = reply.first_name;
+            LastName = reply.last_name;
+            StartLocation = reply.start_location;
+            AgentAccess = reply.agent_access;
+
+            LLSDArray look_at = (LLSDArray)LLSDParser.DeserializeNotation(reply.look_at);
+            LookAt = new LLVector3(
+                (float)look_at[0].AsReal(),
+                (float)look_at[1].AsReal(),
+                (float)look_at[2].AsReal());
+
+            if (reply.home != null)
+            {
+                LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply.home);
+                LLSDArray array = (LLSDArray)home["position"];
+                HomePosition = new LLVector3(
+                    (float)array[0].AsReal(),
+                    (float)array[1].AsReal(),
+                    (float)array[2].AsReal());
+
+                array = (LLSDArray)home["look_at"];
+                HomeLookAt = new LLVector3(
+                    (float)array[0].AsReal(),
+                    (float)array[1].AsReal(),
+                    (float)array[2].AsReal());
+            }
+
+            CircuitCode = (uint)reply.circuit_code;
+            RegionX = (uint)reply.region_x;
+            RegionY = (uint)reply.region_y;
+            SimPort = (ushort)reply.sim_port;
+            SimIP = IPAddress.Parse(reply.sim_ip);
+            SeedCapability = reply.seed_capability;
+
+            if (reply.buddy_list != null)
+            {
+                BuddyList = new FriendInfo[reply.buddy_list.Length];
+                for (int i = 0; i < BuddyList.Length; ++i)
+                {
+                    NetworkManager.BuddyListEntry buddy = reply.buddy_list[i];
+                    BuddyList[i] = new FriendInfo(buddy.buddy_id, (FriendRights)buddy.buddy_rights_given,
+                            (FriendRights)buddy.buddy_rights_has);
+                }
+            }
+            else
+            {
+                BuddyList = new FriendInfo[0];
+            }
+
+            InventoryRoot = LLUUID.Parse(reply.inventory_root[0].folder_id);
+            LibraryRoot = LLUUID.Parse(reply.inventory_lib_root[0].folder_id);
+            LibraryOwner = LLUUID.Parse(reply.inventory_lib_owner[0].agent_id);
+            InventorySkeleton = ParseSkeleton(reply.inventory_skeleton, AgentID);
+            LibrarySkeleton = ParseSkeleton(reply.inventory_skel_lib, LibraryOwner);
+        }
+
+        public InventoryFolder[] ParseSkeleton(NetworkManager.InventorySkeletonEntry[] skeleton, LLUUID owner)
+        {
+            Dictionary<LLUUID, InventoryFolder> Folders = new Dictionary<LLUUID, InventoryFolder>();
+            Dictionary<LLUUID, List<InventoryFolder>> FoldersChildren = new Dictionary<LLUUID, List<InventoryFolder>>(skeleton.Length);
+
+            foreach (NetworkManager.InventorySkeletonEntry entry in skeleton)
+            {
+                InventoryFolder folder = new InventoryFolder(entry.folder_id);
+                if (entry.type_default != -1)
+                    folder.PreferredType = (AssetType)entry.type_default;
+                folder.Version = entry.version;
+                folder.OwnerID = owner;
+                folder.ParentUUID = LLUUID.Parse(entry.parent_id);
+                folder.Name = entry.name;
+                Folders.Add(entry.folder_id, folder);
+
+                if (entry.parent_id != LLUUID.Zero)
+                {
+                    List<InventoryFolder> parentChildren;
+                    if (!FoldersChildren.TryGetValue(entry.parent_id, out parentChildren))
+                    {
+                        parentChildren = new List<InventoryFolder>();
+                        FoldersChildren.Add(entry.parent_id, parentChildren);
+                    }
+                    parentChildren.Add(folder);
+                }
+            }
+
+            foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren)
+            {
+                if (Folders.ContainsKey(pair.Key))
+                {
+                    InventoryFolder parentFolder = Folders[pair.Key];
+                    parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
+                }
+            }
+
+            // Should we do this or just return an IEnumerable?
+            InventoryFolder[] ret = new InventoryFolder[Folders.Count];
+            int index = 0;
+            foreach (InventoryFolder folder in Folders.Values)
+            {
+                ret[index] = folder;
+                ++index;
+            }
+            return ret;
+        }
+    }
+
     public partial class NetworkManager
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="loginSuccess"></param>
-        /// <param name="redirect"></param>
-        /// <param name="simIP"></param>
-        /// <param name="simPort"></param>
-        /// <param name="regionX"></param>
-        /// <param name="regionY"></param>
-        /// <param name="reason"></param>
-        /// <param name="message"></param>
-        [Obsolete("Use LoginResponseCallback instead.")]
-        public delegate void LoginReplyCallback(bool loginSuccess, bool redirect, IPAddress simIP, int simPort,
-            uint regionX, uint regionY, string reason, string message);
         /// <summary>
         /// 
         /// </summary>
@@ -82,201 +258,6 @@ namespace libsecondlife
         /// <param name="redirect"></param>
         /// <param name="replyData"></param>
         public delegate void LoginResponseCallback(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public struct LoginParams
-        {
-            /// <summary></summary>
-            public string URI;
-            /// <summary></summary>
-            public int Timeout;
-            /// <summary></summary>
-            public string MethodName;
-            /// <summary></summary>
-            public string FirstName;
-            /// <summary></summary>
-            public string LastName;
-            /// <summary></summary>
-            public string Password;
-            /// <summary></summary>
-            public string Start;
-            /// <summary></summary>
-            public string Channel;
-            /// <summary></summary>
-            public string Version;
-            /// <summary></summary>
-            public string Platform;
-            /// <summary></summary>
-            public string MAC;
-            /// <summary></summary>
-            public string ViewerDigest;
-            /// <summary></summary>
-            public List<string> Options;
-        }
-
-        public struct LoginResponseData
-        {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID SecureSessionID;
-            public string FirstName;
-            public string LastName;
-            public string StartLocation;
-            public string AgentAccess;
-            public LLVector3 LookAt;
-            public LLVector3 HomePosition;
-            public LLVector3 HomeLookAt;
-            public uint CircuitCode;
-            public uint RegionX;
-            public uint RegionY;
-            public ushort SimPort;
-            public IPAddress SimIP;
-            public string SeedCapability;
-            public FriendsManager.FriendInfo[] BuddyList;
-            public DateTime SecondsSinceEpoch;
-            public LLUUID InventoryRoot;
-            public LLUUID LibraryRoot;
-            public InventoryFolder[] InventorySkeleton;
-            public InventoryFolder[] LibrarySkeleton;
-            public LLUUID LibraryOwner;
-
-            public void Parse(LoginMethodResponse reply)
-            {
-                AgentID = LLUUID.Parse(reply.agent_id);
-                SessionID = LLUUID.Parse(reply.session_id);
-                SecureSessionID = LLUUID.Parse(reply.secure_session_id);
-                FirstName = reply.first_name;
-                LastName = reply.last_name;
-                StartLocation = reply.start_location;
-                AgentAccess = reply.agent_access;
-
-                LLSDArray look_at = (LLSDArray)LLSDParser.DeserializeNotation(reply.look_at);
-                LookAt = new LLVector3(
-                    (float)look_at[0].AsReal(),
-                    (float)look_at[1].AsReal(),
-                    (float)look_at[2].AsReal());
-
-                if (reply.home != null)
-                {
-                    LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply.home);
-                    LLSDArray array = (LLSDArray)home["position"];
-                    HomePosition = new LLVector3(
-                        (float)array[0].AsReal(),
-                        (float)array[1].AsReal(),
-                        (float)array[2].AsReal());
-
-                    array = (LLSDArray)home["look_at"];
-                    HomeLookAt = new LLVector3(
-                        (float)array[0].AsReal(),
-                        (float)array[1].AsReal(),
-                        (float)array[2].AsReal());
-                }
-
-                CircuitCode = (uint)reply.circuit_code;
-                RegionX = (uint)reply.region_x;
-                RegionY = (uint)reply.region_y;
-                SimPort = (ushort)reply.sim_port;
-                SimIP = IPAddress.Parse(reply.sim_ip);
-                SeedCapability = reply.seed_capability;
-
-                if (reply.buddy_list != null)
-                {
-                    BuddyList = new FriendsManager.FriendInfo[reply.buddy_list.Length];
-                    for (int i = 0; i < BuddyList.Length; ++i)
-                    {
-                        BuddyListEntry buddy = reply.buddy_list[i];
-                        BuddyList[i] = new FriendsManager.FriendInfo(buddy.buddy_id, (FriendsManager.RightsFlags)buddy.buddy_rights_given,
-                                (FriendsManager.RightsFlags)buddy.buddy_rights_has);
-                    }
-                }
-                else
-                {
-                    BuddyList = new FriendsManager.FriendInfo[0];
-                }
-
-                InventoryRoot = LLUUID.Parse(reply.inventory_root[0].folder_id);
-                LibraryRoot = LLUUID.Parse(reply.inventory_lib_root[0].folder_id);
-                LibraryOwner = LLUUID.Parse(reply.inventory_lib_owner[0].agent_id);
-                InventorySkeleton = ParseSkeleton(reply.inventory_skeleton, AgentID);
-                LibrarySkeleton = ParseSkeleton(reply.inventory_skel_lib, LibraryOwner);
-            }
-
-            public InventoryFolder[] ParseSkeleton(InventorySkeletonEntry[] skeleton, LLUUID owner)
-            {
-                Dictionary<LLUUID, InventoryFolder> Folders = new Dictionary<LLUUID, InventoryFolder>();
-                Dictionary<LLUUID, List<InventoryFolder>> FoldersChildren = new Dictionary<LLUUID, List<InventoryFolder>>(skeleton.Length);
-
-                foreach (InventorySkeletonEntry entry in skeleton)
-                {
-                    InventoryFolder folder = new InventoryFolder(entry.folder_id);
-                    if (entry.type_default != -1)
-                        folder.PreferredType = (AssetType)entry.type_default;
-                    folder.Version = entry.version;
-                    folder.OwnerID = owner;
-                    folder.ParentUUID = LLUUID.Parse(entry.parent_id);
-                    folder.Name = entry.name;
-                    Folders.Add(entry.folder_id, folder);
-
-                    if (entry.parent_id != LLUUID.Zero)
-                    {
-                        List<InventoryFolder> parentChildren;
-                        if (!FoldersChildren.TryGetValue(entry.parent_id, out parentChildren))
-                        {
-                            parentChildren = new List<InventoryFolder>();
-                            FoldersChildren.Add(entry.parent_id, parentChildren);
-                        }
-                        parentChildren.Add(folder);
-                    }
-                }
-
-                foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren)
-                {
-                    if (Folders.ContainsKey(pair.Key))
-                    {
-                        InventoryFolder parentFolder = Folders[pair.Key];
-                        parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
-                    }
-                }
-
-                // Should we do this or just return an IEnumerable?
-                InventoryFolder[] ret = new InventoryFolder[Folders.Count];
-                int index = 0;
-                foreach (InventoryFolder folder in Folders.Values)
-                {
-                    ret[index] = folder;
-                    ++index;
-                }
-                return ret;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum LoginStatus
-        {
-            /// <summary></summary>
-            Failed = -1,
-            /// <summary></summary>
-            None = 0,
-            /// <summary></summary>
-            ConnectingToLogin,
-            /// <summary></summary>
-            ReadingResponse,
-            /// <summary></summary>
-            ConnectingToSim,
-            /// <summary></summary>
-            Redirecting,
-            /// <summary></summary>
-            Success
-        }
-
-        /// <summary>Called when a reply is received from the login server, the
-        /// login sequence will block until this event returns</summary>
-        [Obsolete("Use RegisterLoginResponse instead.")]
-        public event LoginReplyCallback OnLoginReply;
 
         /// <summary>Called any time the login status changes, will eventually
         /// return LoginStatus.Success or LoginStatus.Failure</summary>
@@ -631,44 +612,9 @@ namespace libsecondlife
                 }
 
                 #endregion Critical Information
-
-                // Buddies:
-                if (reply.buddy_list != null)
-                {
-                    foreach (BuddyListEntry buddy in reply.buddy_list)
-                    {
-                        Client.Friends.AddFriend(buddy.buddy_id, (FriendsManager.RightsFlags)buddy.buddy_rights_given,
-                            (FriendsManager.RightsFlags)buddy.buddy_rights_has);
-                    }
-                }
-
-                // Misc:
-                //uint timestamp = (uint)reply.seconds_since_epoch;
-                //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
-
-                // Unhandled:
-                // reply.gestures
-                // reply.event_categories
-                // reply.classified_categories
-                // reply.event_notifications
-                // reply.ui_config
-                // reply.login_flags
-                // reply.global_textures
-                // reply.inventory_lib_root
-                // reply.inventory_lib_owner
-                // reply.inventory_skeleton
-                // reply.inventory_skel_lib
-                // reply.initial_outfit
             }
 
             bool redirect = (reply.login == "indeterminate");
-
-            // Fire the client handler
-            if (OnLoginReply != null)
-            {
-                try { OnLoginReply(loginSuccess, redirect, simIP, simPort, regionX, regionY, reason, message); }
-                catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
-            }
 
             try
             {

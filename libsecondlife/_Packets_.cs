@@ -1196,35 +1196,6 @@ namespace libsecondlife.Packets
             return PacketType.Default;
         }
 
-        public static PacketType GetType(byte[] bytes, int packetEnd, byte[] zeroBuffer)
-        {
-            ushort id; PacketFrequency freq;
-            int i = 0, end = packetEnd;
-            Header header = Header.BuildHeader(bytes, ref i, ref end);
-            if (header.Zerocoded)
-            {
-                end = Helpers.ZeroDecode(bytes, end + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-
-            if (bytes[6] == 0xFF)
-            {
-                if (bytes[7] == 0xFF)
-                {
-                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;
-                }
-                else
-                {
-                    id = (ushort)bytes[7];  freq = PacketFrequency.Medium;
-                }
-            }
-            else
-            {
-                id = (ushort)bytes[6];  freq = PacketFrequency.High;
-            }
-            return GetType(id, freq);
-        }
-
         public static Packet BuildPacket(PacketType type)
         {
             if(type == PacketType.StartPingCheck) return new StartPingCheckPacket();

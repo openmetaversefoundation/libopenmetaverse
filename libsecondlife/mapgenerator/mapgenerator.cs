@@ -876,27 +876,31 @@ namespace mapgenerator
                 "                    break;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
                 "            return PacketType.Default;" + Environment.NewLine + "        }" + Environment.NewLine);
             
+            // TODO: Not sure if this function is useful to anyone, but if it is it needs to be
+            // rewritten to not overwrite passed in pointers and decode the entire packet just
+            // to read the header
+
             // Write the Packet.GetType() function
-            writer.WriteLine(
-                "        public static PacketType GetType(byte[] bytes, int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
-                "        {" + Environment.NewLine + "            ushort id; PacketFrequency freq;" + Environment.NewLine + 
-                "            int i = 0, end = packetEnd;" + Environment.NewLine +
-                "            Header header = Header.BuildHeader(bytes, ref i, ref end);" + Environment.NewLine +
-                "            if (header.Zerocoded)" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                end = Helpers.ZeroDecode(bytes, end + 1, zeroBuffer) - 1;" + Environment.NewLine +
-                "                bytes = zeroBuffer;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
-                "            if (bytes[6] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                if (bytes[7] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
-                "                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;" + Environment.NewLine +
-                "                }" + Environment.NewLine + 
-                "                else" + Environment.NewLine +
-                "                {" + Environment.NewLine + "                    id = (ushort)bytes[7];  freq = PacketFrequency.Medium;" +
-                Environment.NewLine + "                }" + Environment.NewLine + "            }" + Environment.NewLine +
-                "            else" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                id = (ushort)bytes[6];  freq = PacketFrequency.High;" + Environment.NewLine +
-                "            }" + Environment.NewLine +
-                "            return GetType(id, freq);" + Environment.NewLine +
-                "        }" + Environment.NewLine);
+            //writer.WriteLine(
+            //    "        public static PacketType GetType(byte[] bytes, int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
+            //    "        {" + Environment.NewLine + "            ushort id; PacketFrequency freq;" + Environment.NewLine + 
+            //    "            int i = 0, end = packetEnd;" + Environment.NewLine +
+            //    "            Header header = Header.BuildHeader(bytes, ref i, ref end);" + Environment.NewLine +
+            //    "            if (header.Zerocoded)" + Environment.NewLine + "            {" + Environment.NewLine +
+            //    "                end = Helpers.ZeroDecode(bytes, end + 1, zeroBuffer) - 1;" + Environment.NewLine +
+            //    "                bytes = zeroBuffer;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
+            //    "            if (bytes[6] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
+            //    "                if (bytes[7] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
+            //    "                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;" + Environment.NewLine +
+            //    "                }" + Environment.NewLine + 
+            //    "                else" + Environment.NewLine +
+            //    "                {" + Environment.NewLine + "                    id = (ushort)bytes[7];  freq = PacketFrequency.Medium;" +
+            //    Environment.NewLine + "                }" + Environment.NewLine + "            }" + Environment.NewLine +
+            //    "            else" + Environment.NewLine + "            {" + Environment.NewLine +
+            //    "                id = (ushort)bytes[6];  freq = PacketFrequency.High;" + Environment.NewLine +
+            //    "            }" + Environment.NewLine +
+            //    "            return GetType(id, freq);" + Environment.NewLine +
+            //    "        }" + Environment.NewLine);
 
             // Write the Packet.BuildPacket(PacketType) function
             writer.WriteLine("        public static Packet BuildPacket(PacketType type)");

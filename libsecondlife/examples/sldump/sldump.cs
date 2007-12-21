@@ -147,16 +147,16 @@ namespace sldump
             client.Network.Logout();
 		}
 
-        static void Network_OnLogin(NetworkManager.LoginStatus login, string message)
+        static void Network_OnLogin(LoginStatus login, string message)
         {
             Console.WriteLine("Login: " + login.ToString() + " (" + message + ")");
 
             switch (login)
             {
-                case NetworkManager.LoginStatus.Failed:
+                case LoginStatus.Failed:
                     LoginEvent.Set();
                     break;
-                case NetworkManager.LoginStatus.Success:
+                case LoginStatus.Success:
                     LoginSuccess = true;
                     LoginEvent.Set();
                     break;

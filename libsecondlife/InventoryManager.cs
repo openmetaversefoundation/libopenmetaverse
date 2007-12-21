@@ -224,6 +224,11 @@ namespace libsecondlife
         public InventoryFolder(LLUUID itemID)
             : base(itemID) { }
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
         public override int GetHashCode()
         {
             return PreferredType.GetHashCode() ^ Version.GetHashCode() ^ DescendentCount.GetHashCode();
@@ -261,6 +266,8 @@ namespace libsecondlife
             public string[] Path;
             public int Level;
         }
+
+        #region Delegates
 
         /// <summary>
         /// Callback for inventory item creation finishing
@@ -336,12 +343,18 @@ namespace libsecondlife
         /// <param name="assetFilename">Filename of the task inventory asset</param>
         public delegate void TaskInventoryReplyCallback(LLUUID itemID, short serial, string assetFilename);
 
+        #endregion Delegates
+
+        #region Events
+
         public event ItemReceivedCallback OnItemReceived;
         public event FolderUpdatedCallback OnFolderUpdated;
         public event ObjectOfferedCallback OnObjectOffered;
         public event TaskItemReceivedCallback OnTaskItemReceived;
         public event FindObjectByPathCallback OnFindObjectByPath;
         public event TaskInventoryReplyCallback OnTaskInventoryReply;
+
+        #endregion Events
 
         private SecondLife _Client;
         private Inventory _Store;
@@ -465,10 +478,16 @@ namespace libsecondlife
             _Client.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
             _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
             _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
+            
             // Watch for inventory given to us through instant message
             _Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+
             // Register extra parameters with login and parse the inventory data that comes back
-            _Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse), new string[] {"inventory-root", "inventory-skeleton", "inventory-lib-root", "inventory-lib-owner", "inventory-skel-lib"} );
+            _Client.Network.RegisterLoginResponseCallback(
+                new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
+                new string[] {
+                    "inventory-root", "inventory-skeleton", "inventory-lib-root",
+                    "inventory-lib-owner", "inventory-skel-lib"});
         }
 
 
@@ -2563,7 +2582,7 @@ namespace libsecondlife
             }
         }
         
-        private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason, NetworkManager.LoginResponseData replyData)
+        private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData)
         {
             if (loginSuccess)
             {
@@ -2573,8 +2592,8 @@ namespace libsecondlife
                 rootFolder.ParentUUID = LLUUID.Zero;
                 _Store.RootFolder = rootFolder;
 
-                foreach (InventoryFolder folder in replyData.InventorySkeleton)
-                    _Store.UpdateNodeFor(folder);
+                for (int i = 0; i < replyData.InventorySkeleton.Length; i++)
+                    _Store.UpdateNodeFor(replyData.InventorySkeleton[i]);
             }
         }
 

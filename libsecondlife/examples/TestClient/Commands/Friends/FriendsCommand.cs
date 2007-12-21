@@ -18,11 +18,11 @@ namespace libsecondlife.TestClient
         }
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            List<FriendsManager.FriendInfo> friends = Client.Friends.FriendsList();
+            List<FriendInfo> friends = Client.Friends.FriendsList();
             if (friends.Count > 0)
             {
                 StringBuilder sb = new StringBuilder();
-                foreach (FriendsManager.FriendInfo friend in friends)
+                foreach (FriendInfo friend in friends)
                 {
                     sb.AppendLine(friend.Name);
                 }

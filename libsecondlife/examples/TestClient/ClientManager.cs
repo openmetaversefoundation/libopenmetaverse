@@ -42,7 +42,7 @@ namespace libsecondlife.TestClient
 
         public bool Running = true;
 
-        string contactPerson = String.Empty;
+        string version = "1.0.0";
         private LLUUID resolvedMasterKey = LLUUID.Zero;
         private ManualResetEvent keyResolution = new ManualResetEvent(false);
 
@@ -50,16 +50,14 @@ namespace libsecondlife.TestClient
         /// 
         /// </summary>
         /// <param name="accounts"></param>
-        public ClientManager(List<LoginDetails> accounts, string c)
+        public ClientManager(List<LoginDetails> accounts)
         {
-            this.contactPerson = c;
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
-        public ClientManager(List<LoginDetails> accounts, string c, string s)
+        public ClientManager(List<LoginDetails> accounts, string s)
         {
-            this.contactPerson = c;
             char sep = '/';
             string[] startbits = s.Split(sep);
 
@@ -98,8 +96,8 @@ namespace libsecondlife.TestClient
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
 
-            NetworkManager.LoginParams loginParams = client.Network.DefaultLoginParams(
-                    account.FirstName, account.LastName, account.Password, "TestClient", contactPerson);
+            LoginParams loginParams = client.Network.DefaultLoginParams(
+                    account.FirstName, account.LastName, account.Password, "TestClient", version);
 
             if (!String.IsNullOrEmpty(account.StartLocation))
                 loginParams.Start = account.StartLocation;
