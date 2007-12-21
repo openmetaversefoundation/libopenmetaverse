@@ -27,38 +27,22 @@ namespace groupmanager
             Client.Throttle.Cloud = 0;
 
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
-            Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(GroupsUpdatedHandler);
+            Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
             
             InitializeComponent();
         }
 
-        void Network_OnEventQueueRunning(Simulator simulator)
-        {
-            if (simulator == Client.Network.CurrentSim)
-            {
-                Console.WriteLine("Event queue connected for the primary simulator, requesting group info");
-
-                Client.Groups.RequestCurrentGroups();
-            }
-        }
-
-        void GroupsUpdatedHandler(Dictionary<LLUUID, Group> groups)
-        {
-            Groups = groups;
-
-            Invoke(new MethodInvoker(UpdateGroups));
-        }
-
-        void UpdateGroups()
+        private void UpdateGroups()
         {
             lock (lstGroups)
             {
-                lstGroups.Items.Clear();
+                Invoke(new MethodInvoker(delegate() { lstGroups.Items.Clear(); }));
 
                 foreach (Group group in Groups.Values)
                 {
-                    Console.WriteLine(String.Format("Adding group {0} ({1})", group.Name, group.ID.ToString()));
-                    lstGroups.Items.Add(group);
+                    Client.Log(String.Format("Adding group {0} ({1})", group.Name, group.ID), Helpers.LogLevel.Info);
+
+                    Invoke(new MethodInvoker(delegate() { lstGroups.Items.Add(group); }));
                 }
             }
         }
@@ -72,6 +56,8 @@ namespace groupmanager
             frmGroupManager frm = new frmGroupManager();
             frm.ShowDialog();
         }
+
+        #region GUI Callbacks
 
         private void cmdConnect_Click(object sender, EventArgs e)
         {
@@ -126,5 +112,28 @@ namespace groupmanager
                 frm.ShowDialog();
             }
         }
+
+        #endregion GUI Callbacks
+
+        #region Network Callbacks
+
+        private void Groups_OnCurrentGroups(Dictionary<LLUUID, Group> groups)
+        {
+            Groups = groups;
+
+            Invoke(new MethodInvoker(UpdateGroups));
+        }
+
+        private void Network_OnEventQueueRunning(Simulator simulator)
+        {
+            if (simulator == Client.Network.CurrentSim)
+            {
+                Console.WriteLine("Event queue connected for the primary simulator, requesting group info");
+
+                Client.Groups.RequestCurrentGroups();
+            }
+        }
+
+        #endregion
     }
 }
