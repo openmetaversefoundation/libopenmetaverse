@@ -206,7 +206,7 @@ namespace libsecondlife.TestClient
             {
                 PrintPrompt();
                 string input = Console.ReadLine();
-                DoCommandAll(input, null, null);
+                DoCommandAll(input, LLUUID.Zero);
             }
 
             foreach (SecondLife client in Clients.Values)
@@ -234,7 +234,7 @@ namespace libsecondlife.TestClient
         /// <param name="cmd"></param>
         /// <param name="fromAgentID"></param>
         /// <param name="imSessionID"></param>
-        public void DoCommandAll(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
+        public void DoCommandAll(string cmd, LLUUID fromAgentID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
             string firstToken = tokens[0].ToLower();
@@ -261,7 +261,7 @@ namespace libsecondlife.TestClient
                 Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
 
                 foreach (TestClient client in clientsCopy.Values)
-                    client.DoCommand(cmd, fromAgentID, imSessionID);
+                    client.DoCommand(cmd, fromAgentID);
             }
         }
 

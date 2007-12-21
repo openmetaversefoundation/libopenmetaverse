@@ -49,10 +49,8 @@ namespace libsecondlife.TestClient
             }
             
             // Send an Online-only IM to the new master
-            Client.Self.InstantMessage(Client.Self.Name, Client.MasterKey,
-                "You are now my master.  IM me with \"help\" for a command list.", LLUUID.Random(),
-                InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Online, Client.Self.SimPosition,
-                Client.Network.CurrentSim.ID, new byte[0]);
+            Client.Self.InstantMessage(
+                Client.MasterKey, "You are now my master.  IM me with \"help\" for a command list.");
 
             return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToString());
 		}

@@ -85,7 +85,7 @@ namespace libsecondlife.TestClient
         }
 
         //breaks up large responses to deal with the max IM size
-        private void SendResponseIM(SecondLife client, LLUUID fromAgentID, string data, LLUUID imSessionID)
+        private void SendResponseIM(SecondLife client, LLUUID fromAgentID, string data)
         {
             for ( int i = 0 ; i < data.Length ; i += 1024 ) {
                 int y;
@@ -98,11 +98,11 @@ namespace libsecondlife.TestClient
                     y = 1023;
                 }
                 string message = data.Substring(i, y);
-                client.Self.InstantMessage(fromAgentID, message, imSessionID);
+                client.Self.InstantMessage(fromAgentID, message);
             }
         }
 
-		public void DoCommand(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
+		public void DoCommand(string cmd, LLUUID fromAgentID)
         {
 			string[] tokens;
 
@@ -125,7 +125,7 @@ namespace libsecondlife.TestClient
 			        cmd += tokens[i] + " ";
 			    }
 
-			    ClientManager.DoCommandAll(cmd, fromAgentID, imSessionID);
+			    ClientManager.DoCommandAll(cmd, fromAgentID);
 
 			    return;
 			}
@@ -140,11 +140,11 @@ namespace libsecondlife.TestClient
                 {
                     Console.WriteLine(response);
 
-                    if (fromAgentID != null && Network.Connected)
+                    if (fromAgentID != LLUUID.Zero && Network.Connected)
                     {
                         // IMs don't like \r\n line endings, clean them up first
-                        response = response.Replace("\r", "");
-                        SendResponseIM(this, fromAgentID, response, imSessionID);
+                        response = response.Replace("\r", String.Empty);
+                        SendResponseIM(this, fromAgentID, response);
                     }
                 }
             }
@@ -221,7 +221,7 @@ namespace libsecondlife.TestClient
                 im.Dialog == InstantMessageDialog.MessageFromAgent ||
                 im.Dialog == InstantMessageDialog.MessageFromObject)
             {
-                DoCommand(im.Message, im.FromAgentID, im.IMSessionID);
+                DoCommand(im.Message, im.FromAgentID);
             }
         }
 

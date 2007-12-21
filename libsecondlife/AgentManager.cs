@@ -965,7 +965,7 @@ namespace libsecondlife
         /// <param name="message">Text message being sent</param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(Name, target, message, LLUUID.Random(),
+            InstantMessage(Name, target, message, target,
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.SimPosition,
                 LLUUID.Zero, new byte[0]);
         }
@@ -1028,31 +1028,39 @@ namespace libsecondlife
             InstantMessageDialog dialog, InstantMessageOnline offline, LLVector3 position, LLUUID regionID, 
             byte[] binaryBucket)
         {
-            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+            if (target != LLUUID.Zero)
+            {
+                ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
 
-            im.AgentData.AgentID = Client.Self.AgentID;
-            im.AgentData.SessionID = Client.Self.SessionID;
+                im.AgentData.AgentID = Client.Self.AgentID;
+                im.AgentData.SessionID = Client.Self.SessionID;
 
-            im.MessageBlock.Dialog = (byte)dialog;
-            im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
-            im.MessageBlock.FromGroup = false;
-            im.MessageBlock.ID = imSessionID;
-            im.MessageBlock.Message = Helpers.StringToField(message);
-            im.MessageBlock.Offline = (byte)offline;
-            im.MessageBlock.ToAgentID = target;
+                im.MessageBlock.Dialog = (byte)dialog;
+                im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+                im.MessageBlock.FromGroup = false;
+                im.MessageBlock.ID = imSessionID;
+                im.MessageBlock.Message = Helpers.StringToField(message);
+                im.MessageBlock.Offline = (byte)offline;
+                im.MessageBlock.ToAgentID = target;
 
-            if (binaryBucket != null)
-                im.MessageBlock.BinaryBucket = binaryBucket;
+                if (binaryBucket != null)
+                    im.MessageBlock.BinaryBucket = binaryBucket;
+                else
+                    im.MessageBlock.BinaryBucket = new byte[0];
+
+                // These fields are mandatory, even if we don't have valid values for them
+                im.MessageBlock.Position = LLVector3.Zero;
+                //TODO: Allow region id to be correctly set by caller or fetched from Client.*
+                im.MessageBlock.RegionID = regionID;
+
+                // Send the message
+                Client.Network.SendPacket(im);
+            }
             else
-                im.MessageBlock.BinaryBucket = new byte[0];
-
-            // These fields are mandatory, even if we don't have valid values for them
-            im.MessageBlock.Position = LLVector3.Zero;
-            //TODO: Allow region id to be correctly set by caller or fetched from Client.*
-            im.MessageBlock.RegionID = regionID;
-
-            // Send the message
-            Client.Network.SendPacket(im);
+            {
+                Client.Log(String.Format("Suppressing instant message \"{0}\" to LLUUID.Zero", message),
+                    Helpers.LogLevel.Error);
+            }
         }
 
         /// <summary>
