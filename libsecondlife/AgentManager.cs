@@ -1124,7 +1124,7 @@ namespace libsecondlife
             effect.Effect = new ViewerEffectPacket.EffectBlock[1];
             effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
             effect.Effect[0].AgentID = Client.Self.AgentID;
-            effect.Effect[0].Color = LLColor.Black.GetBytes();
+            effect.Effect[0].Color = new byte[0];
             effect.Effect[0].Duration = (type == PointAtType.Clear) ? 0.0f : Single.MaxValue / 4.0f;
             effect.Effect[0].ID = effectID;
             effect.Effect[0].Type = (byte)EffectType.PointAt;
@@ -1192,7 +1192,7 @@ namespace libsecondlife
             effect.Effect = new ViewerEffectPacket.EffectBlock[1];
             effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
             effect.Effect[0].AgentID = Client.Self.AgentID;
-            effect.Effect[0].Color = LLColor.Black.GetBytes();
+            effect.Effect[0].Color = new byte[0];
             effect.Effect[0].Duration = duration;
             effect.Effect[0].ID = effectID;
             effect.Effect[0].Type = (byte)EffectType.LookAt;
@@ -1229,7 +1229,7 @@ namespace libsecondlife
             effect.Effect = new ViewerEffectPacket.EffectBlock[1];
             effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
             effect.Effect[0].AgentID = Client.Self.AgentID;
-            effect.Effect[0].Color = color.GetBytes();
+            effect.Effect[0].Color = color.GetFloatBytes();
             effect.Effect[0].Duration = duration;
             effect.Effect[0].ID = effectID;
             effect.Effect[0].Type = (byte)EffectType.Beam;

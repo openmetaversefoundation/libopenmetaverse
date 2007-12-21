@@ -1481,6 +1481,16 @@ namespace libsecondlife
             return byteArray;
         }
 
+        public byte[] GetFloatBytes()
+        {
+            byte[] bytes = new byte[16];
+            Buffer.BlockCopy(BitConverter.GetBytes(R), 0, bytes, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(G), 0, bytes, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(B), 0, bytes, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(A), 0, bytes, 12, 4);
+            return bytes;
+        }
+
         /// <summary>
         /// 
         /// </summary>
