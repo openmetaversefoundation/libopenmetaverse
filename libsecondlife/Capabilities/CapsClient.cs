@@ -78,9 +78,13 @@ namespace libsecondlife.Capabilities
 
             if (_Client.IsBusy)
             {
-                SecondLife.LogStatic("New CAPS request initiated, closing previous request",
-                    Helpers.LogLevel.Warning);
+                SecondLife.LogStatic("New CAPS request to " + _Client.Location +
+                    " initiated, closing previous request", Helpers.LogLevel.Warning);
                 _Client.CancelAsync();
+            }
+            else
+            {
+                SecondLife.DebugLogStatic("New CAPS request to " + _Client.Location + " initiated");
             }
             
             // Proxy

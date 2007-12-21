@@ -145,13 +145,9 @@ namespace libsecondlife
             req.Add("ChatSessionRequest");
             req.Add("ProvisionVoiceAccountRequest");
 
-            byte[] postData = LLSDParser.SerializeXmlBytes(req);
-
-            Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
-
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
-            _SeedRequest.StartRequest(postData);
+            _SeedRequest.StartRequest(req);
         }
 
         private void SeedRequestCompleteHandler(CapsClient client, LLSD result, Exception error)
