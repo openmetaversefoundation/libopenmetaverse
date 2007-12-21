@@ -31,111 +31,111 @@ using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
-    #region Enumerations
+        #region Enumerations
 
-    /// <summary>
-    /// The type of bump-mapping applied to a face
-    /// </summary>
-    public enum Bumpiness : byte
-    {
-        /// <summary></summary>
-        None = 0,
-        /// <summary></summary>
-        Brightness = 1,
-        /// <summary></summary>
-        Darkness = 2,
-        /// <summary></summary>
-        Woodgrain = 3,
-        /// <summary></summary>
-        Bark = 4,
-        /// <summary></summary>
-        Bricks = 5,
-        /// <summary></summary>
-        Checker = 6,
-        /// <summary></summary>
-        Concrete = 7,
-        /// <summary></summary>
-        Crustytile = 8,
-        /// <summary></summary>
-        Cutstone = 9,
-        /// <summary></summary>
-        Discs = 10,
-        /// <summary></summary>
-        Gravel = 11,
-        /// <summary></summary>
-        Petridish = 12,
-        /// <summary></summary>
-        Siding = 13,
-        /// <summary></summary>
-        Stonetile = 14,
-        /// <summary></summary>
-        Stucco = 15,
-        /// <summary></summary>
-        Suction = 16,
-        /// <summary></summary>
-        Weave = 17
-    }
+        /// <summary>
+        /// The type of bump-mapping applied to a face
+        /// </summary>
+        public enum Bumpiness : byte
+        {
+            /// <summary></summary>
+            None = 0,
+            /// <summary></summary>
+            Brightness = 1,
+            /// <summary></summary>
+            Darkness = 2,
+            /// <summary></summary>
+            Woodgrain = 3,
+            /// <summary></summary>
+            Bark = 4,
+            /// <summary></summary>
+            Bricks = 5,
+            /// <summary></summary>
+            Checker = 6,
+            /// <summary></summary>
+            Concrete = 7,
+            /// <summary></summary>
+            Crustytile = 8,
+            /// <summary></summary>
+            Cutstone = 9,
+            /// <summary></summary>
+            Discs = 10,
+            /// <summary></summary>
+            Gravel = 11,
+            /// <summary></summary>
+            Petridish = 12,
+            /// <summary></summary>
+            Siding = 13,
+            /// <summary></summary>
+            Stonetile = 14,
+            /// <summary></summary>
+            Stucco = 15,
+            /// <summary></summary>
+            Suction = 16,
+            /// <summary></summary>
+            Weave = 17
+        }
 
-    /// <summary>
-    /// The level of shininess applied to a face
-    /// </summary>
-    public enum Shininess
-    {
-        /// <summary></summary>
-        None = 0,
-        /// <summary></summary>
-        Low = 0x40,
-        /// <summary></summary>
-        Medium = 0x80,
-        /// <summary></summary>
-        High = 0xC0
-    }
+        /// <summary>
+        /// The level of shininess applied to a face
+        /// </summary>
+        public enum Shininess
+        {
+            /// <summary></summary>
+            None = 0,
+            /// <summary></summary>
+            Low = 0x40,
+            /// <summary></summary>
+            Medium = 0x80,
+            /// <summary></summary>
+            High = 0xC0
+        }
 
-    /// <summary>
-    /// The texture mapping style used for a face
-    /// </summary>
-    public enum MappingType
-    {
-        /// <summary></summary>
-        Default = 0,
-        /// <summary></summary>
-        Planar = 2
-    }
+        /// <summary>
+        /// The texture mapping style used for a face
+        /// </summary>
+        public enum MappingType
+        {
+            /// <summary></summary>
+            Default = 0,
+            /// <summary></summary>
+            Planar = 2
+        }
 
-    /// <summary>
-    /// Flags in the TextureEntry block that describe which properties are 
-    /// set
-    /// </summary>
-    [Flags]
-    public enum TextureAttributes : uint
-    {
-        /// <summary></summary>
-        None = 0,
-        /// <summary></summary>
-        TextureID = 1 << 0,
-        /// <summary></summary>
-        RGBA = 1 << 1,
-        /// <summary></summary>
-        RepeatU = 1 << 2,
-        /// <summary></summary>
-        RepeatV = 1 << 3,
-        /// <summary></summary>
-        OffsetU = 1 << 4,
-        /// <summary></summary>
-        OffsetV = 1 << 5,
-        /// <summary></summary>
-        Rotation = 1 << 6,
-        /// <summary></summary>
-        Material = 1 << 7,
-        /// <summary></summary>
-        Media = 1 << 8,
-        /// <summary></summary>
-        Glow = 1 << 9,
-        /// <summary></summary>
-        All = 0xFFFFFFFF
-    }
+        /// <summary>
+        /// Flags in the TextureEntry block that describe which properties are 
+        /// set
+        /// </summary>
+        [Flags]
+        public enum TextureAttributes : uint
+        {
+            /// <summary></summary>
+            None = 0,
+            /// <summary></summary>
+            TextureID = 1 << 0,
+            /// <summary></summary>
+            RGBA = 1 << 1,
+            /// <summary></summary>
+            RepeatU = 1 << 2,
+            /// <summary></summary>
+            RepeatV = 1 << 3,
+            /// <summary></summary>
+            OffsetU = 1 << 4,
+            /// <summary></summary>
+            OffsetV = 1 << 5,
+            /// <summary></summary>
+            Rotation = 1 << 6,
+            /// <summary></summary>
+            Material = 1 << 7,
+            /// <summary></summary>
+            Media = 1 << 8,
+            /// <summary></summary>
+            Glow = 1 << 9,
+            /// <summary></summary>
+            All = 0xFFFFFFFF
+        }
 
-    #endregion Enumerations
+        #endregion Enumerations
 
     public abstract partial class LLObject
     {
@@ -278,6 +278,23 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
+            public float Glow
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Glow) != 0)
+                        return glow;
+                    else
+                        return DefaultTexture.glow;
+                }
+                set
+                {
+                    glow = value;
+                    hasAttribute |= TextureAttributes.Glow;
+                }
+            }
+
+            /// <summary></summary>
             public Bumpiness Bump
             {
                 get
@@ -380,23 +397,6 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            public float Glow
-            {
-                get
-                {
-                    if ((hasAttribute & TextureAttributes.Glow) != 0)
-                        return glow;
-                    else
-                        return DefaultTexture.glow;
-                }
-                set
-                {
-                    glow = value;
-                    hasAttribute |= TextureAttributes.Glow;
-                }
-            }
-
-            /// <summary></summary>
             public LLUUID TextureID
             {
                 get
@@ -431,9 +431,10 @@ namespace libsecondlife
                     hasAttribute = TextureAttributes.None;
             }
 
-            public LLSD ToLLSD()
+            public LLSD ToLLSD(int faceNumber)
             {
                 LLSDMap tex = new LLSDMap(10);
+                if (faceNumber >= 0) tex["face_number"] = LLSD.FromInteger(faceNumber);
                 tex["colors"] = RGBA.ToLLSD();
                 tex["scales"] = LLSD.FromReal(RepeatU);
                 tex["scalet"] = LLSD.FromReal(RepeatV);
@@ -451,11 +452,12 @@ namespace libsecondlife
                 return tex;
             }
 
-            public static TextureEntryFace FromLLSD(LLSD llsd, TextureEntryFace defaultFace)
+            public static TextureEntryFace FromLLSD(LLSD llsd, TextureEntryFace defaultFace, out int faceNumber)
             {
                 LLSDMap map = (LLSDMap)llsd;
 
                 TextureEntryFace face = new TextureEntryFace(defaultFace);
+                faceNumber = (map.ContainsKey("face_number")) ? map["face_number"].AsInteger() : -1;
                 face.RGBA = LLColor.FromLLSD(map["colors"]);
                 face.RepeatU = (float)map["scales"].AsReal();
                 face.RepeatV = (float)map["scalet"].AsReal();
@@ -497,11 +499,12 @@ namespace libsecondlife
         /// of nine faces</remarks>
         public class TextureEntry
         {
-            /// <summary>Maximum number of faces an object can have</summary>
-            public const int MAX_FACES = 32;
-
+            /// <summary></summary>
+            public TextureEntryFace DefaultTexture;
             /// <summary></summary>
             public TextureEntryFace[] FaceTextures = new TextureEntryFace[MAX_FACES];
+
+            public const int MAX_FACES = 32;
 
             /// <summary>
             /// Constructor that takes a default texture UUID
@@ -509,8 +512,8 @@ namespace libsecondlife
             /// <param name="defaultTextureID">Texture UUID to use as the default texture</param>
             public TextureEntry(LLUUID defaultTextureID)
             {
-                FaceTextures[0] = new TextureEntryFace(null);
-                FaceTextures[0].TextureID = defaultTextureID;
+                DefaultTexture = new TextureEntryFace(null);
+                DefaultTexture.TextureID = defaultTextureID;
             }
 
             /// <summary>
@@ -520,19 +523,20 @@ namespace libsecondlife
             /// <param name="defaultFace">Face to use as the default face</param>
             public TextureEntry(TextureEntryFace defaultFace)
             {
-                FaceTextures[0] = new TextureEntryFace(null);
-                FaceTextures[0].Bump = defaultFace.Bump;
-                FaceTextures[0].Fullbright = defaultFace.Fullbright;
-                FaceTextures[0].MediaFlags = defaultFace.MediaFlags;
-                FaceTextures[0].OffsetU = defaultFace.OffsetU;
-                FaceTextures[0].OffsetV = defaultFace.OffsetV;
-                FaceTextures[0].RepeatU = defaultFace.RepeatU;
-                FaceTextures[0].RepeatV = defaultFace.RepeatV;
-                FaceTextures[0].RGBA = defaultFace.RGBA;
-                FaceTextures[0].Rotation = defaultFace.Rotation;
-                FaceTextures[0].Shiny = defaultFace.Shiny;
-                FaceTextures[0].TexMapType = defaultFace.TexMapType;
-                FaceTextures[0].TextureID = defaultFace.TextureID;
+                DefaultTexture = new TextureEntryFace(null);
+                DefaultTexture.Bump = defaultFace.Bump;
+                DefaultTexture.Fullbright = defaultFace.Fullbright;
+                DefaultTexture.MediaFlags = defaultFace.MediaFlags;
+                DefaultTexture.OffsetU = defaultFace.OffsetU;
+                DefaultTexture.OffsetV = defaultFace.OffsetV;
+                DefaultTexture.RepeatU = defaultFace.RepeatU;
+                DefaultTexture.RepeatV = defaultFace.RepeatV;
+                DefaultTexture.RGBA = defaultFace.RGBA;
+                DefaultTexture.Rotation = defaultFace.Rotation;
+                DefaultTexture.Glow = defaultFace.Glow;
+                DefaultTexture.Shiny = defaultFace.Shiny;
+                DefaultTexture.TexMapType = defaultFace.TexMapType;
+                DefaultTexture.TextureID = defaultFace.TextureID;
             }
 
             /// <summary>
@@ -561,7 +565,7 @@ namespace libsecondlife
                 if (index >= MAX_FACES) throw new Exception(index + " is outside the range of MAX_FACES");
 
                 if (FaceTextures[index] == null)
-                    FaceTextures[index] = new TextureEntryFace(FaceTextures[0]);
+                    FaceTextures[index] = new TextureEntryFace(this.DefaultTexture);
 
                 return FaceTextures[index];
             }
@@ -578,7 +582,7 @@ namespace libsecondlife
                 if (FaceTextures[index] != null)
                     return FaceTextures[index];
                 else
-                    return FaceTextures[0];
+                    return DefaultTexture;
             }
 
             /// <summary>
@@ -589,10 +593,13 @@ namespace libsecondlife
             {
                 LLSDArray array = new LLSDArray();
 
+                // Always add default texture
+                array.Add(DefaultTexture.ToLLSD(-1));
+
                 for (int i = 0; i < MAX_FACES; i++)
                 {
                     if (FaceTextures[i] != null)
-                        array.Add(FaceTextures[i].ToLLSD());
+                        array.Add(FaceTextures[i].ToLLSD(i));
                 }
 
                 return array;
@@ -605,13 +612,15 @@ namespace libsecondlife
 
                 if (array.Count > 0)
                 {
+                    int faceNumber;
                     faceLLSD = (LLSDMap)array[0];
-                    TextureEntryFace defaultFace = TextureEntryFace.FromLLSD(faceLLSD, null);
+                    TextureEntryFace defaultFace = TextureEntryFace.FromLLSD(faceLLSD, null, out faceNumber);
                     TextureEntry te = new TextureEntry(defaultFace);
 
                     for (int i = 1; i < array.Count; i++)
                     {
-                        te.FaceTextures[i] = TextureEntryFace.FromLLSD(array[i], defaultFace);
+                        TextureEntryFace tex = TextureEntryFace.FromLLSD(array[i], defaultFace, out faceNumber);
+                        te.FaceTextures[faceNumber] = tex;
                     }
 
                     return te;
@@ -624,13 +633,15 @@ namespace libsecondlife
 
             private void FromBytes(byte[] data, int pos, int length)
             {
-                FaceTextures[0] = new TextureEntryFace(null);
-
-                if (length < 16)
+                if (length <= 0)
                 {
                     // No TextureEntry to process
-                    SecondLife.LogStatic("Parsing an empty TextureEntry", Helpers.LogLevel.Warning);
+                    DefaultTexture = null;
                     return;
+                }
+                else
+                {
+                    DefaultTexture = new TextureEntryFace(null);
                 }
 
                 uint bitfieldSize = 0;
@@ -638,7 +649,7 @@ namespace libsecondlife
                 int i = pos;
 
                 #region Texture
-                FaceTextures[0].TextureID = new LLUUID(data, i);
+                DefaultTexture.TextureID = new LLUUID(data, i);
                 i += 16;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -653,8 +664,7 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                // Inverse set to true to reverse the zerocoding optimization where white becomes black
-                FaceTextures[0].RGBA = new LLColor(data, i, true);
+                DefaultTexture.RGBA = new LLColor(data[i], data[i + 1], data[i + 2], data[i + 3]);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -669,7 +679,7 @@ namespace libsecondlife
                 #endregion Color
 
                 #region RepeatU
-                FaceTextures[0].RepeatU = Helpers.BytesToFloat(data, i);
+                DefaultTexture.RepeatU = Helpers.BytesToFloat(data, i);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -684,7 +694,7 @@ namespace libsecondlife
                 #endregion RepeatU
 
                 #region RepeatV
-                FaceTextures[0].RepeatV = Helpers.BytesToFloat(data, i);
+                DefaultTexture.RepeatV = Helpers.BytesToFloat(data, i);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -699,7 +709,7 @@ namespace libsecondlife
                 #endregion RepeatV
 
                 #region OffsetU
-                FaceTextures[0].OffsetU = Helpers.TEOffsetFloat(data, i);
+                DefaultTexture.OffsetU = Helpers.TEOffsetFloat(data, i);
                 i += 2;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -714,7 +724,7 @@ namespace libsecondlife
                 #endregion OffsetU
 
                 #region OffsetV
-                FaceTextures[0].OffsetV = Helpers.TEOffsetFloat(data, i);
+                DefaultTexture.OffsetV = Helpers.TEOffsetFloat(data, i);
                 i += 2;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -729,7 +739,7 @@ namespace libsecondlife
                 #endregion OffsetV
 
                 #region Rotation
-                FaceTextures[0].Rotation = Helpers.TERotationFloat(data, i);
+                DefaultTexture.Rotation = Helpers.TERotationFloat(data, i);
                 i += 2;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -744,7 +754,7 @@ namespace libsecondlife
                 #endregion Rotation
 
                 #region Material
-                FaceTextures[0].material = data[i];
+                DefaultTexture.material = data[i];
                 i++;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -759,10 +769,10 @@ namespace libsecondlife
                 #endregion Material
 
                 #region Media
-                FaceTextures[0].media = data[i];
+                DefaultTexture.media = data[i];
                 i++;
 
-                while (/*i - pos < length && */ ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
+                while (i - pos < length && ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
                     byte tmpByte = data[i];
                     i++;
@@ -774,7 +784,7 @@ namespace libsecondlife
                 #endregion Media
 
                 #region Glow
-                FaceTextures[0].Glow = Helpers.TEGlowFloat(data, i);
+                DefaultTexture.Glow = Helpers.TEGlowFloat(data, i);
                 i++;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
@@ -786,7 +796,7 @@ namespace libsecondlife
                         if ((faceBits & bit) != 0)
                             CreateFace(face).Glow = tmpFloat;
                 }
-                #endregion Glow
+ 	  	        #endregion Glow
             }
 
             /// <summary>
@@ -795,6 +805,9 @@ namespace libsecondlife
             /// <returns></returns>
             public byte[] ToBytes()
             {
+                if (DefaultTexture == null)
+                    return new byte[0];
+
                 MemoryStream memStream = new MemoryStream();
                 BinaryWriter binWriter = new BinaryWriter(memStream);
 
@@ -821,56 +834,56 @@ namespace libsecondlife
                 uint[] glows = new uint[FaceTextures.Length];
                 InitializeArray(ref glows);
 
-                for (int i = 1; i < FaceTextures.Length; i++)
+                for (int i = 0; i < FaceTextures.Length; i++)
                 {
                     if (FaceTextures[i] == null) continue;
 
-                    if (FaceTextures[i].TextureID != FaceTextures[0].TextureID)
+                    if (FaceTextures[i].TextureID != DefaultTexture.TextureID)
                     {
                         if (textures[i] == UInt32.MaxValue) textures[i] = 0;
                         textures[i] |= (uint)(1 << i);
                     }
-                    if (FaceTextures[i].RGBA != FaceTextures[0].RGBA)
+                    if (FaceTextures[i].RGBA != DefaultTexture.RGBA)
                     {
                         if (rgbas[i] == UInt32.MaxValue) rgbas[i] = 0;
                         rgbas[i] |= (uint)(1 << i);
                     }
-                    if (FaceTextures[i].RepeatU != FaceTextures[0].RepeatU)
+                    if (FaceTextures[i].RepeatU != DefaultTexture.RepeatU)
                     {
                         if (repeatus[i] == UInt32.MaxValue) repeatus[i] = 0;
                         repeatus[i] |= (uint)(1 << i);
                     }
-                    if (FaceTextures[i].RepeatV != FaceTextures[0].RepeatV)
+                    if (FaceTextures[i].RepeatV != DefaultTexture.RepeatV)
                     {
                         if (repeatvs[i] == UInt32.MaxValue) repeatvs[i] = 0;
                         repeatvs[i] |= (uint)(1 << i);
                     }
-                    if (Helpers.TEOffsetShort(FaceTextures[i].OffsetU) != Helpers.TEOffsetShort(FaceTextures[0].OffsetU))
+                    if (Helpers.TEOffsetShort(FaceTextures[i].OffsetU) != Helpers.TEOffsetShort(DefaultTexture.OffsetU))
                     {
                         if (offsetus[i] == UInt32.MaxValue) offsetus[i] = 0;
                         offsetus[i] |= (uint)(1 << i);
                     }
-                    if (Helpers.TEOffsetShort(FaceTextures[i].OffsetV) != Helpers.TEOffsetShort(FaceTextures[0].OffsetV))
+                    if (Helpers.TEOffsetShort(FaceTextures[i].OffsetV) != Helpers.TEOffsetShort(DefaultTexture.OffsetV))
                     {
                         if (offsetvs[i] == UInt32.MaxValue) offsetvs[i] = 0;
                         offsetvs[i] |= (uint)(1 << i);
                     }
-                    if (Helpers.TERotationShort(FaceTextures[i].Rotation) != Helpers.TERotationShort(FaceTextures[0].Rotation))
+                    if (Helpers.TERotationShort(FaceTextures[i].Rotation) != Helpers.TERotationShort(DefaultTexture.Rotation))
                     {
                         if (rotations[i] == UInt32.MaxValue) rotations[i] = 0;
                         rotations[i] |= (uint)(1 << i);
                     }
-                    if (FaceTextures[i].material != FaceTextures[0].material)
+                    if (FaceTextures[i].material != DefaultTexture.material)
                     {
                         if (materials[i] == UInt32.MaxValue) materials[i] = 0;
                         materials[i] |= (uint)(1 << i);
                     }
-                    if (FaceTextures[i].media != FaceTextures[0].media)
+                    if (FaceTextures[i].media != DefaultTexture.media)
                     {
                         if (medias[i] == UInt32.MaxValue) medias[i] = 0;
                         medias[i] |= (uint)(1 << i);
                     }
-                    if (Helpers.TEGlowByte(FaceTextures[i].Glow) != Helpers.TEGlowByte(FaceTextures[0].Glow))
+                    if (Helpers.TEGlowByte(FaceTextures[i].Glow) != Helpers.TEGlowByte(DefaultTexture.Glow))
                     {
                         if (glows[i] == UInt32.MaxValue) glows[i] = 0;
                         glows[i] |= (uint)(1 << i);
@@ -880,7 +893,7 @@ namespace libsecondlife
                 #endregion Bitfield Setup
 
                 #region Texture
-                binWriter.Write(FaceTextures[0].TextureID.GetBytes());
+                binWriter.Write(DefaultTexture.TextureID.GetBytes());
                 for (int i = 0; i < textures.Length; i++)
                 {
                     if (textures[i] != UInt32.MaxValue)
@@ -893,20 +906,20 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                binWriter.Write(FaceTextures[0].RGBA.GetInvertedBytes());
+                binWriter.Write(DefaultTexture.RGBA.GetBytes());
                 for (int i = 0; i < rgbas.Length; i++)
                 {
                     if (rgbas[i] != UInt32.MaxValue)
                     {
                         binWriter.Write(GetFaceBitfieldBytes(rgbas[i]));
-                        binWriter.Write(FaceTextures[i].RGBA.GetInvertedBytes());
+                        binWriter.Write(FaceTextures[i].RGBA.GetBytes());
                     }
                 }
                 binWriter.Write((byte)0);
                 #endregion Color
 
                 #region RepeatU
-                binWriter.Write(FaceTextures[0].RepeatU);
+                binWriter.Write(DefaultTexture.RepeatU);
                 for (int i = 0; i < repeatus.Length; i++)
                 {
                     if (repeatus[i] != UInt32.MaxValue)
@@ -919,7 +932,7 @@ namespace libsecondlife
                 #endregion RepeatU
 
                 #region RepeatV
-                binWriter.Write(FaceTextures[0].RepeatV);
+                binWriter.Write(DefaultTexture.RepeatV);
                 for (int i = 0; i < repeatvs.Length; i++)
                 {
                     if (repeatvs[i] != UInt32.MaxValue)
@@ -932,7 +945,7 @@ namespace libsecondlife
                 #endregion RepeatV
 
                 #region OffsetU
-                binWriter.Write(Helpers.TEOffsetShort(FaceTextures[0].OffsetU));
+                binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetU));
                 for (int i = 0; i < offsetus.Length; i++)
                 {
                     if (offsetus[i] != UInt32.MaxValue)
@@ -945,7 +958,7 @@ namespace libsecondlife
                 #endregion OffsetU
 
                 #region OffsetV
-                binWriter.Write(Helpers.TEOffsetShort(FaceTextures[0].OffsetV));
+                binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetV));
                 for (int i = 0; i < offsetvs.Length; i++)
                 {
                     if (offsetvs[i] != UInt32.MaxValue)
@@ -958,7 +971,7 @@ namespace libsecondlife
                 #endregion OffsetV
 
                 #region Rotation
-                binWriter.Write(Helpers.TERotationShort(FaceTextures[0].Rotation));
+                binWriter.Write(Helpers.TERotationShort(DefaultTexture.Rotation));
                 for (int i = 0; i < rotations.Length; i++)
                 {
                     if (rotations[i] != UInt32.MaxValue)
@@ -971,7 +984,7 @@ namespace libsecondlife
                 #endregion Rotation
 
                 #region Material
-                binWriter.Write(FaceTextures[0].material);
+                binWriter.Write(DefaultTexture.material);
                 for (int i = 0; i < materials.Length; i++)
                 {
                     if (materials[i] != UInt32.MaxValue)
@@ -984,7 +997,7 @@ namespace libsecondlife
                 #endregion Material
 
                 #region Media
-                binWriter.Write(FaceTextures[0].media);
+                binWriter.Write(DefaultTexture.media);
                 for (int i = 0; i < medias.Length; i++)
                 {
                     if (medias[i] != UInt32.MaxValue)
@@ -997,7 +1010,7 @@ namespace libsecondlife
                 #endregion Media
 
                 #region Glow
-                binWriter.Write(Helpers.TEGlowByte(FaceTextures[0].Glow));
+                binWriter.Write(Helpers.TEGlowByte(DefaultTexture.Glow));
                 for (int i = 0; i < glows.Length; i++)
                 {
                     if (glows[i] != UInt32.MaxValue)
@@ -1018,6 +1031,8 @@ namespace libsecondlife
             public override string ToString()
             {
                 string output = String.Empty;
+
+                output += "Default Face: " + DefaultTexture.ToString() + Helpers.NewLine;
 
                 for (int i = 0; i < FaceTextures.Length; i++)
                 {
