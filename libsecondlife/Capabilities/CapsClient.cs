@@ -169,6 +169,7 @@ namespace libsecondlife.Capabilities
                     if (Helpers.StringContains(e.Error.Message, "502"))
                     {
                         // These are normal, retry the request automatically
+                        SecondLife.DebugLogStatic("502 error from capability " + _Client.Location);
                         StartRequest(_PostData, _ContentType);
                     }
                     else
@@ -177,6 +178,10 @@ namespace libsecondlife.Capabilities
                         catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
+            }
+            else if (e.Cancelled)
+            {
+                SecondLife.DebugLogStatic("Capability action at " + _Client.Location + " cancelled");
             }
         }
 

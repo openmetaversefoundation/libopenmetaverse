@@ -130,23 +130,27 @@ namespace libsecondlife.Capabilities
 
             if (e.Error != null)
             {
+                // Error occurred
                 string message = e.Error.Message.ToLower();
 
                 // Check what kind of exception happened
                 if (Helpers.StringContains(message, "404") || Helpers.StringContains(message, "410"))
                 {
-                    SecondLife.LogStatic("Closing event queue due to missing caps URI", Helpers.LogLevel.Info);
+                    SecondLife.LogStatic("Closing event queue at " + _Client.Location  + " due to missing caps URI",
+                        Helpers.LogLevel.Info);
 
                     _Running = false;
                     _Dead = true;
                 }
                 else if (!e.Cancelled && !Helpers.StringContains(message, "502"))
                 {
-                    SecondLife.LogStatic("Unrecognized caps exception: " + e.Error.Message, Helpers.LogLevel.Warning);
+                    SecondLife.LogStatic("Unrecognized caps exception from " + _Client.Location  +
+                        ": " + e.Error.Message, Helpers.LogLevel.Warning);
                 }
             }
             else if (!e.Cancelled && e.Result != null)
             {
+                // Got a response
                 LLSD result = LLSDParser.DeserializeXml(e.Result);
                 if (result != null && result.Type == LLSDType.Map)
                 {
@@ -156,6 +160,11 @@ namespace libsecondlife.Capabilities
                     events = (LLSDArray)map["events"];
                     ack = map["id"].AsInteger();
                 }
+            }
+            else if (e.Cancelled)
+            {
+                // Connection was cancelled
+                SecondLife.DebugLogStatic("Cancelled connection to event queue at " + _Client.Location);
             }
 
             if (_Running)
