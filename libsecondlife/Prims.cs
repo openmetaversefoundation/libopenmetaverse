@@ -266,14 +266,33 @@ namespace libsecondlife
             {
                 LLSDMap map = new LLSDMap();
 
-                map["softness"] = LLSD.FromInteger(Softness);
+                map["simulate_lod"] = LLSD.FromInteger(Softness);
                 map["gravity"] = LLSD.FromReal(Gravity);
-                map["drag"] = LLSD.FromReal(Drag);
-                map["wind"] = LLSD.FromReal(Wind);
+                map["air_friction"] = LLSD.FromReal(Drag);
+                map["wind_sensitivity"] = LLSD.FromReal(Wind);
                 map["tension"] = LLSD.FromReal(Tension);
-                map["force"] = Force.ToLLSD();
+                map["user_force"] = Force.ToLLSD();
 
                 return map;
+            }
+
+            public static FlexibleData FromLLSD(LLSD llsd)
+            {
+                FlexibleData flex = new FlexibleData();
+
+                if (llsd.Type == LLSDType.Map)
+                {
+                    LLSDMap map = (LLSDMap)llsd;
+
+                    flex.Softness = map["simulate_lod"].AsInteger();
+                    flex.Gravity = (float)map["gravity"].AsReal();
+                    flex.Drag = (float)map["air_friction"].AsReal();
+                    flex.Wind = (float)map["wind_sensitivity"].AsReal();
+                    flex.Tension = (float)map["tension"].AsReal();
+                    flex.Force = LLVector3.FromLLSD(map["user_force"]);
+                }
+
+                return flex;
             }
         }
 
@@ -353,6 +372,24 @@ namespace libsecondlife
                 return map;
             }
 
+            public static LightData FromLLSD(LLSD llsd)
+            {
+                LightData light = new LightData();
+
+                if (llsd.Type == LLSDType.Map)
+                {
+                    LLSDMap map = (LLSDMap)llsd;
+
+                    light.Color = LLColor.FromLLSD(map["color"]);
+                    light.Intensity = (float)map["intensity"].AsReal();
+                    light.Radius = (float)map["radius"].AsReal();
+                    light.Cutoff = (float)map["cutoff"].AsReal();
+                    light.Falloff = (float)map["falloff"].AsReal();
+                }
+
+                return light;
+            }
+
             /// <summary>
             /// 
             /// </summary>
@@ -404,6 +441,21 @@ namespace libsecondlife
                 map["type"] = LLSD.FromInteger((int)Type);
 
                 return map;
+            }
+
+            public static SculptData FromLLSD(LLSD llsd)
+            {
+                SculptData sculpt = new SculptData();
+
+                if (llsd.Type == LLSDType.Map)
+                {
+                    LLSDMap map = (LLSDMap)llsd;
+
+                    sculpt.SculptTexture = map["texture"].AsUUID();
+                    sculpt.Type = (SculptType)map["type"].AsInteger();
+                }
+
+                return sculpt;
             }
         }
 
@@ -546,7 +598,7 @@ namespace libsecondlife
             #endregion Path/Profile
 
             prim.Data = data;
-
+            
             if (map["phantom"].AsBoolean())
                 prim.Flags |= ObjectFlags.Phantom;
 
@@ -556,15 +608,14 @@ namespace libsecondlife
             if (map["shadows"].AsBoolean())
                 prim.Flags |= ObjectFlags.CastShadows;
 
+            prim.ParentID = (uint)map["parentid"].AsInteger();
             prim.Position = LLVector3.FromLLSD(map["position"]);
             prim.Rotation = LLQuaternion.FromLLSD(map["rotation"]);
             prim.Scale = LLVector3.FromLLSD(map["scale"]);
-
+            prim.Flexible = FlexibleData.FromLLSD(map["flexible"]);
+            prim.Light = LightData.FromLLSD(map["light"]);
+            prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);
             prim.Textures = TextureEntry.FromLLSD(map["textures"]);
-
-            LLSD parentID;
-            if (map.TryGetValue("parentid", out parentID))
-                prim.ParentID = (uint)parentID.AsInteger();
 
             return prim;
         }

@@ -320,7 +320,14 @@ namespace libsecondlife.StructuredData
         public ICollection<LLSD> Values { get { return value.Values; } }
         public LLSD this[string key]
         {
-            get { return value[key]; }
+            get
+            {
+                LLSD llsd;
+                if (this.value.TryGetValue(key, out llsd))
+                    return llsd;
+                else
+                    return new LLSD();
+            }
             set { this.value[key] = value; }
         }
 

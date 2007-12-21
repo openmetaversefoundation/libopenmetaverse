@@ -1417,6 +1417,11 @@ namespace libsecondlife
 
         public LLColor(float r, float g, float b, float a)
         {
+            if (r > 1f || g > 1f || b > 1f || a > 1f)
+                SecondLife.LogStatic(
+                    String.Format("Attempting to initialize LLColor with out of range values <{0},{1},{2},{3}>",
+                    r, g, b, a), Helpers.LogLevel.Warning);
+
             // Valid range is from 0.0 to 1.0
             R = Helpers.Clamp(r, 0f, 1f);
             G = Helpers.Clamp(g, 0f, 1f);
@@ -1588,8 +1593,8 @@ namespace libsecondlife
 
         #endregion Operators
 
-        /// <summary>An LLColor with a value of 0,0,0,255</summary>
-        public readonly static LLColor Black = new LLColor(0, 0, 0, 255);
+        /// <summary>An LLColor with zero RGB values and full alpha</summary>
+        public readonly static LLColor Black = new LLColor(0f, 0f, 0f, 1f);
     }
 
     /// <summary>
