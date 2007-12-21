@@ -620,7 +620,8 @@ namespace libsecondlife
                     for (int i = 1; i < array.Count; i++)
                     {
                         TextureEntryFace tex = TextureEntryFace.FromLLSD(array[i], defaultFace, out faceNumber);
-                        te.FaceTextures[faceNumber] = tex;
+                        if (faceNumber >= 0 && faceNumber < te.FaceTextures.Length)
+                            te.FaceTextures[faceNumber] = tex;
                     }
 
                     return te;
