@@ -36,13 +36,13 @@ namespace groupmanager
         {
             lock (lstGroups)
             {
-                Invoke(new MethodInvoker(delegate() { lstGroups.Items.Clear(); }));
+                Invoke((MethodInvoker)delegate() { lstGroups.Items.Clear(); });
 
                 foreach (Group group in Groups.Values)
                 {
                     Client.Log(String.Format("Adding group {0} ({1})", group.Name, group.ID), Helpers.LogLevel.Info);
 
-                    Invoke(new MethodInvoker(delegate() { lstGroups.Items.Add(group); }));
+                    Invoke((MethodInvoker)delegate() { lstGroups.Items.Add(group); });
                 }
             }
         }

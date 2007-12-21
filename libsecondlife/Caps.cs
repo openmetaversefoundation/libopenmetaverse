@@ -56,8 +56,7 @@ namespace libsecondlife
         internal Dictionary<string, Uri> _Caps = new Dictionary<string, Uri>();
 
         private CapsClient _SeedRequest;
-        //private Capabilities2.EventQueueClient _EventQueueCap = null;
-        private CapsEventQueue _EventQueueCap = null;
+        private EventQueueClient _EventQueueCap = null;
 
         /// <summary>Capabilities URI this system was initialized with</summary>
         public string SeedCapsURI { get { return _SeedCapsURI; } }
@@ -177,14 +176,10 @@ namespace libsecondlife
                 {
                     Simulator.Client.DebugLog("Starting event queue for " + Simulator.ToString());
 
-                    _EventQueueCap = new CapsEventQueue(Simulator, _Caps["EventQueueGet"].AbsoluteUri);
-                    _EventQueueCap.MakeRequest();
-
-                    // FIXME: Get the new event queue client working
-                    //_EventQueueCap = new Capabilities2.EventQueueClient(_Caps["EventQueueGet"]);
-                    //_EventQueueCap.OnConnected += new Capabilities2.EventQueueClient.ConnectedCallback(EventQueueConnectedHandler);
-                    //_EventQueueCap.OnEvent += new Capabilities2.EventQueueClient.EventCallback(EventQueueEventHandler);
-                    //_EventQueueCap.Start();
+                    _EventQueueCap = new EventQueueClient(_Caps["EventQueueGet"]);
+                    _EventQueueCap.OnConnected += new EventQueueClient.ConnectedCallback(EventQueueConnectedHandler);
+                    _EventQueueCap.OnEvent += new EventQueueClient.EventCallback(EventQueueEventHandler);
+                    _EventQueueCap.Start();
                 }
             }
             else

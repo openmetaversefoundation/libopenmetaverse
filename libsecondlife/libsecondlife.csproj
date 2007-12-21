@@ -106,7 +106,6 @@
     <Compile Include="BitPack.cs" />
     <Compile Include="BlockingQueue.cs" />
     <Compile Include="Capabilities\CapsClient.cs" />
-    <Compile Include="Capabilities\CapsEventQueue.cs" />
     <Compile Include="Capabilities\CapsListener.cs" />
     <Compile Include="Capabilities\CapsBase.cs">
       <SubType>Component</SubType>
