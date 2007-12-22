@@ -153,6 +153,7 @@
     <Compile Include="ProtocolManager.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SafeDictionary.cs" />
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>

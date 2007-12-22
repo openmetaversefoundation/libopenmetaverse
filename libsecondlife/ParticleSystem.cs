@@ -114,7 +114,7 @@ namespace libsecondlife
             public ParticleSystem(byte[] data, int pos)
             {
                 // TODO: Not sure exactly how many bytes we need here, so partial 
-                // (but truncated) data will cause an exception to be thrown
+                // (truncated) data will cause an exception to be thrown
                 if (data.Length > 0)
                 {
                     BitPack pack = new BitPack(data, pos);

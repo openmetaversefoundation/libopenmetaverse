@@ -1181,14 +1181,25 @@ namespace libsecondlife
         /// </summary>
         /// <param name="byteArray"></param>
         /// <param name="pos"></param>
-        public LLColor(byte[] byteArray, int pos)
-		{
-            float quanta = 1.0f / 255.0f;
+        /// <param name="inverted"></param>
+        public LLColor(byte[] byteArray, int pos, bool inverted)
+        {
+            const float quanta = 1.0f / 255.0f;
 
-            R = (float)byteArray[pos] * quanta;
-            G = (float)byteArray[pos + 1] * quanta;
-            B = (float)byteArray[pos + 2] * quanta;
-            A = (float)byteArray[pos + 3] * quanta;
+            if (inverted)
+            {
+                R = (float)(255 - byteArray[pos]) * quanta;
+                G = (float)(255 - byteArray[pos + 1]) * quanta;
+                B = (float)(255 - byteArray[pos + 2]) * quanta;
+                A = (float)(255 - byteArray[pos + 3]) * quanta;
+            }
+            else
+            {
+                R = (float)byteArray[pos] * quanta;
+                G = (float)byteArray[pos + 1] * quanta;
+                B = (float)byteArray[pos + 2] * quanta;
+                A = (float)byteArray[pos + 3] * quanta;
+            }
         }
 
         #endregion Constructors

@@ -175,6 +175,12 @@ namespace libsecondlife
         /// an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
 
+        /// <summary>
+        /// If true, parcelproperty replies are store in an internal safeDictionary
+        /// containing parcel details.
+        /// </summary>
+        public bool PARCEL_TRACKING = true;
+
         // Misc
 
         /// <summary>Default color used for viewer particle effects</summary>

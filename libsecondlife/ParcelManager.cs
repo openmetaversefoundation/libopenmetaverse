@@ -524,6 +524,14 @@ namespace libsecondlife
         /// <param name="primownersEntries">List containing details or prim ownership.</param>
         public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator,  List<ParcelPrimOwners> primOwners);
 
+        /// <summary>
+        /// Fired when all parcels are downloaded from simulator.
+        /// </summary>
+        /// <param name="simulator">simulator parcel is in</param>
+        /// <param name="simParcels">Dictionary containing parcel details in simulator.</param>
+        /// <param name="parcelMap">64,64 array containing sim position -> localID mapping.</param>
+        public delegate void SimParcelsDownloaded(Simulator simulator, SafeDictionary<int, Parcel> simParcels, int[,] parcelMap);
+
         #endregion Delegates
 
         #region Events
@@ -538,6 +546,8 @@ namespace libsecondlife
         public event ParcelAccessListReplyCallback OnAccessListReply;
         /// <summary></summary>
         public event ParcelObjectOwnersListReplyCallback OnPrimOwnersListReply;
+        /// <summary></summary>
+        public event SimParcelsDownloaded OnSimParcelsDownloaded;
 
         #endregion Events
 
@@ -824,6 +834,46 @@ namespace libsecondlife
             Client.Network.SendPacket(join, simulator);
         }
 
+           /// <summary>
+        /// Request all simulator parcel properties (used for populating the <code>Simulator.Parcels</code> 
+        /// dictionary)
+        /// </summary>
+        /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
+        public void RequestAllSimParcels(Simulator simulator)
+        {
+            System.Threading.Thread th = new System.Threading.Thread(delegate()
+            {
+                int y, x;
+                for (y = 0; y < 64; y++)
+                {
+                    for (x = 0; x < 64; x++)
+                    {
+                        if (simulator.ParcelMap[y, x] == 0)
+                        {
+                            Client.Parcels.PropertiesRequest(simulator,
+                                                             (y + 1) * 4.0f, (x + 1) * 4.0f,
+                                                             y * 4.0f, x * 4.0f, 0, false);
+                            // Pause for 50 ms after every request to avoid flooding the sim
+                            System.Threading.Thread.Sleep(50);
+                        }
+                    }
+                }
+            });
+            th.Start();
+        }
+
+        /// <summary>
+        /// Gets a parcel LocalID
+        /// </summary>
+        /// <param name="simulator">Simulator parcel is in</param>
+        /// <param name="position">llVector3 position in simulator (Z not used)</param>
+        /// <returns>0 on failure, or parcel LocalID on success.</returns>
+        /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map &
+        /// dictionary.</remarks>
+        public int GetParcelLocalID(Simulator simulator, LLVector3 position)
+        {
+            return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+        }
         #endregion Public Methods
 
         #region Packet Handlers
@@ -870,7 +920,7 @@ namespace libsecondlife
 
         private void ParcelPropertiesHandler(Packet packet, Simulator simulator)
         {
-            if (OnParcelProperties != null)
+            if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
                 ParcelPropertiesPacket properties = (ParcelPropertiesPacket)packet;
 
@@ -922,14 +972,48 @@ namespace libsecondlife
                 parcel.TotalPrims = properties.ParcelData.TotalPrims;
                 parcel.UserLocation = properties.ParcelData.UserLocation;
                 parcel.UserLookAt = properties.ParcelData.UserLookAt;
-
-                // Fire the callback
-                try
+                // store parcel in dictionary
+                if (Client.Settings.PARCEL_TRACKING)
                 {
-                    OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
-                        properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
+                    lock (simulator.Parcels.Dictionary)
+                        simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
+
+                    int y, x, index, bit;
+                    for (y = 0; y < simulator.ParcelMap.GetLength(0); y++)
+                    {
+                        for (x = 0; x < simulator.ParcelMap.GetLength(1); x++)
+                        {
+                            if (simulator.ParcelMap[y, x] == 0)
+                            {
+                                index = (y * 64) + x;
+                                bit = index % 8;
+                                index >>= 3;
+
+                                if ((parcel.Bitmap[index] & (1 << bit)) != 0)
+                                    simulator.ParcelMap[y, x] = parcel.LocalID;
+                            }
+                        }
+
+                    }
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+
+                  // Fire the callback for parcel properties being received
+                if (OnParcelProperties != null)
+                {
+                    try
+                    {
+                        OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
+                            properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
+                    }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+
+                // Check if all of the simulator parcels have been retrieved, if so fire another callback
+                if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
+                {
+                    try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
 

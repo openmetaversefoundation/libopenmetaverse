@@ -281,6 +281,51 @@ namespace libsecondlife
         /// simulator. Must be locked with SequenceLock before modifying. Only
         /// useful for applications manipulating sequence numbers</summary>
         public volatile uint Sequence;
+        public SafeDictionary<int, Parcel> Parcels = new SafeDictionary<int, Parcel>();
+
+        /// <summary>
+        /// Provides access to an internal thread-safe multidimensional array containing a x,y grid mapped
+        /// each 64x64 parcel's LocalID.
+        /// </summary>
+        public int[,] ParcelMap
+        {
+            get
+            {
+                lock (this)
+                    return _ParcelMap;
+            }
+            set
+            {
+                lock (this)
+                    _ParcelMap = value;
+            }
+        }
+
+        /// <summary>
+        /// Checks simulator parcel map to make sure its downloaded all data successfully
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <returns></returns>
+        public bool IsParcelMapFull()
+        {
+            int i = 0;
+            int j = 0;
+
+            while (i < this.ParcelMap.GetLength(0))
+            {
+                while (j < this.ParcelMap.GetLength(1))
+                {
+                    if (this.ParcelMap[i, j] == 0)
+                        return false;
+
+                    j++;
+                }
+
+                i++;
+            }
+
+            return true;
+        }
 
         #endregion Public Members
 
@@ -330,7 +375,7 @@ namespace libsecondlife
         private System.Timers.Timer AckTimer;
         private System.Timers.Timer PingTimer;
         private System.Timers.Timer StatsTimer;
-
+        private int[,] _ParcelMap = new int[64, 64];
         #endregion Internal/Private Members
 
         /// <summary>
