@@ -24,9 +24,10 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
+            ParcelsDownloaded.Reset();
+
             ParcelDownloader.DownloadSimParcels(Client.Network.CurrentSim);
 
-            ParcelsDownloaded.Reset();
             if (ParcelsDownloaded.WaitOne(20000, false) && Client.Network.Connected)
                 return "Downloaded information for " + ParcelCount + " parcels in " + Client.Network.CurrentSim.Name;
             else

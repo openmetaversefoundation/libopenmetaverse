@@ -522,6 +522,23 @@ namespace libsecondlife
             Hovered_Over_Parcel = -50000
         }
 
+        public enum TerraformAction : byte
+        {
+            Level = 0,
+            Raise = 1,
+            Lower = 2,
+            Smooth = 3,
+            Noise = 4,
+            Revert = 5
+        }
+
+        public enum TerraformBrushSize : byte
+        {
+            Small = 1,
+            Medium = 2,
+            Large = 4
+        }
+
         #endregion Enums
 
         #region Structs
@@ -937,6 +954,123 @@ namespace libsecondlife
         public int GetParcelLocalID(Simulator simulator, LLVector3 position)
         {
             return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+        }
+
+        /// <summary>
+        /// Terraform (raise, lower, etc) an area or whole parcel of land
+        /// </summary>
+        /// <param name="simulator">Simulator land area is in.</param>
+        /// <param name="localID">LocalID of parcel, or -1 if using bounding box</param>
+        /// <param name="action">From Enum, Raise, Lower, Level, Smooth, Etc.</param>
+        /// <param name="brushSize">Size of area to modify</param>
+        /// <returns>true on successful request sent.</returns>
+        /// <remarks>Settings.STORE_LAND_PATCHES must be true, 
+        /// Parcel information must be downloaded using <code>RequestAllSimParcels()</code></remarks>
+        public bool Terraform(Simulator simulator, int localID, TerraformAction action, TerraformBrushSize brushSize)
+        {
+            return Terraform(simulator, localID, 0f, 0f, 0f, 0f, action, brushSize, 1);
+        }
+
+        /// <summary>
+        /// Terraform (raise, lower, etc) an area or whole parcel of land
+        /// </summary>
+        /// <param name="simulator">Simulator land area is in.</param>
+        /// <param name="west">west border of area to modify</param>
+        /// <param name="south">south border of area to modify</param>
+        /// <param name="east">east border of area to modify</param>
+        /// <param name="north">north border of area to modify</param>
+        /// <param name="action">From Enum, Raise, Lower, Level, Smooth, Etc.</param>
+        /// <param name="brushSize">Size of area to modify</param>
+        /// <returns>true on successful request sent.</returns>
+        /// <remarks>Settings.STORE_LAND_PATCHES must be true, 
+        /// Parcel information must be downloaded using <code>RequestAllSimParcels()</code></remarks>
+        public bool Terraform(Simulator simulator, float west, float south, float east, float north,
+            TerraformAction action, TerraformBrushSize brushSize)
+        {
+            return Terraform(simulator, -1, west, south, east, north, action, brushSize, 1);
+        }
+
+        /// <summary>
+        /// Terraform (raise, lower, etc) an area or whole parcel of land
+        /// </summary>
+        /// <param name="simulator">Simulator land area is in.</param>
+        /// <param name="localID">LocalID of parcel, or -1 if using bounding box</param>
+        /// <param name="west">west border of area to modify</param>
+        /// <param name="south">south border of area to modify</param>
+        /// <param name="east">east border of area to modify</param>
+        /// <param name="north">north border of area to modify</param>
+        /// <param name="action">From Enum, Raise, Lower, Level, Smooth, Etc.</param>
+        /// <param name="brushSize">Size of area to modify</param>
+        /// <param name="seconds">How many meters + or - to lower, 1 = 1 meter</param>
+        /// <returns>true on successful request sent.</returns>
+        /// <remarks>Settings.STORE_LAND_PATCHES must be true, 
+        /// Parcel information must be downloaded using <code>RequestAllSimParcels()</code></remarks>
+        public bool Terraform(Simulator simulator, int localID, float west, float south, float east, float north,
+            TerraformAction action, TerraformBrushSize brushSize, int seconds)
+        {
+            float height = 0f;
+            int x, y;
+            if (localID == -1)
+            {
+                x = (int)east - (int)west / 2;
+                y = (int)north - (int)south / 2;
+            }
+            else
+            {
+                Parcel p;
+                if (!simulator.Parcels.TryGetValue((int)simulator.ParcelMap.GetValue(localID), out p))
+                {
+                    Client.Log(String.Format("Can't find parcel {0} in simulator {1}", localID, simulator),
+                        Helpers.LogLevel.Warning);
+                    return false;
+                }
+
+                x = (int)p.AABBMax.X - (int)p.AABBMin.X / 2;
+                y = (int)p.AABBMax.Y - (int)p.AABBMin.Y / 2;
+            }
+
+            if (!Client.Terrain.TerrainHeightAtPoint(simulator.Handle, x, y, out height))
+            {
+                Client.Log("Land Patch not stored for location", Helpers.LogLevel.Warning);
+                return false;
+            }
+
+            Terraform(simulator, localID, west, south, east, north, action, brushSize, seconds, height);
+            return true;
+        }
+
+        /// <summary>
+        /// Terraform (raise, lower, etc) an area or whole parcel of land
+        /// </summary>
+        /// <param name="simulator">Simulator land area is in.</param>
+        /// <param name="localID">LocalID of parcel, or -1 if using bounding box</param>
+        /// <param name="west">west border of area to modify</param>
+        /// <param name="south">south border of area to modify</param>
+        /// <param name="east">east border of area to modify</param>
+        /// <param name="north">north border of area to modify</param>
+        /// <param name="action">From Enum, Raise, Lower, Level, Smooth, Etc.</param>
+        /// <param name="brushSize">Size of area to modify</param>
+        /// <param name="seconds">How many meters + or - to lower, 1 = 1 meter</param>
+        /// <param name="height">Height at which the terraform operation is acting at</param>
+        public void Terraform(Simulator simulator, int localID, float west, float south, float east, float north,
+            TerraformAction action, TerraformBrushSize brushSize, int seconds, float height)
+        {
+            ModifyLandPacket land = new ModifyLandPacket();
+            land.AgentData.AgentID = Client.Self.AgentID;
+            land.AgentData.SessionID = Client.Self.SessionID;
+
+            land.ModifyBlock.Action = (byte)action;
+            land.ModifyBlock.BrushSize = (byte)brushSize;
+            land.ModifyBlock.Seconds = seconds;
+            land.ModifyBlock.Height = height;
+
+            land.ParcelData[0].LocalID = localID;
+            land.ParcelData[0].West = west;
+            land.ParcelData[0].South = south;
+            land.ParcelData[0].East = east;
+            land.ParcelData[0].North = north;
+
+            Client.Network.SendPacket(land, simulator);
         }
 
         #endregion Public Methods
