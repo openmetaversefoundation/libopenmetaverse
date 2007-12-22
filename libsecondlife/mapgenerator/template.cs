@@ -50,7 +50,7 @@ namespace libsecondlife.Packets
             this.Source = "Packet decoding";
         }
     }
-    
+
     /// <summary>
     /// The Second Life header of a message template packet. Either 5, 6, or 8 
     /// bytes in length at the beginning of the packet, and encapsulates any 
@@ -97,10 +97,11 @@ namespace libsecondlife.Packets
         public uint Sequence
         {
             get { return (uint)((Data[1] << 24) + (Data[2] << 16) + (Data[3] << 8) + Data[4]); }
-            set {
-			Data[1] = (byte)(value >> 24); Data[2] = (byte)(value >> 16); 
-			Data[3] = (byte)(value >> 8);  Data[4] = (byte)(value % 256); 
-		}
+            set
+            {
+                Data[1] = (byte)(value >> 24); Data[2] = (byte)(value >> 16);
+                Data[3] = (byte)(value >> 8); Data[4] = (byte)(value % 256);
+            }
         }
         /// <summary>Numeric ID number of this packet</summary>
         public abstract ushort ID { get; set; }
@@ -156,7 +157,7 @@ namespace libsecondlife.Packets
                 return new HighHeader(bytes, ref pos, ref packetEnd);
             }
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -170,14 +171,14 @@ namespace libsecondlife.Packets
                 {
                     int count = bytes[packetEnd--];
                     AckList = new uint[count];
-                    
+
                     for (int i = 0; i < count; i++)
                     {
                         AckList[i] = (uint)(
                             (bytes[(packetEnd - i * 4) - 3] << 24) |
                             (bytes[(packetEnd - i * 4) - 2] << 16) |
-                            (bytes[(packetEnd - i * 4) - 1] <<  8) |
-                            (bytes[(packetEnd - i * 4)    ]));
+                            (bytes[(packetEnd - i * 4) - 1] << 8) |
+                            (bytes[(packetEnd - i * 4)]));
                     }
 
                     packetEnd -= (count * 4);
@@ -359,46 +360,4 @@ namespace libsecondlife.Packets
             i += 7;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class CapsHeader : Header
-    {
-        /// <summary>Does nothing, ID is irrelevant to capability packets</summary>
-        public override ushort ID
-        {
-            get { return (ushort)0; }
-            set { }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override PacketFrequency Frequency
-        {
-            get { return PacketFrequency.Caps; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public CapsHeader()
-        {
-			// Needed just in case someone tries to grab the sequence number or something
-            // weird from a capability packet
-            Data = new byte[8];
-            // No appended ACKs on capability packets
-            AckList = new uint[0];
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="i"></param>
-        public override void ToBytes(byte[] bytes, ref int i)
-        {
-            i = 0;
-        }
-    }
+}

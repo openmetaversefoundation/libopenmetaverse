@@ -632,16 +632,16 @@ namespace libsecondlife
 
                     if (packet != null)
                     {
-                        if (packet.Header.Frequency != PacketFrequency.Caps)
+                        // Skip the ACK handling on packets synthesized from CAPS messages
+                        if (packet.Header.Sequence != 0)
                         {
-                            #region Archive Duplicate Search
-
+                            #region ACK accounting
                             // TODO: Replace PacketArchive Queue<> with something more efficient
 
                             // Check the archives to see whether we already received this packet
                             lock (simulator.PacketArchive)
                             {
-                                if (packet.Header.Sequence != 0 && simulator.PacketArchive.Contains(packet.Header.Sequence))
+                                if (simulator.PacketArchive.Contains(packet.Header.Sequence))
                                 {
                                     if (packet.Header.Resent)
                                     {
@@ -669,7 +669,7 @@ namespace libsecondlife
                                 }
                             }
 
-                            #endregion Archive Duplicate Search
+                            #endregion ACK accounting
 
                             #region ACK handling
 

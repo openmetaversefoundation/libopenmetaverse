@@ -1469,7 +1469,7 @@ namespace libsecondlife
                         prim.OwnerID = block.OwnerID;
                         prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
                         prim.Text = Helpers.FieldToUTF8String(block.Text);
-                        prim.TextColor = new LLColor(block.TextColor, 0);
+                        prim.TextColor = new LLColor(block.TextColor, 0, false);
                         // Alpha is inversed to help zero encoding
                         prim.TextColor.A = (byte)(255 - prim.TextColor.A);
 
@@ -1563,7 +1563,6 @@ namespace libsecondlife
                         SetAvatarSittingOn(simulator, avatar, block.ParentID, oldSeatID);
 
                         // Set this avatar online and in a region
-                        avatar.Online = true;
                         avatar.CurrentSim = simulator;
 
                         // Textures
@@ -1899,7 +1898,7 @@ namespace libsecondlife
                                 prim.Text = text;
 
                                 // Text color
-                                prim.TextColor = new LLColor(block.Data, i);
+                                prim.TextColor = new LLColor(block.Data, i, false);
                                 i += 4;
                             }
                             else
