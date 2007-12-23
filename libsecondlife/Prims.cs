@@ -549,6 +549,7 @@ namespace libsecondlife
             prim["position"] = Position.ToLLSD();
             prim["rotation"] = Rotation.ToLLSD();
             prim["scale"] = Scale.ToLLSD();
+            prim["material"] = LLSD.FromInteger((int)Data.Material);
             prim["shadows"] = LLSD.FromBoolean(((Flags & ObjectFlags.CastShadows) != 0));
             prim["textures"] = Textures.ToLLSD();
             prim["volume"] = volume;
@@ -612,6 +613,7 @@ namespace libsecondlife
             prim.Position = LLVector3.FromLLSD(map["position"]);
             prim.Rotation = LLQuaternion.FromLLSD(map["rotation"]);
             prim.Scale = LLVector3.FromLLSD(map["scale"]);
+            prim.Data.Material = (MaterialType)map["material"].AsInteger();
             prim.Flexible = FlexibleData.FromLLSD(map["flexible"]);
             prim.Light = LightData.FromLLSD(map["light"]);
             prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);

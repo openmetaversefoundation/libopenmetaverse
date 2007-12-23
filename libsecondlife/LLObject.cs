@@ -218,6 +218,8 @@ namespace libsecondlife
             /// <summary></summary>
             public PCode PCode;
 
+            #region Properties
+
             /// <summary></summary>
             public ProfileCurve ProfileCurve
             {
@@ -267,6 +269,8 @@ namespace libsecondlife
                     return end;
                 }
             }
+
+            #endregion Properties
         }
 
         /// <summary>
