@@ -1125,7 +1125,31 @@ namespace libsecondlife
             _Client.Network.SendPacket(create);
         }
 
-        public LLUUID CreateFolder(LLUUID parentID, AssetType preferredType, string name)
+        /// <summary>
+        /// Creates a new inventory folder
+        /// </summary>
+        /// <param name="parentID">ID of the folder to put this folder in</param>
+        /// <param name="name">Name of the folder to create</param>
+        /// <returns>The UUID of the newly created folder</returns>
+        public LLUUID CreateFolder(LLUUID parentID, string name)
+        {
+            return CreateFolder(parentID, name, AssetType.Unknown);
+        }
+
+        /// <summary>
+        /// Creates a new inventory folder
+        /// </summary>
+        /// <param name="parentID">ID of the folder to put this folder in</param>
+        /// <param name="name">Name of the folder to create</param>
+        /// <param name="preferredType">Sets this folder as the default folder
+        /// for new assets of the specified type. Use <code>AssetType.Unknown</code>
+        /// to create a normal folder, otherwise it will likely create a
+        /// duplicate of an existing folder type</param>
+        /// <returns>The UUID of the newly created folder</returns>
+        /// <remarks>If you specify a preferred type of <code>AsseType.Folder</code>
+        /// it will create a new root folder which may likely cause all sorts
+        /// of strange problems</remarks>
+        public LLUUID CreateFolder(LLUUID parentID, string name, AssetType preferredType)
         {
             LLUUID id = LLUUID.Random();
 

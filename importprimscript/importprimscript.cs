@@ -124,7 +124,7 @@ namespace importprimscript
             //
 
             // Create a folder to hold all of our texture uploads
-            UploadFolderID = Client.Inventory.CreateFolder(Client.Inventory.Store.RootFolder.UUID, AssetType.Unknown, scriptfilename);
+            UploadFolderID = Client.Inventory.CreateFolder(Client.Inventory.Store.RootFolder.UUID, scriptfilename);
 
             // Loop through each sculpty and do what we need to do
             for (int i = 0; i < sculpties.Count; i++)
