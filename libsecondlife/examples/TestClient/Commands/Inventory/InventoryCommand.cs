@@ -14,8 +14,8 @@ namespace libsecondlife.TestClient
     {
         private Inventory Inventory;
         private InventoryManager Manager;
-        
-		public InventoryCommand(TestClient testClient)
+
+        public InventoryCommand(TestClient testClient)
         {
             Name = "i";
             Description = "Prints out inventory.";
@@ -28,34 +28,23 @@ namespace libsecondlife.TestClient
 
             StringBuilder result = new StringBuilder();
 
-            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID,
-            //    true, true, InventorySortOrder.ByName);
+            InventoryFolder rootFolder = Inventory.RootFolder;
+            PrintFolder(rootFolder, result, 0);
 
-            //PrintFolder(Inventory.RootNode, result, 0);
-
-            //return result.ToString();
-
-            //FIXME:
-            return "This function needs a blocking InventoryManager.FolderContents() to work";
+            return result.ToString();
         }
 
-        void PrintFolder(InventoryNode f, StringBuilder result, int indent)
+        void PrintFolder(InventoryFolder f, StringBuilder result, int indent)
         {
-            foreach ( InventoryNode i in f.Nodes.Values )
+            foreach (InventoryBase i in Manager.FolderContents(f.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByName, 3000))
             {
-                result.Append(i.Data.Name + "\n");
-
-                if ( i.Nodes.Count > 0 )
-                    PrintFolder(i, result, indent + 1);
+                result.AppendFormat("{0}{1} ({2})\n", new String(' ', indent * 2), i.Name, i.UUID);
+                if (i is InventoryFolder)
+                {
+                    InventoryFolder folder = (InventoryFolder)i;
+                    PrintFolder(folder, result, indent + 1);
+                }
             }
         }
-
-        //void Indent(StringBuilder output, int indenting)
-        //{
-        //    for (int count = 0; count < indenting; count++)
-        //    {
-        //        output.Append("  ");
-        //    }
-        //}
-	}
+    }
 }

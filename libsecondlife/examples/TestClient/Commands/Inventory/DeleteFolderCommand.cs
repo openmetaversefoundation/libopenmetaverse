@@ -19,22 +19,17 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            return "Broken until someone fixes me";
+            if (args.Length != 1)
+                return "Usage: deletefolder UUID";
 
-            //string target = String.Empty;
-            //for (int ct = 0; ct < args.Length; ct++)
-            //    target = target + args[ct] + " ";
-            //target = target.TrimEnd();
+            LLUUID target;
 
-            //Client.Inventory.DownloadInventory();
-            //InventoryFolder folder = Client.Inventory.getFolder(target);
-            //if (folder != null)
-            //{
-            //    folder.Delete();
-            //    return "Folder " + target + " deleted.";
-            //}
-
-            //return "Unable to find: " + target;
+            if (LLUUID.TryParse(args[0], out target))
+            {
+                Client.Inventory.RemoveFolder(target);
+                return String.Format("removed folder {0}", target);
+            } else
+            return "Did not delete folder, check uuid with inventory command";
 		}
 	}
 }
