@@ -289,7 +289,7 @@ namespace libsecondlife
                     flex.Drag = (float)map["air_friction"].AsReal();
                     flex.Wind = (float)map["wind_sensitivity"].AsReal();
                     flex.Tension = (float)map["tension"].AsReal();
-                    flex.Force = LLVector3.FromLLSD(map["user_force"]);
+                    flex.Force.FromLLSD(map["user_force"]);
                 }
 
                 return flex;
@@ -380,7 +380,7 @@ namespace libsecondlife
                 {
                     LLSDMap map = (LLSDMap)llsd;
 
-                    light.Color = LLColor.FromLLSD(map["color"]);
+                    light.Color.FromLLSD(map["color"]);
                     light.Intensity = (float)map["intensity"].AsReal();
                     light.Radius = (float)map["radius"].AsReal();
                     light.Cutoff = (float)map["cutoff"].AsReal();
@@ -610,9 +610,9 @@ namespace libsecondlife
                 prim.Flags |= ObjectFlags.CastShadows;
 
             prim.ParentID = (uint)map["parentid"].AsInteger();
-            prim.Position = LLVector3.FromLLSD(map["position"]);
-            prim.Rotation = LLQuaternion.FromLLSD(map["rotation"]);
-            prim.Scale = LLVector3.FromLLSD(map["scale"]);
+            prim.Position.FromLLSD(map["position"]);
+            prim.Rotation.FromLLSD(map["rotation"]);
+            prim.Scale.FromLLSD(map["scale"]);
             prim.Data.Material = (MaterialType)map["material"].AsInteger();
             prim.Flexible = FlexibleData.FromLLSD(map["flexible"]);
             prim.Light = LightData.FromLLSD(map["light"]);

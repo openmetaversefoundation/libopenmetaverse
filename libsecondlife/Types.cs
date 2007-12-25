@@ -39,13 +39,6 @@ namespace libsecondlife
         /// <summary>The System.Guid object this struct wraps around</summary>
         public Guid UUID;
 
-        #region Properties
-
-        /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
-        public byte[] Data { get { return GetBytes(); } }
-
-        #endregion Properties
-
         #region Constructors
 
         /// <summary>
@@ -56,7 +49,7 @@ namespace libsecondlife
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
         public LLUUID(string val)
         {
-            if (val == null)
+            if (String.IsNullOrEmpty(val))
                 UUID = new Guid();
             else
                 UUID = new Guid(val);
@@ -98,6 +91,20 @@ namespace libsecondlife
         #region Public Methods
 
         /// <summary>
+        /// IComparable.CompareTo implementation.
+        /// </summary>
+        public int CompareTo(object obj)
+        {
+            if (obj is LLUUID)
+            {
+                LLUUID ID = (LLUUID)obj;
+                return this.UUID.CompareTo(ID.UUID);
+            }
+
+            throw new ArgumentException("object is not a LLUUID");
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="source"></param>
@@ -113,21 +120,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// IComparable.CompareTo implementation.
-        /// </summary>
-        public int CompareTo(object obj)
-        {
-            if (obj is LLUUID)
-            {
-                LLUUID ID = (LLUUID)obj;
-                return this.UUID.CompareTo(ID.UUID);
-            }
-
-            throw new ArgumentException("object is not a LLUUID");
-        }
-
-        /// <summary>
-        /// Returns the raw bytes for this UUID
+        /// Returns a copy of the raw bytes for this UUID
         /// </summary>
         /// <returns>A 16 byte array containing this UUID</returns>
         public byte[] GetBytes()
@@ -173,10 +166,10 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Get a 64-bit integer representation of the first half of this UUID
+        /// Create a 64-bit integer representation of the first half of this UUID
         /// </summary>
         /// <returns>An integer created from the first eight bytes of this UUID</returns>
-        public ulong ToULong()
+        public ulong GetULong()
         {
             return Helpers.BytesToUInt64(UUID.ToByteArray());
         }
@@ -571,6 +564,17 @@ namespace libsecondlife
         #region Public Methods
 
         /// <summary>
+        /// Test if this vector is composed of all finite numbers
+        /// </summary>
+        public bool IsFinite()
+        {
+            if (Helpers.IsFinite(X) && Helpers.IsFinite(Y) && Helpers.IsFinite(Z))
+                return true;
+            else
+                return false;
+        }
+
+        /// <summary>
         /// Builds a vector from a byte array
         /// </summary>
         /// <param name="byteArray">Byte array containing a 12 byte vector</param>
@@ -603,17 +607,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Test if this vector is composed of all finite numbers
-        /// </summary>
-        public bool IsFinite()
-        {
-            if (Helpers.IsFinite(X) && Helpers.IsFinite(Y) && Helpers.IsFinite(Z))
-                return true;
-            else
-                return false;
-        }
-
-        /// <summary>
         /// Returns the raw bytes for this vector
         /// </summary>
         /// <returns>A 12 byte array containing X, Y, and Z</returns>
@@ -643,11 +636,7 @@ namespace libsecondlife
             return array;
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
-        public static LLVector3 FromLLSD(LLSD llsd)
+        public void FromLLSD(LLSD llsd)
         {
             if (llsd.Type == LLSDType.Array)
             {
@@ -655,12 +644,41 @@ namespace libsecondlife
 
                 if (array.Count == 3)
                 {
-                    return new LLVector3((float)array[0].AsReal(), (float)array[1].AsReal(), (float)array[2].AsReal());
+                    X = (float)array[0].AsReal();
+                    Y = (float)array[1].AsReal();
+                    Z = (float)array[2].AsReal();
                 }
             }
 
-            return LLVector3.Zero;
+            this = LLVector3.Zero;
         }
+
+        /// <summary>
+        /// Assumes this vector represents euler rotations along the X, Y, and
+        /// Z axis and creates a quaternion representation of the rotations
+        /// </summary>
+        /// <returns>A quaternion representation of the euler rotations</returns>
+        public LLQuaternion ToRotation()
+        {
+            LLVector3 vec = this;
+
+            if (vec.X > Helpers.PI) vec.X -= Helpers.TWO_PI;
+            if (vec.Y > Helpers.PI) vec.Y -= Helpers.TWO_PI;
+            if (vec.Z > Helpers.PI) vec.Z -= Helpers.TWO_PI;
+
+            if (vec.X < -Helpers.PI) vec.X += Helpers.TWO_PI;
+            if (vec.Y < -Helpers.PI) vec.Y += Helpers.TWO_PI;
+            if (vec.Z < -Helpers.PI) vec.Z += Helpers.TWO_PI;
+
+            LLQuaternion rot = new LLQuaternion(X, Y, Z, 1f);
+            if (vec.Z > Helpers.PI) rot.W = 0f;
+
+            return rot;
+        }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         /// <summary>
         /// Calculate the magnitude of the supplied vector
@@ -752,32 +770,11 @@ namespace libsecondlife
             LLVector3 axis = Norm(crossProduct);
             float s = (float)Math.Sin(angle / 2);
 
-            LLQuaternion quat = new LLQuaternion();
-            quat.X = axis.X * s;
-            quat.Y = axis.Y * s;
-            quat.Z = axis.Z * s;
-            quat.W = (float)Math.Cos(angle / 2);
-
-            return quat;
-        }
-
-        /// <summary>
-        /// Converts a vector style rotation to a quaternion
-        /// </summary>
-        /// <param name="a">Axis rotation, such as 0,0,90 for 90 degrees to the right</param>
-        /// <returns>A quaternion representing the axes of the supplied vector</returns>
-        public static LLQuaternion Axis2Rot(LLVector3 a)
-        {
-            if (a.X > 180) a.X -= 360; if (a.Y > 180) a.Y -= 360; if (a.Z > 180) a.Z -= 360;
-            if (a.X < -180) a.X += 360; if (a.Y < -180) a.Y += 360; if (a.Z < -180) a.Z += 360;
-
-            LLQuaternion rot = LLQuaternion.Identity;
-            rot.X = (float)(a.X * Helpers.DEG_TO_RAD);
-            rot.Y = (float)(a.Y * Helpers.DEG_TO_RAD);
-            rot.Z = (float)(a.Z * Helpers.DEG_TO_RAD);
-            if (a.Z > 180) rot.W = 0;
-
-            return rot;
+            return new LLQuaternion(
+                axis.X * s,
+                axis.Y * s,
+                axis.Z * s,
+                (float)Math.Cos(angle / 2));
         }
 
         /// <summary>
@@ -1027,11 +1024,7 @@ namespace libsecondlife
             return array;
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
-        public static LLVector3d FromLLSD(LLSD llsd)
+        public void FromLLSD(LLSD llsd)
         {
             if (llsd.Type == LLSDType.Array)
             {
@@ -1039,12 +1032,18 @@ namespace libsecondlife
 
                 if (array.Count == 3)
                 {
-                    return new LLVector3d(array[0].AsReal(), array[1].AsReal(), array[2].AsReal());
+                    X = array[0].AsReal();
+                    Y = array[1].AsReal();
+                    Z = array[2].AsReal();
                 }
             }
 
-            return LLVector3d.Zero;
+            this = LLVector3d.Zero;
         }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         /// <summary>
         /// Calculates the distance between two vectors
@@ -1245,11 +1244,7 @@ namespace libsecondlife
             return array;
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
-        public static LLVector4 FromLLSD(LLSD llsd)
+        public void FromLLSD(LLSD llsd)
         {
             if (llsd.Type == LLSDType.Array)
             {
@@ -1257,16 +1252,19 @@ namespace libsecondlife
 
                 if (array.Count == 4)
                 {
-                    return new LLVector4(
-                        (float)array[0].AsReal(),
-                        (float)array[1].AsReal(),
-                        (float)array[2].AsReal(),
-                        (float)array[3].AsReal());
+                    X = (float)array[0].AsReal();
+                    Y = (float)array[1].AsReal();
+                    Z = (float)array[2].AsReal();
+                    S = (float)array[3].AsReal();
                 }
             }
 
-            return LLVector4.Zero;
+            this = LLVector4.Zero;
         }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         #endregion Static Methods
 
@@ -1431,6 +1429,16 @@ namespace libsecondlife
 
         public LLColor(byte[] byteArray, int pos, bool inverted)
         {
+            R = G = B = A = 0f;
+            FromBytes(byteArray, pos, inverted);
+        }
+
+        #endregion Constructors
+
+        #region Public Methods
+
+        public void FromBytes(byte[] byteArray, int pos, bool inverted)
+        {
             const float quanta = 1.0f / 255.0f;
 
             if (inverted)
@@ -1449,15 +1457,16 @@ namespace libsecondlife
             }
         }
 
-        #endregion Constructors
-
-        #region Public Methods
+        public byte[] GetBytes()
+        {
+            return GetBytes(false);
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte[] GetBytes()
+        public byte[] GetBytes(bool inverted)
         {
             byte[] byteArray = new byte[4];
 
@@ -1466,17 +1475,13 @@ namespace libsecondlife
             byteArray[2] = Helpers.FloatToByte(B, 0f, 1f);
             byteArray[3] = Helpers.FloatToByte(A, 0f, 1f);
 
-            return byteArray;
-        }
-
-        public byte[] GetInvertedBytes()
-        {
-            byte[] byteArray = GetBytes();
-
-            byteArray[0] = (byte)(255 - byteArray[0]);
-            byteArray[1] = (byte)(255 - byteArray[1]);
-            byteArray[2] = (byte)(255 - byteArray[2]);
-            byteArray[3] = (byte)(255 - byteArray[3]);
+            if (inverted)
+            {
+                byteArray[0] = (byte)(255 - byteArray[0]);
+                byteArray[1] = (byte)(255 - byteArray[1]);
+                byteArray[2] = (byte)(255 - byteArray[2]);
+                byteArray[3] = (byte)(255 - byteArray[3]);
+            }
 
             return byteArray;
         }
@@ -1495,15 +1500,6 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-        public string ToStringRGB()
-        {
-            return String.Format("<{0}, {1}, {2}>", R, G, B);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         public LLSD ToLLSD()
         {
             LLSDArray array = new LLSDArray();
@@ -1514,11 +1510,7 @@ namespace libsecondlife
             return array;
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
-        public static LLColor FromLLSD(LLSD llsd)
+        public void FromLLSD(LLSD llsd)
         {
             if (llsd.Type == LLSDType.Array)
             {
@@ -1526,16 +1518,28 @@ namespace libsecondlife
 
                 if (array.Count == 4)
                 {
-                    return new LLColor(
-                        (float)array[0].AsReal(),
-                        (float)array[1].AsReal(),
-                        (float)array[2].AsReal(),
-                        (float)array[3].AsReal());
+                    R = (float)array[0].AsReal();
+                    G = (float)array[1].AsReal();
+                    B = (float)array[2].AsReal();
+                    A = (float)array[3].AsReal();
                 }
             }
 
-            return LLColor.Black;
+            this = LLColor.Black;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string ToStringRGB()
+        {
+            return String.Format("<{0}, {1}, {2}>", R, G, B);
+        }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         #endregion Static Methods
 
@@ -1678,23 +1682,12 @@ namespace libsecondlife
         /// Build a quaternion from an angle and a vector
         /// </summary>
         /// <param name="angle">Angle value</param>
-        /// <param name="vector">Vector value</param>
-        public LLQuaternion(float angle, LLVector3 vector)
+        /// <param name="vec">Vector value</param>
+        public LLQuaternion(float angle, LLVector3 vec)
         {
             conversionBuffer = null;
-
-            vector = LLVector3.Norm(vector);
-            angle *= 0.5f;
-
-            float c = (float)Math.Cos(angle);
-            float s = (float)Math.Sin(angle);
-
-            X = vector.X * s;
-            Y = vector.Y * s;
-            Z = vector.Z * s;
-            W = c;
-
-            this = Norm(this);
+            X = Y = Z = W = 0f;
+            SetQuaternion(angle, vec);
         }
 
         #endregion Constructors
@@ -1816,11 +1809,7 @@ namespace libsecondlife
             return array;
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
-        public static LLQuaternion FromLLSD(LLSD llsd)
+        public void FromLLSD(LLSD llsd)
         {
             if (llsd.Type == LLSDType.Array)
             {
@@ -1828,16 +1817,85 @@ namespace libsecondlife
 
                 if (array.Count == 4)
                 {
-                    return new LLQuaternion(
-                        (float)array[0].AsReal(),
-                        (float)array[1].AsReal(),
-                        (float)array[2].AsReal(),
-                        (float)array[3].AsReal());
+                    X = (float)array[0].AsReal();
+                    Y = (float)array[1].AsReal();
+                    Z = (float)array[2].AsReal();
+                    W = (float)array[3].AsReal();
                 }
             }
 
-            return LLQuaternion.Identity;
+            this = LLQuaternion.Identity;
         }
+
+        public void GetEulerAngles(out float roll, out float pitch, out float yaw)
+        {
+            LLMatrix3 rotMat = new LLMatrix3(this);
+            rotMat = LLMatrix3.Orthogonalize(rotMat);
+            rotMat.GetEulerAngles(out roll, out pitch, out yaw);
+        }
+
+        /// <summary>
+        /// Returns the inverse matrix from a quaternion, or the correct
+        /// matrix if the quaternion is inverse
+        /// </summary>
+        /// <returns>A matrix representation of this quaternion</returns>
+        public LLMatrix3 ToMatrix()
+        {
+            LLMatrix3 m;
+            float xx, xy, xz, xw, yy, yz, yw, zz, zw;
+
+            xx = X * X;
+            xy = X * Y;
+            xz = X * Z;
+            xw = X * W;
+
+            yy = Y * Y;
+            yz = Y * Z;
+            yw = Y * W;
+
+            zz = Z * Z;
+            zw = Z * W;
+
+            m.M11 = 1f - 2f * (yy + zz);
+            m.M12 = 2f * (xy + zw);
+            m.M13 = 2f * (xz - yw);
+
+            m.M21 = 2f * (xy - zw);
+            m.M22 = 1f - 2f * (xx + zz);
+            m.M23 = 2f * (yz + xw);
+
+            m.M31 = 2f * (xz + yw);
+            m.M32 = 2f * (yz - xw);
+            m.M33 = 1f - 2f * (xx + yy);
+
+            return m;
+        }
+
+        public void SetQuaternion(float angle, float x, float y, float z)
+        {
+            LLVector3 vec = new LLVector3(x, y, z);
+            SetQuaternion(angle, vec);
+        }
+
+        public void SetQuaternion(float angle, LLVector3 vec)
+        {
+            vec = LLVector3.Norm(vec);
+
+            angle *= 0.5f;
+            float c = (float)Math.Cos(angle);
+            float s = (float)Math.Sin(angle);
+
+            X = vec.X * s;
+            Y = vec.Y * s;
+            Z = vec.Z * s;
+            W = c;
+
+            this = LLQuaternion.Norm(this);
+        }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         /// <summary>
         /// Calculate the magnitude of the supplied quaternion
@@ -1874,68 +1932,6 @@ namespace libsecondlife
             }
 
             return q;
-        }
-
-        /// <summary>
-        /// Returns the inverse matrix from a quaternion, or the correct
-        /// matrix if the quaternion is inverse
-        /// </summary>
-        /// <param name="q">Quaternion to convert to a matrix</param>
-        /// <returns>A matrix representation of the quaternion</returns>
-        public static LLMatrix3 GetMatrix(LLQuaternion q)
-        {
-            LLMatrix3 m;
-            float xx, xy, xz, xw, yy, yz, yw, zz, zw;
-
-            xx = q.X * q.X;
-            xy = q.X * q.Y;
-            xz = q.X * q.Z;
-            xw = q.X * q.W;
-
-            yy = q.Y * q.Y;
-            yz = q.Y * q.Z;
-            yw = q.Y * q.W;
-
-            zz = q.Z * q.Z;
-            zw = q.Z * q.W;
-
-            m.M11 = 1f - 2f * (yy + zz);
-            m.M12 = 2f * (xy + zw);
-            m.M13 = 2f * (xz - yw);
-
-            m.M21 = 2f * (xy - zw);
-            m.M22 = 1f - 2f * (xx + zz);
-            m.M23 = 2f * (yz + xw);
-
-            m.M31 = 2f * (xz + yw);
-            m.M32 = 2f * (yz - xw);
-            m.M33 = 1f - 2f * (xx + yy);
-
-            return m;
-        }
-
-        public static LLQuaternion SetQuaternion(float angle, float x, float y, float z)
-        {
-            LLVector3 vec = new LLVector3(x, y, z);
-            return SetQuaternion(angle, vec);
-        }
-
-        public static LLQuaternion SetQuaternion(float angle, LLVector3 vec)
-        {
-            LLQuaternion quat = new LLQuaternion();
-            vec = LLVector3.Norm(vec);
-
-            angle *= 0.5f;
-            float c = (float)Math.Cos(angle);
-            float s = (float)Math.Sin(angle);
-
-            quat.X = vec.X * s;
-            quat.Y = vec.Y * s;
-            quat.Z = vec.Z * s;
-            quat.W = c;
-
-            quat = LLQuaternion.Norm(quat);
-            return quat;
         }
 
         #endregion Static Methods
@@ -2083,38 +2079,12 @@ namespace libsecondlife
 
         public LLMatrix3(LLQuaternion q)
         {
-            this = LLQuaternion.GetMatrix(q);
+            this = q.ToMatrix();
         }
 
         #endregion Constructors
 
         #region Public Methods
-
-        /// <summary>
-        /// Transposes this matrix
-        /// </summary>
-        public void Transpose()
-        {
-            Helpers.Swap<float>(ref M12, ref M21);
-            Helpers.Swap<float>(ref M13, ref M31);
-            Helpers.Swap<float>(ref M23, ref M32);
-        }
-
-        public void Orthogonalize()
-        {
-            LLVector3 xAxis = this[0];
-            LLVector3 yAxis = this[1];
-            LLVector3 zAxis = this[2];
-
-            xAxis = LLVector3.Norm(xAxis);
-            yAxis -= xAxis * (xAxis * yAxis);
-            yAxis = LLVector3.Norm(yAxis);
-            zAxis = LLVector3.Cross(xAxis, yAxis);
-
-            this[0] = xAxis;
-            this[1] = yAxis;
-            this[2] = zAxis;
-        }
 
         public void GetEulerAngles(out float roll, out float pitch, out float yaw)
         {
@@ -2223,11 +2193,36 @@ namespace libsecondlife
             );
         }
 
+        /// <summary>
+        /// Transposes a matrix
+        /// </summary>
+        /// <param name="m">Matrix to transpose</param>
+        /// <returns>Transposed matrix</returns>
         public static LLMatrix3 Transpose(LLMatrix3 m)
         {
-            LLMatrix3 t = new LLMatrix3(m);
-            t.Transpose();
-            return t;
+            Helpers.Swap<float>(ref m.M12, ref m.M21);
+            Helpers.Swap<float>(ref m.M13, ref m.M31);
+            Helpers.Swap<float>(ref m.M23, ref m.M32);
+
+            return m;
+        }
+
+        public static LLMatrix3 Orthogonalize(LLMatrix3 m)
+        {
+            LLVector3 xAxis = m[0];
+            LLVector3 yAxis = m[1];
+            LLVector3 zAxis = m[2];
+
+            xAxis = LLVector3.Norm(xAxis);
+            yAxis -= xAxis * (xAxis * yAxis);
+            yAxis = LLVector3.Norm(yAxis);
+            zAxis = LLVector3.Cross(xAxis, yAxis);
+
+            m[0] = xAxis;
+            m[1] = yAxis;
+            m[2] = zAxis;
+
+            return m;
         }
 
         #endregion Static Methods

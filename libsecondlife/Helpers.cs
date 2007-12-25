@@ -65,6 +65,10 @@ namespace libsecondlife
         public const double DEG_TO_RAD = Math.PI / 180.0d;
         /// <summary>Used for converting radians to degrees</summary>
         public const double RAD_TO_DEG = 180.0d / Math.PI;
+        /// <summary></summary>
+        public const float PI = (float)Math.PI;
+        /// <summary></summary>
+        public const float TWO_PI = (float)(Math.PI * 2d);
 
 #if PocketPC
         public static string NewLine = "\r\n";

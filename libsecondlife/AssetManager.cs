@@ -374,7 +374,7 @@ namespace libsecondlife
         public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, LLUUID vFileID, AssetType vFileType)
         {
             LLUUID uuid = LLUUID.Random();
-            ulong id = uuid.ToULong();
+            ulong id = uuid.GetULong();
 
             XferDownload transfer = new XferDownload();
             transfer.XferID = id;

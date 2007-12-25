@@ -1000,7 +1000,7 @@ namespace libsecondlife
             {
                 binaryBucket = new byte[16 * conferenceIDs.Length];
                 for (int i = 0; i < conferenceIDs.Length; ++i)
-                    Buffer.BlockCopy(conferenceIDs[i].Data, 0, binaryBucket, i * 16, 16);
+                    Buffer.BlockCopy(conferenceIDs[i].GetBytes(), 0, binaryBucket, i * 16, 16);
             }
             else
             {

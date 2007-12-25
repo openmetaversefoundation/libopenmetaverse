@@ -198,22 +198,6 @@ namespace libsecondlife.Packets
                     {
                         field.SetValue(block, (short)blockData[field.Name].AsInteger());
                     }
-                    else if (fieldType == typeof(LLUUID))
-                    {
-                        field.SetValue(block, blockData[field.Name].AsUUID());
-                    }
-                    else if (fieldType == typeof(LLVector3))
-                    {
-                        field.SetValue(block, LLVector3.FromLLSD(blockData[field.Name]));
-                    }
-                    else if (fieldType == typeof(LLVector4))
-                    {
-                        field.SetValue(block, LLVector4.FromLLSD(blockData[field.Name]));
-                    }
-                    else if (fieldType == typeof(LLQuaternion))
-                    {
-                        field.SetValue(block, LLQuaternion.FromLLSD(blockData[field.Name]));
-                    }
                     else if (fieldType == typeof(string))
                     {
                         field.SetValue(block, blockData[field.Name].AsString());
@@ -233,6 +217,28 @@ namespace libsecondlife.Packets
                     else if (fieldType == typeof(int))
                     {
                         field.SetValue(block, blockData[field.Name].AsInteger());
+                    }
+                    else if (fieldType == typeof(LLUUID))
+                    {
+                        field.SetValue(block, blockData[field.Name].AsUUID());
+                    }
+                    else if (fieldType == typeof(LLVector3))
+                    {
+                        LLVector3 vec = (LLVector3)field.GetValue(block);
+                        vec.FromLLSD(blockData[field.Name]);
+                        field.SetValue(block, vec);
+                    }
+                    else if (fieldType == typeof(LLVector4))
+                    {
+                        LLVector4 vec = (LLVector4)field.GetValue(block);
+                        vec.FromLLSD(blockData[field.Name]);
+                        field.SetValue(block, vec);
+                    }
+                    else if (fieldType == typeof(LLQuaternion))
+                    {
+                        LLQuaternion quat = (LLQuaternion)field.GetValue(block);
+                        quat.FromLLSD(blockData[field.Name]);
+                        field.SetValue(block, quat);
                     }
                 }
             }
