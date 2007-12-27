@@ -84,7 +84,13 @@ namespace libsecondlife.Tests
         [Test]
         public void VectorQuaternionMath()
         {
-            ;
+            // Convert a vector to a quaternion and back
+            LLVector3 a = new LLVector3(1f, 0.5f, 0.75f);
+            LLQuaternion b = a.ToQuaternion();
+            LLVector3 c;
+            b.GetEulerAngles(out c.X, out c.Y, out c.Z);
+
+            Assert.IsTrue(a == c, c.ToString() + " does not equal " + a.ToString());
         }
 
         [Test]

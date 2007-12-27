@@ -15,11 +15,11 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.PathBeginFloat(i);
-                ushort result = LLObject.PathBeginUInt16(floatValue);
+                float floatValue = LLObject.UnpackBeginCut(i);
+                ushort result = LLObject.PackBeginCut(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
+                    ", and ended up with " + result);
             }
         }
 
@@ -28,24 +28,11 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.PathEndFloat(i);
-                ushort result = LLObject.PathEndUInt16(floatValue);
+                float floatValue = LLObject.UnpackEndCut(i);
+                ushort result = LLObject.PackEndCut(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
-            }
-        }
-
-        [Test]
-        public void PathRadiusOffset()
-        {
-            for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
-            {
-                float floatValue = LLObject.PathRadiusOffsetFloat(i);
-                sbyte result = LLObject.PathRadiusOffsetByte(floatValue);
-
-                Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
+                    ", and ended up with " + result);
             }
         }
 
@@ -54,11 +41,11 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.PathRevolutionsFloat(i);
-                byte result = LLObject.PathRevolutionsByte(floatValue);
+                float floatValue = LLObject.UnpackPathRevolutions(i);
+                byte result = LLObject.PackPathRevolutions(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
+                    ", and ended up with " + result);
             }
         }
 
@@ -67,11 +54,11 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.PathScaleFloat(i);
-                byte result = LLObject.PathScaleByte(floatValue);
+                float floatValue = LLObject.UnpackPathScale(i);
+                byte result = LLObject.PackPathScale(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
+                    ", and ended up with " + result);
             }
         }
 
@@ -80,21 +67,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.PathShearFloat(i);
-                byte result = LLObject.PathShearByte(floatValue);
-
-                Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
-            }
-        }
-
-        [Test]
-        public void PathSkew()
-        {
-            for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
-            {
-                float floatValue = LLObject.PathSkewFloat(i);
-                sbyte result = LLObject.PathSkewByte(floatValue);
+                float floatValue = LLObject.UnpackPathShear(i);
+                byte result = LLObject.PackPathShear(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -106,34 +80,8 @@ namespace libsecondlife.Tests
         {
             for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
             {
-                float floatValue = LLObject.PathTaperFloat(i);
-                sbyte result = LLObject.PathTaperByte(floatValue);
-
-                Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
-            }
-        }
-
-        [Test]
-        public void ProfileBegin()
-        {
-            for (byte i = 0; i < byte.MaxValue; i++)
-            {
-                float floatValue = LLObject.ProfileBeginFloat(i);
-                ushort result = LLObject.ProfileBeginUInt16(floatValue);
-
-                Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
-            }
-        }
-
-        [Test]
-        public void ProfileEnd()
-        {
-            for (byte i = 0; i < byte.MaxValue; i++)
-            {
-                float floatValue = LLObject.ProfileEndFloat(i);
-                ushort result = LLObject.ProfileEndUInt16(floatValue);
+                float floatValue = LLObject.UnpackPathTaper(i);
+                sbyte result = LLObject.PackPathTaper(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -154,12 +102,6 @@ namespace libsecondlife.Tests
                 Assert.IsTrue(foffset - i < Single.Epsilon, foffset + " is not equal to " + i);
             }
         }
-
-        //[Test]
-        //public void TextureEntryRotations()
-        //{
-        //    ;
-        //}
 
         [Test]
         public void TextureEntry()

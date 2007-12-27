@@ -653,28 +653,22 @@ namespace libsecondlife
             this = LLVector3.Zero;
         }
 
+        //FIXME: Need comprehensive testing for this
         /// <summary>
         /// Assumes this vector represents euler rotations along the X, Y, and
         /// Z axis and creates a quaternion representation of the rotations
         /// </summary>
         /// <returns>A quaternion representation of the euler rotations</returns>
-        public LLQuaternion ToRotation()
-        {
-            LLVector3 vec = this;
+        //public LLQuaternion ToQuaternion()
+        //{
+        //    LLMatrix3 rotMat = new LLMatrix3(X, Y, Z);
+        //    rotMat = LLMatrix3.Orthogonalize(rotMat);
 
-            if (vec.X > Helpers.PI) vec.X -= Helpers.TWO_PI;
-            if (vec.Y > Helpers.PI) vec.Y -= Helpers.TWO_PI;
-            if (vec.Z > Helpers.PI) vec.Z -= Helpers.TWO_PI;
+        //    LLQuaternion quat = rotMat.ToQuaternion();
+        //    quat = LLQuaternion.Norm(quat);
 
-            if (vec.X < -Helpers.PI) vec.X += Helpers.TWO_PI;
-            if (vec.Y < -Helpers.PI) vec.Y += Helpers.TWO_PI;
-            if (vec.Z < -Helpers.PI) vec.Z += Helpers.TWO_PI;
-
-            LLQuaternion rot = new LLQuaternion(X, Y, Z, 1f);
-            if (vec.Z > Helpers.PI) rot.W = 0f;
-
-            return rot;
-        }
+        //    return quat;
+        //}
 
         #endregion Public Methods
 
@@ -775,6 +769,16 @@ namespace libsecondlife
                 axis.Y * s,
                 axis.Z * s,
                 (float)Math.Cos(angle / 2));
+        }
+
+        public static LLVector3 Transform(LLVector3 vector, LLMatrix3 matrix)
+        {
+            // Operates "from the right" on row vector
+            return new LLVector3(
+                vector.X * matrix.M11 + vector.Y * matrix.M21 + vector.Z * matrix.M31,
+                vector.X * matrix.M12 + vector.Y * matrix.M22 + vector.Z * matrix.M32,
+                vector.X * matrix.M13 + vector.Y * matrix.M23 + vector.Z * matrix.M33
+            );
         }
 
         /// <summary>
@@ -894,6 +898,11 @@ namespace libsecondlife
             float nz = -rw * rot.Z + rz * rot.W - rx * rot.Y + ry * rot.X;
 
             return new LLVector3(nx, ny, nz);
+        }
+
+        public static LLVector3 operator *(LLVector3 vector, LLMatrix3 matrix)
+        {
+            return LLVector3.Transform(vector, matrix);
         }
 
         #endregion Operators
@@ -1827,13 +1836,15 @@ namespace libsecondlife
             this = LLQuaternion.Identity;
         }
 
-        public void GetEulerAngles(out float roll, out float pitch, out float yaw)
-        {
-            LLMatrix3 rotMat = new LLMatrix3(this);
-            rotMat = LLMatrix3.Orthogonalize(rotMat);
-            rotMat.GetEulerAngles(out roll, out pitch, out yaw);
-        }
+        //FIXME: Need comprehensive testing for this
+        //public void GetEulerAngles(out float roll, out float pitch, out float yaw)
+        //{
+        //    LLMatrix3 rotMat = new LLMatrix3(this);
+        //    rotMat = LLMatrix3.Orthogonalize(rotMat);
+        //    rotMat.GetEulerAngles(out roll, out pitch, out yaw);
+        //}
 
+        //FIXME: Need comprehensive testing for this
         /// <summary>
         /// Returns the inverse matrix from a quaternion, or the correct
         /// matrix if the quaternion is inverse
@@ -2082,9 +2093,43 @@ namespace libsecondlife
             this = q.ToMatrix();
         }
 
+        //FIXME:
+        //public LLMatrix3(float roll, float pitch, float yaw)
+        //{
+        //    M11 = M12 = M13 = M21 = M22 = M23 = M31 = M32 = M33 = 0f;
+        //    FromEulers(roll, pitch, yaw);
+        //}
+
         #endregion Constructors
 
         #region Public Methods
+
+        // FIXME: Need comprehensive testing for this
+        //public void FromEulers(float roll, float pitch, float yaw)
+        //{
+        //    float cx, sx, cy, sy, cz, sz;
+        //    float cxsy, sxsy;
+
+        //    cx = (float)Math.Cos(roll);
+        //    sx = (float)Math.Sin(roll);
+        //    cy = (float)Math.Cos(pitch);
+        //    sy = (float)Math.Sin(pitch);
+        //    cz = (float)Math.Cos(yaw);
+        //    sz = (float)Math.Sin(yaw);
+
+        //    cxsy = cx * sy;
+        //    sxsy = sx * sy;
+
+        //    M11 = cy * cz;
+        //    M21 = -cy * sz;
+        //    M31 = sy;
+        //    M12 = sxsy * cz + cx * sz;
+        //    M22 = -sxsy * sz + cx * cz;
+        //    M32 = -sx * cy;
+        //    M13 = -cxsy * cz + sx * sz;
+        //    M23 = cxsy * sz + sx * cz;
+        //    M33 = cx * cy;
+        //}
 
         public void GetEulerAngles(out float roll, out float pitch, out float yaw)
         {
@@ -2124,6 +2169,58 @@ namespace libsecondlife
             roll = (float)angleX;
             pitch = (float)angleY;
             yaw = (float)angleZ;
+        }
+
+        public LLQuaternion ToQuaternion()
+        {
+            LLQuaternion quat = new LLQuaternion();
+            float tr, s;
+            float[] q = new float[4];
+            int i, j, k;
+            int[] nxt = new int[] { 1, 2, 0 };
+
+            tr = this[0, 0] + this[1, 1] + this[2, 2];
+
+            // Check the diagonal
+            if (tr > 0f)
+            {
+                s = (float)Math.Sqrt(tr + 1f);
+                quat.W = s / 2f;
+                
+                s = 0.5f / s;
+                quat.X = (this[1, 2] - this[2, 1]) * s;
+                quat.Y = (this[2, 0] - this[0, 2]) * s;
+                quat.Z = (this[0, 1] - this[1, 0]) * s;
+            }
+            else
+            {
+                // Diagonal is negative
+                i = 0;
+                if (this[1, 1] > this[0, 0])
+                    i = 1;
+                if (this[2, 2] > this[i, i])
+                    i = 2;
+
+                j = nxt[i];
+                k = nxt[j];
+
+                s = (float)Math.Sqrt((this[i, i] - (this[j, j] + this[k, k])) + 1f);
+                q[i] = s * 0.5f;
+
+                if (s != 0f)
+                    s = 0.5f / s;
+
+                q[3] = (this[j, k] - this[k, j]) * s;
+                q[j] = (this[i, j] + this[j, i]) * s;
+                q[k] = (this[i, k] + this[k, i]) * s;
+
+                quat.X = q[0];
+                quat.Y = q[1];
+                quat.Z = q[2];
+                quat.W = q[3];
+            }
+
+            return quat;
         }
 
         #endregion Public Methods
@@ -2180,16 +2277,6 @@ namespace libsecondlife
                 left.M31 * right.M11 + left.M32 * right.M21 + left.M33 * right.M31,
                 left.M31 * right.M12 + left.M32 * right.M22 + left.M33 * right.M32,
                 left.M31 * right.M13 + left.M32 * right.M23 + left.M33 * right.M33
-            );
-        }
-
-        public static LLVector3 Transform(LLVector3 vector, LLMatrix3 matrix)
-        {
-            // Operates "from the right" on row vector
-            return new LLVector3(
-                vector.X * matrix.M11 + vector.Y * matrix.M21 + vector.Z * matrix.M31,
-                vector.X * matrix.M12 + vector.Y * matrix.M22 + vector.Z * matrix.M32,
-                vector.X * matrix.M13 + vector.Y * matrix.M23 + vector.Z * matrix.M33
             );
         }
 
@@ -2298,11 +2385,6 @@ namespace libsecondlife
         public static LLMatrix3 operator *(LLMatrix3 left, LLMatrix3 right)
         {
             return LLMatrix3.Multiply(left, right); ;
-        }
-
-        public static LLVector3 operator *(LLVector3 vector, LLMatrix3 matrix)
-        {
-            return LLMatrix3.Transform(vector, matrix);
         }
 
         public LLVector3 this[int row]
