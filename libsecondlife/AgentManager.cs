@@ -674,6 +674,13 @@ namespace libsecondlife
         public delegate void MeanCollisionCallback(MeanCollisionType type, LLUUID perp, LLUUID victim,
             float magnitude, DateTime time);
 
+        /// <summary>
+        /// Triggered when the agent physically moves in to a neighboring region
+        /// </summary>
+        /// <param name="oldSim">Simulator agent was previously occupying</param>
+        /// <param name="newSim">Simulator agent is now currently occupying</param>
+        public delegate void RegionCrossedCallback(Simulator oldSim, Simulator newSim);
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -696,6 +703,8 @@ namespace libsecondlife
         /// <summary>Callback for an object or avatar forcefully colliding
         /// with the agent</summary>
         public event MeanCollisionCallback OnMeanCollision;
+        /// <summary>Callback for the agent moving in to a neighboring sim</summary>
+        public event RegionCrossedCallback OnRegionCrossed;
 
         #endregion
 
@@ -920,7 +929,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
             // Object colliding into our agent callback
             Client.Network.RegisterCallback(PacketType.MeanCollisionAlert, new NetworkManager.PacketCallback(MeanCollisionAlertHandler));
-
+            // Region Crossing
+            Client.Network.RegisterCallback(PacketType.CrossedRegion, new NetworkManager.PacketCallback(CrossedRegionHandler));
 	        // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
 
@@ -2415,6 +2425,40 @@ namespace libsecondlife
             // in again (with a different account name or different login
             // server but using the same SecondLife object
             fullName = null;
+        }
+
+        /// <summary>
+        /// Allows agent to cross over (walk, fly, vehicle) in to neighboring
+        /// simulators
+        /// </summary>
+        private void CrossedRegionHandler(Packet packet, Simulator sim)
+        {
+            CrossedRegionPacket crossing = (CrossedRegionPacket)packet;
+            string seedCap = Helpers.FieldToUTF8String(crossing.RegionData.SeedCapability);
+            IPEndPoint endPoint = new IPEndPoint(crossing.RegionData.SimIP, crossing.RegionData.SimPort);
+
+            Client.DebugLog("Crossed in to new region area, attempting to connect to " + endPoint.ToString());
+
+            Simulator oldSim = Client.Network.CurrentSim;
+            Simulator newSim = Client.Network.Connect(endPoint, crossing.RegionData.RegionHandle, true, seedCap);
+
+            if (newSim != null)
+            {
+                Client.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info);
+
+                if (OnRegionCrossed != null)
+                {
+                    try { OnRegionCrossed(oldSim, newSim); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            else
+            {
+                // The old simulator will (poorly) handle our movement still, so the connection isn't
+                // completely shot yet
+                Client.Log("Failed to connect to new region " + endPoint.ToString() + " after crossing over",
+                    Helpers.LogLevel.Warning);
+            }
         }
 
         #endregion Packet Handlers

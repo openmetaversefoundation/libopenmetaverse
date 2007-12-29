@@ -345,6 +345,22 @@ namespace libsecondlife
         public Simulator Connect(IPAddress ip, ushort port, ulong handle, bool setDefault, string seedcaps)
         {
             IPEndPoint endPoint = new IPEndPoint(ip, (int)port);
+            return Connect(endPoint, handle, setDefault, seedcaps);
+        }
+
+        /// <summary>
+        /// Connect to a simulator
+        /// </summary>
+        /// <param name="endPoint">IP address and port to connect to</param>
+        /// <param name="handle">Handle for this simulator, to identify its
+        /// location in the grid</param>
+        /// <param name="setDefault">Whether to set CurrentSim to this new
+        /// connection, use this if the avatar is moving in to this simulator</param>
+        /// <param name="seedcaps">URL of the capabilities server to use for
+        /// this sim connection</param>
+        /// <returns>A Simulator object on success, otherwise null</returns>
+        public Simulator Connect(IPEndPoint endPoint, ulong handle, bool setDefault, string seedcaps)
+        {
             Simulator simulator = FindSimulator(endPoint);
 
             if (simulator == null)
