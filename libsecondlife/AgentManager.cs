@@ -119,11 +119,11 @@ namespace libsecondlife
 		SessionDrop = 18,
 		/// <summary>Indicates that the IM is from an object</summary>
 		MessageFromObject = 19,
-		/// <summary>sent an IM to a busy user, this is the auto response</summary>
+		/// <summary>Sent an IM to a busy user, this is the auto response</summary>
 		BusyAutoResponse = 20,
 		/// <summary>Shows the message in the console and chat history</summary>
 		ConsoleAndChatHistory = 21,
-		/// <summary>IM Types used for luring your friends</summary>
+		/// <summary>Send a teleport lure</summary>
 		RequestTeleport = 22,
 		/// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
 		AcceptTeleport = 23,

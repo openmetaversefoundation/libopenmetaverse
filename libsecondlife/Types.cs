@@ -647,6 +647,8 @@ namespace libsecondlife
                     X = (float)array[0].AsReal();
                     Y = (float)array[1].AsReal();
                     Z = (float)array[2].AsReal();
+
+                    return;
                 }
             }
 
@@ -1044,6 +1046,8 @@ namespace libsecondlife
                     X = array[0].AsReal();
                     Y = array[1].AsReal();
                     Z = array[2].AsReal();
+
+                    return;
                 }
             }
 
@@ -1265,6 +1269,8 @@ namespace libsecondlife
                     Y = (float)array[1].AsReal();
                     Z = (float)array[2].AsReal();
                     S = (float)array[3].AsReal();
+
+                    return;
                 }
             }
 
@@ -1531,6 +1537,8 @@ namespace libsecondlife
                     G = (float)array[1].AsReal();
                     B = (float)array[2].AsReal();
                     A = (float)array[3].AsReal();
+
+                    return;
                 }
             }
 
@@ -1830,6 +1838,8 @@ namespace libsecondlife
                     Y = (float)array[1].AsReal();
                     Z = (float)array[2].AsReal();
                     W = (float)array[3].AsReal();
+
+                    return;
                 }
             }
 
