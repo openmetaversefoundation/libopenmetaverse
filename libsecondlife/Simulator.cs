@@ -308,22 +308,16 @@ namespace libsecondlife
         /// <returns></returns>
         public bool IsParcelMapFull()
         {
-            int i = 0;
-            int j = 0;
-
-            while (i < this.ParcelMap.GetLength(0))
+            int ny = this.ParcelMap.GetLength(0);
+            int nx = this.ParcelMap.GetLength(1);
+            for (int y = 0; y < 64; y++)
             {
-                while (j < this.ParcelMap.GetLength(1))
+                for (int x = 0; x < 64; x++)
                 {
-                    if (this.ParcelMap[i, j] == 0)
+                    if (this.ParcelMap[y, x] == 0)
                         return false;
-
-                    j++;
                 }
-
-                i++;
             }
-
             return true;
         }
 
