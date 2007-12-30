@@ -711,7 +711,7 @@ namespace libsecondlife
             packet.ObjectData.PathTwist = LLObject.PackPathTwist(prim.PathTwist);
             packet.ObjectData.PathTwistBegin = LLObject.PackPathTwist(prim.PathTwistBegin);
 
-            packet.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
+            packet.ObjectData.ProfileCurve = prim.profileCurve;
             packet.ObjectData.ProfileBegin = LLObject.PackBeginCut(prim.ProfileBegin);
             packet.ObjectData.ProfileEnd = LLObject.PackEndCut(prim.ProfileEnd);
             packet.ObjectData.ProfileHollow = LLObject.PackProfileHollow(prim.ProfileHollow);

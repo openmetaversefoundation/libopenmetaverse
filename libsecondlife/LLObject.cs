@@ -282,7 +282,8 @@ namespace libsecondlife
             public LLUUID ObjectID;
             /// <summary></summary>
             public LLUUID CreatorID;
-            /// <summary></summary>
+            /// <summary>This is a protocol hack, it will only be set if the
+            /// object has a non-null sound so you can mute the owner</summary>
             public LLUUID OwnerID;
             /// <summary></summary>
             public LLUUID GroupID;
