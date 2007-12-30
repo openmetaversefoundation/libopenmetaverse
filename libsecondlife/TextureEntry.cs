@@ -458,7 +458,9 @@ namespace libsecondlife
 
                 TextureEntryFace face = new TextureEntryFace(defaultFace);
                 faceNumber = (map.ContainsKey("face_number")) ? map["face_number"].AsInteger() : -1;
-                face.RGBA.FromLLSD(map["colors"]);
+                LLColor rgba = face.RGBA;
+                rgba.FromLLSD(map["colors"]);
+                face.RGBA = rgba;
                 face.RepeatU = (float)map["scales"].AsReal();
                 face.RepeatV = (float)map["scalet"].AsReal();
                 face.OffsetU = (float)map["offsets"].AsReal();
