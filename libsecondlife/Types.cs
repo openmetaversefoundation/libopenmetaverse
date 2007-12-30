@@ -907,6 +907,14 @@ namespace libsecondlife
             return LLVector3.Transform(vector, matrix);
         }
 
+        public static LLVector3 operator %(LLVector3 lhs, LLVector3 rhs)
+        {
+            return new LLVector3(
+                lhs.Y * rhs.Z - rhs.Y * lhs.Z,
+                lhs.Z * rhs.X - rhs.Z * lhs.X,
+                lhs.X * rhs.Y - rhs.X * lhs.Y);
+        }
+
         #endregion Operators
 
         /// <summary>An LLVector3 with a value of 0,0,0</summary>
