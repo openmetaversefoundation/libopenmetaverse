@@ -515,12 +515,10 @@ namespace libsecondlife
         /// <param name="Images">List of requested images</param>
         public void RequestImages(List<ImageRequest> Images)
         {
-            for (int iri = Images.Count; iri > 0; --iri)
+            for (int iri = 0; iri < Images.Count; iri++)
             {
                 if (Transfers.ContainsKey(Images[iri].ImageID))
-                {
                     Images.RemoveAt(iri);
-                }
             }
 
             if (Images.Count > 0)
