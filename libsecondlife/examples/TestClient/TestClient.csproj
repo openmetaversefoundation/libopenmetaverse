@@ -85,6 +85,8 @@
     <Compile Include="Commands\Prims\PrimCountCommand.cs" />
     <Compile Include="Commands\Prims\PrimInfoCommand.cs" />
     <Compile Include="Commands\Prims\PrimRegexCommand.cs" />
+    <Compile Include="Commands\SearchEventsCommand.cs" />
+    <Compile Include="Commands\ShowEventDetailsCommand.cs" />
     <Compile Include="Commands\Stats\DilationCommand.cs" />
     <Compile Include="Commands\Stats\RegionInfoCommand.cs" />
     <Compile Include="Commands\Stats\StatsCommand.cs" />

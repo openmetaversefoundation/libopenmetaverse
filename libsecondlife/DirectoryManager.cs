@@ -63,6 +63,22 @@ namespace libsecondlife
             Personal
         }
 
+        public enum EventCategories
+        {
+            All = 0,
+            Discussion = 18,
+            Sports = 19,
+            LiveMusic = 20,
+            Commercial = 22,
+            Nightlife = 23,
+            Games = 24,
+            Pageants = 25,
+            Education = 26,
+            Arts = 27,
+            Charity = 28,
+            Miscellaneous = 29
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -134,7 +150,14 @@ namespace libsecondlife
             /// <summary></summary>
             Estate = 1 << 4
         }
-        
+
+        [Flags]
+        public enum EventFlags
+        {
+            None = 0,
+            Mature = 1 << 1
+        }
+
         /// <summary>
         /// A classified ad in Second Life
         /// </summary>
@@ -213,23 +236,39 @@ namespace libsecondlife
             public int Price;   
         }
 
-        /*/// <summary></summary>
-        public LLUUID OwnerID;
-        /// <summary></summary>
-        public LLUUID SnapshotID;
-        /// <summary></summary>
-        public ulong RegionHandle;
-        /// <summary></summary>
-        public string SimName;
-        /// <summary></summary>
-        public string Desc;
-        /// <summary></summary>
-        public LLVector3 GlobalPosition;
-        /// <summary></summary>
-        public LLVector3 SimPosition;
-        /// <summary></summary>
-        public float Dwell;*/
+        /// <summary>
+        /// Response to "Events" search
+        /// </summary>
+        public struct EventsSearchData
+        {
+            public LLUUID Owner;
+            public string Name;
+            public uint ID;
+            public string Date;
+            public uint Time;
+            public EventFlags Flags;
+        }
 
+
+        /// <summary>
+        /// an Event returned from the dataserver
+        /// </summary>
+        public struct EventInfo
+        {
+			public uint ID;
+			public LLUUID Creator;
+            public string Name;
+            public EventCategories Category;
+            public string Desc;
+            public string Date;
+            public UInt32 DateUTC;
+            public UInt32 Duration;
+            public UInt32 Cover;
+            public UInt32 Amount;
+            public string SimName;
+            public LLVector3d GlobalPos;
+            public EventFlags Flags;
+        }
 
         /// <summary>
         /// 
@@ -265,6 +304,19 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="queryID"></param>
+        /// <param name="matchedEvents"></param>
+        public delegate void EventReplyCallback(LLUUID queryID, List<EventsSearchData> matchedEvents);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matchedEvent"></param>
+        public delegate void EventInfoCallback(EventInfo matchedEvent);
+
+        /// <summary>
+        /// 
+        /// </summary>
         public event ClassifiedReplyCallback OnClassifiedReply;
         /// <summary>
         /// 
@@ -276,6 +328,12 @@ namespace libsecondlife
         public event DirGroupsReplyCallback OnDirGroupsReply;
 
         public event PlacesReplyCallback OnPlacesReply;
+
+        // List of Events
+        public event EventReplyCallback OnEventsReply;
+
+        // Event Details
+        public event EventInfoCallback OnEventInfo;
 
         private SecondLife Client;
 
@@ -289,6 +347,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
             Client.Network.RegisterCallback(PacketType.PlacesReply, new NetworkManager.PacketCallback(PlacesReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirEventsReply, new NetworkManager.PacketCallback(EventsReplyHandler));
+            Client.Network.RegisterCallback(PacketType.EventInfoReply, new NetworkManager.PacketCallback(EventInfoReplyHandler));    
 
         }
 
@@ -506,6 +566,68 @@ namespace libsecondlife
             return transactionID;
         }
 
+
+        /// <summary>
+        /// Search All Events with specifid searchText in all categories, includes Mature
+        /// </summary>
+        /// <param name="searchText">Text to search for</param>
+        /// <returns>UUID of query to correlate results in callback.</returns>
+        public LLUUID StartEventsSearch(string searchText)
+        {
+            return StartEventsSearch(searchText, true, EventCategories.All);
+        }
+
+        /// <summary>
+        /// Search Events with Options to specify category and Mature events.
+        /// </summary>
+        /// <param name="searchText">Text to search for</param>
+        /// <param name="ShowMature">true to include Mature events</param>
+        /// <param name="category">category to search</param>
+        /// <returns>UUID of query to correlate results in callback.</returns>
+        public LLUUID StartEventsSearch(string searchText, bool showMature, EventCategories category)
+        {
+            return StartEventsSearch(searchText, showMature, "u", 0, category, LLUUID.Random());
+        }
+
+        /// <summary>
+        /// Search Events - ALL options
+        /// </summary>
+        /// <param name="searchText">string text to search for e.g.: live music</param>
+        /// <param name="showMature">Include mature events in results</param>
+        /// <param name="eventDay">"u" for now and upcoming events, -or- number of days since/until event is scheduled
+        /// For example "0" = Today, "1" = tomorrow, "2" = following day, "-1" = yesterday, etc.</param>
+        /// <param name="queryStart">Page # to show, 0 for First Page</param>
+        /// <param name="category">EventCategory event is listed under.</param>
+        /// <param name="queryID">a LLUUID that can be used to track queries with results.</param>
+        /// <returns>UUID of query to correlate results in callback.</returns>
+        public LLUUID StartEventsSearch(string searchText, bool showMature, string eventDay, uint queryStart, EventCategories category, LLUUID queryID)
+        {
+            DirFindQueryPacket find = new DirFindQueryPacket();
+            find.AgentData.AgentID = Client.Self.AgentID;
+            find.AgentData.SessionID = Client.Self.SessionID;
+            
+            find.QueryData.QueryID = queryID;
+            find.QueryData.QueryText = Helpers.StringToField(eventDay + "|" + (int)category + "|" + searchText);
+            find.QueryData.QueryFlags = showMature ? (uint)32 : (uint)8224;
+            find.QueryData.QueryStart = (int)queryStart;
+
+            Client.Network.SendPacket(find);
+            return queryID;
+        }
+
+        /// <summary>Requests Event Details</summary>
+        /// <param name="eventID">ID of Event returned from Places Search</param>
+        public void EventInfoRequest(uint eventID)
+        {
+            EventInfoRequestPacket find = new EventInfoRequestPacket();
+            find.AgentData.AgentID = Client.Self.AgentID;
+            find.AgentData.SessionID = Client.Self.SessionID;
+
+            find.EventData.EventID = eventID;
+
+            Client.Network.SendPacket(find);
+        }
+
         #region Blocking Functions
 
         public bool PeopleSearch(DirFindFlags findFlags, string searchText, int queryStart,
@@ -655,6 +777,55 @@ namespace libsecondlife
                     places.Add(place);
                 }
                 try { OnPlacesReply(placesReply.TransactionData.TransactionID, places); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void EventsReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnEventsReply != null)
+            {
+                DirEventsReplyPacket eventsReply = packet as DirEventsReplyPacket;
+                List<EventsSearchData> matches = new List<EventsSearchData>(eventsReply.QueryReplies.Length);
+
+                foreach (DirEventsReplyPacket.QueryRepliesBlock reply in eventsReply.QueryReplies)
+                {
+                    EventsSearchData eventsData = new EventsSearchData();
+                    eventsData.Owner = reply.OwnerID;
+                    eventsData.Name = Helpers.FieldToUTF8String(reply.Name);
+                    eventsData.ID = reply.EventID;
+                    eventsData.Date = Helpers.FieldToUTF8String(reply.Date);
+                    eventsData.Time = reply.UnixTime;
+                    eventsData.Flags = (EventFlags)reply.EventFlags;
+                    matches.Add(eventsData);
+                }
+
+                try { OnEventsReply(eventsReply.QueryData.QueryID, matches); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+        
+        private void EventInfoReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnEventInfo != null)
+            {
+                EventInfoReplyPacket eventReply = (EventInfoReplyPacket)packet;
+                EventInfo evinfo = new EventInfo();
+                evinfo.ID = eventReply.EventData.EventID;
+                evinfo.Name = Helpers.FieldToUTF8String(eventReply.EventData.Name);
+                evinfo.Desc = Helpers.FieldToUTF8String(eventReply.EventData.Desc);
+                evinfo.Amount = eventReply.EventData.Amount;
+                evinfo.Category = (EventCategories)Helpers.BytesToUInt(eventReply.EventData.Category);
+                evinfo.Cover = eventReply.EventData.Cover;
+                evinfo.Creator = (LLUUID)Helpers.FieldToUTF8String(eventReply.EventData.Creator);
+                evinfo.Date = Helpers.FieldToUTF8String(eventReply.EventData.Date);
+                evinfo.DateUTC = eventReply.EventData.DateUTC;
+                evinfo.Duration = eventReply.EventData.Duration;
+                evinfo.Flags = (EventFlags)eventReply.EventData.EventFlags;
+                evinfo.SimName = Helpers.FieldToUTF8String(eventReply.EventData.SimName);
+                evinfo.GlobalPos = eventReply.EventData.GlobalPos;
+
+                try { OnEventInfo(evinfo); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
