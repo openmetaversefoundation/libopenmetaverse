@@ -310,6 +310,14 @@ namespace libsecondlife
                 try
                 {
                     int id = Int32.Parse(fields[0]);
+                    if (fields[1] == ",")
+                    {
+                        fields[1] = "0";
+                    }
+                    else
+                    {
+                        fields[1] = fields[1].Replace(',', '.');
+                    }
                     float weight = Single.Parse(fields[1], System.Globalization.NumberStyles.Float,
                         Helpers.EnUsCulture.NumberFormat);
 
