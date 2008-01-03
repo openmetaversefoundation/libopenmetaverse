@@ -727,6 +727,7 @@ namespace libsecondlife.Packets
         LandStatRequest = 65957,
         LandStatReply = 65958,
         Error = 65959,
+        ObjectIncludeInSearch = 65960,
         PacketAck = 131067,
         OpenCircuit = 131068,
         CloseCircuit = 131069,
@@ -1135,6 +1136,7 @@ namespace libsecondlife.Packets
                         case 421: return PacketType.LandStatRequest;
                         case 422: return PacketType.LandStatReply;
                         case 423: return PacketType.Error;
+                        case 424: return PacketType.ObjectIncludeInSearch;
                         case 65531: return PacketType.PacketAck;
                         case 65532: return PacketType.OpenCircuit;
                         case 65533: return PacketType.CloseCircuit;
@@ -1585,6 +1587,7 @@ namespace libsecondlife.Packets
             if(type == PacketType.LandStatRequest) return new LandStatRequestPacket();
             if(type == PacketType.LandStatReply) return new LandStatReplyPacket();
             if(type == PacketType.Error) return new ErrorPacket();
+            if(type == PacketType.ObjectIncludeInSearch) return new ObjectIncludeInSearchPacket();
             if(type == PacketType.PacketAck) return new PacketAckPacket();
             if(type == PacketType.OpenCircuit) return new OpenCircuitPacket();
             if(type == PacketType.CloseCircuit) return new CloseCircuitPacket();
@@ -1960,6 +1963,7 @@ namespace libsecondlife.Packets
                         case 421: return new LandStatRequestPacket(header, bytes, ref i);
                         case 422: return new LandStatReplyPacket(header, bytes, ref i);
                         case 423: return new ErrorPacket(header, bytes, ref i);
+                        case 424: return new ObjectIncludeInSearchPacket(header, bytes, ref i);
                         case 65531: return new PacketAckPacket(header, bytes, ref i);
                         case 65532: return new OpenCircuitPacket(header, bytes, ref i);
                         case 65533: return new CloseCircuitPacket(header, bytes, ref i);
@@ -29150,11 +29154,57 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        public class NewGroupDataBlock
+        {
+            public bool ListInProfile;
+
+            public int Length
+            {
+                get
+                {
+                    return 1;
+                }
+            }
+
+            public NewGroupDataBlock() { }
+            public NewGroupDataBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    ListInProfile = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = (byte)((ListInProfile) ? 1 : 0);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- NewGroupData --");
+                output.Append(String.Format("ListInProfile: {0}", ListInProfile));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarGroupsReply; } }
         public AgentDataBlock AgentData;
         public GroupDataBlock[] GroupData;
+        public NewGroupDataBlock NewGroupData;
 
         public AvatarGroupsReplyPacket()
         {
@@ -29163,6 +29213,7 @@ namespace libsecondlife.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock[0];
+            NewGroupData = new NewGroupDataBlock();
         }
 
         public AvatarGroupsReplyPacket(byte[] bytes, ref int i) : this()
@@ -29187,6 +29238,7 @@ namespace libsecondlife.Packets
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
+            NewGroupData.FromBytes(bytes, ref i);
         }
 
         public AvatarGroupsReplyPacket(Header head, byte[] bytes, ref int i): this()
@@ -29211,12 +29263,13 @@ namespace libsecondlife.Packets
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
+            NewGroupData.FromBytes(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
-            length += AgentData.Length;;
+            length += AgentData.Length;            length += NewGroupData.Length;;
             length++;
             for (int j = 0; j < GroupData.Length; j++) { length += GroupData[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
@@ -29226,6 +29279,7 @@ namespace libsecondlife.Packets
             AgentData.ToBytes(bytes, ref i);
             bytes[i++] = (byte)GroupData.Length;
             for (int j = 0; j < GroupData.Length; j++) { GroupData[j].ToBytes(bytes, ref i); }
+            NewGroupData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -29238,6 +29292,7 @@ namespace libsecondlife.Packets
             {
                 output += GroupData[j].ToString() + Environment.NewLine;
             }
+                output += NewGroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -63294,11 +63349,57 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        public class NewDataBlock
+        {
+            public bool ListInProfile;
+
+            public int Length
+            {
+                get
+                {
+                    return 1;
+                }
+            }
+
+            public NewDataBlock() { }
+            public NewDataBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    ListInProfile = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = (byte)((ListInProfile) ? 1 : 0);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- NewData --");
+                output.Append(String.Format("ListInProfile: {0}", ListInProfile));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetGroupAcceptNotices; } }
         public AgentDataBlock AgentData;
         public DataBlock Data;
+        public NewDataBlock NewData;
 
         public SetGroupAcceptNoticesPacket()
         {
@@ -63307,6 +63408,7 @@ namespace libsecondlife.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
+            NewData = new NewDataBlock();
         }
 
         public SetGroupAcceptNoticesPacket(byte[] bytes, ref int i) : this()
@@ -63325,6 +63427,7 @@ namespace libsecondlife.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             Data.FromBytes(bytes, ref i);
+            NewData.FromBytes(bytes, ref i);
         }
 
         public SetGroupAcceptNoticesPacket(Header head, byte[] bytes, ref int i): this()
@@ -63343,18 +63446,20 @@ namespace libsecondlife.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             Data.FromBytes(bytes, ref i);
+            NewData.FromBytes(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
-            length += AgentData.Length;            length += Data.Length;;
+            length += AgentData.Length;            length += Data.Length;            length += NewData.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             Data.ToBytes(bytes, ref i);
+            NewData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -63364,6 +63469,7 @@ namespace libsecondlife.Packets
             string output = "--- SetGroupAcceptNotices ---" + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
                 output += Data.ToString() + Environment.NewLine;
+                output += NewData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72058,6 +72164,203 @@ namespace libsecondlife.Packets
     }
 
     /// <exclude/>
+    public class ObjectIncludeInSearchPacket : Packet
+    {
+        /// <exclude/>
+        public class AgentDataBlock
+        {
+            public LLUUID AgentID;
+            public LLUUID SessionID;
+
+            public int Length
+            {
+                get
+                {
+                    return 32;
+                }
+            }
+
+            public AgentDataBlock() { }
+            public AgentDataBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentID.FromBytes(bytes, i); i += 16;
+                    SessionID.FromBytes(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- AgentData --");
+                output.AppendLine(String.Format("AgentID: {0}", AgentID));
+                output.Append(String.Format("SessionID: {0}", SessionID));
+                return output.ToString();
+            }
+        }
+
+        /// <exclude/>
+        public class ObjectDataBlock
+        {
+            public uint ObjectLocalID;
+            public bool IncludeInSearch;
+
+            public int Length
+            {
+                get
+                {
+                    return 5;
+                }
+            }
+
+            public ObjectDataBlock() { }
+            public ObjectDataBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    ObjectLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    IncludeInSearch = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = (byte)(ObjectLocalID % 256);
+                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
+                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
+                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                bytes[i++] = (byte)((IncludeInSearch) ? 1 : 0);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- ObjectData --");
+                output.AppendLine(String.Format("ObjectLocalID: {0}", ObjectLocalID));
+                output.Append(String.Format("IncludeInSearch: {0}", IncludeInSearch));
+                return output.ToString();
+            }
+        }
+
+        private Header header;
+        public override Header Header { get { return header; } set { header = value; } }
+        public override PacketType Type { get { return PacketType.ObjectIncludeInSearch; } }
+        public AgentDataBlock AgentData;
+        public ObjectDataBlock[] ObjectData;
+
+        public ObjectIncludeInSearchPacket()
+        {
+            Header = new LowHeader();
+            Header.ID = 424;
+            Header.Reliable = true;
+            AgentData = new AgentDataBlock();
+            ObjectData = new ObjectDataBlock[0];
+        }
+
+        public ObjectIncludeInSearchPacket(byte[] bytes, ref int i) : this()
+        {
+            int packetEnd = bytes.Length - 1;
+            FromBytes(bytes, ref i, ref packetEnd, null);
+        }
+
+        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
+        {
+            header.FromBytes(bytes, ref i, ref packetEnd);
+            if (header.Zerocoded && zeroBuffer != null)
+            {
+                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
+                bytes = zeroBuffer;
+            }
+            AgentData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(ObjectData.Length < count) {
+                ObjectData = new ObjectDataBlock[count];
+                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { ObjectData[j].FromBytes(bytes, ref i); }
+        }
+
+        public ObjectIncludeInSearchPacket(Header head, byte[] bytes, ref int i): this()
+        {
+            int packetEnd = bytes.Length - 1;
+            FromBytes(head, bytes, ref i, ref packetEnd, null);
+        }
+
+        override public void FromBytes(Header head, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
+        {
+            Header = head;
+            if (head.Zerocoded && zeroBuffer != null)
+            {
+                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
+                bytes = zeroBuffer;
+            }
+            AgentData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(ObjectData.Length < count) {
+                ObjectData = new ObjectDataBlock[count];
+                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { ObjectData[j].FromBytes(bytes, ref i); }
+        }
+
+        public override byte[] ToBytes()
+        {
+            int length = 10;
+            length += AgentData.Length;;
+            length++;
+            for (int j = 0; j < ObjectData.Length; j++) { length += ObjectData[j].Length; }
+            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
+            byte[] bytes = new byte[length];
+            int i = 0;
+            header.ToBytes(bytes, ref i);
+            AgentData.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)ObjectData.Length;
+            for (int j = 0; j < ObjectData.Length; j++) { ObjectData[j].ToBytes(bytes, ref i); }
+            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
+            return bytes;
+        }
+
+        public override string ToString()
+        {
+            string output = "--- ObjectIncludeInSearch ---" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+            for (int j = 0; j < ObjectData.Length; j++)
+            {
+                output += ObjectData[j].ToString() + Environment.NewLine;
+            }
+            return output;
+        }
+
+    }
+
+    /// <exclude/>
     public class PacketAckPacket : Packet
     {
         /// <exclude/>
@@ -73580,11 +73883,57 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        public class AgentDataBlock
+        {
+            public LLUUID AgentID;
+
+            public int Length
+            {
+                get
+                {
+                    return 16;
+                }
+            }
+
+            public AgentDataBlock() { }
+            public AgentDataBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentID.FromBytes(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- AgentData --");
+                output.Append(String.Format("AgentID: {0}", AgentID));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CoarseLocationUpdate; } }
         public LocationBlock[] Location;
         public IndexBlock Index;
+        public AgentDataBlock[] AgentData;
 
         public CoarseLocationUpdatePacket()
         {
@@ -73593,6 +73942,7 @@ namespace libsecondlife.Packets
             Header.Reliable = true;
             Location = new LocationBlock[0];
             Index = new IndexBlock();
+            AgentData = new AgentDataBlock[0];
         }
 
         public CoarseLocationUpdatePacket(byte[] bytes, ref int i) : this()
@@ -73617,6 +73967,13 @@ namespace libsecondlife.Packets
             for (int j = 0; j < count; j++)
             { Location[j].FromBytes(bytes, ref i); }
             Index.FromBytes(bytes, ref i);
+            count = (int)bytes[i++];
+            if(AgentData.Length < count) {
+                AgentData = new AgentDataBlock[count];
+                for(int j = 0; j < count; j++) AgentData[j] = new AgentDataBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { AgentData[j].FromBytes(bytes, ref i); }
         }
 
         public CoarseLocationUpdatePacket(Header head, byte[] bytes, ref int i): this()
@@ -73641,6 +73998,13 @@ namespace libsecondlife.Packets
             for (int j = 0; j < count; j++)
             { Location[j].FromBytes(bytes, ref i); }
             Index.FromBytes(bytes, ref i);
+            count = (int)bytes[i++];
+            if(AgentData.Length < count) {
+                AgentData = new AgentDataBlock[count];
+                for(int j = 0; j < count; j++) AgentData[j] = new AgentDataBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { AgentData[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
@@ -73649,6 +74013,8 @@ namespace libsecondlife.Packets
             length += Index.Length;;
             length++;
             for (int j = 0; j < Location.Length; j++) { length += Location[j].Length; }
+            length++;
+            for (int j = 0; j < AgentData.Length; j++) { length += AgentData[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
@@ -73656,6 +74022,8 @@ namespace libsecondlife.Packets
             bytes[i++] = (byte)Location.Length;
             for (int j = 0; j < Location.Length; j++) { Location[j].ToBytes(bytes, ref i); }
             Index.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)AgentData.Length;
+            for (int j = 0; j < AgentData.Length; j++) { AgentData[j].ToBytes(bytes, ref i); }
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -73668,6 +74036,10 @@ namespace libsecondlife.Packets
                 output += Location[j].ToString() + Environment.NewLine;
             }
                 output += Index.ToString() + Environment.NewLine;
+            for (int j = 0; j < AgentData.Length; j++)
+            {
+                output += AgentData[j].ToString() + Environment.NewLine;
+            }
             return output;
         }
 
@@ -80183,10 +80555,56 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        public class AgeVerificationBlockBlock
+        {
+            public bool RegionDenyAgeUnverified;
+
+            public int Length
+            {
+                get
+                {
+                    return 1;
+                }
+            }
+
+            public AgeVerificationBlockBlock() { }
+            public AgeVerificationBlockBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    RegionDenyAgeUnverified = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = (byte)((RegionDenyAgeUnverified) ? 1 : 0);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- AgeVerificationBlock --");
+                output.Append(String.Format("RegionDenyAgeUnverified: {0}", RegionDenyAgeUnverified));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelProperties; } }
         public ParcelDataBlock ParcelData;
+        public AgeVerificationBlockBlock AgeVerificationBlock;
 
         public ParcelPropertiesPacket()
         {
@@ -80194,6 +80612,7 @@ namespace libsecondlife.Packets
             Header.ID = 23;
             Header.Reliable = true;
             ParcelData = new ParcelDataBlock();
+            AgeVerificationBlock = new AgeVerificationBlockBlock();
         }
 
         public ParcelPropertiesPacket(byte[] bytes, ref int i) : this()
@@ -80211,6 +80630,7 @@ namespace libsecondlife.Packets
                 bytes = zeroBuffer;
             }
             ParcelData.FromBytes(bytes, ref i);
+            AgeVerificationBlock.FromBytes(bytes, ref i);
         }
 
         public ParcelPropertiesPacket(Header head, byte[] bytes, ref int i): this()
@@ -80228,17 +80648,19 @@ namespace libsecondlife.Packets
                 bytes = zeroBuffer;
             }
             ParcelData.FromBytes(bytes, ref i);
+            AgeVerificationBlock.FromBytes(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 7;
-            length += ParcelData.Length;;
+            length += ParcelData.Length;            length += AgeVerificationBlock.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             ParcelData.ToBytes(bytes, ref i);
+            AgeVerificationBlock.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -80247,6 +80669,7 @@ namespace libsecondlife.Packets
         {
             string output = "--- ParcelProperties ---" + Environment.NewLine;
                 output += ParcelData.ToString() + Environment.NewLine;
+                output += AgeVerificationBlock.ToString() + Environment.NewLine;
             return output;
         }
 

@@ -3050,6 +3050,10 @@ version 2.0
 		{	You		S16	}
 		{	Prey	S16	}
 	}
+    {
+         AgentData       Variable
+         {       AgentID                 LLUUID                  }
+    }
 }
 
 // ImageData - sent to viewer to transmit information about an image 
@@ -3783,6 +3787,10 @@ version 2.0
 		{	GroupName			Variable 1	}
 		{	GroupInsigniaID		LLUUID		}
 	}
+	{
+		NewGroupData		Single
+		{	ListInProfile	BOOL		}	// whether group displays in profile
+	}
 }
 
 
@@ -4344,6 +4352,10 @@ version 2.0
 		{	RegionDenyAnonymous	BOOL		}
 		{	RegionDenyIdentified	BOOL		}
 		{	RegionDenyTransacted	BOOL		}
+	}
+	{
+		AgeVerificationBlock Single
+		{   RegionDenyAgeUnverified BOOL    }
 	}
 }
 
@@ -5267,7 +5279,7 @@ version 2.0
 
 // ScriptRunningReply - response from simulator to message above
 {
-	ScriptRunningReply		Low	244 		NotTrusted Unencoded
+	ScriptRunningReply		Low	244 		NotTrusted Unencoded UDPDeprecated
 	{
 		Script				Single
 		{	ObjectID		LLUUID	}
@@ -7823,6 +7835,10 @@ version 2.0
 		{	GroupID		LLUUID	}
 		{	AcceptNotices	BOOL	}
 	}
+	{
+		NewData				Single
+		{	ListInProfile	BOOL	}
+	}
 }
 
 // GroupRoleDataRequest
@@ -8140,7 +8156,7 @@ version 2.0
 // dataserver -> simulator -> viewer
 // reliable
 {
-	AgentGroupDataUpdate Low 389 Trusted Zerocoded
+	AgentGroupDataUpdate Low 389 Trusted Zerocoded UDPDeprecated
 	{
 		AgentData			Single
 		{	AgentID				LLUUID	}
@@ -8763,3 +8779,18 @@ version 2.0
 	}
 }
 
+// ObjectIncludeInSearch
+// viewer -> simulator
+{
+	ObjectIncludeInSearch Low 424 NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		ObjectData		Variable
+		{	ObjectLocalID	U32		}
+		{	IncludeInSearch	BOOL	}
+	}
+}
