@@ -790,7 +790,7 @@ namespace libsecondlife
         /// in arrow brackets and separated by commas</param>
         public static LLVector3 Parse(string val)
         {
-            char[] splitChar = { ',', ' ' };
+            char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
             return new LLVector3(
                 float.Parse(split[0].Trim(), Helpers.EnUsCulture),
