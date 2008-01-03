@@ -614,7 +614,7 @@ namespace libsecondlife
             prim.Rotation.FromLLSD(map["rotation"]);
             prim.Scale.FromLLSD(map["scale"]);
             prim.Data.Material = (MaterialType)map["material"].AsInteger();
-            prim.Flexible = FlexibleData.FromLLSD(map["flexible"]);
+            prim.Flexible = FlexibleData.FromLLSD(map["flex"]);
             prim.Light = LightData.FromLLSD(map["light"]);
             prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);
             prim.Textures = TextureEntry.FromLLSD(map["textures"]);
