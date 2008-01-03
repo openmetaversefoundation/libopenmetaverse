@@ -53,7 +53,7 @@ namespace libsecondlife.Utilities
 
             // Start typing
             client.Self.Chat(String.Empty, 0, ChatType.StartTyping);
-            client.Self.AnimationStart(Animations.TYPE);
+            client.Self.AnimationStart(Animations.TYPE, false);
 
             while (characters < message.Length)
             {
@@ -61,7 +61,7 @@ namespace libsecondlife.Utilities
                 {
                     // Start typing again
                     client.Self.Chat(String.Empty, 0, ChatType.StartTyping);
-                    client.Self.AnimationStart(Animations.TYPE);
+                    client.Self.AnimationStart(Animations.TYPE, false);
                     typing = true;
                 }
                 else
@@ -70,7 +70,7 @@ namespace libsecondlife.Utilities
                     if (rand.Next(10) >= 9)
                     {
                         client.Self.Chat(String.Empty, 0, ChatType.StopTyping);
-                        client.Self.AnimationStop(Animations.TYPE);
+                        client.Self.AnimationStop(Animations.TYPE, false);
                         typing = false;
                     }
                 }
@@ -85,7 +85,7 @@ namespace libsecondlife.Utilities
 
             // Stop typing
             client.Self.Chat(String.Empty, 0, ChatType.StopTyping);
-            client.Self.AnimationStop(Animations.TYPE);
+            client.Self.AnimationStop(Animations.TYPE, false);
         }
     }
 

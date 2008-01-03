@@ -1615,24 +1615,26 @@ namespace libsecondlife
         /// Send an AgentAnimation packet that toggles a single animation on
         /// </summary>
         /// <param name="animation">The animation to start playing</param>
-        public void AnimationStart(LLUUID animation)
+        /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
+        public void AnimationStart(LLUUID animation, bool reliable)
         {
             Dictionary<LLUUID, bool> animations = new Dictionary<LLUUID, bool>();
             animations[animation] = true;
 
-            Animate(animations);
+            Animate(animations, reliable);
         }
 
         /// <summary>
         /// Send an AgentAnimation packet that toggles a single animation off
         /// </summary>
         /// <param name="animation">The animation to stop playing</param>
-        public void AnimationStop(LLUUID animation)
+        /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
+        public void AnimationStop(LLUUID animation, bool reliable)
         {
             Dictionary<LLUUID, bool> animations = new Dictionary<LLUUID, bool>();
             animations[animation] = false;
 
-            Animate(animations);
+            Animate(animations, reliable);
         }
 
         /// <summary>
@@ -1640,9 +1642,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="animations">A list of animation UUIDs, and whether to
         /// turn that animation on or off</param>
-        public void Animate(Dictionary<LLUUID, bool> animations)
+        /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
+        public void Animate(Dictionary<LLUUID, bool> animations, bool reliable)
         {
             AgentAnimationPacket animate = new AgentAnimationPacket();
+            animate.Header.Reliable = reliable;
 
             animate.AgentData.AgentID = Client.Self.AgentID;
             animate.AgentData.SessionID = Client.Self.SessionID;
