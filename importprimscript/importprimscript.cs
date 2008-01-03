@@ -32,9 +32,10 @@ namespace importprimscript
             if (args.Length != 8)
             {
                 Console.WriteLine("Usage: importprimscript.exe [firstname] [lastname] [password] " +
-                    "[Simulator] [x] [y] [z] [input.primscript]" +
+                    "[loginuri] [Simulator] [x] [y] [z] [input.primscript]" +
                     Environment.NewLine + "Example: importprimscript.exe My Bot password " + 
-                    "Hooper 128 128 40 maya-export" + Path.DirectorySeparatorChar + "ant.primscript");
+                    "Hooper 128 128 40 maya-export" + Path.DirectorySeparatorChar + "ant.primscript" +
+                    Environment.NewLine + "(the loginuri is optional and only used for logging in to another grid)");
                 Environment.Exit(-1);
             }
 
@@ -43,7 +44,7 @@ namespace importprimscript
                 args[i] = args[i].Trim(new char[] { '"' });
 
             // Parse the primscript file
-            string scriptfilename = args[7];
+            string scriptfilename = args[args.Length - 1];
             string error;
             List<Sculpt> sculpties = ParsePrimscript(scriptfilename, out error);
             scriptfilename = Path.GetFileNameWithoutExtension(scriptfilename);
@@ -91,14 +92,18 @@ namespace importprimscript
                 };
             Client.Network.OnEventQueueRunning += eventQueueCallback;
 
-            int x = Int32.Parse(args[4]);
-            int y = Int32.Parse(args[5]);
-            int z = Int32.Parse(args[6]);
-            string start = NetworkManager.StartLocation(args[3], x, y, z);
+            int x = Int32.Parse(args[args.Length - 4]);
+            int y = Int32.Parse(args[args.Length - 3]);
+            int z = Int32.Parse(args[args.Length - 2]);
+            string start = NetworkManager.StartLocation(args[args.Length - 5], x, y, z);
+
+            LoginParams loginParams = Client.Network.DefaultLoginParams(args[0], args[1], args[2],
+                "importprimscript", "1.4.0");
+            loginParams.Start = start;
+            if (args.Length == 9) loginParams.URI = args[3];
 
             // Attempt to login
-            if (!Client.Network.Login(args[0], args[1], args[2], "importprimscript 1.3.0", start,
-                "John Hurliman <jhurliman@metaverseindustries.com>"))
+            if (!Client.Network.Login(loginParams))
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginMessage);
                 Environment.Exit(-4);
