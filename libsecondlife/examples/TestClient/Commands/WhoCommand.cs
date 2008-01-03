@@ -22,7 +22,7 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Client.Network.Simulators[i].Objects.ForEach(
+                    Client.Network.Simulators[i].ObjectsAvatars.ForEach(
                         delegate(Avatar av)
                         {
                             result.AppendLine();

@@ -157,7 +157,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ReaderWriterLock.cs" />
-    <Compile Include="SafeDictionary.cs" />
+    <Compile Include="InternalDictionary.cs" />
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>

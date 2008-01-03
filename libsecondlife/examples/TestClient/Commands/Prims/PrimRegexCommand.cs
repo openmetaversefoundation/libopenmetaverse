@@ -30,8 +30,8 @@ namespace libsecondlife.TestClient
                 Regex regexPrimName = new Regex(predicatPrim.ToLower());
 
                 // Print result
-                Client.Log(string.Format("Searching prim for [{0}] ({1} prims loaded in simulator)\n", predicatPrim, Client.Network.CurrentSim.Objects.PrimCount), Helpers.LogLevel.Info);
-                Client.Network.CurrentSim.Objects.ForEach(
+                Client.Log(string.Format("Searching prim for [{0}] ({1} prims loaded in simulator)\n", predicatPrim, Client.Network.CurrentSim.ObjectsPrimitives.Count), Helpers.LogLevel.Info);
+                Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                     delegate(Primitive prim)
                     {
                         if (prim.Text != null && regexPrimName.IsMatch(prim.Text.ToLower()))

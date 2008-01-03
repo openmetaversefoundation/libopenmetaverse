@@ -29,23 +29,23 @@ using System.Collections.Generic;
 
 namespace libsecondlife
 {
-    public class SafeDictionary<TKey, TValue>
+    public class InternalDictionary<TKey, TValue>
     {
         internal Dictionary<TKey, TValue> Dictionary;
 
         public int Count { get { return Dictionary.Count; } }
 
-        public SafeDictionary()
+        public InternalDictionary()
         {
             Dictionary = new Dictionary<TKey, TValue>();
         }
 
-        public SafeDictionary(IDictionary<TKey, TValue> dictionary)
+        public InternalDictionary(IDictionary<TKey, TValue> dictionary)
         {
             Dictionary = new Dictionary<TKey, TValue>(dictionary);
         }
 
-        public SafeDictionary(int capacity)
+        public InternalDictionary(int capacity)
         {
             Dictionary = new Dictionary<TKey, TValue>(capacity);
         }

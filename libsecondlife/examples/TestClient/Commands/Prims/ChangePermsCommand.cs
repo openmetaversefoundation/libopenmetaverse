@@ -61,7 +61,7 @@ namespace libsecondlife.TestClient
             Client.DebugLog("Using PermissionMask: " + Perms.ToString());
 
             // Find the requested prim
-            rootPrim = Client.Network.CurrentSim.Objects.Find(delegate(Primitive prim) { return prim.ID == rootID; });
+            rootPrim = Client.Network.CurrentSim.ObjectsPrimitives.Find(delegate(Primitive prim) { return prim.ID == rootID; });
             if (rootPrim == null)
                 return "Cannot find requested prim " + rootID.ToString();
             else
@@ -70,14 +70,14 @@ namespace libsecondlife.TestClient
             if (rootPrim.ParentID != 0)
             {
                 // This is not actually a root prim, find the root
-                if (!Client.Network.CurrentSim.Objects.TryGetPrimitive(rootPrim.ParentID, out rootPrim))
+                if (!Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(rootPrim.ParentID, out rootPrim))
                     return "Cannot find root prim for requested object";
                 else
                     Client.DebugLog("Set root prim to " + rootPrim.ID.ToString());
             }
 
             // Find all of the child objects linked to this root
-            childPrims = Client.Network.CurrentSim.Objects.FindAll(delegate(Primitive prim) { return prim.ParentID == rootPrim.LocalID; });
+            childPrims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(delegate(Primitive prim) { return prim.ParentID == rootPrim.LocalID; });
 
             // Build a dictionary of primitives for referencing later
             Objects[rootPrim.ID] = rootPrim;

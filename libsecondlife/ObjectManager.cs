@@ -2067,31 +2067,38 @@ namespace libsecondlife
         {
             KillObjectPacket kill = (KillObjectPacket)packet;
 
+            // Run the for loop multiple times so we only have to lock a total
+            // of two times. Locking is by far the most expensive operation here
+
             if (Client.Settings.OBJECT_TRACKING)
             {
-                for (int i = 0; i < kill.ObjectData.Length; i++)
+                uint localID;
+
+                lock (simulator.ObjectsPrimitives.Dictionary)
                 {
-                    uint localID = kill.ObjectData[i].ID;
-
-                    if (simulator.Objects.Prims.ContainsKey(localID))
+                    for (int i = 0; i < kill.ObjectData.Length; i++)
                     {
-                        lock (simulator.Objects.Prims)
-                            simulator.Objects.Prims.Remove(localID);
-                    }
-                    if (simulator.Objects.Avatars.ContainsKey(localID))
-                    {
-                        lock (simulator.Objects.Avatars)
-                            simulator.Objects.Avatars.Remove(localID);
-                    }
+                        localID = kill.ObjectData[i].ID;
 
-                    FireOnObjectKilled(simulator, localID);
+                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID))
+                            simulator.ObjectsPrimitives.Dictionary.Remove(localID);
+                    }
+                }
+
+                lock (simulator.ObjectsAvatars.Dictionary)
+                {
+                    for (int i = 0; i < kill.ObjectData.Length; i++)
+                    {
+                        localID = kill.ObjectData[i].ID;
+
+                        if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
+                            simulator.ObjectsAvatars.Dictionary.Remove(localID);
+                    }
                 }
             }
-            else
-            {
-                for (int i = 0; i < kill.ObjectData.Length; i++)
-                    FireOnObjectKilled(simulator, kill.ObjectData[i].ID);
-            }
+
+            for (int i = 0; i < kill.ObjectData.Length; i++)
+                FireOnObjectKilled(simulator, kill.ObjectData[i].ID);
         }
 
         protected void ObjectPropertiesHandler(Packet p, Simulator sim)
@@ -2135,15 +2142,15 @@ namespace libsecondlife
 
                 if (Client.Settings.OBJECT_TRACKING)
                 {
-                    Primitive findPrim = sim.Objects.Find(
+                    Primitive findPrim = sim.ObjectsPrimitives.Find(
                         delegate(Primitive prim) { return prim.ID == props.ObjectID; });
 
                     if (findPrim != null)
                     {
-                        lock (sim.Objects.Prims)
+                        lock (sim.ObjectsPrimitives.Dictionary)
                         {
-                            if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
-                                sim.Objects.Prims[findPrim.LocalID].Properties = props;
+                            if (sim.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
+                                sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties = props;
                         }
                     }
                 }
@@ -2176,15 +2183,15 @@ namespace libsecondlife
 
             if (Client.Settings.OBJECT_TRACKING)
             {
-                Primitive findPrim = sim.Objects.Find(
+                Primitive findPrim = sim.ObjectsPrimitives.Find(
                         delegate(Primitive prim) { return prim.ID == props.ObjectID; });
 
                 if (findPrim != null)
                 {
-                    lock (sim.Objects.Prims)
+                    lock (sim.ObjectsPrimitives.Dictionary)
                     {
-                        if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
-                            sim.Objects.Prims[findPrim.LocalID].PropertiesFamily = props;
+                        if (sim.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
+                            sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].PropertiesFamily = props;
                     }
                 }
             }
@@ -2321,7 +2328,7 @@ namespace libsecondlife
             {
                 Primitive prim;
 
-                if (simulator.Objects.Prims.TryGetValue(localID, out prim))
+                if (simulator.ObjectsPrimitives.TryGetValue(localID, out prim))
                 {
                     return prim;
                 }
@@ -2330,8 +2337,8 @@ namespace libsecondlife
                     prim = new Primitive();
                     prim.LocalID = localID;
                     prim.ID = fullID;
-                    lock (simulator.Objects.Prims)
-                        simulator.Objects.Prims[localID] = prim;
+                    lock (simulator.ObjectsPrimitives.Dictionary)
+                        simulator.ObjectsPrimitives.Dictionary[localID] = prim;
 
                     return prim;
                 }
@@ -2348,7 +2355,7 @@ namespace libsecondlife
             {
                 Avatar avatar;
 
-                if (simulator.Objects.Avatars.TryGetValue(localID, out avatar))
+                if (simulator.ObjectsAvatars.TryGetValue(localID, out avatar))
                 {
                     return avatar;
                 }
@@ -2357,8 +2364,8 @@ namespace libsecondlife
                     avatar = new Avatar();
                     avatar.LocalID = localID;
                     avatar.ID = fullID;
-                    lock (simulator.Objects.Avatars)
-                        simulator.Objects.Avatars[localID] = avatar;
+                    lock (simulator.ObjectsAvatars.Dictionary)
+                        simulator.ObjectsAvatars.Dictionary[localID] = avatar;
 
                     return avatar;
                 }
@@ -2386,9 +2393,9 @@ namespace libsecondlife
                         float adjSeconds = seconds * Client.Network.Simulators[i].Stats.Dilation;
 
                         // Iterate through all of this sims avatars
-                        lock (Client.Network.Simulators[i].Objects.Avatars)
+                        lock (Client.Network.Simulators[i].ObjectsAvatars.Dictionary)
                         {
-                            foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                            foreach (Avatar avatar in Client.Network.Simulators[i].ObjectsAvatars.Dictionary.Values)
                             {
                                 #region Linear Motion
                                 // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
@@ -2404,9 +2411,9 @@ namespace libsecondlife
                         }
 
                         // Iterate through all of this sims primitives
-                        lock (Client.Network.Simulators[i].Objects.Prims)
+                        lock (Client.Network.Simulators[i].ObjectsPrimitives.Dictionary)
                         {
-                            foreach (Primitive prim in Client.Network.Simulators[i].Objects.Prims.Values)
+                            foreach (Primitive prim in Client.Network.Simulators[i].ObjectsPrimitives.Dictionary.Values)
                             {
                                 if (prim.Joint == Primitive.JointType.Invalid)
                                 {

@@ -23,7 +23,7 @@ namespace libsecondlife.TestClient
             if (Int32.TryParse(args[0], out faceIndex) &&
                 LLUUID.TryParse(args[1], out textureID))
             {
-                Client.Network.CurrentSim.Objects.ForEach(
+                Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                     delegate(Primitive prim)
                     {
                         if (prim.Textures != null && prim.Textures.FaceTextures[faceIndex] != null)

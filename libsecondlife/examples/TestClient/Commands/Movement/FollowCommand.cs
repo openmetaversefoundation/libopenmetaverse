@@ -48,7 +48,7 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Avatar target = Client.Network.Simulators[i].Objects.Find(
+                    Avatar target = Client.Network.Simulators[i].ObjectsAvatars.Find(
                         delegate(Avatar avatar)
                         {
                             return avatar.Name == name;
@@ -74,7 +74,7 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Avatar target = Client.Network.Simulators[i].Objects.Find(
+                    Avatar target = Client.Network.Simulators[i].ObjectsAvatars.Find(
                         delegate(Avatar avatar)
                         {
                             return avatar.ID == id;
@@ -103,7 +103,7 @@ namespace libsecondlife.TestClient
                 {
                     Avatar targetAv;
 
-                    if (Client.Network.Simulators[i].Objects.TryGetAvatar(targetLocalID, out targetAv))
+                    if (Client.Network.Simulators[i].ObjectsAvatars.TryGetValue(targetLocalID, out targetAv))
                     {
                         float distance = 0.0f;
 

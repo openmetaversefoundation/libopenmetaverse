@@ -660,7 +660,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="agentAnimations">A convenience reference to the
         /// SignaledAnimations collection</param>
-        public delegate void AnimationsChangedCallback(SafeDictionary<LLUUID, int> agentAnimations);
+        public delegate void AnimationsChangedCallback(InternalDictionary<LLUUID, int> agentAnimations);
 
         /// <summary>
         /// Triggered when an object or avatar forcefully collides with our
@@ -716,7 +716,7 @@ namespace libsecondlife
         /// check the current movement status such as walking, hovering, aiming,
         /// etc. by checking for system animations in the <code>Animations</code>
         /// class</summary>
-        public SafeDictionary<LLUUID, int> SignaledAnimations = new SafeDictionary<LLUUID, int>();
+        public InternalDictionary<LLUUID, int> SignaledAnimations = new InternalDictionary<LLUUID, int>();
 
         #region Properties
 
@@ -787,7 +787,7 @@ namespace libsecondlife
                 if (sittingOn != 0)
                 {
                     Primitive parent;
-                    if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Objects.TryGetPrimitive(sittingOn, out parent))
+                    if(Client.Network.CurrentSim != null && Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out parent))
                     {
                         return parent.Position + relativePosition;
                     }
@@ -811,7 +811,7 @@ namespace libsecondlife
                 if (sittingOn != 0)
                 {
                     Primitive parent;
-                    if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Objects.TryGetPrimitive(sittingOn, out parent))
+                    if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out parent))
                     {
                         return relativeRotation * parent.Rotation;
                     }

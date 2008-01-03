@@ -20,7 +20,7 @@ namespace libsecondlife.TestClient
 
             if (LLUUID.TryParse(args[0], out primID))
             {
-                Primitive target = Client.Network.CurrentSim.Objects.Find(
+                Primitive target = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim) { return prim.ID == primID; }
                 );
 

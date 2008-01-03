@@ -50,7 +50,7 @@ namespace libsecondlife.TestClient
 
             Primitive exportPrim;
 
-            exportPrim = Client.Network.CurrentSim.Objects.Find(
+            exportPrim = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                 delegate(Primitive prim) { return prim.ID == id; }
             );
 
@@ -81,7 +81,7 @@ namespace libsecondlife.TestClient
                     }
                 }
 
-                List<Primitive> prims = Client.Network.CurrentSim.Objects.FindAll(
+                List<Primitive> prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
                     delegate(Primitive prim)
                     {
                         return (prim.LocalID == localid || prim.ParentID == localid);
@@ -92,21 +92,38 @@ namespace libsecondlife.TestClient
 
                 if (!complete)
                 {
-                    Console.WriteLine("Warning: Unable to retrieve full properties for:");
+                    Client.Log("Warning: Unable to retrieve full properties for:", Helpers.LogLevel.Warning);
                     foreach (LLUUID uuid in PrimsWaiting.Keys)
-                        Console.WriteLine(uuid);
+                        Client.Log(uuid.ToString(), Helpers.LogLevel.Warning);
                 }
 
                 string output = LLSDParser.SerializeXmlString(Helpers.PrimListToLLSD(prims));
                 try { File.WriteAllText(file, output); }
                 catch (Exception e) { return e.Message; }
 
-                return "Exported " + prims.Count + " prims to " + file;
+                Client.Log("Exported " + prims.Count + " prims to " + file, Helpers.LogLevel.Info);
+
+                // Create a list of all of the textures to download
+                Dictionary<LLUUID, LLUUID> textures = new Dictionary<LLUUID,LLUUID>();
+                for (int i = 0; i < prims.Count; i++)
+                {
+                    Primitive prim = prims[i];
+
+                    textures[prim.Textures.DefaultTexture.TextureID] = prim.Textures.DefaultTexture.TextureID;
+
+                    for (int j = 0; j < prim.Textures.FaceTextures.Length; j++)
+                    {
+                        if (prim.Textures.FaceTextures[j] != null)
+                            textures[prim.Textures.FaceTextures[j].TextureID] = prim.Textures.FaceTextures[j].TextureID;
+                    }
+                }
+
+                return "Exported complete";
             }
             else
             {
                 return "Couldn't find UUID " + id.ToString() + " in the " + 
-                    Client.Network.CurrentSim.Objects.PrimCount + 
+                    Client.Network.CurrentSim.ObjectsPrimitives.Count + 
                     "objects currently indexed in the current simulator";
             }
         }

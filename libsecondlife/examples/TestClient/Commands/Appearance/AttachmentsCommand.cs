@@ -15,7 +15,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            List<Primitive> attachments = Client.Network.CurrentSim.Objects.FindAll(
+            List<Primitive> attachments = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
                 delegate(Primitive prim) { return prim.ParentID == Client.Self.LocalID; }
             );
 

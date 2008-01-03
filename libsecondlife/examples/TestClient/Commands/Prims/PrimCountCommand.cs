@@ -19,8 +19,8 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    int avcount = Client.Network.Simulators[i].Objects.AvatarCount;
-                    int primcount = Client.Network.Simulators[i].Objects.PrimCount;
+                    int avcount = Client.Network.Simulators[i].ObjectsAvatars.Count;
+                    int primcount = Client.Network.Simulators[i].ObjectsPrimitives.Count;
 
                     Console.WriteLine("{0} (Avatars: {1} Primitives: {2})", 
                         Client.Network.Simulators[i].Name, avcount, primcount);

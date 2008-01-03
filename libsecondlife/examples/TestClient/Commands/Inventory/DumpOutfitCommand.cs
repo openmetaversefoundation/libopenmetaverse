@@ -34,7 +34,7 @@ namespace libsecondlife.TestClient
                 {
                     Avatar targetAv;
 
-                    targetAv = Client.Network.Simulators[i].Objects.Find(
+                    targetAv = Client.Network.Simulators[i].ObjectsAvatars.Find(
                         delegate(Avatar avatar)
                         {
                             return avatar.ID == target;

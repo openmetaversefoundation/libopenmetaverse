@@ -611,7 +611,7 @@ namespace libsecondlife
         /// <param name="simulator">Simulator the parcel is in</param>
         /// <param name="simParcels">Read-only dictionary containing parcel details for the simulator</param>
         /// <param name="parcelMap">64,64 array containing sim position to localID mapping</param>
-        public delegate void SimParcelsDownloaded(Simulator simulator, SafeDictionary<int, Parcel> simParcels, int[,] parcelMap);
+        public delegate void SimParcelsDownloaded(Simulator simulator, InternalDictionary<int, Parcel> simParcels, int[,] parcelMap);
 
         #endregion Delegates
 

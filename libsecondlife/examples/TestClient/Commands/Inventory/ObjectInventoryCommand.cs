@@ -22,7 +22,7 @@ namespace libsecondlife.TestClient
             if (!LLUUID.TryParse(args[0], out objectID))
                 return "Usage: objectinventory [objectID]";
 
-            Primitive found = Client.Network.CurrentSim.Objects.Find(delegate(Primitive prim) { return prim.ID == objectID; });
+            Primitive found = Client.Network.CurrentSim.ObjectsPrimitives.Find(delegate(Primitive prim) { return prim.ID == objectID; });
             if (found != null)
                 objectLocalID = found.LocalID;
             else

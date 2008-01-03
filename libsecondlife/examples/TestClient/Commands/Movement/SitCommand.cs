@@ -19,7 +19,7 @@ namespace libsecondlife.TestClient
             Primitive closest = null;
 		    double closestDistance = Double.MaxValue;
 
-            Client.Network.CurrentSim.Objects.ForEach(
+            Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                 delegate(Primitive prim)
                 {
                     float distance = LLVector3.Dist(Client.Self.SimPosition, prim.Position);

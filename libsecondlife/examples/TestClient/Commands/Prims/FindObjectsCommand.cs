@@ -33,7 +33,7 @@ namespace libsecondlife.TestClient
             LLVector3 location = Client.Self.SimPosition;
 
             // *** find all objects in radius ***
-            List<Primitive> prims = Client.Network.CurrentSim.Objects.FindAll(
+            List<Primitive> prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
                 delegate(Primitive prim) {
                     LLVector3 pos = prim.Position;
                     return ((prim.ParentID == 0) && (pos != LLVector3.Zero) && (LLVector3.Dist(pos, location) < radius));

@@ -27,7 +27,7 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Primitive exportPrim = Client.Network.Simulators[i].Objects.Find(
+                    Primitive exportPrim = Client.Network.Simulators[i].ObjectsPrimitives.Find(
                         delegate(Primitive prim)
                         {
                             return prim.ID == id;

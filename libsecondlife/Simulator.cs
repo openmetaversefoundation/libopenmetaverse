@@ -271,7 +271,11 @@ namespace libsecondlife
 
         /// <summary>Provides access to two thread-safe dictionaries containing
         /// avatars and primitives found in this simulator</summary>
-        public ObjectTracker Objects = new ObjectTracker();
+        //public ObjectTracker Objects = new ObjectTracker();
+
+        public InternalDictionary<uint, Avatar> ObjectsAvatars = new InternalDictionary<uint, Avatar>();
+
+        public InternalDictionary<uint, Primitive> ObjectsPrimitives = new InternalDictionary<uint, Primitive>();
 
         /// <summary>Used to obtain a lock on the sequence number for packets
         /// sent to this simulator. Only useful for applications manipulating
@@ -286,7 +290,7 @@ namespace libsecondlife
         /// Provides access to an internal thread-safe dictionary containing parcel
         /// information found in this simulator
         /// </summary>
-        public SafeDictionary<int, Parcel> Parcels = new SafeDictionary<int, Parcel>();
+        public InternalDictionary<int, Parcel> Parcels = new InternalDictionary<int, Parcel>();
 
         /// <summary>
         /// Provides access to an internal thread-safe multidimensional array containing a x,y grid mapped
