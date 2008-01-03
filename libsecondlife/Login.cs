@@ -31,11 +31,13 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using libsecondlife.StructuredData;
+using libsecondlife.Capabilities;
 using libsecondlife.Packets;
-using CookComputing.XmlRpc;
 
 namespace libsecondlife
 {
+    #region Enums
+
     /// <summary>
     /// 
     /// </summary>
@@ -56,6 +58,10 @@ namespace libsecondlife
         /// <summary></summary>
         Success
     }
+
+    #endregion Enums
+
+    #region Structs
 
     /// <summary>
     /// 
@@ -90,22 +96,6 @@ namespace libsecondlife
         public List<string> Options;
     }
 
-    // TODO: Remove me when MONO can handle ServerCertificateValidationCallback
-    internal class AcceptAllCertificatePolicy : ICertificatePolicy
-    {
-        public AcceptAllCertificatePolicy()
-        {
-        }
-
-        public bool CheckValidationResult(ServicePoint sPoint,
-            System.Security.Cryptography.X509Certificates.X509Certificate cert,
-            WebRequest wRequest, int certProb)
-        {
-            // Always accept
-            return true;
-        }
-    }
-
     public struct LoginResponseData
     {
         public LLUUID AgentID;
@@ -116,6 +106,7 @@ namespace libsecondlife
         public string StartLocation;
         public string AgentAccess;
         public LLVector3 LookAt;
+        public ulong HomeRegion;
         public LLVector3 HomePosition;
         public LLVector3 HomeLookAt;
         public uint CircuitCode;
@@ -132,125 +123,197 @@ namespace libsecondlife
         public InventoryFolder[] LibrarySkeleton;
         public LLUUID LibraryOwner;
 
-        public void Parse(NetworkManager.LoginMethodResponse reply)
+        public void Parse(LLSDMap reply)
         {
-            AgentID = LLUUID.Parse(reply.agent_id);
-            SessionID = LLUUID.Parse(reply.session_id);
-            SecureSessionID = LLUUID.Parse(reply.secure_session_id);
-            FirstName = reply.first_name;
-            LastName = reply.last_name;
-            StartLocation = reply.start_location;
-            AgentAccess = reply.agent_access;
+            AgentID = ParseUUID("agent_id", reply);
+            SessionID = ParseUUID("session_id", reply);
+            SecureSessionID = ParseUUID("secure_session_id", reply);
+            FirstName = ParseString("first_name", reply).Trim('"');
+            LastName = ParseString("last_name", reply).Trim('"');
+            StartLocation = ParseString("start_location", reply);
+            AgentAccess = ParseString("agent_access", reply);
+            LookAt = ParseLLVector3("look_at", reply);
 
-            LLSDArray look_at = (LLSDArray)LLSDParser.DeserializeNotation(reply.look_at);
-            LookAt = new LLVector3(
-                (float)look_at[0].AsReal(),
-                (float)look_at[1].AsReal(),
-                (float)look_at[2].AsReal());
-
-            if (reply.home != null)
+            // Home
+            LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
+            LLSD homeRegion;
+            if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == LLSDType.Array)
             {
-                LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply.home);
-                LLSDArray array = (LLSDArray)home["position"];
-                HomePosition = new LLVector3(
-                    (float)array[0].AsReal(),
-                    (float)array[1].AsReal(),
-                    (float)array[2].AsReal());
-
-                array = (LLSDArray)home["look_at"];
-                HomeLookAt = new LLVector3(
-                    (float)array[0].AsReal(),
-                    (float)array[1].AsReal(),
-                    (float)array[2].AsReal());
+                LLSDArray homeArray = (LLSDArray)homeRegion;
+                if (homeArray.Count == 2)
+                    HomeRegion = Helpers.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
             }
+            HomePosition = ParseLLVector3("position", home);
+            HomeLookAt = ParseLLVector3("look_at", home);
 
-            CircuitCode = (uint)reply.circuit_code;
-            RegionX = (uint)reply.region_x;
-            RegionY = (uint)reply.region_y;
-            SimPort = (ushort)reply.sim_port;
-            SimIP = IPAddress.Parse(reply.sim_ip);
-            SeedCapability = reply.seed_capability;
+            CircuitCode = ParseUInt("circuit_code", reply);
+            RegionX = ParseUInt("region_x", reply);
+            RegionY = ParseUInt("region_y", reply);
+            SimPort = (ushort)ParseUInt("sim_port", reply);
+            string simIP = ParseString("sim_ip", reply);
+            IPAddress.TryParse(simIP, out SimIP);
+            SeedCapability = ParseString("seed_capability", reply);
 
-            if (reply.buddy_list != null)
+            // Buddy list
+            LLSD buddyLLSD;
+            if (reply.TryGetValue("buddy-list", out buddyLLSD) && buddyLLSD.Type == LLSDType.Array)
             {
-                BuddyList = new FriendInfo[reply.buddy_list.Length];
-                for (int i = 0; i < BuddyList.Length; ++i)
+                LLSDArray buddyArray = (LLSDArray)buddyLLSD;
+                BuddyList = new FriendInfo[buddyArray.Count];
+
+                for (int i = 0; i < buddyArray.Count; i++)
                 {
-                    NetworkManager.BuddyListEntry buddy = reply.buddy_list[i];
-                    BuddyList[i] = new FriendInfo(buddy.buddy_id, (FriendRights)buddy.buddy_rights_given,
-                            (FriendRights)buddy.buddy_rights_has);
+                    if (buddyArray[i].Type == LLSDType.Map)
+                    {
+                        LLSDMap buddy = (LLSDMap)buddyArray[i];
+                        BuddyList[i] = new FriendInfo(
+                            ParseUUID("buddy_id", buddy),
+                            (FriendRights)ParseUInt("buddy_rights_given", buddy),
+                            (FriendRights)ParseUInt("buddy_rights_has", buddy));
+                    }
                 }
             }
-            else
-            {
-                BuddyList = new FriendInfo[0];
-            }
 
-            InventoryRoot = LLUUID.Parse(reply.inventory_root[0].folder_id);
-            LibraryRoot = LLUUID.Parse(reply.inventory_lib_root[0].folder_id);
-            LibraryOwner = LLUUID.Parse(reply.inventory_lib_owner[0].agent_id);
-            InventorySkeleton = ParseSkeleton(reply.inventory_skeleton, AgentID);
-            LibrarySkeleton = ParseSkeleton(reply.inventory_skel_lib, LibraryOwner);
+            SecondsSinceEpoch = Helpers.UnixTimeToDateTime(ParseUInt("seconds_since_epoch", reply));
+            InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
+            InventorySkeleton = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
+            LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
+            LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
+            LibrarySkeleton = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
         }
 
-        public InventoryFolder[] ParseSkeleton(NetworkManager.InventorySkeletonEntry[] skeleton, LLUUID owner)
+        #region Parsing Helpers
+
+        public static uint ParseUInt(string key, LLSDMap reply)
         {
-            Dictionary<LLUUID, InventoryFolder> Folders = new Dictionary<LLUUID, InventoryFolder>();
-            Dictionary<LLUUID, List<InventoryFolder>> FoldersChildren = new Dictionary<LLUUID, List<InventoryFolder>>(skeleton.Length);
+            LLSD llsd;
+            if (reply.TryGetValue(key, out llsd))
+                return (uint)llsd.AsInteger();
+            else
+                return 0;
+        }
 
-            foreach (NetworkManager.InventorySkeletonEntry entry in skeleton)
+        public static LLUUID ParseUUID(string key, LLSDMap reply)
+        {
+            LLSD llsd;
+            if (reply.TryGetValue(key, out llsd))
+                return llsd.AsUUID();
+            else
+                return LLUUID.Zero;
+        }
+
+        public static string ParseString(string key, LLSDMap reply)
+        {
+            LLSD llsd;
+            if (reply.TryGetValue(key, out llsd))
+                return llsd.AsString();
+            else
+                return String.Empty;
+        }
+
+        public static LLVector3 ParseLLVector3(string key, LLSDMap reply)
+        {
+            LLSD llsd;
+            if (reply.TryGetValue(key, out llsd))
             {
-                InventoryFolder folder = new InventoryFolder(entry.folder_id);
-                if (entry.type_default != -1)
-                    folder.PreferredType = (AssetType)entry.type_default;
-                folder.Version = entry.version;
-                folder.OwnerID = owner;
-                folder.ParentUUID = LLUUID.Parse(entry.parent_id);
-                folder.Name = entry.name;
-                Folders.Add(entry.folder_id, folder);
-
-                if (entry.parent_id != LLUUID.Zero)
+                if (llsd.Type == LLSDType.Array)
                 {
-                    List<InventoryFolder> parentChildren;
-                    if (!FoldersChildren.TryGetValue(entry.parent_id, out parentChildren))
+                    LLVector3 vec = new LLVector3();
+                    vec.FromLLSD(llsd);
+                    return vec;
+                }
+                else if (llsd.Type == LLSDType.String)
+                {
+                    LLSDArray array = (LLSDArray)LLSDParser.DeserializeNotation(llsd.AsString());
+                    LLVector3 vec = new LLVector3();
+                    vec.FromLLSD(array);
+                    return vec;
+                }
+            }
+
+            return LLVector3.Zero;
+        }
+
+        public static LLUUID ParseMappedUUID(string key, string key2, LLSDMap reply)
+        {
+            LLSD folderLLSD;
+            if (reply.TryGetValue(key, out folderLLSD) && folderLLSD.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)folderLLSD;
+                if (array.Count == 1 && array[0].Type == LLSDType.Map)
+                {
+                    LLSDMap map = (LLSDMap)array[0];
+                    LLSD folder;
+                    if (map.TryGetValue(key2, out folder))
+                        return folder.AsUUID();
+                }
+            }
+
+            return LLUUID.Zero;
+        }
+
+        public static InventoryFolder[] ParseInventoryFolders(string key, LLUUID owner, LLSDMap reply)
+        {
+            List<InventoryFolder> folders = new List<InventoryFolder>();
+
+            LLSD skeleton;
+            if (reply.TryGetValue(key, out skeleton) && skeleton.Type == LLSDType.Array)
+            {
+                LLSDArray array = (LLSDArray)skeleton;
+
+                for (int i = 0; i < array.Count; i++)
+                {
+                    if (array[i].Type == LLSDType.Map)
                     {
-                        parentChildren = new List<InventoryFolder>();
-                        FoldersChildren.Add(entry.parent_id, parentChildren);
+                        LLSDMap map = (LLSDMap)array[i];
+                        InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
+                        folder.PreferredType = (AssetType)map["type_default"].AsInteger();
+                        folder.Version = map["version"].AsInteger();
+                        folder.OwnerID = owner;
+                        folder.ParentUUID = map["parent_id"].AsUUID();
+                        folder.Name = map["name"].AsString();
+
+                        folders.Add(folder);
                     }
-                    parentChildren.Add(folder);
                 }
+
+                return folders.ToArray();
             }
 
-            foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren)
-            {
-                if (Folders.ContainsKey(pair.Key))
-                {
-                    InventoryFolder parentFolder = Folders[pair.Key];
-                    parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
-                }
-            }
+            return new InventoryFolder[0];
+        }
 
-            // Should we do this or just return an IEnumerable?
-            InventoryFolder[] ret = new InventoryFolder[Folders.Count];
-            int index = 0;
-            foreach (InventoryFolder folder in Folders.Values)
-            {
-                ret[index] = folder;
-                ++index;
-            }
-            return ret;
+        #endregion Parsing Helpers
+    }
+
+    #endregion Structs
+
+    // TODO: Remove me when MONO can handle ServerCertificateValidationCallback
+    internal class AcceptAllCertificatePolicy : ICertificatePolicy
+    {
+        public AcceptAllCertificatePolicy()
+        {
+        }
+
+        public bool CheckValidationResult(ServicePoint sPoint,
+            System.Security.Cryptography.X509Certificates.X509Certificate cert,
+            WebRequest wRequest, int certProb)
+        {
+            // Always accept
+            return true;
         }
     }
 
     public partial class NetworkManager
     {
+        #region Delegates
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="login"></param>
         /// <param name="message"></param>
         public delegate void LoginCallback(LoginStatus login, string message);
-
         /// <summary>
         /// 
         /// </summary>
@@ -258,6 +321,10 @@ namespace libsecondlife
         /// <param name="redirect"></param>
         /// <param name="replyData"></param>
         public delegate void LoginResponseCallback(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData);
+
+        #endregion Delegates
+
+        #region Events
 
         /// <summary>Called any time the login status changes, will eventually
         /// return LoginStatus.Success or LoginStatus.Failure</summary>
@@ -267,38 +334,32 @@ namespace libsecondlife
         /// login sequence will block until this event returns</summary>
         private event LoginResponseCallback OnLoginResponse;
 
+        #endregion Events
+
         /// <summary>Seed CAPS URL returned from the login server</summary>
         public string LoginSeedCapability = String.Empty;
-
         /// <summary>Current state of logging in</summary>
         public LoginStatus LoginStatusCode { get { return InternalStatusCode; } }
-
         /// <summary>Upon login failure, contains a short string key for the
         /// type of login error that occurred</summary>
         public string LoginErrorKey { get { return InternalErrorKey; } }
-
         /// <summary>The raw XML-RPC reply from the login server, exactly as it
         /// was received (minus the HTTP header)</summary>
         public string RawLoginReply { get { return InternalRawLoginReply; } }
-
         /// <summary>During login this contains a descriptive version of 
         /// LoginStatusCode. After a successful login this will contain the 
         /// message of the day, and after a failed login a descriptive error 
         /// message will be returned</summary>
         public string LoginMessage { get { return InternalLoginMessage; } }
 
-        private class LoginContext
-        {
-            public LoginParams Params;
-        }
-
-        private LoginContext CurrentContext = null;
+        private LoginParams? CurrentContext = null;
         private AutoResetEvent LoginEvent = new AutoResetEvent(false);
         private LoginStatus InternalStatusCode = LoginStatus.None;
         private string InternalErrorKey = String.Empty;
         private string InternalLoginMessage = String.Empty;
         private string InternalRawLoginReply = String.Empty;
         private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
+        
         /// <summary>
         /// 
         /// </summary>
@@ -312,20 +373,14 @@ namespace libsecondlife
             string userAgent, string userVersion)
         {
             List<string> options = new List<string>();
-            options.Add("inventory-root");
-            options.Add("inventory-skeleton");
-            options.Add("inventory-lib-root");
-            options.Add("inventory-lib-owner");
-            options.Add("inventory-skel-lib");
-            options.Add("gestures");
-            options.Add("event_categories");
-            options.Add("event_notifications");
-            options.Add("classified_categories");
-            options.Add("buddy-list");
-            options.Add("ui-config");
-            options.Add("login-flags");
-            options.Add("global-textures");
-            // initial-outfit?
+            //options.Add("gestures");
+            //options.Add("event_categories");
+            //options.Add("event_notifications");
+            //options.Add("classified_categories");
+            //options.Add("ui-config");
+            //options.Add("login-flags");
+            //options.Add("global-textures");
+            //options.Add("initial-outfit");
 
             LoginParams loginParams = new LoginParams();
 
@@ -413,89 +468,15 @@ namespace libsecondlife
             return (InternalStatusCode == LoginStatus.Success);
         }
 
-        private void BeginLogin()
-        {
-            // Sanity check some of the parameters
-            if (CurrentContext.Params.ViewerDigest == null)
-                CurrentContext.Params.ViewerDigest = String.Empty;
-            if (CurrentContext.Params.Version == null)
-                CurrentContext.Params.Version = String.Empty;
-            if (CurrentContext.Params.Platform == null)
-                CurrentContext.Params.Platform = String.Empty;
-            if (CurrentContext.Params.Options == null)
-                CurrentContext.Params.Options = new List<string>();
-            if (CurrentContext.Params.MAC == null)
-                CurrentContext.Params.MAC = String.Empty;
-            if (CurrentContext.Params.Channel == null)
-                CurrentContext.Params.Channel = String.Empty;
-            if (CurrentContext.Params.Password == null)
-                CurrentContext.Params.Password = String.Empty;
-
-            // Convert the password to MD5 if it isn't already
-            if (CurrentContext.Params.Password.Length != 35 && !CurrentContext.Params.Password.StartsWith("$1$"))
-                CurrentContext.Params.Password = Helpers.MD5(CurrentContext.Params.Password);
-
-            // Override SSL authentication mechanisms. DO NOT convert this to the 
-            // .NET 2.0 preferred method, the equivalent function in Mono has a 
-            // different name and it will break compatibility!
-            ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-            // TODO: At some point, maybe we should check the cert?
-
-            LoginMethodParams loginParams;
-            loginParams.first = CurrentContext.Params.FirstName;
-            loginParams.last = CurrentContext.Params.LastName;
-            loginParams.passwd = CurrentContext.Params.Password;
-            loginParams.start = CurrentContext.Params.Start;
-            loginParams.channel = CurrentContext.Params.Channel;
-            loginParams.version = CurrentContext.Params.Version;
-            loginParams.platform = CurrentContext.Params.Platform;
-            loginParams.mac = CurrentContext.Params.MAC;
-            loginParams.agree_to_tos = "true";
-            loginParams.read_critical = "true";
-            loginParams.viewer_digest = CurrentContext.Params.ViewerDigest;
-
-            List<string> options = new List<string>(CurrentContext.Params.Options.Count + CallbackOptions.Values.Count);
-            options.AddRange(CurrentContext.Params.Options);
-            foreach (string[] callbackOpts in CallbackOptions.Values)
-            {
-                if (callbackOpts != null)
-                    foreach (string option in callbackOpts)
-                        if (!options.Contains(option)) // TODO: Replace with some kind of Dictionary/Set?
-                            options.Add(option);
-            }
-            loginParams.options = options.ToArray();
-
-            try
-            {
-                LoginProxy proxy = new LoginProxy();
-
-                proxy.KeepAlive = false;
-                proxy.ResponseEvent += new XmlRpcResponseEventHandler(proxy_ResponseEvent);
-                proxy.Url = CurrentContext.Params.URI;
-                proxy.XmlRpcMethod = CurrentContext.Params.MethodName;
-#if !PocketPC
-                proxy.Expect100Continue = false;
-#endif
-
-                // Start the request
-                proxy.BeginLoginToSimulator(loginParams, new AsyncCallback(LoginMethodCallback), new object[] { proxy, CurrentContext });
-            }
-            catch (Exception e)
-            {
-                UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e);
-            }
-        }
-
         public void BeginLogin(LoginParams loginParams)
         {
+            // FIXME: Now that we're using CAPS we could cancel the current login and start a new one
             if (CurrentContext != null)
                 throw new Exception("Login already in progress");
 
             LoginEvent.Reset();
 
-            CurrentContext = new LoginContext();
-            CurrentContext.Params = loginParams;
-
+            CurrentContext = loginParams;
             BeginLogin();
         }
 
@@ -529,6 +510,62 @@ namespace libsecondlife
             return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
         }
 
+        private void BeginLogin()
+        {
+            LoginParams loginParams = CurrentContext.Value;
+
+            // Sanity check
+            if (loginParams.Options == null)
+                loginParams.Options = new List<string>();
+
+            // Convert the password to MD5 if it isn't already
+            if (loginParams.Password.Length != 35 && !loginParams.Password.StartsWith("$1$"))
+                loginParams.Password = Helpers.MD5(loginParams.Password);
+
+            // Override SSL authentication mechanisms. DO NOT convert this to the 
+            // .NET 2.0 preferred method, the equivalent function in Mono has a 
+            // different name and it will break compatibility!
+            ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+            // TODO: At some point, maybe we should check the cert?
+
+            // Create the CAPS login structure
+            LLSDMap loginLLSD = new LLSDMap();
+            loginLLSD["first"] = LLSD.FromString(loginParams.FirstName);
+            loginLLSD["last"] = LLSD.FromString(loginParams.LastName);
+            loginLLSD["passwd"] = LLSD.FromString(loginParams.Password);
+            loginLLSD["start"] = LLSD.FromString(loginParams.Start);
+            loginLLSD["channel"] = LLSD.FromString(loginParams.Channel);
+            loginLLSD["version"] = LLSD.FromString(loginParams.Version);
+            loginLLSD["platform"] = LLSD.FromString(loginParams.Platform);
+            loginLLSD["mac"] = LLSD.FromString(loginParams.MAC);
+            loginLLSD["agree_to_tos"] = LLSD.FromBoolean(true);
+            loginLLSD["read_critical"] = LLSD.FromBoolean(true);
+            loginLLSD["viewer_digest"] = LLSD.FromString(loginParams.ViewerDigest);
+
+            // Create the options LLSD array
+            LLSDArray optionsLLSD = new LLSDArray();
+            for (int i = 0; i < loginParams.Options.Count; i++)
+                optionsLLSD.Add(LLSD.FromString(loginParams.Options[i]));
+            foreach (string[] callbackOpts in CallbackOptions.Values)
+            {
+                if (callbackOpts != null)
+                {
+                    for (int i = 0; i < callbackOpts.Length; i++)
+                    {
+                        if (!optionsLLSD.Contains(callbackOpts[i]))
+                            optionsLLSD.Add(callbackOpts[i]);
+                    }
+                }
+            }
+            loginLLSD["options"] = optionsLLSD;
+
+            // Make the CAPS POST for login
+            CapsClient loginRequest = new CapsClient(new Uri(loginParams.URI));
+            loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
+            loginRequest.UserData = CurrentContext;
+            loginRequest.StartRequest(LLSDParser.SerializeXmlBytes(loginLLSD), "application/xml+llsd");
+        }
+
         private void UpdateLoginStatus(LoginStatus status, string message)
         {
             InternalStatusCode = status;
@@ -549,388 +586,123 @@ namespace libsecondlife
             }
         }
 
-        private void proxy_ResponseEvent(object sender, XmlRpcResponseEventArgs args)
+        private void LoginReplyHandler(CapsClient client, LLSD result, Exception error)
         {
-            TextReader reader = new StreamReader(args.ResponseStream);
-            InternalRawLoginReply = reader.ReadToEnd();
-        }
-
-        private void LoginMethodCallback(IAsyncResult result)
-        {
-            object[] asyncState = result.AsyncState as object[];
-            LoginProxy proxy = asyncState[0] as LoginProxy;
-            LoginContext context = asyncState[1] as LoginContext;
-            XmlRpcAsyncResult clientResult = result as XmlRpcAsyncResult;
-            LoginMethodResponse reply;
-            IPAddress simIP = IPAddress.Any; // Temporary
-            ushort simPort = 0;
-            uint regionX = 0;
-            uint regionY = 0;
-            bool loginSuccess = false;
-
-            // Fetch the login response
-            try
+            if (error == null)
             {
-                reply = proxy.EndLoginToSimulator(clientResult);
-                if (context != CurrentContext)
-                    return;
-            }
-            catch (Exception ex)
-            {
-                Client.DebugLog(ex.ToString());
-
-                UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server");
-                return;
-            }
-
-            string reason = reply.reason;
-            string message = reply.message;
-
-            if (reply.login == "true")
-            {
-                loginSuccess = true;
-
-                // FIXME: No information should be set here, everything can take care of itself
-                // through login reply handlers
-
-                #region Critical Information
-
-                try
+                if (result != null && result.Type == LLSDType.Map)
                 {
-                    // Networking
-                    Client.Network.CircuitCode = (uint)reply.circuit_code;
-                    regionX = (uint)reply.region_x;
-                    regionY = (uint)reply.region_y;
-                    simPort = (ushort)reply.sim_port;
-                    Helpers.TryParse(reply.sim_ip, out simIP);
-                    LoginSeedCapability = reply.seed_capability;
-                }
-                catch (Exception)
-                {
-                    UpdateLoginStatus(LoginStatus.Failed, "Login server failed to return critical information");
-                    return;
-                }
+                    LLSDMap map = (LLSDMap)result;
 
-                #endregion Critical Information
-            }
+                    LLSD llsd;
+                    string reason, message;
 
-            bool redirect = (reply.login == "indeterminate");
+                    if (map.TryGetValue("reason", out llsd))
+                        reason = llsd.AsString();
+                    else
+                        reason = String.Empty;
 
-            try
-            {
-                if (OnLoginResponse != null)
-                {
-                    LoginResponseData data = new LoginResponseData();
-                    if (loginSuccess)
+                    if (map.TryGetValue("message", out llsd))
+                        message = llsd.AsString();
+                    else
+                        message = String.Empty;
+
+                    if (map.TryGetValue("login", out llsd))
                     {
-                        data.Parse(reply);
+                        bool loginSuccess = llsd.AsBoolean();
+                        bool redirect = (llsd.AsString() == "indeterminate");
+                        LoginResponseData data = new LoginResponseData();
+                        
+                        // Parse successful login replies in to LoginResponseData structs
+                        if (loginSuccess)
+                            data.Parse(map);
+
+                        if (OnLoginResponse != null)
+                        {
+                            try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
+                            catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
+                        }
+
+                        if (loginSuccess)
+                        {
+                            // Login succeeded
+
+                            // These parameters are stored in NetworkManager, so instead of registering
+                            // another callback for them we just set the values here
+                            CircuitCode = data.CircuitCode;
+                            LoginSeedCapability = data.SeedCapability;
+
+                            UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
+
+                            ulong handle = Helpers.UIntsToLong(data.RegionX, data.RegionY);
+
+                            // Connect to the sim given in the login reply
+                            if (Connect(data.SimIP, data.SimPort, handle, true, LoginSeedCapability) != null)
+                            {
+                                // Request the economy data right after login
+                                SendPacket(new EconomyDataRequestPacket());
+
+                                // Update the login message with the MOTD returned from the server
+                                UpdateLoginStatus(LoginStatus.Success, message);
+
+                                // Fire an event for connecting to the grid
+                                if (OnConnected != null)
+                                {
+                                    try { OnConnected(this.Client); }
+                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                }
+                            }
+                            else
+                            {
+                                UpdateLoginStatus(LoginStatus.Failed,
+                                    "Unable to establish a UDP connection to the simulator");
+                            }
+                        }
+                        else if (redirect)
+                        {
+                            // Login redirected
+
+                            // Make the next login URL jump
+                            UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
+
+                            LoginParams loginParams = CurrentContext.Value;
+                            loginParams.URI = LoginResponseData.ParseString("next_url", map);
+                            //CurrentContext.Params.MethodName = LoginResponseData.ParseString("next_method", map);
+                            // Ignore next_options and next_duration for now
+                            CurrentContext = loginParams;
+
+                            BeginLogin();
+                        }
+                        else
+                        {
+                            // Login failed
+
+                            // Make sure a usable error key is set
+                            if (reason != String.Empty)
+                                InternalErrorKey = reason;
+                            else
+                                InternalErrorKey = "unknown";
+
+                            UpdateLoginStatus(LoginStatus.Failed, message);
+                        }
                     }
-                    try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
-                    catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
-                }
-            }
-            catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
-
-            // Make the next network jump, if needed
-            if (redirect)
-            {
-                UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
-
-                // Handle indeterminate logins
-                CurrentContext.Params.URI = reply.next_url;
-                CurrentContext.Params.MethodName = reply.next_method;
-
-                // Ignore next_options and next_duration for now
-                BeginLogin();
-            }
-            else if (loginSuccess)
-            {
-                UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
-
-                ulong handle = Helpers.UIntsToLong(regionX, regionY);
-
-                // Connect to the sim given in the login reply
-                if (Connect(simIP, simPort, handle, true, LoginSeedCapability) != null)
-                {
-                    // Request the economy data right after login
-                    SendPacket(new EconomyDataRequestPacket());
-
-                    // Update the login message with the MOTD returned from the server
-                    UpdateLoginStatus(LoginStatus.Success, message);
-
-                    // Fire an event for connecting to the grid
-                    if (OnConnected != null)
+                    else
                     {
-                        try { OnConnected(this.Client); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        // Got an LLSD map but no login value
+                        UpdateLoginStatus(LoginStatus.Failed, "login parameter missing in the response");
                     }
                 }
                 else
                 {
-                    UpdateLoginStatus(LoginStatus.Failed, "Unable to connect to simulator");
+                    // No LLSD response
+                    UpdateLoginStatus(LoginStatus.Failed, "Empty or unparseable login response");
                 }
             }
             else
             {
-                // Make sure a usable error key is set
-                if (!String.IsNullOrEmpty(reason))
-                    InternalErrorKey = reason;
-                else
-                    InternalErrorKey = "unknown";
-
-                UpdateLoginStatus(LoginStatus.Failed, message);
+                // Connection error
+                UpdateLoginStatus(LoginStatus.Failed, error.Message);
             }
         }
-
-        public interface ILoginProxy : IXmlRpcProxy
-        {
-            [XmlRpcMethod("login_to_simulator")]
-            LoginMethodResponse LoginToSimulator(LoginMethodParams loginParams);
-
-            [XmlRpcBegin("login_to_simulator")]
-            IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback, object asyncState);
-
-            [XmlRpcEnd("login_to_simulator")]
-            LoginMethodResponse EndLoginToSimulator(IAsyncResult result);
-        }
-
-        public sealed class LoginProxy : XmlRpcClientProtocol, ILoginProxy
-        {
-            [XmlRpcMethod("login_to_simulator")]
-            public LoginMethodResponse LoginToSimulator(LoginMethodParams loginParams)
-            {
-                object xrtTemp = null;
-                LoginMethodResponse xrtReturn;
-                object[] xrtArray = new object[] {
-                    loginParams};
-                xrtTemp = this.Invoke("LoginToSimulator", xrtArray);
-                xrtReturn = ((LoginMethodResponse)(xrtTemp));
-                return xrtReturn;
-            }
-
-            [XmlRpcBegin("login_to_simulator")]
-            public IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback, 
-                object asyncState)
-            {
-                return BeginInvoke("LoginToSimulator", new object[] { loginParams }, this, callback, asyncState);
-            }
-
-            [XmlRpcEnd("login_to_simulator")]
-            public LoginMethodResponse EndLoginToSimulator(IAsyncResult xrtResult)
-            {
-                object xrtTemp = null;
-                LoginMethodResponse xrtReturn;
-                xrtTemp = this.EndInvoke(xrtResult);
-                xrtReturn = ((LoginMethodResponse)(xrtTemp));
-                return xrtReturn;
-            }
-        }
-
-        #region XML-RPC structs
-
-        public struct LoginMethodParams
-        {
-            public string first;
-            public string last;
-            public string passwd;
-            public string start;
-            public string channel;
-            public string version;
-            public string platform;
-            public string mac;
-            public string agree_to_tos;
-            public string read_critical;
-            public string viewer_digest;
-            public string[] options;
-        }
-
-        public struct LoginMethodResponse
-        {
-            public string login;
-            public string message;
-
-            #region Login Failure
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string reason;
-            #endregion
-
-            #region Login Success
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("inventory-skeleton")]
-            public InventorySkeletonEntry[] inventory_skeleton;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string session_id;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("inventory-root")]
-            public InventoryRootEntry[] inventory_root;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public EventNotificationEntry[] event_notifications;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public CategoryEntry[] event_categories;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string secure_session_id;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string start_location;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string first_name;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string last_name;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public int region_x;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public int region_y;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("global-textures")]
-            public GlobalTextureEntry[] global_textures;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string home;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("inventory-lib-owner")]
-            public InventoryLibraryOwnerEntry[] inventory_lib_owner;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("inventory-lib-root")]
-            public InventoryRootEntry[] inventory_lib_root;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("inventory-skel-lib")]
-            public InventorySkeletonEntry[] inventory_skel_lib;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public CategoryEntry[] classified_categories;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("login-flags")]
-            public LoginFlagsEntry[] login_flags;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string agent_access;
-
-            [XmlRpcMember("buddy-list")]
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public BuddyListEntry[] buddy_list;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public int circuit_code;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public int sim_port;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public GestureEntry[] gestures;
-            [XmlRpcMember("ui-config")]
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public UIConfigEntry[] ui_config;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string sim_ip;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string look_at;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string agent_id;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public int seconds_since_epoch;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string seed_capability;
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            [XmlRpcMember("initial-outfit")]
-            public OutfitEntry[] initial_outfit;
-            #endregion
-
-            #region Redirection
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string next_method;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string next_url;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string[] next_options;
-
-            [XmlRpcMissingMapping(MappingAction.Ignore)]
-            public string next_duration;
-            #endregion
-        }
-
-        public struct InventoryRootEntry
-        {
-            public string folder_id;
-        }
-
-        public struct InventorySkeletonEntry
-        {
-            public int type_default;
-            public int version;
-            public string name;
-            public string folder_id;
-            public string parent_id;
-        }
-
-        public struct CategoryEntry
-        {
-            public int category_id;
-            public string category_name;
-        }
-
-        public struct EventNotificationEntry
-        {
-            // ???
-        }
-
-        public struct OutfitEntry
-        {
-            // ???
-        }
-
-        public struct GlobalTextureEntry
-        {
-            public string cloud_texture_id;
-            public string sun_texture_id;
-            public string moon_texture_id;
-        }
-
-        public struct InventoryLibraryOwnerEntry
-        {
-            public string agent_id;
-        }
-
-        public struct LoginFlagsEntry
-        {
-            public string ever_logged_in;
-            public string daylight_savings;
-            public string stipend_since_login;
-            public string gendered;
-        }
-
-        public struct BuddyListEntry
-        {
-            public int buddy_rights_given;
-            public string buddy_id;
-            public int buddy_rights_has;
-        }
-
-        public struct GestureEntry
-        {
-            public string asset_id;
-            public string item_id;
-        }
-
-        public struct UIConfigEntry
-        {
-            public string allow_first_life;
-        }
-
-        #endregion
     }
 }
