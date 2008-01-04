@@ -12,7 +12,6 @@
   <!-- default configuration -->
   <property name="build.number"
      value="${string::replace(string::replace(string::substring(datetime::to-string(datetime::now()),0,10),'/200','0'),'/','')}" />
-  <!-- <property name="project.version" value="0.0.5" /> -->
   <property name="project.version" value="${build.number}" />
   <property name="project.config"  value="debug" /> <!-- debug|release -->
   <property name="package.config"  value="dist" /> <!-- dist|src -->
@@ -24,12 +23,11 @@
 
   <!-- build sets -->
   <fileset id="apps">
-    <include name="applications/Decoder/*.build" />
-    <include name="applications/SLIRC/*.build" />
-    <include name="applications/SLProxy/*.build" />
+    <include name="importprimscript/*.build" />
+    <include name="SLImageUpload/*.build" />
+    <include name="SLProxy/*.build" />
   </fileset>
   <fileset id="lib">
-    <include name="openjpegnet/*.build" />
     <include name="libsecondlife/*.build" />
   </fileset>
   <fileset id="examples">
@@ -107,8 +105,8 @@
     </nant>
     <copy todir="bin" overwrite="true">
 	  <fileset basedir="data">
-        <include name="*.txt" />
-        <include name="*.msg" />
+        <include name="*.crt" />
+        <include name="message_template.msg" />
       </fileset>
     </copy>
   </target>
@@ -163,8 +161,8 @@
       <mkdir dir="${archive.dir}" failonerror="false" />
       <copy todir="${archive.dir}" overwrite="true">
 				<fileset basedir=".">
-				  <include name="LICENSE" />
-				  <include name="README" />
+				  <include name="LICENSE.txt" />
+				  <include name="README.txt" />
 				</fileset>
       </copy>
       <copy todir="${archive.dir}" overwrite="true">
