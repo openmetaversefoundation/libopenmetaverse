@@ -1,7 +1,0 @@
-in GrantGodlikePowers
-[GrantData]
-GodLevel = 255
-Token = $UUID
-[AgentData]
-AgentID = $AgentID
-SessionID = $SessionID

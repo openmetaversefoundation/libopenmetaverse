@@ -56,7 +56,8 @@
 		<uptodate property="_Packets_.cs.uptodate">
 			<sourcefiles>
 				<include name="../bin/mapgenerator.exe" />
-				<include name="../data/message_template.msg mapgenerator/template.cs" />
+				<include name="../data/message_template.msg" />
+				<include name="mapgenerator/template.cs" />
 			</sourcefiles>
 			<targetfiles>
 				<include name="_Packets_.cs" />
@@ -82,7 +83,7 @@
 					<attribute type="AssemblyVersionAttribute" value="${CCNetLabel}" />
 					<attribute type="AssemblyTitleAttribute" value="libsecondlife" />
 					<attribute type="AssemblyDescriptionAttribute" value="Networking layer for Second Life" />
-					<attribute type="AssemblyCopyrightAttribute" value="Copyright © libsecondlife 2006" />
+					<attribute type="AssemblyCopyrightAttribute" value="Copyright © libsecondlife 2006-2008" />
 				</attributes>
 			</asminfo>
 		</if>
@@ -102,8 +103,7 @@
                             <include name="Resources/*.tga" />
                             <include name="Resources/*.xml" />
 			</resources>
-			<references> 
-				<include name="${bin_dir}/CookComputing.XmlRpcV2.dll" />
+			<references>
 				<include name="System.Drawing.dll" />
 			</references>
 			<nowarn>
