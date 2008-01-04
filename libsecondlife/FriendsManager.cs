@@ -692,7 +692,7 @@ namespace libsecondlife
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
             LoginResponseData replyData)
         {
-            if (loginSuccess)
+            if (loginSuccess && replyData.BuddyList != null)
             {
                 lock (_Friends)
                 {

@@ -148,7 +148,17 @@ namespace libsecondlife.StructuredData
                 this.value = String.Empty;
         }
 
-        public override bool AsBoolean() { return !String.IsNullOrEmpty(value); }
+        public override bool AsBoolean()
+        {
+            if (String.IsNullOrEmpty(value))
+                return false;
+
+            if (value == "0" || value.ToLower() == "false")
+                return false;
+
+            return true;
+        }
+
         public override int AsInteger()
         {
             double dbl;

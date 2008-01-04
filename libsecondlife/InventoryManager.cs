@@ -107,7 +107,7 @@ namespace libsecondlife
         public InventoryBase(LLUUID itemID)
         {
             if (itemID == LLUUID.Zero)
-                throw new ArgumentException("Inventory item ID cannot be NULL_KEY (LLUUID.Zero)");
+                SecondLife.LogStatic("Initializing an InventoryBase with LLUUID.Zero", Helpers.LogLevel.Warning);
             UUID = itemID;
         }
 

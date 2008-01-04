@@ -136,15 +136,28 @@ namespace libsecondlife
 
             // Home
             LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
-            LLSD homeRegion;
-            if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == LLSDType.Array)
+
+            if (home != null)
             {
-                LLSDArray homeArray = (LLSDArray)homeRegion;
-                if (homeArray.Count == 2)
-                    HomeRegion = Helpers.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
+                LLSD homeRegion;
+                if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == LLSDType.Array)
+                {
+                    LLSDArray homeArray = (LLSDArray)homeRegion;
+                    if (homeArray.Count == 2)
+                        HomeRegion = Helpers.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
+                    else
+                        HomeRegion = 0;
+                }
+
+                HomePosition = ParseLLVector3("position", home);
+                HomeLookAt = ParseLLVector3("look_at", home);
             }
-            HomePosition = ParseLLVector3("position", home);
-            HomeLookAt = ParseLLVector3("look_at", home);
+            else
+            {
+                HomeRegion = 0;
+                HomePosition = LLVector3.Zero;
+                HomeLookAt = LLVector3.Zero;
+            }
 
             CircuitCode = ParseUInt("circuit_code", reply);
             RegionX = ParseUInt("region_x", reply);
@@ -636,26 +649,34 @@ namespace libsecondlife
 
                             ulong handle = Helpers.UIntsToLong(data.RegionX, data.RegionY);
 
-                            // Connect to the sim given in the login reply
-                            if (Connect(data.SimIP, data.SimPort, handle, true, LoginSeedCapability) != null)
+                            if (data.SimIP != null && data.SimPort != 0)
                             {
-                                // Request the economy data right after login
-                                SendPacket(new EconomyDataRequestPacket());
-
-                                // Update the login message with the MOTD returned from the server
-                                UpdateLoginStatus(LoginStatus.Success, message);
-
-                                // Fire an event for connecting to the grid
-                                if (OnConnected != null)
+                                // Connect to the sim given in the login reply
+                                if (Connect(data.SimIP, data.SimPort, handle, true, LoginSeedCapability) != null)
                                 {
-                                    try { OnConnected(this.Client); }
-                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                    // Request the economy data right after login
+                                    SendPacket(new EconomyDataRequestPacket());
+
+                                    // Update the login message with the MOTD returned from the server
+                                    UpdateLoginStatus(LoginStatus.Success, message);
+
+                                    // Fire an event for connecting to the grid
+                                    if (OnConnected != null)
+                                    {
+                                        try { OnConnected(this.Client); }
+                                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                    }
+                                }
+                                else
+                                {
+                                    UpdateLoginStatus(LoginStatus.Failed,
+                                        "Unable to establish a UDP connection to the simulator");
                                 }
                             }
                             else
                             {
                                 UpdateLoginStatus(LoginStatus.Failed,
-                                    "Unable to establish a UDP connection to the simulator");
+                                    "Login server did not return a simulator address");
                             }
                         }
                         else if (redirect)

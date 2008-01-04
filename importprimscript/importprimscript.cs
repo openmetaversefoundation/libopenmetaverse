@@ -29,7 +29,7 @@ namespace importprimscript
 
         static void Main(string[] args)
         {
-            if (args.Length != 8)
+            if (args.Length != 8 && args.Length != 9)
             {
                 Console.WriteLine("Usage: importprimscript.exe [firstname] [lastname] [password] " +
                     "[loginuri] [Simulator] [x] [y] [z] [input.primscript]" +
