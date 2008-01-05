@@ -92,5 +92,37 @@ namespace libsecondlife
                 }
             }
         }
+
+        public bool ContainsKey(TKey key)
+        {
+            return Dictionary.ContainsKey(key);
+        }
+
+        public bool ContainsValue(TValue value)
+        {
+            return Dictionary.ContainsValue(value);
+        }
+
+        internal void Add(TKey key, TValue value)
+        {
+            Dictionary.Add(key, value);
+        }
+
+        internal bool Remove(TKey key)
+        {
+            return Dictionary.Remove(key);
+        }
+
+        internal void SafeAdd(TKey key, TValue value)
+        {
+            lock (Dictionary)
+                Dictionary.Add(key, value);
+        }
+
+        internal bool SafeRemove(TKey key)
+        {
+            lock (Dictionary)
+                return Dictionary.Remove(key);
+        }
     }
 }

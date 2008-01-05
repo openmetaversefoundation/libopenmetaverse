@@ -43,6 +43,7 @@
     <Compile Include="Commands\CloneProfileCommand.cs" />
     <Compile Include="Commands\Communication\EchoMasterCommand.cs" />
     <Compile Include="Commands\Communication\IMCommand.cs" />
+    <Compile Include="Commands\Communication\IMGroupCommand.cs" />
     <Compile Include="Commands\Communication\SayCommand.cs" />
     <Compile Include="Commands\Communication\ShoutCommand.cs" />
     <Compile Include="Commands\Communication\WhisperCommand.cs" />

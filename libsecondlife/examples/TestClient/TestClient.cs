@@ -196,7 +196,7 @@ namespace libsecondlife.TestClient
                 if (im.FromAgentID != MasterKey)
                 {
                     // Received an IM from someone that is not the bot's master, ignore
-                    Console.WriteLine("<IM ({0})> {1} (not master): {2} (@{3}:{4})", im.Dialog, im.FromAgentName, im.Message,
+                    Console.WriteLine("<{0} ({1})> {2} (not master): {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message,
                         im.RegionID, im.Position);
                     return;
                 }
@@ -204,13 +204,13 @@ namespace libsecondlife.TestClient
             else if (GroupMembers != null && !GroupMembers.ContainsKey(im.FromAgentID))
             {
                 // Received an IM from someone outside the bot's group, ignore
-                Console.WriteLine("<IM ({0})> {1} (not in group): {2} (@{3}:{4})", im.Dialog, im.FromAgentName,
+                Console.WriteLine("<{0} ({1})> {2} (not in group): {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName,
                     im.Message, im.RegionID, im.Position);
                 return;
             }
 
             // Received an IM from someone that is authenticated
-            Console.WriteLine("<IM ({0})> {1}: {2} (@{3}:{4})", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
+            Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
 
             if (im.Dialog == InstantMessageDialog.RequestTeleport)
             {

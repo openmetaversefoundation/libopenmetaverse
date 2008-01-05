@@ -681,6 +681,15 @@ namespace libsecondlife
         /// <param name="newSim">Simulator agent is now currently occupying</param>
         public delegate void RegionCrossedCallback(Simulator oldSim, Simulator newSim);
 
+        /// <summary>
+        /// Fired when group chat session confirmed joined</summary>
+        /// <param name="groupchatSessionID">LLUUID of Session (groups UUID)</param>
+        public delegate void GroupChatJoined(LLUUID groupChatSessionID);
+
+        /// <summary>Fired when agent group chat session terminated</summary>
+        /// <param name="groupchatSessionID">LLUUID of Session (groups UUID)</param>
+        public delegate void GroupChatLeft(LLUUID groupchatSessionID);
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -705,6 +714,10 @@ namespace libsecondlife
         public event MeanCollisionCallback OnMeanCollision;
         /// <summary>Callback for the agent moving in to a neighboring sim</summary>
         public event RegionCrossedCallback OnRegionCrossed;
+        /// <summary>Callback for when agent is confirmed joined group chat session.</summary>
+        public event GroupChatJoined OnGroupChatJoin;
+        /// <summary>Callback for when agent is confirmed to have left group chat session.</summary>
+        public event GroupChatLeft OnGroupChatLeft;
 
         #endregion
 
@@ -885,7 +898,7 @@ namespace libsecondlife
         private float health;
         private int balance;
 		private LLUUID activeGroup;
-
+        private InternalDictionary<LLUUID, List<LLUUID>> GroupChatSessions = new InternalDictionary<LLUUID, List<LLUUID>>();
         #endregion Private Members
 
         /// <summary>
@@ -933,7 +946,12 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.CrossedRegion, new NetworkManager.PacketCallback(CrossedRegionHandler));
 	        // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
-
+            // Incoming Group Chat
+            Client.Network.RegisterEventCallback("ChatterBoxInvitation", new Caps.EventQueueCallback(ChatterBoxInvitationHandler));
+            // Outgoing Group Chat Reply
+            Client.Network.RegisterEventCallback("ChatterBoxSessionEventReply", new Caps.EventQueueCallback(ChatterBoxSessionEventHandler));
+            Client.Network.RegisterEventCallback("ChatterBoxSessionStartReply", new Caps.EventQueueCallback(ChatterBoxSessionStartReplyHandler));
+            Client.Network.RegisterEventCallback("ChatterBoxSessionAgentListUpdates", new Caps.EventQueueCallback(ChatterBoxSessionAgentListReplyHandler));
             // Login
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse));
         }
@@ -1092,14 +1110,47 @@ namespace libsecondlife
         /// <remarks>This does not appear to function with groups the agent is not in</remarks>
         public void InstantMessageGroup(string fromName, LLUUID groupUUID, string message)
         {
+            lock (GroupChatSessions.Dictionary)
+                if (GroupChatSessions.ContainsKey(groupUUID))
+                {
+                    ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+
+                    im.AgentData.AgentID = Client.Self.AgentID;
+                    im.AgentData.SessionID = Client.Self.SessionID;
+                    im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionSend;
+                    im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+                    im.MessageBlock.FromGroup = false;
+                    im.MessageBlock.Message = Helpers.StringToField(message);
+                    im.MessageBlock.Offline = 0;
+                    im.MessageBlock.ID = groupUUID;
+                    im.MessageBlock.ToAgentID = groupUUID;
+                    im.MessageBlock.Position = LLVector3.Zero;
+                    im.MessageBlock.RegionID = LLUUID.Zero;
+                    im.MessageBlock.BinaryBucket = Helpers.StringToField("\0");
+                    
+                    Client.Network.SendPacket(im);
+                }
+                else
+                { 
+                    Client.Log("No Active group chat session appears to exist, use RequestJoinGroupChat() to join one", 
+                        Helpers.LogLevel.Error);
+                }
+        }
+
+        /// <summary>
+        /// Send a request to join a group chat session
+        /// </summary>
+        /// <param name="groupUUID">UUID of Group</param>
+        public void RequestJoinGroupChat(LLUUID groupUUID)
+        {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
 
             im.AgentData.AgentID = Client.Self.AgentID;
             im.AgentData.SessionID = Client.Self.SessionID;
-            im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionSend;
-            im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+            im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionGroupStart;
+            im.MessageBlock.FromAgentName = Helpers.StringToField(Client.Self.Name);
             im.MessageBlock.FromGroup = false;
-            im.MessageBlock.Message = Helpers.StringToField(message);
+            im.MessageBlock.Message = new byte[0];
             im.MessageBlock.Offline = 0;
             im.MessageBlock.ID = groupUUID;
             im.MessageBlock.ToAgentID = groupUUID;
@@ -1107,7 +1158,30 @@ namespace libsecondlife
             im.MessageBlock.Position = LLVector3.Zero;
             im.MessageBlock.RegionID = LLUUID.Zero;
 
-            // Send the message
+            Client.Network.SendPacket(im);
+        }
+        /// <summary>
+        /// Request self terminates group chat. This will stop Group IM's from showing up
+        /// until session is rejoined or expires.
+        /// </summary>
+        /// <param name="groupUUID">UUID of Group</param>
+        public void RequestLeaveGroupChat(LLUUID groupUUID)
+        {
+            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+
+            im.AgentData.AgentID = Client.Self.AgentID;
+            im.AgentData.SessionID = Client.Self.SessionID;
+            im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionDrop;
+            im.MessageBlock.FromAgentName = Helpers.StringToField(Client.Self.Name);
+            im.MessageBlock.FromGroup = false;
+            im.MessageBlock.Message = new byte[0];
+            im.MessageBlock.Offline = 0;
+            im.MessageBlock.ID = groupUUID;
+            im.MessageBlock.ToAgentID = groupUUID;
+            im.MessageBlock.BinaryBucket = new byte[0];
+            im.MessageBlock.Position = LLVector3.Zero;
+            im.MessageBlock.RegionID = LLUUID.Zero;
+
             Client.Network.SendPacket(im);
         }
 
@@ -2197,6 +2271,7 @@ namespace libsecondlife
         {
             StructuredData.LLSDMap body = (StructuredData.LLSDMap)llsd;
 
+
             if (Client.Settings.MULTIPLE_SIMS && body.ContainsKey("sim-ip-and-port"))
             {
                 string ipAndPort = body["sim-ip-and-port"].AsString();
@@ -2465,6 +2540,141 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Group Chat event handler
+        /// </summary>
+        /// <param name="capsKey"></param>
+        /// <param name="llsd"></param>
+        /// <param name="simulator"></param>
+        private void ChatterBoxSessionEventHandler(string capsKey, LLSD llsd, Simulator simulator)
+        {
+            // TODO: this appears to occur when you try and initiate group chat with an unopened session
+            //       
+            // Key=ChatterBoxSessionEventReply 
+            // llsd={
+            //    ("error": "generic")
+            //    ("event": "message")
+            //    ("session_id": "3dafea18-cda1-9813-d5f1-fd3de6b13f8c") // group uuid
+            //    ("success": "0")}
+            //LLSDMap map = (LLSDMap)llsd;
+            //LLUUID groupUUID = map["session_id"].AsUUID();
+            //Console.WriteLine("SessionEvent: Key={0} llsd={1}", capsKey, llsd.ToString());
+        }
+
+        /// <summary>
+        /// Response from request to join a group chat
+        /// </summary>
+        /// <param name="capsKey"></param>
+        /// <param name="llsd"></param>
+        /// <param name="simulator"></param>
+        private void ChatterBoxSessionStartReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        {
+            LLSDMap map = (LLSDMap)llsd;
+            LLUUID sessionID = map["session_id"].AsUUID();
+
+            if (map["success"].AsBoolean())
+            {
+                LLSDArray agentlist = (LLSDArray)map["agents"];
+                List<LLUUID> agents = new List<LLUUID>();
+                foreach (LLSD id in agentlist)
+                    agents.Add(id.AsUUID());
+
+                lock (GroupChatSessions.Dictionary)
+                {
+                    if (GroupChatSessions.ContainsKey(sessionID))
+                        GroupChatSessions.Dictionary[sessionID] = agents;
+                    else
+                        GroupChatSessions.Add(sessionID, agents);
+                }
+            }
+
+            if (OnGroupChatJoin != null)
+            {
+                try { OnGroupChatJoin(sessionID); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        /// <summary>
+        /// Someone joined or left group chat
+        /// </summary>
+        /// <param name="capsKey"></param>
+        /// <param name="llsd"></param>
+        /// <param name="simulator"></param>
+        private void ChatterBoxSessionAgentListReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        {
+            LLSDMap map = (LLSDMap)llsd;
+            LLUUID sessionID = map["session_id"].AsUUID();
+            LLSDMap update = (LLSDMap)map["updates"];
+            string errormsg = map["error"].AsString();
+            
+            //if (errormsg.Equals("already in session"))
+            //  return;
+
+            foreach (KeyValuePair<string, LLSD> kvp in update)
+            {
+                if (kvp.Value.Equals("ENTER"))
+                {
+                    lock (GroupChatSessions.Dictionary)
+                    {
+                        if (!GroupChatSessions.Dictionary[sessionID].Contains((LLUUID)kvp.Key))
+                            GroupChatSessions.Dictionary[sessionID].Add((LLUUID)kvp.Key);
+                    }
+                }
+                else if (kvp.Value.Equals("LEAVE"))
+                {
+                    lock (GroupChatSessions.Dictionary)
+                    {
+                        if (GroupChatSessions.Dictionary[sessionID].Contains((LLUUID)kvp.Key))
+                            GroupChatSessions.Dictionary[sessionID].Remove((LLUUID)kvp.Key);
+
+                        // we left session, remove from dictionary
+                        if (kvp.Key.Equals(Client.Self.id) && OnGroupChatLeft != null)
+                        {
+                            GroupChatSessions.Dictionary.Remove(sessionID);
+                            OnGroupChatLeft(sessionID);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Group Chat Request
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="llsd"></param>
+        /// <param name="simulator"></param>
+        private void ChatterBoxInvitationHandler(string capsKey, LLSD llsd, Simulator simulator)
+        {       
+                if (OnInstantMessage != null)
+                {
+                    LLSDMap map = (LLSDMap)llsd;
+                    LLSDMap im = (LLSDMap)map["instantmessage"];
+                    LLSDMap agent = (LLSDMap)im["agent_params"];
+                    LLSDMap msg = (LLSDMap)im["message_params"];
+                    LLSDMap msgdata = (LLSDMap)msg["data"];
+
+                    InstantMessage message = new InstantMessage();
+                    
+                    message.FromAgentID = map["from_id"].AsUUID();
+                    message.FromAgentName = map["from_name"].AsString();
+                    message.ToAgentID = msg["to_id"].AsString();
+                    message.ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
+                    message.RegionID = msg["region_id"].AsUUID();
+                    message.Position.FromLLSD(msg["position"]);
+                    message.Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
+                    message.GroupIM = true;
+                    message.IMSessionID = map["session_id"].AsUUID();
+                    message.Timestamp = new DateTime(msgdata["timestamp"].AsInteger());
+                    message.Message = msg["message"].AsString();
+                    message.Offline = (InstantMessageOnline)msg["offline"].AsInteger();
+                    message.BinaryBucket = msg["binary_bucket"].AsBinary();
+
+                    try { OnInstantMessage(message, simulator); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }             
+        }
         #endregion Packet Handlers
     }
 }
