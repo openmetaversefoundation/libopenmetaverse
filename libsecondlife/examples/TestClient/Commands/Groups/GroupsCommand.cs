@@ -46,7 +46,8 @@ namespace libsecondlife.TestClient
             StringBuilder sb = new StringBuilder();
             foreach (Group group in groups.Values)
             {
-                sb.AppendLine(group.Name);
+                sb.AppendLine(group.Name + " " + group.ID);
+                
             }
             
             return sb.ToString();
