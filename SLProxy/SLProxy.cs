@@ -594,7 +594,7 @@ namespace SLProxy
                 }
                 else
                 {
-                    capReq.Request = content;
+                    capReq.Request = LLSDParser.DeserializeXml(content);
                 }
 
                 foreach (CapsDelegate d in cap.GetDelegates())
@@ -608,7 +608,7 @@ namespace SLProxy
                 }
                 else
                 {
-                    content = (byte[])capReq.Request;
+                    content = LLSDParser.SerializeXmlBytes(capReq.Request);
                 }
             }
 
@@ -704,7 +704,7 @@ namespace SLProxy
                         }
                         else
                         {
-                            capReq.Response = respBuf;
+                            capReq.Response = LLSDParser.DeserializeXml(respBuf);
                         }
 
                     }
@@ -755,7 +755,7 @@ namespace SLProxy
                 }
                 else
                 {
-                    respBuf = (byte[])capReq.Response;
+                    respBuf = LLSDParser.SerializeXmlBytes(capReq.Response);
                 }
             }
 
@@ -794,26 +794,33 @@ namespace SLProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            Dictionary<string, object> m = (Dictionary<string, object>)capReq.Response;
-            Dictionary<string, object> nm = new Dictionary<string, object>();
-            foreach (string key in m.Keys)
+            LLSDMap nm = new LLSDMap();
+
+            if (capReq.Response.Type == LLSDType.Map)
             {
-                string val = (string)m[key];
-                if (!String.IsNullOrEmpty(val))
+                LLSDMap m = (LLSDMap)capReq.Response;
+                
+                foreach (string key in m.Keys)
                 {
-                    if (!KnownCaps.ContainsKey(val))
+                    string val = m[key].AsString();
+
+                    if (!String.IsNullOrEmpty(val))
                     {
-                        CapInfo newCap = new CapInfo(val, capReq.Info.Sim, key);
-                        newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
-                        lock (this) { KnownCaps[val] = newCap; }
+                        if (!KnownCaps.ContainsKey(val))
+                        {
+                            CapInfo newCap = new CapInfo(val, capReq.Info.Sim, key);
+                            newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
+                            lock (this) { KnownCaps[val] = newCap; }
+                        }
+                        nm[key] = LLSD.FromString(loginURI + val);
                     }
-                    nm[key] = loginURI + val;
-                }
-                else
-                {
-                    nm[key] = val;
+                    else
+                    {
+                        nm[key] = LLSD.FromString(val);
+                    }
                 }
             }
+
             capReq.Response = nm;
             return false;
         }
@@ -883,44 +890,60 @@ namespace SLProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            foreach (Dictionary<string, object> evt in (List<object>)((Dictionary<string, object>)capReq.Response)["events"])
+            LLSDMap map = (LLSDMap)capReq.Response;
+            LLSDArray array = (LLSDArray)map["events"];
+
+            for (int i = 0; i < array.Count; i++)
             {
-                string message = (string)evt["message"];
-                Dictionary<string, object> body = (Dictionary<string, object>)evt["body"];
+                LLSDMap evt = (LLSDMap)array[i];
+
+                string message = evt["message"].AsString();
+                LLSDMap body = (LLSDMap)evt["body"];
+
                 if (message == "TeleportFinish" || message == "CrossedRegion")
                 {
-                    Dictionary<string, object> info = null;
+                    LLSDMap info = null;
                     if (message == "TeleportFinish")
-                        info = (Dictionary<string, object>)(((List<object>)body["Info"])[0]);
+                        info = (LLSDMap)(((LLSDArray)body["Info"])[0]);
                     else
-                        info = (Dictionary<string, object>)(((List<object>)body["RegionData"])[0]);
-                    byte[] bytes = (byte[])info["SimIP"];
-                    uint simIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
-                    ushort simPort = (ushort)(int)info["SimPort"];
-                    string capsURL = (string)info["SeedCapability"];
+                        info = (LLSDMap)(((LLSDArray)body["RegionData"])[0]);
+                    byte[] bytes = info["SimIP"].AsBinary();
+                    uint simIP = Helpers.BytesToUIntBig(bytes);
+                    ushort simPort = (ushort)info["SimPort"].AsInteger();
+                    string capsURL = info["SeedCapability"].AsString();
+
                     GenericCheck(ref simIP, ref simPort, ref capsURL, capReq.Info.Sim == activeCircuit);
-                    info["SeedCapability"] = capsURL;
+
+                    info["SeedCapability"] = LLSD.FromString(capsURL);
                     bytes[0] = (byte)(simIP % 256);
                     bytes[1] = (byte)((simIP >> 8) % 256);
                     bytes[2] = (byte)((simIP >> 16) % 256);
                     bytes[3] = (byte)((simIP >> 24) % 256);
-                    info["SimIP"] = bytes;
-                    info["SimPort"] = (int)simPort;
+                    info["SimIP"] = LLSD.FromBinary(bytes);
+                    info["SimPort"] = LLSD.FromInteger(simPort);
                 }
                 else if (message == "EstablishAgentCommunication")
                 {
-                    string ipAndPort = (string)body["sim-ip-and-port"];
+                    string ipAndPort = body["sim-ip-and-port"].AsString();
                     string[] pieces = ipAndPort.Split(':');
                     byte[] bytes = IPAddress.Parse(pieces[0]).GetAddressBytes();
                     uint simIP = (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
                     ushort simPort = (ushort)Convert.ToInt32(pieces[1]);
 
-                    string capsURL = (string)body["seed-capability"];
+                    string capsURL = body["seed-capability"].AsString();
+
+#if DEBUG_CAPS
                     Console.WriteLine("DEBUG: Got EstablishAgentCommunication for " + ipAndPort + " with seed cap " + capsURL);
+#endif
+
                     GenericCheck(ref simIP, ref simPort, ref capsURL, false);
-                    body["seed-capability"] = capsURL;
-                    body["sim-ip-and-port"] = new IPAddress((uint)simIP).ToString() + ":" + simPort;
-                    Console.WriteLine("DEBUG: Modified EstablishAgentCommunication to " + (string)body["sim-ip-and-port"] + " with seed cap " + capsURL);
+                    body["seed-capability"] = LLSD.FromString(capsURL);
+                    string ipport = String.Format("{0}:{1}", new IPAddress(simIP), simPort);
+                    body["sim-ip-and-port"] = LLSD.FromString(ipport);
+
+#if DEBUG_CAPS
+                    Console.WriteLine("DEBUG: Modified EstablishAgentCommunication to " + body["sim-ip-and-port"].AsString() + " with seed cap " + capsURL);
+#endif
                 }
             }
 
@@ -1974,10 +1997,10 @@ namespace SLProxy
         public readonly CapInfo Info;
 
         // The request
-        public object Request = null;
+        public LLSD Request = null;
 
         // The corresponding response
-        public object Response = null;
+        public LLSD Response = null;
     }
 
     // XmlRpcRequestDelegate: specifies a delegate to be called for XML-RPC requests
