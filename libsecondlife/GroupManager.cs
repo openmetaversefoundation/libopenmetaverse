@@ -606,15 +606,17 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Request a current list of groups the avatar is a member of.
         /// </summary>
+        /// <remarks>CAPS Event Queue must be running for this to work since the results
+        /// come across CAPS.</remarks>
         public void RequestCurrentGroups()
         {
             AgentDataUpdateRequestPacket request = new AgentDataUpdateRequestPacket();
 
             request.AgentData.AgentID = Client.Self.AgentID;
             request.AgentData.SessionID = Client.Self.SessionID;
-
+            
             Client.Network.SendPacket(request);
         }
 

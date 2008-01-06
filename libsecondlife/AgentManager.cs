@@ -730,6 +730,10 @@ namespace libsecondlife
         /// etc. by checking for system animations in the <code>Animations</code>
         /// class</summary>
         public InternalDictionary<LLUUID, int> SignaledAnimations = new InternalDictionary<LLUUID, int>();
+        /// <summary>
+        /// Dictionary containing current Group Chat sessions and members
+        /// </summary>
+        public InternalDictionary<LLUUID, List<LLUUID>> GroupChatSessions = new InternalDictionary<LLUUID, List<LLUUID>>();
 
         #region Properties
 
@@ -898,7 +902,6 @@ namespace libsecondlife
         private float health;
         private int balance;
 		private LLUUID activeGroup;
-        private InternalDictionary<LLUUID, List<LLUUID>> GroupChatSessions = new InternalDictionary<LLUUID, List<LLUUID>>();
         #endregion Private Members
 
         /// <summary>
