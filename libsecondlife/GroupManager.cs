@@ -462,6 +462,11 @@ namespace libsecondlife
         /// <param name="groups"></param>
         public delegate void CurrentGroupsCallback(Dictionary<LLUUID, Group> groups);
         /// <summary>
+        /// Callback for a list of group names
+        /// </summary>
+        /// <param name="names"></param>
+        public delegate void GroupNamesCallback(Dictionary<LLUUID, string> groupNames);
+        /// <summary>
         /// Callback for the profile of a group
         /// </summary>
         /// <param name="group"></param>
@@ -533,6 +538,8 @@ namespace libsecondlife
         /// <summary></summary>
         public event CurrentGroupsCallback OnCurrentGroups;
         /// <summary></summary>
+        public event GroupNamesCallback OnGroupNames;
+        /// <summary></summary>
         public event GroupProfileCallback OnGroupProfile;
         /// <summary></summary>
         public event GroupMembersCallback OnGroupMembers;
@@ -565,8 +572,8 @@ namespace libsecondlife
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>> GroupRolesCaches;
         /// <summary>A list of all the role to member mappings</summary>
         private Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>> GroupRolesMembersCaches;
-
-
+        /// <summary>Caches group name lookups</summary>
+        public InternalDictionary<LLUUID, string> GroupName2KeyCache;
         /// <summary>
         /// 
         /// </summary>
@@ -578,6 +585,7 @@ namespace libsecondlife
             GroupMembersCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>>();
             GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();
             GroupRolesMembersCaches = new Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>>();
+            GroupName2KeyCache  = new InternalDictionary<LLUUID, string>();
 
             Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(GroupDataHandler));
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
@@ -594,6 +602,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
+            Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
         }
 
         /// <summary>
@@ -607,6 +616,72 @@ namespace libsecondlife
             request.AgentData.SessionID = Client.Self.SessionID;
 
             Client.Network.SendPacket(request);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupID"></param>
+        public void RequestGroupName(LLUUID groupID)
+        {
+            // if we already have this in the cache, return from cache instead of making a request
+                if (GroupName2KeyCache.ContainsKey(groupID))
+                {
+                    Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
+                    lock(GroupName2KeyCache.Dictionary)
+                    groupNames.Add(groupID, GroupName2KeyCache.Dictionary[groupID]);
+                    if (OnGroupNames != null)
+                    {
+                           
+                        try { OnGroupNames(groupNames); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+                }
+            
+                else
+                {
+                    UUIDGroupNameRequestPacket req = new UUIDGroupNameRequestPacket();
+                    UUIDGroupNameRequestPacket.UUIDNameBlockBlock[] block = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock[1];
+                    block[0] = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock();
+                    block[0].ID = groupID;
+                    req.UUIDNameBlock = block;
+                    Client.Network.SendPacket(req);
+                }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupIDs"></param>
+        public void RequestGroupNames(List<LLUUID> groupIDs)
+        {
+            Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
+            foreach (LLUUID groupID in groupIDs)
+                if (GroupName2KeyCache.ContainsKey(groupID))
+                {
+                    groupIDs.Remove(groupID);
+                    lock (GroupName2KeyCache.Dictionary)
+                    groupNames.Add(groupID, GroupName2KeyCache.Dictionary[groupID]);
+                }
+            if (groupIDs.Count > 0)
+            {
+                UUIDGroupNameRequestPacket req = new UUIDGroupNameRequestPacket();
+                UUIDGroupNameRequestPacket.UUIDNameBlockBlock[] block = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock[groupIDs.Count];
+
+                for (int i = 0; i < groupIDs.Count; i++)
+                {
+                    block[i] = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock();
+                    block[i].ID = groupIDs[i];
+                }
+
+                req.UUIDNameBlock = block;
+                Client.Network.SendPacket(req);
+            }
+
+            // fire handler from cache
+            if(groupNames.Count > 0 && OnGroupNames != null)
+                try { OnGroupNames(groupNames); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
         }
 
         /// <summary>
@@ -1318,6 +1393,27 @@ namespace libsecondlife
                 LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
 
                 try { OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void UUIDGroupNameReplyHandler(Packet packet, Simulator simulator)
+        {
+            UUIDGroupNameReplyPacket reply = (UUIDGroupNameReplyPacket)packet;
+            UUIDGroupNameReplyPacket.UUIDNameBlockBlock[] blocks = reply.UUIDNameBlock;
+            
+            Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
+
+            foreach (UUIDGroupNameReplyPacket.UUIDNameBlockBlock block in blocks) 
+            {
+                groupNames.Add(block.ID, Helpers.FieldToUTF8String(block.GroupName));
+                    if (!GroupName2KeyCache.ContainsKey(block.ID))
+                        GroupName2KeyCache.SafeAdd(block.ID, Helpers.FieldToUTF8String(block.GroupName));
+            }
+
+            if (OnGroupNames != null)
+            {    
+                try { OnGroupNames(groupNames); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }

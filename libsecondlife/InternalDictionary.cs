@@ -95,11 +95,13 @@ namespace libsecondlife
 
         public bool ContainsKey(TKey key)
         {
+            lock(Dictionary)
             return Dictionary.ContainsKey(key);
         }
 
         public bool ContainsValue(TValue value)
         {
+            lock(Dictionary)
             return Dictionary.ContainsValue(value);
         }
 
