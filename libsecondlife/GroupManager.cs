@@ -619,9 +619,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Lookup name of group based on groupID
         /// </summary>
-        /// <param name="groupID"></param>
+        /// <param name="groupID">groupID of group to lookup name for.</param>
         public void RequestGroupName(LLUUID groupID)
         {
             // if we already have this in the cache, return from cache instead of making a request
@@ -650,9 +650,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Request lookup of multiple group names
         /// </summary>
-        /// <param name="groupIDs"></param>
+        /// <param name="groupIDs">List of group IDs to request.</param>
         public void RequestGroupNames(List<LLUUID> groupIDs)
         {
             Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
@@ -684,10 +684,9 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="group"></param>
+        /// <summary>Lookup group profile data such as name, enrollment, founder, logo, etc</summary>
+        /// <remarks>Subscribe to <code>OnGroupProfile</code> event to receive the results.</remarks>
+        /// <param name="group">group ID (UUID)</param>
         public void RequestGroupProfile(LLUUID group)
         {
             GroupProfileRequestPacket request = new GroupProfileRequestPacket();
@@ -699,10 +698,9 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="group"></param>
+        /// <summary>Request a list of group members.</summary>
+        /// <remarks>Subscribe to <code>OnGroupMembers</code> event to receive the results.</remarks>
+        /// <param name="group">group ID (UUID)</param>
         public void RequestGroupMembers(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
@@ -718,10 +716,9 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="group"></param>
+        /// <summary>Request group roles</summary>
+        /// <remarks>Subscribe to <code>OnGroupRoles</code> event to receive the results.</remarks>
+        /// <param name="group">group ID (UUID)</param>
         public void RequestGroupRoles(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
@@ -737,10 +734,9 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="group"></param>
+        /// <summary>Request members <> role mapping for a group.</summary>
+        /// <remarks>Subscribe to <code>OnGroupRolesMembers</code> event to receive the results.</remarks>
+        /// <param name="group">group ID (UUID)</param>
         public void RequestGroupRoleMembers(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
@@ -757,10 +753,9 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="group"></param>
+        /// <summary>Request a groups Titles</summary>
+        /// <remarks>Subscribe to <code>OnGroupTitles</code> event to receive the results.</remarks>
+        /// <param name="group">group ID (UUID)</param>
         public void RequestGroupTitles(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
@@ -775,10 +770,9 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>
-        /// Begin to get the group account summary
-        /// </summary>
-        /// <param name="group">The group's ID</param>
+        /// <summary>Begin to get the group account summary</summary>
+        /// <remarks>Subscribe to the <code>OnGroupAccountSummary</code> event to receive the results.</remarks>
+        /// <param name="group">group ID (UUID)</param>
         /// <param name="intervalDays">How long of an interval</param>
         /// <param name="currentInterval">Which interval (0 for current, 1 for last)</param>
         public void RequestGroupAccountSummary(LLUUID group, int intervalDays, int currentInterval)
@@ -793,9 +787,7 @@ namespace libsecondlife
             Client.Network.SendPacket(p);
         }
 
-        /// <summary>
-        /// Invites a user to a group
-        /// </summary>
+        /// <summary>Invites a user to a group</summary>
         /// <param name="group">The group to invite to</param>
         /// <param name="roles">A list of roles to invite a person to</param>
         /// <param name="personkey">Key of person to invite</param>
@@ -822,10 +814,8 @@ namespace libsecondlife
             Client.Network.SendPacket(igp);
         }
 
-        /// <summary>
-        /// Set a group as the current active group
-        /// </summary>
-        /// <param name="id"></param>
+        /// <summary>Set a group as the current active group</summary>
+        /// <param name="id">group ID (UUID)</param>
         public void ActivateGroup(LLUUID id)
         {
             ActivateGroupPacket activate = new ActivateGroupPacket();
@@ -836,11 +826,9 @@ namespace libsecondlife
             Client.Network.SendPacket(activate);
         }
 
-        /// <summary>
-        /// Change the role that determines your active title
-        /// </summary>
-        /// <param name="group">Group to use</param>
-        /// <param name="role">Role to change to</param>
+        /// <summary>Change the role that determines your active title</summary>
+        /// <param name="group">Group ID to use</param>
+        /// <param name="role">Role ID to change to</param>
         public void ActivateTitle(LLUUID group, LLUUID role)
         {
             GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
@@ -852,10 +840,8 @@ namespace libsecondlife
             Client.Network.SendPacket(gtu);
         }
 
-        /// <summary>
-        /// Set this avatar's tier contribution
-        /// </summary>
-        /// <param name="group">Group to change tier in</param>
+        /// <summary>Set this avatar's tier contribution</summary>
+        /// <param name="group">Group ID to change tier in</param>
         /// <param name="contribution">amount of tier to donate</param>
         public void SetGroupContribution(LLUUID group, int contribution)
         {
@@ -868,10 +854,9 @@ namespace libsecondlife
             Client.Network.SendPacket(sgp);
         }
 
-        /// <summary>
-        /// Request to join a group
-        /// </summary>
-        /// <param name="id">Group ID to join</param>
+        /// <summary>Request to join a group</summary>
+        /// <remarks>Subscribe to <code>OnGroupJoined</code> event for confirmation.</remarks>
+        /// <param name="id">group ID (UUID) to join.</param>
         public void RequestJoinGroup(LLUUID id)
         {
             JoinGroupRequestPacket join = new JoinGroupRequestPacket();
@@ -887,6 +872,7 @@ namespace libsecondlife
         /// Request to create a new group. If the group is successfully
         /// created, L$100 will automatically be deducted
         /// </summary>
+        /// <remarks>Subscribe to <code>OnGroupCreated</code> event to receive confirmation.</remarks>
         /// <param name="group">Group struct containing the new group info</param>
         public void RequestCreateGroup(Group group)
         {
@@ -909,10 +895,9 @@ namespace libsecondlife
             Client.Network.SendPacket(cgrp);
         }
 
-        /// <summary>
-        /// Update a group's profile and other information
-        /// </summary>
-        /// <param name="group">Group struct to update</param>
+        /// <summary>Update a group's profile and other information</summary>
+        /// <param name="id">Groups ID (UUID) to update.</param>
+        /// <param name="group">Group struct to update.</param>
         public void UpdateGroup(LLUUID id, Group group)
         {
             libsecondlife.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
@@ -934,10 +919,8 @@ namespace libsecondlife
             Client.Network.SendPacket(cgrp);
         }
 
-        /// <summary>
-        /// Eject a user from a group
-        /// </summary>
-        /// <param name="group">Group to eject the user from</param>
+        /// <summary>Eject a user from a group</summary>
+        /// <param name="group">Group ID to eject the user from</param>
         /// <param name="member">Avatar's key to eject</param>
         public void EjectUser(LLUUID group, LLUUID member)
         {
@@ -956,9 +939,7 @@ namespace libsecondlife
             Client.Network.SendPacket(eject);
         }
 
-        /// <summary>
-        /// Update role information
-        /// </summary>
+        /// <summary>Update role information</summary>
         /// <param name="group">Group to update</param>
         /// <param name="role">Role to update</param>
         public void UpdateRole(LLUUID group, GroupRole role)
@@ -976,10 +957,8 @@ namespace libsecondlife
             Client.Network.SendPacket(gru);
         }
 
-        /// <summary>
-        /// Create a new role
-        /// </summary>
-        /// <param name="group">Group to update</param>
+        /// <summary>Create a new group role</summary>
+        /// <param name="group">Group ID to update</param>
         /// <param name="role">Role to create</param>
         public void CreateRole(LLUUID group, GroupRole role)
         {
@@ -996,12 +975,10 @@ namespace libsecondlife
             Client.Network.SendPacket(gru);
         }
 
-        /// <summary>
-        /// Remove an avatar from a role
-        /// </summary>
-        /// <param name="group">Group to update</param>
-        /// <param name="role">Role to be removed from</param>
-        /// <param name="member">Avatar to remove</param>
+        /// <summary>Remove an avatar from a role</summary>
+        /// <param name="group">Group ID to update</param>
+        /// <param name="role">Role ID to be removed from</param>
+        /// <param name="member">Avatar's Key to remove</param>
         public void RemoveFromRole(LLUUID group, LLUUID role, LLUUID member)
         {
             libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
@@ -1018,12 +995,10 @@ namespace libsecondlife
             Client.Network.SendPacket(grc);
         }
 
-        /// <summary>
-        /// Assign an avatar to a role
-        /// </summary>
-        /// <param name="group">Group to update</param>
-        /// <param name="role">Role to assign to</param>
-        /// <param name="member">Avatar to assign</param>
+        /// <summary>Assign an avatar to a role</summary>
+        /// <param name="group">Group ID to update</param>
+        /// <param name="role">Role ID to assign to</param>
+        /// <param name="member">Avatar's ID to assign to role</param>
         public void AddToRole(LLUUID group, LLUUID role, LLUUID member)
         {
             libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
@@ -1040,11 +1015,9 @@ namespace libsecondlife
             Client.Network.SendPacket(grc);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="group"></param>
-        /// <param name="notice"></param>
+        /// <summary>Send out a group notice</summary>
+        /// <param name="group">Group ID to update</param>
+        /// <param name="notice"><code>GroupNotice</code> structure containing notice data</param>
         public void SendGroupNotice(LLUUID group, GroupNotice notice)
         {
             Client.Self.InstantMessage(Client.Self.Name, group, notice.Subject + "|" + notice.Message,
@@ -1052,11 +1025,9 @@ namespace libsecondlife
                 LLVector3.Zero, LLUUID.Zero, notice.SerializeAttachment());
         }
 
-        /// <summary>
-        /// Start a group proposal (vote)
-        /// </summary>
-        /// <param name="group">The group to send it to</param>
-        /// <param name="prop">The proposal to start</param>
+        /// <summary>Start a group proposal (vote)</summary>
+        /// <param name="group">The Group ID to send proposal to</param>
+        /// <param name="prop"><code>GroupProposal</code> structure containing the proposal</param>
         public void StartProposal(LLUUID group, GroupProposal prop)
         {
             StartGroupProposalPacket p = new StartGroupProposalPacket();
@@ -1070,9 +1041,8 @@ namespace libsecondlife
             Client.Network.SendPacket(p);
         }
 
-        /// <summary>
-        /// Request to leave a group
-        /// </summary>
+        /// <summary>Request to leave a group</summary>
+        /// <remarks>Subscribe to <code>OnGroupLeft</code> event to receive confirmation</remarks>
         /// <param name="groupID">The group to leave</param>
         public void LeaveGroup(LLUUID groupID)
         {
