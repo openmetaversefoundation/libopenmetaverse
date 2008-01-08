@@ -735,11 +735,6 @@ namespace libsecondlife
         /// </summary>
         public InternalDictionary<LLUUID, List<LLUUID>> GroupChatSessions = new InternalDictionary<LLUUID, List<LLUUID>>();
 
-        /// <summary>
-        /// Dictionary to keep track of IM Sessions instead of using the target avatars UUID as the sessionID.
-        /// </summary>
-        public InternalDictionary<LLUUID, LLUUID> IMSessions = new InternalDictionary<LLUUID, LLUUID>();
-
         #region Properties
 
         /// <summary>Your (client) avatar UUID</summary>
@@ -1001,7 +996,7 @@ namespace libsecondlife
         /// <param name="message">Text message being sent</param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(Name, target, message, LLUUID.Random(),
+            InstantMessage(Name, target, message, AgentID.Equals(target) ? AgentID : target ^ AgentID,
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.SimPosition,
                 LLUUID.Zero, new byte[0]);
         }
@@ -1068,11 +1063,8 @@ namespace libsecondlife
             {
                 ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
 
-                LLUUID tmpSess;
-                if (!IMSessions.TryGetValue(target, out tmpSess))
-                    IMSessions.SafeAdd(target, imSessionID);
-                else
-                    imSessionID = tmpSess;
+                if (imSessionID.Equals(LLUUID.Zero) || imSessionID.Equals(AgentID))
+                    imSessionID = AgentID.Equals(target) ? AgentID : target ^ AgentID;
 
                 im.AgentData.AgentID = Client.Self.AgentID;
                 im.AgentData.SessionID = Client.Self.SessionID;
@@ -2119,9 +2111,6 @@ namespace libsecondlife
                 	message.Message = Helpers.FieldToUTF8String(im.MessageBlock.Message);
                 	message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
                 	message.BinaryBucket = im.MessageBlock.BinaryBucket;
-
-                    if (!IMSessions.ContainsKey(message.FromAgentID))
-                        IMSessions.SafeAdd(message.FromAgentID, message.IMSessionID);
 
                 	try { OnInstantMessage(message, simulator); }
                 	catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
