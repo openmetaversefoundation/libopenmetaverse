@@ -1067,14 +1067,13 @@ namespace libsecondlife
             if (target != LLUUID.Zero)
             {
                 ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
-                Console.WriteLine("DEBUG: {0}", imSessionID);
+
                 LLUUID tmpSess;
                 if (!IMSessions.TryGetValue(target, out tmpSess))
                     IMSessions.SafeAdd(target, imSessionID);
                 else
                     imSessionID = tmpSess;
 
-                Console.WriteLine("DEBUG: {0}", imSessionID);
                 im.AgentData.AgentID = Client.Self.AgentID;
                 im.AgentData.SessionID = Client.Self.SessionID;
 
