@@ -573,6 +573,18 @@ namespace libsecondlife
             loginLLSD["options"] = optionsLLSD;
 
             // Make the CAPS POST for login
+            Uri loginUri;
+            try
+            {
+                loginUri = new Uri(loginParams.URI);
+            }
+            catch (Exception ex)
+            {
+                Client.Log(String.Format("Failed to parse login URI {0}, {1}", loginParams.URI, ex.Message),
+                    Helpers.LogLevel.Error);
+                return;
+            }
+
             CapsClient loginRequest = new CapsClient(new Uri(loginParams.URI));
             loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
             loginRequest.UserData = CurrentContext;
