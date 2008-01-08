@@ -68,7 +68,7 @@ namespace SLAccountant
 		private System.Windows.Forms.ColumnHeader colUuid;
 
 		// libsecondlife instance
-		private SecondLife client;
+		private SecondLife Client;
 
 		public frmSLAccountant()
 		{
@@ -83,7 +83,7 @@ namespace SLAccountant
 		/// </summary>
 		protected override void Dispose( bool disposing )
 		{
-			client.Network.Logout();
+			Client.Network.Logout();
 			
 			if( disposing )
 			{
@@ -392,14 +392,67 @@ namespace SLAccountant
 
 		private void frmSLAccountant_Load(object sender, System.EventArgs e)
 		{
-			client = new SecondLife();
+			Client = new SecondLife();
+
+            Client.Settings.MULTIPLE_SIMS = false;
+
+            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
 			// Install our packet handlers
-            client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
-            client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleHandler));
+            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
+            Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleHandler));
 
 			grpLogin.Enabled = true;
 		}
+
+        private void Network_OnLogin(LoginStatus login, string message)
+        {
+            if (login == LoginStatus.Success)
+            {
+                Random rand = new Random();
+
+                // AgentSetAppearance
+                AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
+                appearance.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
+                // Setup some random appearance values
+                for (int i = 0; i < 218; i++)
+                {
+                    appearance.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
+                    appearance.VisualParam[i].ParamValue = (byte)rand.Next(255);
+                }
+                appearance.AgentData.AgentID = Client.Self.AgentID;
+                appearance.AgentData.SessionID = Client.Self.SessionID;
+                appearance.AgentData.SerialNum = 1;
+                appearance.AgentData.Size = new LLVector3(0.45F, 0.6F, 1.831094F);
+                appearance.ObjectData.TextureEntry = new byte[0];
+
+                Client.Network.SendPacket(appearance);
+
+                // Request our balance
+                Client.Self.RequestBalance();
+
+                BeginInvoke(
+                    (MethodInvoker)delegate()
+                    {
+                        lblName.Text = Client.ToString();
+                        txtFind.Enabled = cmdFind.Enabled = true;
+                        txtTransfer.Enabled = cmdTransfer.Enabled = true;
+                    });
+            }
+            else if (login == LoginStatus.Failed)
+            {
+                BeginInvoke(
+                    (MethodInvoker)delegate()
+                    {
+                        MessageBox.Show(this, "Error logging in: " + Client.Network.LoginMessage);
+                        cmdConnect.Text = "Connect";
+                        txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
+                        txtFind.Enabled = cmdFind.Enabled = false;
+                        lblName.Text = lblBalance.Text = String.Empty;
+                        txtTransfer.Enabled = cmdTransfer.Enabled = false;
+                    });
+            }
+        }
 
 		private void cmdConnect_Click(object sender, System.EventArgs e)
 		{
@@ -408,49 +461,13 @@ namespace SLAccountant
 				cmdConnect.Text = "Disconnect";
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-				if (client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, 
-                    "accountant", "jhurliman@metaverseindustries.com"))
-				{
-					Random rand = new Random();
-					
-					lblName.Text = client.ToString();
-
-                    // AgentSetAppearance
-                    AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
-                    appearance.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
-                    // Setup some random appearance values
-                    for (int i = 0; i < 218; i++)
-                    {
-                        appearance.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
-                        appearance.VisualParam[i].ParamValue = (byte)rand.Next(255);
-                    }
-                    appearance.AgentData.AgentID = client.Self.AgentID;
-                    appearance.AgentData.SessionID = client.Self.SessionID;
-                    appearance.AgentData.SerialNum = 1;
-                    appearance.AgentData.Size = new LLVector3(0.45F, 0.6F, 1.831094F);
-                    appearance.ObjectData.TextureEntry = new byte[0];
-
-                    client.Network.SendPacket(appearance);
-
-                    // Request our balance
-                    client.Self.RequestBalance();
-
-					txtFind.Enabled = cmdFind.Enabled = true;
-					txtTransfer.Enabled = cmdTransfer.Enabled = true;
-				}
-				else
-				{
-					MessageBox.Show(this, "Error logging in: " + client.Network.LoginMessage);
-					cmdConnect.Text = "Connect";
-					txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
-					txtFind.Enabled = cmdFind.Enabled = false;
-					lblName.Text = lblBalance.Text = "";
-					txtTransfer.Enabled = cmdTransfer.Enabled = false;
-				}
+                LoginParams loginParams = Client.Network.DefaultLoginParams(txtFirstName.Text, txtLastName.Text,
+                    txtPassword.Text, "slaccountant", "1.0.0");
+                Client.Network.BeginLogin(loginParams);
 			}
 			else
 			{
-				client.Network.Logout();
+				Client.Network.Logout();
 				cmdConnect.Text = "Connect";
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
 				txtFind.Enabled = cmdFind.Enabled = false;
@@ -464,15 +481,15 @@ namespace SLAccountant
 			lstFind.Items.Clear();
 
             DirFindQueryPacket query = new DirFindQueryPacket();
-            query.AgentData.AgentID = client.Self.AgentID;
-            query.AgentData.SessionID = client.Self.SessionID;
+            query.AgentData.AgentID = Client.Self.AgentID;
+            query.AgentData.SessionID = Client.Self.SessionID;
             query.QueryData.QueryFlags = 1;
             query.QueryData.QueryID = LLUUID.Random();
             query.QueryData.QueryStart = 0;
             query.QueryData.QueryText = Helpers.StringToField(txtFind.Text);
             query.Header.Reliable = true;
 
-            client.Network.SendPacket(query);
+            Client.Network.SendPacket(query);
 		}
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)
@@ -496,7 +513,7 @@ namespace SLAccountant
 				return;
 			}
 			
-			client.Self.GiveAvatarMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
+			Client.Self.GiveAvatarMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
 			    amount, "SLAccountant payment");
 		}
 	}

@@ -488,8 +488,8 @@ namespace libsecondlife
                 throw new Exception("Login already in progress");
 
             LoginEvent.Reset();
-
             CurrentContext = loginParams;
+
             BeginLogin();
         }
 
@@ -598,16 +598,18 @@ namespace libsecondlife
 
             Client.DebugLog("Login status: " + status.ToString() + ": " + message);
 
-            if (OnLogin != null)
-            {
-                try { OnLogin(status, message); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-            }
-
+            // If we reached a login resolution trigger the event
             if (status == LoginStatus.Success || status == LoginStatus.Failed)
             {
                 CurrentContext = null;
                 LoginEvent.Set();
+            }
+
+            // Fire the login status callback
+            if (OnLogin != null)
+            {
+                try { OnLogin(status, message); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 

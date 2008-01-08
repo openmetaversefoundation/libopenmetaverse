@@ -26,6 +26,8 @@ namespace Heightmap
             LastName = lastName;
             Password = password;
 
+            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+
             // Throttle land up and other things down
             Client.Throttle.Cloud = 0;
             Client.Throttle.Land = 1000000;
@@ -58,24 +60,31 @@ namespace Heightmap
             InitializeComponent();
         }
 
-        private void frmHeightmap_Load(object sender, EventArgs e)
+        private void Network_OnLogin(LoginStatus login, string message)
         {
-            Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
-            // Only needed so we can do lookups with TerrainHeightAtPoint
-            Client.Settings.STORE_LAND_PATCHES = true;
-
-            if (!Client.Network.Login(FirstName, LastName, Password, "Heightmap", "jhurliman@wsu.edu"))
+            if (login == LoginStatus.Success)
+            {
+                UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
+                UpdateTimer.Start();
+            }
+            else if (login == LoginStatus.Failed)
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginMessage);
                 Console.ReadKey();
                 this.Close();
                 return;
             }
-            else
-            {
-                UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
-                UpdateTimer.Start();
-            }
+        }
+
+        private void frmHeightmap_Load(object sender, EventArgs e)
+        {
+            Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
+            // Only needed so we can do lookups with TerrainHeightAtPoint
+            Client.Settings.STORE_LAND_PATCHES = true;
+
+            LoginParams loginParams = Client.Network.DefaultLoginParams(FirstName, LastName, Password, "Heightmap",
+                "1.0.0");
+            Client.Network.BeginLogin(loginParams);
         }
 
         private void box_MouseUp(object sender, MouseEventArgs e)

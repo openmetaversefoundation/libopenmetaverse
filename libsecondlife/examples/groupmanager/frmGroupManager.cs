@@ -26,6 +26,7 @@ namespace groupmanager
             Client.Throttle.Wind = 0;
             Client.Throttle.Cloud = 0;
 
+            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
             Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
             
@@ -66,19 +67,9 @@ namespace groupmanager
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                if (Client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "GroupManager",
-                    "jhurliman@metaverseindustries.com"))
-                {
-                    groupBox.Enabled = true;
-                }
-                else
-                {
-                    MessageBox.Show(this, "Error logging in: " + Client.Network.LoginMessage);
-                    cmdConnect.Text = "Connect";
-                    txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
-                    groupBox.Enabled = false;
-                    lstGroups.Items.Clear();
-                }
+                LoginParams loginParams = Client.Network.DefaultLoginParams(txtFirstName.Text, txtLastName.Text,
+                    txtPassword.Text, "GroupManager", "1.0.0");
+                Client.Network.BeginLogin(loginParams);
             }
 			else
 			{
@@ -116,6 +107,26 @@ namespace groupmanager
         #endregion GUI Callbacks
 
         #region Network Callbacks
+
+        private void Network_OnLogin(LoginStatus login, string message)
+        {
+            if (login == LoginStatus.Success)
+            {
+                groupBox.Enabled = true;
+            }
+            else if (login == LoginStatus.Failed)
+            {
+                BeginInvoke(
+                    (MethodInvoker)delegate()
+                    {
+                        MessageBox.Show(this, "Error logging in: " + Client.Network.LoginMessage);
+                        cmdConnect.Text = "Connect";
+                        txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
+                        groupBox.Enabled = false;
+                        lstGroups.Items.Clear();
+                    });
+            }
+        }
 
         private void Groups_OnCurrentGroups(Dictionary<LLUUID, Group> groups)
         {
