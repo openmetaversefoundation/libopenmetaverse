@@ -142,7 +142,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ObjectPoolBase.cs" />
-    <Compile Include="ObjectTracker.cs" />
     <Compile Include="OpenJPEG.cs" />
     <Compile Include="ParcelManager.cs" />
     <Compile Include="ParticleSystem.cs">

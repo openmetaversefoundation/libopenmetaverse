@@ -4,69 +4,72 @@ using System.ComponentModel;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// Particle system specific enumerators, flags and methods.
+    /// </summary>
     public partial class Primitive
     {
         /// <summary>
-        /// 
+        /// Complete structure for the particle system
         /// </summary>
         public struct ParticleSystem
         {
             /// <summary>
-            /// 
+            /// Particle source pattern
             /// </summary>
             public enum SourcePattern : byte
             {
-                /// <summary></summary>
+                /// <summary>None</summary>
                 None = 0,
-                /// <summary></summary>
+                /// <summary>Drop particles at source position with no force</summary>
                 Drop = 0x01,
-                /// <summary></summary>
+                /// <summary>"Explode" particles in all directions</summary>
                 Explode = 0x02,
-                /// <summary></summary>
+                /// <summary>Particles shoot across a 2D area</summary>
                 Angle = 0x04,
-                /// <summary></summary>
+                /// <summary>Particles shoot across a 3D Cone</summary>
                 AngleCone = 0x08,
-                /// <summary></summary>
+                /// <summary>Inverse of AngleCone (shoot particles everywhere except the 3D cone defined</summary>
                 AngleConeEmpty = 0x10
             }
 
             /// <summary>
-            /// 
+            /// Particle Data Flags
             /// </summary>
             [Flags]
             public enum ParticleDataFlags : uint
             {
-                /// <summary></summary>
+                /// <summary>None</summary>
                 None = 0,
-                /// <summary></summary>
+                /// <summary>Interpolate color and alpha from start to end</summary>
                 InterpColor = 0x001,
-                /// <summary></summary>
+                /// <summary>Interpolate scale from start to end</summary>
                 InterpScale = 0x002,
-                /// <summary></summary>
+                /// <summary>Bounce particles off sourc Z height</summary>
                 Bounce = 0x004,
-                /// <summary></summary>
+                /// <summary>velocity of particles is dampened toward the simulators wind</summary>
                 Wind = 0x008,
-                /// <summary></summary>
+                /// <summary>Particles follow the source</summary>
                 FollowSrc = 0x010,
-                /// <summary></summary>
+                /// <summary>Particles point towards the direction of source's velocity</summary>
                 FollowVelocity = 0x020,
-                /// <summary></summary>
+                /// <summary>Target of the particles</summary>
                 TargetPos = 0x040,
-                /// <summary></summary>
+                /// <summary>Particles are sent in a straight line</summary>
                 TargetLinear = 0x080,
-                /// <summary></summary>
+                /// <summary>Particles emit a glow</summary>
                 Emissive = 0x100,
-                /// <summary></summary>
+                /// <summary>used for point/grab/touch</summary>
                 Beam = 0x200
             }
 
             /// <summary>
-            /// 
+            /// Particle Flags Enum
             /// </summary>
             [Flags]
             public enum ParticleFlags : uint
             {
-                /// <summary></summary>
+                /// <summary>None</summary>
                 None = 0,
                 /// <summary>Acceleration and velocity for particles are
                 /// relative to the object rotation</summary>
@@ -77,40 +80,64 @@ namespace libsecondlife
 
 
             public uint CRC;
-            /// <summary></summary>
+            /// <summary>Particle Flags</summary>
             /// <remarks>There appears to be more data packed in to this area
             /// for many particle systems. It doesn't appear to be flag values
             /// and serialization breaks unless there is a flag for every
             /// possible bit so it is left as an unsigned integer</remarks>
             public uint PartFlags;
+            /// <summary><seealso cref="T:SourcePattern"/> pattern of particles</summary>
             public SourcePattern Pattern;
+            /// <summary>Maximimum age (in seconds) particle will be displayed (max 30 seconds)</summary>
             public float MaxAge;
+            /// <summary>Number of seconds, from when the particle source comes into view, 
+            /// or the particle system's creation, that the object will emits particles; 
+            /// after this time period no more particles are emitted</summary>
             public float StartAge;
+            /// <summary>Area in radians that specify where particles will not be created</summary>
             public float InnerAngle;
+            /// <summary>Area in radians that will be filled with particles</summary>
             public float OuterAngle;
+            /// <summary>How often particle burts will occur in seconds</summary>
             public float BurstRate;
+            /// <summary>Number of meters from center of sourcewhere particles are created</summary>
             public float BurstRadius;
+            /// <summary>Minimum speed of particle creation</summary>
             public float BurstSpeedMin;
+            /// <summary>Maximum speed of particle creation</summary>
             public float BurstSpeedMax;
+            /// <summary>How many particles are generated per burst</summary>
             public byte BurstPartCount;
+            /// <summary>X/Y/Z Velocity in which particles are emitted</summary>
             public LLVector3 AngularVelocity;
+            /// <summary>X/Y/Z Acceleration in which particles are emitted</summary>
             public LLVector3 PartAcceleration;
+            /// <summary>Key of texture used in particle</summary>
             public LLUUID Texture;
+            /// <summary>Key of target</summary>
             public LLUUID Target;
+            /// <summary>Flags of particle from <seealso cref="T:ParticleDataFlags"/></summary>
             public ParticleDataFlags PartDataFlags;
+            /// <summary>Max Age particle system will emit particles for</summary>
             public float PartMaxAge;
+            /// <summary>Starting color of particles</summary>
             public LLColor PartStartColor;
+            /// <summary>Ending color of particles</summary>
             public LLColor PartEndColor;
+            /// <summary>Starting X size of particle (Min 0, Max 4)</summary>
             public float PartStartScaleX;
+            /// <summary>Starting Y size of particle (Min 0, Max 4)</summary>
             public float PartStartScaleY;
+            /// <summary>Ending X size of particle (Min 0, Max 4)</summary>
             public float PartEndScaleX;
+            /// <summary>Ending Y size of particle (Min 0, Max 4)</summary>
             public float PartEndScaleY;
 
             /// <summary>
-            /// 
+            /// Decodes a byte[] array into a ParticleSystem Object
             /// </summary>
-            /// <param name="data"></param>
-            /// <param name="pos"></param>
+            /// <param name="data">ParticleSystem object</param>
+            /// <param name="pos">Start position for BitPacker</param>
             public ParticleSystem(byte[] data, int pos)
             {
                 // TODO: Not sure exactly how many bytes we need here, so partial 
@@ -176,9 +203,9 @@ namespace libsecondlife
             }
 
             /// <summary>
-            /// 
+            /// Generate byte[] array from particle data
             /// </summary>
-            /// <returns></returns>
+            /// <returns>Byte array</returns>
             public byte[] GetBytes()
             {
                 byte[] bytes = new byte[86];

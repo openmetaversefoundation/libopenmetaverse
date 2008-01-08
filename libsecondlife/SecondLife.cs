@@ -39,8 +39,8 @@ namespace libsecondlife
         /// Callback used for client apps to receive log messages from
         /// libsecondlife
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="level"></param>
+        /// <param name="message">Text sent to log</param>
+        /// <param name="level">The severity of the log entry from <seealso cref="Helpers.LogLevel"/></param>
         public delegate void LogCallback(string message, Helpers.LogLevel level);
 
 
@@ -168,30 +168,32 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Static log function for when Client data is not available
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="level"></param>
+        /// <param name="message">Text sent to log</param>
+        /// <param name="level">The severity of the log entry from <seealso cref="Helpers.LogLevel"/></param>
         public static void LogStatic(string message, Helpers.LogLevel level)
         {
             Console.WriteLine("{0}: {1}", level.ToString().ToUpper(), message);
         }
 
         /// <summary>
-        /// 
+        /// Static logging function for <seealso cref="T:System.Exception"/> handling
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="level"></param>
-        /// <param name="exception"></param>
+        /// <param name="message">Text sent to log</param>
+        /// <param name="level">The severity of the log entry from <seealso cref="Helpers.LogLevel"/></param>
+        /// <param name="exception">The <seealso cref="T:System.Exception"/> thrown</param>
         public static void LogStatic(string message, Helpers.LogLevel level, Exception exception)
         {
             Console.WriteLine("{0} [libsecondlife]: {1} ({2})", level.ToString().ToUpper(), message, exception);
         }
 
         /// <summary>
-        /// 
+        /// If the library is compiled with DEBUG defined, and SecondLife.Debug
+        /// is true, either an event will be fired for the debug message or 
+        /// it will be written to the console
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">The debug message</param>
         [System.Diagnostics.Conditional("DEBUG")]
         public static void DebugLogStatic(string message)
         {
