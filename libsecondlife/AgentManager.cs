@@ -735,6 +735,11 @@ namespace libsecondlife
         /// </summary>
         public InternalDictionary<LLUUID, List<LLUUID>> GroupChatSessions = new InternalDictionary<LLUUID, List<LLUUID>>();
 
+        /// <summary>
+        /// Dictionary to keep track of IM Sessions instead of using the target avatars UUID as the sessionID.
+        /// </summary>
+        public InternalDictionary<LLUUID, LLUUID> IMSessions = new InternalDictionary<LLUUID, LLUUID>();
+
         #region Properties
 
         /// <summary>Your (client) avatar UUID</summary>
@@ -996,7 +1001,7 @@ namespace libsecondlife
         /// <param name="message">Text message being sent</param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(Name, target, message, target,
+            InstantMessage(Name, target, message, LLUUID.Random(),
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.SimPosition,
                 LLUUID.Zero, new byte[0]);
         }
@@ -1051,8 +1056,8 @@ namespace libsecondlife
         /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
         /// <param name="dialog">Type of instant message to send</param>
         /// <param name="offline">Whether to IM offline avatars as well</param>
-        /// <param name="position"></param>
-        /// <param name="regionID"></param>
+        /// <param name="position">Senders Position</param>
+        /// <param name="regionID">RegionID Sender is In</param>
         /// <param name="binaryBucket">Packed binary data that is specific to
         /// the dialog type</param>
         public void InstantMessage(string fromName, LLUUID target, string message, LLUUID imSessionID, 
@@ -1062,7 +1067,14 @@ namespace libsecondlife
             if (target != LLUUID.Zero)
             {
                 ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+                Console.WriteLine("DEBUG: {0}", imSessionID);
+                LLUUID tmpSess;
+                if (!IMSessions.TryGetValue(target, out tmpSess))
+                    IMSessions.SafeAdd(target, imSessionID);
+                else
+                    imSessionID = tmpSess;
 
+                Console.WriteLine("DEBUG: {0}", imSessionID);
                 im.AgentData.AgentID = Client.Self.AgentID;
                 im.AgentData.SessionID = Client.Self.SessionID;
 
@@ -2108,7 +2120,10 @@ namespace libsecondlife
                 	message.Message = Helpers.FieldToUTF8String(im.MessageBlock.Message);
                 	message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
                 	message.BinaryBucket = im.MessageBlock.BinaryBucket;
-                	
+
+                    if (!IMSessions.ContainsKey(message.FromAgentID))
+                        IMSessions.SafeAdd(message.FromAgentID, message.IMSessionID);
+
                 	try { OnInstantMessage(message, simulator); }
                 	catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }

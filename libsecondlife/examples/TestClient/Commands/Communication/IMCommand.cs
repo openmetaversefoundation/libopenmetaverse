@@ -46,7 +46,7 @@ namespace libsecondlife.TestClient
             {
                 LLUUID id = Name2Key[ToAvatarName.ToLower()];
 
-                Client.Self.InstantMessage(id, message, id);
+                Client.Self.InstantMessage(id, message);
                 return "Instant Messaged " + id.ToString() + " with message: " + message;
             }
             else
