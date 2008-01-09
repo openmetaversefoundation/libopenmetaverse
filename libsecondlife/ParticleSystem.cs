@@ -21,7 +21,7 @@ namespace libsecondlife
             {
                 /// <summary>None</summary>
                 None = 0,
-                /// <summary>Drop particles at source position with no force</summary>
+                /// <summary>Drop particles from source position with no force</summary>
                 Drop = 0x01,
                 /// <summary>"Explode" particles in all directions</summary>
                 Explode = 0x02,
@@ -45,7 +45,7 @@ namespace libsecondlife
                 InterpColor = 0x001,
                 /// <summary>Interpolate scale from start to end</summary>
                 InterpScale = 0x002,
-                /// <summary>Bounce particles off sourc Z height</summary>
+                /// <summary>Bounce particles off particle sources Z height</summary>
                 Bounce = 0x004,
                 /// <summary>velocity of particles is dampened toward the simulators wind</summary>
                 Wind = 0x008,
@@ -88,49 +88,57 @@ namespace libsecondlife
             public uint PartFlags;
             /// <summary><seealso cref="T:SourcePattern"/> pattern of particles</summary>
             public SourcePattern Pattern;
-            /// <summary>Maximimum age (in seconds) particle will be displayed (max 30 seconds)</summary>
+            /// <summary>A <see langword="float"/> representing the maximimum age (in seconds) particle will be displayed</summary>
+            /// <remarks>Maximum value is 30 seconds</remarks>
             public float MaxAge;
-            /// <summary>Number of seconds, from when the particle source comes into view, 
+            /// <summary>A <see langword="float"/> representing the number of seconds, 
+            /// from when the particle source comes into view, 
             /// or the particle system's creation, that the object will emits particles; 
             /// after this time period no more particles are emitted</summary>
             public float StartAge;
-            /// <summary>Area in radians that specify where particles will not be created</summary>
+            /// <summary>A <see langword="float"/> in radians that specifies where particles will not be created</summary>
             public float InnerAngle;
-            /// <summary>Area in radians that will be filled with particles</summary>
+            /// <summary>A <see langword="float"/> in radians that specifies where particles will be created</summary>
             public float OuterAngle;
-            /// <summary>How often particle burts will occur in seconds</summary>
+            /// <summary>A <see langword="float"/> representing the number of seconds between burts.</summary>
             public float BurstRate;
-            /// <summary>Number of meters from center of sourcewhere particles are created</summary>
+            /// <summary>A <see langword="float"/> representing the number of meters
+            /// around the center of the source where particles will be created.</summary>
             public float BurstRadius;
-            /// <summary>Minimum speed of particle creation</summary>
+            /// <summary>A <see langword="float"/> representing in seconds, the minimum speed between bursts of new particles 
+            /// being emitted</summary>
             public float BurstSpeedMin;
-            /// <summary>Maximum speed of particle creation</summary>
+            /// <summary>A <see langword="float"/> representing in seconds the maximum speed of new particles being emitted.</summary>
             public float BurstSpeedMax;
-            /// <summary>How many particles are generated per burst</summary>
+            /// <summary>A <see langword="byte"/> representing the maximum number of particles emitted per burst</summary>
             public byte BurstPartCount;
-            /// <summary>X/Y/Z Velocity in which particles are emitted</summary>
+            /// <summary>A <see cref="T:LLVector3"/> which represents the velocity (speed) from the source which particles are emitted</summary>
             public LLVector3 AngularVelocity;
-            /// <summary>X/Y/Z Acceleration in which particles are emitted</summary>
+            /// <summary>A <see cref="T:LLVector3"/> which represents the Acceleration from the source which particles are emitted</summary>
             public LLVector3 PartAcceleration;
-            /// <summary>Key of texture used in particle</summary>
+            /// <summary>The <see cref="T:LLUUID"/> Key of the texture displayed on the particle</summary>
             public LLUUID Texture;
-            /// <summary>Key of target</summary>
+            /// <summary>The <see cref="T:LLUUID"/> Key of the specified target object or avatar particles will follow</summary>
             public LLUUID Target;
             /// <summary>Flags of particle from <seealso cref="T:ParticleDataFlags"/></summary>
             public ParticleDataFlags PartDataFlags;
             /// <summary>Max Age particle system will emit particles for</summary>
             public float PartMaxAge;
-            /// <summary>Starting color of particles</summary>
+            /// <summary>The <see cref="T:LLColor"/> the particle has at the beginning of its lifecycle</summary>
             public LLColor PartStartColor;
-            /// <summary>Ending color of particles</summary>
+            /// <summary>The <see cref="T:LLColor"/> the particle has at the ending of its lifecycle</summary>
             public LLColor PartEndColor;
-            /// <summary>Starting X size of particle (Min 0, Max 4)</summary>
+            /// <summary>A <see langword="float"/> that represents the starting X size of the particle</summary>
+            /// <remarks>Minimum value is 0, maximum value is 4</remarks>
             public float PartStartScaleX;
-            /// <summary>Starting Y size of particle (Min 0, Max 4)</summary>
+            /// <summary>A <see langword="float"/> that represents the starting Y size of the particle</summary>
+            /// <remarks>Minimum value is 0, maximum value is 4</remarks>
             public float PartStartScaleY;
-            /// <summary>Ending X size of particle (Min 0, Max 4)</summary>
+            /// <summary>A <see langword="float"/> that represents the ending X size of the particle</summary>
+            /// <remarks>Minimum value is 0, maximum value is 4</remarks>
             public float PartEndScaleX;
-            /// <summary>Ending Y size of particle (Min 0, Max 4)</summary>
+            /// <summary>A <see langword="float"/> that represents the ending Y size of the particle</summary>
+            /// <remarks>Minimum value is 0, maximum value is 4</remarks>
             public float PartEndScaleY;
 
             /// <summary>
