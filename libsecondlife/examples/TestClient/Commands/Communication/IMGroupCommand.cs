@@ -53,8 +53,9 @@ namespace libsecondlife.TestClient
             }
         }
 
-        void Self_OnGroupChatJoin(LLUUID groupChatSessionID)
+        void Self_OnGroupChatJoin(LLUUID groupChatSessionID, LLUUID tmpSessionID, bool success)
         {
+            if(success)
             WaitForSessionStart.Set();
         }
     }
