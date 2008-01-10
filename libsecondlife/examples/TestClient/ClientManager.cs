@@ -105,13 +105,7 @@ namespace libsecondlife.TestClient
             if (!String.IsNullOrEmpty(account.URI))
                 loginParams.URI = account.URI;
             
-            if (!client.Network.Login(loginParams))
-            {
-                Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                    client.Network.LoginMessage);
-            }
-
-            if (client.Network.Connected)
+            if (client.Network.Login(loginParams))
             {
                 if (account.MasterKey == LLUUID.Zero && !String.IsNullOrEmpty(account.MasterName))
                 {
@@ -134,10 +128,14 @@ namespace libsecondlife.TestClient
                 }
 
                 client.MasterKey = account.MasterKey;
-
                 Clients[client.Self.AgentID] = client;
 
                 Console.WriteLine("Logged in " + client.ToString());
+            }
+            else
+            {
+                Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                    client.Network.LoginMessage);
             }
 
             return client;

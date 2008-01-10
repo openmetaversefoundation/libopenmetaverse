@@ -860,7 +860,7 @@ namespace libsecondlife
 
 		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)
 		{
-			return !(lhs == rhs);
+            return !(lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
 
         public static LLVector3 operator +(LLVector3 lhs, LLVector3 rhs)

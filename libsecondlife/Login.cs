@@ -420,14 +420,14 @@ namespace libsecondlife
         /// <param name="firstName">Account first name</param>
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password</param>
-        /// <param name="userAgent">Client application name and version</param>
-        /// <param name="author">Client application author</param>
+        /// <param name="userAgent">Client application name</param>
+        /// <param name="userVersion">Client application version</param>
         /// <returns>Whether the login was successful or not. On failure the
         /// LoginErrorKey string will contain the error code and LoginMessage
         /// will contain a description of the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string author)
+        public bool Login(string firstName, string lastName, string password, string userAgent, string userVersion)
         {
-            return Login(firstName, lastName, password, userAgent, "last", author);
+            return Login(firstName, lastName, password, userAgent, "last", userVersion);
         }
 
         /// <summary>
@@ -439,17 +439,17 @@ namespace libsecondlife
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password or MD5 hash of the password
         /// such as $1$1682a1e45e9f957dcdf0bb56eb43319c</param>
-        /// <param name="userAgent">Client application name and version</param>
+        /// <param name="userAgent">Client application name</param>
         /// <param name="start">Starting location URI that can be built with
         /// StartLocation()</param>
-        /// <param name="author">Client application author</param>
+        /// <param name="userVersion">Client application version</param>
         /// <returns>Whether the login was successful or not. On failure the
         /// LoginErrorKey string will contain the error code and LoginMessage
         /// will contain a description of the error</returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string start,
-            string author)
+            string userVersion)
         {
-            LoginParams loginParams = DefaultLoginParams(firstName, lastName, password, userAgent, author);
+            LoginParams loginParams = DefaultLoginParams(firstName, lastName, password, userAgent, userVersion);
             loginParams.Start = start;
 
             return Login(loginParams);
