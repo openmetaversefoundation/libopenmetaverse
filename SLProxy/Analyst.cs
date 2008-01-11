@@ -717,7 +717,9 @@ public class Analyst : ProxyPlugin
     // LogPacket: dump a packet to the console
     private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
-        if (logGrep == null || (logGrep != null && Regex.IsMatch(packet.ToString(), logGrep)))
+        string packetText = packet.ToString();
+
+        if (logGrep == null || (logGrep != null && Regex.IsMatch(packetText, logGrep)))
         {
             Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
                      , direction == Direction.Incoming ? "<--" : "-->"
@@ -725,7 +727,7 @@ public class Analyst : ProxyPlugin
                      , packet.Header.Sequence
                      , InterpretOptions(packet.Header.Flags)
                      , Environment.NewLine
-                     , packet
+                     , packetText
                      );
         }
     }

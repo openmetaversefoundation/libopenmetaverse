@@ -2034,11 +2034,13 @@ namespace libsecondlife
         /// <returns></returns>
         public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
         {
-            LLQuaternion ret = new LLQuaternion();
-            ret.W = lhs.W * rhs.W - lhs.X * rhs.X - lhs.Y * rhs.Y - lhs.Z * rhs.Z;
-            ret.X = lhs.W * rhs.X + lhs.X * rhs.W + lhs.Y * rhs.Z - lhs.Z * rhs.Y;
-            ret.Y = lhs.W * rhs.Y + lhs.Y * rhs.W + lhs.Z * rhs.X - lhs.X * rhs.Z;
-            ret.Z = lhs.W * rhs.Z + lhs.Z * rhs.W + lhs.X * rhs.Y - lhs.Y * rhs.X;
+            LLQuaternion ret = new LLQuaternion(
+                rhs.W * lhs.X + rhs.X * lhs.W + rhs.Y * lhs.Z - rhs.Z * lhs.Y,
+                rhs.W * lhs.Y + rhs.Y * lhs.W + rhs.Z * lhs.X - rhs.X * lhs.Z,
+                rhs.W * lhs.Z + rhs.Z * lhs.W + rhs.X * lhs.Y - rhs.Y * lhs.X,
+                rhs.W * lhs.W - rhs.X * lhs.X - rhs.Y * lhs.Y - rhs.Z * lhs.Z
+            );
+
             return ret;
         }
 

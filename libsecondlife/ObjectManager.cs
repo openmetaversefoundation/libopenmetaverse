@@ -2393,9 +2393,8 @@ namespace libsecondlife
                         float adjSeconds = seconds * Client.Network.Simulators[i].Stats.Dilation;
 
                         // Iterate through all of this sims avatars
-                        lock (Client.Network.Simulators[i].ObjectsAvatars.Dictionary)
-                        {
-                            foreach (Avatar avatar in Client.Network.Simulators[i].ObjectsAvatars.Dictionary.Values)
+                        Client.Network.Simulators[i].ObjectsAvatars.ForEach(
+                            delegate(Avatar avatar)
                             {
                                 #region Linear Motion
                                 // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
@@ -2404,16 +2403,15 @@ namespace libsecondlife
                                 {
                                     avatar.Position += (avatar.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
                                         avatar.Acceleration) * adjSeconds;
-                                    avatar.Velocity = avatar.Velocity + avatar.Acceleration * adjSeconds;
+                                    avatar.Velocity += avatar.Acceleration * adjSeconds;
                                 }
                                 #endregion Linear Motion
                             }
-                        }
+                        );
 
                         // Iterate through all of this sims primitives
-                        lock (Client.Network.Simulators[i].ObjectsPrimitives.Dictionary)
-                        {
-                            foreach (Primitive prim in Client.Network.Simulators[i].ObjectsPrimitives.Dictionary.Values)
+                        Client.Network.Simulators[i].ObjectsPrimitives.ForEach(
+                            delegate(Primitive prim)
                             {
                                 if (prim.Joint == Primitive.JointType.Invalid)
                                 {
@@ -2438,8 +2436,8 @@ namespace libsecondlife
                                     if (prim.Acceleration != LLVector3.Zero && prim.Velocity == LLVector3.Zero)
                                     {
                                         prim.Position += (prim.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
-                                        prim.Acceleration) * adjSeconds;
-                                        prim.Velocity = prim.Velocity + prim.Acceleration * adjSeconds;
+                                            prim.Acceleration) * adjSeconds;
+                                        prim.Velocity += prim.Acceleration * adjSeconds;
                                     }
                                     #endregion Linear Motion
                                 }
@@ -2456,7 +2454,7 @@ namespace libsecondlife
                                     Client.Log("Unhandled joint type " + prim.Joint, Helpers.LogLevel.Warning);
                                 }
                             }
-                        }
+                        );
                     }
                 }
 
