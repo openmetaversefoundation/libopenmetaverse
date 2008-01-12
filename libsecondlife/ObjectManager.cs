@@ -1307,8 +1307,8 @@ namespace libsecondlife
                 data.PathEnd = LLObject.UnpackEndCut(block.PathEnd);
                 data.PathScaleX = LLObject.UnpackPathScale(block.PathScaleX);
                 data.PathScaleY = LLObject.UnpackPathScale(block.PathScaleY);
-                data.PathShearX = LLObject.UnpackPathShear(block.PathShearX);
-                data.PathShearY = LLObject.UnpackPathShear(block.PathShearY);
+                data.PathShearX = LLObject.UnpackPathShear((sbyte)block.PathShearX);
+                data.PathShearY = LLObject.UnpackPathShear((sbyte)block.PathShearY);
                 data.PathTwist = LLObject.UnpackPathTwist(block.PathTwist);
                 data.PathTwistBegin = LLObject.UnpackPathTwist(block.PathTwistBegin);
                 data.PathRadiusOffset = LLObject.UnpackPathTwist(block.PathRadiusOffset);
@@ -1981,8 +1981,8 @@ namespace libsecondlife
                             prim.Data.PathEnd = LLObject.UnpackEndCut(pathEnd);
                             prim.Data.PathScaleX = LLObject.UnpackPathScale(block.Data[i++]);
                             prim.Data.PathScaleY = LLObject.UnpackPathScale(block.Data[i++]);
-                            prim.Data.PathShearX = LLObject.UnpackPathShear(block.Data[i++]);
-                            prim.Data.PathShearY = LLObject.UnpackPathShear(block.Data[i++]);
+                            prim.Data.PathShearX = LLObject.UnpackPathShear((sbyte)block.Data[i++]);
+                            prim.Data.PathShearY = LLObject.UnpackPathShear((sbyte)block.Data[i++]);
                             prim.Data.PathTwist = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
                             prim.Data.PathTwistBegin = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
                             prim.Data.PathRadiusOffset = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);

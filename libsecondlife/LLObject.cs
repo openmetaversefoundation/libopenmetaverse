@@ -520,7 +520,7 @@ namespace libsecondlife
             return (float)(200 - pathScale) * SCALE_QUANTA;
         }
 
-        public static float UnpackPathShear(byte pathShear)
+        public static float UnpackPathShear(sbyte pathShear)
         {
             return (float)pathShear * SHEAR_QUANTA;
         }
