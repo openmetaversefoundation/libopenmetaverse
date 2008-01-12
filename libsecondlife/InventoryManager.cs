@@ -67,6 +67,32 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [Flags]
+    public enum InventoryItemFlags : uint
+    {
+        None = 0,
+        VisitedLandmark = 1,
+        /// <summary>If set, indicates rezzed object will have more restrictive permissions masks;
+        /// Which masks will be affected are below</summary>
+        RestrictNextOwner = 0x100,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates BaseMask will be overwritten on Rez</summary>
+        OverwriteBase = 0x010000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates OwnerMask will be overwritten on Rez</summary>
+        OverwriteOwner = 0x020000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates GroupMask will be overwritten on Rez</summary>
+        OverwriteGroup = 0x040000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates EveryoneMask will be overwritten on Rez</summary>
+        OverwriteEveryone = 0x080000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates NextOwnerMask will be overwritten on Rez</summary>
+        OverwriteNextOwner = 0x100000,
+        /// <summary>If set, indicates item is multiple items coalesced into a single item</summary>
+        MultipleObjects = 0x200000
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
     public enum SaleType : byte
     {
         /// <summary>Not for sale</summary>
@@ -143,7 +169,7 @@ namespace libsecondlife
         public bool GroupOwned;
         public int SalePrice;
         public SaleType SaleType;
-        public uint Flags;
+        public InventoryItemFlags Flags;
         /// <summary>Time and date this inventory item was created, stored as
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
@@ -208,7 +234,7 @@ namespace libsecondlife
         public WearableType WearableType
         {
             get { return (WearableType)Flags; }
-            set { Flags = (uint)value; }
+            set { Flags = (InventoryItemFlags)value; }
         }
     }
 
@@ -1332,7 +1358,7 @@ namespace libsecondlife
                 block.CreatorID = item.CreatorID;
                 block.Description = Helpers.StringToField(item.Description);
                 block.EveryoneMask = (uint)item.Permissions.EveryoneMask;
-                block.Flags = item.Flags;
+                block.Flags = (uint)item.Flags;
                 block.FolderID = item.ParentUUID;
                 block.GroupID = item.GroupID;
                 block.GroupMask = (uint)item.Permissions.GroupMask;
@@ -1414,7 +1440,7 @@ namespace libsecondlife
             add.RezData.RayEndIsIntersection = false;
             add.RezData.RezSelected = requestObjectDetails;
             add.RezData.RemoveItem = false;
-            add.RezData.ItemFlags = item.Flags;
+            add.RezData.ItemFlags = (uint)item.Flags;
             add.RezData.GroupMask = (uint)item.Permissions.GroupMask;
             add.RezData.EveryoneMask = (uint)item.Permissions.EveryoneMask;
             add.RezData.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
@@ -1433,7 +1459,7 @@ namespace libsecondlife
             add.InventoryData.TransactionID = queryID;
             add.InventoryData.Type = (sbyte)item.InventoryType;
             add.InventoryData.InvType = (sbyte)item.InventoryType;
-            add.InventoryData.Flags = item.Flags;
+            add.InventoryData.Flags = (uint)item.Flags;
             add.InventoryData.SaleType = (byte)item.SaleType;
             add.InventoryData.SalePrice = item.SalePrice;
             add.InventoryData.Name = Helpers.StringToField(item.Name);
@@ -1497,7 +1523,7 @@ namespace libsecondlife
             update.InventoryData.TransactionID = transactionID;
             update.InventoryData.Type = (sbyte)item.AssetType;
             update.InventoryData.InvType = (sbyte)item.InventoryType;
-            update.InventoryData.Flags = item.Flags;
+            update.InventoryData.Flags = (uint)item.Flags;
             update.InventoryData.SaleType = (byte)item.SaleType;
             update.InventoryData.SalePrice = item.SalePrice;
             update.InventoryData.Name = Helpers.StringToField(item.Name);
@@ -1698,7 +1724,7 @@ namespace libsecondlife
             CRC += (uint)iitem.Permissions.GroupMask; //group_mask;
 
             // The rest of the CRC fields
-            CRC += iitem.Flags; // Flags
+            CRC += (uint)iitem.Flags; // Flags
             CRC += (uint)iitem.InventoryType; // InvType
             CRC += (uint)iitem.AssetType; // Type 
             CRC += (uint)Helpers.DateTimeToUnixTime(iitem.CreationDate); // CreationDate
@@ -2046,7 +2072,7 @@ namespace libsecondlife
                         item.CreationDate = creationDate;
                         item.CreatorID = creatorID;
                         item.Description = desc;
-                        item.Flags = flags;
+                        item.Flags = (InventoryItemFlags)flags;
                         item.GroupID = groupID;
                         item.GroupOwned = groupOwned;
                         item.Name = name;
@@ -2163,7 +2189,7 @@ namespace libsecondlife
                             item.AssetUUID = reply.ItemData[i].AssetID;
                             item.CreationDate = Helpers.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
                             item.Description = Helpers.FieldToUTF8String(reply.ItemData[i].Description);
-                            item.Flags = reply.ItemData[i].Flags;
+                            item.Flags = (InventoryItemFlags)reply.ItemData[i].Flags;
                             item.Name = Helpers.FieldToUTF8String(reply.ItemData[i].Name);
                             item.GroupID = reply.ItemData[i].GroupID;
                             item.GroupOwned = reply.ItemData[i].GroupOwned;
@@ -2299,7 +2325,7 @@ namespace libsecondlife
                 item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
                 item.CreatorID = dataBlock.CreatorID;
                 item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
-                item.Flags = dataBlock.Flags;
+                item.Flags = (InventoryItemFlags)dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
                 item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
@@ -2399,7 +2425,7 @@ namespace libsecondlife
                     item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
                     item.CreatorID = dataBlock.CreatorID;
                     item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
-                    item.Flags = dataBlock.Flags;
+                    item.Flags = (InventoryItemFlags)dataBlock.Flags;
                     item.GroupID = dataBlock.GroupID;
                     item.GroupOwned = dataBlock.GroupOwned;
                     item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
@@ -2458,7 +2484,7 @@ namespace libsecondlife
                 item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
                 item.CreatorID = dataBlock.CreatorID;
                 item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
-                item.Flags = dataBlock.Flags;
+                item.Flags = (InventoryItemFlags)dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
                 item.Name = Helpers.FieldToUTF8String(dataBlock.Name);

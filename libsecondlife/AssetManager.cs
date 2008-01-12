@@ -475,11 +475,17 @@ namespace libsecondlife
         /// <param name="type">Type of the image to download, either a baked
         /// avatar texture or a normal texture</param>
         /// <param name="priority">Priority level of the download. Default is
-        /// <code>1,013,000.0f</code></param>
+        /// <c>1,013,000.0f</c></param>
         /// <param name="discardLevel">Number of quality layers to discard</param>
+        /// <remarks>Sending a priority of 0, and a discardlevel of -1 aborts
+        /// download</remarks>
         public void RequestImage(LLUUID imageID, ImageType type, float priority, int discardLevel)
         {
-            if (!Transfers.ContainsKey(imageID))
+            // allows aborting of download
+            if (Transfers.ContainsKey(imageID) && priority.Equals(0) && discardLevel.Equals(-1))
+                Transfers.Remove(imageID);
+
+            if (!Transfers.ContainsKey(imageID) && !priority.Equals(0) && !discardLevel.Equals(-1))
             {
                 ImageDownload transfer = new ImageDownload();
                 //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.

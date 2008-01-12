@@ -483,7 +483,7 @@ namespace libsecondlife
                     attachmentsPacket.ObjectData[i].AttachmentPt = 0;
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
-                    attachmentsPacket.ObjectData[i].ItemFlags = attachment.Flags;
+                    attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
                     attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
                     attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
                     attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
@@ -498,7 +498,7 @@ namespace libsecondlife
                     attachmentsPacket.ObjectData[i].AttachmentPt = 0;
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
-                    attachmentsPacket.ObjectData[i].ItemFlags = attachment.Flags;
+                    attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
                     attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
                     attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
                     attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
@@ -522,7 +522,7 @@ namespace libsecondlife
         }
 
         public void Attach(LLUUID itemID, LLUUID ownerID, string name, string description,
-            Permissions perms, uint itemFlags, AttachmentPoint attachPoint)
+            Permissions perms, InventoryItemFlags itemFlags, AttachmentPoint attachPoint)
         {
             // TODO: At some point it might be beneficial to have AppearanceManager track what we
             // are currently wearing for attachments to make enumeration and detachment easier
@@ -536,7 +536,7 @@ namespace libsecondlife
             attach.ObjectData.Description = Helpers.StringToField(description);
             attach.ObjectData.EveryoneMask = (uint)perms.EveryoneMask;
             attach.ObjectData.GroupMask = (uint)perms.GroupMask;
-            attach.ObjectData.ItemFlags = itemFlags;
+            attach.ObjectData.ItemFlags = (uint)itemFlags;
             attach.ObjectData.ItemID = itemID;
             attach.ObjectData.Name = Helpers.StringToField(name);
             attach.ObjectData.NextOwnerMask = (uint)perms.NextOwnerMask;
