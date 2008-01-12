@@ -1194,6 +1194,29 @@ namespace libsecondlife
             Client.Network.SendPacket(im);
         }
 
+        /// <summary>
+        /// Reply to script dialog questions. 
+        /// </summary>
+        /// <param name="channel">Channel initial request came on</param>
+        /// <param name="buttonIndex">Index of button you're "clicking"</param>
+        /// <param name="buttonlabel">Label of button you're "clicking"</param>
+        /// <param name="objectID">UUID of Object that sent the request</param>
+        /// <seealso cref="E:OnScriptDialog"/>
+        public void ReplyToScriptDialog(int channel, int buttonIndex, string buttonlabel, LLUUID objectID)
+        {
+            ScriptDialogReplyPacket reply = new ScriptDialogReplyPacket();
+
+            reply.AgentData.AgentID = Client.Self.AgentID;
+            reply.AgentData.SessionID = Client.Self.SessionID;
+
+            reply.Data.ButtonIndex = buttonIndex;
+            reply.Data.ButtonLabel = Helpers.StringToField(buttonlabel);
+            reply.Data.ChatChannel = channel;
+            reply.Data.ObjectID = objectID;
+
+            Client.Network.SendPacket(reply);
+        }
+
         #endregion Chat and instant messages
 
         #region Viewer Effects
@@ -2064,7 +2087,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Reply to script permissions request
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="itemID"></param>
