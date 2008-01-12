@@ -613,6 +613,13 @@ namespace libsecondlife
         /// <param name="parcelMap">64,64 array containing sim position to localID mapping</param>
         public delegate void SimParcelsDownloaded(Simulator simulator, InternalDictionary<int, Parcel> simParcels, int[,] parcelMap);
 
+        /// <summary>
+        /// Fired in response to SelectParcelObjects
+        /// </summary>
+        /// <param name="simulator">simulator the objects are in</param>
+        /// <param name="objectIDs">Local IDs of the selected objects</param>
+        public delegate void ForceSelectObjects(Simulator simulator, List<uint> objectIDs);
+
         #endregion Delegates
 
         #region Events
@@ -629,7 +636,8 @@ namespace libsecondlife
         public event ParcelObjectOwnersListReplyCallback OnPrimOwnersListReply;
         /// <summary></summary>
         public event SimParcelsDownloaded OnSimParcelsDownloaded;
-
+        /// <summary></summary>
+        public event ForceSelectObjects OnParcelSelectedObjects;
         #endregion Events
 
         private SecondLife Client;
@@ -649,6 +657,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new NetworkManager.PacketCallback(ParcelDwellReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelObjectOwnersReply, new NetworkManager.PacketCallback(ParcelObjectOwnersReplyHandler));
+            Client.Network.RegisterCallback(PacketType.ForceObjectSelect, new NetworkManager.PacketCallback(SelectParcelObjectsReplyHandler));
         }
 
         /// <summary>
@@ -1073,6 +1082,43 @@ namespace libsecondlife
             Client.Network.SendPacket(land, simulator);
         }
 
+        /// <summary>
+        /// Sends a request to the simulator to return a list of objects owned by specific owners
+        /// </summary>
+        /// <param name="localID">Simulator local ID of parcel</param>
+        /// <param name="selectType">Owners, Others, Etc</param>
+        /// <param name="ownerIDs">List containing keys of avatars objects to select; 
+        /// if List is null will return Objects of type <c>selectType<c></c></param>
+        /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
+        public void SelectObjects(int localID, ObjectReturnType selectType, List<LLUUID> ownerIDs)
+        {
+            if (OnParcelSelectedObjects != null)
+            {
+                ParcelSelectObjectsPacket select = new ParcelSelectObjectsPacket();
+                select.AgentData.AgentID = Client.Self.AgentID;
+                select.AgentData.SessionID = Client.Self.SessionID;
+
+                select.ParcelData.LocalID = localID;
+                select.ParcelData.ReturnType = (uint)selectType;
+                
+                if (ownerIDs != null)
+                {
+                    select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[ownerIDs.Count];
+
+                    for (int i = 0; i < ownerIDs.Count; i++)
+                    {
+                        select.ReturnIDs[i] = new ParcelSelectObjectsPacket.ReturnIDsBlock();
+                        select.ReturnIDs[i].ReturnID = ownerIDs[i];
+                    }
+                }
+                else
+                {
+                    select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[0];
+                }
+                Client.Network.SendPacket(select);
+            }
+        }
+
         #endregion Public Methods
 
         #region Packet Handlers
@@ -1279,6 +1325,18 @@ namespace libsecondlife
                 }
                 try { OnPrimOwnersListReply(simulator, primOwners); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+
+        }
+
+        private void SelectParcelObjectsReplyHandler(Packet packet, Simulator simulator)
+        {
+            ForceObjectSelectPacket reply = (ForceObjectSelectPacket)packet;
+            List<uint> ObjectIDs = new List<uint>(reply.Data.Length);
+
+            for (int i = 0; i < reply.Data.Length; i++)
+            {
+                ObjectIDs.Add(reply.Data[i].LocalID);
             }
 
         }

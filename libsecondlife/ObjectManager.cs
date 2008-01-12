@@ -1456,6 +1456,10 @@ namespace libsecondlife
                             continue;
                         }
 
+                        // Automatically request ObjectProperties for prim if it was rezzed selected.
+                        if ((prim.Flags & LLObject.ObjectFlags.CreateSelected) == LLObject.ObjectFlags.CreateSelected)
+                            SelectObject(simulator, prim.LocalID);
+
                         prim.NameValues = nameValues;
                         prim.LocalID = block.ID;
                         prim.ID = block.FullID;
