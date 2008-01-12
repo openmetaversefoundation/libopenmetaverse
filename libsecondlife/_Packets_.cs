@@ -97,10 +97,11 @@ namespace libsecondlife.Packets
         public uint Sequence
         {
             get { return (uint)((Data[1] << 24) + (Data[2] << 16) + (Data[3] << 8) + Data[4]); }
-            set {
-			Data[1] = (byte)(value >> 24); Data[2] = (byte)(value >> 16); 
-			Data[3] = (byte)(value >> 8);  Data[4] = (byte)(value % 256); 
-		}
+            set
+            {
+			    Data[1] = (byte)(value >> 24); Data[2] = (byte)(value >> 16); 
+			    Data[3] = (byte)(value >> 8);  Data[4] = (byte)(value % 256); 
+		    }
         }
         /// <summary>Numeric ID number of this packet</summary>
         public abstract ushort ID { get; set; }
@@ -780,7 +781,8 @@ namespace libsecondlife.Packets
         public abstract PacketType Type { get; }
         public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
         public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
-        public int TickCount;
+        internal int TickCount;
+        internal int ResendCount;
 
         public abstract byte[] ToBytes();
         public static PacketType GetType(ushort id, PacketFrequency frequency)

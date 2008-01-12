@@ -470,9 +470,9 @@ namespace libsecondlife
             return (byte)(200 - (byte)Math.Round(pathScale / SCALE_QUANTA));
         }
 
-        public static byte PackPathShear(float pathShear)
+        public static sbyte PackPathShear(float pathShear)
         {
-            return (byte)Math.Round(pathShear / SHEAR_QUANTA);
+            return (sbyte)Math.Round(pathShear / SHEAR_QUANTA);
         }
 
         /// <summary>

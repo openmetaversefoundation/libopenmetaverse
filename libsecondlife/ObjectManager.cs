@@ -703,8 +703,8 @@ namespace libsecondlife
             packet.ObjectData.PathRevolutions = LLObject.PackPathRevolutions(prim.PathRevolutions);
             packet.ObjectData.PathScaleX = LLObject.PackPathScale(prim.PathScaleX);
             packet.ObjectData.PathScaleY = LLObject.PackPathScale(prim.PathScaleY);
-            packet.ObjectData.PathShearX = LLObject.PackPathShear(prim.PathShearX);
-            packet.ObjectData.PathShearY = LLObject.PackPathShear(prim.PathShearY);
+            packet.ObjectData.PathShearX = (byte)LLObject.PackPathShear(prim.PathShearX);
+            packet.ObjectData.PathShearY = (byte)LLObject.PackPathShear(prim.PathShearY);
             packet.ObjectData.PathSkew = LLObject.PackPathTwist(prim.PathSkew);
             packet.ObjectData.PathTaperX = LLObject.PackPathTaper(prim.PathTaperX);
             packet.ObjectData.PathTaperY = LLObject.PackPathTaper(prim.PathTaperY);
