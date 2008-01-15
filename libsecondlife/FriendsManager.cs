@@ -269,6 +269,14 @@ namespace libsecondlife
         /// <param name="agentName">Full name of the avatar who terminated your friendship</param>
         public delegate void FriendshipTerminatedEvent(LLUUID agentID, string agentName);
 
+        /// <summary>
+        /// Triggered in response to a FindFriend request
+        /// </summary>
+        /// <param name="agentID">Friends Key</param>
+        /// <param name="regionHandle">region handle friend is in</param>
+        /// <param name="location">X/Y location of friend</param>
+        public delegate void FriendFoundEvent(LLUUID agentID, ulong regionHandle, LLVector3 location);
+
         #endregion Delegates
 
         #region Events
@@ -279,6 +287,7 @@ namespace libsecondlife
         public event FriendshipOfferedEvent OnFriendshipOffered;
         public event FriendshipResponseEvent OnFriendshipResponse;
         public event FriendshipTerminatedEvent OnFriendshipTerminated;
+        public event FriendFoundEvent OnFriendFound;
 
         #endregion Events
 
@@ -302,11 +311,12 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);
             Client.Network.RegisterCallback(PacketType.ChangeUserRights, ChangeUserRightsHandler);
             Client.Network.RegisterCallback(PacketType.TerminateFriendship, TerminateFriendshipHandler);
+            Client.Network.RegisterCallback(PacketType.FindAgent, OnFindAgentReplyHandler);
 
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
                 new string[] { "buddy-list" });
         }
-
+        #region Public Methods
         /// <summary>
         /// Get a list of all the friends we are currently aware of
         /// </summary>
@@ -472,6 +482,39 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Use to map a friends location on the grid.
+        /// </summary>
+        /// <param name="friendID">Friends UUID to find</param>
+        /// <remarks><seealso cref="E:OnFriendFound"/></remarks>
+        public void MapFriend(LLUUID friendID)
+        {
+            FindAgentPacket stalk = new FindAgentPacket();
+            stalk.AgentBlock.Hunter = Client.Self.AgentID;
+            stalk.AgentBlock.Prey = friendID;
+            Console.WriteLine(stalk.ToString());
+
+            Client.Network.SendPacket(stalk);
+        }
+
+        /// <summary>
+        /// Use to track a friends movement on the grid
+        /// </summary>
+        /// <param name="friendID">Friends Key</param>
+        public void TrackFriend(LLUUID friendID)
+        {
+            TrackAgentPacket stalk = new TrackAgentPacket();
+            stalk.AgentData.AgentID = Client.Self.AgentID;
+            stalk.AgentData.SessionID = Client.Self.SessionID;
+            stalk.TargetData.PreyID = friendID;
+
+            Console.WriteLine(stalk.ToString());
+
+            Client.Network.SendPacket(stalk);
+        }
+
+        #endregion
+        #region Internal events
+        /// <summary>
         /// Called when a connection to the SL server is established.  The list of friend avatars 
         /// is populated from XML returned by the login server.  That list contains the avatar's id 
         /// and right, but no names.  Here is where those names are requested.
@@ -512,7 +555,8 @@ namespace libsecondlife
                 }
             }
         }
-
+        #endregion
+        #region Packet Handlers
 
         /// <summary>
         /// Handle notifications sent when a friends has come online.
@@ -631,6 +675,29 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Handle friend location updates
+        /// </summary>
+        /// <param name="packet">The Packet</param>
+        /// <param name="simulator">The Simulator</param>
+        public void OnFindAgentReplyHandler(Packet packet, Simulator simulator)
+        {
+            if(OnFriendFound != null)
+            {
+            FindAgentPacket reply = (FindAgentPacket)packet;
+
+            float x,y;
+            LLUUID prey = reply.AgentBlock.Prey;
+            ulong regionHandle = Helpers.GlobalPosToRegionHandle((float)reply.LocationBlock[0].GlobalX, 
+                (float)reply.LocationBlock[0].GlobalY, out x, out y);
+            LLVector3 xyz = new LLVector3(x, y, 0f);
+
+            try { OnFriendFound(prey, regionHandle, xyz); }
+            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles relevant messages from the server encapsulated in instant messages.
