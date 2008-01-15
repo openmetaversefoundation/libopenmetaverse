@@ -771,7 +771,7 @@ namespace libsecondlife
         /// <returns>An unsigned integer representing a UNIX timestamp</returns>
         public static uint DateTimeToUnixTime(DateTime time)
         {
-            TimeSpan ts = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0));
+            TimeSpan ts = (time - new DateTime(1970, 1, 1, 0, 0, 0));
             return (uint)ts.TotalSeconds;
         }
 
