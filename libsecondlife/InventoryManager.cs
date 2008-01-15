@@ -1559,36 +1559,44 @@ namespace libsecondlife
             {
                 OnTaskInventoryReply -= callback;
 
-                byte[] assetData = null;
-                ulong xferID = 0;
-                AutoResetEvent taskDownloadEvent = new AutoResetEvent(false);
-
-                AssetManager.XferReceivedCallback xferCallback =
-                    delegate(XferDownload xfer)
-                    {
-                        if (xfer.XferID == xferID)
-                        {
-                            assetData = xfer.AssetData;
-                            taskDownloadEvent.Set();
-                        }
-                    };
-
-                _Client.Assets.OnXferReceived += xferCallback;
-
-                // Start the actual asset xfer
-                xferID = _Client.Assets.RequestAssetXfer(filename, true, false, LLUUID.Zero, AssetType.Unknown);
-
-                if (taskDownloadEvent.WaitOne(timeoutMS, false))
+                if (!String.IsNullOrEmpty(filename))
                 {
-                    _Client.Assets.OnXferReceived -= xferCallback;
+                    byte[] assetData = null;
+                    ulong xferID = 0;
+                    AutoResetEvent taskDownloadEvent = new AutoResetEvent(false);
 
-                    string taskList = Helpers.FieldToUTF8String(assetData);
-                    return ParseTaskInventory(taskList);
+                    AssetManager.XferReceivedCallback xferCallback =
+                        delegate(XferDownload xfer)
+                        {
+                            if (xfer.XferID == xferID)
+                            {
+                                assetData = xfer.AssetData;
+                                taskDownloadEvent.Set();
+                            }
+                        };
+
+                    _Client.Assets.OnXferReceived += xferCallback;
+
+                    // Start the actual asset xfer
+                    xferID = _Client.Assets.RequestAssetXfer(filename, true, false, LLUUID.Zero, AssetType.Unknown);
+
+                    if (taskDownloadEvent.WaitOne(timeoutMS, false))
+                    {
+                        _Client.Assets.OnXferReceived -= xferCallback;
+
+                        string taskList = Helpers.FieldToUTF8String(assetData);
+                        return ParseTaskInventory(taskList);
+                    }
+                    else
+                    {
+                        _Client.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning);
+                        _Client.Assets.OnXferReceived -= xferCallback;
+                        return null;
+                    }
                 }
                 else
                 {
-                    _Client.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning);
-                    _Client.Assets.OnXferReceived -= xferCallback;
+                    _Client.Log("Task is empty for " + objectLocalID, Helpers.LogLevel.Debug);
                     return null;
                 }
             }
