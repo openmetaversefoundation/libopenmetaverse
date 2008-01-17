@@ -161,6 +161,19 @@ namespace libsecondlife
             Light
         }
 
+        public enum PrimType
+        {
+            Unknown,
+            Box,
+            Cylinder,
+            Prism,
+            Sphere,
+            Torus,
+            Tube,
+            Ring,
+            Sculpt
+        }
+
         #endregion Enumerations
 
         #region Structs
@@ -270,7 +283,49 @@ namespace libsecondlife
                 }
             }
 
+            public PrimType Type
+            {
+                get
+                {
+                    bool linearPath = (PathCurve == LLObject.PathCurve.Line || PathCurve == LLObject.PathCurve.Flexible);
+                    float scaleX = PathScaleX;
+                    float scaleY = PathScaleY;
+
+                    if (linearPath && ProfileCurve == LLObject.ProfileCurve.Circle)
+                        return PrimType.Cylinder;
+                    else if (linearPath && ProfileCurve == LLObject.ProfileCurve.Square)
+                        return PrimType.Box;
+                    else if (linearPath && ProfileCurve == LLObject.ProfileCurve.IsoTriangle)
+                        return PrimType.Prism;
+                    else if (linearPath && ProfileCurve == LLObject.ProfileCurve.EqualTriangle)
+                        return PrimType.Prism;
+                    else if (linearPath && ProfileCurve == LLObject.ProfileCurve.RightTriangle)
+                        return PrimType.Prism;
+                    else if (PathCurve == LLObject.PathCurve.Flexible)
+                        return PrimType.Unknown;
+                    else if (PathCurve == LLObject.PathCurve.Circle && ProfileCurve == LLObject.ProfileCurve.Circle && scaleY > 0.75f)
+                        return PrimType.Sphere;
+                    else if (PathCurve == LLObject.PathCurve.Circle && ProfileCurve == LLObject.ProfileCurve.Circle && scaleY <= 0.75f)
+                        return PrimType.Torus;
+                    else if (PathCurve == LLObject.PathCurve.Circle && ProfileCurve == LLObject.ProfileCurve.HalfCircle)
+                        return PrimType.Sphere;
+                    else if (PathCurve == LLObject.PathCurve.Circle2 && ProfileCurve == LLObject.ProfileCurve.Circle)
+                        return PrimType.Sphere; // Spiral/sphere
+                    else if (PathCurve == LLObject.PathCurve.Circle && ProfileCurve == LLObject.ProfileCurve.EqualTriangle)
+                        return PrimType.Ring;
+                    else if (PathCurve == LLObject.PathCurve.Circle && ProfileCurve == LLObject.ProfileCurve.Square && scaleY <= 0.75f)
+                        return PrimType.Tube;
+                    else
+                        return PrimType.Unknown;
+                }
+            }
+
             #endregion Properties
+
+            public override string ToString()
+            {
+                return Type.ToString();
+            }
         }
 
         /// <summary>

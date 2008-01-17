@@ -9,6 +9,7 @@ namespace libsecondlife.TestClient
 {
     public class ExportCommand : Command
     {
+        List<LLUUID> Textures = new List<LLUUID>();
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
         LLObject.ObjectPropertiesFamily Properties;
         bool GotPermissions = false;
@@ -21,6 +22,7 @@ namespace libsecondlife.TestClient
         {
             testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectPropertiesFamily);
             testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
+            testClient.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
             testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
 
             Name = "export";
@@ -104,21 +106,33 @@ namespace libsecondlife.TestClient
                 Client.Log("Exported " + prims.Count + " prims to " + file, Helpers.LogLevel.Info);
 
                 // Create a list of all of the textures to download
-                Dictionary<LLUUID, LLUUID> textures = new Dictionary<LLUUID,LLUUID>();
-                for (int i = 0; i < prims.Count; i++)
+                List<ImageRequest> textureRequests = new List<ImageRequest>();
+
+                lock (Textures)
                 {
-                    Primitive prim = prims[i];
-
-                    textures[prim.Textures.DefaultTexture.TextureID] = prim.Textures.DefaultTexture.TextureID;
-
-                    for (int j = 0; j < prim.Textures.FaceTextures.Length; j++)
+                    for (int i = 0; i < prims.Count; i++)
                     {
-                        if (prim.Textures.FaceTextures[j] != null)
-                            textures[prim.Textures.FaceTextures[j].TextureID] = prim.Textures.FaceTextures[j].TextureID;
+                        Primitive prim = prims[i];
+
+                        if (!Textures.Contains(prim.Textures.DefaultTexture.TextureID))
+                            Textures.Add(prim.Textures.DefaultTexture.TextureID);
+
+                        for (int j = 0; j < prim.Textures.FaceTextures.Length; j++)
+                        {
+                            if (prim.Textures.FaceTextures[j] != null && !Textures.Contains(prim.Textures.FaceTextures[j].TextureID))
+                                Textures.Add(prim.Textures.FaceTextures[j].TextureID);
+                        }
                     }
+
+                    // Create a request list from all of the images
+                    for (int i = 0; i < Textures.Count; i++)
+                        textureRequests.Add(new ImageRequest(Textures[i], ImageType.Normal, 1013000.0f, 0));
                 }
 
-                return "Exported complete";
+                // Download all of the textures in the export list
+                Client.Assets.RequestImages(textureRequests);
+
+                return "XML exported, began downloading " + Textures.Count + " textures";
             }
             else
             {
@@ -147,6 +161,37 @@ namespace libsecondlife.TestClient
             Client.Objects.SelectObjects(Client.Network.CurrentSim, localids);
 
             return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
+        }
+
+        private void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
+        {
+            if (Textures.Contains(image.ID))
+            {
+                lock (Textures)
+                    Textures.Remove(image.ID);
+
+                if (image.Success)
+                {
+                    try { File.WriteAllBytes(image.ID.ToString() + ".jp2", asset.AssetData); }
+                    catch (Exception ex) { Client.Log(ex.Message, Helpers.LogLevel.Error); }
+
+                    if (asset.Decode())
+                    {
+                        try { File.WriteAllBytes(image.ID.ToString() + ".tga", asset.Image.ExportTGA()); }
+                        catch (Exception ex) { Client.Log(ex.Message, Helpers.LogLevel.Error); }
+                    }
+                    else
+                    {
+                        Client.Log("Failed to decode image " + image.ID.ToString(), Helpers.LogLevel.Error);
+                    }
+
+                    Client.Log("Finished downloading image " + image.ID.ToString(), Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    Client.Log("Failed to download image " + image.ID.ToString(), Helpers.LogLevel.Warning);
+                }
+            }
         }
 
         void Avatars_OnPointAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 

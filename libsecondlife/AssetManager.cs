@@ -529,7 +529,6 @@ namespace libsecondlife
 
             if (Images.Count > 0)
             {
-
                 // Build and send the request packet
                 RequestImagePacket request = new RequestImagePacket();
                 request.AgentData.AgentID = Client.Self.AgentID;
@@ -552,6 +551,7 @@ namespace libsecondlife
                     request.RequestImage[iru].Image = Images[iru].ImageID;
                     request.RequestImage[iru].Type = (byte)Images[iru].Type;
                 }
+
                 Client.Network.SendPacket(request, Client.Network.CurrentSim);
             }
             else
