@@ -592,6 +592,17 @@ namespace libsecondlife
         public delegate void ScriptQuestionCallback(Simulator simulator, LLUUID taskID, LLUUID itemID, string objectName, string objectOwner, ScriptPermission questions);
 
         /// <summary>
+        /// Triggered when a script displays a URL via llLoadURL
+        /// </summary>
+        /// <param name="objectName">Name of the scripted object</param>
+        /// <param name="objectID">ID of the scripted object</param>
+        /// <param name="ownerID">ID of the object's owner</param>
+        /// <param name="ownerIsGroup">Whether or not ownerID is a group</param>
+        /// <param name="message">Message displayed along with URL</param>
+        /// <param name="URL">Offered URL</param>
+        public delegate void LoadURLCallback( string objectName, LLUUID objectID, LLUUID ownerID, bool ownerIsGroup, string message, string URL);
+
+        /// <summary>
         /// Triggered when the L$ account balance for this avatar changes
         /// </summary>
         /// <param name="balance">The new account balance</param>
@@ -699,6 +710,8 @@ namespace libsecondlife
         public event ScriptDialogCallback OnScriptDialog;
         /// <summary>Callback for pop-up dialogs regarding permissions</summary>
         public event ScriptQuestionCallback OnScriptQuestion;
+        /// <summary>Callback for URL popups</summary>
+        public event LoadURLCallback OnLoadURL;
         /// <summary>Callback for incoming IMs</summary>
         public event InstantMessageCallback OnInstantMessage;
         /// <summary>Callback for Teleport request update</summary>
@@ -936,6 +949,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ScriptDialog, new NetworkManager.PacketCallback(ScriptDialogHandler));
             // Script question callback
             Client.Network.RegisterCallback(PacketType.ScriptQuestion, new NetworkManager.PacketCallback(ScriptQuestionHandler));
+            // Script URL callback
+            Client.Network.RegisterCallback(PacketType.LoadURL, new NetworkManager.PacketCallback(LoadURLHandler));
             // Movement complete callback
             Client.Network.RegisterCallback(PacketType.AgentMovementComplete, new NetworkManager.PacketCallback(MovementCompleteHandler));
             // Health callback
@@ -2215,6 +2230,30 @@ namespace libsecondlife
                         Helpers.FieldToUTF8String(question.Data.ObjectName),
                         Helpers.FieldToUTF8String(question.Data.ObjectOwner),
                         (ScriptPermission)question.Data.Questions);
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        /// <summary>
+        /// Used for parsing llLoadURL Dialogs
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void LoadURLHandler(Packet packet, Simulator simulator)
+        {
+            LoadURLPacket loadURL = (LoadURLPacket)packet;
+            if (OnLoadURL != null)
+            {
+                try {
+                    OnLoadURL(
+                        Helpers.FieldToUTF8String(loadURL.Data.ObjectName),
+                        loadURL.Data.ObjectID,
+                        loadURL.Data.OwnerID,
+                        loadURL.Data.OwnerIsGroup,
+                        Helpers.FieldToUTF8String(loadURL.Data.Message),
+                        Helpers.FieldToUTF8String(loadURL.Data.URL)
+                    );
                 }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
