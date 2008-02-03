@@ -2116,6 +2116,13 @@ namespace libsecondlife
             ItemCreatedFromAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
+            if (result == null)
+            {
+                try { callback(false, error.Message, LLUUID.Zero, LLUUID.Zero); }
+                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                return;
+            }
+
             string status = contents["state"].AsString();
 
             if (status == "upload")
