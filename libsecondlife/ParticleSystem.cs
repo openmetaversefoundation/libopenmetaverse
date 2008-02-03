@@ -241,7 +241,7 @@ namespace libsecondlife
                 pack.PackUUID(Target);
 
                 pack.PackBits((uint)PartDataFlags, 32);
-                pack.PackFixed(MaxAge, false, 8, 8);
+                pack.PackFixed(PartMaxAge, false, 8, 8);
                 pack.PackColor(PartStartColor);
                 pack.PackColor(PartEndColor);
                 pack.PackFixed(PartStartScaleX, false, 3, 5);
