@@ -908,6 +908,9 @@ namespace libsecondlife
 					case 5:
                         simulator.Stats.NetTime = s.StatValue;
 						break;
+                    case 6:
+                        simulator.Stats.OtherTime = s.StatValue;
+                        break;
 					case 7:
                         simulator.Stats.PhysicsTime = s.StatValue;
 						break;
@@ -918,8 +921,9 @@ namespace libsecondlife
                         simulator.Stats.ScriptTime = s.StatValue;
 						break;
 					case 10:
-                        simulator.Stats.OtherTime = s.StatValue;
-						break;
+                        //simulator.Stats.OtherTime = s.StatValue;
+						// This is not othertime, this is something else
+                        break;
 					case 11:
                         simulator.Stats.Objects = Convert.ToInt32(s.StatValue);
 						break;
