@@ -14,6 +14,7 @@ namespace libsecondlife.TestClient
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
 		public bool Running = true;
+        public bool GroupCommands = false;
         public string MasterName = String.Empty;
         public LLUUID MasterKey = LLUUID.Zero;
 		public ClientManager ClientManager;
@@ -191,38 +192,35 @@ namespace libsecondlife.TestClient
 
         private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
         {
-            if (MasterKey != LLUUID.Zero)
+
+            bool groupIM = im.GroupIM && GroupMembers != null && GroupMembers.ContainsKey(im.FromAgentID) ? true : false;
+
+            if (im.FromAgentID == MasterKey || (GroupCommands && groupIM))
             {
-                if (im.FromAgentID != MasterKey)
+                // Received an IM from someone that is authenticated
+                Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
+
+                if (im.Dialog == InstantMessageDialog.RequestTeleport)
                 {
-                    // Received an IM from someone that is not the bot's master, ignore
-                    Console.WriteLine("<{0} ({1})> {2} (not master): {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message,
-                        im.RegionID, im.Position);
-                    return;
+                    Console.WriteLine("Accepting teleport lure.");
+                    Self.TeleportLureRespond(im.FromAgentID, true);
+                }
+                else if (
+                    im.Dialog == InstantMessageDialog.MessageFromAgent ||
+                    im.Dialog == InstantMessageDialog.MessageFromObject)
+                {
+                    DoCommand(im.Message, im.FromAgentID);
                 }
             }
-            else if (GroupMembers != null && !GroupMembers.ContainsKey(im.FromAgentID))
+
+            else
             {
-                // Received an IM from someone outside the bot's group, ignore
-                Console.WriteLine("<{0} ({1})> {2} (not in group): {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName,
-                    im.Message, im.RegionID, im.Position);
+                // Received an IM from someone that is not the bot's master, ignore
+                Console.WriteLine("<{0} ({1})> {2} (not master): {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message,
+                    im.RegionID, im.Position);
                 return;
             }
 
-            // Received an IM from someone that is authenticated
-            Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
-
-            if (im.Dialog == InstantMessageDialog.RequestTeleport)
-            {
-                Console.WriteLine("Accepting teleport lure.");
-                Self.TeleportLureRespond(im.FromAgentID, true);
-            }
-            else if (
-                im.Dialog == InstantMessageDialog.MessageFromAgent ||
-                im.Dialog == InstantMessageDialog.MessageFromObject)
-            {
-                DoCommand(im.Message, im.FromAgentID);
-            }
         }
 
         private bool Inventory_OnInventoryObjectReceived(LLUUID fromAgentID, string fromAgentName,

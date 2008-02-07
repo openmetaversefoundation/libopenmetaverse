@@ -14,6 +14,7 @@ namespace libsecondlife.TestClient
         public string LastName;
         public string Password;
         public string StartLocation;
+        public bool GroupCommands;
         public string MasterName;
         public LLUUID MasterKey;
         public string URI;
@@ -93,6 +94,7 @@ namespace libsecondlife.TestClient
             client.Throttle.Land = 1000000;
             client.Throttle.Task = 1000000;
 
+            client.GroupCommands = account.GroupCommands;
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
 

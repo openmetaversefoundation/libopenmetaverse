@@ -24,6 +24,7 @@ namespace libsecondlife.TestClient
             ClientManager manager;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
+            bool groupCommands = false;
             string masterName = String.Empty;
             LLUUID masterKey = LLUUID.Zero;
             string file = String.Empty;
@@ -31,6 +32,11 @@ namespace libsecondlife.TestClient
 
             try
             {
+                if (arguments["groupcommands"] != null)
+                {
+                    groupCommands = true;
+                }
+
                 if (arguments["masterkey"] != null)
                 {
                     masterKey = LLUUID.Parse(arguments["masterkey"]);
@@ -121,6 +127,7 @@ namespace libsecondlife.TestClient
 
             foreach (LoginDetails a in accounts)
             {
+                a.GroupCommands = groupCommands;
                 a.MasterName = masterName;
                 a.MasterKey = masterKey;
                 a.URI = loginuri;
