@@ -14,6 +14,7 @@ namespace libsecondlife.TestClient
         public string LastName;
         public string Password;
         public string StartLocation;
+        public bool GroupCommands;
         public string MasterName;
         public LLUUID MasterKey;
         public string URI;
