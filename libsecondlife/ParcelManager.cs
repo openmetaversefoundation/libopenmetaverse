@@ -1119,6 +1119,39 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Eject and optionally ban a user from a parcel
+        /// </summary>
+        /// <param name="targetID">target key of avatar to eject</param>
+        /// <param name="ban">true to also ban target</param>
+        public void EjectUser(LLUUID targetID, bool ban)
+        {
+            EjectUserPacket eject = new EjectUserPacket();
+            eject.AgentData.AgentID = Client.Self.AgentID;
+            eject.AgentData.SessionID = Client.Self.SessionID;
+            eject.Data.TargetID = targetID;
+            if (ban) eject.Data.Flags = 1;
+            else eject.Data.Flags = 0;
+
+            Client.Network.SendPacket(eject);
+        }
+
+        /// <summary>
+        /// Freeze or unfreeze an avatar over your land
+        /// </summary>
+        /// <param name="targetID">target key to freeze</param>
+        /// <param name="freeze">true to freeze, false to unfreeze</param>
+        public void FreezeUser(LLUUID targetID, bool freeze)
+        {
+            FreezeUserPacket frz = new FreezeUserPacket();
+            frz.AgentData.AgentID = Client.Self.AgentID;
+            frz.AgentData.SessionID = Client.Self.SessionID;
+            frz.Data.TargetID = targetID;
+            if (freeze) frz.Data.Flags = 0;
+            else frz.Data.Flags = 1;
+
+            Client.Network.SendPacket(frz);
+        }
         #endregion Public Methods
 
         #region Packet Handlers
