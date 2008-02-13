@@ -123,8 +123,6 @@ namespace libsecondlife
         {
             byte[] bytes = UUID.ToByteArray();
 
-            if (BitConverter.IsLittleEndian)
-            {
                 byte[] output = new byte[16];
                 output[0] = bytes[3];
                 output[1] = bytes[2];
@@ -137,11 +135,6 @@ namespace libsecondlife
                 Buffer.BlockCopy(bytes, 8, output, 8, 8);
 
                 return output;
-            }
-            else
-            {
-                return bytes;
-            }
         }
 
 		/// <summary>
