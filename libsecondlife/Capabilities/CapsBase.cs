@@ -29,7 +29,7 @@ using System.Net;
 
 namespace libsecondlife.Capabilities
 {
-    public class CapsBase : MonoWebClient
+    public class CapsBase : WebClient
     {
         public int Timeout;
         public int ContentLength;
@@ -43,7 +43,7 @@ namespace libsecondlife.Capabilities
             _Location = location;
         }
 
-        protected override System.Net.WebRequest GetWebRequest(Uri address)
+        protected override WebRequest GetWebRequest(Uri address)
         {
             HttpWebRequest request = base.GetWebRequest(address) as HttpWebRequest;
 

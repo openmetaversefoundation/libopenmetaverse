@@ -134,9 +134,6 @@
     </Compile>
     <Compile Include="GroupManager.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="MonoWebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="NameValue.cs" />
     <Compile Include="NetworkManager.cs">
       <SubType>Code</SubType>
