@@ -58,6 +58,7 @@ namespace libsecondlife
 
         private int bytePos;
         private int bitPos;
+        private bool weAreBigEndian = !BitConverter.IsLittleEndian;
 
 
         /// <summary>
@@ -79,6 +80,7 @@ namespace libsecondlife
         public void PackFloat(float data)
         {
             byte[] input = BitConverter.GetBytes(data);
+            if (weAreBigEndian) Array.Reverse(input);
             PackBitArray(input, 32);
         }
 
@@ -90,6 +92,7 @@ namespace libsecondlife
         public void PackBits(int data, int totalCount)
         {
             byte[] input = BitConverter.GetBytes(data);
+            if (weAreBigEndian) Array.Reverse(input);
             PackBitArray(input, totalCount);
         }
 
@@ -101,6 +104,7 @@ namespace libsecondlife
         public void PackBits(uint data, int totalCount)
         {
             byte[] input = BitConverter.GetBytes(data);
+            if (weAreBigEndian) Array.Reverse(input);
             PackBitArray(input, totalCount);
         }
 
@@ -176,7 +180,7 @@ namespace libsecondlife
         {
             byte[] output = UnpackBitsArray(32);
 
-            if (!BitConverter.IsLittleEndian) Array.Reverse(output);
+            if (weAreBigEndian) Array.Reverse(output);
             return BitConverter.ToSingle(output, 0);
         }
 
@@ -190,7 +194,7 @@ namespace libsecondlife
         {
             byte[] output = UnpackBitsArray(totalCount);
 
-            if (!BitConverter.IsLittleEndian) Array.Reverse(output);
+            if (weAreBigEndian) Array.Reverse(output);
             return BitConverter.ToInt32(output, 0);
         }
 
@@ -205,7 +209,7 @@ namespace libsecondlife
         {
             byte[] output = UnpackBitsArray(totalCount);
 
-            if (!BitConverter.IsLittleEndian) Array.Reverse(output);
+            if (weAreBigEndian) Array.Reverse(output);
             return BitConverter.ToUInt32(output, 0);
         }
 
