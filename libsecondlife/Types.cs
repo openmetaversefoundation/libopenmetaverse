@@ -126,26 +126,18 @@ namespace libsecondlife
         public byte[] GetBytes()
         {
             byte[] bytes = UUID.ToByteArray();
+            byte[] output = new byte[16];
+            output[0] = bytes[3];
+            output[1] = bytes[2];
+            output[2] = bytes[1];
+            output[3] = bytes[0];
+            output[4] = bytes[5];
+            output[5] = bytes[4];
+            output[6] = bytes[7];
+            output[7] = bytes[6];
+            Buffer.BlockCopy(bytes, 8, output, 8, 8);
 
-            if (BitConverter.IsLittleEndian)
-            {
-                byte[] output = new byte[16];
-                output[0] = bytes[3];
-                output[1] = bytes[2];
-                output[2] = bytes[1];
-                output[3] = bytes[0];
-                output[4] = bytes[5];
-                output[5] = bytes[4];
-                output[6] = bytes[7];
-                output[7] = bytes[6];
-                Buffer.BlockCopy(bytes, 8, output, 8, 8);
-
-                return output;
-            }
-            else
-            {
-                return bytes;
-            }
+            return output;
         }
 
 		/// <summary>
