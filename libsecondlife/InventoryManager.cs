@@ -2273,7 +2273,7 @@ namespace libsecondlife
                             {
                                 if (search.Level == search.Path.Length - 1)
                                 {
-                                    _Client.DebugLog("Finished patch search of " + String.Join("/", search.Path));
+                                    _Client.DebugLog("Finished path search of " + String.Join("/", search.Path));
 
                                     // This is the last node in the path, fire the callback and clean up
                                     if (OnFindObjectByPath != null)

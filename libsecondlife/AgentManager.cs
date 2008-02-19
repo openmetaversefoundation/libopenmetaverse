@@ -704,6 +704,12 @@ namespace libsecondlife
         /// <param name="groupchatSessionID">Key of Session (groups UUID)</param>
         public delegate void GroupChatLeft(LLUUID groupchatSessionID);
 
+        /// <summary>
+        /// Fired when alert message received from simulator
+        /// </summary>
+        /// <param name="message">the message sent from the grid to our avatar.</param>
+        public delegate void AlertMessage(string message);
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -734,7 +740,8 @@ namespace libsecondlife
         public event GroupChatJoined OnGroupChatJoin;
         /// <summary>Callback for when agent is confirmed to have left group chat session.</summary>
         public event GroupChatLeft OnGroupChatLeft;
-
+        /// <summary>Alert messages sent to client from simulator</summary>
+        public event AlertMessage OnAlertMessage;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -975,6 +982,9 @@ namespace libsecondlife
             Client.Network.RegisterEventCallback("ChatterBoxSessionAgentListUpdates", new Caps.EventQueueCallback(ChatterBoxSessionAgentListReplyHandler));
             // Login
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse));
+            // Alert Messages
+            Client.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
+
         }
 
         #region Chat and instant messages
@@ -2748,6 +2758,20 @@ namespace libsecondlife
                     try { OnInstantMessage(message, simulator); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }             
+        }
+
+        /// <summary>
+        /// Alert Message packet handler
+        /// </summary>
+        /// <param name="packet">AlertMessagePacket</param>
+        /// <param name="simulator">not used</param>
+        private void AlertMessageHandler(Packet packet, Simulator simulator)
+        {
+            AlertMessagePacket alert = (AlertMessagePacket)packet;
+            string message = Helpers.FieldToUTF8String(alert.AlertData.Message);
+
+            try { OnAlertMessage(message); }
+            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
         }
         #endregion Packet Handlers
     }
