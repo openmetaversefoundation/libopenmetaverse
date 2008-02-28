@@ -784,13 +784,23 @@ namespace libsecondlife
             set.AgentData.SerialNum = SetAppearanceSerialNum++;
             set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[VisualParams.Params.Count];
 
+
+
+            float AgentSizeVPHeight = 0.0f;
+            float AgentSizeVPHeelHeight = 0.0f;
+            float AgentSizeVPPlatformHeight = 0.0f;
+            float AgentSizeVPHeadSize = 0.0f;
+            float AgentSizeVPLegLength = 0.0f;
+            float AgentSizeVPNeckLength = 0.0f;
+            float AgentSizeVPHipLength = 0.0f;
+
             lock (Wearables)
             {
                 // Only for debugging output
                 int count = 0, vpIndex = 0;
 
                 // Build the visual param array
-                foreach (KeyValuePair<int,VisualParam> kvp in VisualParams.Params)
+                foreach (KeyValuePair<int, VisualParam> kvp in VisualParams.Params)
                 {
                     bool found = false;
                     set.VisualParam[vpIndex] = new AgentSetAppearancePacket.VisualParamBlock();
@@ -801,10 +811,34 @@ namespace libsecondlife
                     {
                         if (data.Asset != null && data.Asset.Params.ContainsKey(vp.ParamID))
                         {
-                            set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], 
-                                vp.MinValue, vp.MaxValue);
+                            set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], vp.MinValue, vp.MaxValue);
                             found = true;
                             count++;
+
+                            switch (vp.ParamID)
+                            {
+                                case 33:
+                                    AgentSizeVPHeight = data.Asset.Params[vp.ParamID];
+                                    break;
+                                case 198:
+                                    AgentSizeVPHeelHeight = data.Asset.Params[vp.ParamID];
+                                    break;
+                                case 503:
+                                    AgentSizeVPPlatformHeight = data.Asset.Params[vp.ParamID];
+                                    break;
+                                case 682:
+                                    AgentSizeVPHeadSize = data.Asset.Params[vp.ParamID];
+                                    break;
+                                case 692:
+                                    AgentSizeVPLegLength = data.Asset.Params[vp.ParamID];
+                                    break;
+                                case 756:
+                                    AgentSizeVPNeckLength = data.Asset.Params[vp.ParamID];
+                                    break;
+                                case 842:
+                                    AgentSizeVPHipLength = data.Asset.Params[vp.ParamID];
+                                    break;
+                            }
                             break;
                         }
                     }
@@ -812,8 +846,32 @@ namespace libsecondlife
                     // Use a default value if we don't have one set for it
                     if (!found)
                     {
-                        set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(vp.DefaultValue,
-                            vp.MinValue, vp.MaxValue);
+                        set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(vp.DefaultValue, vp.MinValue, vp.MaxValue);
+
+                        switch (vp.ParamID)
+                        {
+                            case 33:
+                                AgentSizeVPHeight = vp.DefaultValue;
+                                break;
+                            case 198:
+                                AgentSizeVPHeelHeight = vp.DefaultValue;
+                                break;
+                            case 503:
+                                AgentSizeVPPlatformHeight = vp.DefaultValue;
+                                break;
+                            case 682:
+                                AgentSizeVPHeadSize = vp.DefaultValue;
+                                break;
+                            case 692:
+                                AgentSizeVPLegLength = vp.DefaultValue;
+                                break;
+                            case 756:
+                                AgentSizeVPNeckLength = vp.DefaultValue;
+                                break;
+                            case 842:
+                                AgentSizeVPHipLength = vp.DefaultValue;
+                                break;
+                        }
                     }
 
                     vpIndex++;
@@ -858,9 +916,16 @@ namespace libsecondlife
 
             // FIXME: Our hackish algorithm is making squished avatars. See
             // http://www.libsecondlife.org/wiki/Agent_Size for discussion of the correct algorithm
-            float height = Helpers.ByteToFloat(set.VisualParam[33].ParamValue, VisualParams.Params[33].MinValue,
-                VisualParams.Params[33].MaxValue);
-            set.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.50856f + ((height / 255.0f) * (2.025506f - 1.50856f)));
+            //float height = Helpers.ByteToFloat(set.VisualParam[33].ParamValue, VisualParams.Params[33].MinValue,
+            //    VisualParams.Params[33].MaxValue);
+
+            // Takes into account the Shoe Heel/Platform offsets but not the Head Size Offset.  But seems to work.
+            double AgentSizeBase = 1.706;
+
+            // The calculation for the Head Size scalar may be incorrect.  But seems to work.
+            double AgentHeight = AgentSizeBase + (AgentSizeVPLegLength * .1918) + (AgentSizeVPHipLength * .0375) + (AgentSizeVPHeight * .12022) + (AgentSizeVPHeadSize * .01117) + (AgentSizeVPNeckLength * .038) + (AgentSizeVPHeelHeight * .08) + (AgentSizeVPPlatformHeight * .07);
+
+            set.AgentData.Size = new LLVector3(0.45f, 0.6f, (float)AgentHeight);
 
             // TODO: Account for not having all the textures baked yet
             set.WearableData = new AgentSetAppearancePacket.WearableDataBlock[BAKED_TEXTURE_COUNT];
@@ -894,6 +959,7 @@ namespace libsecondlife
             // Finally, send the packet
             Client.Network.SendPacket(set);
         }
+
 
         private void SendAgentIsNowWearing()
         {
