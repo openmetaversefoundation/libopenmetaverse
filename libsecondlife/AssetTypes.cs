@@ -67,16 +67,25 @@ namespace libsecondlife
 
         public AssetNotecard() { }
         
-        public AssetNotecard(byte[] assetData) : base(assetData) { }
+        public AssetNotecard(byte[] assetData) : base(assetData) 
+        {
+            Decode();
+        }
         
         public AssetNotecard(string text)
         {
             Text = text;
+            Encode();
         }
 
         public override void Encode()
         {
-            AssetData = Helpers.StringToField(Text);
+
+            string temp = "Linden text version 2\n{\nLLEmbeddedItems version 1\n{\ncount 0\n}\nText length ";
+            temp += Text.Length + "\n";
+            temp += Text;
+            temp += "}";
+            AssetData = Helpers.StringToField(temp);
         }
         
         public override bool Decode()
