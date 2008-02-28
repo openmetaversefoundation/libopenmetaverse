@@ -2130,6 +2130,19 @@ namespace libsecondlife
             Client.Network.SendPacket(yes, simulator);
         }
 
+        /// <summary>
+        /// Respond to a group invitation by either accepting or denying it
+        /// </summary>
+        /// <param name="groupID">UUID of the group (sent in the AgentID field of the invite message)</param>
+        /// <param name="imSessionID">IM Session ID from the group invitation message</param>
+        /// <param name="accept">Accept the group invitation or deny it</param>
+        public void GroupInviteRespond(LLUUID groupID, LLUUID imSessionID, bool accept)
+        {
+            InstantMessage(Name, groupID, String.Empty, imSessionID,
+                accept ? InstantMessageDialog.GroupInvitationAccept : InstantMessageDialog.GroupInvitationDecline,
+                InstantMessageOnline.Offline, LLVector3.Zero, LLUUID.Zero, new byte[0]);
+        }  
+
         #endregion Misc
 
         #region Packet Handlers
