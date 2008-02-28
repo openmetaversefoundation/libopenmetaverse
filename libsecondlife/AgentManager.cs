@@ -2783,8 +2783,11 @@ namespace libsecondlife
             AlertMessagePacket alert = (AlertMessagePacket)packet;
             string message = Helpers.FieldToUTF8String(alert.AlertData.Message);
 
-            try { OnAlertMessage(message); }
-            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            if (OnAlertMessage != null)
+            {
+                try { OnAlertMessage(message); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
         #endregion Packet Handlers
     }
