@@ -1122,17 +1122,41 @@ namespace libsecondlife
 
         #region Create
 
-        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type, 
+        [Obsolete("Incorrect handling of TransactionID",false)]
+        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type,
+            InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask,
+            ItemCreatedCallback callback)
+        {
+            RequestCreateItem(parentFolder, name, description, type, LLUUID.Random(), invType, wearableType, nextOwnerMask, callback);
+        }
+
+        [Obsolete("Incorrect handling of TransactionID", false)]
+        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type,
             InventoryType invType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
         {
             // Even though WearableType 0 is Shape, in this context it is treated as NOT_WEARABLE
-            RequestCreateItem(parentFolder, name, description, type, invType, (WearableType)0, nextOwnerMask, 
+            RequestCreateItem(parentFolder, name, description, type, LLUUID.Random(), invType, (WearableType)0, nextOwnerMask,
                 callback);
         }
 
-        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type, 
-            InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask, 
-            ItemCreatedCallback callback)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="assetTransactionID">Proper use is to upload the inventory's asset first, then provide the Asset's TransactionID here.</param>
+        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type, LLUUID assetTransactionID,
+            InventoryType invType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
+        {
+            // Even though WearableType 0 is Shape, in this context it is treated as NOT_WEARABLE
+            RequestCreateItem(parentFolder, name, description, type, assetTransactionID, invType, (WearableType)0, nextOwnerMask, 
+                callback);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="assetTransactionID">Proper use is to upload the inventory's asset first, then provide the Asset's TransactionID here.</param>
+        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type, LLUUID assetTransactionID,
+            InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
         {
             CreateInventoryItemPacket create = new CreateInventoryItemPacket();
             create.AgentData.AgentID = _Client.Self.AgentID;
@@ -1140,7 +1164,7 @@ namespace libsecondlife
 
             create.InventoryBlock.CallbackID = RegisterItemCreatedCallback(callback);
             create.InventoryBlock.FolderID = parentFolder;
-            create.InventoryBlock.TransactionID = LLUUID.Random();
+            create.InventoryBlock.TransactionID = assetTransactionID;
             create.InventoryBlock.NextOwnerMask = (uint)nextOwnerMask;
             create.InventoryBlock.Type = (sbyte)type;
             create.InventoryBlock.InvType = (sbyte)invType;
