@@ -94,6 +94,8 @@ namespace libsecondlife
         public string ViewerDigest;
         /// <summary></summary>
         public List<string> Options;
+        /// <summary></summary>
+        public string id0;
     }
 
     public struct LoginResponseData
@@ -410,6 +412,7 @@ namespace libsecondlife
             loginParams.MAC = String.Empty;
             loginParams.ViewerDigest = String.Empty;
             loginParams.Options = options;
+            loginParams.id0 = "00000000000000000000000000000000";
 
             return loginParams;
         }
@@ -554,6 +557,7 @@ namespace libsecondlife
             loginLLSD["agree_to_tos"] = LLSD.FromBoolean(true);
             loginLLSD["read_critical"] = LLSD.FromBoolean(true);
             loginLLSD["viewer_digest"] = LLSD.FromString(loginParams.ViewerDigest);
+            loginLLSD["id0"] = LLSD.FromString(loginParams.id0);
 
             // Create the options LLSD array
             LLSDArray optionsLLSD = new LLSDArray();
