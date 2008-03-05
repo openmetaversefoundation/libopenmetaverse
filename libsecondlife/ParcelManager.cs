@@ -868,7 +868,7 @@ namespace libsecondlife
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="position">llVector3 position in simulator (Z not used)</param>
         /// <returns>0 on failure, or parcel LocalID on success.</returns>
-        /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map &
+        /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map and
         /// dictionary.</remarks>
         public int GetParcelLocalID(Simulator simulator, LLVector3 position)
         {
