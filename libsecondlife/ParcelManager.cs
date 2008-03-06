@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Reflection;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -325,7 +326,20 @@ namespace libsecondlife
         /// <summary>Access list of who is whitelisted or blacklisted on this
         /// parcel</summary>
         public List<ParcelManager.ParcelAccessEntry> AccessList;
+        /// <summary></summary>
+        public bool RegionDenyAgeUnverified;
 
+        public override string ToString()
+        {
+            string result = "";
+            Type parcelType = this.GetType();
+            FieldInfo[] fields = parcelType.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                result += (field.Name + " = " + field.GetValue(this) + " ");
+            }
+            return result;
+        }
         /// <summary>
         /// Defalt constructor
         /// </summary>
@@ -386,6 +400,7 @@ namespace libsecondlife
             RegionDenyTransacted = false;
             RegionPushOverride = false;
             AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
+            RegionDenyAgeUnverified = false;
         }
 
         /// <summary>
@@ -1260,6 +1275,7 @@ namespace libsecondlife
                 parcel.TotalPrims = properties.ParcelData.TotalPrims;
                 parcel.UserLocation = properties.ParcelData.UserLocation;
                 parcel.UserLookAt = properties.ParcelData.UserLookAt;
+                parcel.RegionDenyAgeUnverified = properties.AgeVerificationBlock.RegionDenyAgeUnverified;
 
                 // store parcel in dictionary
                 if (Client.Settings.PARCEL_TRACKING)

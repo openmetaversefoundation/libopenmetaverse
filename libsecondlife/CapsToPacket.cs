@@ -243,13 +243,21 @@ namespace libsecondlife.Packets
                 }
             }
 
-            // String fields are properties, pick those up as well
+            // Additional fields come as properties, Handle those as well.
             foreach (PropertyInfo property in blockType.GetProperties())
             {
                 if (blockData.ContainsKey(property.Name))
                 {
+                    LLSDType proptype = blockData[property.Name].Type;
                     MethodInfo set = property.GetSetMethod();
-                    set.Invoke(block, new object[] { Helpers.StringToField(blockData[property.Name].AsString()) });
+
+                    if (proptype.Equals(LLSDType.Binary))
+                    {
+                        byte[] bytes = blockData[property.Name].AsBinary();
+                        set.Invoke(block, new object[] { blockData[property.Name].AsBinary() });
+                    }
+                    else
+                        set.Invoke(block, new object[] { Helpers.StringToField(blockData[property.Name].AsString()) });
                 }
             }
 

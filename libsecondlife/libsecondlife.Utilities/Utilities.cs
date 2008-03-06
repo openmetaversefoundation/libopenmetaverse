@@ -195,6 +195,7 @@ namespace libsecondlife.Utilities
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete("ParcelDownloader has been replaced by Parcels.RequestAllSimParcels()")]
     public class ParcelDownloader
     {
         /// <summary>
