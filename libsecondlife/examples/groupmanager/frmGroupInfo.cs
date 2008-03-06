@@ -71,7 +71,7 @@ namespace groupmanager
         {
             Profile = profile;
 
-            if (Group.InsigniaID != null && Group.InsigniaID != LLUUID.Zero)
+            if (Group.InsigniaID != LLUUID.Zero)
                 Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0);
 
             if (this.InvokeRequired)
@@ -121,7 +121,7 @@ namespace groupmanager
             {
                 lock (Names)
                 {
-                    if (Profile.FounderID != null && Names.ContainsKey(Profile.FounderID))
+                    if (Profile.FounderID != LLUUID.Zero && Names.ContainsKey(Profile.FounderID))
                     {
                         lblFoundedBy.Text = "Founded by " + Names[Profile.FounderID];
                     }

@@ -231,7 +231,6 @@ namespace libsecondlife
         /// </summary>
         /// <param name="method">EstateOwnerMessage Method field</param>
         /// <param name="listParams">List of parameters to include</param>
-        /// <param name="createInvoice">Use LLUUID.Random() for Invoice field instead of LLUUID.Zero</param>
         public void EstateOwnerMessage(string method, List<string>listParams)
         {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
@@ -251,7 +250,7 @@ namespace libsecondlife
         /// <summary>
         /// Kick an avatar from an estate
         /// </summary>
-        /// <param name="prey">Key of Avatar to kick</param>
+        /// <param name="userID">Key of Avatar to kick</param>
 		public void KickUser(LLUUID userID) 
 		{
             EstateOwnerMessage("kickestate", userID.ToString());
@@ -321,7 +320,6 @@ namespace libsecondlife
         /// <summary>
         /// Begin the region restart process
         /// </summary>
-        /// <param name="prey"></param>
         public void RestartRegion()
         {
             EstateOwnerMessage("restart", "120");
@@ -330,7 +328,6 @@ namespace libsecondlife
         /// <summary>
         /// Cancels a region restart
         /// </summary>
-        /// <param name="prey"></param>
         public void CancelRestart()
         {
             EstateOwnerMessage("restart", "-1");

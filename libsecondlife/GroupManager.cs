@@ -320,7 +320,7 @@ namespace libsecondlife
         /// <returns></returns>
         public byte[] SerializeAttachment()
         {
-            if (OwnerID == null || OwnerID == LLUUID.Zero || AttachmentID == null || AttachmentID == LLUUID.Zero)
+            if (OwnerID == LLUUID.Zero || AttachmentID == LLUUID.Zero)
                 return new byte[0];
             //I guess this is how this works, no gaurentees
             string lsd = "<llsd><item_id>" + AttachmentID.ToString() + "</item_id><owner_id>"
@@ -736,7 +736,7 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>Request members <> role mapping for a group.</summary>
+        /// <summary>Request members (members,role) role mapping for a group.</summary>
         /// <remarks>Subscribe to <code>OnGroupRolesMembers</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
         public void RequestGroupRoleMembers(LLUUID group)

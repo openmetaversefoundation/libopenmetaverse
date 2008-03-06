@@ -1104,7 +1104,7 @@ namespace libsecondlife
         /// can be accomplished with SetPermissions()
         /// </summary>
         /// <param name="simulator">Simulator containing object</param>
-        /// <param name="LocalID">LocalID of Object</param>
+        /// <param name="localID">LocalID of Object</param>
         /// <param name="group">Group to deed object to</param>
         public void DeedObject(Simulator simulator, uint localID, LLUUID group)
         {
@@ -1130,7 +1130,7 @@ namespace libsecondlife
         /// can be accomplished with SetPermissions()
         /// </summary>
         /// <param name="simulator">Simulator containing objects</param>
-        /// <param name="LocalIDs">List of LocalIDs</param>
+        /// <param name="localIDs">List of LocalIDs</param>
         /// <param name="group">Group to deed objects to.</param>
         public void DeedObjects(Simulator simulator, List<uint> localIDs, LLUUID group)
         {

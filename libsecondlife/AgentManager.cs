@@ -1271,9 +1271,9 @@ namespace libsecondlife
             effect.Effect[0].Type = (byte)EffectType.PointAt;
 
             byte[] typeData = new byte[57];
-            if (sourceAvatar != null)
+            if (sourceAvatar != LLUUID.Zero)
                 Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
-            if (targetObject != null)
+            if (targetObject != LLUUID.Zero)
                 Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
             Buffer.BlockCopy(globalOffset.GetBytes(), 0, typeData, 32, 24);
             typeData[56] = (byte)type;
@@ -1339,9 +1339,9 @@ namespace libsecondlife
             effect.Effect[0].Type = (byte)EffectType.LookAt;
 
             byte[] typeData = new byte[57];
-            if (sourceAvatar != null)
+            if (sourceAvatar != LLUUID.Zero)
                 Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
-            if (targetObject != null)
+            if (targetObject != LLUUID.Zero)
                 Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
             typeData[56] = (byte)type;
 
@@ -2739,9 +2739,9 @@ namespace libsecondlife
         /// <summary>
         /// Group Chat Request
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="llsd"></param>
-        /// <param name="simulator"></param>
+        /// <param name="capsKey">Caps Key</param>
+        /// <param name="llsd">LLSD Map containing invitation</param>
+        /// <param name="simulator">Originating Simulator</param>
         private void ChatterBoxInvitationHandler(string capsKey, LLSD llsd, Simulator simulator)
         {       
                 if (OnInstantMessage != null)

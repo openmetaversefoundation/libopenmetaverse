@@ -698,7 +698,7 @@ namespace libsecondlife
                     LLUUID assetID = GetWearableAsset(type);
 
                     // Build a hash of all the texture asset IDs in this baking layer
-                    if (assetID != null) hash ^= assetID;
+                    if (assetID != LLUUID.Zero) hash ^= assetID;
                 }
 
                 if (hash != LLUUID.Zero)

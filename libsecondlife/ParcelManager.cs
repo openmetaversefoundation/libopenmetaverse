@@ -958,7 +958,7 @@ namespace libsecondlife
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="position">llVector3 position in simulator (Z not used)</param>
         /// <returns>0 on failure, or parcel LocalID on success.</returns>
-        /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map &
+        /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map and
         /// dictionary.</remarks>
         public int GetParcelLocalID(Simulator simulator, LLVector3 position)
         {
@@ -1088,7 +1088,7 @@ namespace libsecondlife
         /// <param name="localID">Simulator local ID of parcel</param>
         /// <param name="selectType">Owners, Others, Etc</param>
         /// <param name="ownerIDs">List containing keys of avatars objects to select; 
-        /// if List is null will return Objects of type <c>selectType<c></c></param>
+        /// if List is null will return Objects of type <c>selectType<c></param>
         /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
         public void SelectObjects(int localID, ObjectReturnType selectType, List<LLUUID> ownerIDs)
         {

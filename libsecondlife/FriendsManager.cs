@@ -702,20 +702,8 @@ namespace libsecondlife
         /// <summary>
         /// Handles relevant messages from the server encapsulated in instant messages.
         /// </summary>
-        /// <param name="fromAgentID"></param>
-        /// <param name="fromAgentName"></param>
-        /// <param name="toAgentID"></param>
-        /// <param name="parentEstateID"></param>
-        /// <param name="regionID"></param>
-        /// <param name="position"></param>
-        /// <param name="dialog"></param>
-        /// <param name="groupIM"></param>
-        /// <param name="imSessionID"></param>
-        /// <param name="timestamp"></param>
-        /// <param name="message"></param>
-        /// <param name="offline"></param>
-        /// <param name="binaryBucket"></param>
-        /// <param name="simulator"></param>
+        /// <param name="im">InstantMessage object containing encapsalated instant message</param>
+        /// <param name="simulator">Originating Simulator</param>
         private void MainAvatar_InstantMessage(InstantMessage im, Simulator simulator)
         {
             if (im.Dialog == InstantMessageDialog.FriendshipOffered)

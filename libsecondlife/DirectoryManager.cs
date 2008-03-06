@@ -581,7 +581,7 @@ namespace libsecondlife
         /// Search Events with Options to specify category and Mature events.
         /// </summary>
         /// <param name="searchText">Text to search for</param>
-        /// <param name="ShowMature">true to include Mature events</param>
+        /// <param name="showMature">true to include Mature events</param>
         /// <param name="category">category to search</param>
         /// <returns>UUID of query to correlate results in callback.</returns>
         public LLUUID StartEventsSearch(string searchText, bool showMature, EventCategories category)

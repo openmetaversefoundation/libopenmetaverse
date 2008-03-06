@@ -581,7 +581,7 @@ namespace libsecondlife
         /// <summary>
         /// Initiate an asset upload
         /// </summary>
-        /// <param name="transactionID">The ID this asset will have if the
+        /// <param name="assetID">The ID this asset will have if the
         /// upload succeeds</param>
         /// <param name="type">Asset type to upload this data as</param>
         /// <param name="data">Raw asset data to upload</param>

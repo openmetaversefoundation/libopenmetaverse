@@ -308,10 +308,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Checks simulator parcel map to make sure its downloaded all data successfully
+        /// Checks simulator parcel map to make sure it has downloaded all data successfully
         /// </summary>
-        /// <param name="sim"></param>
-        /// <returns></returns>
+        /// <returns>true if map is full (contains no 0's)</returns>
         public bool IsParcelMapFull()
         {
             int ny = this.ParcelMap.GetLength(0);
@@ -380,7 +379,8 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="port"></param>
+        /// <param name="address">IPEndPoint of the simulator</param>
+        /// <param name="handle">handle of the simulator</param>
         public Simulator(SecondLife client, IPEndPoint address, ulong handle)
             : base(address)
         {

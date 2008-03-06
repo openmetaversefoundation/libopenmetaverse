@@ -60,12 +60,10 @@ namespace libsecondlife.Baking
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="totalLayers">Total number of layers this layer set is
+        /// <param name="textureCount">Total number of layers this layer set is
         /// composed of</param>
         /// <param name="paramValues">Appearance parameters the drive the 
         /// baking process</param>
-        /// <param name="width">Width of the final baked image</param>
-        /// <param name="height">Height of the final baked image</param>
         public Baker(SecondLife client, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
         {
             Client = client;
@@ -94,7 +92,7 @@ namespace libsecondlife.Baking
         /// stores it for processing later
         /// </summary>
         /// <param name="index">The baking texture index of the image to be added</param>
-        /// <param name="jp2data">JPEG2000 compressed image to be added to the 
+        /// <param name="texture">JPEG2000 compressed image to be added to the 
         /// baking texture</param>
         /// <returns>True if this texture is completely baked and JPEG2000 data 
         /// is available, otherwise false</returns>

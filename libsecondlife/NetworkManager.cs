@@ -264,7 +264,7 @@ namespace libsecondlife
         /// and should only be used if you are doing something not supported in
         /// libsecondlife
         /// </summary>
-        /// <param name="eventName">Name of the CAPS event to register a handler for</param>
+        /// <param name="capsEvent">Name of the CAPS event to register a handler for</param>
         /// <param name="callback">Callback to fire when a CAPS event is received</param>
         public void RegisterEventCallback(string capsEvent, Caps.EventQueueCallback callback)
         {

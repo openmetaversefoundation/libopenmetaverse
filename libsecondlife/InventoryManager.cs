@@ -872,7 +872,7 @@ namespace libsecondlife
         /// Moves the folders, the keys in the Dictionary parameter,
         /// to a new parents, the value of that folder's key.
         /// </summary>
-        /// <param name="FoldersNewParents"></param>
+        /// <param name="foldersNewParents"></param>
         public void MoveFolders(Dictionary<LLUUID, LLUUID> foldersNewParents)
         {
             // FIXME: Use two List<LLUUID> to stay consistent
@@ -1742,7 +1742,7 @@ namespace libsecondlife
             // IDs
             CRC += iitem.AssetUUID.CRC(); // AssetID
             CRC += iitem.ParentUUID.CRC(); // FolderID
-            CRC += iitem.UUID == null ? LLUUID.Zero.CRC() : iitem.UUID.CRC(); // ItemID
+            CRC += iitem.UUID.CRC(); // ItemID
 
             // Permission stuff
             CRC += iitem.CreatorID.CRC(); // CreatorID

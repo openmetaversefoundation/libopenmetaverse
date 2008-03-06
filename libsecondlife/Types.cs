@@ -358,7 +358,6 @@ namespace libsecondlife
         /// </summary>
         /// <param name="x">X value</param>
         /// <param name="y">Y value</param>
-        /// <param name="z">Z value</param>
 		public LLVector2(float x, float y)
 		{
 			X = x;

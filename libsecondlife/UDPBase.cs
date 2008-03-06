@@ -98,7 +98,6 @@ namespace libsecondlife
         /// <summary>
         /// Initialize the object pool in server mode
         /// </summary>
-        /// <param name="port"></param>
         /// <param name="itemsPerSegment"></param>
         /// <param name="minSegments"></param>
         public PacketBufferPool(int itemsPerSegment, int minSegments)

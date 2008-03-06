@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-			if (fromAgentID == null)
+			if (fromAgentID == LLUUID.Zero)
 				return "Unable to send money to console.  This command only works when IMed.";
 
 		    int amount = Client.Self.Balance;

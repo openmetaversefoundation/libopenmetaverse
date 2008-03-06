@@ -78,7 +78,6 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client"></param>
         /// <param name="simulator"></param>
         /// <param name="seedcaps"></param>
         internal Caps(Simulator simulator, string seedcaps)

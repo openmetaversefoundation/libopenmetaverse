@@ -74,7 +74,7 @@ namespace libsecondlife
         /// // populates with copied values from example KeyNameCache Dictionary.
         /// 
         /// // create source dictionary
-        /// Dictionary<LLUUID, string> KeyNameCache = new Dictionary<LLUUID, string>();
+        /// Dictionary&lt;LLUUID, string&gt; KeyNameCache = new Dictionary&lt;LLUUID, string&gt;();
         /// KeyNameCache.Add("8300f94a-7970-7810-cf2c-fc9aa6cdda24", "Jack Avatar");
         /// KeyNameCache.Add("27ba1e40-13f7-0708-3e98-5819d780bd62", "Jill Avatar");
         /// 
