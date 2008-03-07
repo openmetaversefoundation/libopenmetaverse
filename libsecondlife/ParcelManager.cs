@@ -777,7 +777,7 @@ namespace libsecondlife
         /// dictionary)
         /// </summary>
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
-        /// <param name="refresh">If set to true, will force a full refresh</param>
+        /// <param name="refresh">If TRUE, will force a full refresh</param>
         public void RequestAllSimParcels(Simulator simulator, bool refresh)
         {
 
@@ -1191,7 +1191,7 @@ namespace libsecondlife
 
         private void ParcelDwellReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnParcelDwell != null)
+            if (OnParcelDwell != null || Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL == true)
             {
                 ParcelDwellReplyPacket dwell = (ParcelDwellReplyPacket)packet;
 
@@ -1205,8 +1205,11 @@ namespace libsecondlife
                     }
                 }
 
-                try { OnParcelDwell(dwell.Data.ParcelID, dwell.Data.LocalID, dwell.Data.Dwell); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                if (OnParcelDwell != null)
+                {
+                    try { OnParcelDwell(dwell.Data.ParcelID, dwell.Data.LocalID, dwell.Data.Dwell); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
 
@@ -1316,9 +1319,17 @@ namespace libsecondlife
                                     simulator.ParcelMap[y, x] = parcel.LocalID;
                             }
                         }
-
                     }
                 }
+
+                // auto request acl, will be stored in parcel tracking dictionary if enables
+                if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
+                    Client.Parcels.AccessListRequest(simulator, properties.ParcelData.LocalID, 
+                        AccessList.Both, properties.ParcelData.SequenceID);
+
+                // auto request dwell, will be stored in parcel tracking dictionary if enables
+                if (Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL)
+                    Client.Parcels.DwellRequest(simulator, properties.ParcelData.LocalID);
 
                 // Fire the callback for parcel properties being received
                 if (OnParcelProperties != null)
@@ -1342,7 +1353,7 @@ namespace libsecondlife
 
         protected void ParcelAccessListReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnAccessListReply != null)
+            if (OnAccessListReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
             {
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
                 List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>(reply.List.Length);
@@ -1367,9 +1378,15 @@ namespace libsecondlife
                     }
                 }
 
-                try { OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
-                    accessList); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                if (OnAccessListReply != null)
+                {
+                    try
+                    {
+                        OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
+                      accessList);
+                    }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
 

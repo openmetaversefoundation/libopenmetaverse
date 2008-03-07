@@ -177,6 +177,16 @@ namespace libsecondlife
         /// <summary>If true, parcel details will be stored in the 
         /// <code>Simulator.Parcels</code> dictionary as they are received</summary>
         public bool PARCEL_TRACKING = true;
+        /// <summary>
+        /// If true, an incoming parcel properties reply will automatically send
+        /// a request for the parcel access list.
+        /// </summary>
+        public bool ALWAYS_REQUEST_PARCEL_ACL = true;
+        /// <summary>
+        /// if true, an incoming parcel properties reply will automatically send 
+        /// a request for the traffic count.
+        /// </summary>
+        public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
         // Misc
 

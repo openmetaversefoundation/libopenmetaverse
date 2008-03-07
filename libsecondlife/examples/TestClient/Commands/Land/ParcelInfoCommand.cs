@@ -41,13 +41,13 @@ namespace libsecondlife.TestClient
 
             if (ParcelsDownloaded.WaitOne(20000, false) && Client.Network.Connected)
             {
-                sb.AppendFormat("Downloaded {0} Parcels in {1}", 
+                sb.AppendFormat("Downloaded {0} Parcels in {1} " + System.Environment.NewLine, 
                     Client.Network.CurrentSim.Parcels.Count, Client.Network.CurrentSim.Name);
 
                 Client.Network.CurrentSim.Parcels.ForEach(delegate(Parcel parcel)
                 {
-                    sb.AppendFormat("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}" + System.Environment.NewLine,
-                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count);
+                    sb.AppendFormat("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3} Traffic: {4}" + System.Environment.NewLine,
+                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count, parcel.Dwell);
                 });
 
                 result = sb.ToString();
