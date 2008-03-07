@@ -10,7 +10,6 @@ namespace libsecondlife.TestClient
     public class ParcelInfoCommand : Command
     {
         private AutoResetEvent ParcelsDownloaded = new AutoResetEvent(false);
-        private int ParcelCount = 0;
 
         public ParcelInfoCommand(TestClient testClient)
         {
@@ -30,25 +29,31 @@ namespace libsecondlife.TestClient
 
             ParcelManager.SimParcelsDownloaded del = delegate(Simulator simulator, InternalDictionary<int, Parcel> simParcels, int[,] parcelMap)
             {
-                ParcelCount = simParcels.Count;
-
-                simParcels.ForEach(delegate(Parcel parcel)
-                {
-                    sb.AppendFormat("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}" + System.Environment.NewLine,
-                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count);
-                });
                 ParcelsDownloaded.Set();
-
             };
 
             ParcelsDownloaded.Reset();
             Client.Parcels.OnSimParcelsDownloaded += del;
             Client.Parcels.RequestAllSimParcels(Client.Network.CurrentSim);
 
+            if (Client.Network.CurrentSim.IsParcelMapFull())
+                ParcelsDownloaded.Set();
+
             if (ParcelsDownloaded.WaitOne(20000, false) && Client.Network.Connected)
+            {
+                sb.AppendFormat("Downloaded {0} Parcels in {1}", 
+                    Client.Network.CurrentSim.Parcels.Count, Client.Network.CurrentSim.Name);
+
+                Client.Network.CurrentSim.Parcels.ForEach(delegate(Parcel parcel)
+                {
+                    sb.AppendFormat("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}" + System.Environment.NewLine,
+                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count);
+                });
+
                 result = sb.ToString();
+            }
             else
-                result =  "Failed to retrieve information on all the simulator parcels";
+                result = "Failed to retrieve information on all the simulator parcels";
 
             Client.Parcels.OnSimParcelsDownloaded -= del;
             return result;

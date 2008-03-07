@@ -769,6 +769,24 @@ namespace libsecondlife
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
         public void RequestAllSimParcels(Simulator simulator)
         {
+            RequestAllSimParcels(simulator, false);
+        }
+
+        /// <summary>
+        /// Request all simulator parcel properties (used for populating the <code>Simulator.Parcels</code> 
+        /// dictionary)
+        /// </summary>
+        /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
+        /// <param name="refresh">If set to true, will force a full refresh</param>
+        public void RequestAllSimParcels(Simulator simulator, bool refresh)
+        {
+
+            if (refresh)
+            {
+                lock (simulator.ParcelMap)
+                    simulator.ParcelMap = new int[64,64];
+            }
+
             Thread th = new Thread(delegate()
             {
                 int y, x;
@@ -782,7 +800,7 @@ namespace libsecondlife
                                                              (y + 1) * 4.0f, (x + 1) * 4.0f,
                                                              y * 4.0f, x * 4.0f, 0, false);
                             // Pause for 50 ms after every request to avoid flooding the sim
-                            System.Threading.Thread.Sleep(50);
+                            System.Threading.Thread.Sleep(200);
                         }
                     }
                 }
