@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
 using libsecondlife.Packets;
+using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
@@ -117,9 +118,9 @@ namespace libsecondlife
             UsePassList = 1 << 11,
             /// <summary>List this parcel in the search directory</summary>
             ShowDirectory = 1 << 12,
-            /// <summary>Unknown</summary>
+            /// <summary>Allow personally owned parcels to be deeded to group</summary>
             AllowDeedToGroup = 1 << 13,
-            /// <summary>Unknown</summary>
+            /// <summary>If Deeded, owner contributes required tier to group parcel is deeded to</summary>
             ContributeWithDeed = 1 << 14,
             /// <summary>Restrict sounds originating on this parcel to the 
             /// parcel boundaries</summary>
@@ -139,9 +140,11 @@ namespace libsecondlife
             RestrictPushObject = 1 << 21,
             /// <summary>Ban all non identified/transacted avatars</summary>
             DenyAnonymous = 1 << 22,
-            /// <summary>Ban all identified avatars</summary>
-            DenyIdentified = 1 << 23,
-            /// <summary>Ban all transacted avatars</summary>
+            /// <summary>Ban all identified avatars [OBSOLETE]</summary>
+            [Obsolete]
+            DenyIdentified = 1 << 23, 
+            /// <summary>Ban all transacted avatars [OBSOLETE]</summary>
+            [Obsolete]
             DenyTransacted = 1 << 24,
             /// <summary>Allow group-owned scripts to run</summary>
             AllowGroupScripts = 1 << 25,
@@ -155,7 +158,9 @@ namespace libsecondlife
             /// <summary>Voice Enabled on this parcel</summary>
             AllowVoiceChat = 1 << 29,
             /// <summary>Use Estate Voice channel for Voice on this parcel</summary>
-            UseEstateVoiceChan = 1 << 30
+            UseEstateVoiceChan = 1 << 30,
+            /// <summary>Deny Age Unverified Users</summary>
+            DenyAgeUnverified = 1U << 31
         }
 
         /// <summary>
@@ -316,18 +321,34 @@ namespace libsecondlife
         /// <summary></summary>
         public bool RegionDenyAnonymous;
         /// <summary></summary>
-        public bool RegionDenyIdentified;
+        [Obsolete]
+        public bool RegionDenyIdentified; // no longer used as of 1.19
         /// <summary></summary>
-        public bool RegionDenyTransacted;
+        [Obsolete]
+        public bool RegionDenyTransacted; // no longer used as of 1.19
         /// <summary></summary>
         public bool RegionPushOverride;
-        /// <summary></summary>
+        /// <summary>Simulator Object, containing details from Simulator class</summary>
         public Simulator Simulator;
         /// <summary>Access list of who is whitelisted or blacklisted on this
         /// parcel</summary>
         public List<ParcelManager.ParcelAccessEntry> AccessList;
-        /// <summary></summary>
+        /// <summary>TRUE of region denies access to age unverified users</summary>
         public bool RegionDenyAgeUnverified;
+        /// <summary>String describing media</summary>
+        public string MediaDesc;
+        /// <summary>Integer representing the height of the media</summary>
+        public int MediaHeight;
+        /// <summary>true to loop media</summary>
+        public bool MediaLoop;
+        /// <summary>The mime type of the media. e.g.: image/jpeg, text/html, etc</summary>
+        public string MediaType;
+        /// <summary>Integer representing the width of the media</summary>
+        public int MediaWidth;
+        /// <summary>true to obscure (hide) media url</summary>
+        public bool ObscureMedia;
+        /// <summary>true to obscure (hide) music url</summary>
+        public bool ObscureMusic;
 
         public override string ToString()
         {
@@ -396,11 +417,18 @@ namespace libsecondlife
             LandingType = 0x0;
             Dwell = 0;
             RegionDenyAnonymous = false;
-            RegionDenyIdentified = false;
-            RegionDenyTransacted = false;
+            RegionDenyIdentified = false; // no longer used as of 1.19
+            RegionDenyTransacted = false; // no longer used as of 1.19
             RegionPushOverride = false;
             AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
             RegionDenyAgeUnverified = false;
+            MediaDesc = string.Empty;
+            MediaHeight = 0;
+            MediaLoop = false;
+            MediaType = String.Empty;
+            MediaWidth = 0;
+            ObscureMedia = false;
+            ObscureMusic = false;
         }
 
         /// <summary>
@@ -521,7 +549,8 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Simulator sent Sequence IDs for ParcelPropertiesReply packets
+        /// Simulator sent Sequence IDs for ParcelPropertiesReply packets (sent when avatar tries to cross
+        /// parcel border)
         /// </summary>
         public enum SequenceStatus : int
         {
@@ -554,6 +583,15 @@ namespace libsecondlife
             Large = 4
         }
 
+        public enum AccessDeniedReason : byte
+        {
+            NotDenied = 0,
+            NotInGroup = 1,
+            NotOnAllowList = 2,
+            BannedFromParcel = 3,
+            NoAccess = 4,
+            NotAgeVerified = 5
+        }
         #endregion Enums
 
         #region Structs
@@ -668,7 +706,10 @@ namespace libsecondlife
             Client = client;
             // Setup the callbacks
             Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new NetworkManager.PacketCallback(ParcelInfoReplyHandler));
+            // UDP packet handler
             Client.Network.RegisterCallback(PacketType.ParcelProperties, new NetworkManager.PacketCallback(ParcelPropertiesHandler));
+            // CAPS packet handler, to allow for Media Data not contained in the message template
+            Client.Network.RegisterEventCallback("ParcelProperties", new Caps.EventQueueCallback(ParcelPropertiesReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new NetworkManager.PacketCallback(ParcelDwellReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelObjectOwnersReply, new NetworkManager.PacketCallback(ParcelObjectOwnersReplyHandler));
@@ -1241,7 +1282,135 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+        /// <summary>
+        /// ParcelProperties replies sent over CAPS
+        /// </summary>
+        /// <param name="capsKey">Not used (will always be ParcelProperties)</param>
+        /// <param name="llsd">LLSD Structured data</param>
+        /// <param name="simulator">Object representing simulator</param>
+        private void ParcelPropertiesReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        {
+            if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
+            {
+                LLSDMap map = (LLSDMap)llsd;
+                LLSDMap parcelDataBlock = (LLSDMap)(((LLSDArray)map["ParcelData"])[0]);
+                LLSDMap ageVerifyBlock = (LLSDMap)(((LLSDArray)map["AgeVerificationBlock"])[0]);
+                LLSDMap mediaDataBlock = (LLSDMap)(((LLSDArray)map["MediaData"])[0]);
 
+                Parcel parcel = new Parcel(simulator, parcelDataBlock["LocalID"].AsInteger());
+
+                parcel.AABBMax.FromLLSD(parcelDataBlock["AABBMax"]);
+                parcel.AABBMin.FromLLSD(parcelDataBlock["AABBMin"]);
+                parcel.Area = parcelDataBlock["Area"].AsInteger();
+                parcel.AuctionID = (uint)parcelDataBlock["AuctionID"].AsInteger();
+                parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
+                parcel.Bitmap = parcelDataBlock["Bitmap"].AsBinary();
+                parcel.Category = (Parcel.ParcelCategory)parcelDataBlock["Category"].AsInteger();
+                parcel.ClaimDate = Helpers.UnixTimeToDateTime(parcelDataBlock["ClaimDate"].AsInteger());
+                parcel.ClaimPrice = parcelDataBlock["ClaimPrice"].AsInteger();
+                parcel.Desc = parcelDataBlock["Desc"].AsString();
+                parcel.Flags = (Parcel.ParcelFlags)parcelDataBlock["ParcelFlags"].AsInteger();
+                parcel.GroupID = parcelDataBlock["GroupID"].AsUUID();
+                parcel.GroupPrims = parcelDataBlock["GroupPrims"].AsInteger();
+                parcel.IsGroupOwned = parcelDataBlock["IsGroupOwned"].AsBoolean();
+                parcel.LandingType = (byte)parcelDataBlock["LandingType"].AsInteger();
+                parcel.LocalID = parcelDataBlock["LocalID"].AsInteger();
+                parcel.MaxPrims = parcelDataBlock["MaxPrims"].AsInteger();
+                parcel.MediaAutoScale = (byte)parcelDataBlock["MediaAutoScale"].AsInteger();
+                parcel.MediaID = parcelDataBlock["MediaID"].AsUUID();
+                parcel.MediaURL = parcelDataBlock["MediaURL"].AsString();
+                parcel.MusicURL = parcelDataBlock["MusicURL"].AsString();
+                parcel.Name = parcelDataBlock["Name"].AsString();
+                parcel.OtherCleanTime = parcelDataBlock["OtherCleanTime"].AsInteger();
+                parcel.OtherCount = parcelDataBlock["OtherCount"].AsInteger();
+                parcel.OtherPrims = parcelDataBlock["OtherPrims"].AsInteger();
+                parcel.OwnerID = parcelDataBlock["OwnerID"].AsUUID();
+                parcel.OwnerPrims = parcelDataBlock["OwnerPrims"].AsInteger();
+                parcel.ParcelPrimBonus = (float)parcelDataBlock["ParcelPrimBonus"].AsReal();
+                parcel.PassHours = (float)parcelDataBlock["PassHours"].AsReal();
+                parcel.PassPrice = parcelDataBlock["PassPrice"].AsInteger();
+                parcel.PublicCount = parcelDataBlock["PublicCount"].AsInteger();
+                parcel.RegionDenyAgeUnverified = ageVerifyBlock["RegionDenyAgeUnverified"].AsBoolean();
+                parcel.RegionDenyAnonymous = parcelDataBlock["RegionDenyAnonymous"].AsBoolean();
+                parcel.RegionPushOverride = parcelDataBlock["RegionPushOverride"].AsBoolean();
+                parcel.RentPrice = parcelDataBlock["RentPrice"].AsInteger();
+                parcel.RequestResult = parcelDataBlock["RequestResult"].AsInteger();
+                parcel.SalePrice = parcelDataBlock["SalePrice"].AsInteger();
+                parcel.SelectedPrims = parcelDataBlock["SelectedPrims"].AsInteger();
+                parcel.SelfCount = parcelDataBlock["SelfCount"].AsInteger();
+                parcel.SequenceID = parcelDataBlock["SequenceID"].AsInteger();
+                parcel.Simulator = simulator;
+                parcel.SimWideMaxPrims = parcelDataBlock["SimWideMaxPrims"].AsInteger();
+                parcel.SimWideTotalPrims = parcelDataBlock["SimWideTotalPrims"].AsInteger();
+                parcel.SnapSelection = parcelDataBlock["SnapSelection"].AsBoolean();
+                parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsUUID();
+                parcel.Status = (Parcel.ParcelStatus)parcelDataBlock["Status"].AsInteger();
+                parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
+                parcel.UserLocation.FromLLSD(parcelDataBlock["UserLocation"]);
+                parcel.UserLookAt.FromLLSD(parcelDataBlock["UserLookAt"]);
+                parcel.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
+                parcel.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
+                parcel.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
+                parcel.MediaLoop = mediaDataBlock["MediaLoop"].AsBoolean();
+                parcel.MediaType = mediaDataBlock["MediaType"].AsString();
+                parcel.ObscureMedia = mediaDataBlock["ObscureMedia"].AsBoolean();
+                parcel.ObscureMusic = mediaDataBlock["ObscureMusic"].AsBoolean();
+                
+                if (Client.Settings.PARCEL_TRACKING)
+                {
+                    lock (simulator.Parcels.Dictionary)
+                        simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
+
+                    int y, x, index, bit;
+                    for (y = 0; y < simulator.ParcelMap.GetLength(0); y++)
+                    {
+                        for (x = 0; x < simulator.ParcelMap.GetLength(1); x++)
+                        {
+                            if (simulator.ParcelMap[y, x] == 0)
+                            {
+                                index = (y * 64) + x;
+                                bit = index % 8;
+                                index >>= 3;
+
+                                if ((parcel.Bitmap[index] & (1 << bit)) != 0)
+                                    simulator.ParcelMap[y, x] = parcel.LocalID;
+                            }
+                        }
+
+                    }
+                }
+
+                // auto request acl, will be stored in parcel tracking dictionary if enabled
+                if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
+                    Client.Parcels.AccessListRequest(simulator, parcel.LocalID,
+                        AccessList.Both, parcel.SequenceID);
+
+                // auto request dwell, will be stored in parcel tracking dictionary if enables
+                if (Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL)
+                    Client.Parcels.DwellRequest(simulator, parcel.LocalID);
+
+                // Fire the callback for parcel properties being received
+                if (OnParcelProperties != null)
+                {
+                    try { OnParcelProperties(parcel, (ParcelResult)parcel.RequestResult,
+                            parcel.SequenceID, parcel.SnapSelection); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+
+                // Check if all of the simulator parcels have been retrieved, if so fire another callback
+                if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
+                {
+                    try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parcel Properties reply handler for data that comes in over udp (deprecated)
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void ParcelPropertiesHandler(Packet packet, Simulator simulator)
         {
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
@@ -1282,8 +1451,8 @@ namespace libsecondlife
                 parcel.PassPrice = properties.ParcelData.PassPrice;
                 parcel.PublicCount = properties.ParcelData.PublicCount;
                 parcel.RegionDenyAnonymous = properties.ParcelData.RegionDenyAnonymous;
-                parcel.RegionDenyIdentified = properties.ParcelData.RegionDenyIdentified;
-                parcel.RegionDenyTransacted = properties.ParcelData.RegionDenyTransacted;
+                //parcel.RegionDenyIdentified = properties.ParcelData.RegionDenyIdentified;
+                //parcel.RegionDenyTransacted = properties.ParcelData.RegionDenyTransacted;
                 parcel.RegionPushOverride = properties.ParcelData.RegionPushOverride;
                 parcel.RentPrice = properties.ParcelData.RentPrice;
                 parcel.SalePrice = properties.ParcelData.SalePrice;
@@ -1297,7 +1466,7 @@ namespace libsecondlife
                 parcel.UserLocation = properties.ParcelData.UserLocation;
                 parcel.UserLookAt = properties.ParcelData.UserLookAt;
                 parcel.RegionDenyAgeUnverified = properties.AgeVerificationBlock.RegionDenyAgeUnverified;
-
+                Console.WriteLine(parcel.ToString());
                 // store parcel in dictionary
                 if (Client.Settings.PARCEL_TRACKING)
                 {
@@ -1322,7 +1491,7 @@ namespace libsecondlife
                     }
                 }
 
-                // auto request acl, will be stored in parcel tracking dictionary if enables
+                // auto request acl, will be stored in parcel tracking dictionary if enabled
                 if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
                     Client.Parcels.AccessListRequest(simulator, properties.ParcelData.LocalID, 
                         AccessList.Both, properties.ParcelData.SequenceID);

@@ -297,8 +297,8 @@ namespace libsecondlife
                 }
             }
 
-            // Generic parser next
-            if (body.Type == StructuredData.LLSDType.Map)
+            // Generic parser next, don't generic parse events we've manually registered for
+            if (body.Type == StructuredData.LLSDType.Map && !_EventTable.ContainsKey(capsEvent))
             {
                 StructuredData.LLSDMap map = (StructuredData.LLSDMap)body;
                 Packet packet = Packet.BuildPacket(capsEvent, map);
