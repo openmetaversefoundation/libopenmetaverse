@@ -142,7 +142,7 @@ namespace libsecondlife
             DenyAnonymous = 1 << 22,
             /// <summary>Ban all identified avatars [OBSOLETE]</summary>
             [Obsolete]
-            DenyIdentified = 1 << 23, 
+            DenyIdentified = 1 << 23,
             /// <summary>Ban all transacted avatars [OBSOLETE]</summary>
             [Obsolete]
             DenyTransacted = 1 << 24,
@@ -656,7 +656,7 @@ namespace libsecondlife
         /// <param name="simulator">simulator parcel is in</param>
         /// <param name="localID">LocalID of parcel</param>
         /// <param name="primownersEntries">List containing details or prim ownership</param>
-        public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator,  List<ParcelPrimOwners> primOwners);
+        public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator, List<ParcelPrimOwners> primOwners);
 
         /// <summary>
         /// Fired when all parcels are downloaded from simulator
@@ -825,7 +825,7 @@ namespace libsecondlife
             if (refresh)
             {
                 lock (simulator.ParcelMap)
-                    simulator.ParcelMap = new int[64,64];
+                    simulator.ParcelMap = new int[64, 64];
             }
 
             Thread th = new Thread(delegate()
@@ -874,7 +874,7 @@ namespace libsecondlife
         /// <param name="groupID"></param>
         /// <param name="removeContribution"></param>
         /// <returns></returns>
-        public void Buy(Simulator simulator, int localID, bool forGroup, LLUUID groupID, 
+        public void Buy(Simulator simulator, int localID, bool forGroup, LLUUID groupID,
             bool removeContribution, int parcelArea, int parcelPrice)
         {
             ParcelBuyPacket request = new ParcelBuyPacket();
@@ -1174,7 +1174,7 @@ namespace libsecondlife
 
                 select.ParcelData.LocalID = localID;
                 select.ParcelData.ReturnType = (uint)selectType;
-                
+
                 if (ownerIDs != null)
                 {
                     select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[ownerIDs.Count];
@@ -1309,7 +1309,12 @@ namespace libsecondlife
                 parcel.ClaimDate = Helpers.UnixTimeToDateTime(parcelDataBlock["ClaimDate"].AsInteger());
                 parcel.ClaimPrice = parcelDataBlock["ClaimPrice"].AsInteger();
                 parcel.Desc = parcelDataBlock["Desc"].AsString();
-                parcel.Flags = (Parcel.ParcelFlags)parcelDataBlock["ParcelFlags"].AsInteger();
+
+                // TODO: this probably needs to happen when the packet is deserialized.
+                byte[] bytes = parcelDataBlock["ParcelFlags"].AsBinary();
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(bytes);
+                parcel.Flags = (Parcel.ParcelFlags)BitConverter.ToUInt32(bytes, 0);
                 parcel.GroupID = parcelDataBlock["GroupID"].AsUUID();
                 parcel.GroupPrims = parcelDataBlock["GroupPrims"].AsInteger();
                 parcel.IsGroupOwned = parcelDataBlock["IsGroupOwned"].AsBoolean();
@@ -1355,7 +1360,7 @@ namespace libsecondlife
                 parcel.MediaType = mediaDataBlock["MediaType"].AsString();
                 parcel.ObscureMedia = mediaDataBlock["ObscureMedia"].AsBoolean();
                 parcel.ObscureMusic = mediaDataBlock["ObscureMusic"].AsBoolean();
-                
+
                 if (Client.Settings.PARCEL_TRACKING)
                 {
                     lock (simulator.Parcels.Dictionary)
@@ -1392,8 +1397,11 @@ namespace libsecondlife
                 // Fire the callback for parcel properties being received
                 if (OnParcelProperties != null)
                 {
-                    try { OnParcelProperties(parcel, (ParcelResult)parcel.RequestResult,
-                            parcel.SequenceID, parcel.SnapSelection); }
+                    try
+                    {
+                        OnParcelProperties(parcel, (ParcelResult)parcel.RequestResult,
+                          parcel.SequenceID, parcel.SnapSelection);
+                    }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
@@ -1466,7 +1474,7 @@ namespace libsecondlife
                 parcel.UserLocation = properties.ParcelData.UserLocation;
                 parcel.UserLookAt = properties.ParcelData.UserLookAt;
                 parcel.RegionDenyAgeUnverified = properties.AgeVerificationBlock.RegionDenyAgeUnverified;
-                Console.WriteLine(parcel.ToString());
+
                 // store parcel in dictionary
                 if (Client.Settings.PARCEL_TRACKING)
                 {
@@ -1493,7 +1501,7 @@ namespace libsecondlife
 
                 // auto request acl, will be stored in parcel tracking dictionary if enabled
                 if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
-                    Client.Parcels.AccessListRequest(simulator, properties.ParcelData.LocalID, 
+                    Client.Parcels.AccessListRequest(simulator, properties.ParcelData.LocalID,
                         AccessList.Both, properties.ParcelData.SequenceID);
 
                 // auto request dwell, will be stored in parcel tracking dictionary if enables
@@ -1565,11 +1573,11 @@ namespace libsecondlife
             {
                 ParcelObjectOwnersReplyPacket reply = (ParcelObjectOwnersReplyPacket)packet;
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
-                
+
                 for (int i = 0; i < reply.Data.Length; i++)
                 {
                     ParcelPrimOwners poe = new ParcelPrimOwners();
-                    
+
                     poe.OwnerID = reply.Data[i].OwnerID;
                     poe.IsGroupOwned = reply.Data[i].IsGroupOwned;
                     poe.Count = reply.Data[i].Count;

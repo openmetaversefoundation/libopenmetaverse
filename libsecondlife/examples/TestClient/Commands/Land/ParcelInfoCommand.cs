@@ -46,8 +46,8 @@ namespace libsecondlife.TestClient
 
                 Client.Network.CurrentSim.Parcels.ForEach(delegate(Parcel parcel)
                 {
-                    sb.AppendFormat("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3} Traffic: {4}" + System.Environment.NewLine,
-                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count, parcel.Dwell);
+                    sb.AppendFormat("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3} Traffic: {4} \n\tFlags: {5}" + System.Environment.NewLine,
+                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count, parcel.Dwell, parcel.Flags.ToString());
                 });
 
                 result = sb.ToString();
