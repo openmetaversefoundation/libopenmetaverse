@@ -343,7 +343,7 @@ namespace libsecondlife
         public delegate void NewFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
-        /// 
+        /// Called whenever an object disappears
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="update"></param>
@@ -2071,6 +2071,11 @@ namespace libsecondlife
         {
             KillObjectPacket kill = (KillObjectPacket)packet;
 
+            // Notify first, so that handler has a chance to get a
+            // reference from the ObjectTracker to the object being killed
+            for (int i = 0; i < kill.ObjectData.Length; i++)
+                FireOnObjectKilled(simulator, kill.ObjectData[i].ID);
+
             // Run the for loop multiple times so we only have to lock a total
             // of two times. Locking is by far the most expensive operation here
 
@@ -2100,9 +2105,6 @@ namespace libsecondlife
                     }
                 }
             }
-
-            for (int i = 0; i < kill.ObjectData.Length; i++)
-                FireOnObjectKilled(simulator, kill.ObjectData[i].ID);
         }
 
         protected void ObjectPropertiesHandler(Packet p, Simulator sim)
