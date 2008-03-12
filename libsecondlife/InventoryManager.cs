@@ -369,6 +369,15 @@ namespace libsecondlife
         /// <param name="assetFilename">Filename of the task inventory asset</param>
         public delegate void TaskInventoryReplyCallback(LLUUID itemID, short serial, string assetFilename);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="success"></param>
+        /// <param name="status"></param>
+        /// <param name="itemID"></param>
+        /// <param name="assetID"></param>
+        public delegate void NotecardUploadedAssetCallback(bool success, string status, LLUUID itemID, LLUUID assetID);
+
         #endregion Delegates
 
         #region Events
@@ -1404,6 +1413,37 @@ namespace libsecondlife
             _Client.Network.SendPacket(update);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="notecardID"></param>
+        /// <param name="callback"></param>
+        public void RequestUploadNotecardAsset(byte[] data, LLUUID notecardID, NotecardUploadedAssetCallback callback)
+        {
+            if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
+                throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
+
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateNotecardAgentInventory");
+
+            if (url != null)
+            {
+                LLSDMap query = new LLSDMap();
+                query.Add("item_id", LLSD.FromUUID(notecardID));
+
+                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(query);
+
+                // Make the request
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
+                request.UserData = new object[2] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
+                request.StartRequest(postData);
+            }
+            else
+            {
+                throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
+            }
+        }
         #endregion Update
 
         #region Rez/Give
@@ -2683,6 +2723,47 @@ namespace libsecondlife
 
                 for (int i = 0; i < replyData.InventorySkeleton.Length; i++)
                     _Store.UpdateNodeFor(replyData.InventorySkeleton[i]);
+            }
+        }
+
+        private void UploadNotecardAssetResponse(CapsClient client, LLSD result, Exception error)
+        {
+            LLSDMap contents = (LLSDMap)result;
+            KeyValuePair<NotecardUploadedAssetCallback, byte[]> kvp = (KeyValuePair<NotecardUploadedAssetCallback, byte[]>)(((object[])client.UserData)[0]);
+            NotecardUploadedAssetCallback callback = kvp.Key;
+            byte[] itemData = (byte[])kvp.Value;
+
+            string status = contents["state"].AsString();
+
+            if (status == "upload")
+            {
+                string uploadURL = contents["uploader"].AsString();
+
+                // This makes the assumption that all uploads go to CurrentSim, to avoid
+                // the problem of HttpRequestState not knowing anything about simulators
+                CapsClient upload = new CapsClient(new Uri(uploadURL));
+                upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
+                upload.UserData = new object[2] { kvp, (LLUUID)(((object[])client.UserData)[1]) };
+                upload.StartRequest(itemData, "application/octet-stream");
+            }
+            else if (status == "complete")
+            {
+                if (contents.ContainsKey("new_asset"))
+                {
+                    try { callback(true, String.Empty, (LLUUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
+                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+                else
+                {
+                    try { callback(false, "Failed to parse asset and item UUIDs", LLUUID.Zero, LLUUID.Zero); }
+                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            else
+            {
+                // Failure
+                try { callback(false, status, LLUUID.Zero, LLUUID.Zero); }
+                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
