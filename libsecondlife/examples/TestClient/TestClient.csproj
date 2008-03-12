@@ -65,6 +65,7 @@
     <Compile Include="Commands\Inventory\ImportOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
     <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
+    <Compile Include="Commands\Land\ParcelDetailsCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
     <Compile Include="Commands\Land\AgentLocationsCommand.cs" />
     <Compile Include="Commands\Land\GridLayerCommand.cs" />

@@ -1290,8 +1290,10 @@ namespace libsecondlife
         /// <param name="simulator">Object representing simulator</param>
         private void ParcelPropertiesReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
+
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
+
                 LLSDMap map = (LLSDMap)llsd;
                 LLSDMap parcelDataBlock = (LLSDMap)(((LLSDArray)map["ParcelData"])[0]);
                 LLSDMap ageVerifyBlock = (LLSDMap)(((LLSDArray)map["AgeVerificationBlock"])[0]);
@@ -1306,7 +1308,7 @@ namespace libsecondlife
                 parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
                 parcel.Bitmap = parcelDataBlock["Bitmap"].AsBinary();
                 parcel.Category = (Parcel.ParcelCategory)parcelDataBlock["Category"].AsInteger();
-                parcel.ClaimDate = Helpers.UnixTimeToDateTime(parcelDataBlock["ClaimDate"].AsInteger());
+                parcel.ClaimDate = Helpers.UnixTimeToDateTime((uint)parcelDataBlock["ClaimDate"].AsInteger());
                 parcel.ClaimPrice = parcelDataBlock["ClaimPrice"].AsInteger();
                 parcel.Desc = parcelDataBlock["Desc"].AsString();
 
