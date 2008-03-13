@@ -1686,6 +1686,45 @@ namespace libsecondlife
 
             _Client.Network.SendPacket(request, simulator);
         }
+        
+        /// <summary>
+        /// Moves an Item from an objects (Prim) Inventory to the specified folder in the avatars inventory
+        /// </summary>
+        /// <param name="objectLocalID">LocalID of the object in the simulator</param>
+        /// <param name="taskItemID">UUID of the task item to move</param>
+        /// <param name="inventoryFolderID">UUID of the folder to move the item to</param>
+        /// <param name="simulator">Simulator Object</param>
+        public void MoveTaskInventory(uint objectLocalID, LLUUID taskItemID, LLUUID inventoryFolderID, Simulator simulator)
+        {
+            MoveTaskInventoryPacket request = new MoveTaskInventoryPacket();
+            request.AgentData.AgentID = _Client.Self.AgentID;
+            request.AgentData.SessionID = _Client.Self.SessionID;
+
+            request.AgentData.FolderID = inventoryFolderID;
+
+            request.InventoryData.ItemID = taskItemID;
+            request.InventoryData.LocalID = objectLocalID;
+
+            _Client.Network.SendPacket(request, simulator);
+        }
+        
+        /// <summary>
+        /// Remove an item from an objects (Prim) Inventory
+        /// </summary>
+        /// <param name="objectLocalID">LocalID of the object in the simulator</param>
+        /// <param name="taskItemID">UUID of the task item to remove</param>
+        /// <param name="simulator">Simulator Object</param>
+        public void RemoveTaskInventory(uint objectLocalID, LLUUID taskItemID, Simulator simulator)
+        {
+            RemoveTaskInventoryPacket remove = new RemoveTaskInventoryPacket();
+            remove.AgentData.AgentID = _Client.Self.AgentID;
+            remove.AgentData.SessionID = _Client.Self.SessionID;
+
+            remove.InventoryData.ItemID = taskItemID;
+            remove.InventoryData.LocalID = objectLocalID;
+
+            _Client.Network.SendPacket(remove, simulator);
+        }
 
         #endregion Task
 
