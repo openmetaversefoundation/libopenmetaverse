@@ -837,7 +837,7 @@ namespace mapgenerator
                 "        public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine + 
                 "        public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +
                 "        public int ResendCount;" + Environment.NewLine +
-                "        internal int TickCount;" + Environment.NewLine + Environment.NewLine +
+                "        public int TickCount;" + Environment.NewLine + Environment.NewLine +
                 "        public abstract byte[] ToBytes();" //+ Environment.NewLine + Environment.NewLine +
                 //"        public void ToXml(XmlWriter xmlWriter)" + Environment.NewLine +
                 //"        {" + Environment.NewLine +

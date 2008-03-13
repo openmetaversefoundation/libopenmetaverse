@@ -782,7 +782,7 @@ namespace libsecondlife.Packets
         public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
         public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
         public int ResendCount;
-        internal int TickCount;
+        public int TickCount;
 
         public abstract byte[] ToBytes();
         public static PacketType GetType(ushort id, PacketFrequency frequency)
@@ -71347,10 +71347,112 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        public class DataBlockExtendedBlock
+        {
+            private byte[] _mediatype;
+            public byte[] MediaType
+            {
+                get { return _mediatype; }
+                set
+                {
+                    if (value == null) { _mediatype = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _mediatype = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediatype, 0, value.Length); }
+                }
+            }
+            private byte[] _mediadesc;
+            public byte[] MediaDesc
+            {
+                get { return _mediadesc; }
+                set
+                {
+                    if (value == null) { _mediadesc = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _mediadesc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediadesc, 0, value.Length); }
+                }
+            }
+            public int MediaWidth;
+            public int MediaHeight;
+            public byte MediaLoop;
+
+            public int Length
+            {
+                get
+                {
+                    int length = 9;
+                    if (MediaType != null) { length += 1 + MediaType.Length; }
+                    if (MediaDesc != null) { length += 1 + MediaDesc.Length; }
+                    return length;
+                }
+            }
+
+            public DataBlockExtendedBlock() { }
+            public DataBlockExtendedBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    length = (ushort)bytes[i++];
+                    _mediatype = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _mediatype, 0, length); i += length;
+                    length = (ushort)bytes[i++];
+                    _mediadesc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _mediadesc, 0, length); i += length;
+                    MediaWidth = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    MediaHeight = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    MediaLoop = (byte)bytes[i++];
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                if(MediaType == null) { Console.WriteLine("Warning: MediaType is null, in " + this.GetType()); }
+                bytes[i++] = (byte)MediaType.Length;
+                Buffer.BlockCopy(MediaType, 0, bytes, i, MediaType.Length); i += MediaType.Length;
+                if(MediaDesc == null) { Console.WriteLine("Warning: MediaDesc is null, in " + this.GetType()); }
+                bytes[i++] = (byte)MediaDesc.Length;
+                Buffer.BlockCopy(MediaDesc, 0, bytes, i, MediaDesc.Length); i += MediaDesc.Length;
+                bytes[i++] = (byte)(MediaWidth % 256);
+                bytes[i++] = (byte)((MediaWidth >> 8) % 256);
+                bytes[i++] = (byte)((MediaWidth >> 16) % 256);
+                bytes[i++] = (byte)((MediaWidth >> 24) % 256);
+                bytes[i++] = (byte)(MediaHeight % 256);
+                bytes[i++] = (byte)((MediaHeight >> 8) % 256);
+                bytes[i++] = (byte)((MediaHeight >> 16) % 256);
+                bytes[i++] = (byte)((MediaHeight >> 24) % 256);
+                bytes[i++] = MediaLoop;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- DataBlockExtended --");
+                Helpers.FieldToString(output, MediaType, "MediaType");
+                output.Append(Environment.NewLine);
+                Helpers.FieldToString(output, MediaDesc, "MediaDesc");
+                output.Append(Environment.NewLine);
+                output.AppendLine(String.Format("MediaWidth: {0}", MediaWidth));
+                output.AppendLine(String.Format("MediaHeight: {0}", MediaHeight));
+                output.Append(String.Format("MediaLoop: {0}", MediaLoop));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelMediaUpdate; } }
         public DataBlockBlock DataBlock;
+        public DataBlockExtendedBlock DataBlockExtended;
 
         public ParcelMediaUpdatePacket()
         {
@@ -71358,6 +71460,7 @@ namespace libsecondlife.Packets
             Header.ID = 420;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
+            DataBlockExtended = new DataBlockExtendedBlock();
         }
 
         public ParcelMediaUpdatePacket(byte[] bytes, ref int i) : this()
@@ -71375,6 +71478,7 @@ namespace libsecondlife.Packets
                 bytes = zeroBuffer;
             }
             DataBlock.FromBytes(bytes, ref i);
+            DataBlockExtended.FromBytes(bytes, ref i);
         }
 
         public ParcelMediaUpdatePacket(Header head, byte[] bytes, ref int i): this()
@@ -71392,17 +71496,19 @@ namespace libsecondlife.Packets
                 bytes = zeroBuffer;
             }
             DataBlock.FromBytes(bytes, ref i);
+            DataBlockExtended.FromBytes(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
-            length += DataBlock.Length;;
+            length += DataBlock.Length;            length += DataBlockExtended.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             DataBlock.ToBytes(bytes, ref i);
+            DataBlockExtended.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -71411,6 +71517,7 @@ namespace libsecondlife.Packets
         {
             string output = "--- ParcelMediaUpdate ---" + Environment.NewLine;
                 output += DataBlock.ToString() + Environment.NewLine;
+                output += DataBlockExtended.ToString() + Environment.NewLine;
             return output;
         }
 

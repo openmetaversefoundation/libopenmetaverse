@@ -7708,7 +7708,7 @@ version 2.0
 // viewer -> simulator -> dataserver
 // reliable
 {
-	StartGroupProposal Low 363 NotTrusted Zerocoded
+	StartGroupProposal Low 363 NotTrusted Zerocoded UDPDeprecated
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -7728,7 +7728,7 @@ version 2.0
 // viewer -> simulator -> dataserver
 // reliable
 {
-	GroupProposalBallot Low 364 NotTrusted Unencoded
+	GroupProposalBallot Low 364 NotTrusted Unencoded UDPDeprecated
 	{
 		AgentData		Single
 		{	AgentID		LLUUID			}
@@ -8178,7 +8178,7 @@ version 2.0
 // dataserver -> userserver
 // reliable
 {
-	AgentDropGroup Low 390 Trusted Zerocoded
+	AgentDropGroup Low 390 Trusted Zerocoded UDPDeprecated
 	{
 		AgentData			Single
 		{	AgentID				LLUUID	}
@@ -8713,6 +8713,14 @@ version 2.0
 		{	MediaURL		Variable	1	}	// string
 		{	MediaID			LLUUID			}
 		{	MediaAutoScale	U8				}
+	}
+	{
+		DataBlockExtended Single
+		{   MediaType       Variable    1   }
+		{   MediaDesc       Variable    1   }
+		{   MediaWidth      S32             }
+		{   MediaHeight     S32             }
+		{   MediaLoop       U8              }
 	}
 }
 
