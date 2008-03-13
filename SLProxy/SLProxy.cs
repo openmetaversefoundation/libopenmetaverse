@@ -1668,6 +1668,7 @@ namespace SLProxy
 #if DEBUG_SEQUENCE
 							hrup += " get's";
 #endif
+                            acks.Remove(id);
                             seenAcks.Add(id);
                             changed = true;
                         }
@@ -1715,6 +1716,7 @@ namespace SLProxy
                             Array.Copy(packet.Header.AckList, i + 1, newAcks, i, ackCount - i - 1);
                             packet.Header.AckList = newAcks;
                             --ackCount;
+                            acks.Remove(ackID);
                             seenAcks.Add(ackID);
                             needsCopy = false;
                         }
