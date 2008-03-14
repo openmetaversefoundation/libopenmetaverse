@@ -32,8 +32,9 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
+    /// Access to the Linden dataserver which allows searching for land, events, people, etc
     /// </summary>
+    /// <remarks>This class is automatically instantiated by the SecondLife class</remarks>
     public class DirectoryManager
     {
         /// <summary>
@@ -134,20 +135,21 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Land types to search dataserver for
         /// </summary>
         [Flags]
         public enum SearchTypeFlags
         {
-            /// <summary></summary>
+            /// <summary>Do not search</summary>
             None = 0,
-            /// <summary></summary>
+            /// <summary>Land which is currently up for auction</summary>
             Auction = 1 << 1,
-            /// <summary></summary>
+            /// <summary>Land available to new landowners (formerly the FirstLand program)</summary>
+            [Obsolete]
             Newbie = 1 << 2,
-            /// <summary></summary>
+            /// <summary>Parcels which are on the mainland (Linden owned) continents</summary>
             Mainland = 1 << 3,
-            /// <summary></summary>
+            /// <summary>Parcels which are on privately owned simulators</summary>
             Estate = 1 << 4
         }
 
@@ -198,11 +200,18 @@ namespace libsecondlife
             public bool ForSale;
         }
 
+        /// <summary>
+        /// An Avatar returned from the dataserver
+        /// </summary>
         public struct AgentSearchData 
         {
+            /// <summary>Online status of agent</summary>
             public bool Online;
+            /// <summary>Agents first name</summary>
             public string FirstName;
+            /// <summary>Agents last name</summary>
             public string LastName;
+            /// <summary>Agents <seealso cref="T:libsecondlife.LLUUID"/></summary>
             public LLUUID AgentID;
         }
         /// <summary>

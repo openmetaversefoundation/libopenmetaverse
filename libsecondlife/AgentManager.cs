@@ -39,32 +39,37 @@ namespace libsecondlife
 	#region Enums
 	
 	/// <summary>
-    /// 
+    /// Permission request flags, asked when a script wants to control an Avatar
     /// </summary>
     [Flags]
     public enum ScriptPermission : int
     {
 		/// <summary>Placeholder for empty values, shouldn't ever see this</summary>
 		None = 0,
-		/// <summary>Script wants to take money from you</summary>
+		/// <summary>Script wants ability to take money from you</summary>
 		Debit = 1 << 1,
-		/// <summary></summary>
+		/// <summary>Script wants to take camera controls for you</summary>
 		TakeControls = 1 << 2,
-		/// <summary></summary>
+		/// <summary>Script wants to remap avatars controls</summary>
 		RemapControls = 1 << 3,
 		/// <summary>Script wants to trigger avatar animations</summary>
+        /// <remarks>This function is not implemented on the grid</remarks>
 		TriggerAnimation = 1 << 4,
-		/// <summary></summary>
+		/// <summary>Script wants to attach or detach the prim or primset to your avatar</summary>
 		Attach = 1 << 5,
-		/// <summary></summary>
+		/// <summary>Script wants permission to release ownership</summary>
+        /// <remarks>This function is not implemented on the grid
+        /// The concept of "public" objects does not exist anymore.</remarks>
 		ReleaseOwnership = 1 << 6,
-		/// <summary></summary>
+		/// <summary>Script wants ability to link/delink with other prims</summary>
 		ChangeLinks = 1 << 7,
-		/// <summary></summary>
+		/// <summary>Script wants permission to change joints</summary>
+        /// <remarks>This function is not implemented on the grid</remarks>
 		ChangeJoints = 1 << 8,
-		/// <summary></summary>
+		/// <summary>Script wants permissions to change permissions</summary>
+        /// <remarks>This function is not implemented on the grid</remarks>
 		ChangePermissions = 1 << 9,
-		/// <summary></summary>
+		/// <summary>Script wants to track avatars camera position and rotation </summary>
 		TrackCamera = 1 << 10,
 		/// <summary>Script wants to control your camera</summary>
 		ControlCamera = 1 << 11
@@ -319,79 +324,148 @@ namespace libsecondlife
 		/// <summary></summary>
 		Clear
     }
-    
+
+    /// <summary>
+    /// Money transaction types
+    /// </summary>
     public enum MoneyTransactionType : int
     {
+        /// <summary></summary>
         None = 0,
+        /// <summary></summary>
         FailSimulatorTimeout = 1,
+        /// <summary></summary>
         FailDataserverTimeout = 2,
+        /// <summary></summary>
         ObjectClaim = 1000,
+        /// <summary></summary>
         LandClaim = 1001,
+        /// <summary></summary>
         GroupCreate = 1002,
+        /// <summary></summary>
         ObjectPublicClaim = 1003,
+        /// <summary></summary>
         GroupJoin = 1004,
+        /// <summary></summary>
         TeleportCharge = 1100,
+        /// <summary></summary>
         UploadCharge = 1101,
+        /// <summary></summary>
         LandAuction = 1102,
+        /// <summary></summary>
         ClassifiedCharge = 1103,
+        /// <summary></summary>
         ObjectTax = 2000,
+        /// <summary></summary>
         LandTax = 2001,
+        /// <summary></summary>
         LightTax = 2002,
+        /// <summary></summary>
         ParcelDirFee = 2003,
+        /// <summary></summary>
         GroupTax = 2004,
+        /// <summary></summary>
         ClassifiedRenew = 2005,
+        /// <summary></summary>
         GiveInventory = 3000,
+        /// <summary></summary>
         ObjectSale = 5000,
+        /// <summary></summary>
         Gift = 5001,
+        /// <summary></summary>
         LandSale = 5002,
+        /// <summary></summary>
         ReferBonus = 5003,
+        /// <summary></summary>
         InventorySale = 5004,
+        /// <summary></summary>
         RefundPurchase = 5005,
+        /// <summary></summary>
         LandPassSale = 5006,
+        /// <summary></summary>
         DwellBonus = 5007,
+        /// <summary></summary>
         PayObject = 5008,
+        /// <summary></summary>
         ObjectPays = 5009,
+        /// <summary></summary>
         GroupLandDeed = 6001,
+        /// <summary></summary>
         GroupObjectDeed = 6002,
+        /// <summary></summary>
         GroupLiability = 6003,
+        /// <summary></summary>
         GroupDividend = 6004,
+        /// <summary></summary>
         GroupMembershipDues = 6005,
+        /// <summary></summary>
         ObjectRelease = 8000,
+        /// <summary></summary>
         LandRelease = 8001,
+        /// <summary></summary>
         ObjectDelete = 8002,
+        /// <summary></summary>
         ObjectPublicDecay = 8003,
+        /// <summary></summary>
         ObjectPublicDelete = 8004,
+        /// <summary></summary>
         LindenAdjustment = 9000,
+        /// <summary></summary>
         LindenGrant = 9001,
+        /// <summary></summary>
         LindenPenalty = 9002,
+        /// <summary></summary>
         EventFee = 9003,
+        /// <summary></summary>
         EventPrize = 9004,
+        /// <summary></summary>
         StipendBasic = 10000,
+        /// <summary></summary>
         StipendDeveloper = 10001,
+        /// <summary></summary>
         StipendAlways = 10002,
+        /// <summary></summary>
         StipendDaily = 10003,
+        /// <summary></summary>
         StipendRating = 10004,
+        /// <summary></summary>
         StipendDelta = 10005
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     [Flags]
     public enum TransactionFlags : byte
     {
+        /// <summary></summary>
         None = 0,
+        /// <summary></summary>
         SourceGroup = 1,
+        /// <summary></summary>
         DestGroup = 2,
+        /// <summary></summary>
         OwnerGroup = 4,
+        /// <summary></summary>
         SimultaneousContribution = 8,
+        /// <summary></summary>
         ContributionRemoval = 16
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public enum MeanCollisionType : byte
     {
+        /// <summary></summary>
         None,
+        /// <summary></summary>
         Bump,
+        /// <summary></summary>
         LLPushObject,
+        /// <summary></summary>
         SelectedObjectCollide,
+        /// <summary></summary>
         ScriptedObjectCollide,
+        /// <summary></summary>
         PhysicalObjectCollide
     }
 
@@ -448,6 +522,7 @@ namespace libsecondlife
     /// <summary>
     /// Manager class for our own avatar
     /// </summary>
+    /// <remarks>This class is instantianted automatically by the SecondLife class.</remarks>
     public partial class AgentManager
     {
         #region Enums
@@ -760,25 +835,26 @@ namespace libsecondlife
 
         #region Properties
 
-        /// <summary>Your (client) avatar UUID</summary>
+        /// <summary>Your (client) avatars <seealso cref="T:libsecondlife.LLUUID"/></summary>
+        /// <remarks>"client", "agent", and "avatar" all represent the same thing</remarks>
         public LLUUID AgentID { get { return id; } }
-        /// <summary>Temporary UUID assigned to this session, used for 
+        /// <summary>Temporary <seealso cref="T:libsecondlife.LLUUID"/> assigned to this session, used for 
         /// verifying our identity in packets</summary>
         public LLUUID SessionID { get { return sessionID; } }
-        /// <summary>Shared secret UUID that is never sent over the wire</summary>
+        /// <summary>Shared secret <seealso cref="T:libsecondlife.LLUUID"/> that is never sent over the wire</summary>
         public LLUUID SecureSessionID { get { return secureSessionID; } }
         /// <summary>Your (client) avatar ID, local to the current region/sim</summary>
         public uint LocalID { get { return localID; } }
         /// <summary>Where the avatar started at login. Can be "last", "home" 
-        /// or a login URI</summary>
+        /// or a login <seealso cref="T:libsecondlife.URI"/></summary>
         public string StartLocation { get { return startLocation; } }
         /// <summary>The access level of this agent, usually M or PG</summary>
         public string AgentAccess { get { return agentAccess; } }
         /// <summary></summary>
         public LLVector4 CollisionPlane { get { return collisionPlane; } }
-        /// <summary></summary>
+        /// <summary>An <seealso cref="T:libsecondlife.LLVector3"/> representing the velocity of our agent</summary>
         public LLVector3 Velocity { get { return velocity; } }
-        /// <summary></summary>
+        /// <summary>An <seealso cref="T:libsecondlife.LLVector3"/> representing the acceleration of our agent</summary>
         public LLVector3 Acceleration { get { return acceleration; } }
         /// <summary></summary>
         public LLVector3 AngularVelocity { get { return angularVelocity; } }
@@ -807,10 +883,10 @@ namespace libsecondlife
         public float Health { get { return health; } }
         /// <summary>Gets the current balance of the agent</summary>
         public int Balance { get { return balance; } }
-        /// <summary>Gets the local ID of the prim the avatar is sitting on,
+        /// <summary>Gets the local ID of the prim the agent is sitting on,
         /// zero if the avatar is not currently sitting</summary>
         public uint SittingOn { get { return sittingOn; } }
-        /// <summary>Gets the UUID of the active group.</summary>
+        /// <summary>Gets the <seealso cref="T:libsecondlife.LLUUID"/> of the agents active group.</summary>
         public LLUUID ActiveGroup { get { return activeGroup; } }
         /// <summary>Current status message for teleporting</summary>
         public string TeleportMessage { get { return teleportMessage; } }
@@ -820,6 +896,7 @@ namespace libsecondlife
         /// <summary>Current rotation of the agent as a relative rotation from
         /// the simulator, or the parent object if we are sitting on something</summary>
         public LLQuaternion RelativeRotation { get { return relativeRotation; } }
+        /// <summary>Current position of the agent in the simulator</summary>
         public LLVector3 SimPosition
         {
             get
@@ -844,6 +921,9 @@ namespace libsecondlife
                 }
             }
         }
+        /// <summary>
+        /// A <seealso cref="T:libsecondlife.LLQuaternion"/> representing the agents current rotation
+        /// </summary>
         public LLQuaternion SimRotation
         {
             get
@@ -889,8 +969,10 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>The Position field has been replaced by RelativePosition, SimPosition, and GlobalPosition</summary>
         [Obsolete("Position has been replaced by RelativePosition, SimPosition, and GlobalPosition")]
         public LLVector3 Position { get { return SimPosition; } }
+        /// <summary>The Rotation field has been replaced by RelativeRotation and SimRotation</summary>
         [Obsolete("Rotation has been replaced by RelativeRotation and SimRotation")]
         public LLQuaternion Rotation { get { return SimRotation; } }
 
@@ -930,7 +1012,7 @@ namespace libsecondlife
         /// <summary>
         /// Constructor, setup callbacks for packets related to our avatar
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">A reference to the <seealso cref="T:libsecondlife.SecondLife"/> Class</param>
         public AgentManager(SecondLife client)
         {
             Client = client;
@@ -1247,12 +1329,12 @@ namespace libsecondlife
         #region Viewer Effects
 
         /// <summary>
-        /// 
+        /// Start a particle stream between an agent and an object
         /// </summary>
-        /// <param name="sourceAvatar"></param>
-        /// <param name="targetObject"></param>
+        /// <param name="sourceAvatar"><seealso cref="LLUUID"/> Key of the source agent</param>
+        /// <param name="targetObject"><seealso cref="LLUUID"/> Key of the target object</param>
         /// <param name="globalOffset"></param>
-        /// <param name="type"></param>
+        /// <param name="type"><seealso cref="T:PointAtType"/></param>
         /// <param name="effectID"></param>
         public void PointAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, PointAtType type,
             LLUUID effectID)
@@ -1284,12 +1366,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Start a particle stream between an agent and an object
         /// </summary>
-        /// <param name="sourceAvatar"></param>
-        /// <param name="targetObject"></param>
+        /// <param name="sourceAvatar"><seealso cref="LLUUID"/> Key of the source agent</param>
+        /// <param name="targetObject"><seealso cref="LLUUID"/> Key of the target object</param>
         /// <param name="globalOffset"></param>
-        /// <param name="type"></param>
+        /// <param name="type"><seealso cref="T:PointAtType"/></param>
         /// <param name="effectID"></param>
         public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type,
             LLUUID effectID)

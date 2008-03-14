@@ -497,26 +497,26 @@ namespace libsecondlife
         {
             /// <summary></summary>
             None = 0,
-            /// <summary></summary>
+            /// <summary>Return objects owned by parcel owner</summary>
             Owner = 1 << 1,
-            /// <summary></summary>
+            /// <summary>Return objects set to group</summary>
             Group = 1 << 2,
-            /// <summary></summary>
+            /// <summary>Return objects not owned by parcel owner or set to group</summary>
             Other = 1 << 3,
-            /// <summary></summary>
+            /// <summary>Return a specific list of objects on parcel</summary>
             List = 1 << 4,
-            /// <summary></summary>
+            /// <summary>Return objects that are marked for-sale</summary>
             Sell = 1 << 5
         }
 
         /// <summary>
-        /// 
+        /// Blacklist/Whitelist flags used in parcels Access List
         /// </summary>
         public enum ParcelAccessFlags : uint
         {
-            /// <summary></summary>
+            /// <summary>Agent is denied access</summary>
             NoAccess = 0,
-            /// <summary></summary>
+            /// <summary>Agent is granted access</summary>
             Access = 1
         }
 
@@ -582,14 +582,22 @@ namespace libsecondlife
             Medium = 2,
             Large = 4
         }
-
+        /// <summary>
+        /// Reasons agent is denied access to a parcel on the simulator
+        /// </summary>
         public enum AccessDeniedReason : byte
         {
+            /// <summary>Agent is not denied, access is granted</summary>
             NotDenied = 0,
+            /// <summary>Agent is not a member of the group set for the parcel, or which owns the parcel</summary>
             NotInGroup = 1,
+            /// <summary>Agent is not on the parcels specific allow list</summary>
             NotOnAllowList = 2,
+            /// <summary>Agent is on the parcels ban list</summary>
             BannedFromParcel = 3,
+            /// <summary>Unknown</summary>
             NoAccess = 4,
+            /// <summary>Agent is not age verified and parcel settings deny access to non age verified avatars</summary>
             NotAgeVerified = 5
         }
         #endregion Enums
