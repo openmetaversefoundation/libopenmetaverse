@@ -126,13 +126,17 @@
   </target>
 
   <target name="clean" depends="init"
-    description="Deletes the built products">
-    <delete dir="${bin_dir}" failonerror="false" />
+    description="Deletes the built products"> 
+	 <delete failonerror="false">
+      <fileset basedir="${bin_dir}">
+		<include name="*" />
+		<exclude name="openjpeg-libsl.dll" />
+      </fileset>
+    </delete>
   </target>
 
-  <target name="clean-all"
+  <target name="clean-all" depends="clean"
     description="Deletes all built products and packagess">
-    <delete dir="${bin_dir}" failonerror="false" />
     <delete failonerror="false">
       <fileset basedir=".">
         <include name="*.zip" />
