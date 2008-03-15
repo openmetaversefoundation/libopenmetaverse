@@ -20,6 +20,7 @@ namespace SLProxy
         private Dictionary<string, CommandDelegate> commandDelegates = new Dictionary<string, CommandDelegate>();
         private LLUUID agentID;
         private LLUUID sessionID;
+        private LLUUID inventoryRoot;
         private bool logLogin = false;
         private string[] args;
 
@@ -38,6 +39,11 @@ namespace SLProxy
         public LLUUID SessionID
         {
             get { return sessionID; }
+        }
+
+        public LLUUID InventoryRoot
+        {
+            get { return inventoryRoot; }
         }
 
         public void AddCommand(string cmd, CommandDelegate deleg)
@@ -141,6 +147,13 @@ namespace SLProxy
                 agentID = new LLUUID((string)values["agent_id"]);
             if (values.Contains("session_id"))
                 sessionID = new LLUUID((string)values["session_id"]);
+            if (values.Contains("inventory-root")) 
+            {
+                inventoryRoot = new LLUUID(
+                    (string)((System.Collections.Hashtable)(((System.Collections.ArrayList)values["inventory-root"])[0]))["folder_id"]
+                    );
+                Console.WriteLine("inventory root: " + inventoryRoot);
+            }
 
             if (logLogin)
             {
