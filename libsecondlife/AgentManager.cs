@@ -1744,39 +1744,39 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Give L$ to an object
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="amount"></param>
-        /// <param name="objectName"></param>
+        /// <param name="target">object <seealso cref="libsecondlife.LLUUID"/> to give money to</param>
+        /// <param name="amount">amount of L$ to give</param>
+        /// <param name="objectName">name of object</param>
         public void GiveObjectMoney(LLUUID target, int amount, string objectName)
         {
             GiveMoney(target, amount, objectName, MoneyTransactionType.PayObject, TransactionFlags.None);
         }
 
         /// <summary>
-        /// 
+        /// Give L$ to a group
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="amount"></param>
+        /// <param name="target">group <seealso cref="libsecondlife.LLUUID"/> to give money to</param>
+        /// <param name="amount">amount of L$ to give</param>
         public void GiveGroupMoney(LLUUID target, int amount)
         {
             GiveMoney(target, amount, String.Empty, MoneyTransactionType.Gift, TransactionFlags.DestGroup);
         }
 
         /// <summary>
-        /// 
+        /// Give L$ to a group
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="amount"></param>
-        /// <param name="description"></param>
+        /// <param name="target">group <seealso cref="libsecondlife.LLUUID"/> to give money to</param>
+        /// <param name="amount">amount of L$ to give</param>
+        /// <param name="description">description of transaction</param>
         public void GiveGroupMoney(LLUUID target, int amount, string description)
         {
             GiveMoney(target, amount, description, MoneyTransactionType.Gift, TransactionFlags.DestGroup);
         }
 
         /// <summary>
-        /// 
+        /// Pay texture/animation upload fee
         /// </summary>
         public void PayUploadFee()
         {
@@ -1785,9 +1785,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Pay texture/animation upload fee
         /// </summary>
-        /// <param name="description"></param>
+        /// <param name="description">description of the transaction</param>
         public void PayUploadFee(string description)
         {
             GiveMoney(LLUUID.Zero, Client.Settings.UPLOAD_COST, description, MoneyTransactionType.UploadCharge, 
@@ -1827,7 +1827,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an AgentAnimation packet that toggles a single animation on
         /// </summary>
-        /// <param name="animation">The animation to start playing</param>
+        /// <param name="animation">The <seealso cref="libsecondlife.LLUUID"/> of the animation to start playing</param>
         /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
         public void AnimationStart(LLUUID animation, bool reliable)
         {
@@ -1840,7 +1840,8 @@ namespace libsecondlife
         /// <summary>
         /// Send an AgentAnimation packet that toggles a single animation off
         /// </summary>
-        /// <param name="animation">The animation to stop playing</param>
+        /// <param name="animation">The <seealso cref="libsecondlife.LLUUID"/> of a 
+        /// currently playing animation to stop playing</param>
         /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
         public void AnimationStop(LLUUID animation, bool reliable)
         {
@@ -1853,7 +1854,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an AgentAnimation packet that will toggle animations on or off
         /// </summary>
-        /// <param name="animations">A list of animation UUIDs, and whether to
+        /// <param name="animations">A list of animation <seealso cref="libsecondlife.LLUUID"/>s, and whether to
         /// turn that animation on or off</param>
         /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
         public void Animate(Dictionary<LLUUID, bool> animations, bool reliable)
@@ -1883,14 +1884,18 @@ namespace libsecondlife
         #region Teleporting
 
         /// <summary>
-        /// Teleports the avatar home
+        /// Teleports agent to their stored home location
         /// </summary>
         public bool GoHome()
         {
             return Teleport(LLUUID.Zero);
         }
 
-		/// <summary>Attempt teleport to specified LLUUID</summary>
+		/// <summary>
+		/// Teleport agent to a landmark
+		/// </summary>
+		/// <param name="landmark"><seealso cref="libsecondlife.LLUUID"/> of the landmark to teleport agent to</param>
+		/// <returns>true on success, false on failure</returns>
 		public bool Teleport(LLUUID landmark)
 		{
 			teleportStat = TeleportStatus.None;
@@ -1966,23 +1971,25 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Start a teleport process
+        /// Teleport agent to another region
         /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        /// <returns></returns>
+        /// <param name="regionHandle">handle of region to teleport agent to</param>
+        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
+        /// <returns>true on success, false on failure</returns>
+        /// <remarks>This call is blocking</remarks>
         public bool Teleport(ulong regionHandle, LLVector3 position)
         {
             return Teleport(regionHandle, position, new LLVector3(0.0f, 1.0f, 0.0f));
         }
 
         /// <summary>
-        /// Start a teleport process
+        /// Teleport agent to another region
         /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        /// <param name="lookAt">Target to look at</param>
-        /// <returns></returns>
+        /// <param name="regionHandle">handle of region to teleport agent to</param>
+        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
+        /// <param name="lookAt"><seealso cref="libsecondlife.LLVector3"/> direction in destination sim agent will look at</param>
+        /// <returns>true on success, false on failure</returns>
+        /// <remarks>This call is blocking</remarks>
         public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
             teleportStat = TeleportStatus.None;
@@ -2004,21 +2011,21 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Start a teleport process
+        /// Request teleport to a another simulator
         /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
+        /// <param name="regionHandle">handle of region to teleport agent to</param>
+        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position)
         {
             RequestTeleport(regionHandle, position, new LLVector3(0.0f, 1.0f, 0.0f));
         }
 
         /// <summary>
-        /// Start a teleport process
+        /// Request teleport to a another simulator
         /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        /// <param name="lookAt">Target to look at</param>
+        /// <param name="regionHandle">handle of region to teleport agent to</param>
+        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
+        /// <param name="lookAt"><seealso cref="libsecondlife.LLVector3"/> direction in destination sim agent will look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
             if (Client.Network.CurrentSim != null &&
@@ -2044,11 +2051,20 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Send a teleport lure to another avatar with default "Join me in ..." invitation message
+        /// </summary>
+        /// <param name="targetID">target avatars <seealso cref="libsecondlife.LLUUID"/> to lure</param>
         public void SendTeleportLure(LLUUID targetID)
         {
             SendTeleportLure(targetID, "Join me in " + Client.Network.CurrentSim.Name + "!");
         }
 
+        /// <summary>
+        /// Send a teleport lure to another avatar with custom invitation message
+        /// </summary>
+        /// <param name="targetID">target avatars <seealso cref="libsecondlife.LLUUID"/> to lure</param>
+        /// <param name="message">custom message to send with invitation</param>
         public void SendTeleportLure(LLUUID targetID, string message)
         {
             StartLurePacket p = new StartLurePacket();
@@ -2065,8 +2081,8 @@ namespace libsecondlife
         /// Respond to a teleport lure by either accepting it and initiating 
         /// the teleport, or denying it
         /// </summary>
-        /// <param name="requesterID">UUID of the avatar requesting the teleport</param>
-        /// <param name="accept">Accept the teleport request or deny it</param>
+        /// <param name="requesterID"><seealso cref="libsecondlife.LLUUID"/> of the avatar sending the lure</param>
+        /// <param name="accept">true to accept the lure, false to decline it</param>
         public void TeleportLureRespond(LLUUID requesterID, bool accept)
         {
             InstantMessage(Name, requesterID, String.Empty, LLUUID.Random(), 
@@ -2091,9 +2107,10 @@ namespace libsecondlife
         #region Misc
 
         /// <summary>
-        /// 
+        /// Update agent profile
         /// </summary>
-        /// <param name="profile"></param>
+        /// <param name="profile"><seealso cref="libsecondlife.Avatar.AvatarProperties"/> struct containing updated 
+        /// profile information</param>
         public void UpdateProfile(Avatar.AvatarProperties profile)
         {
             AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
@@ -2111,9 +2128,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Update agents profile interests
         /// </summary>
-        /// <param name="interests"></param>
+        /// <param name="interests">selection of interests from <seealso cref="T:libsecondlife.Avatar.Interests"/> struct</param>
         public void UpdateInterests(Avatar.Interests interests)
         {
             AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
@@ -2148,7 +2165,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Request the list of muted things for this avatar
+        /// Request the list of muted objects and avatars for this agent
         /// </summary>
         public void RequestMuteList()
         {
@@ -2161,8 +2178,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Sets home location
-        /// </summary>		
+        /// Sets home location to agents current position
+        /// </summary>
+        /// <remarks>will fire an AlertMessage (<seealso cref="E:libsecondlife.AgentManager.OnAlertMessage"/>) with 
+        /// success or failure message</remarks>
         public void SetHome()
         {
             SetStartLocationRequestPacket s = new SetStartLocationRequestPacket();
@@ -2181,7 +2200,7 @@ namespace libsecondlife
         /// Move an agent in to a simulator. This packet is the last packet
         /// needed to complete the transition in to a new simulator
         /// </summary>
-        /// <param name="simulator"></param>
+        /// <param name="simulator"><seealso cref="T:libsecondlife.Simulator"/> Object</param>
         public void CompleteAgentMovement(Simulator simulator)
         {
             CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
@@ -2196,10 +2215,10 @@ namespace libsecondlife
         /// <summary>
         /// Reply to script permissions request
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="itemID"></param>
-        /// <param name="taskID"></param>
-        /// <param name="permissions"></param>
+        /// <param name="simulator"><seealso cref="T:libsecondlife.Simulator"/> Object</param>
+        /// <param name="itemID"><seealso cref="libsecondlife.LLUUID"/> of the itemID requesting permissions</param>
+        /// <param name="taskID"><seealso cref="libsecondlife.LLUUID"/> of the taskID requesting permissions</param>
+        /// <param name="permissions"><seealso cref="libsecondlife.ScriptPermission"/> list of permissions to allow</param>
         public void ScriptQuestionReply(Simulator simulator, LLUUID itemID, LLUUID taskID, ScriptPermission permissions)
         {
             ScriptAnswerYesPacket yes = new ScriptAnswerYesPacket();
