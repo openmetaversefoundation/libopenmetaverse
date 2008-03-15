@@ -374,7 +374,7 @@ namespace libsecondlife
         private string InternalLoginMessage = String.Empty;
         private string InternalRawLoginReply = String.Empty;
         private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -408,8 +408,8 @@ namespace libsecondlife
             loginParams.Start = "last";
             loginParams.Channel = userAgent + " (libsecondlife)";
             loginParams.Version = userVersion;
-            loginParams.Platform = "Win";
-            loginParams.MAC = String.Empty;
+            loginParams.Platform = GetPlatform();
+            loginParams.MAC = GetMAC();
             loginParams.ViewerDigest = String.Empty;
             loginParams.Options = options;
             loginParams.id0 = "00000000000000000000000000000000";
@@ -501,7 +501,8 @@ namespace libsecondlife
             RegisterLoginResponseCallback(callback, null);
         }
 
-        public void RegisterLoginResponseCallback(LoginResponseCallback callback, string[] options) {
+        public void RegisterLoginResponseCallback(LoginResponseCallback callback, string[] options)
+        {
             CallbackOptions.Add(callback, options);
             OnLoginResponse += callback;
         }
@@ -643,7 +644,7 @@ namespace libsecondlife
                         bool loginSuccess = llsd.AsBoolean();
                         bool redirect = (llsd.AsString() == "indeterminate");
                         LoginResponseData data = new LoginResponseData();
-                        
+
                         // Parse successful login replies in to LoginResponseData structs
                         if (loginSuccess)
                             data.Parse(map);
@@ -742,6 +743,49 @@ namespace libsecondlife
                 // Connection error
                 UpdateLoginStatus(LoginStatus.Failed, error.Message);
             }
+        }
+        /// <summary>
+        /// Get current OS
+        /// </summary>
+        /// <returns>Either "Win" or "Linux"</returns>
+        private static string GetPlatform()
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Unix:
+                    return "Linux";
+
+                default:
+                    return "Win";
+            }
+        }
+
+        /// <summary>
+        /// Get clients default Mac Address
+        /// </summary>
+        /// <returns>A string containing the first found Mac Address</returns>
+        private static string GetMAC()
+        {
+            string mac = "";
+            System.Net.NetworkInformation.NetworkInterface[] nics = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+
+            if (nics.Length > 0)
+            {
+                mac = nics[0].GetPhysicalAddress().ToString().ToUpper();
+            }
+
+            if (mac.Length < 12)
+            {
+                mac = mac.PadRight(12, '0');
+            }
+
+            return String.Format("{0}:{1}:{2}:{3}:{4}:{5}",
+                                 mac.Substring(0, 2),
+                                 mac.Substring(2, 2),
+                                 mac.Substring(4, 2),
+                                 mac.Substring(6, 2),
+                                 mac.Substring(8, 2),
+                                 mac.Substring(10, 2));
         }
     }
 }
