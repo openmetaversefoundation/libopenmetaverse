@@ -412,7 +412,10 @@ namespace libsecondlife
             loginParams.MAC = GetMAC();
             loginParams.ViewerDigest = String.Empty;
             loginParams.Options = options;
-            loginParams.id0 = "00000000000000000000000000000000";
+			// workaround for bots being caught up in a global ban
+			// This *should* be the hash of the first hard drive, 
+			// but any unique identifier works.
+            loginParams.id0 = GetMac();
 
             return loginParams;
         }
