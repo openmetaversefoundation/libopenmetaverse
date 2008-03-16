@@ -415,7 +415,7 @@ namespace libsecondlife
 			// workaround for bots being caught up in a global ban
 			// This *should* be the hash of the first hard drive, 
 			// but any unique identifier works.
-            loginParams.id0 = GetMac();
+            loginParams.id0 = GetMAC();
 
             return loginParams;
         }
