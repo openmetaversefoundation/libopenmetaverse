@@ -131,26 +131,28 @@ namespace libsecondlife
         #endregion Enums
 
         #region Structs
-
+        /// <summary>
+        /// Simulator Statistics
+        /// </summary>
         public struct SimStats
         {
-            /// <summary></summary>
+            /// <summary>Total number of packets sent by this simulator to this agent</summary>
             public ulong SentPackets;
-            /// <summary></summary>
+            /// <summary>Total number of packets received by this simulator to this agent</summary>
             public ulong RecvPackets;
-            /// <summary></summary>
+            /// <summary>Total number of bytes sent by this simulator to this agent</summary>
             public ulong SentBytes;
-            /// <summary></summary>
+            /// <summary>Total number of bytes received by this simulator to this agent</summary>
             public ulong RecvBytes;
-            /// <summary></summary>
+            /// <summary>Time in seconds agent has been connected to simulator</summary>
             public int ConnectTime;
-            /// <summary></summary>
+            /// <summary>Total number of packets that have been resent</summary>
             public int ResentPackets;
-            /// <summary></summary>
+            /// <summary>Total number of resent packets recieved</summary>
             public int ReceivedResends;
-            /// <summary></summary>
+            /// <summary>Total number of pings sent to this simulator by this agent</summary>
             public int SentPings;
-            /// <summary></summary>
+            /// <summary>Total number of ping replies sent to this agent by this simulator</summary>
             public int ReceivedPongs;
             /// <summary>
             /// Incoming bytes per second
@@ -164,9 +166,9 @@ namespace libsecondlife
             /// <remarks>It would be nice to have this claculated on the fly, but
             /// this is far, far easier</remarks>
             public int OutgoingBPS;
-            /// <summary></summary>
+            /// <summary>Time last ping was sent</summary>
             public int LastPingSent;
-            /// <summary></summary>
+            /// <summary>ID of last Ping sent</summary>
             public byte LastPingID;
             /// <summary></summary>
             public int LastLag;
@@ -174,28 +176,51 @@ namespace libsecondlife
             public int MissedPings;
             /// <summary>Current time dilation of this simulator</summary>
             public float Dilation;
+            /// <summary>Current Frames per second of simulator</summary>
             public int FPS;
+            /// <summary>Current Physics frames per second of simulator</summary>
             public float PhysicsFPS;
+            /// <summary></summary>
             public float AgentUpdates;
+            /// <summary></summary>
             public float FrameTime;
+            /// <summary></summary>
             public float NetTime;
+            /// <summary></summary>
             public float PhysicsTime;
+            /// <summary></summary>
             public float ImageTime;
+            /// <summary></summary>
             public float ScriptTime;
+            /// <summary></summary>
             public float OtherTime;
+            /// <summary>Total number of objects Simulator is simulating</summary>
             public int Objects;
+            /// <summary>Total number of Active (Scripted) objects running</summary>
             public int ScriptedObjects;
+            /// <summary>Number of agents currently in this simulator</summary>
             public int Agents;
+            /// <summary>Number of agents in neighbor simulators</summary>
             public int ChildAgents;
+            /// <summary>Number of Active scripts running in this simulator</summary>
             public int ActiveScripts;
+            /// <summary></summary>
             public int LSLIPS;
+            /// <summary></summary>
             public int INPPS;
+            /// <summary></summary>
             public int OUTPPS;
+            /// <summary>Number of downloads pending</summary>
             public int PendingDownloads;
+            /// <summary>Number of uploads pending</summary>
             public int PendingUploads;
+            /// <summary></summary>
             public int VirtualSize;
+            /// <summary></summary>
             public int ResidentSize;
+            /// <summary>Number of local uploads pending</summary>
             public int PendingLocalUploads;
+            /// <summary>Unacknowledged bytes in queue</summary>
             public int UnackedBytes;
         }
 
