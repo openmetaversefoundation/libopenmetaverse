@@ -26,6 +26,7 @@
     <include name="importprimscript/*.build" />
     <include name="SLImageUpload/*.build" />
     <include name="SLProxy/*.build" />
+	<include name="VoiceTest/*.build" />
   </fileset>
   <fileset id="lib">
     <include name="libsecondlife/*.build" />
