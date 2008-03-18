@@ -250,13 +250,14 @@ namespace libsecondlife
         /// <summary>
         /// Kick an avatar from an estate
         /// </summary>
-        /// <param name="userID">Key of Avatar to kick</param>
+        /// <param name="userID">Key of Agent to remove</param>
 		public void KickUser(LLUUID userID) 
 		{
             EstateOwnerMessage("kickestate", userID.ToString());
 		}
 
         /// <summary>Ban an avatar from an estate</summary>
+        /// <param name="userID">Key of Agent to remove</param>
         public void BanUser(LLUUID userID)
         {
             List<string> listParams = new List<string>();
@@ -268,6 +269,7 @@ namespace libsecondlife
         }
 
         /// <summary>Unban an avatar from an estate</summary>
+        /// <param name="userID">Key of Agent to remove</param>
         public void UnbanUser(LLUUID userID)
         {
             List<string> listParams = new List<string>();

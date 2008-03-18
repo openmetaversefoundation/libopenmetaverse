@@ -1170,7 +1170,7 @@ namespace libsecondlife
         /// <param name="localID">Simulator local ID of parcel</param>
         /// <param name="selectType">Owners, Others, Etc</param>
         /// <param name="ownerIDs">List containing keys of avatars objects to select; 
-        /// if List is null will return Objects of type <c>selectType<c></param>
+        /// if List is null will return Objects of type <c>selectType</c></param>
         /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
         public void SelectObjects(int localID, ObjectReturnType selectType, List<LLUUID> ownerIDs)
         {

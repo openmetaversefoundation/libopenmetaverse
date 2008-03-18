@@ -96,8 +96,8 @@ namespace libsecondlife.Baking
         /// stores it for processing later
         /// </summary>
         /// <param name="index">The baking texture index of the image to be added</param>
-        /// <param name="texture">JPEG2000 compressed image to be added to the 
-        /// baking texture</param>
+        /// <param name="texture">JPEG2000 compressed image to be
+        /// added to the baking texture</param>
         /// <returns>True if this texture is completely baked and JPEG2000 data 
         /// is available, otherwise false</returns>
         public bool AddTexture(AppearanceManager.TextureIndex index, AssetTexture texture)
