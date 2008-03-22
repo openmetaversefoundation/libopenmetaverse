@@ -200,8 +200,6 @@ namespace libsecondlife.TestClient
                             Client.Objects.SetSculpt(simulator, prim.LocalID, currentPrim.Sculpt);
                         }
 
-                        Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
-
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
                             Client.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Description))
