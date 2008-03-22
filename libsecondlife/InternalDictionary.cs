@@ -181,8 +181,8 @@ namespace libsecondlife
             return found;
         }
 
-        /// <summary>Perform an <seealso cref="System.Action"/> on each entry in an <seealso cref="T:InternalDictionary"/></summary>
-        /// <param name="action"><seealso cref="System.Action"/> to perform</param>
+        /// <summary>Perform an <seealso cref="T:System.Action"/> on each entry in an <seealso cref="T:libsecondlife.InternalDictionary"/></summary>
+        /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
         /// <example>
         /// <code>
         /// // Iterates over the ObjectsPrimitives InternalDictionary and prints out some information.
@@ -204,6 +204,19 @@ namespace libsecondlife
                 foreach (TValue value in Dictionary.Values)
                 {
                     action(value);
+                }
+            }
+        }
+
+        /// <summary>Perform an <seealso cref="T:System.Action"/> on each key of an <seealso cref="T:libsecondlife.InternalDictionary"/></summary>
+        /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
+        public void ForEach(Action<TKey> action)
+        {
+            lock (Dictionary)
+            {
+                foreach (TKey key in Dictionary.Keys)
+                {
+                    action(key);
                 }
             }
         }
