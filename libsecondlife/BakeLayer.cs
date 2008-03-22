@@ -198,8 +198,10 @@ namespace libsecondlife.Baking
             Client.DebugLog("DrawLayer(): baking layer " + textureIndex.ToString());
 
             Image source = texture.Image;
+            bool sourceHasAlpha = (source.Channels & ImageChannels.Alpha) != 0;
 
-            source.ResizeNearestNeighbor(BakeWidth, BakeHeight);
+            if ( source.Width != BakeWidth || source.Height != BakeHeight )
+                source.ResizeNearestNeighbor(BakeWidth, BakeHeight);
 
             if (textureIndex == AppearanceManager.TextureIndex.HeadBodypaint
                 || textureIndex == AppearanceManager.TextureIndex.UpperBodypaint
@@ -212,7 +214,7 @@ namespace libsecondlife.Baking
                 {
                     for (int x = 0; x < BakeWidth; x++)
                     {
-                        if ((source.Channels & ImageChannels.Alpha) != 0)
+                        if (sourceHasAlpha)
                         {
                             if (source.Alpha[i] != 0)
                             {
@@ -246,8 +248,13 @@ namespace libsecondlife.Baking
                     for (int x = 0; x < BakeWidth; x++)
                     {
 
-                        float alpha = (float)source.Alpha[i];
-                        alpha /= 255.0f;
+                        float alpha = 1.0f;
+                        if (sourceHasAlpha)
+                        {
+                            alpha = (float)source.Alpha[i];
+                            alpha /= 255.0f;
+                        }
+
                         float red = (float)source.Red[i];
                         float green = (float)source.Green[i];
                         float blue = (float)source.Blue[i];
