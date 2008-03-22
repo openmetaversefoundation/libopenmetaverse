@@ -36,31 +36,56 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     #region Enums
-
+    /// <summary>
+    /// Inventory Item Types, eg Script, Notecard, Folder, etc
+    /// </summary>
     public enum InventoryType : sbyte
     {
+        /// <summary>Unknown</summary>
         Unknown = -1,
+        /// <summary>Texture</summary>
         Texture = 0,
+        /// <summary>Sound</summary>
         Sound = 1,
+        /// <summary>Calling Card</summary>
         CallingCard = 2,
+        /// <summary>Landmark</summary>
         Landmark = 3,
-        [Obsolete] Script = 4,
-        [Obsolete] Clothing = 5,
+        /// <summary>Script</summary>
+        [Obsolete("See LSL")] Script = 4,
+        /// <summary>Clothing</summary>
+        [Obsolete("See Wearable")] Clothing = 5,
+        /// <summary>Object, both single and coalesced</summary>
         Object = 6,
+        /// <summary>Notecard</summary>
         Notecard = 7,
+        /// <summary></summary>
         Category = 8,
+        /// <summary>Folder</summary>
         Folder = 8,
+        /// <summary></summary>
         RootCategory = 0,
+        /// <summary>an LSL Script</summary>
         LSL = 10,
-        [Obsolete] LSLBytecode = 11,
-        [Obsolete] TextureTGA = 12,
+        /// <summary></summary>
+        [Obsolete("See LSL")] LSLBytecode = 11,
+        /// <summary></summary>
+        [Obsolete("See Texture")] TextureTGA = 12,
+        /// <summary></summary>
         [Obsolete] Bodypart = 13,
+        /// <summary></summary>
         [Obsolete] Trash = 14,
+        /// <summary></summary>
         Snapshot = 15,
+        /// <summary></summary>
         [Obsolete] LostAndFound = 16,
+        /// <summary></summary>
         Attachment = 17,
+        /// <summary></summary>
         Wearable = 18,
+        /// <summary></summary>
         Animation = 19,
+        /// <summary></summary>
         Gesture = 20
     }
 
@@ -71,6 +96,10 @@ namespace libsecondlife
     public enum InventoryItemFlags : uint
     {
         None = 0,
+        /// <summary>
+        /// A Landmark that has not been previously visited shows up as a dark red pushpin, one that has been
+        /// visited shows up as a light red pushpin
+        /// </summary>
         VisitedLandmark = 1,
         /// <summary>If set, indicates rezzed object will have more restrictive permissions masks;
         /// Which masks will be affected are below</summary>
@@ -91,7 +120,7 @@ namespace libsecondlife
 
 
     /// <summary>
-    /// 
+    /// Item Sale Status
     /// </summary>
     public enum SaleType : byte
     {
@@ -122,14 +151,24 @@ namespace libsecondlife
     #endregion Enums
 
     #region Inventory Object Classes
-
+    /// <summary>
+    /// Base Class for Inventory Items
+    /// </summary>
     public abstract class InventoryBase
     {
+        /// <summary></summary>
         public readonly LLUUID UUID;
+        /// <summary></summary>
         public LLUUID ParentUUID;
+        /// <summary></summary>
         public string Name;
+        /// <summary></summary>
         public LLUUID OwnerID;
 
+        /// <summary>
+        /// Constructor, takes an itemID as a parameter
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="libsecondlife.LLUUID"/> of the item</param>
         public InventoryBase(LLUUID itemID)
         {
             if (itemID == LLUUID.Zero)
@@ -137,6 +176,11 @@ namespace libsecondlife
             UUID = itemID;
         }
 
+        /// <summary>
+        /// Generates a number corresponding to the value of the object to support the use of a hash table,
+        /// suitable for use in hashing algorithms and data structures such as a hash table
+        /// </summary>
+        /// <returns>A Hashcode of all the combined InventoryBase fields</returns>
         public override int GetHashCode()
         {
             return UUID.GetHashCode() ^ ParentUUID.GetHashCode() ^ Name.GetHashCode() ^ OwnerID.GetHashCode();
@@ -157,28 +201,56 @@ namespace libsecondlife
         }
     }
 
+    /// <summary>
+    /// An Item in Inventory
+    /// </summary>
     public class InventoryItem : InventoryBase
     {
+        /// <summary>The <seealso cref="T:libsecondlife.LLUUID"/> of this item</summary>
         public LLUUID AssetUUID;
+        /// <summary>The combined <seealso cref="T:libsecondlife.Permissions"/> of this item</summary>
         public Permissions Permissions;
+        /// <summary>The type of item from <seealso cref="libsecondlife.AssetType"/></summary>
         public AssetType AssetType;
+        /// <summary></summary>
         public InventoryType InventoryType;
+        /// <summary>The <seealso cref="T:libsecondlife.LLUUID"/> of the creator of this item</summary>
         public LLUUID CreatorID;
+        /// <summary>A Description of this item</summary>
         public string Description;
+        /// <summary>The <seealso cref="libsecondlife.Group"/>s <seealso cref="T:libsecondlife.LLUUID"/> this item is set to or owned by</summary>
         public LLUUID GroupID;
+        /// <summary>If True, item is group owned</summary>
         public bool GroupOwned;
+        /// <summary>The price this item can be purchased for</summary>
         public int SalePrice;
+        /// <summary>The type of sale from the <seealso cref="libsecondlife.SaleType"/> enum</summary>
         public SaleType SaleType;
+        /// <summary>Combined flags from <seealso cref="libsecondlife.InventoryItemFlags"/></summary>
         public InventoryItemFlags Flags;
         /// <summary>Time and date this inventory item was created, stored as
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
 
+        /// <summary>
+        ///  Construct a new InventoryItem object
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="libsecondlife.LLUUID"/> of the item</param>
         public InventoryItem(LLUUID itemID) 
             : base(itemID) { }
 
+        /// <summary>
+        /// Construct a new InventoryItem object of a specific Type
+        /// </summary>
+        /// <param name="type">The type of item from <seealso cref="libsecondlife.InventoryType"/></param>
+        /// <param name="itemID"><seealso cref="libsecondlife.LLUUID"/> of the item</param>
         public InventoryItem(InventoryType type, LLUUID itemID) : base(itemID) { InventoryType = type; }
 
+        /// <summary>
+        /// Generates a number corresponding to the value of the object to support the use of a hash table.
+        /// Suitable for use in hashing algorithms and data structures such as a hash table
+        /// </summary>
+        /// <returns>A Hashcode of all the combined InventoryItem fields</returns>
         public override int GetHashCode()
         {
             return AssetUUID.GetHashCode() ^ Permissions.GetHashCode() ^ AssetType.GetHashCode() ^
@@ -187,18 +259,33 @@ namespace libsecondlife
                 Flags.GetHashCode() ^ CreationDate.GetHashCode();
         }
 
+        /// <summary>
+        /// Compares an object
+        /// </summary>
+        /// <param name="o">The object to compare</param>
+        /// <returns>true if comparison object matches</returns>
         public override bool Equals(object o)
         {
             InventoryItem item = o as InventoryItem;
             return item != null && Equals(item);
         }
 
+        /// <summary>
+        /// Compare an InventoryBase item
+        /// </summary>
+        /// <param name="o">The <seealso cref="libsecondlife.InventoryBase"/> object to compare</param>
+        /// <returns>true if match</returns>
         public override bool Equals(InventoryBase o)
         {
             InventoryItem item = o as InventoryItem;
             return item != null && Equals(item);
         }
 
+        /// <summary>
+        /// Compare an InventoryItem object
+        /// </summary>
+        /// <param name="o"><seealso cref="libsecondlife.InventoryItem"/></param>
+        /// <returns>true if match</returns>
         public bool Equals(InventoryItem o)
         {
             return base.Equals(o as InventoryBase)
@@ -240,13 +327,30 @@ namespace libsecondlife
 
     public class InventoryAnimation   : InventoryItem { public InventoryAnimation(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Animation; } }
     public class InventoryGesture     : InventoryItem { public InventoryGesture(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Gesture; } }
-
+    
+    /// <summary>
+    /// A folder contains <seealso cref="T:libsecondlife.InventoryItem"/>s and has certain attributes specific 
+    /// to itself
+    /// </summary>
     public class InventoryFolder : InventoryBase
     {
+        /// <summary>
+        /// The Preferred <seealso cref="T:libsecondlife.AssetType"/> for a folder.
+        /// </summary>
         public AssetType PreferredType;
+        /// <summary>
+        /// The Version of this folder
+        /// </summary>
         public int Version;
+        /// <summary>
+        /// Number of child items this folder contains.
+        /// </summary>
         public int DescendentCount;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="itemID">LLUUID of the folder</param>
         public InventoryFolder(LLUUID itemID)
             : base(itemID) { }
 

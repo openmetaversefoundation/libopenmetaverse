@@ -41,7 +41,7 @@ namespace libsecondlife
     }
     
     /// <summary>
-    /// 
+    /// Manager class to for agents appearance, both body parts and clothing
     /// </summary>
     public class AppearanceManager
     {
@@ -181,7 +181,7 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">This agents <seealso cref="libsecondlife.SecondLife"/> Object</param>
         /// <param name="assets"></param>
         public AppearanceManager(SecondLife client, AssetManager assets)
         {
