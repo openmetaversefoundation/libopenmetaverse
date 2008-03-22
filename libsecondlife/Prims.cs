@@ -611,8 +611,8 @@ namespace libsecondlife
             data.PathSkew = (float)path["skew"].AsReal();
             data.PathTaperX = (float)path["taper_x"].AsReal();
             data.PathTaperY = (float)path["taper_y"].AsReal();
-            data.PathTwist = path["twist"].AsInteger();
-            data.PathTwistBegin = path["twist_begin"].AsInteger();
+            data.PathTwist = (float)path["twist"].AsReal();
+            data.PathTwistBegin = (float)path["twist_begin"].AsReal();
 
             data.ProfileBegin = (float)profile["begin"].AsReal();
             data.ProfileCurve = (ProfileCurve)profile["curve"].AsInteger();
