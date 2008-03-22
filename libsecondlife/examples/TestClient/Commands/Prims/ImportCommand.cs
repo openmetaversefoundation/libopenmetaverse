@@ -189,7 +189,17 @@ namespace libsecondlife.TestClient
                         // TODO: Is there a way to set all of this at once, and update more ObjectProperties stuff?
                         Client.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
                         Client.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
-                        Client.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+
+                        if (currentPrim.Light.Intensity > 0) {
+                            Client.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+                        }
+
+                        Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
+ 
+                        if (currentPrim.Sculpt.SculptTexture != LLUUID.Zero) {
+                            Client.Objects.SetSculpt(simulator, prim.LocalID, currentPrim.Sculpt);
+                        }
+
                         Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
 
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
