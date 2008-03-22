@@ -16,7 +16,7 @@ namespace CommandLine.Utility
         public Arguments(string[] Args)
         {
             Parameters = new StringDictionary();
-            Regex Splitter = new Regex(@"^-{1,2}|=|:",
+            Regex Splitter = new Regex(@"^-{1,2}|=",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
             Regex Remover = new Regex(@"^['""]?(.*?)['""]?$",
@@ -28,7 +28,7 @@ namespace CommandLine.Utility
             // Valid parameters forms:
             // {-,/,--}param{ ,=,:}((",')value(",'))
             // Examples: 
-            // -param1 value1 --param2 /param3:"Test-:-work" 
+            // -param1 value1 --param2
             //   /param4=happy -param5 '--=nice=--'
             foreach (string Txt in Args)
             {
