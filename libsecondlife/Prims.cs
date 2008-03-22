@@ -568,6 +568,8 @@ namespace libsecondlife
             volume["profile"] = profile;
 
             LLSDMap prim = new LLSDMap(9);
+            prim["name"] = LLSD.FromString(Properties.Name);
+            prim["description"] = LLSD.FromString(Properties.Description);
             prim["phantom"] = LLSD.FromBoolean(((Flags & ObjectFlags.Phantom) != 0));
             prim["physical"] = LLSD.FromBoolean(((Flags & ObjectFlags.Physics) != 0));
             prim["position"] = Position.ToLLSD();
@@ -642,6 +644,13 @@ namespace libsecondlife
             prim.Light = LightData.FromLLSD(map["light"]);
             prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);
             prim.Textures = TextureEntry.FromLLSD(map["textures"]);
+            if (!string.IsNullOrEmpty(map["name"].AsString())) {
+                prim.Properties.Name = map["name"].AsString();
+            }
+
+            if (!string.IsNullOrEmpty(map["description"].AsString())) {
+                prim.Properties.Description = map["description"].AsString();
+            }
 
             return prim;
         }
