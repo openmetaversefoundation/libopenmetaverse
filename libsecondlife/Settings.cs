@@ -188,6 +188,18 @@ namespace libsecondlife
         /// </summary>
         public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
+        // Texture cache
+
+        /// <summary>
+        /// if true, images downloaded from the server will be cached 
+        /// in a local directory.
+        /// </summary>
+        public bool USE_TEXTURE_CACHE = false;
+        /// <summary>
+        /// Path where to store the cached images.
+        /// </summary>
+        public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
+
         // Misc
 
         /// <summary>Default color used for viewer particle effects</summary>

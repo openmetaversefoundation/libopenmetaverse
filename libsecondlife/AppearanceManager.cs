@@ -1207,7 +1207,8 @@ namespace libsecondlife
             {
                 lock (ImageDownloads)
                 {
-                    foreach (LLUUID image in ImageDownloads.Keys)
+                    List<LLUUID> imgKeys = new List<LLUUID>(ImageDownloads.Keys);
+                    foreach (LLUUID image in imgKeys)
                     {
                         // Download all the images we need for baking
                         Assets.RequestImage(image, ImageType.Normal, 1013000.0f, 0);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.IO;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -266,6 +267,10 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        public delegate void ImageReceiveProgressCallback(LLUUID image, int recieved, int total);
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="upload"></param>
         public delegate void AssetUploadedCallback(AssetUpload upload);
         /// <summary>
@@ -285,6 +290,8 @@ namespace libsecondlife
         /// <summary></summary>
         public event ImageReceivedCallback OnImageReceived;
         /// <summary></summary>
+        public event ImageReceiveProgressCallback OnImageReceiveProgress;
+        /// <summary></summary>
         public event AssetUploadedCallback OnAssetUploaded;
         /// <summary></summary>
         public event UploadProgressCallback OnUploadProgress;
@@ -295,7 +302,7 @@ namespace libsecondlife
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
         private AssetUpload PendingUpload;
         private AutoResetEvent PendingUploadEvent = new AutoResetEvent(true);
-
+        private TextureCache Cache;
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -303,6 +310,7 @@ namespace libsecondlife
         public AssetManager(SecondLife client)
         {
             Client = client;
+            Cache = new TextureCache(client);
 
             // Transfer packets for downloading large assets
             Client.Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoHandler));
@@ -481,6 +489,16 @@ namespace libsecondlife
         /// download</remarks>
         public void RequestImage(LLUUID imageID, ImageType type, float priority, int discardLevel)
         {
+            if (Cache.HasImage(imageID)) {
+                ImageDownload transfer = Cache.GetCachedImage(imageID);
+                if (null != transfer) {
+                    if (null != OnImageReceived) {
+                        OnImageReceived(transfer, new AssetTexture(transfer.AssetData));
+                    }
+                    return;
+                }
+            }
+
             // allows aborting of download
             if (Transfers.ContainsKey(imageID) && priority.Equals(0) && discardLevel.Equals(-1))
                 Transfers.Remove(imageID);
@@ -523,8 +541,20 @@ namespace libsecondlife
         {
             for (int iri = 0; iri < Images.Count; iri++)
             {
-                if (Transfers.ContainsKey(Images[iri].ImageID))
+                if (Transfers.ContainsKey(Images[iri].ImageID)) {
                     Images.RemoveAt(iri);
+                }
+
+                if (Cache.HasImage(Images[iri].ImageID)) {
+                    ImageDownload transfer = Cache.GetCachedImage(Images[iri].ImageID);
+                    if (null != transfer) {
+                        if (null != OnImageReceived) {
+                            OnImageReceived(transfer, new AssetTexture(transfer.AssetData));
+                        }
+                        Images.RemoveAt(iri);
+                    }
+                }
+
             }
 
             if (Images.Count > 0)
@@ -843,7 +873,7 @@ namespace libsecondlife
                     Client.DebugLog("TransferPacket received ahead of the transfer header, blocking...");
 
                     // We haven't received the header yet, block until it's received or times out
-                    download.HeaderReceivedEvent.WaitOne(1000 * 20, false);
+                    download.HeaderReceivedEvent.WaitOne(1000 * 5, false);
 
                     if (download.Size == 0)
                     {
@@ -1088,6 +1118,9 @@ namespace libsecondlife
 
                     //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
                     //    data.ImageID.ID.ToString());
+                    if (OnImageReceiveProgress != null) {
+                        OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size);
+                    }
 
                     transfer.Codec = data.ImageID.Codec;
                     transfer.PacketCount = data.ImageID.Packets;
@@ -1103,6 +1136,7 @@ namespace libsecondlife
                     {
                         Transfers.Remove(transfer.ID);
                         transfer.Success = true;
+                        Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
                     }
                 }
             }
@@ -1136,7 +1170,7 @@ namespace libsecondlife
                     if (transfer.Size == 0)
                     {
                         // We haven't received the header yet, block until it's received or times out
-                        transfer.HeaderReceivedEvent.WaitOne(1000 * 20, false);
+                        transfer.HeaderReceivedEvent.WaitOne(1000 * 5, false);
 
                         if (transfer.Size == 0)
                         {
@@ -1153,6 +1187,10 @@ namespace libsecondlife
                     Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize +
                         (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
                     transfer.Transferred += image.ImageData.Data.Length;
+                    
+                    if (OnImageReceiveProgress != null) {
+                        OnImageReceiveProgress(image.ImageID.ID, transfer.Transferred, transfer.Size);
+                    }
 
                     //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
                     //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToString());
@@ -1160,6 +1198,7 @@ namespace libsecondlife
                     // Check if we downloaded the full image
                     if (transfer.Transferred >= transfer.Size)
                     {
+                        Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
                         transfer.Success = true;
                         Transfers.Remove(transfer.ID);
                     }
@@ -1203,4 +1242,128 @@ namespace libsecondlife
 
         #endregion Image Callbacks
     }
+
+    #region Texture Cache
+    /// <summary>
+    /// Class that handles the local image cache
+    /// </summary>
+    public class TextureCache
+    {
+        private SecondLife Client;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="client">A reference to the SecondLife client object</param>
+        public TextureCache(SecondLife client)
+        {
+            Client = client;
+        }
+
+        /// <summary>
+        /// Return bytes read from the local image cache, null if it does not exist
+        /// </summary>
+        /// <param name="imageID">LLUUID of the image we want to get</param>
+        /// <returns>Raw bytes of the image, or null on failure</returns>
+        public byte[] GetCachedImageBytes(LLUUID imageID)
+        {
+            if (!Operational()) {
+                return null;
+            }
+            try {
+                Client.Log("Reading " + FileName(imageID) + " from texture cache.", Helpers.LogLevel.Debug);
+                byte[] data = File.ReadAllBytes(FileName(imageID));
+                return data;
+            } catch (Exception ex) {
+                Client.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns ImageDownload object of the
+        /// image from the local image cache, null if it does not exist
+        /// </summary>
+        /// <param name="imageID">LLUUID of the image we want to get</param>
+        /// <returns>ImageDownload object containing the image, or null on failure</returns>
+        public ImageDownload GetCachedImage(LLUUID imageID)
+        {
+            if (!Operational()) {
+                return null;
+            }
+            byte[] imageData = GetCachedImageBytes(imageID);
+            if (imageData == null) {
+                return null;
+            }
+            ImageDownload transfer = new ImageDownload();
+            transfer.AssetType = AssetType.Texture;
+            transfer.ID = imageID;
+            transfer.Simulator = Client.Network.CurrentSim;
+            transfer.Size = imageData.Length;
+            transfer.Success = true;
+            transfer.Transferred = imageData.Length;
+            transfer.AssetData = imageData;
+            return transfer;
+        }
+
+        /// <summary>
+        /// Constructs a file name of the cached image
+        /// </summary>
+        /// <param name="imageID">LLUUID of the image</param>
+        /// <returns>String with the file name of the cahced image</returns>
+        private string FileName(LLUUID imageID)
+        {
+            return Client.Settings.TEXTURE_CACHE_DIR + "/" + imageID.ToString();
+        }
+
+        /// <summary>
+        /// Saves an image to the local cache
+        /// </summary>
+        /// <param name="imageID">LLUUID of the image</param>
+        /// <param name="imageData">Raw bytes the image consists of</param>
+        /// <returns>Weather the operation was successfull</returns>
+        public bool SaveImageToCache(LLUUID imageID, byte[] imageData)
+        {
+            if (!Operational()) {
+                return false;
+            }
+            
+            try {
+                Client.Log("Saving " + FileName(imageID) + " to texture cache.", Helpers.LogLevel.Debug);
+                
+                if (!Directory.Exists(Client.Settings.TEXTURE_CACHE_DIR)) {
+                    Directory.CreateDirectory(Client.Settings.TEXTURE_CACHE_DIR);
+                }
+                
+                File.WriteAllBytes(FileName(imageID), imageData);
+            } catch (Exception ex) {
+                Client.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning);
+                return false;
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the image exists in the local cache
+        /// </summary>
+        /// <param name="imageID">LLUUID of the image</param>
+        public bool HasImage(LLUUID imageID)
+        {
+            if (!Operational()) {
+                return false;
+            }
+            return File.Exists(FileName(imageID));
+        }
+
+        /// <summary>
+        /// Checks weather caching is enabled
+        /// </summary>
+        private bool Operational()
+        {
+            return Client.Settings.USE_TEXTURE_CACHE;
+        }
+
+    }
+    #endregion
 }
