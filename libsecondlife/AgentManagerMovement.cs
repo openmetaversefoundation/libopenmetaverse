@@ -407,6 +407,13 @@ namespace libsecondlife
                 get { return (updateInterval != 0); }
             }
 
+            /// <summary>Reset movement controls every time we send an update</summary>
+            public bool AutoResetControls
+            {
+                get { return autoResetControls; }
+                set { autoResetControls = value; }
+            }
+
             #endregion Properties
 
             /// <summary>Agent camera controls</summary>
@@ -446,6 +453,7 @@ namespace libsecondlife
             /// <summary>Timer for sending AgentUpdate packets</summary>
             private Timer updateTimer;
             private int updateInterval;
+            private bool autoResetControls = true;
 
             /// <summary>Default constructor</summary>
             public AgentMovement(SecondLife client)
@@ -634,7 +642,9 @@ namespace libsecondlife
 
                     Client.Network.SendPacket(update, simulator);
 
-                    ResetControlFlags();
+                    if (autoResetControls) {
+                        ResetControlFlags();
+                    }
                 }
             }
 
