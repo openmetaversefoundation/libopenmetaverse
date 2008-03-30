@@ -64,12 +64,13 @@ Encode the packets of a tile to a destination buffer
 @param maxlayers maximum number of layers
 @param dest the destination buffer
 @param len the length of the destination buffer
-@param image_info structure to create an index file
+@param cstr_info Codestream information structure 
 @param tpnum Tile part number of the current tile
 @param tppos The position of the tile part flag in the progression order
 @param t2_mode If == 0 In Threshold calculation ,If == 1 Final pass
+@param cur_totnum_tp The total number of tile parts in the current tile
 */
-int t2_encode_packets(opj_t2_t* t2,int tileno, opj_tcd_tile_t *tile, int maxlayers, unsigned char *dest, int len, opj_image_info_t *image_info,int tpnum, int tppos,int pino,J2K_T2_MODE t2_mode);
+int t2_encode_packets(opj_t2_t* t2,int tileno, opj_tcd_tile_t *tile, int maxlayers, unsigned char *dest, int len, opj_codestream_info_t *cstr_info,int tpnum, int tppos,int pino,J2K_T2_MODE t2_mode,int cur_totnum_tp);
 /**
 Decode the packets of a tile from a source buffer
 @param t2 T2 handle
@@ -78,7 +79,7 @@ Decode the packets of a tile from a source buffer
 @param tileno number that identifies the tile for which to decode the packets
 @param tile tile for which to decode the packets
  */
-int t2_decode_packets(opj_t2_t *t2, unsigned char *src, int len, int tileno, opj_tcd_tile_t *tile);
+int t2_decode_packets(opj_t2_t *t2, unsigned char *src, int len, int tileno, opj_tcd_tile_t *tile, opj_codestream_info_t *cstr_info);
 
 /**
 Create a T2 handle

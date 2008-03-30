@@ -79,12 +79,17 @@ The functions in J2K.C have for goal to read/write the several parts of the code
 #define J2K_MS_COM 0xff64	/**< COM marker value */
 /* UniPG>> */
 #ifdef USE_JPWL
-#define J2K_MS_EPC 0xff68	/**< EPC marker value (Part11) */
-#define J2K_MS_EPB 0xff66	/**< EPB marker value (Part11) */ 
-#define J2K_MS_ESD 0xff67	/**< ESD marker value (Part11) */ 
-#define J2K_MS_RED 0xff69	/**< RED marker value (Part11) */
+#define J2K_MS_EPC 0xff68	/**< EPC marker value (Part 11: JPEG 2000 for Wireless) */
+#define J2K_MS_EPB 0xff66	/**< EPB marker value (Part 11: JPEG 2000 for Wireless) */ 
+#define J2K_MS_ESD 0xff67	/**< ESD marker value (Part 11: JPEG 2000 for Wireless) */ 
+#define J2K_MS_RED 0xff69	/**< RED marker value (Part 11: JPEG 2000 for Wireless) */
 #endif /* USE_JPWL */
+#ifdef USE_JPSEC
+#define J2K_MS_SEC 0xff65    /**< SEC marker value (Part 8: Secure JPEG 2000) */
+#define J2K_MS_INSEC 0xff94  /**< INSEC marker value (Part 8: Secure JPEG 2000) */
+#endif /* USE_JPSEC */
 /* <<UniPG */
+
 
 /* ----------------------------------------------------------------------- */
 
@@ -99,7 +104,8 @@ typedef enum J2K_STATUS {
 	J2K_STATE_TPHSOT = 0x0008, /**< the decoding process is in a tile part header and expects a SOT marker */
 	J2K_STATE_TPH    = 0x0010, /**< the decoding process is in a tile part header */
 	J2K_STATE_MT     = 0x0020, /**< the EOC marker has just been read */
-	J2K_STATE_NEOC   = 0x0040  /**< the decoding process must not expect a EOC marker because the codestream is truncated */
+	J2K_STATE_NEOC   = 0x0040, /**< the decoding process must not expect a EOC marker because the codestream is truncated */
+	J2K_STATE_ERR    = 0x0080  /**< the decoding process has encountered an error */
 } J2K_STATUS;
 
 /* ----------------------------------------------------------------------- */
@@ -222,8 +228,6 @@ typedef struct opj_cp {
 	int layer;
 	/** if == NO_LIMITATION, decode entire codestream; if == LIMIT_TO_MAIN_HEADER then only decode the main header */
 	OPJ_LIMIT_DECODING limit_decoding;
-	/** 0 = no index || 1 = index */
-	int index_on;
 	/** XTOsiz */
 	int tx0;
 	/** YTOsiz */
@@ -305,92 +309,6 @@ typedef struct opj_cp {
 } opj_cp_t;
 
 /**
-Information concerning a packet inside tile
-*/
-typedef struct opj_packet_info {
-	/** start position */
-	int start_pos;
-	/** end position */
-	int end_pos;
-	/** ADD for Marcela */
-	double disto;
-} opj_packet_info_t;
-
-/**
-Index structure : information regarding tiles inside image
-*/
-typedef struct opj_tile_info {
-	/** value of thresh for each layer by tile cfr. Marcela   */
-	double *thresh;
-	/** number of tile */
-	int num_tile;
-	/** start position */
-	int start_pos;
-	/** end position of the header */
-	int end_header;
-	/** end position */
-	int end_pos;
-	/** precinct number for each resolution level (width) */
-	int pw[33];
-	/** precinct number for each resolution level (height) */
-	int ph[33];
-	/** precinct size (in power of 2), in X for each resolution level */
-	int pdx[33];
-	/** precinct size (in power of 2), in Y for each resolution level */
-	int pdy[33];
-	/** information concerning packets inside tile */
-	opj_packet_info_t *packet;
-	/** add fixed_quality */
-	int nbpix;
-	/** add fixed_quality */
-	double distotile;
-} opj_tile_info_t;
-
-/**
-Index structure
-*/
-typedef struct opj_image_info {
-	/** 0 = no index || 1 = index */
-	int index_on;
-	/** maximum distortion reduction on the whole image (add for Marcela) */
-	double D_max;
-	/** packet number */
-	int num;
-	/** writing the packet in the index with t2_encode_packets */
-	int index_write;
-	/** image width */
-	int image_w;
-	/** image height */
-	int image_h;
-	/** progression order */
-	OPJ_PROG_ORDER prog;
-	/** tile size in x */
-	int tile_x;
-	/** tile size in y */
-	int tile_y;
-	/** */
-	int tile_Ox;
-	/** */
-	int tile_Oy;
-	/** number of tiles in X */
-	int tw;
-	/** number of tiles in Y */
-	int th;
-	/** component numbers */
-	int comp;
-	/** number of layer */
-	int layer;
-	/** number of decomposition */
-	int decomposition;
-	/** main header position */
-	int main_head_end;
-	/** codestream's size */
-	int codestream_size;
-	/** information regarding tiles inside image */
-	opj_tile_info_t *tile;
-} opj_image_info_t;
-
-/**
 JPEG-2000 codestream reader/writer
 */
 typedef struct opj_j2k {
@@ -445,7 +363,7 @@ typedef struct opj_j2k {
 	/** pointer to the coding parameters */
 	opj_cp_t *cp;
 	/** helper used to write the index file */
-	opj_image_info_t *image_info;
+	opj_codestream_info_t *cstr_info;
 	/** pointer to the byte i/o stream */
 	opj_cio_t *cio;
 } opj_j2k_t;
@@ -475,16 +393,18 @@ void j2k_setup_decoder(opj_j2k_t *j2k, opj_dparameters_t *parameters);
 Decode an image from a JPEG-2000 codestream
 @param j2k J2K decompressor handle
 @param cio Input buffer stream
+@param cstr_info Codestream information structure if required, NULL otherwise
 @return Returns a decoded image if successful, returns NULL otherwise
 */
-opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio);
+opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio, opj_codestream_info_t *cstr_info);
 /**
 Decode an image form a JPT-stream (JPEG 2000, JPIP)
 @param j2k J2K decompressor handle
 @param cio Input buffer stream
+@param cstr_info Codestream information structure if required, NULL otherwise
 @return Returns a decoded image if successful, returns NULL otherwise
 */
-opj_image_t* j2k_decode_jpt_stream(opj_j2k_t *j2k, opj_cio_t *cio);
+opj_image_t* j2k_decode_jpt_stream(opj_j2k_t *j2k, opj_cio_t *cio, opj_codestream_info_t *cstr_info);
 /**
 Creates a J2K compression structure
 @param cinfo Codec context info
@@ -513,10 +433,11 @@ Encode an image into a JPEG-2000 codestream
 @param j2k J2K compressor handle
 @param cio Output buffer stream
 @param image Image to encode
-@param index Name of the index file if required, NULL otherwise
+@param cstr_info Codestream information structure if required, NULL otherwise
 @return Returns true if successful, returns false otherwise
 */
-bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, char *index);
+bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, opj_codestream_info_t *cstr_info);
+
 /* ----------------------------------------------------------------------- */
 /*@}*/
 

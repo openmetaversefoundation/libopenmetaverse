@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="DllOpenJPEG"
-	ProjectGUID="{D1F3D377-653A-4B9B-B01F-C8DF3FA5C86F}"
+	ProjectGUID="{89AC992C-5E2C-4E6B-A453-61C1DF446216}"
 	RootNamespace="DllOpenJPEG"
 	>
 	<Platforms>
@@ -23,6 +23,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -49,7 +50,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OPJ_EXPORTS"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="false"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OPJ_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -77,6 +80,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=""
+				LinkTimeCodeGeneration="0"
 				ImportLibrary=".\Release/openjpeg-libsl.lib"
 				TargetMachine="1"
 			/>
@@ -105,7 +109,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine=""
+				CommandLine="if not exist dist mkdir dist;copy libopenjpeg\openjpeg.h dist&#x0D;&#x0A;copy Release\OpenJPEG.dll dist&#x0D;&#x0A;copy Release\OpenJPEG.lib dist"
 			/>
 		</Configuration>
 		<Configuration
@@ -667,31 +671,6 @@
 			<File
 				RelativePath="libopenjpeg\tgt.h"
 				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-			>
-			<File
-				RelativePath="OpenJPEG.rc"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 	</Files>

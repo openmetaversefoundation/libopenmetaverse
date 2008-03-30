@@ -344,7 +344,7 @@ static void mqc_renormd(opj_mqc_t *mqc) {
 ==========================================================
 */
 
-opj_mqc_t* mqc_create() {
+opj_mqc_t* mqc_create(void) {
 	opj_mqc_t *mqc = (opj_mqc_t*)opj_malloc(sizeof(opj_mqc_t));
 	return mqc;
 }
@@ -369,10 +369,6 @@ void mqc_init_enc(opj_mqc_t *mqc, unsigned char *bp) {
 		mqc->ct = 13;
 	}
 	mqc->start = bp;
-}
-
-void mqc_setcurctx(opj_mqc_t *mqc, int ctxno) {
-	mqc->curctx = &mqc->ctxs[ctxno];
 }
 
 void mqc_encode(opj_mqc_t *mqc, int d) {
