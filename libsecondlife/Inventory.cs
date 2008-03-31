@@ -59,6 +59,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="obj">The InventoryObject that was removed.</param>
         public delegate void InventoryObjectRemoved(InventoryBase obj);
+        /// <summary>
+        /// Delegate to use for the OnInventoryObjectUpdated event.
+        /// </summary>
+        /// <param name="obj">The InventoryObject that has been stored.</param>
+        public delegate void InventoryObjectAdded(InventoryBase obj);
 
         /// <summary>
         /// Called when an InventoryObject's state is changed.
@@ -68,6 +73,12 @@ namespace libsecondlife
         /// Called when an item or folder is removed from inventory.
         /// </summary>
         public event InventoryObjectRemoved OnInventoryObjectRemoved;
+        /// <summary>
+        /// Called when an item is first added to the local inventory store.
+        /// This will occur most frequently when we're initially downloading
+        /// the inventory from the server.
+        /// </summary>
+        public event InventoryObjectAdded OnInventoryObjectAdded;
 
         /// <summary>
         /// 
@@ -97,14 +108,26 @@ namespace libsecondlife
             }
         }
 
+        public LLUUID Owner {
+            get { return _Owner; }
+        }
+
+        private LLUUID _Owner;
+
         private SecondLife Client;
         private InventoryManager Manager;
         private Dictionary<LLUUID, InventoryNode> Items = new Dictionary<LLUUID, InventoryNode>();
 
         public Inventory(SecondLife client, InventoryManager manager)
+            : this(client, manager, client.Self.AgentID) { }
+
+        public Inventory(SecondLife client, InventoryManager manager, LLUUID owner)
         {
             Client = client;
             Manager = manager;
+            _Owner = owner;
+            if (owner == LLUUID.Zero)
+                client.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning);
             Items = new Dictionary<LLUUID, InventoryNode>();
         }
 
@@ -203,8 +226,14 @@ namespace libsecondlife
                 {
                     itemNode = new InventoryNode(item, itemParent);
                     Items.Add(item.UUID, itemNode);
+                    FireOnInventoryObjectAdded(item);
                 }
             }
+        }
+
+        public InventoryNode GetNodeFor(LLUUID uuid)
+        {
+            return Items[uuid];
         }
 
         /// <summary>
@@ -309,6 +338,15 @@ namespace libsecondlife
             if (OnInventoryObjectRemoved != null)
             {
                 try { OnInventoryObjectRemoved(obj); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        protected void FireOnInventoryObjectAdded(InventoryBase obj)
+        {
+            if (OnInventoryObjectAdded != null)
+            {
+                try { OnInventoryObjectAdded(obj); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }

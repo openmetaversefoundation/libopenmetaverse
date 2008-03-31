@@ -608,7 +608,6 @@ namespace libsecondlife
         public InventoryManager(SecondLife client)
         {
             _Client = client;
-            _Store = new Inventory(client, this);
 
             _Client.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
             _Client.Network.RegisterCallback(PacketType.SaveAssetIntoInventory, new NetworkManager.PacketCallback(SaveAssetIntoInventoryHandler));
@@ -2858,6 +2857,8 @@ namespace libsecondlife
         {
             if (loginSuccess)
             {
+                // Initialize the store here so we know who owns it:
+                _Store = new Inventory(_Client, this, _Client.Self.AgentID);
                 _Client.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString());
                 InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
                 rootFolder.Name = String.Empty;
