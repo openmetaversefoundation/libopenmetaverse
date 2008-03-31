@@ -23,7 +23,6 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -50,9 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="false"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OPJ_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OPJ_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -109,7 +106,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="if not exist dist mkdir dist;copy libopenjpeg\openjpeg.h dist&#x0D;&#x0A;copy Release\OpenJPEG.dll dist&#x0D;&#x0A;copy Release\OpenJPEG.lib dist"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -673,6 +670,32 @@
 				>
 			</File>
 		</Filter>
+<Filter 	 
+Name="Resource Files" 	 
+Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe" 	 
+> 	 
+<File 	 
+RelativePath="OpenJPEG.rc" 	 
+> 	 
+<FileConfiguration 	 
+Name="Release|Win32" 	 
+> 	 
+<Tool 	 
+Name="VCResourceCompilerTool" 	 
+PreprocessorDefinitions="" 	 
+/> 	 
+</FileConfiguration> 	 
+<FileConfiguration 	 
+Name="Debug|Win32" 	 
+> 	 
+<Tool 	 
+Name="VCResourceCompilerTool" 	 
+PreprocessorDefinitions="" 	 
+/> 	 
+</FileConfiguration> 	 
+</File> 	 
+</Filter>
+
 	</Files>
 	<Globals>
 	</Globals>
