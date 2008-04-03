@@ -945,14 +945,47 @@ namespace libsecondlife
 
         #endregion Find
 
-        #region Move
-
+        #region Move/Rename
+        
         public void Move(InventoryBase item, InventoryFolder newParent)
         {
             if (item is InventoryFolder)
                 MoveFolder(item.UUID, newParent.UUID);
             else
                 MoveItem(item.UUID, newParent.UUID);
+        }
+
+        public void Move(InventoryBase itemID, InventoryFolder ParentID, string newName)
+        {
+            if (itemID is InventoryFolder)
+                MoveFolder(itemID.UUID, ParentID.UUID, newName);
+            else
+                MoveItem(itemID.UUID, ParentID.UUID, newName);
+        }
+
+        public void MoveFolder(LLUUID folderID, LLUUID parentID, string newName)
+        {
+            lock (Store)
+            {
+                if (_Store.Contains(folderID))
+                {
+                    InventoryBase inv = Store[folderID];
+                    inv.Name = newName;
+                    _Store.UpdateNodeFor(inv);
+                }
+            }
+
+            UpdateInventoryFolderPacket move = new UpdateInventoryFolderPacket();
+            move.AgentData.AgentID = _Client.Self.AgentID;
+            move.AgentData.SessionID = _Client.Self.SessionID;
+            move.FolderData = new UpdateInventoryFolderPacket.FolderDataBlock[1];
+            move.FolderData[0] = new UpdateInventoryFolderPacket.FolderDataBlock();
+            move.FolderData[0].FolderID = folderID;
+            move.FolderData[0].ParentID = parentID;
+            move.FolderData[0].Name = Helpers.StringToField(newName);
+            move.FolderData[0].Type = -1;
+
+            _Client.Network.SendPacket(move);
         }
 
         public void MoveFolder(LLUUID folder, LLUUID newParent)
@@ -976,6 +1009,7 @@ namespace libsecondlife
             move.InventoryData[0] = new MoveInventoryFolderPacket.InventoryDataBlock();
             move.InventoryData[0].FolderID = folder;
             move.InventoryData[0].ParentID = newParent;
+            
 
             _Client.Network.SendPacket(move);
         }
