@@ -1648,6 +1648,51 @@ namespace libsecondlife
             }
         }
 
+            /// <summary>
+            /// Aims at the specified position, enters mouselook, presses and
+            /// releases the left mouse button, and leaves mouselook
+            /// </summary>
+            /// <param name="target">Target to shoot at</param>
+            /// <returns></returns>
+            public bool Shoot(LLVector3 target)
+            {
+                if (Movement.TurnToward(target))
+                    return Shoot();
+                else
+                    return false;
+            }
+
+            /// <summary>
+            /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
+            /// </summary>
+            /// <returns></returns>
+            public bool Shoot()
+            {
+                if (Client.Settings.SEND_AGENT_UPDATES)
+                {
+                    Movement.Mouselook = true;
+                    Movement.MLButtonDown = true;
+                    Movement.SendUpdate();
+
+                    Movement.MLButtonUp = true;
+                    Movement.MLButtonDown = false;
+                    Movement.FinishAnim = true;
+                    Movement.SendUpdate();
+
+                    Movement.Mouselook = false;
+                    Movement.MLButtonUp = false;
+                    Movement.FinishAnim = false;
+                    Movement.SendUpdate();
+
+                    return true;
+                }
+                else
+                {
+                    Client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                    return false;
+                }
+            }
+
         #endregion Movement actions
 
         #region Touch and grab
