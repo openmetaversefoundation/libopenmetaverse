@@ -658,7 +658,7 @@ namespace libsecondlife
                             catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
                         }
 
-                        if (loginSuccess)
+                        if (loginSuccess && !redirect)
                         {
                             // Login succeeded
 
