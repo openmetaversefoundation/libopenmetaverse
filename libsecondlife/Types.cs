@@ -1796,9 +1796,16 @@ namespace libsecondlife
             {
                 norm = 1 / norm;
 
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * X), 0, bytes, 0, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * Y), 0, bytes, 4, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * Z), 0, bytes, 8, 4);
+                float x, y, z;
+                if (W >= 0) {
+                    x = X; y = Y; z = Z;
+                } else {
+                    x = -X; y = -Y; z = -Z;
+                }
+
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * x), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * y), 0, bytes, 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * z), 0, bytes, 8, 4);
 
                 if (!BitConverter.IsLittleEndian)
                 {
