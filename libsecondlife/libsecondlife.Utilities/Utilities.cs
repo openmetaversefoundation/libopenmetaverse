@@ -25,6 +25,51 @@ namespace libsecondlife.Utilities
     public static class Realism
     {
         /// <summary>
+        /// Aims at the specified position, enters mouselook, presses and
+        /// releases the left mouse button, and leaves mouselook
+        /// </summary>
+        /// <param name="target">Target to shoot at</param>
+        /// <returns></returns>
+        public static bool Shoot(SecondLife client, LLVector3 target)
+        {
+            if (client.Self.Movement.TurnToward(target))
+                return Shoot(client);
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
+        /// </summary>
+        /// <returns></returns>
+        public static bool Shoot(SecondLife client)
+        {
+            if (client.Settings.SEND_AGENT_UPDATES)
+            {
+                client.Self.Movement.Mouselook = true;
+                client.Self.Movement.MLButtonDown = true;
+                client.Self.Movement.SendUpdate();
+
+                client.Self.Movement.MLButtonUp = true;
+                client.Self.Movement.MLButtonDown = false;
+                client.Self.Movement.FinishAnim = true;
+                client.Self.Movement.SendUpdate();
+
+                client.Self.Movement.Mouselook = false;
+                client.Self.Movement.MLButtonUp = false;
+                client.Self.Movement.FinishAnim = false;
+                client.Self.Movement.SendUpdate();
+
+                return true;
+            }
+            else
+            {
+                client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        /// <summary>
         ///  A psuedo-realistic chat function that uses the typing sound and
         /// animation, types at three characters per second, and randomly 
         /// pauses. This function will block until the message has been sent

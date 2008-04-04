@@ -520,7 +520,7 @@ namespace libsecondlife
             /// </summary>
             /// <param name="target">Target to shoot at</param>
             /// <returns></returns>
-            [Obsolete("Use Self.Shoot()")]
+            [Obsolete("Moved to libsecondlife.Utilities")]
             public bool Shoot(LLVector3 target)
             {
                 if (TurnToward(target))
@@ -533,7 +533,7 @@ namespace libsecondlife
             /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
             /// </summary>
             /// <returns></returns>
-            [Obsolete("Use Self.Shoot()")]
+            [Obsolete("Moved to libsecondlife.Utilities")]
             public bool Shoot()
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
