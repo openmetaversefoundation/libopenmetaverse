@@ -469,6 +469,36 @@ namespace libsecondlife
         PhysicalObjectCollide
     }
 
+    /// <summary>
+    /// Flags sent when a script takes or releases a control
+    /// </summary>
+    /// <remarks>NOTE: (need to verify) These might be a subset of the ControlFlags enum in Movement,</remarks>
+    [Flags]
+    public enum ScriptControlChange : uint
+    {
+        /// <summary>No Flags set</summary>
+        None = 0,
+        /// <summary>Forward (W or up Arrow)</summary>
+        Forward = 1,
+        /// <summary>Back (S or down arrow)</summary>
+        Back = 2,
+        /// <summary>Move left (shift+A or left arrow)</summary>
+        Left = 4,
+        /// <summary>Move right (shift+D or right arrow)</summary>
+        Right = 8,
+        /// <summary>Up (E or PgUp)</summary>
+        Up = 16,
+        /// <summary>Down (C or PgDown</summary>
+        Down = 32,
+        /// <summary>Rotate left (A or left arrow)</summary>
+        RotateLeft = 256,
+        /// <summary>Rotate right (D or right arrow)</summary>
+        RotateRight = 512,
+        /// <summary>Left Mouse Button</summary>
+        LeftButton = 268435456,
+        /// <summary>Left Mouse button in MouseLook</summary>
+        MouseLookLeftButton = 1073741824
+    }
     #endregion Enums
     
     #region Structs
@@ -785,6 +815,15 @@ namespace libsecondlife
         /// <param name="message">the message sent from the grid to our avatar.</param>
         public delegate void AlertMessage(string message);
 
+        /// <summary>
+        /// Fired when a script wants to give or release controls.
+        /// </summary>
+        /// <param name="controls">Control to give or take</param>
+        /// <param name="pass">true of passing control to agent</param>
+        /// <param name="take">true of taking control from agent</param>
+        /// TODO: controls should be an enum
+        public delegate void ScriptControlEvent(ScriptControlChange controls, bool pass, bool take);
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -817,6 +856,8 @@ namespace libsecondlife
         public event GroupChatLeft OnGroupChatLeft;
         /// <summary>Alert messages sent to client from simulator</summary>
         public event AlertMessage OnAlertMessage;
+        /// <summary>Fired when a script wants to take or release control of your avatar.</summary>
+        public event ScriptControlEvent OnScriptControlChange;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -1066,6 +1107,8 @@ namespace libsecondlife
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse));
             // Alert Messages
             Client.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
+            // script control change messages, ie: when an in-world LSL script wants to take control of your agent.
+            Client.Network.RegisterCallback(PacketType.ScriptControlChange, new NetworkManager.PacketCallback(ScriptControlChangeHandler));
 
         }
 
@@ -2356,6 +2399,29 @@ namespace libsecondlife
                         (ScriptPermission)question.Data.Questions);
                 }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        /// <summary>
+        /// Handles Script Control changes when Script with permissions releases or takes a control
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void ScriptControlChangeHandler(Packet packet, Simulator simulator)
+        {
+            if (OnScriptControlChange != null)
+            {
+                ScriptControlChangePacket change = (ScriptControlChangePacket)packet;
+                for (int i = 0; i < change.Data.Length; i++)
+                {
+                    try
+                    {
+                        OnScriptControlChange((ScriptControlChange)change.Data[i].Controls,
+                            change.Data[i].PassToAgent,
+                            change.Data[i].TakeControls);
+                    }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
 
