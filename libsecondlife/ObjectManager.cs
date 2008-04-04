@@ -1086,17 +1086,18 @@ namespace libsecondlife
         /// <param name="position"></param>
         public void SetPosition(Simulator simulator, uint localID, LLVector3 position)
         {
-            ObjectPositionPacket objPosPacket = new ObjectPositionPacket();
-            objPosPacket.AgentData.AgentID = Client.Self.AgentID;
-            objPosPacket.AgentData.SessionID = Client.Self.SessionID;
+            MultipleObjectUpdatePacket multiObjectUpdate = new MultipleObjectUpdatePacket();
+            multiObjectUpdate.AgentData.AgentID = Client.Self.AgentID;
+            multiObjectUpdate.AgentData.SessionID = Client.Self.SessionID;
 
-            objPosPacket.ObjectData = new ObjectPositionPacket.ObjectDataBlock[1];
+            multiObjectUpdate.ObjectData = new MultipleObjectUpdatePacket.ObjectDataBlock[1];
 
-            objPosPacket.ObjectData[0] = new ObjectPositionPacket.ObjectDataBlock();
-            objPosPacket.ObjectData[0].ObjectLocalID = localID;
-            objPosPacket.ObjectData[0].Position = position;
+            multiObjectUpdate.ObjectData[0] = new MultipleObjectUpdatePacket.ObjectDataBlock();
+            multiObjectUpdate.ObjectData[0].Type = 9;
+            multiObjectUpdate.ObjectData[0].ObjectLocalID = localID;
+            multiObjectUpdate.ObjectData[0].Data = position.GetBytes();
 
-            Client.Network.SendPacket(objPosPacket, simulator);
+            Client.Network.SendPacket(multiObjectUpdate, simulator);
         }
 
         /// <summary>
