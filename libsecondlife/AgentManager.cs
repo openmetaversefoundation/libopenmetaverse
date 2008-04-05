@@ -821,8 +821,13 @@ namespace libsecondlife
         /// <param name="controls">Control to give or take</param>
         /// <param name="pass">true of passing control to agent</param>
         /// <param name="take">true of taking control from agent</param>
-        /// TODO: controls should be an enum
-        public delegate void ScriptControlEvent(ScriptControlChange controls, bool pass, bool take);
+        public delegate void ScriptControlCallback(ScriptControlChange controls, bool pass, bool take);
+
+        /// <summary>
+        /// Fired when camera tries to view beyond its view limits
+        /// </summary>
+        /// <param name="collidePlane">LLVector4 representing plane where constraints were hit</param>
+        public delegate void CameraConstraintCallback(LLVector4 collidePlane);
 
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -857,7 +862,9 @@ namespace libsecondlife
         /// <summary>Alert messages sent to client from simulator</summary>
         public event AlertMessage OnAlertMessage;
         /// <summary>Fired when a script wants to take or release control of your avatar.</summary>
-        public event ScriptControlEvent OnScriptControlChange;
+        public event ScriptControlCallback OnScriptControlChange;
+        /// <summary>Fired when our avatar camera reaches the maximum possible point</summary>
+        public event CameraConstraintCallback OnCameraConstraint;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -1109,6 +1116,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
             // script control change messages, ie: when an in-world LSL script wants to take control of your agent.
             Client.Network.RegisterCallback(PacketType.ScriptControlChange, new NetworkManager.PacketCallback(ScriptControlChangeHandler));
+            // Camera Constraint (probably needs to move to AgentManagerCamera TODO:
+            Client.Network.RegisterCallback(PacketType.CameraConstraint, new NetworkManager.PacketCallback(CameraConstraintHandler));
 
         }
 
@@ -2953,6 +2962,22 @@ namespace libsecondlife
             if (OnAlertMessage != null)
             {
                 try { OnAlertMessage(message); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        /// <summary>
+        /// detects camera constraint collisions
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void CameraConstraintHandler(Packet packet, Simulator simulator)
+        {
+            if (OnCameraConstraint != null)
+            {
+                CameraConstraintPacket camera = (CameraConstraintPacket)packet;
+
+                try { OnCameraConstraint(camera.CameraCollidePlane.Plane); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
