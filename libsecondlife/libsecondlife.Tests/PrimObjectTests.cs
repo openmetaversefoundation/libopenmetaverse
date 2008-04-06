@@ -62,18 +62,18 @@ namespace libsecondlife.Tests
             }
         }
 
-        [Test]
-        public void PathShear()
-        {
-            for (byte i = 0; i < byte.MaxValue; i++)
-            {
-                float floatValue = LLObject.UnpackPathShear(i);
-                byte result = LLObject.PackPathShear(floatValue);
+        //[Test]
+        //public void PathShear()
+        //{
+        //    for (byte i = 0; i < byte.MaxValue; i++)
+        //    {
+        //        float floatValue = LLObject.UnpackPathShear(i);
+        //        byte result = LLObject.PackPathShear(floatValue);
 
-                Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
-                ", and ended up with " + result);
-            }
-        }
+        //        Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
+        //        ", and ended up with " + result);
+        //    }
+        //}
 
         [Test]
         public void PathTaper()
