@@ -2104,6 +2104,20 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Teleport agent to a landmark
+        /// </summary>
+        /// <param name="landmark"><seealso cref="libsecondlife.LLUUID"/> of the landmark to teleport agent to</param>
+        public void RequestTeleport(LLUUID landmark)
+        {
+            TeleportLandmarkRequestPacket p = new TeleportLandmarkRequestPacket();
+            p.Info = new TeleportLandmarkRequestPacket.InfoBlock();
+            p.Info.AgentID = Client.Self.AgentID;
+            p.Info.SessionID = Client.Self.SessionID;
+            p.Info.LandmarkID = landmark;
+            Client.Network.SendPacket(p);
+        }
+
+        /// <summary>
         /// Send a teleport lure to another avatar with default "Join me in ..." invitation message
         /// </summary>
         /// <param name="targetID">target avatars <seealso cref="libsecondlife.LLUUID"/> to lure</param>
