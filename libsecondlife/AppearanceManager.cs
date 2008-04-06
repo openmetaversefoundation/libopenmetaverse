@@ -143,7 +143,7 @@ namespace libsecondlife
 
         private SecondLife Client;
         private AssetManager Assets;
-        private Dictionary<WearableType, WearableData> Wearables = new Dictionary<WearableType, WearableData>();
+        public InternalDictionary<WearableType, WearableData> Wearables = new InternalDictionary<WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this array
         private LLUUID[] AgentTextures = new LLUUID[AVATAR_TEXTURE_COUNT];
 
@@ -437,23 +437,23 @@ namespace libsecondlife
         // this method will download the assets for all inventory items in iws
         private void ReplaceOutfitWearables(List<InventoryWearable> iws)
         {
-            lock (Wearables)
+            lock (Wearables.Dictionary)
             {
                 Dictionary<WearableType, WearableData> preserve = new Dictionary<WearableType,WearableData>();
                 
-                foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
+                foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables.Dictionary)
                 {
                     if (kvp.Value.Item.AssetType == AssetType.Bodypart)
-                        preserve.Add(kvp.Key,kvp.Value);
+                            preserve.Add(kvp.Key, kvp.Value);
                 }
 
-                Wearables = preserve;
+                Wearables.Dictionary = preserve;
             
                 foreach (InventoryWearable iw in iws)
                 {
                     WearableData wd = new WearableData();
-                    wd.Item = iw;
-                    Wearables[wd.Item.WearableType] = wd;
+                    wd.Item = iw; 
+                    Wearables.Dictionary[wd.Item.WearableType] = wd;
                 }
             }
         }
@@ -687,7 +687,7 @@ namespace libsecondlife
             {
                 // Don't do a cache request for a skirt bake if we're not wearing a skirt
                 if (bakedIndex == (int)BakeType.Skirt && 
-                    (!Wearables.ContainsKey(WearableType.Skirt) || Wearables[WearableType.Skirt].Asset.AssetID == LLUUID.Zero))
+                    (!Wearables.ContainsKey(WearableType.Skirt) || Wearables.Dictionary[WearableType.Skirt].Asset.AssetID == LLUUID.Zero))
                     continue;
 
                 LLUUID hash = new LLUUID();
@@ -754,7 +754,7 @@ namespace libsecondlife
                 AgentWearablesUpdatePacket update = (AgentWearablesUpdatePacket)packet;
 
                 // Reset the Wearables collection
-                lock (Wearables) Wearables.Clear();
+                lock (Wearables.Dictionary) Wearables.Dictionary.Clear();
 
                 for (int i = 0; i < update.WearableData.Length; i++)
                 {
@@ -768,7 +768,7 @@ namespace libsecondlife
                         data.Item.AssetUUID = update.WearableData[i].AssetID;
 
                         // Add this wearable to our collection
-                        lock (Wearables) Wearables[type] = data;
+                        lock (Wearables.Dictionary) Wearables.Dictionary[type] = data;
                     }
                 }
             }
@@ -794,7 +794,7 @@ namespace libsecondlife
             float AgentSizeVPNeckLength = 0.0f;
             float AgentSizeVPHipLength = 0.0f;
 
-            lock (Wearables)
+            lock (Wearables.Dictionary)
             {
                 // Only for debugging output
                 int count = 0, vpIndex = 0;
@@ -807,7 +807,7 @@ namespace libsecondlife
                     VisualParam vp = kvp.Value;
 
                     // Try and find this value in our collection of downloaded wearables
-                    foreach (WearableData data in Wearables.Values)
+                    foreach (WearableData data in Wearables.Dictionary.Values)
                     {
                         if (data.Asset != null && data.Asset.Params.ContainsKey(vp.ParamID))
                         {
@@ -895,7 +895,7 @@ namespace libsecondlife
                     }
                 }
 
-                foreach (WearableData data in Wearables.Values)
+                foreach (WearableData data in Wearables.Dictionary.Values)
                 {
                     if (data.Asset != null)
                     {
@@ -977,7 +977,7 @@ namespace libsecondlife
                 wearing.WearableData[i].WearableType = (byte)i;
 
                 if (Wearables.ContainsKey(type))
-                    wearing.WearableData[i].ItemID = Wearables[type].Item.UUID;
+                    wearing.WearableData[i].ItemID = Wearables.Dictionary[type].Item.UUID;
                 else
                     wearing.WearableData[i].ItemID = LLUUID.Zero;
             }
@@ -1006,7 +1006,7 @@ namespace libsecondlife
 
         private void DownloadWearableAssets()
         {
-            foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables)
+            foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables.Dictionary)
             {
                 Client.DebugLog("Requesting asset for wearable item" + kvp.Value.Item.Name + " (" + kvp.Value.Item.AssetUUID + ")");
                 AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
@@ -1027,9 +1027,9 @@ namespace libsecondlife
                 Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables =
                     new Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>>();
 
-                lock (Wearables)
+                lock (Wearables.Dictionary)
                 {
-                    foreach (KeyValuePair<WearableType, WearableData> data in Wearables)
+                    foreach (KeyValuePair<WearableType, WearableData> data in Wearables.Dictionary)
                         wearables.Add(data.Key, new KeyValuePair<LLUUID, LLUUID>(data.Value.Item.AssetUUID, data.Value.Item.UUID));
                 }
 
@@ -1084,7 +1084,7 @@ namespace libsecondlife
                 VisualParam vp = kvp.Value;
 
                 // Try and find this value in our collection of downloaded wearables
-                foreach (WearableData data in Wearables.Values)
+                foreach (WearableData data in Wearables.Dictionary.Values)
                 {
                     if (data.Asset.Params.ContainsKey(vp.ParamID))
                     {
@@ -1219,10 +1219,10 @@ namespace libsecondlife
 
         private void Assets_OnAssetReceived(AssetDownload download, Asset asset)
         {
-            lock (Wearables)
+            lock (Wearables.Dictionary)
             {
                 // Check if this is a wearable we were waiting on
-                foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
+                foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables.Dictionary)
                 {
                     if (kvp.Value.Item.AssetUUID == download.AssetID)
                     {
