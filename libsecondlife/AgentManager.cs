@@ -655,6 +655,15 @@ namespace libsecondlife
             GodlikePursuit = 2
         }
 
+        [Flags]
+        public enum ScriptSensorTypeFlags
+        {
+            Agent = 1,
+            Active = 2,
+            Passive = 4,
+            Scripted = 8,
+        }
+
         #endregion
 
         #region Callbacks & Events
@@ -829,6 +838,36 @@ namespace libsecondlife
         /// <param name="collidePlane">LLVector4 representing plane where constraints were hit</param>
         public delegate void CameraConstraintCallback(LLVector4 collidePlane);
 
+        /// <summary>
+        /// Fired when script sensor reply is received
+        /// </summary>
+        /// <param name="requestorID">requestors UUID</param>
+        /// <param name="groupID">Sources Group UUID</param>
+        /// <param name="name">Sources Name</param>
+        /// <param name="objectID">Objects UUID</param>
+        /// <param name="ownerID">Object owners UUID</param>
+        /// <param name="position">Position of Object</param>
+        /// <param name="range">Range of Object</param>
+        /// <param name="rotation">Rotation of object</param>
+        /// <param name="type">Objects Type</param>
+        /// <param name="velocity">LLVector3 representing the velocity of object</param>
+        /// TODO: this should probably be a struct, and there should be an enum added for type
+        public delegate void ScriptSensorReplyCallback(LLUUID requestorID, LLUUID groupID, string name, LLUUID objectID,
+            LLUUID ownerID, LLVector3 position, float range, LLQuaternion rotation, ScriptSensorTypeFlags type, LLVector3 velocity);
+
+        /// <summary>
+        /// Fired in response to a RequestSit()
+        /// </summary>
+        /// <param name="objectID">ID of primitive avatar will be sitting on</param>
+        /// <param name="autoPilot">true of avatar autopiloted there</param>
+        /// <param name="cameraAtOffset">Camera offset when avatar is seated</param>
+        /// <param name="cameraEyeOffset">Camera eye offset when avatar is seated</param>
+        /// <param name="forceMouselook">true of sitting on this object will force mouselook</param>
+        /// <param name="sitPosition">position avatar will be in when seated</param>
+        /// <param name="sitRotation">rotation avatar will be in when seated</param>
+        public delegate void AvatarSitResponseCallback(LLUUID objectID, bool autoPilot, LLVector3 cameraAtOffset, LLVector3 cameraEyeOffset,
+            bool forceMouselook, LLVector3 sitPosition, LLQuaternion sitRotation);
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -865,6 +904,10 @@ namespace libsecondlife
         public event ScriptControlCallback OnScriptControlChange;
         /// <summary>Fired when our avatar camera reaches the maximum possible point</summary>
         public event CameraConstraintCallback OnCameraConstraint;
+        /// <summary>Fired when a script sensor reply is received</summary>
+        public event ScriptSensorReplyCallback OnScriptSensorReply;
+
+        public event AvatarSitResponseCallback OnAvatarSitResponse;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -1118,6 +1161,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ScriptControlChange, new NetworkManager.PacketCallback(ScriptControlChangeHandler));
             // Camera Constraint (probably needs to move to AgentManagerCamera TODO:
             Client.Network.RegisterCallback(PacketType.CameraConstraint, new NetworkManager.PacketCallback(CameraConstraintHandler));
+            Client.Network.RegisterCallback(PacketType.ScriptSensorReply, new NetworkManager.PacketCallback(ScriptSensorReplyHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarSitResponse, new NetworkManager.PacketCallback(AvatarSitResponseHandler));
 
         }
 
@@ -2308,8 +2353,35 @@ namespace libsecondlife
             InstantMessage(Name, groupID, String.Empty, imSessionID,
                 accept ? InstantMessageDialog.GroupInvitationAccept : InstantMessageDialog.GroupInvitationDecline,
                 InstantMessageOnline.Offline, LLVector3.Zero, LLUUID.Zero, new byte[0]);
-        }  
+        }
 
+        /// <summary>
+        /// Requests script detection of objects and avatars
+        /// </summary>
+        /// <param name="name">name of the object/avatar to search for</param>
+        /// <param name="searchID">UUID of the object or avatar to search for</param>
+        /// <param name="type">Type of search from ScriptSensorTypeFlags</param>
+        /// <param name="range">range of scan (96 max?)</param>
+        /// <param name="arc">the arc in radians to search within</param>
+        /// <param name="requestID">an user generated ID to correlate replies with</param>
+        /// <param name="sim">Simulator to perform search in</param>
+        public void RequestScriptSensor(string name, LLUUID searchID, ScriptSensorTypeFlags type, float range, float arc, LLUUID requestID, Simulator sim)
+        {
+            ScriptSensorRequestPacket request = new ScriptSensorRequestPacket();
+            request.Requester.Arc = arc;
+            request.Requester.Range = range;
+            request.Requester.RegionHandle = sim.Handle;
+            request.Requester.RequestID = requestID;
+            request.Requester.SearchDir = LLQuaternion.Identity; // TODO: this needs to be tested
+            request.Requester.SearchID = searchID;
+            request.Requester.SearchName = Helpers.StringToField(name);
+            request.Requester.SearchPos = LLVector3.Zero;
+            request.Requester.SearchRegions = 0; // TODO: ?
+            request.Requester.SourceID = Client.Self.AgentID;
+            request.Requester.Type = (int)type;
+
+            Client.Network.SendPacket(request, sim);
+        }
         #endregion Misc
 
         #region Packet Handlers
@@ -2995,6 +3067,52 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+
+        /// <summary>
+        /// Packet handler for ScriptSensorReply packet
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void ScriptSensorReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnScriptSensorReply != null)
+            {
+                ScriptSensorReplyPacket reply = (ScriptSensorReplyPacket)packet;
+
+                for (int i = 0; i < reply.SensedData.Length; i++)
+                {
+                    ScriptSensorReplyPacket.SensedDataBlock block = reply.SensedData[i];
+                    ScriptSensorReplyPacket.RequesterBlock requestor = reply.Requester;
+                    
+                    try { OnScriptSensorReply(requestor.SourceID, block.GroupID, Helpers.FieldToUTF8String(block.Name),
+                        block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            
+        }
+
+        /// <summary>
+        /// Packet handler for AvatarSitResponse packet
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void AvatarSitResponseHandler(Packet packet, Simulator simulator)
+        {
+            if (OnAvatarSitResponse != null)
+            {
+                AvatarSitResponsePacket sit = (AvatarSitResponsePacket)packet;
+
+                try
+                {
+                    OnAvatarSitResponse(sit.SitObject.ID, sit.SitTransform.AutoPilot, sit.SitTransform.CameraAtOffset,
+                  sit.SitTransform.CameraEyeOffset, sit.SitTransform.ForceMouselook, sit.SitTransform.SitPosition,
+                  sit.SitTransform.SitRotation);
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
         #endregion Packet Handlers
     }
 }
