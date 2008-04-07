@@ -122,6 +122,10 @@ namespace libsecondlife.TestClient
                             if (prim.Textures.FaceTextures[j] != null && !Textures.Contains(prim.Textures.FaceTextures[j].TextureID))
                                 Textures.Add(prim.Textures.FaceTextures[j].TextureID);
                         }
+
+                        if (prim.Sculpt.SculptTexture != LLUUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture)) {
+                            Textures.Add(prim.Sculpt.SculptTexture);
+                        }
                     }
 
                     // Create a request list from all of the images
