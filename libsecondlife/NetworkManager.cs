@@ -915,14 +915,13 @@ namespace libsecondlife
                         simulator.Stats.PhysicsTime = s.StatValue;
 						break;
 					case 8:
-                        simulator.Stats.ImageTime = s.StatValue;
+                        simulator.Stats.AgentTime = s.StatValue;
 						break;
 					case 9:
-                        simulator.Stats.ScriptTime = s.StatValue;
+                        simulator.Stats.ImageTime = s.StatValue;
 						break;
 					case 10:
-                        //simulator.Stats.OtherTime = s.StatValue;
-						// This is not othertime, this is something else
+                        simulator.Stats.ScriptTime = s.StatValue;
                         break;
 					case 11:
                         simulator.Stats.Objects = Convert.ToInt32(s.StatValue);

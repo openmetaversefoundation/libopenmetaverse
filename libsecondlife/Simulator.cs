@@ -193,6 +193,8 @@ namespace libsecondlife
             /// <summary></summary>
             public float ScriptTime;
             /// <summary></summary>
+            public float AgentTime;
+            /// <summary></summary>
             public float OtherTime;
             /// <summary>Total number of objects Simulator is simulating</summary>
             public int Objects;
