@@ -14,6 +14,9 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
+            if (args.Length < 1)
+                return "Usage: wear [outfit name] eg: 'wear /My Outfit/Dance Party";
+
             string target = String.Empty;
             bool bake = true;
 
