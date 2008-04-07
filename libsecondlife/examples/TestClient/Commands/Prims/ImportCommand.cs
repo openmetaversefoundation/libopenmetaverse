@@ -112,6 +112,8 @@ namespace libsecondlife.TestClient
                     if (!primDone.WaitOne(10000, false))
                         return "Rez failed, timed out while creating the root prim.";
 
+                    Client.Objects.SetPosition(Client.Network.CurrentSim, primsCreated[primsCreated.Count - 1].LocalID, linkset.RootPrim.Position);
+
                     state = ImporterState.RezzingChildren;
 
                     // Rez the child prims
@@ -125,6 +127,8 @@ namespace libsecondlife.TestClient
 
                         if (!primDone.WaitOne(10000, false))
                             return "Rez failed, timed out while creating child prim.";
+                        Client.Objects.SetPosition(Client.Network.CurrentSim, primsCreated[primsCreated.Count - 1].LocalID, currentPosition);
+
                     }
 
                     if (linkset.Children.Count != 0)
