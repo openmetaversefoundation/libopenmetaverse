@@ -176,7 +176,7 @@ namespace libsecondlife
 
     public class AssetPrim : Asset
     {
-        public override AssetType AssetType { get { return AssetType.Primitive; } }
+        public override AssetType AssetType { get { return AssetType.Object; } }
 
         public AssetPrim() { }
 

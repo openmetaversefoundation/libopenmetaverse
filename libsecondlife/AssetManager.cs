@@ -32,7 +32,7 @@ namespace libsecondlife
         Clothing = 5,
         /// <summary>Primitive that can contain textures, sounds, 
         /// scripts and more</summary>
-        Primitive = 6,
+        Object = 6,
         /// <summary>Notecard asset</summary>
         Notecard = 7,
         /// <summary>Holds a collection of inventory items</summary>
@@ -702,7 +702,7 @@ namespace libsecondlife
                 case AssetType.Texture:
                     asset = new AssetTexture();
                     break;
-                case AssetType.Primitive:
+                case AssetType.Object:
                     asset = new AssetPrim();
                     break;
                 case AssetType.Clothing:
