@@ -33,8 +33,16 @@ namespace libsecondlife.TestClient
                 if (message.Length > 1023) message = message.Remove(1023);
 
                 Client.Self.OnGroupChatJoin += new AgentManager.GroupChatJoined(Self_OnGroupChatJoin);
-                Client.Self.RequestJoinGroupChat(ToGroupID);
-                WaitForSessionStart.Reset();
+                if (!Client.Self.GroupChatSessions.ContainsKey(ToGroupID))
+                {
+                    WaitForSessionStart.Reset();
+                    Client.Self.RequestJoinGroupChat(ToGroupID);
+                }
+                else
+                {
+                    WaitForSessionStart.Set();
+                }
+                
                 if (WaitForSessionStart.WaitOne(10000, false))
                 {
                     Client.Self.InstantMessageGroup(ToGroupID, message);
@@ -43,8 +51,8 @@ namespace libsecondlife.TestClient
                 {
                     return "Timeout waiting for group session start";
                 }
+                
                 Client.Self.OnGroupChatJoin -= new AgentManager.GroupChatJoined(Self_OnGroupChatJoin);
-                Client.Self.RequestLeaveGroupChat(ToGroupID);
                 return "Instant Messaged group " + ToGroupID.ToString() + " with message: " + message;
             }
             else
@@ -55,8 +63,15 @@ namespace libsecondlife.TestClient
 
         void Self_OnGroupChatJoin(LLUUID groupChatSessionID, LLUUID tmpSessionID, bool success)
         {
-            if(success)
-            WaitForSessionStart.Set();
+            if (success)
+            {
+                Console.WriteLine("Join Group Chat Success!");
+                WaitForSessionStart.Set();
+            }
+            else
+            {
+                Console.WriteLine("Join Group Chat failed :(");
+            }
         }
     }
 }
