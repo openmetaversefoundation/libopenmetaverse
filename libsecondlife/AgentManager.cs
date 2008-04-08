@@ -524,7 +524,7 @@ namespace libsecondlife
         public InstantMessageDialog Dialog;
         /// <summary>Group IM session toggle</summary>
         public bool GroupIM;
-        /// <summary>Key of IM session</summary>
+        /// <summary>Key of IM session, for Group Messages, the groups UUID</summary>
         public LLUUID IMSessionID;
         /// <summary>Timestamp of the instant message</summary>
         public DateTime Timestamp;
