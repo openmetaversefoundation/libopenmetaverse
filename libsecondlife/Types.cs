@@ -2042,10 +2042,29 @@ namespace libsecondlife
             return ret;
         }
 
+        /// <summary>
+        /// Division operator (multiply by the conjugate)
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLQuaternion operator /(LLQuaternion lhs, LLQuaternion rhs)
+        {
+            return lhs * rhs.Conjugate;
+        }
+
         #endregion Operators
 
         /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
         public readonly static LLQuaternion Identity = new LLQuaternion(0f, 0f, 0f, 1f);
+
+        public LLQuaternion Conjugate
+        {
+            get
+            {
+                return new LLQuaternion(-this.X, -this.Y, -this.Z, this.W);
+            }
+        }
 	}
 
     /// <summary>
