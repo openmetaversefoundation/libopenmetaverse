@@ -15,7 +15,7 @@ AR = ar
 # Converts cr/lf to just lf
 DOS2UNIX = dos2unix
 
-COMPILERFLAGS = -Wall -O3 -ffast-math -std=c99 -fPIC
+COMPILERFLAGS = -O3 -fPIC
 LIBRARIES = -lstdc++
 
 MODULES = $(SRCS:.c=.o)
@@ -25,6 +25,7 @@ CFLAGS = $(COMPILERFLAGS) $(INCLUDE)
 TARGET  = openjpeg-libsl
 SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).so
 LIBNAME = lib$(TARGET).so.$(VER_MAJOR)
+
 
 default: all
 
@@ -37,23 +38,23 @@ dist: OpenJPEG
 dos2unix:
 	@$(DOS2UNIX) $(SRCS) $(INCLS)
 
-OpenJPEG: $(STATICLIB) $(SHAREDLIB)
+OpenJPEG: $(SHAREDLIB)
 
-.c.o:
+$(MODULES): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(STATICLIB): $(MODULES)
-	$(AR) r $@ $(MODULES)
+$(CPPMODULES): %.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(SHAREDLIB): $(MODULES)
-	$(CC) -s -shared -Wl,-soname,$(LIBNAME) -o $@ $(MODULES) $(LIBRARIES)
+$(SHAREDLIB): $(MODULES) $(CPPMODULES)
+	$(CC) -s -shared -Wl,-soname,$(LIBNAME) -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
 
 install: OpenJPEG
 	install -d ../bin
 	cp $(SHAREDLIB) ../bin/
 
 clean:
-	rm -rf core dist/ u2dtmp* $(MODULES) $(STATICLIB) $(SHAREDLIB) $(LIBNAME)
+	rm -rf core dist/ u2dtmp* $(MODULES) $(CPPMODULES) $(SHAREDLIB) $(LIBNAME)
 
 osx:
 	make -f Makefile.osx
