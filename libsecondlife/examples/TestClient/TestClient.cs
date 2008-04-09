@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Xml;
 using libsecondlife;
 using libsecondlife.Packets;
+using libsecondlife.Utilities;
 
 namespace libsecondlife.TestClient
 {
@@ -18,6 +19,7 @@ namespace libsecondlife.TestClient
         public string MasterName = String.Empty;
         public LLUUID MasterKey = LLUUID.Zero;
 		public ClientManager ClientManager;
+        public VoiceManager VoiceManager;
 
         private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
@@ -53,7 +55,9 @@ namespace libsecondlife.TestClient
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
             Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
-            
+
+            VoiceManager = new VoiceManager(this);
+
             updateTimer.Start();
         }
 

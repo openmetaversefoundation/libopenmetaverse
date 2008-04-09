@@ -85,6 +85,7 @@ namespace libsecondlife.Utilities
         public delegate void SessionCreatedCallback(int cookie, int statusCode, string statusString, string sessionHandle);
         public delegate void DevicesCallback(int cookie, int statusCode, string statusString, string currentDevice);
         public delegate void ProvisionAccountCallback(string username, string password);
+        public delegate void ParcelVoiceInfoCallback(string regionName, int localID, string channelURI);
 
         public event LoginStateChangeCallback OnLoginStateChange;
         public event NewSessionCallback OnNewSession;
@@ -103,6 +104,7 @@ namespace libsecondlife.Utilities
         public event DevicesCallback OnCaptureDevices;
         public event DevicesCallback OnRenderDevices;
         public event ProvisionAccountCallback OnProvisionAccount;
+        public event ParcelVoiceInfoCallback OnParcelVoiceInfo;
 
         public SecondLife Client;
         public string VoiceServer = VOICE_RELEASE_SERVER;
@@ -318,33 +320,45 @@ namespace libsecondlife.Utilities
             }
         }
 
-        public bool RequestProvisionAccount()
+        private bool RequestVoiceInternal(string me, CapsClient.CompleteCallback callback, string capsName)
         {
             if (Enabled && Client.Network.Connected)
             {
                 if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null)
                 {
-                    Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("ProvisionVoiceAccountRequest");
+                    Uri url = Client.Network.CurrentSim.Caps.CapabilityURI(capsName);
 
                     if (url != null)
                     {
                         CapsClient request = new CapsClient(url);
-                        request.OnComplete += new CapsClient.CompleteCallback(ProvisionCapsResponse);
+                        request.OnComplete += new CapsClient.CompleteCallback(callback);
                         request.StartRequest();
 
                         return true;
                     }
                     else
                     {
-                        Client.Log("VoiceManager.RequestProvisionAccount(): ProvisionVoiceAccountRequest capability is missing", 
-                            Helpers.LogLevel.Info);
+                        Client.Log("VoiceManager." + me + "(): " + capsName + " capability is missing", 
+                                   Helpers.LogLevel.Info);
                         return false;
                     }
                 }
             }
 
-            Client.Log("VoiceManager.RequestProvisionAccount(): Voice system is currently disabled", Helpers.LogLevel.Info);
+            Client.Log("VoiceManager.RequestVoiceInternal(): Voice system is currently disabled", 
+                       Helpers.LogLevel.Info);
             return false;
+            
+        }
+
+        public bool RequestProvisionAccount()
+        {
+            return RequestVoiceInternal("RequestProvisionAccount", ProvisionCapsResponse, "ProvisionVoiceAccountRequest");
+        }
+
+        public bool RequestParcelVoiceInfo()
+        {
+            return RequestVoiceInternal("RequestParcelVoiceInfo", ParcelVoiceInfoResponse, "ParcelVoiceInfoRequest");
         }
 
         public int RequestLogin(string accountName, string password, string connectorHandle)
@@ -537,6 +551,25 @@ namespace libsecondlife.Utilities
                     try { OnProvisionAccount(respTable["username"].AsString(), respTable["password"].AsString()); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
+            }
+        }
+
+        private void ParcelVoiceInfoResponse(CapsClient client, LLSD response, Exception error)
+        {
+            if (response is LLSDMap)
+            {
+                LLSDMap respTable = (LLSDMap)response;
+
+                string regionName = respTable["region_name"].AsString();
+                int localID = (int)respTable["parcel_local_id"].AsInteger();
+
+                string channelURI = null;
+                if (respTable["voice_credentials"] is LLSDMap) {
+                    LLSDMap creds = (LLSDMap)respTable["voice_credentials"];
+                    channelURI = creds["channel_uri"].AsString();
+                }
+                
+                if (OnParcelVoiceInfo != null) OnParcelVoiceInfo(regionName, localID, channelURI);
             }
         }
 

@@ -32,15 +32,34 @@ using libsecondlife.Utilities;
 
 namespace VoiceTest
 {
+    public class VoiceException: Exception
+    {
+        public bool LoggedIn = false;
+
+        public VoiceException(string msg): base(msg) 
+        {
+        }
+
+        public VoiceException(string msg, bool loggedIn): base(msg) 
+        {
+            LoggedIn = loggedIn;
+        }
+    }
+
     class VoiceTest
     {
+        static AutoResetEvent EventQueueRunningEvent = new AutoResetEvent(false);
         static AutoResetEvent ProvisionEvent = new AutoResetEvent(false);
+        static AutoResetEvent ParcelVoiceInfoEvent = new AutoResetEvent(false);
         static string VoiceAccount = String.Empty;
         static string VoicePassword = String.Empty;
+        static string VoiceRegionName = String.Empty;
+        static int VoiceLocalID = 0;
+        static string VoiceChannelURI = String.Empty;
 
         static void Main(string[] args)
         {
-            if (args.Length != 3)
+            if (args.Length < 3)
             {
                 Console.WriteLine("Usage: VoiceTest.exe [firstname] [lastname] [password]");
                 return;
@@ -49,16 +68,31 @@ namespace VoiceTest
             string firstName = args[0];
             string lastName = args[1];
             string password = args[2];
+            
 
             SecondLife client = new SecondLife();
             client.Settings.MULTIPLE_SIMS = false;
-            //client.OnLogMessage += new SecondLife.LogCallback(client_OnLogMessage);
+            client.Settings.DEBUG = true;
+            client.Settings.LOG_RESENDS = false;
+            client.Settings.STORE_LAND_PATCHES = true;
+            client.Settings.ALWAYS_DECODE_OBJECTS = true;
+            client.Settings.ALWAYS_REQUEST_OBJECTS = true;
+            client.Settings.SEND_AGENT_UPDATES = true;
+
+            string loginURI = client.Settings.LOGIN_SERVER;
+            if (4 == args.Length) {
+                loginURI = args[3];
+            }
 
             VoiceManager voice = new VoiceManager(client);
-            voice.OnProvisionAccount += new VoiceManager.ProvisionAccountCallback(voice_OnProvisionAccount);
+            voice.OnProvisionAccount += voice_OnProvisionAccount;
+            voice.OnParcelVoiceInfo += voice_OnParcelVoiceInfo;
 
-            if (voice.ConnectToDaemon())
-            {
+            client.Network.OnEventQueueRunning += client_OnEventQueueRunning;
+
+            try {
+                if (!voice.ConnectToDaemon()) throw new VoiceException("Failed to connect to the voice daemon");
+
                 List<string> captureDevices = voice.CaptureDevices();
 
                 Console.WriteLine("Capture Devices:");
@@ -73,73 +107,74 @@ namespace VoiceTest
                     Console.WriteLine(String.Format("{0}. \"{1}\"", i, renderDevices[i]));
                 Console.WriteLine();
 
-                Console.WriteLine("Logging in to Second Life as " + firstName + " " + lastName + "...");
 
                 // Login to SL
-                if (client.Network.Login(firstName, lastName, password, "Voice Test", "Metaverse Industries LLC <jhurliman@metaverseindustries.com>"))
-                {
-                    Console.WriteLine("Creating voice connector...");
+                Console.WriteLine("Logging in to Second Life as " + firstName + " " + lastName + "...");
+                LoginParams loginParams = 
+                    client.Network.DefaultLoginParams(firstName, lastName, password, "Voice Test", 
+                                                      "Metaverse Industries LLC <jhurliman@metaverseindustries.com>");
+                loginParams.URI = loginURI;
+                if (!client.Network.Login(loginParams))
+                    throw new VoiceException("Login to SL failed: " + client.Network.LoginMessage);
+                Console.WriteLine("Logged in: " + client.Network.LoginMessage);
 
-                    int status;
-                    string connectorHandle = voice.CreateConnector(out status);
 
-                    if (connectorHandle != String.Empty)
-                    {
-                        Console.WriteLine("Voice connector handle: " + connectorHandle);
+                Console.WriteLine("Creating voice connector...");
+                int status;
+                string connectorHandle = voice.CreateConnector(out status);
+                if (String.IsNullOrEmpty(connectorHandle)) 
+                    throw new VoiceException("Failed to create a voice connector, error code: " + status, true);
+                Console.WriteLine("Voice connector handle: " + connectorHandle);
 
-                        // Wait for the simulator capabilities to show up
-                        // FIXME: Use client.Network.OnEventQueueRunning to continue here
 
-                        Console.WriteLine("Asking the current simulator to create a provisional account...");
+                Console.WriteLine("Waiting for OnEventQueueRunning");
+                if (!EventQueueRunningEvent.WaitOne(45 * 1000, false)) 
+                    throw new VoiceException("EventQueueRunning event did not occur", true);
+                Console.WriteLine("EventQueue running");
 
-                        if (voice.RequestProvisionAccount())
-                        {
-                            if (ProvisionEvent.WaitOne(45 * 1000, false))
-                            {
-                                Console.WriteLine("Provisional account created. Username: " + VoiceAccount + ", Password: " + VoicePassword);
-                                Console.WriteLine("Logging in to voice server " + voice.VoiceServer);
 
-                                string accountHandle = voice.Login(VoiceAccount, VoicePassword, connectorHandle, out status);
+                Console.WriteLine("Asking the current simulator to create a provisional account...");
+                if (!voice.RequestProvisionAccount()) 
+                    throw new VoiceException("Failed to request a provisional account", true); 
+                if (!ProvisionEvent.WaitOne(120 * 1000, false)) 
+                    throw new VoiceException("Failed to create a provisional account", true);
+                Console.WriteLine("Provisional account created. Username: " + VoiceAccount + 
+                                  ", Password: " + VoicePassword);
 
-                                if (accountHandle != String.Empty)
-                                {
-                                    Console.WriteLine("Login succeeded, account handle: " + accountHandle);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Login failed, error code: " + status);
-                                    client.Network.Logout();
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Failed to create a provisional account");
-                                client.Network.Logout();
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Failed to request a provisional account");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Failed to create a voice connector, error code: " + status);
-                        client.Network.Logout();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Login to SL failed: " + client.Network.LoginMessage);
-                }
+
+                Console.WriteLine("Logging in to voice server " + voice.VoiceServer);
+                string accountHandle = voice.Login(VoiceAccount, VoicePassword, connectorHandle, out status);
+                if (String.IsNullOrEmpty(accountHandle)) 
+                    throw new VoiceException("Login failed, error code: " + status, true);
+                Console.WriteLine("Login succeeded, account handle: " + accountHandle);
+
+
+                if (!voice.RequestParcelVoiceInfo()) 
+                    throw new Exception("Failed to request parcel voice info");
+                if (!ParcelVoiceInfoEvent.WaitOne(45 * 1000, false)) 
+                    throw new VoiceException("Failed to obtain parcel info voice", true);
+
+
+                Console.WriteLine("Parcel Voice Info obtained. Region name {0}, local parcel ID {1}, channel URI {2}",
+                                  VoiceRegionName, VoiceLocalID, VoiceChannelURI);
+
+                client.Network.Logout();
             }
-            else
+            catch(Exception e) 
             {
-                Console.WriteLine("Failed to connect to the voice daemon");
+                Console.WriteLine(e.Message);
+                if (e is VoiceException && (e as VoiceException).LoggedIn) 
+                {
+                    client.Network.Logout();
+                }
+                
             }
-
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
+        }
+        
+        static void client_OnEventQueueRunning(Simulator sim) {
+            EventQueueRunningEvent.Set();
         }
 
         static void client_OnLogMessage(string message, Helpers.LogLevel level)
@@ -154,6 +189,15 @@ namespace VoiceTest
             VoicePassword = password;
 
             ProvisionEvent.Set();
+        }
+
+        static void voice_OnParcelVoiceInfo(string regionName, int localID, string channelURI)
+        {
+            VoiceRegionName = regionName;
+            VoiceLocalID = localID;
+            VoiceChannelURI = channelURI;
+
+            ParcelVoiceInfoEvent.Set();
         }
     }
 }
