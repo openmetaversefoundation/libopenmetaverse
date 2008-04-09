@@ -34,6 +34,7 @@ namespace libsecondlife
     /// A 128-bit Universally Unique Identifier, used throughout the Second
     /// Life networking protocol
     /// </summary>
+    [Serializable]
     public struct LLUUID : IComparable
     {
         /// <summary>The System.Guid object this struct wraps around</summary>
