@@ -868,6 +868,8 @@ namespace libsecondlife
         public delegate void AvatarSitResponseCallback(LLUUID objectID, bool autoPilot, LLVector3 cameraAtOffset, LLVector3 cameraEyeOffset,
             bool forceMouselook, LLVector3 sitPosition, LLQuaternion sitRotation);
 
+        public delegate void AgentMovementCallback(LLVector3 agentPosition, ulong regionHandle, LLVector3 agentLookAt, string simVersion);
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -908,6 +910,8 @@ namespace libsecondlife
         public event ScriptSensorReplyCallback OnScriptSensorReply;
 
         public event AvatarSitResponseCallback OnAvatarSitResponse;
+
+        public event AgentMovementCallback OnAgentMovement;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -2556,6 +2560,15 @@ namespace libsecondlife
             relativePosition = movement.Data.Position;
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
+            if (OnAgentMovement != null)
+            {
+                try
+                {
+                    OnAgentMovement(movement.Data.Position, movement.Data.RegionHandle,
+                  movement.Data.LookAt, Helpers.FieldToUTF8String(movement.SimData.ChannelVersion));
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
 
         /// <summary>
