@@ -131,11 +131,13 @@ namespace libsecondlife.TestClient
 
                     }
 
+                    // Create a list of the local IDs of the newly created prims
+                    List<uint> primIDs = new List<uint>(primsCreated.Count);
+                    primIDs.Add(rootLocalID); // Root prim is first in list.
+                    
                     if (linkset.Children.Count != 0)
                     {
-                        // Create a list of the local IDs of the newly created prims
-                        List<uint> primIDs = new List<uint>(primsCreated.Count);
-                        primIDs.Add(rootLocalID); // Root prim is first in list.
+                        // Add the rest of the prims to the list of local IDs
                         foreach (Primitive prim in primsCreated)
                         {
                             if (prim.LocalID != rootLocalID)
@@ -153,14 +155,17 @@ namespace libsecondlife.TestClient
                         else
                             Console.WriteLine("Warning: Failed to link {0} prims", linkQueue.Count);
 
-                        Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
-                            PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
-                            PermissionMask.All, true);
                     }
                     else
                     {
                         Client.Objects.SetRotation(Client.Network.CurrentSim, rootLocalID, rootRotation);
                     }
+                    
+                    // Set permissions on newly created prims
+                    Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
+                        PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
+                        PermissionMask.All, true);
+                    
                     state = ImporterState.Idle;
                 }
                 else
