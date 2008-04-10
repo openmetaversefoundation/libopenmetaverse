@@ -302,7 +302,7 @@ namespace libsecondlife
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
         private AssetUpload PendingUpload;
         private AutoResetEvent PendingUploadEvent = new AutoResetEvent(true);
-        private TextureCache Cache;
+        public TextureCache Cache;
         /// <summary>
         /// Default constructor
         /// </summary>
