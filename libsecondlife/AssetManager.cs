@@ -1261,19 +1261,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Checks if an image exists in the texture cache
-        /// </summary>
-        /// <param name="imageID">LLUUID of the image to check for in the cache</param>
-        /// <returns>True if the image is found in the cache, otherwise false</returns>
-        public bool IsImageCached(LLUUID imageID)
-        {
-            if (!Operational())
-                return false;
-
-            return File.Exists(FileName(imageID));
-        }
-
-        /// <summary>
         /// Return bytes read from the local image cache, null if it does not exist
         /// </summary>
         /// <param name="imageID">LLUUID of the image we want to get</param>
@@ -1360,6 +1347,7 @@ namespace libsecondlife
         /// Checks if the image exists in the local cache
         /// </summary>
         /// <param name="imageID">LLUUID of the image</param>
+        /// <returns>True is the image is stored in the cache, otherwise false</returns>
         public bool HasImage(LLUUID imageID)
         {
             if (!Operational()) {
