@@ -31,6 +31,30 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+
+    #region Structs
+    /// <summary>
+    /// Holds group information for Avatars such as those you might find in a profile
+    /// </summary>
+    public struct AvatarGroup
+    {
+        /// <summary>true of Avatar accepts group notices</summary>
+        public bool AcceptNotices;
+        /// <summary>Groups Key</summary>
+        public LLUUID GroupID;
+        /// <summary>Texture Key for groups insignia</summary>
+        public LLUUID GroupInsigniaID;
+        /// <summary>Name of the group</summary>
+        public LLUUID GroupName;
+        /// <summary>Powers avatar has in the group</summary>
+        public GroupPowers GroupPowers;
+        /// <summary>Avatars Currently selected title</summary>
+        public string GroupTitle;
+        /// <summary>true of Avatar has chosen to list this in their profile</summary>
+        public bool ListInProfile;
+    } 
+    #endregion
+
     /// <summary>
     /// Retrieve friend status notifications, and retrieve avatar names and
     /// profiles
@@ -65,7 +89,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="avatarID"></param>
         /// <param name="groups"></param>
-        public delegate void AvatarGroupsCallback(LLUUID avatarID, AvatarGroupsReplyPacket.GroupDataBlock[] groups);
+        public delegate void AvatarGroupsCallback(LLUUID avatarID, List<AvatarGroup> avatarGroups);
         /// <summary>
         /// Triggered when a name search reply is received (AvatarPickerReply)
         /// </summary>
@@ -312,11 +336,27 @@ namespace libsecondlife
         {
             if (OnAvatarGroups != null)
             {
+                
                 AvatarGroupsReplyPacket groups = (AvatarGroupsReplyPacket)packet;
+                List<AvatarGroup> avatarGroups = new List<AvatarGroup>(groups.GroupData.Length);
+                
+                for (int i = 0; i < groups.GroupData.Length; i++)
+                {
+                    AvatarGroup avatarGroup = new AvatarGroup();
 
-                // FIXME: Build a little struct to represent the groups.GroupData blocks so we keep
-                // libsecondlife.Packets abstracted away
-                OnAvatarGroups(groups.AgentData.AvatarID, groups.GroupData);
+                    avatarGroup.AcceptNotices = groups.GroupData[i].AcceptNotices;
+                    avatarGroup.GroupID = groups.GroupData[i].GroupID;
+                    avatarGroup.GroupInsigniaID = groups.GroupData[i].GroupInsigniaID;
+                    avatarGroup.GroupName = Helpers.FieldToUTF8String(groups.GroupData[i].GroupName);
+                    avatarGroup.GroupPowers = (GroupPowers)groups.GroupData[i].GroupPowers;
+                    avatarGroup.GroupTitle = Helpers.FieldToUTF8String(groups.GroupData[i].GroupTitle);
+                    avatarGroup.ListInProfile = groups.NewGroupData.ListInProfile;
+
+                    avatarGroups.Add(avatarGroup);
+                }
+
+                try { OnAvatarGroups(groups.AgentData.AvatarID, avatarGroups); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -333,7 +373,8 @@ namespace libsecondlife
                         " " + Helpers.FieldToUTF8String(block.LastName);
                 }
 
-                OnAvatarNameSearch(reply.AgentData.QueryID, avatars);
+                try { OnAvatarNameSearch(reply.AgentData.QueryID, avatars); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 

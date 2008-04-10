@@ -98,13 +98,13 @@ namespace libsecondlife.TestClient
             }
         }
 
-        void Avatars_OnAvatarGroups(LLUUID avatarID, AvatarGroupsReplyPacket.GroupDataBlock[] groups)
+        void Avatars_OnAvatarGroups(LLUUID avatarID, List<AvatarGroup> groups)
         {
             lock (ReceivedProfileEvent)
             {
-                foreach (AvatarGroupsReplyPacket.GroupDataBlock block in groups)
+                foreach (AvatarGroup group in groups)
                 {
-                    Groups.Add(block.GroupID);
+                    Groups.Add(group.GroupID);
                 }
 
                 ReceivedGroups = true;
@@ -113,7 +113,7 @@ namespace libsecondlife.TestClient
                     ReceivedProfileEvent.Set();
             }
         }
-
+        
         void Groups_OnGroupJoined(LLUUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
