@@ -1261,6 +1261,19 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Checks if an image exists in the texture cache
+        /// </summary>
+        /// <param name="imageID">LLUUID of the image to check for in the cache</param>
+        /// <returns>True if the image is found in the cache, otherwise false</returns>
+        public bool IsImageCached(LLUUID imageID)
+        {
+            if (!Operational())
+                return false;
+
+            return File.Exists(FileName(imageID));
+        }
+
+        /// <summary>
         /// Return bytes read from the local image cache, null if it does not exist
         /// </summary>
         /// <param name="imageID">LLUUID of the image we want to get</param>
@@ -1288,13 +1301,12 @@ namespace libsecondlife
         /// <returns>ImageDownload object containing the image, or null on failure</returns>
         public ImageDownload GetCachedImage(LLUUID imageID)
         {
-            if (!Operational()) {
+            if (!Operational())
                 return null;
-            }
+
             byte[] imageData = GetCachedImageBytes(imageID);
-            if (imageData == null) {
+            if (imageData == null)
                 return null;
-            }
             ImageDownload transfer = new ImageDownload();
             transfer.AssetType = AssetType.Texture;
             transfer.ID = imageID;
@@ -1357,13 +1369,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Checks weather caching is enabled
+        /// Checks whether caching is enabled
         /// </summary>
         private bool Operational()
         {
             return Client.Settings.USE_TEXTURE_CACHE;
         }
-
     }
     #endregion
 }
