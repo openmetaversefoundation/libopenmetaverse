@@ -22,10 +22,15 @@ namespace SLImageUpload
         public frmSLImageUpload()
         {
             InitializeComponent();
+            InitClient();
+        }
 
+        private void InitClient()
+        {
             Client = new SecondLife();
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
             Client.Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
+            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
             // Turn almost everything off since we are only interested in uploading textures
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
@@ -159,31 +164,50 @@ namespace SLImageUpload
 
         private void cmdConnect_Click(object sender, EventArgs e)
         {
-            if (cmdConnect.Text == "Connect")
-            {
+            if (cmdConnect.Text == "Connect") {
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
-
-                if (!Client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "SL Image Upload",
-                    "jhurliman@metaverseindustries.com"))
-                {
-                    MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
-                        Client.Network.LoginMessage));
-                    cmdConnect.Text = "Connect";
-                    txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
-                    DisableUpload();
-                }
-            }
-            else
-            {
+                LoginParams lp = new LoginParams();
+                lp.FirstName = txtFirstName.Text;
+                lp.LastName = txtLastName.Text;
+                lp.Password = txtPassword.Text;
+                lp.URI = Client.Settings.LOGIN_SERVER;
+                lp.Start = "last";
+                cmdConnect.Enabled = false;
+                Client.Network.BeginLogin(lp);
+                return;
+            } else {
                 Client.Network.Logout();
                 cmdConnect.Text = "Connect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                 DisableUpload();
-
-                // HACK: Create a new SecondLife object until it can clean up properly after itself
-                Client = new SecondLife();
+                InitClient();
             }
+        }
+
+        void Network_OnLogin(LoginStatus login, string message)
+        {
+            if (InvokeRequired) {
+                BeginInvoke(new MethodInvoker(
+                    delegate()
+                    {
+                        Network_OnLogin(login, message);
+                    }
+                    ));
+                return;
+            }
+            if (login == LoginStatus.Success) {
+                MessageBox.Show("Connected: " + message);
+                cmdConnect.Enabled = true;
+            } else if (login == LoginStatus.Failed) {
+                MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
+     Client.Network.LoginMessage));
+                cmdConnect.Text = "Connect";
+                cmdConnect.Enabled = true;
+                txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
+                DisableUpload();
+            }
+
         }
 
         private void cmdLoad_Click(object sender, EventArgs e)
