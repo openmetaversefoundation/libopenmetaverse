@@ -114,13 +114,20 @@ namespace libsecondlife.TestClient
                     {
                         Primitive prim = prims[i];
 
-                        if (!Textures.Contains(prim.Textures.DefaultTexture.TextureID))
+                        if (prim.Textures.DefaultTexture.TextureID != LLObject.TextureEntry.WHITE_TEXTURE &&
+                            !Textures.Contains(prim.Textures.DefaultTexture.TextureID))
+                        {
                             Textures.Add(prim.Textures.DefaultTexture.TextureID);
+                        }
 
                         for (int j = 0; j < prim.Textures.FaceTextures.Length; j++)
                         {
-                            if (prim.Textures.FaceTextures[j] != null && !Textures.Contains(prim.Textures.FaceTextures[j].TextureID))
+                            if (prim.Textures.FaceTextures[j] != null &&
+                                prim.Textures.FaceTextures[j].TextureID != LLObject.TextureEntry.WHITE_TEXTURE &&
+                                !Textures.Contains(prim.Textures.FaceTextures[j].TextureID))
+                            {
                                 Textures.Add(prim.Textures.FaceTextures[j].TextureID);
+                            }
                         }
 
                         if (prim.Sculpt.SculptTexture != LLUUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture)) {

@@ -31,111 +31,111 @@ using libsecondlife.StructuredData;
 
 namespace libsecondlife
 {
-        #region Enumerations
+    #region Enumerations
 
-        /// <summary>
-        /// The type of bump-mapping applied to a face
-        /// </summary>
-        public enum Bumpiness : byte
-        {
-            /// <summary></summary>
-            None = 0,
-            /// <summary></summary>
-            Brightness = 1,
-            /// <summary></summary>
-            Darkness = 2,
-            /// <summary></summary>
-            Woodgrain = 3,
-            /// <summary></summary>
-            Bark = 4,
-            /// <summary></summary>
-            Bricks = 5,
-            /// <summary></summary>
-            Checker = 6,
-            /// <summary></summary>
-            Concrete = 7,
-            /// <summary></summary>
-            Crustytile = 8,
-            /// <summary></summary>
-            Cutstone = 9,
-            /// <summary></summary>
-            Discs = 10,
-            /// <summary></summary>
-            Gravel = 11,
-            /// <summary></summary>
-            Petridish = 12,
-            /// <summary></summary>
-            Siding = 13,
-            /// <summary></summary>
-            Stonetile = 14,
-            /// <summary></summary>
-            Stucco = 15,
-            /// <summary></summary>
-            Suction = 16,
-            /// <summary></summary>
-            Weave = 17
-        }
+    /// <summary>
+    /// The type of bump-mapping applied to a face
+    /// </summary>
+    public enum Bumpiness : byte
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        Brightness = 1,
+        /// <summary></summary>
+        Darkness = 2,
+        /// <summary></summary>
+        Woodgrain = 3,
+        /// <summary></summary>
+        Bark = 4,
+        /// <summary></summary>
+        Bricks = 5,
+        /// <summary></summary>
+        Checker = 6,
+        /// <summary></summary>
+        Concrete = 7,
+        /// <summary></summary>
+        Crustytile = 8,
+        /// <summary></summary>
+        Cutstone = 9,
+        /// <summary></summary>
+        Discs = 10,
+        /// <summary></summary>
+        Gravel = 11,
+        /// <summary></summary>
+        Petridish = 12,
+        /// <summary></summary>
+        Siding = 13,
+        /// <summary></summary>
+        Stonetile = 14,
+        /// <summary></summary>
+        Stucco = 15,
+        /// <summary></summary>
+        Suction = 16,
+        /// <summary></summary>
+        Weave = 17
+    }
 
-        /// <summary>
-        /// The level of shininess applied to a face
-        /// </summary>
-        public enum Shininess
-        {
-            /// <summary></summary>
-            None = 0,
-            /// <summary></summary>
-            Low = 0x40,
-            /// <summary></summary>
-            Medium = 0x80,
-            /// <summary></summary>
-            High = 0xC0
-        }
+    /// <summary>
+    /// The level of shininess applied to a face
+    /// </summary>
+    public enum Shininess
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        Low = 0x40,
+        /// <summary></summary>
+        Medium = 0x80,
+        /// <summary></summary>
+        High = 0xC0
+    }
 
-        /// <summary>
-        /// The texture mapping style used for a face
-        /// </summary>
-        public enum MappingType
-        {
-            /// <summary></summary>
-            Default = 0,
-            /// <summary></summary>
-            Planar = 2
-        }
+    /// <summary>
+    /// The texture mapping style used for a face
+    /// </summary>
+    public enum MappingType
+    {
+        /// <summary></summary>
+        Default = 0,
+        /// <summary></summary>
+        Planar = 2
+    }
 
-        /// <summary>
-        /// Flags in the TextureEntry block that describe which properties are 
-        /// set
-        /// </summary>
-        [Flags]
-        public enum TextureAttributes : uint
-        {
-            /// <summary></summary>
-            None = 0,
-            /// <summary></summary>
-            TextureID = 1 << 0,
-            /// <summary></summary>
-            RGBA = 1 << 1,
-            /// <summary></summary>
-            RepeatU = 1 << 2,
-            /// <summary></summary>
-            RepeatV = 1 << 3,
-            /// <summary></summary>
-            OffsetU = 1 << 4,
-            /// <summary></summary>
-            OffsetV = 1 << 5,
-            /// <summary></summary>
-            Rotation = 1 << 6,
-            /// <summary></summary>
-            Material = 1 << 7,
-            /// <summary></summary>
-            Media = 1 << 8,
-            /// <summary></summary>
-            Glow = 1 << 9,
-            /// <summary></summary>
-            All = 0xFFFFFFFF
-        }
+    /// <summary>
+    /// Flags in the TextureEntry block that describe which properties are 
+    /// set
+    /// </summary>
+    [Flags]
+    public enum TextureAttributes : uint
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        TextureID = 1 << 0,
+        /// <summary></summary>
+        RGBA = 1 << 1,
+        /// <summary></summary>
+        RepeatU = 1 << 2,
+        /// <summary></summary>
+        RepeatV = 1 << 3,
+        /// <summary></summary>
+        OffsetU = 1 << 4,
+        /// <summary></summary>
+        OffsetV = 1 << 5,
+        /// <summary></summary>
+        Rotation = 1 << 6,
+        /// <summary></summary>
+        Material = 1 << 7,
+        /// <summary></summary>
+        Media = 1 << 8,
+        /// <summary></summary>
+        Glow = 1 << 9,
+        /// <summary></summary>
+        All = 0xFFFFFFFF
+    }
 
-        #endregion Enumerations
+    #endregion Enumerations
 
     public abstract partial class LLObject
     {
@@ -447,7 +447,11 @@ namespace libsecondlife
                 tex["media_flags"] = LLSD.FromInteger(Convert.ToInt32(MediaFlags));
                 tex["mapping"] = LLSD.FromInteger((int)TexMapType);
                 tex["glow"] = LLSD.FromReal(Glow);
-                tex["imageid"] = LLSD.FromUUID(TextureID);
+
+                if (TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                    tex["imageid"] = LLSD.FromUUID(TextureID);
+                else
+                    tex["imageid"] = LLSD.FromUUID(LLUUID.Zero);
 
                 return tex;
             }
@@ -501,12 +505,13 @@ namespace libsecondlife
         /// of nine faces</remarks>
         public class TextureEntry
         {
+            public const int MAX_FACES = 32;
+            public static readonly LLUUID WHITE_TEXTURE = new LLUUID("5748decc-f629-461c-9a36-a35a221fe21f");
+
             /// <summary></summary>
             public TextureEntryFace DefaultTexture;
             /// <summary></summary>
             public TextureEntryFace[] FaceTextures = new TextureEntryFace[MAX_FACES];
-
-            public const int MAX_FACES = 32;
 
             /// <summary>
             /// Constructor that takes a default texture UUID
@@ -667,12 +672,12 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                DefaultTexture.RGBA = new LLColor(data[i], data[i + 1], data[i + 2], data[i + 3]);
+                DefaultTexture.RGBA = new LLColor(data, i, true);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    LLColor tmpColor = new LLColor(data[i], data[i + 1], data[i + 2], data[i + 3]);
+                    LLColor tmpColor = new LLColor(data, i, true);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
