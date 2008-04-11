@@ -594,8 +594,11 @@ namespace libsecondlife
                         coarse.Location[i].Z));
                 }
 
-                try { OnCourseLocationUpdate(simulator); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                if (OnCourseLocationUpdate != null)
+                {
+                    try { OnCourseLocationUpdate(simulator); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
     }
