@@ -45,6 +45,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using libsecondlife;
+using libsecondlife.Capabilities;
 using libsecondlife.StructuredData;
 using libsecondlife.Packets;
 
@@ -461,6 +462,7 @@ namespace SLProxy
             string line = null;
             int reqNo;
             int contentLength = 0;
+            string contentType = "";
             Match match;
             string uri;
             string meth;
@@ -528,6 +530,10 @@ namespace SLProxy
                 contentLength = Convert.ToInt32(headers["content-length"]);
             }
 
+            if (headers.ContainsKey("content-type")) {
+                contentType = headers["content-type"];
+            }
+
             // read the HTTP body into a buffer
             byte[] content = new byte[contentLength];
             reader.Read(content, 0, contentLength);
@@ -538,7 +544,11 @@ namespace SLProxy
 
             if (uri == "/")
             {
-                ProxyLogin(netStream, content);
+                if (contentType == "application/xml+llsd") {
+                    ProxyLoginLLSD(netStream, content);
+                } else {
+                    ProxyLogin(netStream, content);
+                }
             }
             else if (new Regex(@"^/https?://.*$").Match(uri).Success)
             {
@@ -1037,6 +1047,74 @@ namespace SLProxy
                 XmlTextWriter responseWriter = new XmlTextWriter(writer);
                 XmlRpcResponseSerializer.Singleton.Serialize(responseWriter, response);
                 responseWriter.Close(); writer.Close();
+            }
+        }
+
+        private void ProxyLoginLLSD(NetworkStream netStream, byte[] content)
+        {
+            lock (this) {
+                ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+                AutoResetEvent remoteComplete = new AutoResetEvent(false);
+                CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
+                LLSD response = null;
+                loginRequest.OnComplete += new CapsClient.CompleteCallback(
+                    delegate(CapsClient client, LLSD result, Exception error)
+                    {
+                        if (error == null) {
+                            if (result != null && result.Type == LLSDType.Map) {
+                                response = result;
+                            }
+                        }
+                        remoteComplete.Set();
+                    }
+                    );
+                loginRequest.StartRequest(content, "application/xml+llsd");
+                remoteComplete.WaitOne(30000, false);
+
+                StreamWriter writer = new StreamWriter(netStream);
+                if (response == null) {
+                    writer.Write("HTTP/1.0 500 Internal server error\r\n");
+                    writer.Write("\r\nError logging in");
+                    writer.Close();
+                    return;
+                }
+
+                LLSDMap map = (LLSDMap)response;
+
+                LLSD llsd;
+                map.TryGetValue("sim_port", out llsd);
+                string sim_port = llsd.AsString();
+                map.TryGetValue("sim_ip", out llsd);
+                string sim_ip = llsd.AsString();
+                map.TryGetValue("seed_capability", out llsd);
+                string seed_capability = llsd.AsString();
+
+                if (sim_port == null || sim_ip == null || seed_capability == null) {
+                    writer.Write("HTTP/1.0 500 Internal server error\r\n");
+                    writer.Write("\r\nError logging in");
+                    writer.Close();
+                    return;
+                }
+
+                IPEndPoint realSim = new IPEndPoint(IPAddress.Parse(sim_ip), Convert.ToUInt16(sim_port));
+                IPEndPoint fakeSim = ProxySim(realSim);
+                map["sim_ip"] = LLSD.FromString(fakeSim.Address.ToString());
+                map["sim_port"] = LLSD.FromInteger(fakeSim.Port);
+                activeCircuit = realSim;
+
+                CapInfo info = new CapInfo(seed_capability, activeCircuit, "SeedCapability");
+                info.AddDelegate(new CapsDelegate(FixupSeedCapsResponse));
+
+                KnownCaps["seed_capability"] = info;
+                map["seed_capability"] = LLSD.FromString(loginURI + seed_capability);
+
+                Reset();
+
+                writer.Write("HTTP/1.0 200 OK\r\n");
+                writer.Write("Content-type: application/xml+llsd\r\n");
+                writer.Write("\r\n");
+                writer.Write(LLSDParser.SerializeXmlString(response));
+                writer.Close();
             }
         }
 
