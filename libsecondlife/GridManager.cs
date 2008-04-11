@@ -180,6 +180,13 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="location"></param>
+        /// <param name="indexYou"></param>
+        /// <param name="indexPrey"></param>
+        public delegate void CoarseLocationUpdateCallback(Simulator sim);
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="region"></param>
         public delegate void GridRegionCallback(GridRegion region);
         /// <summary>
@@ -194,6 +201,8 @@ namespace libsecondlife
         /// <param name="items"></param>
         public delegate void GridItemsCallback(GridItemType type, List<GridItem> items);
 
+        /// <summary>Triggered when coarse locations (minimap dots) are updated by the simulator</summary>
+        public event CoarseLocationUpdateCallback OnCourseLocationUpdate;
         /// <summary>Triggered when a new region is discovered through GridManager</summary>
         public event GridRegionCallback OnGridRegion;
         /// <summary></summary>
@@ -584,6 +593,9 @@ namespace libsecondlife
                     simulator.avatarPositions.Add(new LLVector3(coarse.Location[i].X, coarse.Location[i].Y,
                         coarse.Location[i].Z));
                 }
+
+                try { OnCourseLocationUpdate(simulator); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
     }
