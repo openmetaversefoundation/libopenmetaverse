@@ -1071,28 +1071,26 @@ namespace SLProxy
                 loginRequest.StartRequest(content, "application/xml+llsd");
                 remoteComplete.WaitOne(30000, false);
 
-                StreamWriter writer = new StreamWriter(netStream);
                 if (response == null) {
-                    writer.Write("HTTP/1.0 500 Internal server error\r\n");
-                    writer.Write("\r\nError logging in");
-                    writer.Close();
+                    byte[] wr = Encoding.ASCII.GetBytes("HTTP/1.0 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n");
+                    netStream.Write(wr, 0, wr.Length);
                     return;
                 }
 
                 LLSDMap map = (LLSDMap)response;
 
                 LLSD llsd;
+                string sim_port = null, sim_ip = null, seed_capability = null;
                 map.TryGetValue("sim_port", out llsd);
-                string sim_port = llsd.AsString();
+                if (llsd != null) sim_port = llsd.AsString();
                 map.TryGetValue("sim_ip", out llsd);
-                string sim_ip = llsd.AsString();
+                if (llsd != null) sim_ip = llsd.AsString();
                 map.TryGetValue("seed_capability", out llsd);
-                string seed_capability = llsd.AsString();
+                if (llsd != null) seed_capability = llsd.AsString();
 
                 if (sim_port == null || sim_ip == null || seed_capability == null) {
-                    writer.Write("HTTP/1.0 500 Internal server error\r\n");
-                    writer.Write("\r\nError logging in");
-                    writer.Close();
+                    byte[] wr = Encoding.ASCII.GetBytes("HTTP/1.0 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n");
+                    netStream.Write(wr, 0, wr.Length);
                     return;
                 }
 
@@ -1102,14 +1100,16 @@ namespace SLProxy
                 map["sim_port"] = LLSD.FromInteger(fakeSim.Port);
                 activeCircuit = realSim;
 
+                // start a new proxy session
+                Reset();
+
                 CapInfo info = new CapInfo(seed_capability, activeCircuit, "SeedCapability");
                 info.AddDelegate(new CapsDelegate(FixupSeedCapsResponse));
 
-                KnownCaps["seed_capability"] = info;
+                KnownCaps[seed_capability] = info;
                 map["seed_capability"] = LLSD.FromString(loginURI + seed_capability);
 
-                Reset();
-
+                StreamWriter writer = new StreamWriter(netStream);
                 writer.Write("HTTP/1.0 200 OK\r\n");
                 writer.Write("Content-type: application/xml+llsd\r\n");
                 writer.Write("\r\n");
