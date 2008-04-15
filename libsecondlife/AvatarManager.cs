@@ -45,7 +45,7 @@ namespace libsecondlife
         /// <summary>Texture Key for groups insignia</summary>
         public LLUUID GroupInsigniaID;
         /// <summary>Name of the group</summary>
-        public LLUUID GroupName;
+        public string GroupName;
         /// <summary>Powers avatar has in the group</summary>
         public GroupPowers GroupPowers;
         /// <summary>Avatars Currently selected title</summary>
