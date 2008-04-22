@@ -84,6 +84,7 @@
     <Compile Include="Commands\Movement\SitOnCommand.cs" />
     <Compile Include="Commands\Movement\StandCommand.cs" />
     <Compile Include="Commands\Prims\ChangePermsCommand.cs" />
+    <Compile Include="Commands\Prims\DownloadTextureCommand.cs" />
     <Compile Include="Commands\Prims\ExportCommand.cs" />
     <Compile Include="Commands\Prims\ExportParticlesCommand.cs" />
     <Compile Include="Commands\Prims\FindObjectsCommand.cs" />
