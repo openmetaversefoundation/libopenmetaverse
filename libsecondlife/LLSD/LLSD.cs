@@ -27,6 +27,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace libsecondlife.StructuredData
 {
@@ -62,6 +63,7 @@ namespace libsecondlife.StructuredData
         public virtual DateTime AsDate() { return Helpers.Epoch; }
         public virtual Uri AsUri() { return new Uri(String.Empty); }
         public virtual byte[] AsBinary() { return new byte[0]; }
+        public override string ToString() { return "undef"; }
 
         public static LLSD FromBoolean(bool value) { return new LLSDBoolean(value); }
         public static LLSD FromInteger(int value) { return new LLSDInteger(value); }
@@ -106,6 +108,9 @@ namespace libsecondlife.StructuredData
     {
         private bool value;
 
+        private static byte[] trueBinary = { 0x31 };
+        private static byte[] falseBinary = { 0x30 };
+
         public override LLSDType Type { get { return LLSDType.Boolean; } }
 
         public LLSDBoolean(bool value)
@@ -117,6 +122,7 @@ namespace libsecondlife.StructuredData
         public override int AsInteger() { return value ? 1 : 0; }
         public override double AsReal() { return value ? 1d : 0d; }
         public override string AsString() { return value ? "1" : "0"; }
+        public override byte[] AsBinary() { return value ? trueBinary : falseBinary; }
 
         public override string ToString() { return AsString(); }
     }
@@ -135,11 +141,18 @@ namespace libsecondlife.StructuredData
         public override bool AsBoolean() { return value != 0; }
         public override int AsInteger() { return value; }
         public override double AsReal() { return (double)value; }
+    
         public override string AsString() { return value.ToString(); }
-
-        public override string ToString() { return AsString(); }
+        
+         public override byte[] AsBinary() {
+            int bigEndInt = System.Net.IPAddress.HostToNetworkOrder( value );
+            byte[] binary = BitConverter.GetBytes(bigEndInt);
+            return binary;
+        }
+                
+        public override string ToString() { return AsString(); }        
     }
-
+    
     public class LLSDReal : LLSD
     {
         private double value;
@@ -152,10 +165,26 @@ namespace libsecondlife.StructuredData
         }
 
         public override bool AsBoolean() { return (!Double.IsNaN(value) && value != 0d); }
-        public override int AsInteger() { return !Double.IsNaN(value) ? (int)value : 0; }
+        public override int AsInteger() { 
+            if ( Double.IsNaN( value ) )
+                return 0;
+            if ( value > (double)Int32.MaxValue )
+                return Int32.MaxValue;
+            if ( value < (double)Int32.MinValue )
+                return Int32.MinValue;
+            return (int)Math.Round( value );
+        }
+ 
         public override double AsReal() { return value; }
         public override string AsString() { return value.ToString(Helpers.EnUsCulture); }
-
+        
+        public override byte[] AsBinary() {
+            byte[] bytesHostEnd = BitConverter.GetBytes( value );
+            long longHostEnd = BitConverter.ToInt64( bytesHostEnd, 0 );
+            long longNetEnd = System.Net.IPAddress.HostToNetworkOrder( longHostEnd );
+            byte[] bytesNetEnd = BitConverter.GetBytes( longNetEnd );
+            return bytesNetEnd;
+        }
         public override string ToString() { return AsString(); }
     }
 
@@ -188,20 +217,21 @@ namespace libsecondlife.StructuredData
         public override int AsInteger()
         {
             double dbl;
-            if (Double.TryParse(value, out dbl))
-                return (int)dbl;
+            if (Helpers.TryParse(value, out dbl))
+                return (int)Math.Floor( dbl );
             else
                 return 0;
         }
         public override double AsReal()
         {
             double dbl;
-            if (Double.TryParse(value, out dbl))
+            if (Helpers.TryParse(value, out dbl))
                 return dbl;
             else
                 return 0d;
         }
-        public override string AsString() { return value; }
+        public override string AsString() { return value; } 
+        public override byte[] AsBinary() { return Encoding.UTF8.GetBytes( value ); }
         public override LLUUID AsUUID()
         {
             LLUUID uuid;
@@ -234,9 +264,10 @@ namespace libsecondlife.StructuredData
             this.value = value;
         }
 
+        public override bool AsBoolean() { return (value == LLUUID.Zero) ? false : true; }
         public override string AsString() { return value.ToString(); }
         public override LLUUID AsUUID() { return value; }
-
+        public override byte[] AsBinary() { return value.GetBytes(); }
         public override string ToString() { return AsString(); }
     }
 
@@ -251,9 +282,27 @@ namespace libsecondlife.StructuredData
             this.value = value;
         }
 
-        public override string AsString() { return value.ToString(); }
-        public override DateTime AsDate() { return value; }
+        public override string AsString() 
+        { 
+            string format;
+            if ( value.Millisecond > 0 )
+                format = "yyyy-MM-ddTHH:mm:ss.ffZ";
+            else
+                format = "yyyy-MM-ddTHH:mm:ssZ";
+            return value.ToUniversalTime().ToString( format );        
+        }
+        
+         public override byte[] AsBinary() {
+            TimeSpan ts = value.ToUniversalTime() - new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc );
+            double timestamp =  (double)ts.TotalSeconds;
+            byte[] bytesHostEnd = BitConverter.GetBytes( timestamp );
+            long longHostEnd = BitConverter.ToInt64( bytesHostEnd, 0 );
+            long longNetEnd = System.Net.IPAddress.HostToNetworkOrder( longHostEnd );
+            byte[] bytesNetEnd = BitConverter.GetBytes( longNetEnd );
+            return bytesNetEnd;
+        }
 
+        public override DateTime AsDate() { return value; }
         public override string ToString() { return AsString(); }
     }
 
@@ -270,7 +319,7 @@ namespace libsecondlife.StructuredData
 
         public override string AsString() { return value.ToString(); }
         public override Uri AsUri() { return value; }
-
+        public override byte[] AsBinary() { return Encoding.UTF8.GetBytes(value.ToString()); }
         public override string ToString() { return AsString(); }
     }
 
@@ -337,15 +386,7 @@ namespace libsecondlife.StructuredData
 
         public override string ToString()
         {
-            System.Text.StringBuilder output = new System.Text.StringBuilder("{");
-
-            foreach (KeyValuePair<string, LLSD> kvp in value)
-            {
-                output.AppendFormat("(\"{0}\": \"{1}\")", kvp.Key, kvp.Value);
-            }
-            output.Append("}");
-
-            return output.ToString();
+            return LLSDParser.SerializeNotationFormatted(this);
         }
 
         #region IDictionary Implementation
@@ -460,16 +501,7 @@ namespace libsecondlife.StructuredData
 
         public override string ToString()
         {
-            System.Text.StringBuilder output = new System.Text.StringBuilder("[");
-            for (int i = 0; i < value.Count; i++)
-            {
-                output.AppendFormat("\"{0}\"", value[i]);
-                if (i != value.Count - 1)
-                    output.Append(",");
-            }
-            output.Append("]");
-
-            return output.ToString();
+            return LLSDParser.SerializeNotationFormatted(this);
         }
 
         #region IList Implementation

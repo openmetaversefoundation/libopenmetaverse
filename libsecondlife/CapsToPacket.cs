@@ -80,7 +80,7 @@ namespace libsecondlife.Packets
 
         public static byte[] ToBinary(Packet packet)
         {
-            throw new NotImplementedException("Need to finish BinaryLLSD first");
+            return LLSDParser.SerializeBinary(ToLLSD(packet));
         }
 
         public static Packet FromXmlString(string xml)

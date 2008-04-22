@@ -37,6 +37,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryLLSDTests.cs" />
+    <Compile Include="NotationLLSDTests.cs" />
     <Compile Include="PacketTests.cs" />
     <Compile Include="PrimObjectTests.cs" />
     <Compile Include="TypeTests.cs" />
