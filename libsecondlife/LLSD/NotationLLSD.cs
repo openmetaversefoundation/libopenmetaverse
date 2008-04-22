@@ -307,8 +307,8 @@ namespace libsecondlife.StructuredData
                 reader.Read();
             }
             double dbl;
-            if ( !Helpers.TryParse( s.ToString(), out dbl ))
-                throw new LLSDException( "Notation LLSD parsing: Can't parse real value." );
+            if (!Helpers.TryParse(s.ToString(), out dbl))
+                throw new LLSDException("Notation LLSD parsing: Can't parse real value: " + s.ToString());
             
             return LLSD.FromReal( dbl );
         }
