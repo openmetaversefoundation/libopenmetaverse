@@ -111,6 +111,8 @@
     <Compile Include="Commands\System\ShowEffectsCommand.cs" />
     <Compile Include="Commands\TouchCommand.cs" />
     <Compile Include="Commands\TreeCommand.cs" />
+    <Compile Include="Commands\Voice\ParcelVoiceInfo.cs" />
+    <Compile Include="Commands\Voice\VoiceAcountCommand.cs" />
     <Compile Include="Commands\WhoCommand.cs" />
     <Compile Include="Parsing.cs" />
     <Compile Include="Program.cs" />
