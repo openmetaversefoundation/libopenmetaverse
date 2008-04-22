@@ -26,6 +26,7 @@
 
 using System;
 using System.Net;
+using System.Threading;
 using libsecondlife.StructuredData;
 
 namespace libsecondlife.Capabilities
@@ -144,8 +145,16 @@ namespace libsecondlife.Capabilities
                 }
                 else if (!e.Cancelled && !Helpers.StringContains(message, "502"))
                 {
-                    SecondLife.LogStatic("Unrecognized caps exception from " + _Client.Location  +
-                        ": " + e.Error.Message, Helpers.LogLevel.Warning);
+                    if (e.Error.InnerException != null)
+                    {
+                        SecondLife.LogStatic("Unrecognized caps exception from " + _Client.Location +
+                            ": " + e.Error.InnerException.Message, Helpers.LogLevel.Warning);
+                    }
+                    else
+                    {
+                        SecondLife.LogStatic("Unrecognized caps exception from " + _Client.Location +
+                            ": " + e.Error.Message, Helpers.LogLevel.Warning);
+                    }
                 }
             }
             else if (!e.Cancelled && e.Result != null)
