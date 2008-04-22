@@ -331,8 +331,9 @@ namespace libsecondlife.Utilities
                     if (url != null)
                     {
                         CapsClient request = new CapsClient(url);
+                        LLSDMap body = new LLSDMap();
                         request.OnComplete += new CapsClient.CompleteCallback(callback);
-                        request.StartRequest();
+                        request.StartRequest(body);
 
                         return true;
                     }
