@@ -908,7 +908,7 @@ namespace libsecondlife
         public event CameraConstraintCallback OnCameraConstraint;
         /// <summary>Fired when a script sensor reply is received</summary>
         public event ScriptSensorReplyCallback OnScriptSensorReply;
-
+        /// <summary>Fired in response to a sit request</summary>
         public event AvatarSitResponseCallback OnAvatarSitResponse;
 
         public event AgentMovementCallback OnAgentMovement;
@@ -2912,22 +2912,16 @@ namespace libsecondlife
         /// <summary>
         /// Group Chat event handler
         /// </summary>
-        /// <param name="capsKey"></param>
+        /// <param name="capsKey">The capability Key</param>
         /// <param name="llsd"></param>
         /// <param name="simulator"></param>
         private void ChatterBoxSessionEventHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
-            // TODO: this appears to occur when you try and initiate group chat with an unopened session
-            //       
-            // Key=ChatterBoxSessionEventReply 
-            // llsd={
-            //    ("error": "generic")
-            //    ("event": "message")
-            //    ("session_id": "3dafea18-cda1-9813-d5f1-fd3de6b13f8c") // group uuid
-            //    ("success": "0")}
-            //LLSDMap map = (LLSDMap)llsd;
-            //LLUUID groupUUID = map["session_id"].AsUUID();
-            //Console.WriteLine("SessionEvent: Key={0} llsd={1}", capsKey, llsd.ToString());
+            LLSDMap map = (LLSDMap)llsd;
+            if (map["success"].AsBoolean() != true)
+            {
+                Client.Log("Attempt to send group chat to non-existant session for group " + map["session_id"].AsString(), Helpers.LogLevel.Info);
+            }
         }
 
         /// <summary>
