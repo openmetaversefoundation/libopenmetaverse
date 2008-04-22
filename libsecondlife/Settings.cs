@@ -201,6 +201,8 @@ namespace libsecondlife
         public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
 
         // Misc
+        // allow client to bind to a different IP Address than the default
+        public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
 
         /// <summary>Default color used for viewer particle effects</summary>
         public LLColor DEFAULT_EFFECT_COLOR = new LLColor(255, 0, 0, 255);
