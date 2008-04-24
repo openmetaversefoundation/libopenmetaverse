@@ -1420,7 +1420,7 @@ namespace libsecondlife
         /// <param name="a"></param>
         public LLColor(byte r, byte g, byte b, byte a)
         {
-            float quanta = 1.0f / 255.0f;
+            const float quanta = 1.0f / 255.0f;
 
             R = (float)r * quanta;
             G = (float)g * quanta;

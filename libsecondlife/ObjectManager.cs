@@ -1473,7 +1473,7 @@ namespace libsecondlife
                         prim.Text = Helpers.FieldToUTF8String(block.Text);
                         prim.TextColor = new LLColor(block.TextColor, 0, false);
                         // Only alpha is inversed
-                        prim.TextColor.A = (byte)(1 - prim.TextColor.A);
+                        prim.TextColor.A = (byte)(1.0f - prim.TextColor.A);
 
                         // Sound information
                         prim.Sound = block.Sound;
