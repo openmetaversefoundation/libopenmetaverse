@@ -123,26 +123,37 @@ namespace libsecondlife
 
             // Create a request list
             LLSDArray req = new LLSDArray();
+            req.Add("ChatSessionRequest");
+            req.Add("CopyInventoryFromNotecard");
+            req.Add("DispatchRegionInfo");
+            req.Add("EstateChangeInfo");
+            req.Add("EventQueueGet");
+            req.Add("FetchInventoryDescendents");
+            req.Add("GroupProposalBallot");
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
-            req.Add("EventQueueGet");
+            req.Add("ParcelPropertiesUpdate");
+            req.Add("ParcelVoiceInfoRequest");
+            req.Add("ProvisionVoiceAccountRequest");
+            req.Add("RemoteParcelRequest");
+            req.Add("RequestTextureDownload");
+            req.Add("SearchStatRequest");
+            req.Add("SearchStatTracking");
+            req.Add("SendPostcard");
+            req.Add("SendUserReport");
+            req.Add("SendUserReportWithScreenshot");
+            req.Add("ServerReleaseNotes");
+            req.Add("StartGroupProposal");
             req.Add("UpdateGestureAgentInventory");
             req.Add("UpdateNotecardAgentInventory");
             req.Add("UpdateScriptAgentInventory");
             req.Add("UpdateGestureTaskInventory");
             req.Add("UpdateNotecardTaskInventory");
             req.Add("UpdateScriptTaskInventory");
-            req.Add("SendPostcard");
             req.Add("ViewerStartAuction");
-            req.Add("ParcelGodReserveForNewbie");
-            req.Add("SendUserReport");
-            req.Add("SendUserReportWithScreenshot");
-            req.Add("RequestTextureDownload");
             req.Add("UntrustedSimulatorMessage");
-            req.Add("ParcelVoiceInfoRequest");
-            req.Add("ChatSessionRequest");
-            req.Add("ProvisionVoiceAccountRequest");
+            req.Add("ViewerStats");
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);

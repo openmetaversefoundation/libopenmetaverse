@@ -492,11 +492,19 @@ namespace libsecondlife
         /// download</remarks>
         public void RequestImage(LLUUID imageID, ImageType type, float priority, int discardLevel)
         {
-            if (Cache.HasImage(imageID)) {
+            if (Cache.HasImage(imageID))
+            {
                 ImageDownload transfer = Cache.GetCachedImage(imageID);
-                if (null != transfer) {
-                    if (null != OnImageReceived) {
-                        OnImageReceived(transfer, new AssetTexture(transfer.AssetData));
+
+                if (null != transfer)
+                {
+                    if (null != OnImageReceived)
+                    {
+                        AssetTexture asset = new AssetTexture(transfer.AssetData);
+                        asset.AssetID = transfer.ID;
+
+                        try { OnImageReceived(transfer, asset); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                     return;
                 }
@@ -544,20 +552,28 @@ namespace libsecondlife
         {
             for (int iri = 0; iri < Images.Count; iri++)
             {
-                if (Transfers.ContainsKey(Images[iri].ImageID)) {
+                if (Transfers.ContainsKey(Images[iri].ImageID))
+                {
                     Images.RemoveAt(iri);
                 }
 
-                if (Cache.HasImage(Images[iri].ImageID)) {
+                if (Cache.HasImage(Images[iri].ImageID))
+                {
                     ImageDownload transfer = Cache.GetCachedImage(Images[iri].ImageID);
-                    if (null != transfer) {
-                        if (null != OnImageReceived) {
-                            OnImageReceived(transfer, new AssetTexture(transfer.AssetData));
+                    if (null != transfer)
+                    {
+                        if (null != OnImageReceived)
+                        {
+                            AssetTexture asset = new AssetTexture(transfer.AssetData);
+                            asset.AssetID = transfer.ID;
+
+                            try { OnImageReceived(transfer, asset); }
+                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                         }
+
                         Images.RemoveAt(iri);
                     }
                 }
-
             }
 
             if (Images.Count > 0)
@@ -1121,8 +1137,10 @@ namespace libsecondlife
 
                     //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
                     //    data.ImageID.ID.ToString());
-                    if (OnImageReceiveProgress != null) {
-                        OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size);
+                    if (OnImageReceiveProgress != null)
+                    {
+                        try { OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
 
                     transfer.Codec = data.ImageID.Codec;
@@ -1150,7 +1168,10 @@ namespace libsecondlife
 
                 if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
                 {
-                    try { OnImageReceived(transfer, new AssetTexture(transfer.AssetData)); }
+                    AssetTexture asset = new AssetTexture(transfer.AssetData);
+                    asset.AssetID = transfer.ID;
+
+                    try { OnImageReceived(transfer, asset); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
@@ -1212,7 +1233,10 @@ namespace libsecondlife
 
             if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
             {
-                try { OnImageReceived(transfer, new AssetTexture(transfer.AssetData)); }
+                AssetTexture asset = new AssetTexture(transfer.AssetData);
+                asset.AssetID = transfer.ID;
+
+                try { OnImageReceived(transfer, asset); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
