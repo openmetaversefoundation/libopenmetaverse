@@ -1370,6 +1370,21 @@ namespace libsecondlife
             return true;
         }
 
+        public string ImageFileName(LLUUID imageID)
+        {
+            if (!Operational())
+            {
+                return null;
+            }
+
+            string fileName = FileName(imageID);
+
+            if (File.Exists(fileName))
+                return fileName;
+            else
+                return null;
+        }
+
         /// <summary>
         /// Checks if the image exists in the local cache
         /// </summary>
