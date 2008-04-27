@@ -43,7 +43,7 @@ namespace libsecondlife.StructuredData
         private static char[] trueNotationValueTwoFull = { 't', 'r', 'u', 'e' };
         private const char trueNotationValueThree = 'T';
         private static char[] trueNotationValueThreeFull = { 'T', 'R', 'U', 'E' };
-        
+
         private const char falseNotationValueOne = '0';
         private const char falseNotationValueTwo = 'f';
         private static char[] falseNotationValueTwoFull = { 'f', 'a', 'l', 's', 'e' };
@@ -56,7 +56,7 @@ namespace libsecondlife.StructuredData
         private const char binaryNotationMarker = 'b';
         private const char stringNotationMarker = 's';
         private const char uriNotationMarker = 'l';
-        private const char dateNotationMarker = 'd';        
+        private const char dateNotationMarker = 'd';
 
         private const char arrayBeginNotationMarker = '[';
         private const char arrayEndNotationMarker = ']';
@@ -65,7 +65,7 @@ namespace libsecondlife.StructuredData
         private const char mapEndNotationMarker = '}';
         private const char kommaNotationDelimiter = ',';
         private const char keyNotationDelimiter = ':';
-        
+
         private const char sizeBeginNotationMarker = '(';
         private const char sizeEndNotationMarker = ')';
         private const char doubleQuotesNotationMarker = '"';
@@ -73,24 +73,24 @@ namespace libsecondlife.StructuredData
 
         public static LLSD DeserializeNotation(string notationData)
         {
-            StringReader reader = new StringReader( notationData );
-            LLSD llsd = DeserializeNotation( reader );
+            StringReader reader = new StringReader(notationData);
+            LLSD llsd = DeserializeNotation(reader);
             reader.Close();
             return llsd;
         }
-        
-        public static LLSD DeserializeNotation( StringReader reader )
+
+        public static LLSD DeserializeNotation(StringReader reader)
         {
-            LLSD llsd = DeserializeNotationElement( reader );
+            LLSD llsd = DeserializeNotationElement(reader);
             return llsd;
         }
-         
+
         public static string SerializeNotation(LLSD llsd)
         {
-            StringWriter writer = SerializeNotationStream( llsd );
+            StringWriter writer = SerializeNotationStream(llsd);
             string s = writer.ToString();
             writer.Close();
-            
+
             return s;
         }
 
@@ -98,7 +98,7 @@ namespace libsecondlife.StructuredData
         {
             StringWriter writer = new StringWriter();
 
-            SerializeNotationElement( writer, llsd );
+            SerializeNotationElement(writer, llsd);
             return writer;
         }
 
@@ -116,479 +116,481 @@ namespace libsecondlife.StructuredData
             StringWriter writer = new StringWriter();
 
             string intend = "";
-            SerializeNotationElementFormatted( writer, intend, llsd );
+            SerializeNotationElementFormatted(writer, intend, llsd);
             return writer;
         }
-        
-        
-        private static LLSD DeserializeNotationElement( StringReader reader )
-        {
-            int character = ReadAndSkipWhitespace( reader );
-            if ( character < 0 )
-                throw new LLSDException( "Notation LLSD parsing:Unexpected end of stream." );
 
-            
+
+        private static LLSD DeserializeNotationElement(StringReader reader)
+        {
+            int character = ReadAndSkipWhitespace(reader);
+            if (character < 0)
+                throw new LLSDException("Notation LLSD parsing:Unexpected end of stream.");
+
+
             LLSD llsd;
             int matching;
-            switch( (char)character)
+            switch ((char)character)
             {
                 case undefNotationValue:
                     llsd = new LLSD();
                     break;
                 case trueNotationValueOne:
-                    llsd = LLSD.FromBoolean( true );
+                    llsd = LLSD.FromBoolean(true);
                     break;
                 case trueNotationValueTwo:
-                    matching = BufferCharactersEqual( reader, trueNotationValueTwoFull, 1 );
-                    if ( matching > 1 && matching < trueNotationValueTwoFull.Length )
-                        throw new LLSDException( "Notation LLSD parsing: True value parsing error:" );
-                    llsd = LLSD.FromBoolean( true );
+                    matching = BufferCharactersEqual(reader, trueNotationValueTwoFull, 1);
+                    if (matching > 1 && matching < trueNotationValueTwoFull.Length)
+                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
+                    llsd = LLSD.FromBoolean(true);
                     break;
                 case trueNotationValueThree:
-                    matching = BufferCharactersEqual( reader, trueNotationValueThreeFull, 1 );
-                    if ( matching > 1 && matching < trueNotationValueThreeFull.Length )
-                        throw new LLSDException( "Notation LLSD parsing: True value parsing error:" );
-                    llsd = LLSD.FromBoolean( true );
+                    matching = BufferCharactersEqual(reader, trueNotationValueThreeFull, 1);
+                    if (matching > 1 && matching < trueNotationValueThreeFull.Length)
+                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
+                    llsd = LLSD.FromBoolean(true);
                     break;
                 case falseNotationValueOne:
-                    llsd = LLSD.FromBoolean( false );
+                    llsd = LLSD.FromBoolean(false);
                     break;
                 case falseNotationValueTwo:
-                    matching = BufferCharactersEqual( reader, falseNotationValueTwoFull, 1 );
-                    if ( matching > 1 && matching < falseNotationValueTwoFull.Length )
-                        throw new LLSDException( "Notation LLSD parsing: True value parsing error:" );
-                    llsd = LLSD.FromBoolean( false );
+                    matching = BufferCharactersEqual(reader, falseNotationValueTwoFull, 1);
+                    if (matching > 1 && matching < falseNotationValueTwoFull.Length)
+                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
+                    llsd = LLSD.FromBoolean(false);
                     break;
                 case falseNotationValueThree:
-                    matching = BufferCharactersEqual( reader, falseNotationValueThreeFull, 1 );
-                    if ( matching > 1 && matching < falseNotationValueThreeFull.Length )
-                        throw new LLSDException( "Notation LLSD parsing: True value parsing error:" );
-                    llsd = LLSD.FromBoolean( false );
+                    matching = BufferCharactersEqual(reader, falseNotationValueThreeFull, 1);
+                    if (matching > 1 && matching < falseNotationValueThreeFull.Length)
+                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
+                    llsd = LLSD.FromBoolean(false);
                     break;
                 case integerNotationMarker:
-                    llsd = DeserializeNotationInteger( reader );
+                    llsd = DeserializeNotationInteger(reader);
                     break;
                 case realNotationMarker:
-                    llsd = DeserializeNotationReal( reader );
+                    llsd = DeserializeNotationReal(reader);
                     break;
                 case uuidNotationMarker:
                     char[] uuidBuf = new char[36];
-                    if ( reader.Read( uuidBuf, 0, 36 ) < 36)
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in UUID." );
+                    if (reader.Read(uuidBuf, 0, 36) < 36)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in UUID.");
                     LLUUID lluuid;
-                    if ( !LLUUID.TryParse( new String( uuidBuf ), out lluuid ))
-                        throw new LLSDException( "Notation LLSD parsing: Invalid UUID discovered." );
-                    llsd = LLSD.FromUUID( lluuid );
+                    if (!LLUUID.TryParse(new String(uuidBuf), out lluuid))
+                        throw new LLSDException("Notation LLSD parsing: Invalid UUID discovered.");
+                    llsd = LLSD.FromUUID(lluuid);
                     break;
                 case binaryNotationMarker:
                     byte[] bytes = new byte[0];
                     int bChar = reader.Peek();
-                    if ( bChar < 0 )
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in binary." );
-                    if ((char)bChar == sizeBeginNotationMarker ) 
+                    if (bChar < 0)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
+                    if ((char)bChar == sizeBeginNotationMarker)
                     {
-                        throw new LLSDException( "Notation LLSD parsing: Raw binary encoding not supported." );
-                    }                        
+                        throw new LLSDException("Notation LLSD parsing: Raw binary encoding not supported.");
+                    }
                     else if (Char.IsDigit((char)bChar))
                     {
                         char[] charsBaseEncoding = new char[2];
-                        if (reader.Read( charsBaseEncoding, 0, 2 ) < 2 )
-                            throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in binary." );
+                        if (reader.Read(charsBaseEncoding, 0, 2) < 2)
+                            throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
                         int baseEncoding;
-                        if (!Int32.TryParse( new String( charsBaseEncoding ), out baseEncoding ))
-                            throw new LLSDException( "Notation LLSD parsing: Invalid binary encoding base." );
-                        if ( baseEncoding == 64 )
+                        if (!Int32.TryParse(new String(charsBaseEncoding), out baseEncoding))
+                            throw new LLSDException("Notation LLSD parsing: Invalid binary encoding base.");
+                        if (baseEncoding == 64)
                         {
-                            if (reader.Read() < 0 )
-                                throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in binary." );
-                            string bytes64 = GetStringDelimitedBy( reader, doubleQuotesNotationMarker );
-                            bytes = Convert.FromBase64String( bytes64 );
+                            if (reader.Read() < 0)
+                                throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
+                            string bytes64 = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
+                            bytes = Convert.FromBase64String(bytes64);
                         }
                         else
-                        {                         
-                            throw new LLSDException( "Notation LLSD parsing: Encoding base" + baseEncoding + " + not supported." );
+                        {
+                            throw new LLSDException("Notation LLSD parsing: Encoding base" + baseEncoding + " + not supported.");
                         }
                     }
-                    llsd = LLSD.FromBinary( bytes );
+                    llsd = LLSD.FromBinary(bytes);
                     break;
                 case stringNotationMarker:
-                    int numChars = GetLengthInBrackets( reader );
-                    if ( reader.Read() < 0 )
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in string." );
+                    int numChars = GetLengthInBrackets(reader);
+                    if (reader.Read() < 0)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
                     char[] chars = new char[numChars];
-                    if ( reader.Read( chars, 0, numChars ) < numChars )
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in string." );
-                    if ( reader.Read() < 0 )
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in string." );
-                    llsd = LLSD.FromString( new String( chars ));
+                    if (reader.Read(chars, 0, numChars) < numChars)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                    if (reader.Read() < 0)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                    llsd = LLSD.FromString(new String(chars));
                     break;
                 case singleQuotesNotationMarker:
-                    string sOne = GetStringDelimitedBy( reader, singleQuotesNotationMarker );
-                    llsd = LLSD.FromString( sOne );
+                    string sOne = GetStringDelimitedBy(reader, singleQuotesNotationMarker);
+                    llsd = LLSD.FromString(sOne);
                     break;
                 case doubleQuotesNotationMarker:
-                    string sTwo = GetStringDelimitedBy( reader, doubleQuotesNotationMarker );
-                    llsd = LLSD.FromString( sTwo );
+                    string sTwo = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
+                    llsd = LLSD.FromString(sTwo);
                     break;
                 case uriNotationMarker:
-                    if ( reader.Read() < 0 )
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in string." );
-                    string sUri = GetStringDelimitedBy( reader, doubleQuotesNotationMarker );
-                    
+                    if (reader.Read() < 0)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                    string sUri = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
+
                     Uri uri;
                     try
                     {
-                        uri = new Uri( sUri, UriKind.RelativeOrAbsolute );
-                    } 
+                        uri = new Uri(sUri, UriKind.RelativeOrAbsolute);
+                    }
                     catch
                     {
-                        throw new LLSDException( "Notation LLSD parsing: Invalid Uri format detected." );
+                        throw new LLSDException("Notation LLSD parsing: Invalid Uri format detected.");
                     }
-                    llsd = LLSD.FromUri( uri);
+                    llsd = LLSD.FromUri(uri);
                     break;
                 case dateNotationMarker:
-                    if (reader.Read() < 0 )
-                        throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in date." );
-                    string date = GetStringDelimitedBy( reader, doubleQuotesNotationMarker );
+                    if (reader.Read() < 0)
+                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in date.");
+                    string date = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
                     DateTime dt;
-                    if ( !Helpers.TryParse( date, out dt ))
-                        throw new LLSDException( "Notation LLSD parsing: Invalid date discovered." );
-                    llsd = LLSD.FromDate( dt );
+                    if (!Helpers.TryParse(date, out dt))
+                        throw new LLSDException("Notation LLSD parsing: Invalid date discovered.");
+                    llsd = LLSD.FromDate(dt);
                     break;
                 case arrayBeginNotationMarker:
-                    llsd = DeserializeNotationArray( reader );
+                    llsd = DeserializeNotationArray(reader);
                     break;
                 case mapBeginNotationMarker:
-                    llsd = DeserializeNotationMap( reader );
+                    llsd = DeserializeNotationMap(reader);
                     break;
                 default:
-                    throw new LLSDException( "Notation LLSD parsing: Unknown type marker '" + (char)character + "'." );
+                    throw new LLSDException("Notation LLSD parsing: Unknown type marker '" + (char)character + "'.");
             }
             return llsd;
         }
-        
-        private static LLSD DeserializeNotationInteger( StringReader reader )
+
+        private static LLSD DeserializeNotationInteger(StringReader reader)
         {
             int character;
             StringBuilder s = new StringBuilder();
-            if ((( character = reader.Peek()) > 0 ) && ((char)character == '-' ))
+            if (((character = reader.Peek()) > 0) && ((char)character == '-'))
             {
                 s.Append((char)character);
                 reader.Read();
             }
-            
-            while (( character = reader.Peek()) > 0 &&
+
+            while ((character = reader.Peek()) > 0 &&
                            Char.IsDigit((char)character))
             {
                 s.Append((char)character);
                 reader.Read();
             }
             int integer;
-            if ( !Helpers.TryParse( s.ToString(), out integer ))
-                throw new LLSDException( "Notation LLSD parsing: Can't parse integer value." );
-            
-            return LLSD.FromInteger( integer );
+            if (!Helpers.TryParse(s.ToString(), out integer))
+                throw new LLSDException("Notation LLSD parsing: Can't parse integer value." + s.ToString());
+
+            return LLSD.FromInteger(integer);
         }
-        
-        private static LLSD DeserializeNotationReal( StringReader reader )
+
+        private static LLSD DeserializeNotationReal(StringReader reader)
         {
             int character;
             StringBuilder s = new StringBuilder();
-            if ((( character = reader.Peek()) > 0 ) && ((char)character == '-' )) 
+            if (((character = reader.Peek()) > 0) &&
+                ((char)character == '-' && (char)character == '+'))
             {
                 s.Append((char)character);
                 reader.Read();
             }
-            while ((( character = reader.Peek()) > 0) &&
-                   ( Char.IsDigit((char)character) || (char)character == '.' ||
-                    (char)character == 'e' || (char)character == 'E' || (char)character == '+' ))
-            {        
+            while (((character = reader.Peek()) > 0) &&
+                   (Char.IsDigit((char)character) || (char)character == '.' ||
+                    (char)character == 'e' || (char)character == 'E' ||
+                    (char)character == '+' || (char)character == '-'))
+            {
                 s.Append((char)character);
                 reader.Read();
             }
             double dbl;
             if (!Helpers.TryParse(s.ToString(), out dbl))
                 throw new LLSDException("Notation LLSD parsing: Can't parse real value: " + s.ToString());
-            
-            return LLSD.FromReal( dbl );
+
+            return LLSD.FromReal(dbl);
         }
-        
-        private static LLSD DeserializeNotationArray( StringReader reader )
+
+        private static LLSD DeserializeNotationArray(StringReader reader)
         {
             int character;
             LLSDArray llsdArray = new LLSDArray();
-            while((( character = PeekAndSkipWhitespace( reader )) > 0) &&
+            while (((character = PeekAndSkipWhitespace(reader)) > 0) &&
                   ((char)character != arrayEndNotationMarker))
             {
-                llsdArray.Add( DeserializeNotationElement( reader ));
-                
-                character = ReadAndSkipWhitespace( reader );
-                if (character < 0 )
-                    throw new LLSDException( "Notation LLSD parsing: Unexpected end of array discovered." );
-                else if ((char)character == kommaNotationDelimiter )
+                llsdArray.Add(DeserializeNotationElement(reader));
+
+                character = ReadAndSkipWhitespace(reader);
+                if (character < 0)
+                    throw new LLSDException("Notation LLSD parsing: Unexpected end of array discovered.");
+                else if ((char)character == kommaNotationDelimiter)
                     continue;
-                else if ((char)character == arrayEndNotationMarker )
+                else if ((char)character == arrayEndNotationMarker)
                     break;
             }
-            if ( character < 0 )
-                throw new LLSDException( "Notation LLSD parsing: Unexpected end of array discovered." );
-            
+            if (character < 0)
+                throw new LLSDException("Notation LLSD parsing: Unexpected end of array discovered.");
+
             return (LLSD)llsdArray;
         }
-        
-        private static LLSD DeserializeNotationMap( StringReader reader )
+
+        private static LLSD DeserializeNotationMap(StringReader reader)
         {
             int character;
             LLSDMap llsdMap = new LLSDMap();
-            while((( character = PeekAndSkipWhitespace( reader )) > 0 ) &&
-                  ((char)character != mapEndNotationMarker ))
-            {               
-                LLSD llsdKey = DeserializeNotationElement( reader );
-                if ( llsdKey.Type != LLSDType.String )
-                    throw new LLSDException( "Notation LLSD parsing: Invalid key in map" );
+            while (((character = PeekAndSkipWhitespace(reader)) > 0) &&
+                  ((char)character != mapEndNotationMarker))
+            {
+                LLSD llsdKey = DeserializeNotationElement(reader);
+                if (llsdKey.Type != LLSDType.String)
+                    throw new LLSDException("Notation LLSD parsing: Invalid key in map");
                 string key = llsdKey.AsString();
-                
-                character = ReadAndSkipWhitespace( reader );
-                if ((char)character != keyNotationDelimiter )
-                    throw new LLSDException( "Notation LLSD parsing: Unexpected end of stream in map." );
-                if ((char)character != keyNotationDelimiter )
-                    throw new LLSDException( "Notation LLSD parsing: Invalid delimiter in map." );
-              
-                llsdMap[key] = DeserializeNotationElement( reader );
-                character = ReadAndSkipWhitespace( reader );
-                if ( character < 0 )
-                    throw new LLSDException( "Notation LLSD parsing: Unexpected end of map discovered." );
-                else if ((char)character == kommaNotationDelimiter )
-                     continue;
-                else if ((char)character == mapEndNotationMarker )
-                     break;
+
+                character = ReadAndSkipWhitespace(reader);
+                if ((char)character != keyNotationDelimiter)
+                    throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in map.");
+                if ((char)character != keyNotationDelimiter)
+                    throw new LLSDException("Notation LLSD parsing: Invalid delimiter in map.");
+
+                llsdMap[key] = DeserializeNotationElement(reader);
+                character = ReadAndSkipWhitespace(reader);
+                if (character < 0)
+                    throw new LLSDException("Notation LLSD parsing: Unexpected end of map discovered.");
+                else if ((char)character == kommaNotationDelimiter)
+                    continue;
+                else if ((char)character == mapEndNotationMarker)
+                    break;
             }
-            if ( character < 0 )
-               throw new LLSDException( "Notation LLSD parsing: Unexpected end of map discovered." );
-            
+            if (character < 0)
+                throw new LLSDException("Notation LLSD parsing: Unexpected end of map discovered.");
+
             return (LLSD)llsdMap;
         }
-        
-        private static void SerializeNotationElement( StringWriter writer, LLSD llsd )
+
+        private static void SerializeNotationElement(StringWriter writer, LLSD llsd)
         {
-            
-            switch( llsd.Type )
+
+            switch (llsd.Type)
             {
                 case LLSDType.Unknown:
-                    writer.Write( undefNotationValue );
+                    writer.Write(undefNotationValue);
                     break;
                 case LLSDType.Boolean:
-                    if ( llsd.AsBoolean() )
-                        writer.Write( trueNotationValueTwo );
+                    if (llsd.AsBoolean())
+                        writer.Write(trueNotationValueTwo);
                     else
-                        writer.Write( falseNotationValueTwo );
+                        writer.Write(falseNotationValueTwo);
                     break;
                 case LLSDType.Integer:
-                    writer.Write( integerNotationMarker );
-                    writer.Write( llsd.AsString());
+                    writer.Write(integerNotationMarker);
+                    writer.Write(llsd.AsString());
                     break;
                 case LLSDType.Real:
-                    writer.Write( realNotationMarker );
-                    writer.Write( llsd.AsString());
+                    writer.Write(realNotationMarker);
+                    writer.Write(llsd.AsString());
                     break;
                 case LLSDType.UUID:
-                    writer.Write( uuidNotationMarker );
-                    writer.Write( llsd.AsString());
+                    writer.Write(uuidNotationMarker);
+                    writer.Write(llsd.AsString());
                     break;
                 case LLSDType.String:
-                    writer.Write( singleQuotesNotationMarker );
-                    writer.Write( EscapeCharacter( llsd.AsString(), singleQuotesNotationMarker ));
-                    writer.Write( singleQuotesNotationMarker );
+                    writer.Write(singleQuotesNotationMarker);
+                    writer.Write(EscapeCharacter(llsd.AsString(), singleQuotesNotationMarker));
+                    writer.Write(singleQuotesNotationMarker);
                     break;
                 case LLSDType.Binary:
-                    writer.Write( binaryNotationMarker );
-                    writer.Write( "64" );
-                    writer.Write( doubleQuotesNotationMarker );
-                    writer.Write( llsd.AsString());
-                    writer.Write( doubleQuotesNotationMarker );
+                    writer.Write(binaryNotationMarker);
+                    writer.Write("64");
+                    writer.Write(doubleQuotesNotationMarker);
+                    writer.Write(llsd.AsString());
+                    writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.Date:
-                    writer.Write( dateNotationMarker );
-                    writer.Write( doubleQuotesNotationMarker );
-                    writer.Write( llsd.AsString());
-                    writer.Write( doubleQuotesNotationMarker );
+                    writer.Write(dateNotationMarker);
+                    writer.Write(doubleQuotesNotationMarker);
+                    writer.Write(llsd.AsString());
+                    writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.URI:
-                    writer.Write( uriNotationMarker );
-                    writer.Write( doubleQuotesNotationMarker );
-                    writer.Write( EscapeCharacter( llsd.AsString(), doubleQuotesNotationMarker ));
-                    writer.Write( doubleQuotesNotationMarker );
+                    writer.Write(uriNotationMarker);
+                    writer.Write(doubleQuotesNotationMarker);
+                    writer.Write(EscapeCharacter(llsd.AsString(), doubleQuotesNotationMarker));
+                    writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.Array:
-                    SerializeNotationArray( writer, (LLSDArray)llsd );
+                    SerializeNotationArray(writer, (LLSDArray)llsd);
                     break;
                 case LLSDType.Map:
-                    SerializeNotationMap( writer, (LLSDMap)llsd );
+                    SerializeNotationMap(writer, (LLSDMap)llsd);
                     break;
                 default:
-                    throw new LLSDException( "Notation serialization: Not existing element discovered." );
-                            
+                    throw new LLSDException("Notation serialization: Not existing element discovered.");
+
             }
         }
-                                              
-        private static void SerializeNotationArray( StringWriter writer, LLSDArray llsdArray )
+
+        private static void SerializeNotationArray(StringWriter writer, LLSDArray llsdArray)
         {
-            writer.Write( arrayBeginNotationMarker );
+            writer.Write(arrayBeginNotationMarker);
             int lastIndex = llsdArray.Count - 1;
-            
-            for( int idx = 0; idx <= lastIndex; idx++ )
+
+            for (int idx = 0; idx <= lastIndex; idx++)
             {
-                SerializeNotationElement( writer, llsdArray[idx] );
-                if ( idx < lastIndex )
-                    writer.Write( kommaNotationDelimiter );
+                SerializeNotationElement(writer, llsdArray[idx]);
+                if (idx < lastIndex)
+                    writer.Write(kommaNotationDelimiter);
             }
-            writer.Write( arrayEndNotationMarker );
+            writer.Write(arrayEndNotationMarker);
         }
-                    
-        private static void SerializeNotationMap( StringWriter writer, LLSDMap llsdMap )
+
+        private static void SerializeNotationMap(StringWriter writer, LLSDMap llsdMap)
         {
-            writer.Write( mapBeginNotationMarker );
+            writer.Write(mapBeginNotationMarker);
             int lastIndex = llsdMap.Count - 1;
             int idx = 0;
-            
-            foreach( KeyValuePair<string, LLSD> kvp in llsdMap )
+
+            foreach (KeyValuePair<string, LLSD> kvp in llsdMap)
             {
-                writer.Write( singleQuotesNotationMarker );
-                writer.Write( EscapeCharacter( kvp.Key, singleQuotesNotationMarker ));
-                writer.Write( singleQuotesNotationMarker );
-                writer.Write( keyNotationDelimiter );
-                SerializeNotationElement( writer,kvp.Value );
-                if ( idx < lastIndex )
-                    writer.Write( kommaNotationDelimiter );
-                
+                writer.Write(singleQuotesNotationMarker);
+                writer.Write(EscapeCharacter(kvp.Key, singleQuotesNotationMarker));
+                writer.Write(singleQuotesNotationMarker);
+                writer.Write(keyNotationDelimiter);
+                SerializeNotationElement(writer, kvp.Value);
+                if (idx < lastIndex)
+                    writer.Write(kommaNotationDelimiter);
+
                 idx++;
             }
-            writer.Write( mapEndNotationMarker );
+            writer.Write(mapEndNotationMarker);
         }
-        
-        private static void SerializeNotationElementFormatted( StringWriter writer, string intend, LLSD llsd )
+
+        private static void SerializeNotationElementFormatted(StringWriter writer, string intend, LLSD llsd)
         {
-            switch( llsd.Type )
+            switch (llsd.Type)
             {
                 case LLSDType.Unknown:
-                    writer.Write( undefNotationValue );
+                    writer.Write(undefNotationValue);
                     break;
                 case LLSDType.Boolean:
-                    if ( llsd.AsBoolean() )
-                        writer.Write( trueNotationValueTwo );
+                    if (llsd.AsBoolean())
+                        writer.Write(trueNotationValueTwo);
                     else
-                        writer.Write( falseNotationValueTwo );
+                        writer.Write(falseNotationValueTwo);
                     break;
                 case LLSDType.Integer:
-                    writer.Write( integerNotationMarker );
-                    writer.Write( llsd.AsString());
+                    writer.Write(integerNotationMarker);
+                    writer.Write(llsd.AsString());
                     break;
                 case LLSDType.Real:
-                    writer.Write( realNotationMarker );
-                    writer.Write( llsd.AsString());
+                    writer.Write(realNotationMarker);
+                    writer.Write(llsd.AsString());
                     break;
                 case LLSDType.UUID:
-                    writer.Write( uuidNotationMarker );
-                    writer.Write( llsd.AsString());
+                    writer.Write(uuidNotationMarker);
+                    writer.Write(llsd.AsString());
                     break;
                 case LLSDType.String:
-                    writer.Write( singleQuotesNotationMarker );
-                    writer.Write( EscapeCharacter( llsd.AsString(), singleQuotesNotationMarker ));
-                    writer.Write( singleQuotesNotationMarker );
+                    writer.Write(singleQuotesNotationMarker);
+                    writer.Write(EscapeCharacter(llsd.AsString(), singleQuotesNotationMarker));
+                    writer.Write(singleQuotesNotationMarker);
                     break;
                 case LLSDType.Binary:
-                    writer.Write( binaryNotationMarker );
-                    writer.Write( "64" );
-                    writer.Write( doubleQuotesNotationMarker );
-                    writer.Write( llsd.AsString());
-                    writer.Write( doubleQuotesNotationMarker );
+                    writer.Write(binaryNotationMarker);
+                    writer.Write("64");
+                    writer.Write(doubleQuotesNotationMarker);
+                    writer.Write(llsd.AsString());
+                    writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.Date:
-                    writer.Write( dateNotationMarker );
-                    writer.Write( doubleQuotesNotationMarker );
-                    writer.Write( llsd.AsString());
-                    writer.Write( doubleQuotesNotationMarker );
+                    writer.Write(dateNotationMarker);
+                    writer.Write(doubleQuotesNotationMarker);
+                    writer.Write(llsd.AsString());
+                    writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.URI:
-                    writer.Write( uriNotationMarker );
-                    writer.Write( doubleQuotesNotationMarker );
-                    writer.Write( EscapeCharacter( llsd.AsString(), doubleQuotesNotationMarker ));
-                    writer.Write( doubleQuotesNotationMarker );
+                    writer.Write(uriNotationMarker);
+                    writer.Write(doubleQuotesNotationMarker);
+                    writer.Write(EscapeCharacter(llsd.AsString(), doubleQuotesNotationMarker));
+                    writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.Array:
-                    SerializeNotationArrayFormatted( writer, intend + baseIntend, (LLSDArray)llsd );
+                    SerializeNotationArrayFormatted(writer, intend + baseIntend, (LLSDArray)llsd);
                     break;
                 case LLSDType.Map:
-                    SerializeNotationMapFormatted( writer, intend + baseIntend, (LLSDMap)llsd );
+                    SerializeNotationMapFormatted(writer, intend + baseIntend, (LLSDMap)llsd);
                     break;
                 default:
-                    throw new LLSDException( "Notation serialization: Not existing element discovered." );
-                            
+                    throw new LLSDException("Notation serialization: Not existing element discovered.");
+
             }
         }
-        
-        private static void SerializeNotationArrayFormatted( StringWriter writer, string intend, LLSDArray llsdArray )
+
+        private static void SerializeNotationArrayFormatted(StringWriter writer, string intend, LLSDArray llsdArray)
         {
-            writer.Write( Helpers.NewLine );
-            writer.Write( intend );
-            writer.Write( arrayBeginNotationMarker );
+            writer.Write(Helpers.NewLine);
+            writer.Write(intend);
+            writer.Write(arrayBeginNotationMarker);
             int lastIndex = llsdArray.Count - 1;
-            
-            for( int idx = 0; idx <= lastIndex; idx++ )
+
+            for (int idx = 0; idx <= lastIndex; idx++)
             {
-                if ( llsdArray[idx].Type != LLSDType.Array && llsdArray[idx].Type != LLSDType.Map )
-                    writer.Write( Helpers.NewLine );
-                writer.Write( intend + baseIntend );
-                SerializeNotationElementFormatted( writer, intend, llsdArray[idx] );
-                if ( idx < lastIndex ) 
+                if (llsdArray[idx].Type != LLSDType.Array && llsdArray[idx].Type != LLSDType.Map)
+                    writer.Write(Helpers.NewLine);
+                writer.Write(intend + baseIntend);
+                SerializeNotationElementFormatted(writer, intend, llsdArray[idx]);
+                if (idx < lastIndex)
                 {
-                    writer.Write( kommaNotationDelimiter );
+                    writer.Write(kommaNotationDelimiter);
                 }
             }
-            writer.Write( Helpers.NewLine );
-            writer.Write( intend );
-            writer.Write( arrayEndNotationMarker );
+            writer.Write(Helpers.NewLine);
+            writer.Write(intend);
+            writer.Write(arrayEndNotationMarker);
         }
-                    
-        private static void SerializeNotationMapFormatted( StringWriter writer, string intend, LLSDMap llsdMap )
+
+        private static void SerializeNotationMapFormatted(StringWriter writer, string intend, LLSDMap llsdMap)
         {
-            writer.Write( Helpers.NewLine );
-            writer.Write( intend );
-            writer.Write( mapBeginNotationMarker );
-            writer.Write( Helpers.NewLine );
+            writer.Write(Helpers.NewLine);
+            writer.Write(intend);
+            writer.Write(mapBeginNotationMarker);
+            writer.Write(Helpers.NewLine);
             int lastIndex = llsdMap.Count - 1;
             int idx = 0;
-            
-            foreach( KeyValuePair<string, LLSD> kvp in llsdMap )
+
+            foreach (KeyValuePair<string, LLSD> kvp in llsdMap)
             {
-                writer.Write( intend + baseIntend );
-                writer.Write( singleQuotesNotationMarker );
-                writer.Write( EscapeCharacter( kvp.Key, singleQuotesNotationMarker ));
-                writer.Write( singleQuotesNotationMarker );
-                writer.Write( keyNotationDelimiter );
-                SerializeNotationElementFormatted( writer, intend, kvp.Value );
-                if ( idx < lastIndex ) 
+                writer.Write(intend + baseIntend);
+                writer.Write(singleQuotesNotationMarker);
+                writer.Write(EscapeCharacter(kvp.Key, singleQuotesNotationMarker));
+                writer.Write(singleQuotesNotationMarker);
+                writer.Write(keyNotationDelimiter);
+                SerializeNotationElementFormatted(writer, intend, kvp.Value);
+                if (idx < lastIndex)
                 {
-                    writer.Write( Helpers.NewLine );
-                    writer.Write( intend + baseIntend );
-                    writer.Write( kommaNotationDelimiter );
-                    writer.Write( Helpers.NewLine );
+                    writer.Write(Helpers.NewLine);
+                    writer.Write(intend + baseIntend);
+                    writer.Write(kommaNotationDelimiter);
+                    writer.Write(Helpers.NewLine);
                 }
-                
+
                 idx++;
             }
-            writer.Write( Helpers.NewLine );
-            writer.Write( intend );
-            writer.Write( mapEndNotationMarker );
+            writer.Write(Helpers.NewLine);
+            writer.Write(intend);
+            writer.Write(mapEndNotationMarker);
         }
-        
-        public static int PeekAndSkipWhitespace( StringReader reader )
+
+        public static int PeekAndSkipWhitespace(StringReader reader)
         {
             int character;
-            while ((character = reader.Peek()) > 0 )
+            while ((character = reader.Peek()) > 0)
             {
                 char c = (char)character;
-                if ( c == ' ' || c == '\t' || c == '\n' || c == '\r' )
+                if (c == ' ' || c == '\t' || c == '\n' || c == '\r')
                 {
                     reader.Read();
                     continue;
@@ -598,131 +600,132 @@ namespace libsecondlife.StructuredData
             }
             return character;
         }
-        
-        public static int ReadAndSkipWhitespace( StringReader reader )
+
+        public static int ReadAndSkipWhitespace(StringReader reader)
         {
-            int character = PeekAndSkipWhitespace( reader );
+            int character = PeekAndSkipWhitespace(reader);
             reader.Read();
             return character;
         }
-                    
-        public static int GetLengthInBrackets( StringReader reader )
+
+        public static int GetLengthInBrackets(StringReader reader)
         {
             int character;
             StringBuilder s = new StringBuilder();
-            if ((( character = PeekAndSkipWhitespace( reader )) > 0 ) &&
-                     ((char)character == sizeBeginNotationMarker)) 
+            if (((character = PeekAndSkipWhitespace(reader)) > 0) &&
+                     ((char)character == sizeBeginNotationMarker))
             {
                 reader.Read();
             }
-            while((( character = reader.Read()) > 0) &&
-                    Char.IsDigit((char)character) && 
-                  ((char) character != sizeEndNotationMarker ))
+            while (((character = reader.Read()) > 0) &&
+                    Char.IsDigit((char)character) &&
+                  ((char)character != sizeEndNotationMarker))
             {
                 s.Append((char)character);
             }
-            if ( character < 0 )
-                throw new LLSDException( "Notation LLSD parsing: Can't parse length value cause unexpected end of stream." );
+            if (character < 0)
+                throw new LLSDException("Notation LLSD parsing: Can't parse length value cause unexpected end of stream.");
             int length;
-            if ( !Helpers.TryParse( s.ToString(), out length ))
-                throw new LLSDException( "Notation LLSD parsing: Can't parse length value." );
-        
+            if (!Helpers.TryParse(s.ToString(), out length))
+                throw new LLSDException("Notation LLSD parsing: Can't parse length value.");
+
             return length;
         }
-        
-        public static string GetStringDelimitedBy( StringReader reader, char delimiter )
+
+        public static string GetStringDelimitedBy(StringReader reader, char delimiter)
         {
             int character;
             bool foundEscape = false;
             StringBuilder s = new StringBuilder();
-            while( ((character = reader.Read()) > 0 ) &&
-                  (((char) character != delimiter ) ||
-                   ((char) character == delimiter && foundEscape )))
+            while (((character = reader.Read()) > 0) &&
+                  (((char)character != delimiter) ||
+                   ((char)character == delimiter && foundEscape)))
             {
-                
-                if ( foundEscape )
+
+                if (foundEscape)
                 {
                     foundEscape = false;
-                    switch((char)character)
+                    switch ((char)character)
                     {
                         case 'a':
-                            s.Append( '\a' );
+                            s.Append('\a');
                             break;
                         case 'b':
-                            s.Append( '\b' );
+                            s.Append('\b');
                             break;
                         case 'f':
-                            s.Append( '\f' );
+                            s.Append('\f');
                             break;
                         case 'n':
-                            s.Append( '\n' );
+                            s.Append('\n');
                             break;
                         case 'r':
-                            s.Append( '\r' );
+                            s.Append('\r');
                             break;
                         case 't':
-                            s.Append( '\t' );
+                            s.Append('\t');
                             break;
                         case 'v':
-                            s.Append( '\v' );
+                            s.Append('\v');
                             break;
                         default:
                             s.Append((char)character);
                             break;
                     }
-                } 
+                }
                 else if ((char)character == '\\')
                     foundEscape = true;
                 else
                     s.Append((char)character);
-                
+
             }
-            if ( character < 0)
-                throw new LLSDException( "Notation LLSD parsing: Can't parse text because unexpected end of stream while expecting a '" 
-                                            + delimiter + "' character." );
-            
+            if (character < 0)
+                throw new LLSDException("Notation LLSD parsing: Can't parse text because unexpected end of stream while expecting a '"
+                                            + delimiter + "' character.");
+
             return s.ToString();
         }
- 
-        public static int BufferCharactersEqual( StringReader reader, char[] buffer, int offset ) {
-            
+
+        public static int BufferCharactersEqual(StringReader reader, char[] buffer, int offset)
+        {
+
             int character;
             int lastIndex = buffer.Length - 1;
             int crrIndex = offset;
             bool charactersEqual = true;
-            
-            while (( character = reader.Peek()) > 0 &&
+
+            while ((character = reader.Peek()) > 0 &&
                     crrIndex <= lastIndex &&
-                    charactersEqual )
+                    charactersEqual)
             {
-                if (((char) character) != buffer[crrIndex] )
+                if (((char)character) != buffer[crrIndex])
                 {
                     charactersEqual = false;
                     break;
-                }                
+                }
                 crrIndex++;
                 reader.Read();
             }
-            
+
             return crrIndex;
         }
-        
-        public static string UnescapeCharacter( String s, char c )
+
+        public static string UnescapeCharacter(String s, char c)
         {
             string oldOne = "\\" + c;
-            string newOne = new String( c, 1 );
+            string newOne = new String(c, 1);
 
-            String sOne = s.Replace( "\\\\", "\\" ).Replace( oldOne, newOne );
+            String sOne = s.Replace("\\\\", "\\").Replace(oldOne, newOne);
             return sOne;
         }
-                    
-        public static string EscapeCharacter( String s, char c )
+
+        public static string EscapeCharacter(String s, char c)
         {
-            string oldOne = new String( c, 1 );
+            string oldOne = new String(c, 1);
             string newOne = "\\" + c;
-            
-            String sOne = s.Replace( "\\", "\\\\" ).Replace( oldOne, newOne );
+
+            String sOne = s.Replace("\\", "\\\\").Replace(oldOne, newOne);
             return sOne;
-        }        
+        }
     }
 }
