@@ -125,7 +125,7 @@ namespace libsecondlife.StructuredData
         {
             int character = ReadAndSkipWhitespace(reader);
             if (character < 0)
-                throw new LLSDException("Notation LLSD parsing:Unexpected end of stream.");
+                return new LLSD(); // server returned an empty file, so we're going to pass along a null LLSD object
 
 
             LLSD llsd;
