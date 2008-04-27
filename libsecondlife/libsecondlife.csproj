@@ -24,8 +24,6 @@
     </StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\bin\</OutputPath>
@@ -195,27 +193,15 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>echo "Entered Post-build"
-xcopy "$(ProjectDir)Resources\*.*" "$(OutDir)libsl_data" /i /d /y
-IF "$(ConfigurationName)"=="Release-docs" Goto BuildOpts
-Goto Exit
-
-:BuildOpts
-
-IF EXIST "%25SANDCASTLE%25" GOTO BuildDocs
-Goto CheckInstaller
-
-:BuildDocs
-"SANDCASTLE=C:\Program Files\EWSoftware\Sandcastle Help File Builder\SandcastleBuilderConsole.exe" $(SolutionDir)..\docs\libsecondlife-docs.shfb
-Goto CheckInstaller
-
-:CheckInstaller
-IF EXIST "%25NSIS%25" GOTO BuildInstall
-GOTO EXIT
-
-:BuildInstall
-"c:\Program Files\NSIS\makensis.exe" $(SolutionDir)..\docs\libsecondlife-installer.nsi
-
-:Exit</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)Resources\*.*" "$(OutDir)libsl_data" /i /d /y
+</PostBuildEvent>
   </PropertyGroup>
+  <Target Name="AfterBuild" Condition="'$(Configuration)|$(Platform)' == 'Release-docs|AnyCPU'">
+    <!-- Automate build of html documentation using sandcastle -->
+    <Message Text="Building HTML Documentation" Condition="Exists('$(SANDCASTLE)')" />
+    <Exec Command="SandCastleBuilderConsole.exe ..\docs\libsecondlife-docs.shfb" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(SANDCASTLE)')" />
+    <!-- Automate exe builds for nightly snapshots-->
+    <Message Text="Building Snapshot" Condition="Exists('$(NSIS)')" />
+    <Exec Command="makensis.exe /O..\docs\makeinstaller.log /DPlatform=$(Platform) /DVersion=$(Satellite_ProductVersion) ..\docs\libsecondlife-installer.nsi" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(NSIS)')" />
+  </Target>
 </Project>
