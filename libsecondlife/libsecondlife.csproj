@@ -195,7 +195,8 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)libsl_data" /i /d /y
+    <PostBuildEvent>echo "Entered Post-build"
+xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)libsl_data" /i /d /y
 IF "$(ConfigurationName)"=="Release-docs" Goto BuildOpts
 Goto Exit
 
