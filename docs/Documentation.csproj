@@ -57,4 +57,7 @@
     <Message Text="Building Snapshot" Condition="Exists('$(NSIS)')" />
     <Exec Command="makensis.exe /O..\docs\makeinstaller.log /DPlatform=$(Platform) ..\docs\libsecondlife-installer.nsi" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(NSIS)')" ContinueOnError="true" />
   </Target>
+  <ItemGroup>
+    <Compile Include="Class1.cs" />
+  </ItemGroup>
 </Project>
