@@ -662,7 +662,7 @@ namespace libsecondlife.Tests
             string sTwo = "asdfkjlaaweoiugsdfjkhsdfg,.mnasdgfkljhrtuiohfglökajsdfoiwghjkdlaaaaseldkfjgheus9";
             
             LLSD stringOne = LLSD.FromString( sOne );
-            LLSD stringTwo = LLSD.FromString( sTwo )
+            LLSD stringTwo = LLSD.FromString(sTwo);
 
             LLSDMap llsdMap = new LLSDMap();
             llsdMap["testOne"] = stringOne;

@@ -73,6 +73,21 @@
     <DebugType>none</DebugType>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release-docs|AnyCPU' ">
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <BaseAddress>285212672</BaseAddress>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>
+    </DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleAssemblies>C:\Program Files\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <DocumentationFile>..\bin\libsecondlife.XML</DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System">
       <Name>System</Name>
@@ -179,6 +194,26 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)libsl_data" /i /d /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)libsl_data" /i /d /y
+IF "$(ConfigurationName)"=="Release-docs" Goto BuildOpts
+Goto Exit
+
+:BuildOpts
+
+IF EXIST "%25SANDCASTLE%25" GOTO BuildDocs
+Goto CheckInstaller
+
+:BuildDocs
+"%25SANDCASTLE%25" $(SolutionDir)..\docs\libsecondlife-docs.shfb
+Goto CheckInstaller
+
+:CheckInstaller
+IF EXIST "%25NSIS%25" GOTO BuildInstall
+GOTO EXIT
+
+:BuildInstall
+"%25NSIS%25" $(SolutionDir)..\docs\libsecondlife-installer.nsi
+
+:Exit</PostBuildEvent>
   </PropertyGroup>
 </Project>
