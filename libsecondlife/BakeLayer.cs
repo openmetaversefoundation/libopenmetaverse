@@ -149,23 +149,40 @@ namespace libsecondlife.Baking
 
             if (BakeType == AppearanceManager.BakeType.Eyes)
             {
+                initBakedLayerColor(255, 255, 255);
                 if (!DrawLayer(AppearanceManager.TextureIndex.EyesIris))
-                    oldBake();
+                {
+                    Client.Log("Missing texture for EYES - unable to bake layer", Helpers.LogLevel.Warning);
+                }
             }
             else if (BakeType == AppearanceManager.BakeType.Head)
             {
-                if (!DrawLayer(AppearanceManager.TextureIndex.HeadBodypaint))
-                    oldBake();
+                // need to use the visual parameters to determine the base skin color in RGB but
+                // it's not apparent how to define RGB levels from the skin color parameters, so
+                // for now use a grey foundation for the skin and skirt layers
+                initBakedLayerColor(128, 128, 128);
+                DrawLayer(AppearanceManager.TextureIndex.HeadBodypaint);
             }
             else if (BakeType == AppearanceManager.BakeType.Skirt)
             {
-                if (!DrawLayer(AppearanceManager.TextureIndex.Skirt))
-                    oldBake();
+                float skirtRed = 1.0f, skirtGreen = 1.0f, skirtBlue = 1.0f;
+                try
+                {
+                    ParamValues.TryGetValue(VisualParams.Find("skirt_red", "skirt").ParamID, out skirtRed);
+                    ParamValues.TryGetValue(VisualParams.Find("skirt_green", "skirt").ParamID, out skirtGreen);
+                    ParamValues.TryGetValue(VisualParams.Find("skirt_blue", "skirt").ParamID, out skirtBlue);
+                }
+                catch
+                {
+                    Client.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning);
+                }
+                initBakedLayerColor((int)(skirtRed * 255.0f), (int)(skirtGreen * 255.0f), (int)(skirtBlue * 255.0f));
+                DrawLayer(AppearanceManager.TextureIndex.Skirt);
             }
             else if (BakeType == AppearanceManager.BakeType.UpperBody)
             {
-                if (!DrawLayer(AppearanceManager.TextureIndex.UpperBodypaint))
-                    oldBake();
+                initBakedLayerColor(128, 128, 128);
+                DrawLayer(AppearanceManager.TextureIndex.UpperBodypaint);
                 DrawLayer(AppearanceManager.TextureIndex.UpperUndershirt);
                 DrawLayer(AppearanceManager.TextureIndex.UpperGloves);
                 DrawLayer(AppearanceManager.TextureIndex.UpperShirt);
@@ -173,8 +190,8 @@ namespace libsecondlife.Baking
             }
             else if (BakeType == AppearanceManager.BakeType.LowerBody)
             {
-                if (!DrawLayer(AppearanceManager.TextureIndex.LowerBodypaint))
-                    oldBake();
+                initBakedLayerColor(128, 128, 128);
+                DrawLayer(AppearanceManager.TextureIndex.LowerBodypaint);
                 DrawLayer(AppearanceManager.TextureIndex.LowerUnderpants);
                 DrawLayer(AppearanceManager.TextureIndex.LowerSocks);
                 DrawLayer(AppearanceManager.TextureIndex.LowerShoes);
@@ -192,101 +209,114 @@ namespace libsecondlife.Baking
 
             AssetTexture texture = new AssetTexture();
 
-            if ( ! Textures.TryGetValue(textureIndex, out texture))
+            if (!Textures.TryGetValue(textureIndex, out texture))
                 return false;
 
-            Client.DebugLog("DrawLayer(): baking layer " + textureIndex.ToString());
-
             Image source = texture.Image;
-            bool sourceHasAlpha = (source.Channels & ImageChannels.Alpha) != 0;
+            bool sourceHasAlpha = ((source.Channels & ImageChannels.Alpha) != 0 && source.Alpha != null);
+            bool sourceHasBump = ((source.Channels & ImageChannels.Bump) != 0 && source.Bump != null);
 
-            if ( source.Width != BakeWidth || source.Height != BakeHeight )
+            bool copySourceAlphaToBakedLayer = sourceHasAlpha && (
+                textureIndex == AppearanceManager.TextureIndex.HeadBodypaint ||
+                textureIndex == AppearanceManager.TextureIndex.Skirt
+            );
+
+            if (source.Width != BakeWidth || source.Height != BakeHeight)
                 source.ResizeNearestNeighbor(BakeWidth, BakeHeight);
 
-            if (textureIndex == AppearanceManager.TextureIndex.HeadBodypaint
-                || textureIndex == AppearanceManager.TextureIndex.UpperBodypaint
-                || textureIndex == AppearanceManager.TextureIndex.LowerBodypaint
-                || textureIndex == AppearanceManager.TextureIndex.Skirt
-                || textureIndex == AppearanceManager.TextureIndex.EyesIris)
-            { // initial layer, just copy onto baked layer
 
-                for (int y = 0; y < BakeHeight; y++)
-                {
-                    for (int x = 0; x < BakeWidth; x++)
-                    {
-                        if (sourceHasAlpha)
-                        {
-                            if (source.Alpha[i] != 0)
-                            {
-                                BakedTexture.Image.Red[i] = source.Red[i];
-                                BakedTexture.Image.Green[i] = source.Green[i];
-                                BakedTexture.Image.Blue[i] = source.Blue[i];
+            Int32 alpha = 255;
+            //Int32 alphaInv = 255 - alpha;
+            Int32 alphaInv = 256 - alpha;
 
-                                BakedTexture.Image.Alpha[i] = source.Alpha[i];
-                                BakedTexture.Image.Bump[i] = 0;
-                            }
-                        }
-                        else
-                        {
-                            BakedTexture.Image.Red[i] = source.Red[i];
-                            BakedTexture.Image.Green[i] = source.Green[i];
-                            BakedTexture.Image.Blue[i] = source.Blue[i];
-                            BakedTexture.Image.Alpha[i] = 255;
+            byte[] bakedRed = BakedTexture.Image.Red;
+            byte[] bakedGreen = BakedTexture.Image.Green;
+            byte[] bakedBlue = BakedTexture.Image.Blue;
+            byte[] bakedAlpha = BakedTexture.Image.Alpha;
+            byte[] bakedBump = BakedTexture.Image.Bump;
 
-                            BakedTexture.Image.Bump[i] = 0;
-                        }
+            byte[] sourceRed = source.Red;
+            byte[] sourceGreen = source.Green;
+            byte[] sourceBlue = source.Blue;
+            byte[] sourceAlpha = null;
+            byte[] sourceBump = null;
 
-                        ++i;
-                    }
-                }
-            }
-            else // not skin layer, so composite with alpha blending
+            if (sourceHasAlpha)
+                sourceAlpha = source.Alpha;
+
+            if (sourceHasBump)
+                sourceBump = source.Bump;
+
+            for (int y = 0; y < BakeHeight; y++)
             {
-
-                for (int y = 0; y < BakeHeight; y++)
+                for (int x = 0; x < BakeWidth; x++)
                 {
-                    for (int x = 0; x < BakeWidth; x++)
+                    if (sourceHasAlpha)
                     {
-
-                        float alpha = 1.0f;
-                        if (sourceHasAlpha)
-                        {
-                            alpha = (float)source.Alpha[i];
-                            alpha /= 255.0f;
-                        }
-
-                        float red = (float)source.Red[i];
-                        float green = (float)source.Green[i];
-                        float blue = (float)source.Blue[i];
-                        red /= 255.0f;
-                        green /= 255.0f;
-                        blue /= 255.0f;
-
-                        float currRed = (float)BakedTexture.Image.Red[i];
-                        float currGreen = (float)BakedTexture.Image.Green[i];
-                        float currBlue = (float)BakedTexture.Image.Blue[i];
-
-                        currRed /= 255.0F;
-                        currGreen /= 255.0F;
-                        currBlue /= 255.0F;
-
-                        BakedTexture.Image.Red[i] = (byte)(255.0f * ((currRed * (1.0 - alpha)) + (red * alpha)));
-
-                        BakedTexture.Image.Green[i] = (byte)(255.0f * ((currGreen * (1.0 - alpha)) + (green * alpha)));
-                        BakedTexture.Image.Blue[i] = (byte)(255.0f * ((currBlue * (1.0 - alpha)) + (blue * alpha)));
-
-                        i++;
+                        alpha = sourceAlpha[i];
+                        //alphaInv = 255 - alpha;
+                        alphaInv = 256 - alpha;
                     }
+
+                    bakedRed[i] = (byte)((bakedRed[i] * alphaInv + sourceRed[i] * alpha) >> 8);
+                    bakedGreen[i] = (byte)((bakedGreen[i] * alphaInv + sourceGreen[i] * alpha) >> 8);
+                    bakedBlue[i] = (byte)((bakedBlue[i] * alphaInv + sourceBlue[i] * alpha) >> 8);
+
+                    if (copySourceAlphaToBakedLayer)
+                        bakedAlpha[i] = sourceAlpha[i];
+
+                    if (sourceHasBump)
+                        bakedBump[i] = sourceBump[i];
+
+                    i++;
+
                 }
             }
             return true;
         }
 
-        protected void oldBake()
+
+        /// <summary>
+        /// initBakedLayerColor()
+        /// fills a baked layer as a solid *appearing* color
+        /// the colors are subtly dithered on a 16x16 grid to prevent the jpeg2000 stage from compressing it
+        /// too far since it seems to cause upload failures if the image is a pure solid color
+        /// 
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="g"></param>
+        /// <param name="b"></param>
+        private void initBakedLayerColor(int r, int g, int b)
         {
-            Client.DebugLog("Baking " + BakeType.ToString());
-            BakedTexture = new AssetTexture(new Image(BakeWidth, BakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
+            byte rByte = (byte)r;
+            byte gByte = (byte)g;
+            byte bByte = (byte)b;
+
+            byte rAlt, gAlt, bAlt;
+
+            rAlt = rByte;
+            gAlt = gByte;
+            bAlt = bByte;
+
+            if (rByte < byte.MaxValue)
+                rAlt++;
+            else rAlt--;
+
+            if (gByte < byte.MaxValue)
+                gAlt++;
+            else gAlt--;
+
+            if (bByte < byte.MaxValue)
+                bAlt++;
+            else bAlt--;
+
             int i = 0;
+
+            byte[] red = BakedTexture.Image.Red;
+            byte[] green = BakedTexture.Image.Green;
+            byte[] blue = BakedTexture.Image.Blue;
+            byte[] alpha = BakedTexture.Image.Alpha;
+            byte[] bump = BakedTexture.Image.Bump;
 
             for (int y = 0; y < BakeHeight; y++)
             {
@@ -294,26 +324,25 @@ namespace libsecondlife.Baking
                 {
                     if (((x ^ y) & 0x10) == 0)
                     {
-                        BakedTexture.Image.Red[i] = 255;
-                        BakedTexture.Image.Green[i] = 0;
-                        BakedTexture.Image.Blue[i] = 0;
-                        BakedTexture.Image.Alpha[i] = 255;
-                        BakedTexture.Image.Bump[i] = 0;
+                        red[i] = rAlt;
+                        green[i] = gByte;
+                        blue[i] = bByte;
+                        alpha[i] = 255;
+                        bump[i] = 0;
                     }
                     else
                     {
-                        BakedTexture.Image.Red[i] = 0;
-                        BakedTexture.Image.Green[i] = 0;
-                        BakedTexture.Image.Blue[i] = 255;
-                        BakedTexture.Image.Alpha[i] = 255;
-                        BakedTexture.Image.Bump[i] = 0;
+                        red[i] = rByte;
+                        green[i] = gAlt;
+                        blue[i] = bAlt;
+                        alpha[i] = 255;
+                        bump[i] = 0;
                     }
 
                     ++i;
                 }
             }
 
-            BakedTexture.Encode();
         }
 
         public static AppearanceManager.BakeType BakeTypeFor(AppearanceManager.TextureIndex index)

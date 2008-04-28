@@ -66,7 +66,6 @@ ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File "..\bin\Baker.exe"
   File "..\bin\ChatConsole.exe"
   File "..\bin\Decoder.exe"
   File "..\bin\groupmanager.exe"
@@ -269,8 +268,6 @@ Section Uninstall
   Delete "$INSTDIR\groupmanager.exe"
   Delete "$INSTDIR\Decoder.exe"
   Delete "$INSTDIR\ChatConsole.exe"
-  Delete "$INSTDIR\Baker.pdb"
-  Delete "$INSTDIR\Baker.exe"
 
   Delete "$SMPROGRAMS\libsecondlife\Uninstall.lnk"
   Delete "$SMPROGRAMS\libsecondlife\Website.lnk"
