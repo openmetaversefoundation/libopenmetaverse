@@ -53,6 +53,8 @@
     <!-- Automate build of html documentation using sandcastle -->
     <Message Text="Building HTML Documentation" Condition="Exists('$(SANDCASTLE)')" />
     <Exec Command="SandCastleBuilderConsole.exe ..\docs\libsecondlife-docs.shfb" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(SANDCASTLE)')" ContinueOnError="true" />
+    <Message Text="Compressing Documentation (if 7-Zip/7za.exe is installed)"/>
+    <Exec Command="7za.exe a -tzip ..\docs\documentation.zip ..\docs\trunk" WorkingDirectory="$(SolutionRoot)" ContinueOnError="true"/>
     <!-- Automate exe builds for nightly snapshots-->
     <Message Text="Building Snapshot" Condition="Exists('$(NSIS)')" />
     <Exec Command="makensis.exe /O..\docs\makeinstaller.log /DPlatform=$(Platform) ..\docs\libsecondlife-installer.nsi" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(NSIS)')" ContinueOnError="true" />

@@ -27,3 +27,5 @@ If you want to generate these documents locally you will need to do the followin
    The built documentation will be located in the docs/trunk directory along with the compiled help file
 
 
+Additionally if you have 7-Zip installed in the path, a zip archive will be created in the documentation tree
+containing all the documentation in a compressed format see: http://www.7-zip.org/
