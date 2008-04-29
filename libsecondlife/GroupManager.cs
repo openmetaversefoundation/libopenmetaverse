@@ -1077,6 +1077,9 @@ namespace libsecondlife
                     group.AcceptNotices = block.AcceptNotices;
 
                     currentGroups[block.GroupID] = group;
+
+                    if (!GroupName2KeyCache.ContainsKey(block.GroupID))
+                        GroupName2KeyCache.SafeAdd(block.GroupID, Helpers.FieldToUTF8String(block.GroupName));
                 }
 
                 try { OnCurrentGroups(currentGroups); }
