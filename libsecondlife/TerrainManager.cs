@@ -78,6 +78,8 @@ namespace libsecondlife
         /// </summary>
         public event LandPatchCallback OnLandPatch;
 
+        public InternalDictionary<ulong, Patch[]> SimPatches = new InternalDictionary<ulong, Patch[]>();
+
         private const int PATCHES_PER_EDGE = 16;
         private const float OO_SQRT2 = 0.7071067811865475244008443621049f;
         private const int STRIDE = 264;
@@ -90,7 +92,6 @@ namespace libsecondlife
         private const int END_OF_PATCHES = 97;
 
         private SecondLife Client;
-        private Dictionary<ulong, Patch[]> SimPatches = new Dictionary<ulong, Patch[]>();
         private float[] DequantizeTable16 = new float[16 * 16];
         private float[] DequantizeTable32 = new float[32 * 32];
         private float[] CosineTable16 = new float[16 * 16];

@@ -672,12 +672,12 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                DefaultTexture.RGBA = new LLColor(data, i, false);
+                DefaultTexture.RGBA = new LLColor(data, i, true);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    LLColor tmpColor = new LLColor(data, i, false);
+                    LLColor tmpColor = new LLColor(data, i, true);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)

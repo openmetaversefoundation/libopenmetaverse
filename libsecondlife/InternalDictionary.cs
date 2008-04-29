@@ -243,8 +243,8 @@ namespace libsecondlife
         /// Adds the specified key to the dictionary, dictionary locking is not performed, 
         /// <see cref="SafeAdd"/>
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="key">The key</param>
+        /// <param name="value">The value</param>
         internal void Add(TKey key, TValue value)
         {
             Dictionary.Add(key, value);
@@ -261,10 +261,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Safely add a key/value pair to the dictionary.
+        /// Safely add a key/value pair to the dictionary
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="key">The key</param>
+        /// <param name="value">The value</param>
         internal void SafeAdd(TKey key, TValue value)
         {
             lock (Dictionary)
@@ -274,12 +274,23 @@ namespace libsecondlife
         /// <summary>
         /// Safely Removes an item from the InternalDictionary
         /// </summary>
-        /// <param name="key">The key.</param>
+        /// <param name="key">The key</param>
         /// <returns><see langword="true"/> if successful, <see langword="false"/> otherwise</returns>
         internal bool SafeRemove(TKey key)
         {
             lock (Dictionary)
                 return Dictionary.Remove(key);
+        }
+
+        /// <summary>
+        /// Indexer for the dictionary
+        /// </summary>
+        /// <param name="key">The key</param>
+        /// <returns>The value</returns>
+        internal TValue this[TKey key]
+        {
+            get { return Dictionary[key]; }
+            set { Dictionary[key] = value; }
         }
     }
 }

@@ -44,7 +44,7 @@ namespace OpenJPEGNet
         {
             public IntPtr encoded;             // encoded image data
             public int length;                 // encoded image length
-            public int dummy; // padding for 64-bit alignment
+            public int dummy;                  // padding for 64-bit alignment
 
             public IntPtr decoded;             // decoded image, contiguous components
             public int width;                  // width of decoded image
@@ -191,14 +191,15 @@ namespace OpenJPEGNet
 
         public const int TGA_HEADER_SIZE = 32;
         
-        public static byte[] DecodeToTGA(byte[] encoded)
+        public static byte[] DecodeToTGA(byte[] encoded, out libsecondlife.Image image)
         {
-            return Decode(encoded).ExportTGA();
+            image = Decode(encoded);
+            return image.ExportTGA();
         }
 
-        public static System.Drawing.Image DecodeToImage(byte[] encoded)
+        public static System.Drawing.Image DecodeToImage(byte[] encoded, out libsecondlife.Image image)
         {
-            return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded)));
+            return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded, out image)));
         }
 
         public unsafe static byte[] EncodeFromImage(Bitmap bitmap, bool lossless)

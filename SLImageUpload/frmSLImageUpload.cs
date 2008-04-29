@@ -82,9 +82,11 @@ namespace SLImageUpload
             {
                 if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
                 {
+                    libsecondlife.Image imgData;
+
                     // Upload JPEG2000 images untouched
                     UploadData = System.IO.File.ReadAllBytes(FileName);
-                    bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData);
+                    bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData, out imgData);
 
                     Client.Log("Loaded raw JPEG2000 data " + FileName, Helpers.LogLevel.Info);
                 }

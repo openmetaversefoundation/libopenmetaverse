@@ -80,8 +80,10 @@ namespace groupmanager
 
         void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
         {
+            libsecondlife.Image imgData;
+
             if (image.Success)
-                picInsignia.Image = OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData);
+                picInsignia.Image = OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData, out imgData);
         }
 
         private void UpdateProfile()

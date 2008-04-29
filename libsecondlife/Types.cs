@@ -1448,6 +1448,12 @@ namespace libsecondlife
             FromBytes(byteArray, pos, inverted);
         }
 
+        public LLColor(byte[] byteArray, int pos, bool inverted, bool alphaInverted)
+        {
+            R = G = B = A = 0f;
+            FromBytes(byteArray, pos, inverted, alphaInverted);
+        }
+
         #endregion Constructors
 
         #region Public Methods
@@ -1470,6 +1476,14 @@ namespace libsecondlife
                 B = (float)byteArray[pos + 2] * quanta;
                 A = (float)byteArray[pos + 3] * quanta;
             }
+        }
+
+        public void FromBytes(byte[] byteArray, int pos, bool inverted, bool alphaInverted)
+        {
+            FromBytes(byteArray, pos, inverted);
+
+            if (alphaInverted)
+                A = 1.0f - A;
         }
 
         public byte[] GetBytes()

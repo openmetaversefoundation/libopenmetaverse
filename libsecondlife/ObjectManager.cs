@@ -1471,9 +1471,7 @@ namespace libsecondlife
                         prim.OwnerID = block.OwnerID;
                         prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
                         prim.Text = Helpers.FieldToUTF8String(block.Text);
-                        prim.TextColor = new LLColor(block.TextColor, 0, false);
-                        // Only alpha is inversed
-                        prim.TextColor.A = (byte)(1.0f - prim.TextColor.A);
+                        prim.TextColor = new LLColor(block.TextColor, 0, false, true);
 
                         // Sound information
                         prim.Sound = block.Sound;
