@@ -42,6 +42,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +79,7 @@
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
     <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
     <Compile Include="Commands\Inventory\CreateNotecardCommand.cs" />
+    <Compile Include="Commands\Inventory\UploadImageCommand.cs" />
     <Compile Include="Commands\Land\ParcelDetailsCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
     <Compile Include="Commands\Land\AgentLocationsCommand.cs" />

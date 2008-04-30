@@ -36,6 +36,7 @@ namespace libsecondlife.TestClient
             System.IO.StreamReader reader = new StreamReader(file);
             string body = reader.ReadToEnd();
 
+            // FIXME: Upload the notecard asset first. When that completes, call RequestCreateItem
             try
             {
                 string desc = String.Format("{0} created by libsecondlife TestClient {1}", file, DateTime.Now);
