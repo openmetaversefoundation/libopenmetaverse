@@ -5,6 +5,9 @@ using libsecondlife;
 
 namespace libsecondlife.TestClient
 {
+    /// <summary>
+    /// Display a list of all agent locations in a specified region
+    /// </summary>
     public class AgentLocationsCommand : Command
     {
         public AgentLocationsCommand(TestClient testClient)

@@ -111,11 +111,11 @@ namespace libsecondlife
 
         /// <summary>Total number of wearables for each avatar</summary>
         public const int WEARABLE_COUNT = 13;
-        /// <summary></summary>
+        /// <summary>Total number of baked textures on each avatar</summary>
         public const int BAKED_TEXTURE_COUNT = 5;
-        /// <summary></summary>
+        /// <summary>Total number of wearables per bake layer</summary>
         public const int WEARABLES_PER_LAYER = 7;
-        /// <summary></summary>
+        /// <summary>Total number of textures on an avatar, baked or not</summary>
         public const int AVATAR_TEXTURE_COUNT = 20;
         /// <summary>Map of what wearables are included in each bake</summary>
         public static readonly WearableType[][] WEARABLE_BAKE_MAP = new WearableType[][]
@@ -143,6 +143,10 @@ namespace libsecondlife
 
         private SecondLife Client;
         private AssetManager Assets;
+
+        /// <summary>
+        /// An <seealso cref="T:InternalDictionary"/> which keeps track of wearables data
+        /// </summary>
         public InternalDictionary<WearableType, WearableData> Wearables = new InternalDictionary<WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this array
         private LLUUID[] AgentTextures = new LLUUID[AVATAR_TEXTURE_COUNT];
@@ -182,7 +186,7 @@ namespace libsecondlife
         /// Default constructor
         /// </summary>
         /// <param name="client">This agents <seealso cref="libsecondlife.SecondLife"/> Object</param>
-        /// <param name="assets"></param>
+        /// <param name="assets">Reference to an AssetManager object</param>
         public AppearanceManager(SecondLife client, AssetManager assets)
         {
             Client = client;
@@ -224,8 +228,8 @@ namespace libsecondlife
         /// <summary>
         /// Returns the assetID for a given WearableType 
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="type">the <seealso cref="libsecondlife.WearableType"/> of the asset</param>
+        /// <returns>The <seealso cref="libsecondlife.LLUUID"/> of the WearableType</returns>
         public LLUUID GetWearableAsset(WearableType type)
         {
             WearableData wearable;
@@ -458,6 +462,12 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Adds a list of attachments to avatar
+        /// </summary>
+        /// <param name="attachments">A List containing the attachments to add</param>
+        /// <param name="removeExistingFirst">If true, tells simulator to remove existing attachment
+        /// first</param>
         public void AddAttachments(List<InventoryBase> attachments, bool removeExistingFirst)
         {
             // FIXME: Obey this
@@ -515,12 +525,29 @@ namespace libsecondlife
             Client.Network.SendPacket(attachmentsPacket);
         }
 
+        /// <summary>
+        /// Attach an item to an avatar at a specific attach point
+        /// </summary>
+        /// <param name="item">A <seealso cref="libsecondlife.InventoryItem"/> to attach</param>
+        /// <param name="attachPoint">the <seealso cref="libsecondlife.AttachmentPoint"/> on the avatar 
+        /// to attach the item to</param>
         public void Attach(InventoryItem item, AttachmentPoint attachPoint)
         {
             Attach(item.UUID, item.OwnerID, item.Name, item.Description, item.Permissions, item.Flags, 
                 attachPoint);
         }
 
+        /// <summary>
+        /// Attach an item to an avatar specifying attachment details
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="libsecondlife.LLUUID"/> of the item to attach</param>
+        /// <param name="ownerID">The <seealso cref="libsecondlife.LLUUID"/> attachments owner</param>
+        /// <param name="name">The name of the attachment</param>
+        /// <param name="description">The description of the attahment</param>
+        /// <param name="perms">The <seealso cref="libsecondlife.Permissions"/> to apply when attached</param>
+        /// <param name="itemFlags">The <seealso cref="libsecondlife.InventoryItemFlags"/> of the attachment</param>
+        /// <param name="attachPoint">the <seealso cref="libsecondlife.AttachmentPoint"/> on the avatar 
+        /// to attach the item to</param>
         public void Attach(LLUUID itemID, LLUUID ownerID, string name, string description,
             Permissions perms, InventoryItemFlags itemFlags, AttachmentPoint attachPoint)
         {
@@ -545,11 +572,19 @@ namespace libsecondlife
             Client.Network.SendPacket(attach);
         }
 
+        /// <summary>
+        /// Detach an item from avatar using an <seealso cref="libsecondlife.InventoryItem"/> object
+        /// </summary>
+        /// <param name="item">An <seealso cref="libsecondlife.InventoryItem"/> object</param>
         public void Detach(InventoryItem item)
         {
-            Detach(item.UUID);
+            Detach(item.UUID); 
         }
 
+        /// <summary>
+        /// Detach an Item from avatar by items <seealso cref="libsecondlife.LLUUID"/>
+        /// </summary>
+        /// <param name="itemID">The items ID to detach</param>
         public void Detach(LLUUID itemID)
         {
             DetachAttachmentIntoInvPacket detach = new DetachAttachmentIntoInvPacket();
@@ -558,6 +593,7 @@ namespace libsecondlife
 
             Client.Network.SendPacket(detach);
         }
+
 
         private void UpdateAppearanceFromWearables(bool bake)
         {

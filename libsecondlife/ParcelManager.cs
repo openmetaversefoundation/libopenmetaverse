@@ -189,7 +189,7 @@ namespace libsecondlife
             Linden,
             /// <summary>Adult themed area</summary>
             Adult,
-            /// <summary>Arts & Culture</summary>
+            /// <summary>Arts and Culture</summary>
             Arts,
             /// <summary>Business</summary>
             Business,
@@ -201,7 +201,7 @@ namespace libsecondlife
             Hangout,
             /// <summary>Newcomer friendly</summary>
             Newcomer,
-            /// <summary>Parks & Nature</summary>
+            /// <summary>Parks and Nature</summary>
             Park,
             /// <summary>Residential</summary>
             Residential,
@@ -781,6 +781,7 @@ namespace libsecondlife
         /// <param name="sequenceID">An arbitrary integer that will be returned
         /// with the ParcelAccessList reply, useful for distinguishing between
         /// multiple simultaneous requests</param>
+        /// <param name="flags"></param>
         public void AccessListRequest(Simulator simulator, int localID, AccessList flags, int sequenceID)
         {
             ParcelAccessListRequestPacket request = new ParcelAccessListRequestPacket();
@@ -888,13 +889,15 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Send a request to Purchase a parcel of land
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="forGroup"></param>
-        /// <param name="groupID"></param>
-        /// <param name="removeContribution"></param>
+        /// <param name="simulator">The Simulator the parcel is located in</param>
+        /// <param name="localID">The parcels region specific local ID</param>
+        /// <param name="forGroup">true if this parcel is being purchased by a group</param>
+        /// <param name="groupID">The groups <seealso cref="T:libsecondlife.LLUUID"/></param>
+        /// <param name="removeContribution">true to remove tier contribution if purchase is successful</param>
+        /// <param name="parcelArea">The parcels size</param>
+        /// <param name="parcelPrice">The purchase price of the parcel</param>
         /// <returns></returns>
         public void Buy(Simulator simulator, int localID, bool forGroup, LLUUID groupID,
             bool removeContribution, int parcelArea, int parcelPrice)
@@ -917,10 +920,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Reclaim a parcel of land
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
+        /// <param name="simulator">The simulator the parcel is in</param>
+        /// <param name="localID">The parcels region specific local ID</param>
         public void Reclaim(Simulator simulator, int localID)
         {
             ParcelReclaimPacket request = new ParcelReclaimPacket();
@@ -933,11 +936,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Deed a parcel to a group
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="groupID"></param>
+        /// <param name="simulator">The simulator the parcel is in</param>
+        /// <param name="localID">The parcels region specific local ID</param>
+        /// <param name="groupID">The groups <seealso cref="T:libsecondlife.LLUUID"/></param>
         public void DeedToGroup(Simulator simulator, int localID, LLUUID groupID)
         {
             ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
@@ -954,7 +957,7 @@ namespace libsecondlife
         /// Request prim owners of a parcel of land.
         /// </summary>
         /// <param name="simulator">Simulator parcel is in</param>
-        /// <param name="localID">local ID # of parcel</param>
+        /// <param name="localID">The parcels region specific local ID</param>
         public void ObjectOwnersRequest(Simulator simulator, int localID)
         {
             ParcelObjectOwnersRequestPacket request = new ParcelObjectOwnersRequestPacket();
@@ -967,12 +970,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Return objects from a parcel
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="type"></param>
-        /// <param name="ownerIDs"></param>
+        /// <param name="simulator">Simulator parcel is in</param>
+        /// <param name="localID">The parcels region specific local ID</param>
+        /// <param name="type">the type of objects to return, <seealso cref="T:libsecondlife.ObjectReturnType"/></param>
+        /// <param name="ownerIDs">A list containing object owners <seealso cref="libsecondlife.LLUUID"/>s to return</param>
         public void ReturnObjects(Simulator simulator, int localID, ObjectReturnType type, List<LLUUID> ownerIDs)
         {
             ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();
@@ -1007,7 +1010,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Subdivide (split) a parcel
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="west"></param>
@@ -1028,7 +1031,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Join two parcels of land creating a single parcel
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="west"></param>
@@ -1049,7 +1052,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Gets a parcel LocalID
+        /// Get a parcels LocalID
         /// </summary>
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="position">llVector3 position in simulator (Z not used)</param>

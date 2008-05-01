@@ -64,9 +64,9 @@ namespace libsecondlife
         /// <summary>
         /// Initializes a new instance of the <seealso cref="T:InternalDictionary"/> Class 
         /// with the specified key/value, has its initial valies copied from the specified 
-        /// <seealso cref="System.Collections.Generic.Dictionary"/>
+        /// <seealso cref="T:System.Collections.Generic.Dictionary"/>
         /// </summary>
-        /// <param name="dictionary"><seealso cref="System.Collections.Generic.Dictionary"/>
+        /// <param name="dictionary"><seealso cref="T:System.Collections.Generic.Dictionary"/>
         /// to copy initial values from</param>
         /// <example>
         /// <code>

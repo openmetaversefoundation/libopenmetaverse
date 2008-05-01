@@ -55,12 +55,17 @@ namespace libsecondlife
         /// Triggered when the list of estate managers is received for the current estate
         /// </summary>
         /// <param name="managers"></param>
+        /// <param name="count"></param>
+        /// <param name="estateID"></param>
         public delegate void EstateManagersReply(uint estateID, int count, List<LLUUID> managers);
 
         /// <summary>
         /// FIXME - Enumerate all params from EstateOwnerMessage packet
         /// </summary>
-        /// <param name="parameters"></param>
+        /// <param name="denyNoPaymentInfo"></param>
+        /// <param name="estateID"></param>
+        /// <param name="estateName"></param>
+        /// <param name="estateOwner"></param>
         public delegate void EstateUpdateInfoReply(string estateName, LLUUID estateOwner, uint estateID, bool denyNoPaymentInfo);
 
         public delegate void EstateManagersListReply(uint estateID, List<LLUUID> managers);
