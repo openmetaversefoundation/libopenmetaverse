@@ -42,7 +42,7 @@ namespace libsecondlife
         /// <summary>Main grid login server</summary>
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
         /// <summary>Beta grid login server</summary>
-        public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login-llsd.cgi";
+        public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
         /// <summary>The relative directory where external resources are kept</summary>
         public const string RESOURCE_DIR = "libsl_data";
 

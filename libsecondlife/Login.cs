@@ -147,7 +147,15 @@ namespace libsecondlife
             }
 
             // Home
-            LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
+            LLSDMap home;
+            try
+            {
+                home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
+            }
+            catch (LLSDException e)
+            {
+                SecondLife.DebugLogStatic("login server returned invalid home position: " + e.Message);
+            }
 
             if (home != null)
             {
