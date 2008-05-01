@@ -239,6 +239,8 @@ namespace libsecondlife
         public Caps Caps = null;
         /// <summary></summary>
         public ulong Handle;
+        /// <summary>The current version of software this simulator is running</summary>
+        public string SimVersion = String.Empty;
         /// <summary></summary>
         public string Name = String.Empty;
         /// <summary></summary>

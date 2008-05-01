@@ -36,39 +36,39 @@ namespace libsecondlife
     #region Structs
 
     /// <summary>
-    /// Some information about a parcel of land
+    /// Some information about a parcel of land returned from a DirectoryManager search
     /// </summary>
     public struct ParcelInfo
     {
-        /// <summary></summary>
+        /// <summary>Global Key of record</summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Parcel Owners <seealso cref="T:libsecondlife.LLUUID"/></summary>
         public LLUUID OwnerID;
-        /// <summary></summary>
+        /// <summary>Name field of parcel, limited to 128 characters</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Description field of parcel, limited to 256 characters</summary>
         public string Description;
-        /// <summary></summary>
+        /// <summary>Total Square meters of parcel</summary>
         public int ActualArea;
-        /// <summary></summary>
+        /// <summary>Total area billable as Tier, for group owned land this will be 10% less than ActualArea</summary>
         public int BillableArea;
-        /// <summary></summary>
+        /// <summary>True of parcel is in Mature simulator</summary>
         public bool Mature;
-        /// <summary></summary>
+        /// <summary>Grid global X position of parcel</summary>
         public float GlobalX;
-        /// <summary></summary>
+        /// <summary>Grid global Y position of parcel</summary>
         public float GlobalY;
-        /// <summary></summary>
+        /// <summary>Grid global Z position of parcel (not used)</summary>
         public float GlobalZ;
-        /// <summary></summary>
+        /// <summary>Name of simulator parcel is located in</summary>
         public string SimName;
-        /// <summary></summary>
+        /// <summary>Texture <seealso cref="T:libsecondlife.LLUUID"/> of parcels display picture</summary>
         public LLUUID SnapshotID;
-        /// <summary></summary>
+        /// <summary>Float representing calculated traffic based on time spent on parcel by avatars</summary>
         public float Dwell;
-        /// <summary></summary>
+        /// <summary>Sale price of parcel (not used)</summary>
         public int SalePrice;
-        /// <summary></summary>
+        /// <summary>Auction ID of parcel</summary>
         public int AuctionID;
     }
 
@@ -168,48 +168,48 @@ namespace libsecondlife
         /// </summary>
         public enum ParcelStatus : sbyte
         {
-            /// <summary></summary>
+            /// <summary>Placeholder</summary>
             None = -1,
-            /// <summary></summary>
+            /// <summary>Parcel is leased (owned) by an avatar or group</summary>
             Leased = 0,
-            /// <summary></summary>
+            /// <summary>Parcel is in process of being leased (purchased) by an avatar or group</summary>
             LeasePending = 1,
-            /// <summary></summary>
+            /// <summary>Parcel has been abandoned back to Governor Linden</summary>
             Abandoned = 2
         }
 
         /// <summary>
-        /// 
+        /// Category parcel is listed in under search
         /// </summary>
         public enum ParcelCategory : sbyte
         {
             /// <summary>No assigned category</summary>
             None = 0,
-            /// <summary></summary>
+            /// <summary>Linden Infohub or public area</summary>
             Linden,
-            /// <summary></summary>
+            /// <summary>Adult themed area</summary>
             Adult,
-            /// <summary></summary>
+            /// <summary>Arts & Culture</summary>
             Arts,
-            /// <summary></summary>
+            /// <summary>Business</summary>
             Business,
-            /// <summary></summary>
+            /// <summary>Educational</summary>
             Educational,
-            /// <summary></summary>
+            /// <summary>Gaming</summary>
             Gaming,
-            /// <summary></summary>
+            /// <summary>Hangout or Club</summary>
             Hangout,
-            /// <summary></summary>
+            /// <summary>Newcomer friendly</summary>
             Newcomer,
-            /// <summary></summary>
+            /// <summary>Parks & Nature</summary>
             Park,
-            /// <summary></summary>
+            /// <summary>Residential</summary>
             Residential,
-            /// <summary></summary>
+            /// <summary>Shopping</summary>
             Shopping,
-            /// <summary></summary>
+            /// <summary>Not Used?</summary>
             Stage,
-            /// <summary></summary>
+            /// <summary>Other</summary>
             Other,
             /// <summary>Not an actual category, only used for queries</summary>
             Any = -1
@@ -350,6 +350,10 @@ namespace libsecondlife
         /// <summary>true to obscure (hide) music url</summary>
         public bool ObscureMusic;
 
+        /// <summary>
+        /// Displays a parcel object in string format
+        /// </summary>
+        /// <returns>string containing key=value pairs of a parcel object</returns>
         public override string ToString()
         {
             string result = "";
@@ -469,6 +473,9 @@ namespace libsecondlife
             UpdateOtherCleanTime();
         }
 
+        /// <summary>
+        /// Set Autoreturn time
+        /// </summary>
         public void UpdateOtherCleanTime()
         {
             ParcelSetOtherCleanTimePacket request = new ParcelSetOtherCleanTimePacket();
@@ -605,23 +612,30 @@ namespace libsecondlife
         #region Structs
 
         /// <summary>
-        /// 
+        /// Parcel Accesslist
         /// </summary>
         public struct ParcelAccessEntry
         {
-            /// <summary></summary>
+            /// <summary>Agents <seealso cref="T:libsecondlife.LLUUID"/></summary>
             public LLUUID AgentID;
             /// <summary></summary>
             public DateTime Time;
-            /// <summary></summary>
+            /// <summary>Flag to Permit access to agent, or ban agent from parcel</summary>
             public AccessList Flags;
         }
 
+        /// <summary>
+        /// Owners of primitives on parcel
+        /// </summary>
         public struct ParcelPrimOwners
         {
+            /// <summary>Prim Owners <seealso cref="T:libsecondlife.LLUUID"/></summary>
             public LLUUID OwnerID;
+            /// <summary>True of owner is group</summary>
             public bool IsGroupOwned;
+            /// <summary>Total count of prims owned by OwnerID</summary>
             public int Count;
+            /// <summary>true of OwnerID is currently online and is not a group</summary>
             public bool OnlineStatus;
         }
         #endregion Structs

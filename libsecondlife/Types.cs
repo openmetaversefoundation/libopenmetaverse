@@ -648,11 +648,11 @@ namespace libsecondlife
         }
 
         //FIXME: Need comprehensive testing for this
-        /// <summary>
-        /// Assumes this vector represents euler rotations along the X, Y, and
-        /// Z axis and creates a quaternion representation of the rotations
-        /// </summary>
-        /// <returns>A quaternion representation of the euler rotations</returns>
+        // <summary>
+        // Assumes this vector represents euler rotations along the X, Y, and
+        // Z axis and creates a quaternion representation of the rotations
+        // </summary>
+        // <returns>A quaternion representation of the euler rotations</returns>
         //public LLQuaternion ToQuaternion()
         //{
         //    LLMatrix3 rotMat = new LLMatrix3(X, Y, Z);

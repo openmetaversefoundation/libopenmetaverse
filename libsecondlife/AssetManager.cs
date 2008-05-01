@@ -252,6 +252,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="transfer"></param>
         /// <param name="asset"></param>
         public delegate void AssetReceivedCallback(AssetDownload transfer, Asset asset);
         /// <summary>
@@ -263,6 +264,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="image"></param>
+        /// <param name="asset"></param>
         public delegate void ImageReceivedCallback(ImageDownload image, AssetTexture asset);
         /// <summary>
         /// 

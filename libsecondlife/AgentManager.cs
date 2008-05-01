@@ -698,6 +698,7 @@ namespace libsecondlife
         /// <summary>
         /// Triggered when a script asks for permissions
         /// </summary>
+        /// <param name="simulator">Simulator object this request comes from</param>
         /// <param name="taskID">Task ID of the script requesting permissions</param>
         /// <param name="itemID">ID of the object containing the script</param>
         /// <param name="objectName">Name of the object containing the script</param>
@@ -808,7 +809,7 @@ namespace libsecondlife
 
         /// <summary>
         /// Fired when group chat session confirmed joined</summary>
-        /// <param name="groupchatSessionID">Key of Session (groups UUID)</param>
+        /// <param name="groupChatSessionID">Key of Session (groups UUID)</param>
         /// <param name="tmpSessionID">Temporary session Key</param>
         /// <param name="success"><see langword="true"/> if session start successful, 
         /// <see langword="false"/> otherwise</param>
@@ -910,7 +911,8 @@ namespace libsecondlife
         public event ScriptSensorReplyCallback OnScriptSensorReply;
         /// <summary>Fired in response to a sit request</summary>
         public event AvatarSitResponseCallback OnAvatarSitResponse;
-
+        /// <summary>Fired when avatar moves to a new simulator</summary>
+        [Obsolete("This information is automatically stored in CurrentSim, Will be removed in 0.5.0")]
         public event AgentMovementCallback OnAgentMovement;
         #endregion
 
@@ -1311,7 +1313,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an Instant Message to a group
         /// </summary>
-        /// <param name="groupUUID">Key of Group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of the group to send message to</param>
         /// <param name="message">Text Message being sent.</param>
         public void InstantMessageGroup(LLUUID groupUUID, string message)
         {
@@ -1322,7 +1324,7 @@ namespace libsecondlife
         /// Send an Instant Message to a group
         /// </summary>
         /// <param name="fromName">The name this IM will show up as being from</param>
-        /// <param name="groupUUID">Key of the group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of the group to send message to</param>
         /// <param name="message">Text message being sent</param>
         /// <remarks>This does not appear to function with groups the agent is not in</remarks>
         public void InstantMessageGroup(string fromName, LLUUID groupUUID, string message)
@@ -1357,7 +1359,7 @@ namespace libsecondlife
         /// <summary>
         /// Send a request to join a group chat session
         /// </summary>
-        /// <param name="groupUUID">UUID of Group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of Group to leave</param>
         public void RequestJoinGroupChat(LLUUID groupUUID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1381,7 +1383,7 @@ namespace libsecondlife
         /// Request self terminates group chat. This will stop Group IM's from showing up
         /// until session is rejoined or expires.
         /// </summary>
-        /// <param name="groupUUID">UUID of Group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of Group to leave</param>
         public void RequestLeaveGroupChat(LLUUID groupUUID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1471,9 +1473,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="sourceAvatar"><seealso cref="LLUUID"/> Key of the source agent</param>
         /// <param name="targetObject"><seealso cref="LLUUID"/> Key of the target object</param>
-        /// <param name="globalOffset"></param>
-        /// <param name="type"><seealso cref="T:PointAtType"/></param>
-        /// <param name="effectID"></param>
+        /// <param name="globalOffset">A <seealso cref="T:libsecondlife.LLVector3d"/> representing the beams offset from the source</param>
+        /// <param name="type">A <seealso cref="T:PointAtType"/> which sets the avatars lookat animation</param>
+        /// <param name="effectID"><seealso cref="T:libsecondlife.LLUUID"/> of the Effect</param>
         public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type,
             LLUUID effectID)
         {
@@ -1534,14 +1536,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Create a particle beam between an avatar and an primitive
         /// </summary>
-        /// <param name="sourceAvatar"></param>
-        /// <param name="targetObject"></param>
-        /// <param name="globalOffset"></param>
-        /// <param name="color"></param>
-        /// <param name="duration"></param>
-        /// <param name="effectID"></param>
+        /// <param name="sourceAvatar"><seealso cref="T:libsecondlife.LLUUID"/> of sources avatar</param>
+        /// <param name="targetObject"><seealso cref="T:libsecondlife.LLUUID"/> of the target</param>
+        /// <param name="globalOffset"><seealso cref="T:libsecondlife.LLVector3d"/>global offset</param>
+        /// <param name="color"><seealso cref="T:libsecondlife.LLColor"/>Color values of beam</param>
+        /// <param name="duration">a float representing the duration the beam will last</param>
+        /// <param name="effectID"><seealso cref="T:libsecondlife.LLUUID"/> of the Effect</param>
         public void BeamEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LLColor color, 
             float duration, LLUUID effectID)
         {
@@ -1599,6 +1601,7 @@ namespace libsecondlife
         }
 
         /// <summary>Stands up from sitting on a prim or the ground</summary>
+        /// <returns>true of AgentUpdate was sent</returns>
         public bool Stand()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
@@ -1730,8 +1733,9 @@ namespace libsecondlife
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
-        /// <summary>Cancels autopilot sim function</summary>
+        /// <summary>Macro to cancel autopilot sim function</summary>
         /// <remarks>Not certain if this is how it is really done</remarks>
+        /// <returns>true if control flags were set and AgentUpdate was sent to the simulator</returns>
         public bool AutoPilotCancel()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
@@ -1756,7 +1760,8 @@ namespace libsecondlife
         /// <summary>
         /// Grabs an object
         /// </summary>
-        /// <param name="objectLocalID">Local ID of Object to grab</param>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Grab(uint objectLocalID)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket();
@@ -1787,6 +1792,8 @@ namespace libsecondlife
         /// <summary>
         /// Releases a grabbed object
         /// </summary>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void DeGrab(uint objectLocalID)
         {
             ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
@@ -1799,6 +1806,8 @@ namespace libsecondlife
         /// <summary>
         /// Touches an object
         /// </summary>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Touch(uint objectLocalID)
         {
             Client.Self.Grab(objectLocalID);
@@ -1987,6 +1996,7 @@ namespace libsecondlife
         /// <summary>
         /// Teleports agent to their stored home location
         /// </summary>
+        /// <returns>true on successful teleport to home location</returns>
         public bool GoHome()
         {
             return Teleport(LLUUID.Zero);
@@ -2553,6 +2563,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="packet">Incoming AgentMovementCompletePacket</param>
         /// <param name="simulator">Unused</param>
+        /// <remarks>This occurs when after an avatar moves into a new sim</remarks>
         private void MovementCompleteHandler(Packet packet, Simulator simulator)
         {
             AgentMovementCompletePacket movement = (AgentMovementCompletePacket)packet;
@@ -2560,6 +2571,7 @@ namespace libsecondlife
             relativePosition = movement.Data.Position;
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
+            simulator.SimVersion = Helpers.FieldToUTF8String(movement.SimData.ChannelVersion);
             if (OnAgentMovement != null)
             {
                 try

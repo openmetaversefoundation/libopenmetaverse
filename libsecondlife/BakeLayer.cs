@@ -62,6 +62,7 @@ namespace libsecondlife.Baking
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
+        /// <param name="bakeType"></param>
         /// <param name="textureCount">Total number of layers this layer set is
         /// composed of</param>
         /// <param name="paramValues">Appearance parameters the drive the 

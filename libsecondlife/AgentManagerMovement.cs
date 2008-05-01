@@ -152,42 +152,51 @@ namespace libsecondlife
 
         /// <summary> 
         /// Agent movement and camera control
+        /// 
+        /// Agent movement is controlled by setting specific <seealso cref="T:AgentManager.ControlFlags"/>
+        /// After the control flags are set, An AgentUpdate is required to update the simulator of the specified flags
+        /// This is most easily accomplished by setting one or more of the AgentMovement properties
+        /// 
+        /// Movement of an avatar is always based on a compass direction, for example AtPos will move the 
+        /// agent from West to East or forward on the X Axis, AtNeg will of course move agent from 
+        /// East to West or backward on the X Axis, LeftPos will be South to North or forward on the Y Axis
+        /// The Z axis is Up, finer grained control of movements can be done using the Nudge properties
         /// </summary> 
         public partial class AgentMovement
         {
             #region Properties
 
-            /// <summary></summary>
+            /// <summary>Move agent positive along the X axis</summary>
             public bool AtPos
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_POS); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_POS, value); }
             }
-            /// <summary></summary>
+            /// <summary>Move agent negative along the X axis</summary>
             public bool AtNeg
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG, value); }
             }
-            /// <summary></summary>
+            /// <summary>Move agent positive along the Y axis</summary>
             public bool LeftPos
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS, value); }
             }
-            /// <summary></summary>
+            /// <summary>Move agent negative along the Y axis</summary>
             public bool LeftNeg
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG, value); }
             }
-            /// <summary></summary>
+            /// <summary>Move agent positive along the Z axis</summary>
             public bool UpPos
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_POS); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_POS, value); }
             }
-            /// <summary></summary>
+            /// <summary>Move agent negative along the Z axis</summary>
             public bool UpNeg
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG); }
@@ -235,73 +244,73 @@ namespace libsecondlife
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_UP); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FAST_UP, value); }
             }
-            /// <summary></summary>
+            /// <summary>Causes simulator to make agent fly</summary>
             public bool Fly
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FLY); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FLY, value); }
             }
-            /// <summary></summary>
+            /// <summary>Stop movement</summary>
             public bool Stop
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STOP); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STOP, value); }
             }
-            /// <summary></summary>
+            /// <summary>Finish animation</summary>
             public bool FinishAnim
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FINISH_ANIM); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_FINISH_ANIM, value); }
             }
-            /// <summary></summary>
+            /// <summary>Stand up from a sit</summary>
             public bool StandUp
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP, value); }
             }
-            /// <summary></summary>
+            /// <summary>Tells simulator to sit agent on ground</summary>
             public bool SitOnGround
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_SIT_ON_GROUND); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_SIT_ON_GROUND, value); }
             }
-            /// <summary></summary>
+            /// <summary>Place agent into mouselook mode</summary>
             public bool Mouselook
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK, value); }
             }
-            /// <summary></summary>
+            /// <summary>Nudge agent positive along the X axis</summary>
             public bool NudgeAtPos
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_POS); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_POS, value); }
             }
-            /// <summary></summary>
+            /// <summary>Nudge agent negative along the X axis</summary>
             public bool NudgeAtNeg
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_NEG); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_AT_NEG, value); }
             }
-            /// <summary></summary>
+            /// <summary>Nudge agent positive along the Y axis</summary>
             public bool NudgeLeftPos
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_POS); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_POS, value); }
             }
-            /// <summary></summary>
+            /// <summary>Nudge agent negative along the Y axis</summary>
             public bool NudgeLeftNeg
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_NEG); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_LEFT_NEG, value); }
             }
-            /// <summary></summary>
+            /// <summary>Nudge agent positive along the Z axis</summary>
             public bool NudgeUpPos
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_POS); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_POS, value); }
             }
-            /// <summary></summary>
+            /// <summary>Nudge agent negative along the Z axis</summary>
             public bool NudgeUpNeg
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_NUDGE_UP_NEG); }
@@ -319,7 +328,7 @@ namespace libsecondlife
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT); }
                 set { SetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT, value); }
             }
-            /// <summary></summary>
+            /// <summary>Tell simulator to mark agent as away</summary>
             public bool Away
             {
                 get { return GetControlFlag(AgentManager.ControlFlags.AGENT_CONTROL_AWAY); }
@@ -664,6 +673,8 @@ namespace libsecondlife
             /// <param name="headRotation"></param>
             /// <param name="farClip"></param>
             /// <param name="reliable"></param>
+            /// <param name="flags"></param>
+            /// <param name="state"></param>
             public void SendManualUpdate(AgentManager.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
                 LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)

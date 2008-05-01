@@ -357,6 +357,7 @@ namespace libsecondlife
         /// <summary>
         /// Accept a friendship request
         /// </summary>
+        /// <param name="fromAgentID">agentID of avatatar to form friendship with</param>
         /// <param name="imSessionID">imSessionID of the friendship request message</param>
         public void AcceptFriendship(LLUUID fromAgentID, LLUUID imSessionID)
         {

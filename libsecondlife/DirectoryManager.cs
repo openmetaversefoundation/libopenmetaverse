@@ -293,6 +293,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="queryID"></param>
         /// <param name="matchedPeople"></param>
         public delegate void DirPeopleReplyCallback(LLUUID queryID, List<AgentSearchData> matchedPeople);
 

@@ -67,12 +67,6 @@ namespace libsecondlife
         /// <param name="names"></param>
         public delegate void AvatarNamesCallback(Dictionary<LLUUID, string> names);
         /// <summary>
-        /// Triggered when a response for avatar statistics (ratings) is returned
-        /// </summary>
-        /// <param name="avatarID"></param>
-        /// <param name="statistics"></param>
-        // public delegate void AvatarStatisticsCallback(LLUUID avatarID, Avatar.Statistics statistics);
-        /// <summary>
         /// Triggered when a response for avatar interests is returned
         /// </summary>
         /// <param name="avatarID"></param>
@@ -88,7 +82,7 @@ namespace libsecondlife
         /// Triggered when an avatar group list is received (AvatarGroupsReply)
         /// </summary>
         /// <param name="avatarID"></param>
-        /// <param name="groups"></param>
+        /// <param name="avatarGroups"></param>
         public delegate void AvatarGroupsCallback(LLUUID avatarID, List<AvatarGroup> avatarGroups);
         /// <summary>
         /// Triggered when a name search reply is received (AvatarPickerReply)
@@ -133,8 +127,6 @@ namespace libsecondlife
 
         /// <summary></summary>
         public event AvatarNamesCallback OnAvatarNames;
-        /// <summary></summary>
-        // public event AvatarStatisticsCallback OnAvatarStatistics;
         /// <summary></summary>
         public event AvatarInterestsCallback OnAvatarInterests;
         /// <summary></summary>

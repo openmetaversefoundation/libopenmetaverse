@@ -101,7 +101,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="textures">List of the textures our avatar is currently wearing</param>
+        /// <param name="te"></param>
         public delegate void AppearanceUpdatedCallback(LLObject.TextureEntry te);
 
         /// <summary></summary>

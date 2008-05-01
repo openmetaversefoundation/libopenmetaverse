@@ -38,14 +38,6 @@ namespace libsecondlife
         public GroundTextureSettings GroundTextures;
 
         /// <summary>
-        /// Triggered on incoming LandStatReply
-        /// </summary>
-        /// <param name="reportType"></param>
-        /// <param name="requestFlags"></param>
-        /// <param name="objectCount"></param>
-        /// <param name="task"></param>
-        //public delegate void LandStatReply(LandStatReportType reportType, uint requestFlags, int objectCount, List<EstateTask> Tasks);
-        /// <summary>
         /// Triggered on incoming LandStatReply when the report type is for "top colliders"
         /// </summary>
         /// <param name="objectCount"></param>
@@ -58,7 +50,7 @@ namespace libsecondlife
         /// <param name="Tasks"></param>
         public delegate void GetTopScriptsReply(int objectCount, List<EstateTask> Tasks);
 
-        /// <summary>Callback for incoming LandStatReply packets</summary>
+        // <summary>Callback for incoming LandStatReply packets</summary>
         //public event LandStatReply OnLandStatReply;
         /// <summary>Triggered upon a successful .GetTopColliders()</summary>
         public event GetTopCollidersReply OnGetTopColliders;
