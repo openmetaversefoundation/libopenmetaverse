@@ -609,36 +609,46 @@ namespace libsecondlife
         [Flags]
         public enum TeleportFlags : uint
         {
-            /// <summary></summary>
+            /// <summary>No flags set, or teleport failed</summary>
             Default         =      0,
-            /// <summary></summary>
+            /// <summary>Set when newbie leaves help island for first time</summary>
             SetHomeToTarget = 1 << 0,
             /// <summary></summary>
             SetLastToTarget = 1 << 1,
-            /// <summary></summary>
+            /// <summary>Via Lure</summary>
             ViaLure         = 1 << 2,
-            /// <summary></summary>
+            /// <summary>Via Landmark</summary>
             ViaLandmark     = 1 << 3,
-            /// <summary></summary>
+            /// <summary>Via Location</summary>
             ViaLocation     = 1 << 4,
-            /// <summary></summary>
+            /// <summary>Via Home</summary>
             ViaHome         = 1 << 5,
-            /// <summary></summary>
+            /// <summary>Via Telehub</summary>
             ViaTelehub      = 1 << 6,
-            /// <summary></summary>
+            /// <summary>Via Login</summary>
             ViaLogin        = 1 << 7,
-            /// <summary></summary>
+            /// <summary>Linden Summoned</summary>
             ViaGodlikeLure  = 1 << 8,
-            /// <summary></summary>
+            /// <summary>Linden Forced me</summary>
             Godlike         = 1 << 9,
             /// <summary></summary>
             NineOneOne      = 1 << 10,
-            /// <summary></summary>
+            /// <summary>Agent Teleported Home via Script</summary>
             DisableCancel   = 1 << 11,
             /// <summary></summary>
             ViaRegionID     = 1 << 12,
             /// <summary></summary>
-            IsFlying        = 1 << 13
+            IsFlying        = 1 << 13,
+            /// <summary></summary>
+            ResetHome       = 1 << 14,
+            /// <summary>forced to new location for example when avatar is banned or ejected</summary>
+            ForceRedirect   = 1 << 15,
+            /// <summary>Teleport Finished via a Lure</summary>
+            FinishedViaLure = 1 << 26,
+            /// <summary>Finished, Sim Changed</summary>
+            FinishedViaNewSim = 1 << 28,
+            /// <summary>Finished, Same Sim</summary>
+            FinishedViaSameSim = 1 << 29
         }
 
         /// <summary>
@@ -2686,7 +2696,7 @@ namespace libsecondlife
         {
             bool finished = false;
             TeleportFlags flags = TeleportFlags.Default;
-
+            
             if (packet.Type == PacketType.TeleportStart)
             {
                 TeleportStartPacket start = (TeleportStartPacket)packet;
