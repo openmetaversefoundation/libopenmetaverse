@@ -147,7 +147,7 @@ namespace libsecondlife
             }
 
             // Home
-            LLSDMap home;
+            LLSDMap home = null;
             try
             {
                 home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
