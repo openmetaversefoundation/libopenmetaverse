@@ -9,9 +9,9 @@ INCLS = ./libopenjpeg/bio.h ./libopenjpeg/cio.h ./libopenjpeg/dwt.h ./libopenjpe
 INCLUDE = -Ilibopenjpeg
 
 # General configuration variables:
-CC = gcc
+CC = g++
 LIBTOOLSTAT = libtool
-LIBTOOLDYN = gcc
+LIBTOOLDYN = g++
 
 
 COMPILERFLAGS = -O3 -fPIC
