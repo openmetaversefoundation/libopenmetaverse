@@ -34,10 +34,12 @@ using libsecondlife;
 namespace OpenJPEGNet
 {
 #if !NO_UNSAFE
-
+    /// <summary>
+    /// A Wrapper around openjpeg to encode and decode images to and from byte arrays
+    /// </summary>
     public class OpenJPEG
     {
-        // This structure is used to marchal both encoded and decoded images
+        // This structure is used to marshal both encoded and decoded images
         // MUST MATCH THE STRUCT IN libsl.h!
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private struct MarshalledImage
@@ -72,7 +74,12 @@ namespace OpenJPEGNet
         [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslDecode(ref MarshalledImage image);
         
-        // encode 
+        /// <summary>
+        /// Encode a <seealso cref="libsecondlife.Image"/> object into a byte array
+        /// </summary>
+        /// <param name="image">The <seealso cref="libsecondlife.Image"/> object to encode</param>
+        /// <param name="lossless">true to enable lossless conversion, only useful for small images ie: sculptmaps</param>
+        /// <returns>A byte array containing the encoded Image object</returns>
         public static byte[] Encode(libsecondlife.Image image, bool lossless)
         {
             if (
@@ -118,11 +125,21 @@ namespace OpenJPEGNet
             return encoded;
         }
 
+        /// <summary>
+        /// Encode a <seealso cref="libsecondlife.Image"/> object into a byte array
+        /// </summary>
+        /// <param name="image">The <seealso cref="libsecondlife.Image"/> object to encode</param>
+        /// <returns>a byte array of the encoded image</returns>
         public static byte[] Encode(libsecondlife.Image image)
         {
             return Encode(image, false);
         }
 
+        /// <summary>
+        /// Decode a <seealso cref="libsecondlife.Image"/> object from a byte array
+        /// </summary>
+        /// <param name="encoded">The encoded byte array to decode</param>
+        /// <returns>A <seealso cref="libsecondlife.image"/> object</returns>
         public static libsecondlife.Image Decode(byte[] encoded)
         {
             MarshalledImage marshalled = new MarshalledImage();
@@ -189,19 +206,41 @@ namespace OpenJPEGNet
             return image;
         }
 
+        /// <summary>
+        /// TGA Header size
+        /// </summary>
         public const int TGA_HEADER_SIZE = 32;
         
+        /// <summary>
+        /// Decode an encoded <seealso cref="libsecondlife.Image"/> byte array to a TGA byte array
+        /// </summary>
+        /// <param name="encoded">The encoded image</param>
+        /// <param name="image">A <seealso cref="libsecondlife.Image"/> object</param>
+        /// <returns>A TGA decoded byte array containing the encoded image</returns>
         public static byte[] DecodeToTGA(byte[] encoded, out libsecondlife.Image image)
         {
             image = Decode(encoded);
             return image.ExportTGA();
         }
 
+        /// <summary>
+        /// Decode an encoded image byte array to a <seealso cref="System.Drawing.Image"/> which can be used
+        /// directly in Windows Forms or by the System.Drawing.Image class
+        /// </summary>
+        /// <param name="encoded">A encoded byte array containing the source image to decode</param>
+        /// <param name="image">A <seealso cref="libsecondlife.Image"/> object</param>
+        /// <returns>A <seealso cref="System.Drawing.Image"/> object</returns>
         public static System.Drawing.Image DecodeToImage(byte[] encoded, out libsecondlife.Image image)
         {
             return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded, out image)));
         }
 
+        /// <summary>
+        /// Encode a <seealso cref="System.Drawing.Bitmap"/> object into a byte array
+        /// </summary>
+        /// <param name="bitmap">The source <seealso cref="System.Drawing.Bitmap"/> object to encode</param>
+        /// <param name="lossless">true to enable lossless decoding</param>
+        /// <returns>A byte array containing the source Bitmap object</returns>
         public unsafe static byte[] EncodeFromImage(Bitmap bitmap, bool lossless)
         {
             BitmapData bd;
