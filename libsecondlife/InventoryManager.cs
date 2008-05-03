@@ -156,13 +156,13 @@ namespace libsecondlife
     /// </summary>
     public abstract class InventoryBase
     {
-        /// <summary></summary>
+        /// <summary><seealso cref="libsecondlife.LLUUID"/> of item/folder</summary>
         public readonly LLUUID UUID;
-        /// <summary></summary>
+        /// <summary><seealso cref="libsecondlife.LLUUID"/> of parent folder</summary>
         public LLUUID ParentUUID;
-        /// <summary></summary>
+        /// <summary>Name of item/folder</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Item/Folder Owners <seealso cref="libsecondlife.LLUUID"/></summary>
         public LLUUID OwnerID;
 
         /// <summary>
@@ -186,12 +186,22 @@ namespace libsecondlife
             return UUID.GetHashCode() ^ ParentUUID.GetHashCode() ^ Name.GetHashCode() ^ OwnerID.GetHashCode();
         }
 
+        /// <summary>
+        /// Determine whether the specified <seealso cref="libsecondlife.InventoryBase"/> object is equal to the current object
+        /// </summary>
+        /// <param name="o">InventoryBase object to compare against</param>
+        /// <returns>true if objects are the same</returns>
         public override bool Equals(object o)
         {
             InventoryBase inv = o as InventoryBase;
             return inv != null && Equals(inv);
         }
 
+        /// <summary>
+        /// Determine whether the specified <seealso cref="libsecondlife.InventoryBase"/> object is equal to the current object
+        /// </summary>
+        /// <param name="o">InventoryBase object to compare against</param>
+        /// <returns>true if objects are the same</returns>
         public virtual bool Equals(InventoryBase o)
         {
             return o.UUID == UUID
@@ -206,21 +216,21 @@ namespace libsecondlife
     /// </summary>
     public class InventoryItem : InventoryBase
     {
-        /// <summary>The <seealso cref="T:libsecondlife.LLUUID"/> of this item</summary>
+        /// <summary>The <seealso cref="libsecondlife.LLUUID"/> of this item</summary>
         public LLUUID AssetUUID;
-        /// <summary>The combined <seealso cref="T:libsecondlife.Permissions"/> of this item</summary>
+        /// <summary>The combined <seealso cref="libsecondlife.Permissions"/> of this item</summary>
         public Permissions Permissions;
         /// <summary>The type of item from <seealso cref="libsecondlife.AssetType"/></summary>
         public AssetType AssetType;
-        /// <summary></summary>
+        /// <summary>The type of item from the <seealso cref="libsecondlife.InventoryType"/> enum</summary>
         public InventoryType InventoryType;
-        /// <summary>The <seealso cref="T:libsecondlife.LLUUID"/> of the creator of this item</summary>
+        /// <summary>The <seealso cref="libsecondlife.LLUUID"/> of the creator of this item</summary>
         public LLUUID CreatorID;
         /// <summary>A Description of this item</summary>
         public string Description;
-        /// <summary>The <seealso cref="libsecondlife.Group"/>s <seealso cref="T:libsecondlife.LLUUID"/> this item is set to or owned by</summary>
+        /// <summary>The <seealso cref="libsecondlife.Group"/>s <seealso cref="libsecondlife.LLUUID"/> this item is set to or owned by</summary>
         public LLUUID GroupID;
-        /// <summary>If True, item is group owned</summary>
+        /// <summary>If true, item is owned by a group</summary>
         public bool GroupOwned;
         /// <summary>The price this item can be purchased for</summary>
         public int SalePrice;
@@ -271,10 +281,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Compare an InventoryBase item
+        /// Determine whether the specified <seealso cref="libsecondlife.InventoryBase"/> object is equal to the current object
         /// </summary>
-        /// <param name="o">The <seealso cref="libsecondlife.InventoryBase"/> object to compare</param>
-        /// <returns>true if match</returns>
+        /// <param name="o">The <seealso cref="libsecondlife.InventoryBase"/> object to compare against</param>
+        /// <returns>true if objects are the same</returns>
         public override bool Equals(InventoryBase o)
         {
             InventoryItem item = o as InventoryItem;
@@ -282,10 +292,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Compare an InventoryItem object
+        /// Determine whether the specified <seealso cref="libsecondlife.InventoryItem"/> object is equal to the current object
         /// </summary>
-        /// <param name="o"><seealso cref="libsecondlife.InventoryItem"/></param>
-        /// <returns>true if match</returns>
+        /// <param name="o">The <seealso cref="libsecondlife.InventoryItem"/> object to compare against</param>
+        /// <returns>true if objects are the same</returns>
         public bool Equals(InventoryItem o)
         {
             return base.Equals(o as InventoryBase)
@@ -303,21 +313,183 @@ namespace libsecondlife
         }
     }
 
-    public class InventoryTexture     : InventoryItem { public InventoryTexture(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Texture; } }
-    public class InventorySound       : InventoryItem { public InventorySound(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Sound; } }
-    public class InventoryCallingCard : InventoryItem { public InventoryCallingCard(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.CallingCard; } }
-    public class InventoryLandmark    : InventoryItem { public InventoryLandmark(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Landmark; } }
-    public class InventoryObject      : InventoryItem { public InventoryObject(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Object; } }
-    public class InventoryNotecard    : InventoryItem { public InventoryNotecard(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Notecard; } }
-    public class InventoryCategory    : InventoryItem { public InventoryCategory(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Category; } }
-    public class InventoryLSL         : InventoryItem { public InventoryLSL(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.LSL; } }
-    public class InventorySnapshot    : InventoryItem { public InventorySnapshot(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Snapshot; } }
-    public class InventoryAttachment  : InventoryItem { public InventoryAttachment(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Attachment; } }
+    /// <summary>
+    /// InventoryTexture Class representing a graphical image
+    /// </summary>
+    /// <seealso cref="libsecondlife.Image"/>
+    public class InventoryTexture : InventoryItem 
+    { 
+        /// <summary>
+        /// Construct an InventoryTexture object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryTexture(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Texture; 
+        } 
+    }
 
+    /// <summary>
+    /// InventorySound Class representing a playable sound
+    /// </summary>
+    public class InventorySound : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventorySound object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventorySound(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Sound; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryCallingCard Class, contains information on another avatar
+    /// </summary>
+    public class InventoryCallingCard : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryCallingCard object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryCallingCard(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.CallingCard; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryLandmark Class, contains details on a specific location
+    /// </summary>
+    public class InventoryLandmark : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryLandmark object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryLandmark(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Landmark; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryObject Class contains details on a primitive or coalesced set of primitives
+    /// </summary>
+    public class InventoryObject : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryObject object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryObject(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Object; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryNotecard Class, contains details on an encoded text document
+    /// </summary>
+    public class InventoryNotecard : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryNotecard object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryNotecard(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Notecard; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryCategory Class
+    /// </summary>
+    /// <remarks>TODO: Is this even used for anything?</remarks>
+    public class InventoryCategory : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryCategory object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryCategory(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Category; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryLSL Class, represents a Linden Scripting Language object
+    /// </summary>
+    public class InventoryLSL : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryLSL object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryLSL(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.LSL; 
+        } 
+    }
+
+    /// <summary>
+    /// InventorySnapshot Class, an image taken with the viewer
+    /// </summary>
+    public class InventorySnapshot : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventorySnapshot object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventorySnapshot(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Snapshot; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryAttachment Class, contains details on an attachable object
+    /// </summary>
+    public class InventoryAttachment  : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryAttachment object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryAttachment(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Attachment; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryWearable Class, details on a clothing item or body part
+    /// </summary>
     public class InventoryWearable : InventoryItem
     {
+        /// <summary>
+        /// Construct an InventoryWearable object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
         public InventoryWearable(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Wearable; }
 
+        /// <summary>
+        /// The <seealso cref="libsecondlife.WearableType"/>, Skin, Shape, Skirt, Etc
+        /// </summary>
         public WearableType WearableType
         {
             get { return (WearableType)Flags; }
@@ -325,8 +497,37 @@ namespace libsecondlife
         }
     }
 
-    public class InventoryAnimation   : InventoryItem { public InventoryAnimation(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Animation; } }
-    public class InventoryGesture     : InventoryItem { public InventoryGesture(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Gesture; } }
+    /// <summary>
+    /// InventoryAnimation Class, A bvh encoded object which animates an avatar
+    /// </summary>
+    public class InventoryAnimation : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryAnimation object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryAnimation(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Animation; 
+        } 
+    }
+
+    /// <summary>
+    /// InventoryGesture Class, details on a series of animations, sounds, and actions
+    /// </summary>
+    public class InventoryGesture : InventoryItem 
+    {
+        /// <summary>
+        /// Construct an InventoryGesture object
+        /// </summary>
+        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
+        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        public InventoryGesture(LLUUID itemID) : base(itemID) 
+        { 
+            InventoryType = InventoryType.Gesture; 
+        } 
+    }
     
     /// <summary>
     /// A folder contains <seealso cref="T:libsecondlife.InventoryItem"/>s and has certain attributes specific 
@@ -334,17 +535,11 @@ namespace libsecondlife
     /// </summary>
     public class InventoryFolder : InventoryBase
     {
-        /// <summary>
-        /// The Preferred <seealso cref="T:libsecondlife.AssetType"/> for a folder.
-        /// </summary>
+        /// <summary>The Preferred <seealso cref="T:libsecondlife.AssetType"/> for a folder.</summary>
         public AssetType PreferredType;
-        /// <summary>
-        /// The Version of this folder
-        /// </summary>
+        /// <summary>The Version of this folder</summary>
         public int Version;
-        /// <summary>
-        /// Number of child items this folder contains.
-        /// </summary>
+        /// <summary>Number of child items this folder contains.</summary>
         public int DescendentCount;
 
         /// <summary>
@@ -354,28 +549,51 @@ namespace libsecondlife
         public InventoryFolder(LLUUID itemID)
             : base(itemID) { }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return Name;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             return PreferredType.GetHashCode() ^ Version.GetHashCode() ^ DescendentCount.GetHashCode();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
         public override bool Equals(object o)
         {
             InventoryFolder folder = o as InventoryFolder;
             return folder != null && Equals(folder);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
         public override bool Equals(InventoryBase o)
         {
             InventoryFolder folder = o as InventoryFolder;
             return folder != null && Equals(folder);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
         public bool Equals(InventoryFolder o)
         {
             return base.Equals(o as InventoryBase)
@@ -387,6 +605,9 @@ namespace libsecondlife
 
     #endregion Inventory Object Classes
 
+    /// <summary>
+    /// Tools for dealing with agents inventory
+    /// </summary>
     public class InventoryManager
     {
         protected struct InventorySearch
@@ -407,14 +628,16 @@ namespace libsecondlife
         /// <param name="item">Inventory item being created. If success is
         /// false this will be null</param>
         public delegate void ItemCreatedCallback(bool success, InventoryItem item);
+
         /// <summary>
-        /// 
+        /// Callback for an inventory item being create from an uploaded asset
         /// </summary>
-        /// <param name="success"></param>
+        /// <param name="success">true if inventory item creation was successful</param>
         /// <param name="status"></param>
         /// <param name="itemID"></param>
         /// <param name="assetID"></param>
         public delegate void ItemCreatedFromAssetCallback(bool success, string status, LLUUID itemID, LLUUID assetID);
+
         /// <summary>
         /// 
         /// </summary>
@@ -425,11 +648,13 @@ namespace libsecondlife
         /// </summary>
         /// <param name="item"></param>
         public delegate void ItemReceivedCallback(InventoryItem item);
+
         /// <summary>
         /// Callback for an inventory folder updating
         /// </summary>
         /// <param name="folderID">UUID of the folder that was updated</param>
         public delegate void FolderUpdatedCallback(LLUUID folderID);
+
         /// <summary>
         /// Callback when an inventory object is received from another avatar
         /// or a primitive
@@ -446,6 +671,7 @@ namespace libsecondlife
         /// <returns>True to accept the inventory offer, false to reject it</returns>
         public delegate bool ObjectOfferedCallback(LLUUID fromAgentID, string fromAgentName, uint parentEstateID, 
             LLUUID regionID, LLVector3 position, DateTime timestamp, AssetType type, LLUUID objectID, bool fromTask);
+
         /// <summary>
         /// Callback when an inventory object is accepted and received from a
         /// task inventory. This is the callback in which you actually get
@@ -458,12 +684,14 @@ namespace libsecondlife
         /// <param name="AssetID"></param>
         public delegate void TaskItemReceivedCallback(LLUUID itemID, LLUUID folderID, LLUUID creatorID, 
             LLUUID assetID, InventoryType type);
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="path"></param>
         /// <param name="inventoryObjectID"></param>
         public delegate void FindObjectByPathCallback(string path, LLUUID inventoryObjectID);
+
         /// <summary>
         /// Reply received after calling <code>RequestTaskInventory</code>,
         /// contains a filename that can be used in an asset download request
@@ -486,11 +714,43 @@ namespace libsecondlife
 
         #region Events
 
+        /// <summary>
+        /// Fired when a reply to a RequestFetchInventory() is received
+        /// </summary>
+        /// <seealso cref="InventoryManager.RequestFetchInventory"/>
         public event ItemReceivedCallback OnItemReceived;
+
+        /// <summary>
+        /// Fired when a response to a RequestFolderContents() is received 
+        /// </summary>
+        /// <seealso cref="InventoryManager.RequestFolderContents"/>
         public event FolderUpdatedCallback OnFolderUpdated;
+
+        /// <summary>
+        /// Fired when an object or another avatar offers us an inventory item
+        /// </summary>
         public event ObjectOfferedCallback OnObjectOffered;
-        public event TaskItemReceivedCallback OnTaskItemReceived;
+       
+        /// <summary>
+        /// Fired when a response to FindObjectByPath() is received
+        /// </summary>
+        /// <seealso cref="InventoryManager.FindObjectByPath"/>
         public event FindObjectByPathCallback OnFindObjectByPath;
+
+        /// <summary>
+        /// Fired when a task inventory item is received
+        /// 
+        /// This may occur when an object that's rezzed in world is
+        /// taken into inventory, when an item is created using the CreateInventoryItem
+        /// packet, or when an object is purchased
+        /// </summary>
+        public event TaskItemReceivedCallback OnTaskItemReceived;
+
+        /// <summary>
+        /// Fired in response to a request for a tasks (primitive) inventory
+        /// </summary>
+        /// <seealso cref="InventoryManager.GetTaskInventory"/>
+        /// <seealso cref="InventoryManager.RequestTaskInventory"/>
         public event TaskInventoryReplyCallback OnTaskInventoryReply;
 
         #endregion Events
@@ -597,6 +857,9 @@ namespace libsecondlife
 
         #region Properties
 
+        /// <summary>
+        /// Get this agents Inventory data
+        /// </summary>
         public Inventory Store { get { return _Store; } }
 
         #endregion Properties
@@ -628,106 +891,16 @@ namespace libsecondlife
                     "inventory-lib-owner", "inventory-skel-lib"});
         }
 
-
-        //public IAsyncResult BeginFindObjects(LLUUID baseFolder, string regex, bool recurse, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState)
-        //{
-        //    return BeginFindObjects(baseFolder, new Regex(regex), recurse, refresh, firstOnly, callback, asyncState);
-        //}
-
-        //public IAsyncResult BeginFindObjects(LLUUID baseFolder, Regex regexp, bool recurse, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState)
-        //{
-        //    FindResult result = new FindResult(regexp, recurse, callback);
-        //    result.FirstOnly = firstOnly;
-        //    result.AsyncState = asyncState;
-        //    result.FoldersWaiting = 1;
-        //    if (refresh)
-        //    {
-        //        lock (FindDescendantsMap)
-        //        {
-        //            IAsyncResult descendReq = BeginRequestFolderContents(baseFolder, _Client.Self.AgentID, true, true, recurse && !firstOnly, InventorySortOrder.ByName, new AsyncCallback(SearchDescendantsCallback), baseFolder);
-        //            FindDescendantsMap.Add(descendReq, result);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        result.Result = LocalFind(baseFolder, regexp, recurse, firstOnly);
-        //        result.CompletedSynchronously = true;
-        //        result.IsCompleted = true;
-        //    }
-        //    return result;
-        //}
-
-        //private List<InventoryBase> LocalFind(LLUUID baseFolder, Regex regexp, bool recurse, bool firstOnly)
-        //{
-        //    List<InventoryBase> objects = new List<InventoryBase>();
-        //    List<InventoryFolder> folders = new List<InventoryFolder>();
-
-        //    List<InventoryBase> contents = _Store.GetContents(baseFolder);
-        //    foreach (InventoryBase inv in contents)
-        //    {
-        //        if (regexp.IsMatch(inv.Name))
-        //        {
-        //            objects.Add(inv);
-        //            if (firstOnly)
-        //                return objects;
-        //        }
-        //        if (inv is InventoryFolder)
-        //        {
-        //            folders.Add(inv as InventoryFolder);
-        //        }
-        //    }
-        //    // Recurse outside of the loop because subsequent calls to FindObjects may
-        //    // modify the baseNode.Nodes collection.
-        //    // FIXME: I'm pretty sure this is not necessary
-        //    if (recurse)
-        //    {
-        //        foreach (InventoryFolder folder in folders)
-        //        {
-        //            objects.AddRange(LocalFind(folder.UUID, regexp, true, firstOnly));
-        //        }
-        //    }
-        //    return objects;
-        //}
-
-        //public List<InventoryBase> FindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly)
-        //{
-        //    IAsyncResult r = BeginFindObjectsByPath(baseFolder, path, refresh, firstOnly, null, null, true);
-        //    return EndFindObjects(r);
-        //}
-        
-        //public IAsyncResult BeginFindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState, bool recurse)
-        //{
-        //    if (path.Length == 0)
-        //        throw new ArgumentException("Empty path is not supported");
-        //    FindResult result = new FindResult(new Regex(String.Join("/",path)), recurse, callback);
-        //    result.FirstOnly = firstOnly;
-        //    result.AsyncState = asyncState;
-            
-        //    if (refresh)
-        //    {
-        //        result.FoldersWaiting = 1;
-        //        BeginRequestFolderContents(
-        //            baseFolder,
-        //            _Client.Self.AgentID,
-        //            true,
-        //            true,
-        //            false,
-        //            InventorySortOrder.ByName,
-        //            new AsyncCallback(FindObjectsByPathCallback),
-        //            new FindObjectsByPathState(result, baseFolder, 0));
-        //    }
-        //    else
-        //    {
-        //        result.Result = LocalFind(baseFolder, path, 0, firstOnly);
-        //        result.CompletedSynchronously = true;
-        //        result.IsCompleted = true;
-        //    }
-
-        //    return result;
-        //}
-
         #region Fetch
 
+        /// <summary>
+        /// Fetch an inventory item from the dataserver
+        /// </summary>
+        /// <param name="itemID">The items <seealso cref="LLUUID"/></param>
+        /// <param name="ownerID">The item Owners <seealso cref="libsecondlife.LLUUID"/></param>
+        /// <param name="timeoutMS">a integer representing the number of milliseconds to wait for results</param>
+        /// <returns>An <seealso cref="InventoryItem"/> object on success, or null if no item was found</returns>
+        /// <remarks>Items will also be sent to the <seealso cref="InventoryManager.OnItemReceived"/> event</remarks>
         public InventoryItem FetchItem(LLUUID itemID, LLUUID ownerID, int timeoutMS)
         {
             AutoResetEvent fetchEvent = new AutoResetEvent(false);
@@ -752,6 +925,12 @@ namespace libsecondlife
             return fetchedItem;
         }
 
+        /// <summary>
+        /// Request A single inventory item
+        /// </summary>
+        /// <param name="itemID">The items <seealso cref="libsecondlife.LLUUID"/></param>
+        /// <param name="ownerID">The item Owners <seealso cref="libsecondlife.LLUUID"/></param>
+        /// <seealso cref="InventoryManager.OnItemReceived"/>
         public void RequestFetchInventory(LLUUID itemID, LLUUID ownerID)
         {
             FetchInventoryPacket fetch = new FetchInventoryPacket();
@@ -772,6 +951,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="itemIDs">Inventory items to request</param>
         /// <param name="ownerIDs">Owners of the inventory items</param>
+        /// <seealso cref="InventoryManager.OnItemReceived"/>
         public void RequestFetchInventory(List<LLUUID> itemIDs, List<LLUUID> ownerIDs)
         {
             if (itemIDs.Count != ownerIDs.Count)
@@ -793,6 +973,17 @@ namespace libsecondlife
             _Client.Network.SendPacket(fetch);
         }
 
+        /// <summary>
+        /// Get contents of a folder
+        /// </summary>
+        /// <param name="folder">The <seealso cref="LLUUID"/> of the folder to search</param>
+        /// <param name="owner">The <seealso cref="LLUUID"/> of the folders owner</param>
+        /// <param name="folders">true to retrieve folders</param>
+        /// <param name="items">true to retrieve items</param>
+        /// <param name="order">sort order to return results in</param>
+        /// <param name="timeoutMS">a integer representing the number of milliseconds to wait for results</param>
+        /// <returns>A list of inventory items matching search criteria within folder</returns>
+        /// <seealso cref="InventoryManager.RequestFolderContents"/>
         public List<InventoryBase> FolderContents(LLUUID folder, LLUUID owner, bool folders, bool items,
             InventorySortOrder order, int timeoutMS)
         {
@@ -817,6 +1008,15 @@ namespace libsecondlife
             return objects;
         }
 
+        /// <summary>
+        /// Request the contents of an inventory folder
+        /// </summary>
+        /// <param name="folder">The folder to search</param>
+        /// <param name="owner">The folder owners <seealso cref="LLUUID"/></param>
+        /// <param name="folders">true to return <seealso cref="InventoryManager.InventoryFolder"/>s contained in folder</param>
+        /// <param name="items">true to return <seealso cref="InventoryManager.InventoryItem"/>s containd in folder</param>
+        /// <param name="order">the sort order to return items in</param>
+        /// <seealso cref="InventoryManager.FolderContents"/>
         public void RequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, 
             InventorySortOrder order)
         {
@@ -877,6 +1077,15 @@ namespace libsecondlife
             return _Store.RootFolder.UUID;
         }
 
+        /// <summary>
+        /// Find an object in inventory using a specific path to search
+        /// </summary>
+        /// <param name="baseFolder">The folder to begin the search in</param>
+        /// <param name="inventoryOwner">The object owners <seealso cref="LLUUID"/></param>
+        /// <param name="path">A string path to search</param>
+        /// <param name="timeoutMS">milliseconds to wait for a reply</param>
+        /// <returns>Found items <seealso cref="LLUUID"/> or <seealso cref="LLUUID.Zero"/> if 
+        /// timeout occurs or item is not found</returns>
         public LLUUID FindObjectByPath(LLUUID baseFolder, LLUUID inventoryOwner, string path, int timeoutMS)
         {
             AutoResetEvent findEvent = new AutoResetEvent(false);
@@ -902,9 +1111,15 @@ namespace libsecondlife
             return foundItem;
         }
 
+        /// <summary>
+        /// Find inventory items by path
+        /// </summary>
+        /// <param name="baseFolder">The folder to begin the search in</param>
+        /// <param name="inventoryOwner">The object owners <seealso cref="LLUUID"/></param>
+        /// <param name="path">A string path to search, folders/objects separated by a '/'</param>
+        /// <remarks>Results are sent to the <seealso cref="InventoryManager.OnFindObjectByPath"/> event</remarks>
         public void RequestFindObjectByPath(LLUUID baseFolder, LLUUID inventoryOwner, string path)
         {
-
             if (path == null || path.Length == 0)
                 throw new ArgumentException("Empty path is not supported");
 
@@ -920,6 +1135,14 @@ namespace libsecondlife
             RequestFolderContents(baseFolder, inventoryOwner, true, true, InventorySortOrder.ByName);
         }
 
+        /// <summary>
+        /// Search inventory Store object for an item or folder
+        /// </summary>
+        /// <param name="baseFolder">The folder to begin the search in</param>
+        /// <param name="path">An array which creates a path to search</param>
+        /// <param name="level">Number of levels below baseFolder to conduct searches</param>
+        /// <param name="firstOnly">if True, will stop searching after first match is found</param>
+        /// <returns>A list of inventory items found</returns>
         public List<InventoryBase> LocalFind(LLUUID baseFolder, string[] path, int level, bool firstOnly)
         {
             List<InventoryBase> objects = new List<InventoryBase>();
@@ -947,6 +1170,11 @@ namespace libsecondlife
 
         #region Move/Rename
         
+        /// <summary>
+        /// Move an inventory item or folder to a new location
+        /// </summary>
+        /// <param name="item">The <seealso cref="T:InventoryBase"/> item or folder to move</param>
+        /// <param name="newParent">The <seealso cref="T:InventoryFolder"/> to move item or folder to</param>
         public void Move(InventoryBase item, InventoryFolder newParent)
         {
             if (item is InventoryFolder)
@@ -955,15 +1183,27 @@ namespace libsecondlife
                 MoveItem(item.UUID, newParent.UUID);
         }
 
-        public void Move(InventoryBase itemID, InventoryFolder ParentID, string newName)
+        /// <summary>
+        /// Move an inventory item or folder to a new location and change its name
+        /// </summary>
+        /// <param name="item">The <seealso cref="T:InventoryBase"/> item or folder to move</param>
+        /// <param name="newParent">The <seealso cref="T:InventoryFolder"/> to move item or folder to</param>
+        /// <param name="newName">The name to change the item or folder to</param>
+        public void Move(InventoryBase item, InventoryFolder newParent, string newName)
         {
-            if (itemID is InventoryFolder)
-                MoveFolder(itemID.UUID, ParentID.UUID, newName);
+            if (item is InventoryFolder)
+                MoveFolder(item.UUID, newParent.UUID, newName);
             else
-                MoveItem(itemID.UUID, ParentID.UUID, newName);
+                MoveItem(item.UUID, newParent.UUID, newName);
         }
 
-        public void MoveFolder(LLUUID folderID, LLUUID parentID, string newName)
+        /// <summary>
+        /// Move and rename a folder
+        /// </summary>
+        /// <param name="folderID">The source folders <seealso cref="LLUUID"/></param>
+        /// <param name="newparentID">The destination folders <seealso cref="LLUUID"/></param>
+        /// <param name="newName">The name to change the folder to</param>
+        public void MoveFolder(LLUUID folderID, LLUUID newparentID, string newName)
         {
             lock (Store)
             {
@@ -981,21 +1221,26 @@ namespace libsecondlife
             move.FolderData = new UpdateInventoryFolderPacket.FolderDataBlock[1];
             move.FolderData[0] = new UpdateInventoryFolderPacket.FolderDataBlock();
             move.FolderData[0].FolderID = folderID;
-            move.FolderData[0].ParentID = parentID;
+            move.FolderData[0].ParentID = newparentID;
             move.FolderData[0].Name = Helpers.StringToField(newName);
             move.FolderData[0].Type = -1;
 
             _Client.Network.SendPacket(move);
         }
 
-        public void MoveFolder(LLUUID folder, LLUUID newParent)
+        /// <summary>
+        /// Move a folder
+        /// </summary>
+        /// <param name="folderID">The source folders <seealso cref="LLUUID"/></param>
+        /// <param name="newParentID">The destination folders <seealso cref="LLUUID"/></param>
+        public void MoveFolder(LLUUID folderID, LLUUID newParentID)
         {
             lock (Store)
             {
-                if (_Store.Contains(folder))
+                if (_Store.Contains(folderID))
                 {
-                    InventoryBase inv = Store[folder];
-                    inv.ParentUUID = newParent;
+                    InventoryBase inv = Store[folderID];
+                    inv.ParentUUID = newParentID;
                     _Store.UpdateNodeFor(inv);
                 }
             }
@@ -1007,18 +1252,19 @@ namespace libsecondlife
 
             move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[1];
             move.InventoryData[0] = new MoveInventoryFolderPacket.InventoryDataBlock();
-            move.InventoryData[0].FolderID = folder;
-            move.InventoryData[0].ParentID = newParent;
+            move.InventoryData[0].FolderID = folderID;
+            move.InventoryData[0].ParentID = newParentID;
             
-
             _Client.Network.SendPacket(move);
         }
  
         /// <summary>
-        /// Moves the folders, the keys in the Dictionary parameter,
+        /// Move multiple folders, the keys in the Dictionary parameter,
         /// to a new parents, the value of that folder's key.
         /// </summary>
-        /// <param name="foldersNewParents"></param>
+        /// <param name="foldersNewParents">A Dictionary containing the 
+        /// <seealso cref="LLUUID"/> of the source as the key, and the 
+        /// <seealso cref="LLUUID"/> of the destination as the value</param>
         public void MoveFolders(Dictionary<LLUUID, LLUUID> foldersNewParents)
         {
             // FIXME: Use two List<LLUUID> to stay consistent
@@ -1056,19 +1302,31 @@ namespace libsecondlife
             _Client.Network.SendPacket(move);
         }
 
-        public void MoveItem(LLUUID item, LLUUID folder)
+
+        /// <summary>
+        /// Move an inventory item to a new folder
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="LLUUID"/> of the source item to move</param>
+        /// <param name="folderID">The <seealso cref="LLUUID"/> of the destination folder</param>
+        public void MoveItem(LLUUID itemID, LLUUID folderID)
         {
-            MoveItem(item, folder, String.Empty);
+            MoveItem(itemID, folderID, String.Empty);
         }
 
-        public void MoveItem(LLUUID item, LLUUID folder, string newItemName)
+        /// <summary>
+        /// Move and rename an inventory item
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="LLUUID"/> of the source item to move</param>
+        /// <param name="folderID">The <seealso cref="LLUUID"/> of the destination folder</param>
+        /// <param name="newName">The name to change the folder to</param>
+        public void MoveItem(LLUUID itemID, LLUUID folderID, string newName)
         {
             lock (_Store)
             {
-                    if (_Store.Contains(item))
+                    if (_Store.Contains(itemID))
                     {
-                        InventoryBase inv = _Store[item];
-                        inv.ParentUUID = folder;
+                        InventoryBase inv = _Store[itemID];
+                        inv.ParentUUID = folderID;
                         _Store.UpdateNodeFor(inv);
                     }
             }
@@ -1080,13 +1338,19 @@ namespace libsecondlife
 
             move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[1];
             move.InventoryData[0] = new MoveInventoryItemPacket.InventoryDataBlock();
-            move.InventoryData[0].ItemID = item;
-            move.InventoryData[0].FolderID = folder;
-            move.InventoryData[0].NewName = Helpers.StringToField(newItemName);
+            move.InventoryData[0].ItemID = itemID;
+            move.InventoryData[0].FolderID = folderID;
+            move.InventoryData[0].NewName = Helpers.StringToField(newName);
 
             _Client.Network.SendPacket(move);
         }
 
+        /// <summary>
+        /// Move multiple inventory items to new locations
+        /// </summary>
+        /// <param name="itemsNewParents">A Dictionary containing the 
+        /// <seealso cref="LLUUID"/> of the source item as the key, and the 
+        /// <seealso cref="LLUUID"/> of the destination folder as the value</param>
         public void MoveItems(Dictionary<LLUUID, LLUUID> itemsNewParents)
         {
             lock (_Store)
@@ -1126,6 +1390,10 @@ namespace libsecondlife
 
         #region Remove
 
+        /// <summary>
+        /// Remove descendants of a folder
+        /// </summary>
+        /// <param name="folder">The <seealso cref="LLUUID"/> of the folder</param>
         public void RemoveDescendants(LLUUID folder)
         {
             PurgeInventoryDescendentsPacket purge = new PurgeInventoryDescendentsPacket();
@@ -1148,6 +1416,10 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Remove a single item from inventory
+        /// </summary>
+        /// <param name="item">The <seealso cref="LLUUID"/> of the inventory item to remove</param>
         public void RemoveItem(LLUUID item)
         {
             List<LLUUID> items = new List<LLUUID>(1);
@@ -1156,6 +1428,10 @@ namespace libsecondlife
             Remove(items, null);
         }
 
+        /// <summary>
+        /// Remove a folder from inventory
+        /// </summary>
+        /// <param name="folder">The <seealso cref="LLUUID"/> of the folder to remove</param>
         public void RemoveFolder(LLUUID folder)
         {
             List<LLUUID> folders = new List<LLUUID>(1);
@@ -1164,6 +1440,11 @@ namespace libsecondlife
             Remove(null, folders);
         }
 
+        /// <summary>
+        /// Remove multiple items or folders from inventory
+        /// </summary>
+        /// <param name="items">A List containing the <seealso cref="LLUUID"/>s of items to remove</param>
+        /// <param name="folders">A List containing the <seealso cref="LLUUID"/>s of the folders to remove</param>
         public void Remove(List<LLUUID> items, List<LLUUID> folders)
         {
             if ((items == null || items.Count == 0) && (folders == null || folders.Count == 0))
@@ -1223,14 +1504,22 @@ namespace libsecondlife
             _Client.Network.SendPacket(rem);
         }
     
+        /// <summary>
+        /// Empty the Lost and Found folder
+        /// </summary>
         public void EmptyLostAndFound()
         {
             EmptySystemFolder(AssetType.LostAndFoundFolder);
         }
+
+        /// <summary>
+        /// Empty the Trash folder
+        /// </summary>
         public void EmptyTrash()
         {
             EmptySystemFolder(AssetType.TrashFolder);
         }
+
         private void EmptySystemFolder(AssetType folderType)
         {
             List<InventoryBase> items = _Store.GetContents(_Store.RootFolder);
@@ -1425,11 +1714,26 @@ namespace libsecondlife
 
         #region Copy
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="newParent"></param>
+        /// <param name="newName"></param>
+        /// <param name="callback"></param>
         public void RequestCopyItem(LLUUID item, LLUUID newParent, string newName, ItemCopiedCallback callback)
         {
             RequestCopyItem(item, newParent, newName, _Client.Self.AgentID, callback);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="newParent"></param>
+        /// <param name="newName"></param>
+        /// <param name="oldOwnerID"></param>
+        /// <param name="callback"></param>
         public void RequestCopyItem(LLUUID item, LLUUID newParent, string newName, LLUUID oldOwnerID,
             ItemCopiedCallback callback)
         {
@@ -1445,6 +1749,14 @@ namespace libsecondlife
             RequestCopyItems(items, folders, names, oldOwnerID, callback);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="targetFolders"></param>
+        /// <param name="newNames"></param>
+        /// <param name="oldOwnerID"></param>
+        /// <param name="callback"></param>
         public void RequestCopyItems(List<LLUUID> items, List<LLUUID> targetFolders, List<string> newNames,
             LLUUID oldOwnerID, ItemCopiedCallback callback)
         {
@@ -1475,6 +1787,13 @@ namespace libsecondlife
             _Client.Network.SendPacket(copy);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectID"></param>
+        /// <param name="notecardID"></param>
+        /// <param name="folderID"></param>
+        /// <param name="itemID"></param>
         public void RequestCopyItemFromNotecard(LLUUID objectID, LLUUID notecardID, LLUUID folderID, LLUUID itemID)
         {
             CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
@@ -1496,6 +1815,10 @@ namespace libsecondlife
 
         #region Update
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
         public void RequestUpdateItem(InventoryItem item)
         {
             List<InventoryItem> items = new List<InventoryItem>(1);
@@ -1504,11 +1827,20 @@ namespace libsecondlife
             RequestUpdateItems(items, LLUUID.Random());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
         public void RequestUpdateItems(List<InventoryItem> items)
         {
             RequestUpdateItems(items, LLUUID.Random());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="transactionID"></param>
         public void RequestUpdateItems(List<InventoryItem> items, LLUUID transactionID)
         {
             UpdateInventoryItemPacket update = new UpdateInventoryItemPacket();
@@ -1672,7 +2004,16 @@ namespace libsecondlife
             return queryID;
         }
 
-        public void GiveItem(LLUUID itemID, string itemName, AssetType assetType, LLUUID recipient, bool doEffect)
+        /// <summary>
+        /// Give an inventory item to another avatar
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="LLUUID"/> of the item to give</param>
+        /// <param name="itemName">The name of the item</param>
+        /// <param name="assetType">The type of the item from the <seealso cref="AssetType"/> enum</param>
+        /// <param name="recipient">The <seealso cref="LLUUID"/> of the recipient</param>
+        /// <param name="doEffect">true to generate a beameffect during transfer</param>
+        public void GiveItem(LLUUID itemID, string itemName, AssetType assetType, LLUUID recipient, 
+            bool doEffect)
         {
             byte[] bucket = new byte[17];
             bucket[0] = (byte)assetType;
@@ -1700,6 +2041,12 @@ namespace libsecondlife
 
         #region Task
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectLocalID"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public LLUUID UpdateTaskInventory(uint objectLocalID, InventoryItem item)
         {
             LLUUID transactionID = LLUUID.Random();
@@ -1737,6 +2084,13 @@ namespace libsecondlife
             return transactionID;
         }
 
+        /// <summary>
+        /// Get the inventory of a Task (Primitive)
+        /// </summary>
+        /// <param name="objectID">The tasks <seealso cref="LLUUID"/></param>
+        /// <param name="objectLocalID">The tasks simulator local ID</param>
+        /// <param name="timeoutMS">milliseconds to wait for reply from simulator</param>
+        /// <returns>A List containing the inventory items inside the task</returns>
         public List<InventoryBase> GetTaskInventory(LLUUID objectID, uint objectLocalID, int timeoutMS)
         {
             string filename = null;
@@ -1809,11 +2163,20 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectLocalID"></param>
         public void RequestTaskInventory(uint objectLocalID)
         {
             RequestTaskInventory(objectLocalID, _Client.Network.CurrentSim);
         }
 
+        /// <summary>
+        /// Request the contents of a tasks (primitives) inventory
+        /// </summary>
+        /// <param name="objectLocalID">The simulator Local ID of the object</param>
+        /// <param name="simulator">A reference to the simulator object that contains the object</param>
         public void RequestTaskInventory(uint objectLocalID, Simulator simulator)
         {
             RequestTaskInventoryPacket request = new RequestTaskInventoryPacket();
@@ -1883,11 +2246,21 @@ namespace libsecondlife
             return AssetType.Unknown;
         }
 
+        /// <summary>
+        /// Convert an InventoryType to a string
+        /// </summary>
+        /// <param name="type">The <seealso cref="T:InventoryType"/> to convert</param>
+        /// <returns>A string representation of the source </returns>
         public static string InventoryTypeToString(InventoryType type)
         {
             return _InventoryTypeNames[(int)type];
         }
 
+        /// <summary>
+        /// Converty a string into a valid InventoryType
+        /// </summary>
+        /// <param name="type">A string representation of the InventoryType to convert</param>
+        /// <returns>A InventoryType object which matched the type</returns>
         public static InventoryType StringToInventoryType(string type)
         {
             for (int i = 0; i < _InventoryTypeNames.Length; i++)
@@ -1951,6 +2324,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Create a CRC from an InventoryItem
+        /// </summary>
+        /// <param name="iitem">The source InventoryItem</param>
+        /// <returns>A uint representing the source InventoryItem as a CRC</returns>
         public static uint ItemCRC(InventoryItem iitem)
         {
             uint CRC = 0;
@@ -1982,6 +2360,12 @@ namespace libsecondlife
             return CRC;
         }
 
+        /// <summary>
+        /// Wrapper for creating a new <seealso cref="InventoryItem"/> object
+        /// </summary>
+        /// <param name="type">The type of item from the <seealso cref="InventoryType"/> enum</param>
+        /// <param name="id">The <seealso cref="LLUUID"/> of the newly created object</param>
+        /// <returns>An <seealso cref="InventoryItem"/> object with the type and id passed</returns>
         public static InventoryItem CreateInventoryItem(InventoryType type, LLUUID id)
         {
             switch (type)
@@ -2051,6 +2435,11 @@ namespace libsecondlife
             return false;
         }
 
+        /// <summary>
+        /// Parse the results of a tasks inventory reply
+        /// </summary>
+        /// <param name="taskData">A string which contains the data from the task reply</param>
+        /// <returns>A List containing the items contained within the tasks inventory</returns>
         public static List<InventoryBase> ParseTaskInventory(string taskData)
         {
             List<InventoryBase> items = new List<InventoryBase>();

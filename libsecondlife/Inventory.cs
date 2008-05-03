@@ -77,6 +77,8 @@ namespace libsecondlife
         /// Called when an item is first added to the local inventory store.
         /// This will occur most frequently when we're initially downloading
         /// the inventory from the server.
+        /// 
+        /// This will also fire when another avatar or object offers us inventory
         /// </summary>
         public event InventoryObjectAdded OnInventoryObjectAdded;
 
