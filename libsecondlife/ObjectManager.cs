@@ -38,104 +38,110 @@ namespace libsecondlife
     /// </summary>
     public enum PCode : byte
     {
-        /// <summary></summary>
+        /// <summary>None</summary>
         None = 0,
-        /// <summary></summary>
+        /// <summary>A Primitive</summary>
         Prim = 9,
-        /// <summary></summary>
+        /// <summary>A Avatar</summary>
         Avatar = 47,
-        /// <summary></summary>
+        /// <summary>Linden grass</summary>
         Grass = 95,
-        /// <summary></summary>
+        /// <summary>Linden tree</summary>
         NewTree = 111,
-        /// <summary></summary>
+        /// <summary>A primitive that acts as the source for a particle stream</summary>
         ParticleSystem = 143,
-        /// <summary></summary>
+        /// <summary>A Linden tree</summary>
         Tree = 255
     }
 
     /// <summary>
     /// Attachment points for objects on avatar bodies
     /// </summary>
+    /// <remarks>
+    /// Both InventoryObject and InventoryAttachment types can be attached
+    /// 
+    /// The last attachment point is stored on the simulator and is not known 
+    /// to the client until item is attached
+    ///</remarks>
     public enum AttachmentPoint : byte
     {
-        /// <summary></summary>
+        /// <summary>Right hand if object was not previously attached</summary>
         Default = 0,
-        /// <summary></summary>
+        /// <summary>Chest</summary>
         Chest = 1,
-        /// <summary></summary>
+        /// <summary>Skull</summary>
         Skull,
-        /// <summary></summary>
+        /// <summary>Left shoulder</summary>
         LeftShoulder,
-        /// <summary></summary>
+        /// <summary>Right shoulder</summary>
         RightShoulder,
-        /// <summary></summary>
+        /// <summary>Left hand</summary>
         LeftHand,
-        /// <summary></summary>
+        /// <summary>Right hand</summary>
         RightHand,
-        /// <summary></summary>
+        /// <summary>Left foot</summary>
         LeftFoot,
-        /// <summary></summary>
+        /// <summary>Right foot</summary>
         RightFoot,
-        /// <summary></summary>
+        /// <summary>Spine</summary>
         Spine,
-        /// <summary></summary>
+        /// <summary>Pelvis</summary>
         Pelvis,
-        /// <summary></summary>
+        /// <summary>Mouth</summary>
         Mouth,
-        /// <summary></summary>
+        /// <summary>Chin</summary>
         Chin,
-        /// <summary></summary>
+        /// <summary>Left ear</summary>
         LeftEar,
-        /// <summary></summary>
+        /// <summary>Right ear</summary>
         RightEar,
-        /// <summary></summary>
+        /// <summary>Left eyeball</summary>
         LeftEyeball,
-        /// <summary></summary>
+        /// <summary>Right eyeball</summary>
         RightEyeball,
-        /// <summary></summary>
+        /// <summary>Nose</summary>
         Nose,
-        /// <summary></summary>
+        /// <summary>Right upper arm</summary>
         RightUpperArm,
-        /// <summary></summary>
+        /// <summary>Right forearm</summary>
         RightForearm,
-        /// <summary></summary>
+        /// <summary>Left upper arm</summary>
         LeftUpperArm,
-        /// <summary></summary>
+        /// <summary>Left forearm</summary>
         LeftForearm,
-        /// <summary></summary>
+        /// <summary>Right hip</summary>
         RightHip,
-        /// <summary></summary>
+        /// <summary>Right upper leg</summary>
         RightUpperLeg,
-        /// <summary></summary>
+        /// <summary>Right lower leg</summary>
         RightLowerLeg,
-        /// <summary></summary>
+        /// <summary>Left hip</summary>
         LeftHip,
-        /// <summary></summary>
+        /// <summary>Left upper leg</summary>
         LeftUpperLeg,
-        /// <summary></summary>
+        /// <summary>Left lower leg</summary>
         LeftLowerLeg,
-        /// <summary></summary>
+        /// <summary>Stomach</summary>
         Stomach,
-        /// <summary></summary>
+        /// <summary>Left pectoral</summary>
         LeftPec,
-        /// <summary></summary>
+        /// <summary>Right pectoral</summary>
         RightPec,
-        /// <summary></summary>
+        /// <summary>HUD Center position 2</summary>
         HUDCenter2,
-        /// <summary></summary>
+        /// <summary>HUD Top-right</summary>
         HUDTopRight,
-        /// <summary></summary>
+        /// <summary>HUD Top</summary>
         HUDTop,
-        /// <summary></summary>
+        /// <summary>HUD Top-left</summary>
         HUDTopLeft,
-        /// <summary></summary>
+        /// <summary>HUD Center</summary>
         HUDCenter,
-        /// <summary></summary>
+        /// <summary>HUD Bottom-left</summary>
         HUDBottomLeft,
-        /// <summary></summary>
+        /// <summary>HUD Bottom</summary>
         HUDBottom,
-        /// <summary></summary>
+        /// <summary>HUD Bottom-right</summary>
         HUDBottomRight
     }
 
@@ -173,47 +179,47 @@ namespace libsecondlife
     /// </summary>
     public enum Tree : byte
     {
-        /// <summary></summary>
+        /// <summary>Pine1 tree</summary>
         Pine1 = 0,
-        /// <summary></summary>
+        /// <summary>Oak tree</summary>
         Oak,
-        /// <summary></summary>
+        /// <summary>Tropical Bush1</summary>
         TropicalBush1,
-        /// <summary></summary>
+        /// <summary>Palm1 tree</summary>
         Palm1,
-        /// <summary></summary>
+        /// <summary>Dogwood tree</summary>
         Dogwood,
-        /// <summary></summary>
+        /// <summary>Tropical Bush2</summary>
         TropicalBush2,
-        /// <summary></summary>
+        /// <summary>Palm2 tree</summary>
         Palm2,
-        /// <summary></summary>
+        /// <summary>Cypress1 tree</summary>
         Cypress1,
-        /// <summary></summary>
+        /// <summary>Cypress2 tree</summary>
         Cypress2,
-        /// <summary></summary>
+        /// <summary>Pine2 tree</summary>
         Pine2,
-        /// <summary></summary>
+        /// <summary>Plumeria</summary>
         Plumeria,
-        /// <summary></summary>
+        /// <summary>Winter pinetree1</summary>
         WinterPine1,
-        /// <summary></summary>
+        /// <summary>Winter Aspen tree</summary>
         WinterAspen,
-        /// <summary></summary>
+        /// <summary>Winter pinetree2</summary>
         WinterPine2,
-        /// <summary></summary>
+        /// <summary>Eucalyptus tree</summary>
         Eucalyptus,
-        /// <summary></summary>
+        /// <summary>Fern</summary>
         Fern,
-        /// <summary></summary>
+        /// <summary>Eelgrass</summary>
         Eelgrass,
-        /// <summary></summary>
+        /// <summary>Sea Sword</summary>
         SeaSword,
-        /// <summary></summary>
+        /// <summary>Kelp1 plant</summary>
         Kelp1,
-        /// <summary></summary>
+        /// <summary>Beach grass</summary>
         BeachGrass1,
-        /// <summary></summary>
+        /// <summary>Kelp2 plant</summary>
         Kelp2
     }
 
@@ -241,11 +247,11 @@ namespace libsecondlife
     /// </summary>
     public enum ClickAction : byte
     {
-        /// <summary></summary>
+        /// <summary>Touch object</summary>
         Touch = 0,
-        /// <summary></summary>
+        /// <summary>Sit on object</summary>
         Sit = 1,
-        /// <summary></summary>
+        /// <summary>Purchase object or contents</summary>
         Buy = 2
     }
 
@@ -500,7 +506,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator">The simulator containing the object you're 
         /// looking for</param>
-        /// <param name="localID">The local ID of the object</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void RequestObject(Simulator simulator, uint localID)
         {
             RequestMultipleObjectsPacket request = new RequestMultipleObjectsPacket();
@@ -518,9 +524,8 @@ namespace libsecondlife
         /// Request object information for multiple objects all contained in
         /// the same sim, primarily used for stale or missing cache entries
         /// </summary>
-        /// <param name="simulator">The simulator containing the object you're 
-        /// looking for</param>
-        /// <param name="localIDs">A list of local IDs of the objects</param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to request</param>
         public void RequestObjects(Simulator simulator, List<uint> localIDs)
         {
             int i = 0;
@@ -546,8 +551,8 @@ namespace libsecondlife
         /// Attempt to purchase an original object, a copy, or the contents of
         /// an object
         /// </summary>
-        /// <param name="simulator">Simulator where the object resides</param>
-        /// <param name="localID">Sim-local ID of the object</param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>        
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="saleType">Whether the original, a copy, or the object
         /// contents are on sale. This is used for verification, if the this
         /// sale type is not valid for the object the purchase will fail</param>
@@ -556,10 +561,14 @@ namespace libsecondlife
         /// will fail</param>
         /// <param name="groupID">Group ID that will be associated with the new
         /// purchase</param>
-        /// <param name="categoryID">Inventory folder UUID where the purchase
-        /// should go</param>
-        /// <example>BuyObject(Client.Network.CurrentSim, 500, SaleType.Copy, 
-        /// 100, LLUUID.Zero, Client.Self.InventoryRootFolderUUID);</example>
+        /// <param name="categoryID">Inventory folder UUID where the object or objects 
+        /// purchased should be placed</param>
+        /// <example>
+        /// <code>
+        /// BuyObject(Client.Network.CurrentSim, 500, SaleType.Copy, 
+        /// 100, LLUUID.Zero, Client.Self.InventoryRootFolderUUID);
+        /// </code> 
+        ///</example>
         public void BuyObject(Simulator simulator, uint localID, SaleType saleType, int price, LLUUID groupID, 
             LLUUID categoryID)
         {
@@ -580,12 +589,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Select an object. This will trigger the simulator to send us back 
+        /// Select a single object. This will trigger the simulator to send us back 
         /// an ObjectProperties packet so we can get the full information for
         /// this object
         /// </summary>
-        /// <param name="simulator">Simulator where the object resides</param>
-        /// <param name="localID">Sim-local ID of the object to select</param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void SelectObject(Simulator simulator, uint localID)
         {
             ObjectSelectPacket select = new ObjectSelectPacket();
@@ -604,8 +613,8 @@ namespace libsecondlife
         /// Select multiple objects. This will trigger the simulator to send us
         /// back ObjectProperties for each object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localIDs"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
         public void SelectObjects(Simulator simulator, uint[] localIDs)
         {
             ObjectSelectPacket select = new ObjectSelectPacket();
@@ -624,6 +633,11 @@ namespace libsecondlife
             Client.Network.SendPacket(select, simulator);
         }
 
+        /// <summary>
+        /// Deselect an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void DeselectObject(Simulator simulator, uint localID)
         {
             ObjectDeselectPacket deselect = new ObjectDeselectPacket();
@@ -639,10 +653,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Perform a click action on an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void ClickObject(Simulator simulator, uint localID)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket();
@@ -667,9 +681,10 @@ namespace libsecondlife
         /// <summary>
         /// Create, or "rez" a new prim object in a simulator
         /// </summary>
-        /// <param name="simulator">The target simulator</param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object to place the object in</param>
         /// <param name="prim">Data describing the prim object to rez</param>
-        /// <param name="groupID">Group ID that this prim is set to, or LLUUID.Zero</param>
+        /// <param name="groupID">Group ID that this prim will be set to, or LLUUID.Zero if you
+        /// do not want the object to be associated with a specific group</param>
         /// <param name="position">An approximation of the position at which to rez the prim</param>
         /// <param name="scale">Scale vector to size this prim</param>
         /// <param name="rotation">Rotation quaternion to rotate this prim</param>
@@ -726,15 +741,16 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Rez a Linden tree
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="scale"></param>
-        /// <param name="rotation"></param>
-        /// <param name="position"></param>
-        /// <param name="treeType"></param>
-        /// <param name="groupOwner"></param>
-        /// <param name="newTree"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="scale">The size of the tree</param>
+        /// <param name="rotation">The rotation of the tree</param>
+        /// <param name="position">The position of the tree</param>
+        /// <param name="treeType">The Type of tree</param>
+        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to set the tree to, 
+        /// or LLUUID.Zero if no group is to be set</param>
+        /// <param name="newTree">true to use the "new" Linden trees, false to use the old</param>
         public void AddTree(Simulator simulator, LLVector3 scale, LLQuaternion rotation, LLVector3 position, 
             Tree treeType, LLUUID groupOwner, bool newTree)
         {
@@ -758,14 +774,15 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Rez grass and ground cover
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="scale"></param>
-        /// <param name="rotation"></param>
-        /// <param name="position"></param>
-        /// <param name="grassType"></param>
-        /// <param name="groupOwner"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="scale">The size of the grass</param>
+        /// <param name="rotation">The rotation of the grass</param>
+        /// <param name="position">The position of the grass</param>
+        /// <param name="grassType">The type of grass from the <seealso cref="Grass"/> enum</param>
+        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to set the tree to, 
+        /// or LLUUID.Zero if no group is to be set</param>
         public void AddGrass(Simulator simulator, LLVector3 scale, LLQuaternion rotation, LLVector3 position,
             Grass grassType, LLUUID groupOwner)
         {
@@ -789,23 +806,23 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Set the textures to apply to the faces of an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="textures"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="textures">The texture data to apply</param>
         public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures)
         {
             SetTextures(simulator, localID, textures, String.Empty);
         }
 
         /// <summary>
-        /// 
+        /// Set the textures to apply to the faces of an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="textures"></param>
-        /// <param name="mediaUrl"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="textures">The texture data to apply</param>
+        /// <param name="mediaUrl">A media URL (not used)</param>
         public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures, string mediaUrl)
         {
             ObjectImagePacket image = new ObjectImagePacket();
@@ -822,11 +839,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Set the Light data on an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="light"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="light">A <seealso cref="Primitive.LightData"/> object containing the data to set</param>
         public void SetLight(Simulator simulator, uint localID, Primitive.LightData light)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
@@ -845,11 +862,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Set the flexible data on an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="flexible"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="flexible">A <seealso cref="Primitive.FlexibleData"/> object containing the data to set</param>
         public void SetFlexible(Simulator simulator, uint localID, Primitive.FlexibleData flexible)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
@@ -867,6 +884,12 @@ namespace libsecondlife
             Client.Network.SendPacket(extra, simulator);
         }
 
+        /// <summary>
+        /// Set the sculptie texture and data on an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="sculpt">A <seealso cref="Primitive.SculptData"/> object containing the data to set</param>
         public void SetSculpt(Simulator simulator, uint localID, Primitive.SculptData sculpt)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
@@ -900,6 +923,12 @@ namespace libsecondlife
             Client.Network.SendPacket(shape, simulator);
         }
 
+        /// <summary>
+        /// Set additional primitive parameters on an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="type">The extra parameters to set</param>
         public void SetExtraParamOff(Simulator simulator, uint localID, Primitive.ExtraParamType type)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
@@ -918,10 +947,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Link multiple prims into a linkset
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localIDs"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to link</param>
+        /// <remarks>The last object in the array will be the root object of the linkset TODO: Is this true?</remarks>
         public void LinkPrims(Simulator simulator, List<uint> localIDs)
         {
             ObjectLinkPacket packet = new ObjectLinkPacket();
@@ -944,11 +974,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Change the rotation of an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="rotation"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="rotation">The new rotation of the object</param>
         public void SetRotation(Simulator simulator, uint localID, LLQuaternion rotation)
         {
             ObjectRotationPacket objRotPacket = new ObjectRotationPacket();
@@ -964,22 +994,22 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Set the name of an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="name"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="name">A string containing the new name of the object</param>
         public void SetName(Simulator simulator, uint localID, string name)
         {
             SetNames(simulator, new uint[] { localID }, new string[] { name });
         }
 
         /// <summary>
-        /// 
+        /// Set the name of multiple objects
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localIDs"></param>
-        /// <param name="names"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to change the name of</param>
+        /// <param name="names">An array which contains the new names of the objects</param>
         public void SetNames(Simulator simulator, uint[] localIDs, string[] names)
         {
             ObjectNamePacket namePacket = new ObjectNamePacket();
@@ -999,22 +1029,22 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Set the description of an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="description"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="description">A string containing the new description of the object</param>
         public void SetDescription(Simulator simulator, uint localID, string description)
         {
             SetDescriptions(simulator, new uint[] { localID }, new string[] { description });
         }
 
         /// <summary>
-        /// 
+        /// Set the descriptions of multiple objects
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localIDs"></param>
-        /// <param name="descriptions"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to change the description of</param>
+        /// <param name="descriptions">An array which contains the new descriptions of the objects</param>
         public void SetDescriptions(Simulator simulator, uint[] localIDs, string[] descriptions)
         {
             ObjectDescriptionPacket descPacket = new ObjectDescriptionPacket();
@@ -1034,12 +1064,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Attach an object to this avatar
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="attachPoint"></param>
-        /// <param name="rotation"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="attachPoint">The point on the avatar the object will be attached</param>
+        /// <param name="rotation">The rotation of the attached object</param>
         public void AttachObject(Simulator simulator, uint localID, AttachmentPoint attachPoint, LLQuaternion rotation)
         {
             ObjectAttachPacket attach = new ObjectAttachPacket();
@@ -1056,10 +1086,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Detach an object from yourself
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localIDs"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> 
+        /// object where the objects reside
+        /// 
+        /// This will always be the simulator the avatar is currently in
+        /// </param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to detach</param>
         public void DetachObjects(Simulator simulator, List<uint> localIDs)
         {
             ObjectDetachPacket detach = new ObjectDetachPacket();
@@ -1079,11 +1113,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Change the position of an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localID"></param>
-        /// <param name="position"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="position">The new position of the object</param>
         public void SetPosition(Simulator simulator, uint localID, LLVector3 position)
         {
             MultipleObjectUpdatePacket multiObjectUpdate = new MultipleObjectUpdatePacket();
@@ -1104,10 +1138,10 @@ namespace libsecondlife
         /// Deed an object (prim) to a group, Object must be shared with group which
         /// can be accomplished with SetPermissions()
         /// </summary>
-        /// <param name="simulator">Simulator containing object</param>
-        /// <param name="localID">LocalID of Object</param>
-        /// <param name="group">Group to deed object to</param>
-        public void DeedObject(Simulator simulator, uint localID, LLUUID group)
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to deed the object to</param>
+        public void DeedObject(Simulator simulator, uint localID, LLUUID groupOwner)
         {
             ObjectOwnerPacket objDeedPacket = new ObjectOwnerPacket();
             objDeedPacket.AgentData.AgentID = Client.Self.AgentID;
@@ -1116,7 +1150,7 @@ namespace libsecondlife
             // Can only be use in God mode
             objDeedPacket.HeaderData.Override = false;
             objDeedPacket.HeaderData.OwnerID = LLUUID.Zero;
-            objDeedPacket.HeaderData.GroupID = group;
+            objDeedPacket.HeaderData.GroupID = groupOwner;
 
             objDeedPacket.ObjectData = new ObjectOwnerPacket.ObjectDataBlock[1];
             objDeedPacket.ObjectData[0] = new ObjectOwnerPacket.ObjectDataBlock();
@@ -1130,10 +1164,10 @@ namespace libsecondlife
         /// Deed multiple objects (prims) to a group, Objects must be shared with group which
         /// can be accomplished with SetPermissions()
         /// </summary>
-        /// <param name="simulator">Simulator containing objects</param>
-        /// <param name="localIDs">List of LocalIDs</param>
-        /// <param name="group">Group to deed objects to.</param>
-        public void DeedObjects(Simulator simulator, List<uint> localIDs, LLUUID group)
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to deed</param>
+        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to deed the object to</param>
+        public void DeedObjects(Simulator simulator, List<uint> localIDs, LLUUID groupOwner)
         {
             ObjectOwnerPacket packet = new ObjectOwnerPacket();
             packet.AgentData.AgentID = Client.Self.AgentID;
@@ -1142,7 +1176,7 @@ namespace libsecondlife
             // Can only be use in God mode
             packet.HeaderData.Override = false;
             packet.HeaderData.OwnerID = LLUUID.Zero;
-            packet.HeaderData.GroupID = group;
+            packet.HeaderData.GroupID = groupOwner;
 
             packet.ObjectData = new ObjectOwnerPacket.ObjectDataBlock[localIDs.Count];
 
@@ -1155,13 +1189,13 @@ namespace libsecondlife
         }
             
         /// <summary>
-        /// 
+        /// Set the permissions on multiple objects
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localIDs"></param>
-        /// <param name="who"></param>
-        /// <param name="permissions"></param>
-        /// <param name="set"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to set the permissions on</param>
+        /// <param name="who">The new Who mask to set</param>
+        /// <param name="permissions">The new Permissions mark to set</param>
+        /// <param name="set">TODO: What does this do?</param>
         public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who, 
             PermissionMask permissions, bool set)
         {
@@ -1191,7 +1225,7 @@ namespace libsecondlife
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
-        /// <param name="simulator"></param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
         /// <param name="objectID"></param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID)
         {
@@ -1201,7 +1235,7 @@ namespace libsecondlife
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
-        /// <param name="simulator">Simulator containing the object</param>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
         /// <param name="objectID">Absolute UUID of the object</param>
         /// <param name="reliable">Whether to require server acknowledgement of this request</param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID, bool reliable)
@@ -2049,6 +2083,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Handles cached object update packets from the simulator
+        /// </summary>
+        /// <param name="packet">The packet containing the object data</param>
+        /// <param name="simulator">The simulator sending the data</param>
         protected void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
             if (Client.Settings.ALWAYS_REQUEST_OBJECTS)
@@ -2066,6 +2105,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Handle KillObject packets from the simulator
+        /// </summary>
+        /// <param name="packet">The packet containing the object data</param>
+        /// <param name="simulator">The simulator sending the data</param>
         protected void KillObjectHandler(Packet packet, Simulator simulator)
         {
             KillObjectPacket kill = (KillObjectPacket)packet;
@@ -2225,10 +2269,17 @@ namespace libsecondlife
             prim.PathScaleX = 1f;
             prim.PathScaleY = 1f;
             prim.PathRevolutions = 1f;
-
+            
             return prim;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="av"></param>
+        /// <param name="localid"></param>
+        /// <param name="oldSeatID"></param>
         protected void SetAvatarSittingOn(Simulator sim, Avatar av, uint localid, uint oldSeatID)
         {
             if (av.LocalID == Client.Self.localID) Client.Self.sittingOn = localid;
@@ -2242,6 +2293,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="dilation"></param>
 		protected void UpdateDilation(Simulator s, uint dilation)
 		{
             s.Stats.Dilation = (float)dilation / 65535.0f;
@@ -2251,6 +2307,11 @@ namespace libsecondlife
 
         #region Event Notification
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="props"></param>
         protected void FireOnObjectProperties(Simulator sim, LLObject.ObjectProperties props)
         {
             if (OnObjectProperties != null)
@@ -2260,6 +2321,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="props"></param>
         protected void FireOnObjectPropertiesFamily(Simulator sim, LLObject.ObjectPropertiesFamily props)
         {
             if (OnObjectPropertiesFamily != null)
@@ -2269,6 +2335,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localid"></param>
         protected void FireOnObjectKilled(Simulator simulator, uint localid)
         {
             if (OnObjectKilled != null)
@@ -2278,6 +2349,13 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="prim"></param>
+        /// <param name="RegionHandle"></param>
+        /// <param name="TimeDilation"></param>
         protected void FireOnNewPrim(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewPrim != null)
@@ -2287,6 +2365,13 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="prim"></param>
+        /// <param name="RegionHandle"></param>
+        /// <param name="TimeDilation"></param>
         protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewFoliage != null)
@@ -2296,6 +2381,13 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="prim"></param>
+        /// <param name="RegionHandle"></param>
+        /// <param name="TimeDilation"></param>
         protected void FireOnNewAttachment(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewAttachment != null)
@@ -2305,6 +2397,13 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="avatar"></param>
+        /// <param name="RegionHandle"></param>
+        /// <param name="TimeDilation"></param>
         protected void FireOnNewAvatar(Simulator simulator, Avatar avatar, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewAvatar != null)
@@ -2314,6 +2413,13 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="update"></param>
+        /// <param name="RegionHandle"></param>
+        /// <param name="TimeDilation"></param>
         protected void FireOnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnObjectUpdated != null)
@@ -2327,6 +2433,13 @@ namespace libsecondlife
 
         #region Object Tracking Link
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="fullID"></param>
+        /// <returns></returns>
         protected Primitive GetPrimitive(Simulator simulator, uint localID, LLUUID fullID)
         {
             if (Client.Settings.OBJECT_TRACKING)
@@ -2354,6 +2467,13 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="fullID"></param>
+        /// <returns></returns>
         protected Avatar GetAvatar(Simulator simulator, uint localID, LLUUID fullID)
         {
             if (Client.Settings.OBJECT_TRACKING)
