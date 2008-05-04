@@ -380,6 +380,9 @@ namespace libsecondlife
                     // Mark that we are connecting/connected to the grid
                     connected = true;
 
+                    // restart the blocking queue in case of re-connect
+                    PacketInbox.Open();
+
                     // Start the packet decoding thread
                     Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
                     decodeThread.Start();
