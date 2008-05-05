@@ -60,8 +60,8 @@ namespace libsecondlife.Capabilities
         public EventQueueClient(Uri eventQueueLocation)
         {
             _Client = new CapsBase(eventQueueLocation);
-            _Client.OpenWriteCompleted += new OpenWriteCompletedEventHandler(Client_OpenWriteCompleted);
-            _Client.UploadDataCompleted += new UploadDataCompletedEventHandler(Client_UploadDataCompleted);
+            _Client.OpenWriteCompleted += new CapsBase.OpenWriteCompletedEventHandler(Client_OpenWriteCompleted);
+            _Client.UploadDataCompleted += new CapsBase.UploadDataCompletedEventHandler(Client_UploadDataCompleted);
         }
 
         public void Start()
@@ -90,7 +90,7 @@ namespace libsecondlife.Capabilities
 
         #region Callback Handlers
 
-        private void Client_OpenWriteCompleted(object sender, OpenWriteCompletedEventArgs e)
+        private void Client_OpenWriteCompleted(object sender, CapsBase.OpenWriteCompletedEventArgs e)
         {
             bool raiseEvent = false;
 
@@ -124,7 +124,7 @@ namespace libsecondlife.Capabilities
             }
         }
 
-        private void Client_UploadDataCompleted(object sender, UploadDataCompletedEventArgs e)
+        private void Client_UploadDataCompleted(object sender, CapsBase.UploadDataCompletedEventArgs e)
         {
             LLSDArray events = null;
             int ack = 0;

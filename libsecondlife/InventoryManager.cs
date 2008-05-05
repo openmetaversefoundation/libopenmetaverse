@@ -1681,7 +1681,7 @@ namespace libsecondlife
         }
 
         public void RequestCreateItemFromAsset(byte[] data, string name, string description, AssetType assetType,
-            InventoryType invType, LLUUID folderID, ItemCreatedFromAssetCallback callback)
+            InventoryType invType, LLUUID folderID, CapsClient.ProgressCallback progCallback, ItemCreatedFromAssetCallback callback)
         {
             if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
                 throw new Exception("NewFileAgentInventory capability is not currently available");
@@ -1702,7 +1702,7 @@ namespace libsecondlife
                 // Make the request
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
-                request.UserData = new KeyValuePair<ItemCreatedFromAssetCallback, byte[]>(callback, data);
+                request.UserData = new object[] { progCallback, callback, data };
                 request.StartRequest(postData);
             }
             else
@@ -2751,10 +2751,12 @@ namespace libsecondlife
 
         private void CreateItemFromAssetResponse(CapsClient client, LLSD result, Exception error)
         {
+            object[] args = (object[])client.UserData;
+            CapsClient.ProgressCallback progCallback = (CapsClient.ProgressCallback)args[0];
+            ItemCreatedFromAssetCallback callback = (ItemCreatedFromAssetCallback)args[1];
+            byte[] itemData = (byte[])args[2];
+
             LLSDMap contents = (LLSDMap)result;
-            KeyValuePair<ItemCreatedFromAssetCallback, byte[]> kvp = (KeyValuePair<ItemCreatedFromAssetCallback, byte[]>)client.UserData;
-            ItemCreatedFromAssetCallback callback = kvp.Key;
-            byte[] itemData = (byte[])kvp.Value;
 
             if (result == null)
             {
@@ -2772,8 +2774,9 @@ namespace libsecondlife
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
+                upload.OnProgress += progCallback;
                 upload.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
-                upload.UserData = kvp;
+                upload.UserData = new object[] { null, callback, itemData };
                 upload.StartRequest(itemData, "application/octet-stream");
             }
             else if (status == "complete")

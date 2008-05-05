@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Drawing;
 using libsecondlife;
-using libsecondlife.Packets;
+using libsecondlife.Capabilities;
 
 namespace libsecondlife.TestClient
 {
@@ -59,8 +59,15 @@ namespace libsecondlife.TestClient
             {
                 string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
 
-                Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload",
+                Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with TestClient",
                     AssetType.Texture, InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
+
+                    delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
+                    {
+                        if (bytesSent > 0)
+                            Console.WriteLine(String.Format("Texture upload: {0} / {1}", bytesSent, totalBytesToSend));
+                    },
+
                     delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
                     {
                         Console.WriteLine(String.Format(

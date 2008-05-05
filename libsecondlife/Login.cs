@@ -129,15 +129,14 @@ namespace libsecondlife
         {
             try
             {
-            AgentID = ParseUUID("agent_id", reply);
-            SessionID = ParseUUID("session_id", reply);
-            SecureSessionID = ParseUUID("secure_session_id", reply);
-            FirstName = ParseString("first_name", reply).Trim('"');
-            LastName = ParseString("last_name", reply).Trim('"');
-            StartLocation = ParseString("start_location", reply);
-            AgentAccess = ParseString("agent_access", reply);
-            LookAt = ParseLLVector3("look_at", reply); 
-
+                AgentID = ParseUUID("agent_id", reply);
+                SessionID = ParseUUID("session_id", reply);
+                SecureSessionID = ParseUUID("secure_session_id", reply);
+                FirstName = ParseString("first_name", reply).Trim('"');
+                LastName = ParseString("last_name", reply).Trim('"');
+                StartLocation = ParseString("start_location", reply);
+                AgentAccess = ParseString("agent_access", reply);
+                LookAt = ParseLLVector3("look_at", reply); 
             }
             catch (LLSDException e)
             {

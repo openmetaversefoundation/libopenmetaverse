@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using libsecondlife;
+using libsecondlife.Capabilities;
 
 namespace SLImageUpload
 {
@@ -29,21 +30,22 @@ namespace SLImageUpload
         {
             Client = new SecondLife();
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
-            Client.Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
             // Turn almost everything off since we are only interested in uploading textures
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
+            Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.CONTINUOUS_AGENT_UPDATES = false;
             Client.Settings.OBJECT_TRACKING = false;
-            Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.STORE_LAND_PATCHES = false;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
             Client.Throttle.Land = 0.0f;
             Client.Throttle.Wind = 0.0f;
+
+            Client.Throttle.Texture = 446000.0f;
         }
 
         private void EnableUpload()
@@ -280,6 +282,16 @@ namespace SLImageUpload
 
                 Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
                     InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
+
+                    delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
+                    {
+                        if (bytesSent > 0)
+                        {
+                            Transferred = (int)bytesSent;
+                            BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
+                        }
+                    },
+
                     delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
                     {
                         if (this.InvokeRequired)
@@ -294,6 +306,9 @@ namespace SLImageUpload
 
                             // Fix the permissions on the new upload since they are fscked by default
                             InventoryItem item = Client.Inventory.FetchItem(itemID, Client.Self.AgentID, 1000 * 15);
+
+                            Transferred = UploadData.Length;
+                            BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
 
                             if (item != null)
                             {
@@ -329,16 +344,6 @@ namespace SLImageUpload
                     }
                 );
             }
-        }
-
-        private void Assets_OnUploadProgress(AssetUpload upload)
-        {
-            Transferred = upload.Transferred;
-
-            if (this.InvokeRequired)
-                BeginInvoke(new MethodInvoker(SetProgress));
-            else
-                SetProgress();
         }
 
         private void SetProgress()

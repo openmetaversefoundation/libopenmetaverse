@@ -121,7 +121,6 @@
     <Compile Include="Capabilities\CapsClient.cs" />
     <Compile Include="Capabilities\CapsListener.cs" />
     <Compile Include="Capabilities\CapsBase.cs">
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Capabilities\EventQueueClient.cs" />
     <Compile Include="Capabilities\EventQueueListener.cs" />
