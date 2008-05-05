@@ -298,7 +298,7 @@ namespace libsecondlife
         /// The Key is the <seealso cref="LLUUID"/> of the friend, the value is a <seealso cref="FriendInfo"/>
         /// object that contains detailed information including permissions you have and have given to the friend
         /// </summary>
-        public InternalDictionary<LLUUID, FriendInfo> Friends = new InternalDictionary<LLUUID, FriendInfo>();
+        public InternalDictionary<LLUUID, FriendInfo> FriendList = new InternalDictionary<LLUUID, FriendInfo>();
 
         /// <summary>
         /// A Dictionary of key/value pairs containing current pending frienship offers.
@@ -345,7 +345,7 @@ namespace libsecondlife
         {
             List<FriendInfo> friends = new List<FriendInfo>();
 
-            Friends.ForEach(delegate(FriendInfo friend)
+            FriendList.ForEach(delegate(FriendInfo friend)
             {
                 friends.Add(friend);
             });
@@ -391,9 +391,9 @@ namespace libsecondlife
 
             FriendInfo friend = new FriendInfo(fromAgentID, FriendRights.CanSeeOnline,
                 FriendRights.CanSeeOnline);
-            lock (Friends)
+            lock (FriendList)
             {
-                if(!Friends.ContainsKey(fromAgentID))  Friends.Add(friend.UUID, friend);
+                if(!FriendList.ContainsKey(fromAgentID))  FriendList.Add(friend.UUID, friend);
             }
             lock (FriendRequests) { if (FriendRequests.ContainsKey(fromAgentID)) FriendRequests.Remove(fromAgentID); }
 
@@ -441,7 +441,7 @@ namespace libsecondlife
         /// <param name="agentID">System ID of the avatar you are terminating the friendship with</param>
         public void TerminateFriendship(LLUUID agentID)
         {
-            if (Friends.ContainsKey(agentID))
+            if (FriendList.ContainsKey(agentID))
             {
                 TerminateFriendshipPacket request = new TerminateFriendshipPacket();
                 request.AgentData.AgentID = Client.Self.AgentID;
@@ -450,10 +450,10 @@ namespace libsecondlife
 
                 Client.Network.SendPacket(request);
 
-                lock (Friends)
+                lock (FriendList)
                 {
-                    if (Friends.ContainsKey(agentID))
-                        Friends.Remove(agentID);
+                    if (FriendList.ContainsKey(agentID))
+                        FriendList.Remove(agentID);
                 }
             }
         }
@@ -467,12 +467,12 @@ namespace libsecondlife
         {
             TerminateFriendshipPacket itsOver = (TerminateFriendshipPacket)packet;
             string name = String.Empty;
-            lock (Friends)
+            lock (FriendList)
             {
-                if (Friends.ContainsKey(itsOver.ExBlock.OtherID))
+                if (FriendList.ContainsKey(itsOver.ExBlock.OtherID))
                 {
-                    name = Friends[itsOver.ExBlock.OtherID].Name;
-                    Friends.Remove(itsOver.ExBlock.OtherID);
+                    name = FriendList[itsOver.ExBlock.OtherID].Name;
+                    FriendList.Remove(itsOver.ExBlock.OtherID);
                 }
             }
             if (OnFriendshipTerminated != null)
@@ -493,7 +493,7 @@ namespace libsecondlife
             request.Rights = new GrantUserRightsPacket.RightsBlock[1];
             request.Rights[0] = new GrantUserRightsPacket.RightsBlock();
             request.Rights[0].AgentRelated = agentID;
-            request.Rights[0].RelatedRights = (int)(Friends[agentID].TheirFriendRights);
+            request.Rights[0].RelatedRights = (int)(FriendList[agentID].TheirFriendRights);
 
             Client.Network.SendPacket(request);
         }
@@ -541,11 +541,11 @@ namespace libsecondlife
         {
             List<LLUUID> names = new List<LLUUID>();
 
-            if ( Friends.Count > 0 )
+            if ( FriendList.Count > 0 )
             {
-                lock (Friends)
+                lock (FriendList)
                 {
-                    foreach (KeyValuePair<LLUUID, FriendInfo> kvp in Friends.Dictionary)
+                    foreach (KeyValuePair<LLUUID, FriendInfo> kvp in FriendList.Dictionary)
                     {
                         if (String.IsNullOrEmpty(kvp.Value.Name))
                             names.Add(kvp.Key);
@@ -563,12 +563,12 @@ namespace libsecondlife
         /// <param name="names">names cooresponding to the the list of IDs sent the the RequestAvatarNames call.</param>
         private void Avatars_OnAvatarNames(Dictionary<LLUUID, string> names)
         {
-            lock (Friends)
+            lock (FriendList)
             {
                 foreach (KeyValuePair<LLUUID, string> kvp in names)
                 {
-                    if (Friends.ContainsKey(kvp.Key))
-                        Friends[kvp.Key].Name = names[kvp.Key];
+                    if (FriendList.ContainsKey(kvp.Key))
+                        FriendList[kvp.Key].Name = names[kvp.Key];
                 }
             }
         }
@@ -590,17 +590,17 @@ namespace libsecondlife
                 {
                     FriendInfo friend;
 
-                    lock (Friends)
+                    lock (FriendList)
                     {
-                        if (!Friends.ContainsKey(block.AgentID))
+                        if (!FriendList.ContainsKey(block.AgentID))
                         {
                             friend = new FriendInfo(block.AgentID, FriendRights.CanSeeOnline,
                                 FriendRights.CanSeeOnline);
-                            Friends.Add(block.AgentID, friend);
+                            FriendList.Add(block.AgentID, friend);
                         }
                         else
                         {
-                            friend = Friends[block.AgentID];
+                            friend = FriendList[block.AgentID];
                         }
                     }
 
@@ -632,12 +632,12 @@ namespace libsecondlife
                 {
                     FriendInfo friend;
 
-                    lock (Friends)
+                    lock (FriendList)
                     {
-                        if (!Friends.ContainsKey(block.AgentID))
-                            Friends.Add(block.AgentID, new FriendInfo(block.AgentID, FriendRights.CanSeeOnline, FriendRights.CanSeeOnline));
+                        if (!FriendList.ContainsKey(block.AgentID))
+                            FriendList.Add(block.AgentID, new FriendInfo(block.AgentID, FriendRights.CanSeeOnline, FriendRights.CanSeeOnline));
 
-                        friend = Friends[block.AgentID];
+                        friend = FriendList[block.AgentID];
                         friend.IsOnline = false;
                     }
 
@@ -667,7 +667,7 @@ namespace libsecondlife
                 foreach (ChangeUserRightsPacket.RightsBlock block in rights.Rights)
                 {
                     FriendRights newRights = (FriendRights)block.RelatedRights;
-                    if (Friends.TryGetValue(block.AgentRelated, out friend))
+                    if (FriendList.TryGetValue(block.AgentRelated, out friend))
                     {
                         friend.TheirFriendRights = newRights;
                         if (OnFriendRights != null)
@@ -678,7 +678,7 @@ namespace libsecondlife
                     }
                     else if (block.AgentRelated == Client.Self.AgentID)
                     {
-                        if (Friends.TryGetValue(rights.AgentData.AgentID, out friend))
+                        if (FriendList.TryGetValue(rights.AgentData.AgentID, out friend))
                         {
                             friend.MyFriendRights = newRights;
                             if (OnFriendRights != null)
@@ -743,7 +743,7 @@ namespace libsecondlife
                 FriendInfo friend = new FriendInfo(im.FromAgentID, FriendRights.CanSeeOnline,
                     FriendRights.CanSeeOnline);
                 friend.Name = im.FromAgentName;
-                lock (Friends) Friends[friend.UUID] = friend;
+                lock (FriendList) FriendList[friend.UUID] = friend;
 
                 if (OnFriendshipResponse != null)
                 {
@@ -766,12 +766,12 @@ namespace libsecondlife
         {
             if (loginSuccess && replyData.BuddyList != null)
             {
-                lock (Friends)
+                lock (FriendList)
                 {
                     for (int i = 0; i < replyData.BuddyList.Length; i++)
                     {
                         FriendInfo friend = replyData.BuddyList[i];
-                        Friends[friend.UUID] = friend;
+                        FriendList[friend.UUID] = friend;
                     }
                 }
             }

@@ -38,11 +38,11 @@ namespace libsecondlife.TestClient
             StringBuilder sb = new StringBuilder();
 
             // Only iterate the Friends dictionary if we actually have friends!
-            if (Client.Friends.Friends.Count > 0)
+            if (Client.Friends.FriendList.Count > 0)
             {
                 // iterate over the InternalDictionary using a delegate to populate
                 // our StringBuilder output string
-                Client.Friends.Friends.ForEach(delegate(FriendInfo friend)
+                Client.Friends.FriendList.ForEach(delegate(FriendInfo friend)
                 {
                     // append the name of the friend to our output
                     sb.AppendLine(friend.Name);
