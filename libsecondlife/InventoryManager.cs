@@ -64,7 +64,7 @@ namespace libsecondlife
         /// <summary>Folder</summary>
         Folder = 8,
         /// <summary></summary>
-        RootCategory = 0,
+        RootCategory = 9,
         /// <summary>an LSL Script</summary>
         LSL = 10,
         /// <summary></summary>
@@ -88,36 +88,6 @@ namespace libsecondlife
         /// <summary></summary>
         Gesture = 20
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Flags]
-    public enum InventoryItemFlags : uint
-    {
-        None = 0,
-        /// <summary>
-        /// A Landmark that has not been previously visited shows up as a dark red pushpin, one that has been
-        /// visited shows up as a light red pushpin
-        /// </summary>
-        VisitedLandmark = 1,
-        /// <summary>If set, indicates rezzed object will have more restrictive permissions masks;
-        /// Which masks will be affected are below</summary>
-        RestrictNextOwner = 0x100,
-        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates BaseMask will be overwritten on Rez</summary>
-        OverwriteBase = 0x010000,
-        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates OwnerMask will be overwritten on Rez</summary>
-        OverwriteOwner = 0x020000,
-        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates GroupMask will be overwritten on Rez</summary>
-        OverwriteGroup = 0x040000,
-        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates EveryoneMask will be overwritten on Rez</summary>
-        OverwriteEveryone = 0x080000,
-        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates NextOwnerMask will be overwritten on Rez</summary>
-        OverwriteNextOwner = 0x100000,
-        /// <summary>If set, indicates item is multiple items coalesced into a single item</summary>
-        MultipleObjects = 0x200000
-    }
-
 
     /// <summary>
     /// Item Sale Status
@@ -237,7 +207,7 @@ namespace libsecondlife
         /// <summary>The type of sale from the <seealso cref="libsecondlife.SaleType"/> enum</summary>
         public SaleType SaleType;
         /// <summary>Combined flags from <seealso cref="libsecondlife.InventoryItemFlags"/></summary>
-        public InventoryItemFlags Flags;
+        public uint Flags;
         /// <summary>Time and date this inventory item was created, stored as
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
@@ -359,7 +329,7 @@ namespace libsecondlife
         public InventoryCallingCard(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.CallingCard; 
-        } 
+        }
     }
 
     /// <summary>
@@ -375,7 +345,16 @@ namespace libsecondlife
         public InventoryLandmark(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Landmark; 
-        } 
+        }
+
+        /// <summary>
+        /// Landmarks use the ObjectType struct and will have a flag of 1 set if they have been visited
+        /// </summary>
+        public ObjectType LandmarkType
+        {
+            get { return (ObjectType)Flags; }
+            set { Flags = (uint)value; }
+        }
     }
 
     /// <summary>
@@ -391,7 +370,19 @@ namespace libsecondlife
         public InventoryObject(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Object; 
-        } 
+        }
+
+        /// <summary>
+        /// Get the Objects permission override settings
+        /// 
+        /// These will indicate the which permissions that 
+        /// will be overwritten when the object is rezzed in-world
+        /// </summary>
+        public ObjectType ObjectType
+        {
+            get { return (ObjectType)Flags; }
+            set { Flags = (uint)value; }
+        }
     }
 
     /// <summary>
@@ -472,7 +463,16 @@ namespace libsecondlife
         public InventoryAttachment(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Attachment; 
-        } 
+        }
+
+        /// <summary>
+        /// Get the last AttachmentPoint this object was attached to
+        /// </summary>
+        public AttachmentPoint AttachmentPoint
+        {
+            get { return (AttachmentPoint)Flags; }
+            set { Flags = (uint)value; }
+        }
     }
 
     /// <summary>
@@ -493,7 +493,7 @@ namespace libsecondlife
         public WearableType WearableType
         {
             get { return (WearableType)Flags; }
-            set { Flags = (InventoryItemFlags)value; }
+            set { Flags = (uint)value; }
         }
     }
 
@@ -643,6 +643,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="items"></param>
         public delegate void ItemCopiedCallback(InventoryBase item);
+
         /// <summary>
         /// 
         /// </summary>
@@ -2212,7 +2213,7 @@ namespace libsecondlife
         /// Remove an item from an objects (Prim) Inventory
         /// </summary>
         /// <param name="objectLocalID">LocalID of the object in the simulator</param>
-        /// <param name="taskItemID">UUID of the task item to remove</param>
+        /// <param name="taskItemID">LLUUID of the task item to remove</param>
         /// <param name="simulator">Simulator Object</param>
         public void RemoveTaskInventory(uint objectLocalID, LLUUID taskItemID, Simulator simulator)
         {
@@ -2230,11 +2231,21 @@ namespace libsecondlife
 
         #region Helper Functions
 
+        /// <summary>
+        /// Takes an AssetType and returns the string representation
+        /// </summary>
+        /// <param name="type">The source <seealso cref="AssetType"/></param>
+        /// <returns>The string version of the AssetType</returns>
         public static string AssetTypeToString(AssetType type)
         {
             return _AssetTypeNames[(int)type];
         }
 
+        /// <summary>
+        /// Translate a string name of an AssetType into the proper Type
+        /// </summary>
+        /// <param name="type">A string containing the AssetType name</param>
+        /// <returns>The AssetType which matches the string name, or AssetType.Unknown if no match was found</returns>
         public static AssetType StringToAssetType(string type)
         {
             for (int i = 0; i < _AssetTypeNames.Length; i++)
@@ -2257,7 +2268,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Converty a string into a valid InventoryType
+        /// Convert a string into a valid InventoryType
         /// </summary>
         /// <param name="type">A string representation of the InventoryType to convert</param>
         /// <returns>A InventoryType object which matched the type</returns>
@@ -2436,7 +2447,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Parse the results of a tasks inventory reply
+        /// Parse the results of a RequestTaskInventory() response
         /// </summary>
         /// <param name="taskData">A string which contains the data from the task reply</param>
         /// <returns>A List containing the items contained within the tasks inventory</returns>
@@ -2709,7 +2720,7 @@ namespace libsecondlife
                         item.CreationDate = creationDate;
                         item.CreatorID = creatorID;
                         item.Description = desc;
-                        item.Flags = (InventoryItemFlags)flags;
+                        item.Flags = flags;
                         item.GroupID = groupID;
                         item.GroupOwned = groupOwned;
                         item.Name = name;
@@ -2826,14 +2837,34 @@ namespace libsecondlife
                     {
                         if (reply.ItemData[i].ItemID != LLUUID.Zero)
                         {
-                            InventoryItem item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType,reply.ItemData[i].ItemID);
+                            InventoryItem item;
+                            /* 
+                             * Objects that have been attached in-world prior to being stored on the 
+                             * asset server are stored with the InventoryType of 0 (Texture) 
+                             * instead of 17 (Attachment) 
+                             * 
+                             * This corrects that behavior by forcing Object Asset types that have an 
+                             * invalid InventoryType with the proper InventoryType of Attachment.
+                             */
+                            if ((AssetType)reply.ItemData[i].Type == AssetType.Object 
+                                && (InventoryType)reply.ItemData[i].InvType == InventoryType.Texture)
+                            {
+                                item = CreateInventoryItem(InventoryType.Attachment, reply.ItemData[i].ItemID);
+                                item.InventoryType = InventoryType.Attachment;
+                            }
+                            else
+                            {
+                                item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType, reply.ItemData[i].ItemID);
+                                item.InventoryType = (InventoryType)reply.ItemData[i].InvType;
+                            }
+                            
                             item.ParentUUID = reply.ItemData[i].FolderID;
                             item.CreatorID = reply.ItemData[i].CreatorID;
                             item.AssetType = (AssetType)reply.ItemData[i].Type;
                             item.AssetUUID = reply.ItemData[i].AssetID;
                             item.CreationDate = Helpers.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
                             item.Description = Helpers.FieldToUTF8String(reply.ItemData[i].Description);
-                            item.Flags = (InventoryItemFlags)reply.ItemData[i].Flags;
+                            item.Flags = reply.ItemData[i].Flags;
                             item.Name = Helpers.FieldToUTF8String(reply.ItemData[i].Name);
                             item.GroupID = reply.ItemData[i].GroupID;
                             item.GroupOwned = reply.ItemData[i].GroupOwned;
@@ -2969,7 +3000,7 @@ namespace libsecondlife
                 item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
                 item.CreatorID = dataBlock.CreatorID;
                 item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
-                item.Flags = (InventoryItemFlags)dataBlock.Flags;
+                item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
                 item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
@@ -3059,6 +3090,8 @@ namespace libsecondlife
                 {
                     BulkUpdateInventoryPacket.ItemDataBlock dataBlock = update.ItemData[i];
 
+                    // If we are given a folder of items, the item information might arrive before the folder
+                    // (parent) is in the store
                     if (!_Store.Contains(dataBlock.ItemID))
                         _Client.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning);
 
@@ -3069,7 +3102,7 @@ namespace libsecondlife
                     item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
                     item.CreatorID = dataBlock.CreatorID;
                     item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
-                    item.Flags = (InventoryItemFlags)dataBlock.Flags;
+                    item.Flags = dataBlock.Flags;
                     item.GroupID = dataBlock.GroupID;
                     item.GroupOwned = dataBlock.GroupOwned;
                     item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
@@ -3128,7 +3161,7 @@ namespace libsecondlife
                 item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
                 item.CreatorID = dataBlock.CreatorID;
                 item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
-                item.Flags = (InventoryItemFlags)dataBlock.Flags;
+                item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
                 item.Name = Helpers.FieldToUTF8String(dataBlock.Name);

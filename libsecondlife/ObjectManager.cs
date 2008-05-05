@@ -59,9 +59,6 @@ namespace libsecondlife
     /// </summary>
     /// <remarks>
     /// Both InventoryObject and InventoryAttachment types can be attached
-    /// 
-    /// The last attachment point is stored on the simulator and is not known 
-    /// to the client until item is attached
     ///</remarks>
     public enum AttachmentPoint : byte
     {
@@ -252,7 +249,15 @@ namespace libsecondlife
         /// <summary>Sit on object</summary>
         Sit = 1,
         /// <summary>Purchase object or contents</summary>
-        Buy = 2
+        Buy = 2,
+        /// <summary>Pay the object</summary>
+        Pay = 3,
+        /// <summary>Open task inventory</summary>
+        OpenTask = 4,
+        /// <summary>Play parcel media</summary>
+        PlayMedia = 5,
+        /// <summary>Open parcel media</summary>
+        OpenMedia = 6
     }
 
     #endregion Enums

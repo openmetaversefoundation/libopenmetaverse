@@ -549,7 +549,7 @@ namespace libsecondlife
         /// <param name="attachPoint">the <seealso cref="libsecondlife.AttachmentPoint"/> on the avatar 
         /// to attach the item to</param>
         public void Attach(LLUUID itemID, LLUUID ownerID, string name, string description,
-            Permissions perms, InventoryItemFlags itemFlags, AttachmentPoint attachPoint)
+            Permissions perms, uint itemFlags, AttachmentPoint attachPoint)
         {
             // TODO: At some point it might be beneficial to have AppearanceManager track what we
             // are currently wearing for attachments to make enumeration and detachment easier
@@ -563,7 +563,7 @@ namespace libsecondlife
             attach.ObjectData.Description = Helpers.StringToField(description);
             attach.ObjectData.EveryoneMask = (uint)perms.EveryoneMask;
             attach.ObjectData.GroupMask = (uint)perms.GroupMask;
-            attach.ObjectData.ItemFlags = (uint)itemFlags;
+            attach.ObjectData.ItemFlags = itemFlags;
             attach.ObjectData.ItemID = itemID;
             attach.ObjectData.Name = Helpers.StringToField(name);
             attach.ObjectData.NextOwnerMask = (uint)perms.NextOwnerMask;

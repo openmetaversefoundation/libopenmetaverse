@@ -30,23 +30,70 @@ using System.Collections.Generic;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
     public enum WearableType : byte
     {
+        /// <summary>A shape</summary>
         Shape = 0,
+        /// <summary></summary>
         Skin,
+        /// <summary></summary>
         Hair,
+        /// <summary></summary>
         Eyes,
+        /// <summary></summary>
         Shirt,
+        /// <summary></summary>
         Pants,
+        /// <summary></summary>
         Shoes,
+        /// <summary></summary>
         Socks,
+        /// <summary></summary>
         Jacket,
+        /// <summary></summary>
         Gloves,
+        /// <summary></summary>
         Undershirt,
+        /// <summary></summary>
         Underpants,
+        /// <summary></summary>
         Skirt,
+        /// <summary></summary>
         Invalid = 255
     };
+
+    /// <summary>
+    /// Each inventory AssetType will have its own set of flags, these are the known flags for AssetType=Object
+    /// </summary>
+    [Flags]
+    public enum ObjectType : uint
+    {
+        None = 0,
+        /// <summary>
+        /// A Landmark that has not been previously visited shows up as a dark red pushpin, one that has been
+        /// visited shows up as a light red pushpin
+        /// </summary>
+        VisitedLandmark = 1,
+        /// <summary>If set, indicates rezzed object will have more restrictive permissions masks;
+        /// Which masks will be affected are below</summary>
+        RestrictNextOwner = 0x100,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates BaseMask will be overwritten on Rez</summary>
+        OverwriteBase = 0x010000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates OwnerMask will be overwritten on Rez</summary>
+        OverwriteOwner = 0x020000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates GroupMask will be overwritten on Rez</summary>
+        OverwriteGroup = 0x040000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates EveryoneMask will be overwritten on Rez</summary>
+        OverwriteEveryone = 0x080000,
+        /// <summary>If set, and <c>RestrictNextOwner</c> bit is set indicates NextOwnerMask will be overwritten on Rez</summary>
+        OverwriteNextOwner = 0x100000,
+        /// <summary>If set, indicates item is multiple items coalesced into a single item</summary>
+        MultipleObjects = 0x200000
+    }
 
     public abstract class Asset
     {
