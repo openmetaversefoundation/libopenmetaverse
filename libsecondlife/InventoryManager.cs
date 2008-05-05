@@ -3323,6 +3323,14 @@ namespace libsecondlife
 
                 for (int i = 0; i < replyData.InventorySkeleton.Length; i++)
                     _Store.UpdateNodeFor(replyData.InventorySkeleton[i]);
+
+                InventoryFolder libraryRootFolder = new InventoryFolder(replyData.LibraryRoot);
+                libraryRootFolder.Name = String.Empty;
+                libraryRootFolder.ParentUUID = LLUUID.Zero;
+                _Store.LibraryFolder = libraryRootFolder;
+
+                for(int i = 0; i < replyData.LibrarySkeleton.Length; i++)
+                    _Store.UpdateNodeFor(replyData.LibrarySkeleton[i]);
             }
         }
 

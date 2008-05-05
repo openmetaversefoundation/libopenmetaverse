@@ -83,7 +83,7 @@ namespace libsecondlife
         public event InventoryObjectAdded OnInventoryObjectAdded;
 
         /// <summary>
-        /// 
+        /// The root folder of this avatars inventory
         /// </summary>
         public InventoryFolder RootFolder
         {
@@ -94,11 +94,25 @@ namespace libsecondlife
                 _RootNode = Items[value.UUID];
             }
         }
-        
+
+        /// <summary>
+        /// The default shared library folder
+        /// </summary>
+        public InventoryFolder LibraryFolder
+        {
+            get { return LibraryRootNode.Data as InventoryFolder; }
+            set
+            {
+                UpdateNodeFor(value);
+                _LibraryRootNode = Items[value.UUID];
+            }
+        }
+
+        private InventoryNode _LibraryRootNode;
         private InventoryNode _RootNode;
         
         /// <summary>
-        /// 
+        /// The root node of the avatars inventory
         /// </summary>
         public InventoryNode RootNode
         {
@@ -107,6 +121,19 @@ namespace libsecondlife
                 if (_RootNode == null)
                     throw new InventoryException("Root node unknown. Are you completely logged in?");
                 return _RootNode;
+            }
+        }
+
+        /// <summary>
+        /// The root node of the default shared library
+        /// </summary>
+        public InventoryNode LibraryRootNode
+        {
+            get
+            {
+                if (_LibraryRootNode == null)
+                    throw new InventoryException("Library Root node unknown. Are you completely logged in?");
+                return _LibraryRootNode;
             }
         }
 
