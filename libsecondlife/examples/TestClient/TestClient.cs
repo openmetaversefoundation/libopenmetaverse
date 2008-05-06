@@ -228,16 +228,15 @@ namespace libsecondlife.TestClient
 
         }
 
-        private bool Inventory_OnInventoryObjectReceived(LLUUID fromAgentID, string fromAgentName,
-            uint parentEstateID, LLUUID regionID, LLVector3 position, DateTime timestamp, AssetType type,
+        private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
             LLUUID objectID, bool fromTask)
         {
             if (MasterKey != LLUUID.Zero)
             {
-                if (fromAgentID != MasterKey)
+                if (offer.FromAgentID != MasterKey)
                     return false;
             }
-            else if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
+            else if (GroupMembers != null && !GroupMembers.ContainsKey(offer.FromAgentID))
             {
                 return false;
             }

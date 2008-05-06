@@ -657,21 +657,15 @@ namespace libsecondlife
         public delegate void FolderUpdatedCallback(LLUUID folderID);
 
         /// <summary>
-        /// Callback when an inventory object is received from another avatar
-        /// or a primitive
+        /// Callback for when an inventory item is offered to us by another avatar or an object
         /// </summary>
-        /// <param name="fromAgentID"></param>
-        /// <param name="fromAgentName"></param>
-        /// <param name="parentEstateID"></param>
-        /// <param name="regionID"></param>
-        /// <param name="position"></param>
-        /// <param name="timestamp"></param>
-        /// <param name="type"></param>
-        /// <param name="objectID">Will be null if offered from a primitive</param>
-        /// <param name="fromTask"></param>
-        /// <returns>True to accept the inventory offer, false to reject it</returns>
-        public delegate bool ObjectOfferedCallback(LLUUID fromAgentID, string fromAgentName, uint parentEstateID, 
-            LLUUID regionID, LLVector3 position, DateTime timestamp, AssetType type, LLUUID objectID, bool fromTask);
+        /// <param name="offerDetails">A <seealso cref="InstantMessage"/> object containing specific
+        /// details on the item being offered, eg who its from</param>
+        /// <param name="type">The <seealso cref="AssetType"/>AssetType being offered</param>
+        /// <param name="objectID">Will be null if item is offered from an object</param>
+        /// <param name="fromTask">will be true of item is offered from an object</param>
+        /// <returns>Return true to accept the offer, or false to decline it</returns>
+        public delegate bool ObjectOfferedCallback(InstantMessage offerDetails, AssetType type, LLUUID objectID, bool fromTask);
 
         /// <summary>
         /// Callback when an inventory object is accepted and received from a
@@ -3211,7 +3205,8 @@ namespace libsecondlife
             // handle it here?
 
             if (OnObjectOffered != null && 
-                (im.Dialog == InstantMessageDialog.InventoryOffered || im.Dialog == InstantMessageDialog.TaskInventoryOffered))
+                (im.Dialog == InstantMessageDialog.InventoryOffered 
+                || im.Dialog == InstantMessageDialog.TaskInventoryOffered))
             {
                 AssetType type = AssetType.Unknown;
                 LLUUID objectID = LLUUID.Zero;
@@ -3265,8 +3260,7 @@ namespace libsecondlife
                     imp.MessageBlock.RegionID = LLUUID.Zero;
                     imp.MessageBlock.Position = _Client.Self.SimPosition;
 
-                    if (OnObjectOffered(im.FromAgentID, im.FromAgentName, im.ParentEstateID, im.RegionID, im.Position,
-                        im.Timestamp, type, objectID, fromTask))
+                    if (OnObjectOffered(im, type, objectID, fromTask))
                     {
                         // Accept the inventory offer
                         switch (im.Dialog)
