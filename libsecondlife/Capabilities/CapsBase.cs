@@ -163,7 +163,7 @@ namespace libsecondlife.Capabilities
 
         public void OpenWriteAsync(Uri address)
         {
-            OpenWriteAsync(address, null);
+            OpenWriteAsync(address, null, null);
         }
 
         public void OpenWriteAsync(Uri address, string method)
@@ -421,12 +421,10 @@ namespace libsecondlife.Capabilities
                     request.Referer = referer;
             }
 
-            // Disable keep-alive
+            // Disable keep-alive by default
             request.KeepAlive = false;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
-            // Upload chunks directly instead of buffering to memory
-            request.AllowWriteStreamBuffering = false;
 
             return request;
         }
@@ -440,12 +438,15 @@ namespace libsecondlife.Capabilities
 
         protected byte[] UploadDataCore(Uri address, string method, byte[] data, object userToken)
         {
-            WebRequest request = SetupRequest(address);
+            HttpWebRequest request = (HttpWebRequest)SetupRequest(address);
+            // Re-enable Keep-Alive
+            request.KeepAlive = true;
 
             try
             {
                 int contentLength = data.Length;
                 request.ContentLength = contentLength;
+
                 using (Stream stream = request.GetRequestStream())
                 {
                     // Most uploads are very small chunks of data, use an optimized path for these
@@ -455,6 +456,9 @@ namespace libsecondlife.Capabilities
                     }
                     else
                     {
+                        // Upload chunks directly instead of buffering to memory
+                        request.AllowWriteStreamBuffering = false;
+
                         MemoryStream ms = new MemoryStream(data);
 
                         byte[] buffer = new byte[checked((uint)Math.Min(4096, (int)contentLength))];
