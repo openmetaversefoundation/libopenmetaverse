@@ -118,6 +118,7 @@ namespace libsecondlife
             return Self.Name;
         }
 
+        /*
         /// <summary>
         /// Send a log message to the debugging output system
         /// </summary>
@@ -125,7 +126,7 @@ namespace libsecondlife
         /// <param name="level">The severity of the log entry</param>
         public void Log(string message, Helpers.LogLevel level)
         {
-            if (level == Helpers.LogLevel.Debug && !Settings.DEBUG) return;
+            //if (level == Helpers.LogLevel.Debug && !Settings.DEBUG) return;
 
             if (OnLogMessage != null)
             {
@@ -154,8 +155,8 @@ namespace libsecondlife
             {
                 if (OnLogMessage != null)
                 {
-                    try { OnLogMessage(message, Helpers.LogLevel.Debug); }
-                    catch (Exception e) { Console.WriteLine(e.ToString()); }
+                    //try { OnLogMessage(message, Helpers.LogLevel.Debug); }
+                    //catch (Exception e) { Console.WriteLine(e.ToString()); }
                 }
                 else
                 {
@@ -199,5 +200,6 @@ namespace libsecondlife
         {
             Console.WriteLine("DEBUG [libsecondlife]: {0}", message);
         }
+        */
     }
 }

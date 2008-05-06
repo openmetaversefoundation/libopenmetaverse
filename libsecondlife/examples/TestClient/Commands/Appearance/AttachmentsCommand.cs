@@ -25,8 +25,8 @@ namespace libsecondlife.TestClient
                 AttachmentPoint point = Helpers.StateToAttachmentPoint(prim.Data.State);
 
                 // TODO: Fetch properties for the objects with missing property sets so we can show names
-                Client.Log(String.Format("[Attachment @ {0}] LocalID: {1} UUID: {2} Offset: {3}",
-                    point, prim.LocalID, prim.ID, prim.Position), Helpers.LogLevel.Info);
+                Logger.Log(String.Format("[Attachment @ {0}] LocalID: {1} UUID: {2} Offset: {3}",
+                    point, prim.LocalID, prim.ID, prim.Position), Helpers.LogLevel.Info, Client);
             }
 
             return "Found " + attachments.Count + " attachments";

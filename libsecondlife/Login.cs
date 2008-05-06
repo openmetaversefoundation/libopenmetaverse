@@ -142,7 +142,7 @@ namespace libsecondlife
             {
                 // FIXME: sometimes look_at comes back with invalid values e.g: 'look_at':'[r1,r2.0193899999999998204e-06,r0]'
                 // need to handle that somehow
-                SecondLife.DebugLogStatic("login server returned (some) invalid data: " + e.Message);
+                Logger.DebugLog("login server returned (some) invalid data: " + e.Message);
             }
 
             // Home
@@ -153,7 +153,7 @@ namespace libsecondlife
             }
             catch (LLSDException e)
             {
-                SecondLife.DebugLogStatic("login server returned invalid home position: " + e.Message);
+                Logger.DebugLog("login server returned invalid home position: " + e.Message);
             }
 
             if (home != null)
@@ -605,8 +605,8 @@ namespace libsecondlife
             }
             catch (Exception ex)
             {
-                Client.Log(String.Format("Failed to parse login URI {0}, {1}", loginParams.URI, ex.Message),
-                    Helpers.LogLevel.Error);
+                Logger.Log(String.Format("Failed to parse login URI {0}, {1}", loginParams.URI, ex.Message),
+                    Helpers.LogLevel.Error, Client);
                 return;
             }
 
@@ -621,7 +621,7 @@ namespace libsecondlife
             InternalStatusCode = status;
             InternalLoginMessage = message;
 
-            Client.DebugLog("Login status: " + status.ToString() + ": " + message);
+            Logger.DebugLog("Login status: " + status.ToString() + ": " + message, Client);
 
             // If we reached a login resolution trigger the event
             if (status == LoginStatus.Success || status == LoginStatus.Failed)
@@ -634,7 +634,7 @@ namespace libsecondlife
             if (OnLogin != null)
             {
                 try { OnLogin(status, message); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -672,7 +672,7 @@ namespace libsecondlife
                         if (OnLoginResponse != null)
                         {
                             try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
-                            catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                         }
 
                         if (loginSuccess && !redirect)
@@ -703,7 +703,7 @@ namespace libsecondlife
                                     if (OnConnected != null)
                                     {
                                         try { OnConnected(this.Client); }
-                                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                     }
                                 }
                                 else

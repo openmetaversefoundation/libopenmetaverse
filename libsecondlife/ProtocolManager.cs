@@ -592,7 +592,7 @@ namespace libsecondlife
 									}
 									else
 									{
-										Client.Log("Unknown packet frequency", Helpers.LogLevel.Error);
+										Logger.Log("Unknown packet frequency", Helpers.LogLevel.Error, Client);
 									}
 								}
 
@@ -663,7 +663,7 @@ namespace libsecondlife
 								}
 								else
 								{
-									Client.Log("Unknown block frequency", Helpers.LogLevel.Error);
+									Logger.Log("Unknown block frequency", Helpers.LogLevel.Error, Client);
 								}
 
 								#endregion

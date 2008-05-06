@@ -981,7 +981,7 @@ namespace libsecondlife
             {
                 // This is a fairly common request, so assume the name doesn't
                 // change mid-session and cache the result
-                if (fullName == null)
+                if (fullName == null || fullName.Length < 2)
                     fullName = String.Format("{0} {1}", firstName, lastName);
                 return fullName;
             }
@@ -1017,8 +1017,8 @@ namespace libsecondlife
                     }
                     else
                     {
-                        Client.Log("Currently sitting on object " + sittingOn + " which is not tracked, SimPosition will be inaccurate",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Currently sitting on object " + sittingOn + " which is not tracked, SimPosition will be inaccurate",
+                            Helpers.LogLevel.Warning, Client);
                         return relativePosition;
                     }
                 }
@@ -1044,8 +1044,8 @@ namespace libsecondlife
                     }
                     else
                     {
-                        Client.Log("Currently sitting on object " + sittingOn + " which is not tracked, SimRotation will be inaccurate",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Currently sitting on object " + sittingOn + " which is not tracked, SimRotation will be inaccurate",
+                            Helpers.LogLevel.Warning, Client);
                         return relativeRotation;
                     }
                 }
@@ -1315,8 +1315,8 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log(String.Format("Suppressing instant message \"{0}\" to LLUUID.Zero", message),
-                    Helpers.LogLevel.Error);
+                Logger.Log(String.Format("Suppressing instant message \"{0}\" to LLUUID.Zero", message),
+                    Helpers.LogLevel.Error, Client);
             }
         }
 
@@ -1360,9 +1360,9 @@ namespace libsecondlife
                     Client.Network.SendPacket(im);
                 }
                 else
-                { 
-                    Client.Log("No Active group chat session appears to exist, use RequestJoinGroupChat() to join one", 
-                        Helpers.LogLevel.Error);
+                {
+                    Logger.Log("No Active group chat session appears to exist, use RequestJoinGroupChat() to join one", 
+                        Helpers.LogLevel.Error, Client);
                 }
         }
 
@@ -1622,7 +1622,7 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Attempted Stand but agent updates are disabled", Helpers.LogLevel.Warning);
+                Logger.Log("Attempted to Stand() but agent updates are disabled", Helpers.LogLevel.Warning, Client);
                 return false;
             }
         }
@@ -1758,7 +1758,7 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Attempted AutoPilotCancel but agent updates are disabled", Helpers.LogLevel.Warning);
+                Logger.Log("Attempted to AutoPilotCancel() but agent updates are disabled", Helpers.LogLevel.Warning, Client);
                 return false;
             }
         }
@@ -2160,7 +2160,7 @@ namespace libsecondlife
                 teleport.Info.Position = position;
                 teleport.Info.RegionHandle = regionHandle;
 
-                Client.Log("Requesting teleport to region handle " + regionHandle.ToString(), Helpers.LogLevel.Info);
+                Logger.Log("Requesting teleport to region handle " + regionHandle.ToString(), Helpers.LogLevel.Info, Client);
 
                 Client.Network.SendPacket(teleport);
             }
@@ -2440,7 +2440,7 @@ namespace libsecondlife
                 	message.BinaryBucket = im.MessageBlock.BinaryBucket;
 
                 	try { OnInstantMessage(message, simulator); }
-                	catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                	catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -2517,7 +2517,7 @@ namespace libsecondlife
                         Helpers.FieldToUTF8String(question.Data.ObjectOwner),
                         (ScriptPermission)question.Data.Questions);
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2539,7 +2539,7 @@ namespace libsecondlife
                             change.Data[i].PassToAgent,
                             change.Data[i].TakeControls);
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -2564,7 +2564,7 @@ namespace libsecondlife
                         Helpers.FieldToUTF8String(loadURL.Data.URL)
                     );
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2589,7 +2589,7 @@ namespace libsecondlife
                     OnAgentMovement(movement.Data.Position, movement.Data.RegionHandle,
                   movement.Data.LookAt, Helpers.FieldToUTF8String(movement.SimData.ChannelVersion));
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2619,13 +2619,13 @@ namespace libsecondlife
                     string groupName = Helpers.FieldToUTF8String(p.AgentData.GroupName);
 
                     try { OnAgentDataUpdated(firstName, lastName, activeGroup, groupTitle, (GroupPowers)p.AgentData.GroupPowers, groupName); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
             else
             {
-                Client.Log("Got an AgentDataUpdate packet for avatar " + p.AgentData.AgentID.ToString() +
-                    " instead of " + Client.Self.AgentID.ToString() + ", this shouldn't happen", Helpers.LogLevel.Error);
+                Logger.Log("Got an AgentDataUpdate packet for avatar " + p.AgentData.AgentID.ToString() +
+                    " instead of " + Client.Self.AgentID.ToString() + ", this shouldn't happen", Helpers.LogLevel.Error, Client);
             }
         }
 
@@ -2647,14 +2647,14 @@ namespace libsecondlife
                         mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
                         mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
                         Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
 
             if (OnBalanceUpdated != null)
             {
                 try { OnBalanceUpdated(balance); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2672,15 +2672,15 @@ namespace libsecondlife
 
                 if (sim == null)
                 {
-                    Client.Log("Got EstablishAgentCommunication for unknown sim " + ipAndPort,
-                        Helpers.LogLevel.Error);
+                    Logger.Log("Got EstablishAgentCommunication for unknown sim " + ipAndPort,
+                        Helpers.LogLevel.Error, Client);
 
                     // FIXME: Should we use this opportunity to connect to the simulator?
                 }
                 else
                 {
-                    Client.Log("Got EstablishAgentCommunication for " + sim.ToString(),
-                        Helpers.LogLevel.Info);
+                    Logger.Log("Got EstablishAgentCommunication for " + sim.ToString(),
+                        Helpers.LogLevel.Info, Client);
 
                     sim.SetSeedCaps(body["seed-capability"].AsString());
                 }
@@ -2705,7 +2705,7 @@ namespace libsecondlife
                 flags = (TeleportFlags)start.Info.TeleportFlags;
                 teleportStat = TeleportStatus.Start;
 
-                Client.DebugLog("TeleportStart received, Flags: " + flags.ToString());
+                Logger.DebugLog("TeleportStart received, Flags: " + flags.ToString(), Client);
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
@@ -2715,7 +2715,7 @@ namespace libsecondlife
                 flags = (TeleportFlags)progress.Info.TeleportFlags;
                 teleportStat = TeleportStatus.Progress;
 
-                Client.DebugLog("TeleportProgress received, Message: " + teleportMessage + ", Flags: " + flags.ToString());
+                Logger.DebugLog("TeleportProgress received, Message: " + teleportMessage + ", Flags: " + flags.ToString(), Client);
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
@@ -2725,7 +2725,7 @@ namespace libsecondlife
                 teleportStat = TeleportStatus.Failed;
                 finished = true;
 
-                Client.DebugLog("TeleportFailed received, Reason: " + teleportMessage);
+                Logger.DebugLog("TeleportFailed received, Reason: " + teleportMessage, Client);
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
@@ -2735,7 +2735,7 @@ namespace libsecondlife
                 string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
                 finished = true;
 
-                Client.DebugLog("TeleportFinish received, Flags: " + flags.ToString());
+                Logger.DebugLog("TeleportFinish received, Flags: " + flags.ToString(), Client);
 
                 // Connect to the new sim
                 Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP),
@@ -2749,7 +2749,7 @@ namespace libsecondlife
                     // Disconnect from the previous sim
                     Client.Network.DisconnectSim(simulator, true);
 
-                    Client.Log("Moved to new sim " + newSimulator.ToString(), Helpers.LogLevel.Info);
+                    Logger.Log("Moved to new sim " + newSimulator.ToString(), Helpers.LogLevel.Info, Client);
                 }
                 else
                 {
@@ -2757,7 +2757,7 @@ namespace libsecondlife
                     teleportStat = TeleportStatus.Failed;
 
                     // We're going to get disconnected now
-                    Client.Log(teleportMessage, Helpers.LogLevel.Error);
+                    Logger.Log(teleportMessage, Helpers.LogLevel.Error, Client);
                 }
             }
             else if (packet.Type == PacketType.TeleportCancel)
@@ -2768,7 +2768,7 @@ namespace libsecondlife
                 teleportStat = TeleportStatus.Cancelled;
                 finished = true;
 
-                Client.DebugLog("TeleportCancel received from " + simulator.ToString());
+                Logger.DebugLog("TeleportCancel received from " + simulator.ToString(), Client);
             }
             else if (packet.Type == PacketType.TeleportLocal)
             {
@@ -2783,13 +2783,13 @@ namespace libsecondlife
                 //local.Info.LocationID;
                 finished = true;
 
-                Client.DebugLog("TeleportLocal received, Flags: " + flags.ToString());
+                Logger.DebugLog("TeleportLocal received, Flags: " + flags.ToString(), Client);
             }
 
             if (OnTeleport != null)
             {
                 try { OnTeleport(teleportMessage, teleportStat, flags); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
 
             if (finished) teleportEvent.Set();
@@ -2850,7 +2850,7 @@ namespace libsecondlife
                 if (OnAnimationsChanged != null)
                 {
                     try { OnAnimationsChanged(SignaledAnimations); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -2869,7 +2869,7 @@ namespace libsecondlife
                     MeanCollisionType type = (MeanCollisionType)block.Type;
 
                     try { OnMeanCollision(type, block.Perp, block.Victim, block.Mag, time); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -2907,27 +2907,27 @@ namespace libsecondlife
             string seedCap = Helpers.FieldToUTF8String(crossing.RegionData.SeedCapability);
             IPEndPoint endPoint = new IPEndPoint(crossing.RegionData.SimIP, crossing.RegionData.SimPort);
 
-            Client.DebugLog("Crossed in to new region area, attempting to connect to " + endPoint.ToString());
+            Logger.DebugLog("Crossed in to new region area, attempting to connect to " + endPoint.ToString(), Client);
 
             Simulator oldSim = Client.Network.CurrentSim;
             Simulator newSim = Client.Network.Connect(endPoint, crossing.RegionData.RegionHandle, true, seedCap);
 
             if (newSim != null)
             {
-                Client.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info);
+                Logger.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info, Client);
 
                 if (OnRegionCrossed != null)
                 {
                     try { OnRegionCrossed(oldSim, newSim); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
             else
             {
                 // The old simulator will (poorly) handle our movement still, so the connection isn't
                 // completely shot yet
-                Client.Log("Failed to connect to new region " + endPoint.ToString() + " after crossing over",
-                    Helpers.LogLevel.Warning);
+                Logger.Log("Failed to connect to new region " + endPoint.ToString() + " after crossing over",
+                    Helpers.LogLevel.Warning, Client);
             }
         }
 
@@ -2942,7 +2942,8 @@ namespace libsecondlife
             LLSDMap map = (LLSDMap)llsd;
             if (map["success"].AsBoolean() != true)
             {
-                Client.Log("Attempt to send group chat to non-existant session for group " + map["session_id"].AsString(), Helpers.LogLevel.Info);
+                Logger.Log("Attempt to send group chat to non-existant session for group " + map["session_id"].AsString(),
+                    Helpers.LogLevel.Info, Client);
             }
         }
 
@@ -2958,7 +2959,6 @@ namespace libsecondlife
             LLUUID sessionID = map["session_id"].AsUUID();
             LLUUID tmpSessionID = map["temp_session_id"].AsUUID();
             bool success = map["success"].AsBoolean();
-
 
             if (success)
             {
@@ -2979,7 +2979,7 @@ namespace libsecondlife
             if (OnGroupChatJoin != null)
             {
                 try { OnGroupChatJoin(sessionID, tmpSessionID, success); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -3060,7 +3060,7 @@ namespace libsecondlife
                     message.BinaryBucket = msg["binary_bucket"].AsBinary();
 
                     try { OnInstantMessage(message, simulator); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }             
         }
 
@@ -3077,7 +3077,7 @@ namespace libsecondlife
             if (OnAlertMessage != null)
             {
                 try { OnAlertMessage(message); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -3093,7 +3093,7 @@ namespace libsecondlife
                 CameraConstraintPacket camera = (CameraConstraintPacket)packet;
 
                 try { OnCameraConstraint(camera.CameraCollidePlane.Plane); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -3115,7 +3115,7 @@ namespace libsecondlife
                     
                     try { OnScriptSensorReply(requestor.SourceID, block.GroupID, Helpers.FieldToUTF8String(block.Name),
                         block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
             
@@ -3138,7 +3138,7 @@ namespace libsecondlife
                   sit.SitTransform.CameraEyeOffset, sit.SitTransform.ForceMouselook, sit.SitTransform.SitPosition,
                   sit.SitTransform.SitRotation);
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 

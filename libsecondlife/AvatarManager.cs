@@ -348,7 +348,7 @@ namespace libsecondlife
                 }
 
                 try { OnAvatarGroups(groups.AgentData.AvatarID, avatarGroups); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -366,7 +366,7 @@ namespace libsecondlife
                 }
 
                 try { OnAvatarNameSearch(reply.AgentData.QueryID, avatars); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -397,36 +397,36 @@ namespace libsecondlife
                 switch (type)
                 {
                     case EffectType.Text:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.Icon:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.Connector:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.FlexibleObject:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.AnimalControls:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.AnimationObject:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.Cloth:
-                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.Glow:
-                        Client.Log("Received a Glow ViewerEffect which is not implemented yet",
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Received a Glow ViewerEffect which is not implemented yet",
+                            Helpers.LogLevel.Warning, Client);
                         break;
                     case EffectType.Beam:
                     case EffectType.Point:
@@ -443,13 +443,13 @@ namespace libsecondlife
                                 LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
 
                                 try { OnEffect(type, sourceAvatar, targetObject, targetPos, block.Duration, block.ID); }
-                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                             }
                             else
                             {
-                                Client.Log("Received a " + type.ToString() + 
+                                Logger.Log("Received a " + type.ToString() + 
                                     " ViewerEffect with an incorrect TypeData size of " +
-                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning, Client);
                             }
                         }
                         break;
@@ -465,12 +465,12 @@ namespace libsecondlife
 
                                 try { OnLookAt(sourceAvatar, targetObject, targetPos, lookAt, block.Duration,
                                     block.ID); }
-                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                             }
                             else
                             {
-                                Client.Log("Received a LookAt ViewerEffect with an incorrect TypeData size of " +
-                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                                Logger.Log("Received a LookAt ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning, Client);
                             }
                         }
                         break;
@@ -486,17 +486,17 @@ namespace libsecondlife
 
                                 try { OnPointAt(sourceAvatar, targetObject, targetPos, pointAt, block.Duration, 
                                     block.ID); }
-                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                             }
                             else
                             {
-                                Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
-                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                                Logger.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning, Client);
                             }
                         }
                         break;
                     default:
-                        Client.Log("Received a ViewerEffect with an unknown type " + type, Helpers.LogLevel.Warning);
+                        Logger.Log("Received a ViewerEffect with an unknown type " + type, Helpers.LogLevel.Warning, Client);
                         break;
                 }
             }

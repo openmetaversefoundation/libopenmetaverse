@@ -26,27 +26,27 @@ namespace libsecondlife.TestClient
 
                 if (target != null)
                 {
-                    Client.Log("Light: " + target.Light.ToString(), Helpers.LogLevel.Info);
+                    Logger.Log("Light: " + target.Light.ToString(), Helpers.LogLevel.Info, Client);
 
                     if (target.ParticleSys.CRC != 0)
-                        Client.Log("Particles: " + target.ParticleSys.ToString(), Helpers.LogLevel.Info);
+                        Logger.Log("Particles: " + target.ParticleSys.ToString(), Helpers.LogLevel.Info, Client);
 
-                    Client.Log("TextureEntry:", Helpers.LogLevel.Info);
+                    Logger.Log("TextureEntry:", Helpers.LogLevel.Info, Client);
                     if (target.Textures != null)
                     {
                         for (int i = 0; i < target.Textures.FaceTextures.Length; i++)
                         {
                             if (target.Textures.FaceTextures[i] != null)
                             {
-                                Client.Log(String.Format("Face {0}: {1}", i,
+                                Logger.Log(String.Format("Face {0}: {1}", i,
                                     target.Textures.FaceTextures[i].TextureID.ToString()),
-                                    Helpers.LogLevel.Info);
+                                    Helpers.LogLevel.Info, Client);
                             }
                         }
                     }
                     else
                     {
-                        Client.Log("null", Helpers.LogLevel.Info);
+                        Logger.Log("null", Helpers.LogLevel.Info, Client);
                     }
 
                     return "Done.";

@@ -213,15 +213,15 @@ namespace libsecondlife
         {
             if (heightmap.Length != 256 * 256)
             {
-                Client.Log("Invalid heightmap value of " + heightmap.Length + " passed to CreatePatch()",
-                    Helpers.LogLevel.Error);
+                Logger.Log("Invalid heightmap value of " + heightmap.Length + " passed to CreatePatch()",
+                    Helpers.LogLevel.Error, Client);
                 return;
             }
 
             if (x < 0 || x > 15 || y < 0 || y > 15)
             {
-                Client.Log("Invalid x or y patch offset passed to CreatePatch(), x=" + x + ", y=" + y,
-                    Helpers.LogLevel.Error);
+                Logger.Log("Invalid x or y patch offset passed to CreatePatch(), x=" + x + ", y=" + y,
+                    Helpers.LogLevel.Error, Client);
                 return;
             }
 
@@ -481,8 +481,8 @@ namespace libsecondlife
 
             if (wbits > 17 || wbits < 2)
             {
-                Client.Log("Bits needed per word in EncodePatchHeader() are outside the allowed range", 
-                    Helpers.LogLevel.Error);
+                Logger.Log("Bits needed per word in EncodePatchHeader() are outside the allowed range", 
+                    Helpers.LogLevel.Error, Client);
             }
 
             header.QuantWBits |= (wbits - 2);
@@ -674,7 +674,7 @@ namespace libsecondlife
 
             if (postquant > 16 * 16 || postquant < 0)
             {
-                Client.Log("Postquant is outside the range of allowed values in EncodePatch()", Helpers.LogLevel.Error);
+                Logger.Log("Postquant is outside the range of allowed values in EncodePatch()", Helpers.LogLevel.Error, Client);
                 return;
             }
 
@@ -761,7 +761,7 @@ namespace libsecondlife
                     block[n] = patches[CopyMatrix32[n]] * DequantizeTable32[n];
                 }
 
-                Client.Log("Implement IDCTPatchLarge", Helpers.LogLevel.Error);
+                Logger.Log("Implement IDCTPatchLarge", Helpers.LogLevel.Error, Client);
             }
 
             for (int j = 0; j < block.Length; j++)
@@ -823,9 +823,9 @@ namespace libsecondlife
 
                 if (x >= PATCHES_PER_EDGE || y >= PATCHES_PER_EDGE)
                 {
-                    Client.Log("Invalid LayerData land packet, x = " + x + ", y = " + y + ", dc_offset = " +
+                    Logger.Log("Invalid LayerData land packet, x = " + x + ", y = " + y + ", dc_offset = " +
                         header.DCOffset + ", range = " + header.Range + ", quant_wbits = " + header.QuantWBits +
-                        ", patchids = " + header.PatchIDs + ", count = " + count, Helpers.LogLevel.Warning);
+                        ", patchids = " + header.PatchIDs + ", count = " + count, Helpers.LogLevel.Warning, Client);
                     return;
                 }
 
@@ -840,7 +840,7 @@ namespace libsecondlife
                 if (OnLandPatch != null)
                 {
                     try { OnLandPatch(simulator, x, y, group.PatchSize, heightmap); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 if (Client.Settings.STORE_LAND_PATCHES)
@@ -888,7 +888,7 @@ namespace libsecondlife
                         DecompressLand(simulator, bitpack, header);
                     break;
                 case LayerType.Water:
-                    Client.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Error);
+                    Logger.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Error, Client);
                     break;
                 case LayerType.Wind:
                     DecompressWind(simulator, bitpack, header);
@@ -897,7 +897,7 @@ namespace libsecondlife
                     DecompressCloud(simulator, bitpack, header);
                     break;
                 default:
-                    Client.Log("Unrecognized LayerData type " + type.ToString(), Helpers.LogLevel.Warning);
+                    Logger.Log("Unrecognized LayerData type " + type.ToString(), Helpers.LogLevel.Warning, Client);
                     break;
             }
         }

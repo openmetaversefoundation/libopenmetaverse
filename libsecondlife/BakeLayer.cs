@@ -107,14 +107,14 @@ namespace libsecondlife.Baking
             {
                 try 
                 {
-
                     texture.Decode();
                     Textures.Add(index, texture);
-                    Client.DebugLog("Adding texture " + index.ToString() + " ID: " + texture.AssetID.ToString() + " to bake " + BakeType.ToString());
+
+                    Logger.DebugLog(String.Format("Added texture {0} (ID: {1}) to bake {2}", index, texture.AssetID, BakeType), Client);
                 }
                 catch ( Exception e )
                 {
-                    Client.DebugLog( "caught exception while trying add texture: " + e.Message.ToString());
+                    Logger.Log(String.Format("AddTexture({0}, {1})", index, texture.AssetID), Helpers.LogLevel.Error, e);
                 }
 
             }
@@ -131,7 +131,7 @@ namespace libsecondlife.Baking
 
         public bool MissingTexture(AppearanceManager.TextureIndex index)
         {
-            Client.DebugLog("Missing texture " + index.ToString() + " in bake " + BakeType.ToString());
+            Logger.DebugLog(String.Format("Missing texture {0} in bake {1}", index, BakeType), Client);
             TextureCount--;
 
             if (Textures.Count == TextureCount)
@@ -153,7 +153,7 @@ namespace libsecondlife.Baking
                 initBakedLayerColor(255, 255, 255);
                 if (!DrawLayer(AppearanceManager.TextureIndex.EyesIris))
                 {
-                    Client.Log("Missing texture for EYES - unable to bake layer", Helpers.LogLevel.Warning);
+                    Logger.Log("Missing texture for EYES - unable to bake layer", Helpers.LogLevel.Warning, Client);
                 }
             }
             else if (BakeType == AppearanceManager.BakeType.Head)
@@ -175,7 +175,7 @@ namespace libsecondlife.Baking
                 }
                 catch
                 {
-                    Client.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning);
+                    Logger.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning, Client);
                 }
                 initBakedLayerColor((int)(skirtRed * 255.0f), (int)(skirtGreen * 255.0f), (int)(skirtBlue * 255.0f));
                 DrawLayer(AppearanceManager.TextureIndex.Skirt);

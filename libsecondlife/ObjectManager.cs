@@ -1469,8 +1469,8 @@ namespace libsecondlife
 
                         break;
                     default:
-                        Client.Log("Got an ObjectUpdate block with ObjectUpdate field length of " +
-                            block.ObjectData.Length, Helpers.LogLevel.Warning);
+                        Logger.Log("Got an ObjectUpdate block with ObjectUpdate field length of " +
+                            block.ObjectData.Length, Helpers.LogLevel.Warning, Client);
 
                         continue;
                 }
@@ -1491,8 +1491,8 @@ namespace libsecondlife
 
                         if ((prim.Flags & LLObject.ObjectFlags.ZlibCompressed) != 0)
                         {
-                            Client.Log("Got a ZlibCompressed ObjectUpdate, implement me!", 
-                                Helpers.LogLevel.Warning);
+                            Logger.Log("Got a ZlibCompressed ObjectUpdate, implement me!", 
+                                Helpers.LogLevel.Warning, Client);
                             continue;
                         }
 
@@ -1618,7 +1618,7 @@ namespace libsecondlife
                         // TODO: Create a callback for particle updates
                         break;
                     default:
-                        Client.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + pcode.ToString());
+                        Logger.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + pcode.ToString(), Client);
                         break;
                 }
             }
@@ -1773,7 +1773,7 @@ namespace libsecondlife
                 }
                 catch (Exception e)
                 {
-                    Client.Log(e.ToString(), Helpers.LogLevel.Warning);
+                    Logger.Log(e.Message, Helpers.LogLevel.Warning, Client, e);
                 }
             }
         }
@@ -2074,16 +2074,15 @@ namespace libsecondlife
 
                             break;
                         default:
-                            Client.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() +
-                                ", implement this!");
+                            Logger.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() +
+                                ", implement this!", Client);
                             break;
                     }
                 }
                 catch (IndexOutOfRangeException e)
                 {
-                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet: " +
-                        e.ToString(), Helpers.LogLevel.Warning);
-                    Client.Log(block.ToString(), Helpers.LogLevel.Warning);
+                    Logger.Log("Error decoding an ObjectUpdateCompressed packet", Helpers.LogLevel.Warning, Client, e);
+                    Logger.Log(block, Helpers.LogLevel.Warning);
                 }
             }
         }
@@ -2294,7 +2293,7 @@ namespace libsecondlife
             if (OnAvatarSitChanged != null && oldSeatID != localid)
             {
                 try { OnAvatarSitChanged(sim, av, localid, oldSeatID); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2322,7 +2321,7 @@ namespace libsecondlife
             if (OnObjectProperties != null)
             {
                 try { OnObjectProperties(sim, props); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2336,7 +2335,7 @@ namespace libsecondlife
             if (OnObjectPropertiesFamily != null)
             {
                 try { OnObjectPropertiesFamily(sim, props); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2350,7 +2349,7 @@ namespace libsecondlife
             if (OnObjectKilled != null)
             {
                 try { OnObjectKilled(simulator, localid); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2366,7 +2365,7 @@ namespace libsecondlife
             if (OnNewPrim != null)
             {
                 try { OnNewPrim(simulator, prim, RegionHandle, TimeDilation); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2382,7 +2381,7 @@ namespace libsecondlife
             if (OnNewFoliage != null)
             {
                 try { OnNewFoliage(simulator, prim, RegionHandle, TimeDilation); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2398,7 +2397,7 @@ namespace libsecondlife
             if (OnNewAttachment != null)
             {
                 try { OnNewAttachment(simulator, prim, RegionHandle, TimeDilation); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2414,7 +2413,7 @@ namespace libsecondlife
             if (OnNewAvatar != null)
             {
                 try { OnNewAvatar(simulator, avatar, RegionHandle, TimeDilation); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2430,7 +2429,7 @@ namespace libsecondlife
             if (OnObjectUpdated != null)
             {
                 try { OnObjectUpdated(simulator, update, RegionHandle, TimeDilation); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -2581,7 +2580,7 @@ namespace libsecondlife
                                 }
                                 else
                                 {
-                                    Client.Log("Unhandled joint type " + prim.Joint, Helpers.LogLevel.Warning);
+                                    Logger.Log("Unhandled joint type " + prim.Joint, Helpers.LogLevel.Warning, Client);
                                 }
                             }
                         );

@@ -90,7 +90,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                Logger.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning, client);
                 return false;
             }
         }
@@ -184,36 +184,36 @@ namespace libsecondlife.Utilities
 
             if (client.Network.Login(firstName, lastName, password, userAgent, start, author))
             {
-                client.Log("Logged in to " + client.Network.CurrentSim, Helpers.LogLevel.Info);
+                Logger.Log("Logged in to " + client.Network.CurrentSim, Helpers.LogLevel.Info, client);
                 return true;
             }
             else
             {
                 if (client.Network.LoginErrorKey == "god")
                 {
-                    client.Log("Grid is down, waiting 10 minutes", Helpers.LogLevel.Warning);
+                    Logger.Log("Grid is down, waiting 10 minutes", Helpers.LogLevel.Warning, client);
                     LoginWait(10);
                     goto Start;
                 }
                 else if (client.Network.LoginErrorKey == "key")
                 {
-                    client.Log("Bad username or password, giving up on login", Helpers.LogLevel.Error);
+                    Logger.Log("Bad username or password, giving up on login", Helpers.LogLevel.Error, client);
                     return false;
                 }
                 else if (client.Network.LoginErrorKey == "presence")
                 {
-                    client.Log("Server is still logging us out, waiting 1 minute", Helpers.LogLevel.Warning);
+                    Logger.Log("Server is still logging us out, waiting 1 minute", Helpers.LogLevel.Warning, client);
                     LoginWait(1);
                     goto Start;
                 }
                 else if (client.Network.LoginErrorKey == "disabled")
                 {
-                    client.Log("This account has been banned! Giving up on login", Helpers.LogLevel.Error);
+                    Logger.Log("This account has been banned! Giving up on login", Helpers.LogLevel.Error, client);
                     return false;
                 }
                 else if (client.Network.LoginErrorKey == "timed out")
                 {
-                    client.Log("Login request timed out, waiting 1 minute", Helpers.LogLevel.Warning);
+                    Logger.Log("Login request timed out, waiting 1 minute", Helpers.LogLevel.Warning, client);
                     LoginWait(1);
                     goto Start;
                 }
@@ -223,14 +223,14 @@ namespace libsecondlife.Utilities
 
                     if (unknownLogins < 5)
                     {
-                        client.Log("Unknown login error, waiting 2 minutes: " + client.Network.LoginErrorKey,
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Unknown login error, waiting 2 minutes: " + client.Network.LoginErrorKey,
+                            Helpers.LogLevel.Warning, client);
                         LoginWait(2);
                         goto Start;
                     }
                     else
                     {
-                        client.Log("Too many unknown login error codes, giving up", Helpers.LogLevel.Error);
+                        Logger.Log("Too many unknown login error codes, giving up", Helpers.LogLevel.Error, client);
                         return false;
                     }
                 }
@@ -304,7 +304,7 @@ namespace libsecondlife.Utilities
         {
             if (simulator == null)
             {
-                Client.Log("DownloadSimParcels() will not work with a null simulator", Helpers.LogLevel.Error);
+                Logger.Log("DownloadSimParcels() will not work with a null simulator", Helpers.LogLevel.Error, Client);
                 return;
             }
 
@@ -312,7 +312,7 @@ namespace libsecondlife.Utilities
             {
                 if (active_sims.Contains(simulator))
                 {
-                    Client.Log("DownloadSimParcels(" + simulator + ") called more than once?", Helpers.LogLevel.Error);
+                    Logger.Log("DownloadSimParcels(" + simulator + ") called more than once?", Helpers.LogLevel.Error, Client);
                     return;
                 }
 
@@ -367,14 +367,14 @@ namespace libsecondlife.Utilities
                                 }
                                 else if (tries > 4)
                                 {
-                                    Client.Log("Too many tries on this terrain block, skipping",
-                                        Helpers.LogLevel.Warning);
+                                    Logger.Log("Too many tries on this terrain block, skipping",
+                                        Helpers.LogLevel.Warning, Client);
                                     continue;
                                 }
                                 else
                                 {
-                                    Client.Log(String.Format("Terrain height is null at {0},{1} retrying",
-                                        x * 4 + x1, y * 4 + y1), Helpers.LogLevel.Info);
+                                    Logger.Log(String.Format("Terrain height is null at {0},{1} retrying",
+                                        x * 4 + x1, y * 4 + y1), Helpers.LogLevel.Info, Client);
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
@@ -399,7 +399,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error);
+                Logger.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error, Client);
                 return Single.NaN;
             }
         }
@@ -414,13 +414,13 @@ namespace libsecondlife.Utilities
         {
             if (!Client.Settings.STORE_LAND_PATCHES)
             {
-                Client.Log("GetWaterType() will not work without Settings.STORE_LAND_PATCHES set to true",
-                    Helpers.LogLevel.Error);
+                Logger.Log("GetWaterType() will not work without Settings.STORE_LAND_PATCHES set to true",
+                    Helpers.LogLevel.Error, Client);
                 return WaterType.Unknown;
             }
             else if (!Client.Network.Connected && Client.Network.CurrentSim != null)
             {
-                Client.Log("GetWaterType() can only be used with an online client", Helpers.LogLevel.Error);
+                Logger.Log("GetWaterType() can only be used with an online client", Helpers.LogLevel.Error, Client);
                 return WaterType.Unknown;
             }
 
@@ -457,14 +457,14 @@ namespace libsecondlife.Utilities
                                 }
                                 else if (tries > 4)
                                 {
-                                    Client.Log("Too many tries on this terrain block, skipping", 
-                                        Helpers.LogLevel.Warning);
+                                    Logger.Log("Too many tries on this terrain block, skipping", 
+                                        Helpers.LogLevel.Warning, Client);
                                     continue;
                                 }
                                 else
                                 {
-                                    Client.Log(String.Format("Terrain height is null at {0},{1} retrying",
-                                        x * 4 + x1, y * 4 + y1), Helpers.LogLevel.Info);
+                                    Logger.Log(String.Format("Terrain height is null at {0},{1} retrying",
+                                        x * 4 + x1, y * 4 + y1), Helpers.LogLevel.Info, Client);
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
@@ -497,7 +497,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error);
+                Logger.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error, Client);
                 return WaterType.Unknown;
             }
         }
@@ -530,16 +530,16 @@ namespace libsecondlife.Utilities
             // Warn about parcel property request errors and bail out
             if (result == ParcelManager.ParcelResult.NoData)
             {
-                Client.Log("ParcelDownloader received a NoData response, sequenceID " + sequenceID,
-                    Helpers.LogLevel.Warning);
+                Logger.Log("ParcelDownloader received a NoData response, sequenceID " + sequenceID,
+                    Helpers.LogLevel.Warning, Client);
                 return;
             }
 
             // Warn about unexpected data and bail out
             if (!ParcelMarked.ContainsKey(parcel.Simulator))
             {
-                Client.Log("ParcelDownloader received unexpected parcel data for " + parcel.Simulator,
-                    Helpers.LogLevel.Warning);
+                Logger.Log("ParcelDownloader received unexpected parcel data for " + parcel.Simulator,
+                    Helpers.LogLevel.Warning, Client);
                 return;
             }
 
@@ -597,7 +597,7 @@ namespace libsecondlife.Utilities
                 {
                     // This map is complete, fire callback
                     try { OnParcelsDownloaded(parcel.Simulator, Parcels[parcel.Simulator], markers); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }

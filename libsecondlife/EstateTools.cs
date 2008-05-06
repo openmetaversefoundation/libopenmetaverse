@@ -212,7 +212,7 @@ namespace libsecondlife
                        Helpers.FieldToUTF8String(reply.Data.EstateName),
                        reply.Data.EstateOwnerID);
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -247,7 +247,7 @@ namespace libsecondlife
                     {
                         OnGetEstateUpdateInfo(estateName, estateOwner, estateID, denyNoPaymentInfo);
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
 
@@ -276,7 +276,7 @@ namespace libsecondlife
                                         }
                                     }
                                     try { OnGetEstateManagers(estateID, count, managers); }
-                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                 }
                             }
                             break;
@@ -297,7 +297,7 @@ namespace libsecondlife
                                         }
                                     }
                                     try { OnGetEstateBans(estateID, count, bannedUsers); }
-                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                 }
                             }
                             break;                            
@@ -318,7 +318,7 @@ namespace libsecondlife
                                         }
                                     }
                                     try { OnGetAllowedUsers(estateID, count, allowedUsers); }
-                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                 }
                             }
                             break;
@@ -339,7 +339,7 @@ namespace libsecondlife
                                         }
                                     }
                                     try { OnGetAllowedGroups(estateID, count, allowedGroups); }
-                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                 }
                             }
                             break;
@@ -361,7 +361,7 @@ namespace libsecondlife
                                 }
                             }
                             try { OnGetEstateManagers(estateID, count, managers); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
                     }
 
@@ -406,12 +406,12 @@ namespace libsecondlife
                 if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
                 {
                     try { OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
                 else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
                 {
                     try { OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 /*

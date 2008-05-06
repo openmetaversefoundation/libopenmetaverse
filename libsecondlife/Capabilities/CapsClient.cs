@@ -78,13 +78,13 @@ namespace libsecondlife.Capabilities
 
             if (_Client.IsBusy)
             {
-                SecondLife.LogStatic("New CAPS request to " + _Client.Location +
+                Logger.Log("New CAPS request to " + _Client.Location +
                     " initiated, closing previous request", Helpers.LogLevel.Warning);
                 _Client.CancelAsync();
             }
             else
             {
-                SecondLife.DebugLogStatic("New CAPS request to " + _Client.Location + " initiated");
+                Logger.DebugLog("New CAPS request to " + _Client.Location + " initiated");
             }
             
             // Proxy
@@ -117,7 +117,7 @@ namespace libsecondlife.Capabilities
             if (OnProgress != null)
             {
                 try { OnProgress(this, e.BytesReceived, 0, e.TotalBytesToReceive, 0); }
-                catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
         }
 
@@ -126,7 +126,7 @@ namespace libsecondlife.Capabilities
             if (OnProgress != null)
             {
                 try { OnProgress(this, e.BytesReceived, e.BytesSent, e.TotalBytesToReceive, e.TotalBytesToSend); }
-                catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
         }
 
@@ -139,26 +139,28 @@ namespace libsecondlife.Capabilities
                     LLSD result = LLSDParser.DeserializeXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
-                    catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                 }
                 else
                 {
                     if (Helpers.StringContains(e.Error.Message, "502"))
                     {
                         // These are normal, retry the request automatically
-                        SecondLife.DebugLogStatic("502 error from capability " + _Client.Location);
+                        Logger.DebugLog("502 error from capability " + _Client.Location);
                         StartRequest(_PostData, _ContentType);
                     }
                     else
                     {
+                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, e.Error.Message));
+
                         try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                     }
                 }
             }
             else if (e.Cancelled)
             {
-                SecondLife.DebugLogStatic("Capability action at " + _Client.Location + " cancelled");
+                Logger.DebugLog("Capability action at " + _Client.Location + " cancelled");
             }
         }
 
@@ -171,26 +173,26 @@ namespace libsecondlife.Capabilities
                     LLSD result = LLSDParser.DeserializeXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
-                    catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                 }
                 else
                 {
                     if (Helpers.StringContains(e.Error.Message, "502"))
                     {
                         // These are normal, retry the request automatically
-                        SecondLife.DebugLogStatic("502 error from capability " + _Client.Location);
+                        Logger.DebugLog("502 error from capability " + _Client.Location);
                         StartRequest(_PostData, _ContentType);
                     }
                     else
                     {
                         try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                     }
                 }
             }
             else if (e.Cancelled)
             {
-                SecondLife.DebugLogStatic("Capability action at " + _Client.Location + " cancelled");
+                Logger.DebugLog("Capability action at " + _Client.Location + " cancelled");
             }
         }
 

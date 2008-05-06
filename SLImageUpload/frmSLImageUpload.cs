@@ -33,6 +33,7 @@ namespace SLImageUpload
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
             // Turn almost everything off since we are only interested in uploading textures
+            Client.Settings.DEBUG = true;
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
@@ -90,7 +91,7 @@ namespace SLImageUpload
                     UploadData = System.IO.File.ReadAllBytes(FileName);
                     bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData, out imgData);
 
-                    Client.Log("Loaded raw JPEG2000 data " + FileName, Helpers.LogLevel.Info);
+                    Logger.Log("Loaded raw JPEG2000 data " + FileName, Helpers.LogLevel.Info, Client);
                 }
                 else
                 {
@@ -99,15 +100,15 @@ namespace SLImageUpload
                     else
                         bitmap = (Bitmap)System.Drawing.Image.FromFile(FileName);
 
-                    Client.Log("Loaded image " + FileName, Helpers.LogLevel.Info);
+                    Logger.Log("Loaded image " + FileName, Helpers.LogLevel.Info, Client);
 
                     int oldwidth = bitmap.Width;
                     int oldheight = bitmap.Height;
 
                     if (!IsPowerOfTwo((uint)oldwidth) || !IsPowerOfTwo((uint)oldheight))
                     {
-                        Client.Log("Image has irregular dimensions " + oldwidth + "x" + oldheight + ", resizing to 256x256",
-                            Helpers.LogLevel.Info);
+                        Logger.Log("Image has irregular dimensions " + oldwidth + "x" + oldheight + ", resizing to 256x256",
+                            Helpers.LogLevel.Info, Client);
 
                         Bitmap resized = new Bitmap(256, 256, bitmap.PixelFormat);
                         Graphics graphics = Graphics.FromImage(resized);
@@ -130,8 +131,8 @@ namespace SLImageUpload
                         int newwidth = (oldwidth > 1024) ? 1024 : oldwidth;
                         int newheight = (oldheight > 1024) ? 1024 : oldheight;
 
-                        Client.Log("Image has oversized dimensions " + oldwidth + "x" + oldheight + ", resizing to " +
-                            newwidth + "x" + newheight, Helpers.LogLevel.Info);
+                        Logger.Log("Image has oversized dimensions " + oldwidth + "x" + oldheight + ", resizing to " +
+                            newwidth + "x" + newheight, Helpers.LogLevel.Info, Client);
 
                         Bitmap resized = new Bitmap(newwidth, newheight, bitmap.PixelFormat);
                         Graphics graphics = Graphics.FromImage(resized);
@@ -145,11 +146,11 @@ namespace SLImageUpload
                         bitmap = resized;
                     }
 
-                    Client.Log("Encoding image...", Helpers.LogLevel.Info);
+                    Logger.Log("Encoding image...", Helpers.LogLevel.Info, Client);
 
                     UploadData = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, chkLossless.Checked);
 
-                    Client.Log("Finished encoding", Helpers.LogLevel.Info);
+                    Logger.Log("Finished encoding", Helpers.LogLevel.Info, Client);
                 }
             }
             catch (Exception ex)
@@ -262,7 +263,7 @@ namespace SLImageUpload
 
                 if (eventSuccess && lookupSuccess)
                 {
-                    Client.Log("Will send uploaded image to avatar " + SendToID.ToString(), Helpers.LogLevel.Info);
+                    Logger.Log("Will send uploaded image to avatar " + SendToID.ToString(), Helpers.LogLevel.Info, Client);
                 }
                 else
                 {
@@ -316,7 +317,7 @@ namespace SLImageUpload
                                 item.Permissions.NextOwnerMask = PermissionMask.All;
                                 Client.Inventory.RequestUpdateItem(item);
 
-                                Client.Log("Created inventory item " + itemID.ToString(), Helpers.LogLevel.Info);
+                                Logger.Log("Created inventory item " + itemID.ToString(), Helpers.LogLevel.Info, Client);
                                 MessageBox.Show("Created inventory item " + itemID.ToString());
 
                                 // FIXME: We should be watching the callback for RequestUpdateItem instead of a dumb sleep
@@ -324,15 +325,15 @@ namespace SLImageUpload
 
                                 if (SendToID != LLUUID.Zero)
                                 {
-                                    Client.Log("Sending item to " + SendToID.ToString(), Helpers.LogLevel.Info);
+                                    Logger.Log("Sending item to " + SendToID.ToString(), Helpers.LogLevel.Info, Client);
                                     Client.Inventory.GiveItem(itemID, name, AssetType.Texture, SendToID, true);
                                     MessageBox.Show("Sent item to " + SendToID.ToString());
                                 }
                             }
                             else
                             {
-                                Client.DebugLog("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
-                                    " cannot update permissions or send to another avatar");
+                                Logger.DebugLog("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
+                                    " cannot update permissions or send to another avatar", Client);
                                 MessageBox.Show("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
                                     " cannot update permissions or send to another avatar");
                             }
@@ -353,7 +354,7 @@ namespace SLImageUpload
 
         private void Network_OnEventQueueRunning(Simulator simulator)
         {
-            Client.DebugLog("Event queue is running for " + simulator.ToString() + ", enabling uploads");
+            Logger.DebugLog("Event queue is running for " + simulator.ToString() + ", enabling uploads", Client);
             EnableUpload();
         }
 

@@ -32,7 +32,7 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DocumentationFile>
     </DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
@@ -88,6 +88,7 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -138,6 +139,7 @@
     <Compile Include="LLSD\LLSD.cs" />
     <Compile Include="LLSD\NotationLLSD.cs" />
     <Compile Include="LLSD\XmlLLSD.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Login.cs" />
     <Compile Include="EstateTools.cs">
       <SubType>Code</SubType>

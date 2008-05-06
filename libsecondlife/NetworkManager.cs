@@ -400,7 +400,7 @@ namespace libsecondlife
                             return null;
                         }
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 // Attempt to establish a connection to the simulator
@@ -419,7 +419,7 @@ namespace libsecondlife
                     if (OnSimConnected != null)
                     {
                         try { OnSimConnected(simulator); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
 
                     // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
@@ -493,11 +493,11 @@ namespace libsecondlife
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
             {
-                Client.Log("Ignoring RequestLogout(), client is already logged out", Helpers.LogLevel.Warning);
+                Logger.Log("Ignoring RequestLogout(), client is already logged out", Helpers.LogLevel.Warning, Client);
                 return;
             }
 
-            Client.Log("Logging out", Helpers.LogLevel.Info);
+            Logger.Log("Logging out", Helpers.LogLevel.Info, Client);
 
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
@@ -520,7 +520,7 @@ namespace libsecondlife
                 if (OnSimDisconnected != null)
                 {
                     try { OnSimDisconnected(sim, DisconnectType.NetworkTimeout); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 lock (Simulators) Simulators.Remove(sim);
@@ -529,7 +529,7 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning);
+                Logger.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning, Client);
             }
         }
 
@@ -540,7 +540,7 @@ namespace libsecondlife
         /// </summary>
         public void Shutdown(DisconnectType type)
         {
-            Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
+            Logger.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info, Client);
 
             // Send a CloseCircuit packet to simulators if we are initiating the disconnect
             bool sendCloseCircuit = (type == DisconnectType.ClientInitiated || type == DisconnectType.NetworkTimeout);
@@ -558,7 +558,7 @@ namespace libsecondlife
                         if (OnSimDisconnected != null)
                         {
                             try { OnSimDisconnected(Simulators[i], type); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
                     }
                 }
@@ -575,7 +575,7 @@ namespace libsecondlife
                 if (OnSimDisconnected != null)
                 {
                     try { OnSimDisconnected(CurrentSim, type); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
 
@@ -588,7 +588,7 @@ namespace libsecondlife
             if (OnDisconnected != null)
             {
                 try { OnDisconnected(DisconnectType.ClientInitiated, String.Empty); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -621,7 +621,7 @@ namespace libsecondlife
             if (OnEventQueueRunning != null)
             {
                 try { OnEventQueueRunning(simulator); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -656,12 +656,12 @@ namespace libsecondlife
                                 {
                                     if (packet.Header.Resent)
                                     {
-                                        Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                        Logger.DebugLog("Received resent packet #" + packet.Header.Sequence, Client);
                                     }
                                     else
                                     {
-                                        Client.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
-                                            packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning);
+                                        Logger.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
+                                            packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning, Client);
                                     }
 
                                     // Avoid firing a callback twice for the same packet
@@ -741,7 +741,7 @@ namespace libsecondlife
                 if (OnCurrentSimChanged != null && simulator != oldSim)
                 {
                     try { OnCurrentSimChanged(oldSim); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -758,8 +758,8 @@ namespace libsecondlife
             else if (CurrentSim.DisconnectCandidate)
             {
                 // The currently occupied simulator hasn't sent us any traffic in a while, shutdown
-                Client.Log("Network timeout for the current simulator (" +
-                    CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning);
+                Logger.Log("Network timeout for the current simulator (" +
+                    CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning, Client);
 
                 if (DisconnectTimer != null) DisconnectTimer.Dispose();
                 connected = false;
@@ -806,8 +806,8 @@ namespace libsecondlife
                         {
                             // This sim hasn't received any network traffic since the 
                             // timer last elapsed, consider it disconnected
-                            Client.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
-                                ", disconnecting", Helpers.LogLevel.Warning);
+                            Logger.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
+                                ", disconnecting", Helpers.LogLevel.Warning, Client);
 
                             DisconnectSim(disconnectedSims[i], true);
                         }
@@ -833,7 +833,7 @@ namespace libsecondlife
 
             if ((logout.AgentData.SessionID == Client.Self.SessionID) && (logout.AgentData.AgentID == Client.Self.AgentID))
             {
-                Client.DebugLog("Logout reply received");
+                Logger.DebugLog("Logout reply received", Client);
 
                 // Deal with callbacks, if any
                 if (OnLogoutReply != null)
@@ -846,7 +846,7 @@ namespace libsecondlife
                     }
 
                     try { OnLogoutReply(itemIDs); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 // If we are receiving a LogoutReply packet assume this is a client initiated shutdown
@@ -854,7 +854,7 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning);
+                Logger.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning, Client);
             }
         }
 
@@ -1002,7 +1002,7 @@ namespace libsecondlife
             simulator.BillableFactor = handshake.RegionInfo.BillableFactor;
             simulator.Access = (Simulator.SimAccess)handshake.RegionInfo.SimAccess;
 
-            Client.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info);
+            Logger.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info, Client);
 
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
@@ -1034,8 +1034,8 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Parcel overlay with sequence ID of " + overlay.ParcelData.SequenceID +
-                    " received from " + simulator.ToString(), Helpers.LogLevel.Warning);
+                Logger.Log("Parcel overlay with sequence ID of " + overlay.ParcelData.SequenceID +
+                    " received from " + simulator.ToString(), Helpers.LogLevel.Warning, Client);
             }
         }
 
@@ -1052,15 +1052,15 @@ namespace libsecondlife
             IPAddress address = new IPAddress(p.SimulatorInfo.IP);
             if (Connect(address, p.SimulatorInfo.Port, p.SimulatorInfo.Handle, false, LoginSeedCapability) == null)
             {
-                Client.Log("Unabled to connect to new sim " + address + ":" + p.SimulatorInfo.Port, 
-                    Helpers.LogLevel.Error);
+                Logger.Log("Unabled to connect to new sim " + address + ":" + p.SimulatorInfo.Port, 
+                    Helpers.LogLevel.Error, Client);
                 return;
             }
         }
 
         private void DisableSimulatorHandler(Packet packet, Simulator simulator)
         {
-            Client.DebugLog("Received a DisableSimulator packet from " + simulator + ", shutting it down");
+            Logger.DebugLog("Received a DisableSimulator packet from " + simulator + ", shutting it down", Client);
 
             DisconnectSim(simulator, false);
         }
@@ -1073,7 +1073,7 @@ namespace libsecondlife
             if (OnDisconnected != null)
             {
                 try { OnDisconnected(DisconnectType.ServerInitiated, message); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
 
             // Shutdown the network layer

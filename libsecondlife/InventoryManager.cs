@@ -142,7 +142,7 @@ namespace libsecondlife
         public InventoryBase(LLUUID itemID)
         {
             if (itemID == LLUUID.Zero)
-                SecondLife.LogStatic("Initializing an InventoryBase with LLUUID.Zero", Helpers.LogLevel.Warning);
+                Logger.Log("Initializing an InventoryBase with LLUUID.Zero", Helpers.LogLevel.Warning);
             UUID = itemID;
         }
 
@@ -1045,8 +1045,8 @@ namespace libsecondlife
         {
             if (_Store == null)
             {
-                _Client.Log("Inventory is null, FindFolderForType() lookup cannot continue",
-                    Helpers.LogLevel.Error);
+                Logger.Log("Inventory is null, FindFolderForType() lookup cannot continue",
+                    Helpers.LogLevel.Error, _Client);
                 return LLUUID.Zero;
             }
 
@@ -1657,7 +1657,7 @@ namespace libsecondlife
 
             // Update the local store
             try { _Store[newFolder.UUID] = newFolder; }
-            catch (InventoryException ie) { _Client.Log(ie.Message, Helpers.LogLevel.Warning); }
+            catch (InventoryException ie) { Logger.Log(ie.Message, Helpers.LogLevel.Warning, _Client, ie); }
 
             // Create the create folder packet and send it
             CreateInventoryFolderPacket create = new CreateInventoryFolderPacket();
@@ -2139,20 +2139,20 @@ namespace libsecondlife
                     }
                     else
                     {
-                        _Client.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning);
+                        Logger.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning, _Client);
                         _Client.Assets.OnXferReceived -= xferCallback;
                         return null;
                     }
                 }
                 else
                 {
-                    _Client.Log("Task is empty for " + objectLocalID, Helpers.LogLevel.Debug);
+                    Logger.DebugLog("Task is empty for " + objectLocalID, _Client);
                     return null;
                 }
             }
             else
             {
-                _Client.Log("Timed out waiting for task inventory reply for " + objectLocalID, Helpers.LogLevel.Warning);
+                Logger.Log("Timed out waiting for task inventory reply for " + objectLocalID, Helpers.LogLevel.Warning, _Client);
                 OnTaskInventoryReply -= callback;
                 return null;
             }
@@ -2303,7 +2303,7 @@ namespace libsecondlife
                 _CallbackPos++;
 
                 if (_ItemCreatedCallbacks.ContainsKey(_CallbackPos))
-                    _Client.Log("Overwriting an existing ItemCreatedCallback", Helpers.LogLevel.Warning);
+                    Logger.Log("Overwriting an existing ItemCreatedCallback", Helpers.LogLevel.Warning, _Client);
 
                 _ItemCreatedCallbacks[_CallbackPos] = callback;
 
@@ -2321,7 +2321,7 @@ namespace libsecondlife
                 _CallbackPos++;
 
                 if (_ItemCopiedCallbacks.ContainsKey(_CallbackPos))
-                    _Client.Log("Overwriting an existing ItemsCopiedCallback", Helpers.LogLevel.Warning);
+                    Logger.Log("Overwriting an existing ItemsCopiedCallback", Helpers.LogLevel.Warning, _Client);
 
                 _ItemCopiedCallbacks[_CallbackPos] = callback;
 
@@ -2703,7 +2703,7 @@ namespace libsecondlife
                                     if (Helpers.TryParse(value, out timestamp))
                                         creationDate = Helpers.UnixTimeToDateTime(timestamp);
                                     else
-                                        SecondLife.LogStatic("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
+                                        Logger.Log("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
                                 }
                             }
                         }
@@ -2730,7 +2730,7 @@ namespace libsecondlife
                     }
                     else
                     {
-                        SecondLife.LogStatic("Unrecognized token " + key + " in: " + Helpers.NewLine + taskData,
+                        Logger.Log("Unrecognized token " + key + " in: " + Helpers.NewLine + taskData,
                             Helpers.LogLevel.Error);
                     }
                 }
@@ -2755,7 +2755,7 @@ namespace libsecondlife
             if (result == null)
             {
                 try { callback(false, error.Message, LLUUID.Zero, LLUUID.Zero); }
-                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 return;
             }
 
@@ -2778,19 +2778,19 @@ namespace libsecondlife
                 if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
                 {
                     try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
                 else
                 {
                     try { callback(false, "Failed to parse asset and item UUIDs", LLUUID.Zero, LLUUID.Zero); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
             }
             else
             {
                 // Failure
                 try { callback(false, status, LLUUID.Zero, LLUUID.Zero); }
-                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }
 
@@ -2800,8 +2800,7 @@ namespace libsecondlife
 
             // FIXME: Find this item in the inventory structure and mark the parent as needing an update
             //save.InventoryData.ItemID;
-            _Client.Log("SaveAssetIntoInventory packet received, someone write this function!",
-                Helpers.LogLevel.Error);
+            Logger.Log("SaveAssetIntoInventory packet received, someone write this function!", Helpers.LogLevel.Error, _Client);
         }
 
         private void InventoryDescendentsHandler(Packet packet, Simulator simulator)
@@ -2890,16 +2889,16 @@ namespace libsecondlife
             }
             else
             {
-                _Client.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToString() +
-                    " or it is not a folder", Helpers.LogLevel.Error);
+                Logger.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToString() +
+                    " or it is not a folder", Helpers.LogLevel.Error, _Client);
                 return;
             }
 
             if (reply.AgentData.Version < parentFolder.Version)
             {
-                _Client.Log("Got an outdated InventoryDescendents packet for folder " + parentFolder.Name +
+                Logger.Log("Got an outdated InventoryDescendents packet for folder " + parentFolder.Name +
                     ", this version = " + reply.AgentData.Version + ", latest version = " + parentFolder.Version,
-                    Helpers.LogLevel.Warning);
+                    Helpers.LogLevel.Warning, _Client);
                 return;
             }
 
@@ -2930,13 +2929,13 @@ namespace libsecondlife
                             {
                                 if (search.Level == search.Path.Length - 1)
                                 {
-                                    _Client.DebugLog("Finished path search of " + String.Join("/", search.Path));
+                                    Logger.DebugLog("Finished path search of " + String.Join("/", search.Path), _Client);
 
                                     // This is the last node in the path, fire the callback and clean up
                                     if (OnFindObjectByPath != null)
                                     {
                                         try { OnFindObjectByPath(String.Join("/", search.Path), folderContents[j].UUID); }
-                                        catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                                     }
 
                                     // Remove this entry and restart the loop since we are changing the collection size
@@ -2946,8 +2945,8 @@ namespace libsecondlife
                                 else
                                 {
                                     // We found a match but it is not the end of the path, request the next level
-                                    _Client.DebugLog(String.Format("Matched level {0}/{1} in a path search of {2}",
-                                        search.Level, search.Path.Length - 1, String.Join("/", search.Path)));
+                                    Logger.DebugLog(String.Format("Matched level {0}/{1} in a path search of {2}",
+                                        search.Level, search.Path.Length - 1, String.Join("/", search.Path)), _Client);
 
                                     search.Folder = folderContents[j].UUID;
                                     search.Level++;
@@ -2968,7 +2967,7 @@ namespace libsecondlife
             if (OnFolderUpdated != null)
             {
                 try { OnFolderUpdated(parentFolder.UUID); }
-                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }
 
@@ -2986,8 +2985,8 @@ namespace libsecondlife
             {
                 if (dataBlock.InvType == (sbyte)InventoryType.Folder)
                 {
-                    _Client.Log("Received InventoryFolder in an UpdateCreateInventoryItem packet, this should not happen!",
-                        Helpers.LogLevel.Error);
+                    Logger.Log("Received InventoryFolder in an UpdateCreateInventoryItem packet, this should not happen!",
+                        Helpers.LogLevel.Error, _Client);
                     continue;
                 }
 
@@ -3022,7 +3021,7 @@ namespace libsecondlife
                     _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { createdCallback(true, item); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
 
                 // TODO: Is this callback even triggered when items are copied?
@@ -3033,7 +3032,7 @@ namespace libsecondlife
                     _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { copyCallback(item); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
                 
                 //This is triggered when an item is received from a task
@@ -3041,7 +3040,7 @@ namespace libsecondlife
                 {
                     try { OnTaskItemReceived(item.UUID, dataBlock.FolderID, item.CreatorID, item.AssetUUID, 
                         item.InventoryType); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
             }
         }
@@ -3055,10 +3054,10 @@ namespace libsecondlife
                 // FIXME: Do something here
                 string newName = Helpers.FieldToUTF8String(move.InventoryData[i].NewName);
 
-                _Client.Log(String.Format(
+                Logger.Log(String.Format(
                     "MoveInventoryItemHandler: Item {0} is moving to Folder {1} with new name \"{2}\". Someone write this function!",
                     move.InventoryData[i].ItemID.ToString(), move.InventoryData[i].FolderID.ToString(),
-                    newName), Helpers.LogLevel.Warning);
+                    newName), Helpers.LogLevel.Warning, _Client);
             }
         }
 
@@ -3071,7 +3070,7 @@ namespace libsecondlife
                 foreach (BulkUpdateInventoryPacket.FolderDataBlock dataBlock in update.FolderData)
                 {
                     if (!_Store.Contains(dataBlock.FolderID))
-                        _Client.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Warning);
+                        Logger.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Warning, _Client);
 
                     InventoryFolder folder = new InventoryFolder(dataBlock.FolderID);
                     folder.Name = Helpers.FieldToUTF8String(dataBlock.Name);
@@ -3090,7 +3089,7 @@ namespace libsecondlife
                     // If we are given a folder of items, the item information might arrive before the folder
                     // (parent) is in the store
                     if (!_Store.Contains(dataBlock.ItemID))
-                        _Client.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning);
+                        Logger.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning, _Client);
 
                     InventoryItem item = SafeCreateInventoryItem((InventoryType)dataBlock.InvType, dataBlock.ItemID);
 
@@ -3123,7 +3122,7 @@ namespace libsecondlife
                         _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                         try { callback(true, item); }
-                        catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                     }
 
                     // Look for an "item copied" callback
@@ -3133,7 +3132,7 @@ namespace libsecondlife
                         _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                         try { copyCallback(item); }
-                        catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                     }
                 }
             }
@@ -3147,8 +3146,8 @@ namespace libsecondlife
             {
                 if (dataBlock.InvType == (sbyte)InventoryType.Folder)
                 {
-                    _Client.Log("Received FetchInventoryReply for an inventory folder, this should not happen!",
-                        Helpers.LogLevel.Error);
+                    Logger.Log("Received FetchInventoryReply for an inventory folder, this should not happen!",
+                        Helpers.LogLevel.Error, _Client);
                     continue;
                 }
 
@@ -3179,7 +3178,7 @@ namespace libsecondlife
                 if (OnItemReceived != null)
                 {
                     try { OnItemReceived(item); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
             }
         }
@@ -3195,7 +3194,7 @@ namespace libsecondlife
                     OnTaskInventoryReply(reply.InventoryData.TaskID, reply.InventoryData.Serial,
                         Helpers.FieldToUTF8String(reply.InventoryData.Filename));
                 }
-                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }
 
@@ -3222,7 +3221,7 @@ namespace libsecondlife
                     }
                     else
                     {
-                        _Client.Log("Malformed inventory offer from agent", Helpers.LogLevel.Warning);
+                        Logger.Log("Malformed inventory offer from agent", Helpers.LogLevel.Warning, _Client);
                         return;
                     }
                 }
@@ -3235,7 +3234,7 @@ namespace libsecondlife
                     }
                     else
                     {
-                        _Client.Log("Malformed inventory offer from object", Helpers.LogLevel.Warning);
+                        Logger.Log("Malformed inventory offer from object", Helpers.LogLevel.Warning, _Client);
                         return;
                     }
                 }
@@ -3301,7 +3300,7 @@ namespace libsecondlife
                 }
                 catch (Exception e)
                 {
-                    _Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                    Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e);
                 }
             }
         }
@@ -3312,7 +3311,7 @@ namespace libsecondlife
             {
                 // Initialize the store here so we know who owns it:
                 _Store = new Inventory(_Client, this, _Client.Self.AgentID);
-                _Client.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString());
+                Logger.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString(), _Client);
                 InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
                 rootFolder.Name = String.Empty;
                 rootFolder.ParentUUID = LLUUID.Zero;
@@ -3356,19 +3355,19 @@ namespace libsecondlife
                 if (contents.ContainsKey("new_asset"))
                 {
                     try { callback(true, String.Empty, (LLUUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
                 else
                 {
                     try { callback(false, "Failed to parse asset and item UUIDs", LLUUID.Zero, LLUUID.Zero); }
-                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
             }
             else
             {
                 // Failure
                 try { callback(false, status, LLUUID.Zero, LLUUID.Zero); }
-                catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }
 

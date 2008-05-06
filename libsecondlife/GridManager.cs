@@ -384,7 +384,7 @@ namespace libsecondlife
         {
             if (String.IsNullOrEmpty(name))
             {
-                Client.Log("GetGridRegion called with a null or empty region name", Helpers.LogLevel.Error);
+                Logger.Log("GetGridRegion called with a null or empty region name", Helpers.LogLevel.Error, Client);
                 region = new GridRegion();
                 return false;
             }
@@ -422,7 +422,7 @@ namespace libsecondlife
                 }
                 else
                 {
-                    Client.Log("Couldn't find region " + name, Helpers.LogLevel.Warning);
+                    Logger.Log("Couldn't find region " + name, Helpers.LogLevel.Warning, Client);
                     region = new GridRegion();
                     return false;
                 }
@@ -448,14 +448,14 @@ namespace libsecondlife
                     layer.ImageID = thisLayerData["ImageID"].AsUUID();
 
                     try { OnGridLayer(layer); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
 
             if (body.ContainsKey("MapBlocks"))
             {
                 // TODO: At one point this will become activated
-                Client.Log("Got MapBlocks through CAPS, please finish this function!", Helpers.LogLevel.Error);
+                Logger.Log("Got MapBlocks through CAPS, please finish this function!", Helpers.LogLevel.Error, Client);
             }
         }
 
@@ -494,7 +494,7 @@ namespace libsecondlife
                     if (OnGridRegion != null)
                     {
                         try { OnGridRegion(region); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
             }
@@ -526,33 +526,33 @@ namespace libsecondlife
                             break;
                         case GridItemType.Classified:
                             //FIXME:
-                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         case GridItemType.LandForSale:
                             //FIXME:
-                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         case GridItemType.MatureEvent:
                         case GridItemType.PgEvent:
                             //FIXME:
-                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         case GridItemType.Popular:
                             //FIXME:
-                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         case GridItemType.Telehub:
                             //FIXME:
-                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         default:
-                            Client.Log("Unknown map item type " + type, Helpers.LogLevel.Warning);
+                            Logger.Log("Unknown map item type " + type, Helpers.LogLevel.Warning, Client);
                             break;
                     }
                 }
 
                 try { OnGridItems(type, items); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -597,7 +597,7 @@ namespace libsecondlife
                 if (OnCourseLocationUpdate != null)
                 {
                     try { OnCourseLocationUpdate(simulator); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }

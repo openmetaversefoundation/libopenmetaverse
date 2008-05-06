@@ -506,7 +506,7 @@ namespace libsecondlife
                         asset.AssetID = transfer.ID;
 
                         try { OnImageReceived(transfer, asset); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                     return;
                 }
@@ -542,8 +542,8 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("RequestImage() called for an image we are already downloading, ignoring",
-                    Helpers.LogLevel.Info);
+                Logger.Log("RequestImage() called for an image we are already downloading, ignoring",
+                    Helpers.LogLevel.Info, Client);
             }
         }
         /// <summary>
@@ -570,7 +570,7 @@ namespace libsecondlife
                             asset.AssetID = transfer.ID;
 
                             try { OnImageReceived(transfer, asset); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
 
                         Images.RemoveAt(iri);
@@ -607,8 +607,8 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("RequestImages() called for an image(s) we are already downloading or an empty list, ignoring",
-                    Helpers.LogLevel.Info);
+                Logger.Log("RequestImages() called for an image(s) we are already downloading or an empty list, ignoring",
+                    Helpers.LogLevel.Info, Client);
             }
         }
 
@@ -661,10 +661,9 @@ namespace libsecondlife
 
             if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
             {
-                Client.Log(
+                Logger.Log(
                     String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
-                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size),
-                    Helpers.LogLevel.Info);
+                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
 
                 // The whole asset will fit in this packet, makes things easy
                 request.AssetBlock.AssetData = data;
@@ -672,10 +671,9 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log(
+                Logger.Log(
                     String.Format("Beginning asset upload [Multiple Packets], ID: {0}, AssetID: {1}, Size: {2}",
-                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size),
-                    Helpers.LogLevel.Info);
+                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
 
                 // Asset is too big, send in multiple packets
                 request.AssetBlock.AssetData = new byte[0];
@@ -733,7 +731,7 @@ namespace libsecondlife
                     asset = new AssetBodypart();
                     break;
                 default:
-                    Client.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error);
+                    Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
                     return null;
             }
 
@@ -825,7 +823,7 @@ namespace libsecondlife
                     // will need to become smarter
                     if (download.Status != StatusCode.OK)
                     {
-                        Client.Log("Transfer failed with status code " + download.Status, Helpers.LogLevel.Warning);
+                        Logger.Log("Transfer failed with status code " + download.Status, Helpers.LogLevel.Warning, Client);
 
                         lock (Transfers) Transfers.Remove(download.ID);
 
@@ -834,7 +832,7 @@ namespace libsecondlife
 
                         // Fire the event with our transfer that contains Success = false;
                         try { OnAssetReceived(download, null); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                     else
                     {
@@ -865,16 +863,16 @@ namespace libsecondlife
                         }
                         else
                         {
-                            Client.Log("Received a TransferInfo packet with a SourceType of " + download.Source.ToString() +
+                            Logger.Log("Received a TransferInfo packet with a SourceType of " + download.Source.ToString() +
                                 " and a Params field length of " + info.TransferInfo.Params.Length,
-                                Helpers.LogLevel.Warning);
+                                Helpers.LogLevel.Warning, Client);
                         }
                     }
                 }
                 else
                 {
-                    Client.Log("Received a TransferInfo packet for an asset we didn't request, TransferID: " +
-                        info.TransferInfo.TransferID, Helpers.LogLevel.Warning);
+                    Logger.Log("Received a TransferInfo packet for an asset we didn't request, TransferID: " +
+                        info.TransferInfo.TransferID, Helpers.LogLevel.Warning, Client);
                 }
             }
         }
@@ -891,15 +889,15 @@ namespace libsecondlife
 
                 if (download.Size == 0)
                 {
-                    Client.DebugLog("TransferPacket received ahead of the transfer header, blocking...");
+                    Logger.DebugLog("TransferPacket received ahead of the transfer header, blocking...", Client);
 
                     // We haven't received the header yet, block until it's received or times out
                     download.HeaderReceivedEvent.WaitOne(1000 * 5, false);
 
                     if (download.Size == 0)
                     {
-                        Client.Log("Timed out while waiting for the asset header to download for " +
-                            download.ID.ToString(), Helpers.LogLevel.Warning);
+                        Logger.Log("Timed out while waiting for the asset header to download for " +
+                            download.ID.ToString(), Helpers.LogLevel.Warning, Client);
 
                         // Abort the transfer
                         TransferAbortPacket abort = new TransferAbortPacket();
@@ -914,7 +912,7 @@ namespace libsecondlife
                         if (OnAssetReceived != null)
                         {
                             try { OnAssetReceived(download, null); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
 
                         return;
@@ -934,7 +932,7 @@ namespace libsecondlife
                 // Check if we downloaded the full asset
                 if (download.Transferred >= download.Size)
                 {
-                    Client.DebugLog("Transfer for asset " + download.AssetID.ToString() + " completed");
+                    Logger.DebugLog("Transfer for asset " + download.AssetID.ToString() + " completed", Client);
 
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
@@ -942,7 +940,7 @@ namespace libsecondlife
                     if (OnAssetReceived != null)
                     {
                         try { OnAssetReceived(download, WrapAsset(download)); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
             }
@@ -955,7 +953,7 @@ namespace libsecondlife
         private void RequestXferHandler(Packet packet, Simulator simulator)
         {
             if (PendingUpload == null)
-                Client.Log("Received a RequestXferPacket for an unknown asset upload", Helpers.LogLevel.Warning);
+                Logger.Log("Received a RequestXferPacket for an unknown asset upload", Helpers.LogLevel.Warning, Client);
             else
             {
                 AssetUpload upload = PendingUpload;
@@ -994,7 +992,7 @@ namespace libsecondlife
                 if (OnUploadProgress != null)
                 {
                     try { OnUploadProgress(upload); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 if (upload.Transferred < upload.Size)
@@ -1038,7 +1036,7 @@ namespace libsecondlife
                     lock (Transfers) Transfers.Remove(foundTransfer.Key);
 
                     try { OnAssetUploaded((AssetUpload)foundTransfer.Value); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -1064,13 +1062,13 @@ namespace libsecondlife
                 {
                     if (packetNum == download.PacketNum - 1)
                     {
-                        Client.DebugLog("Resending Xfer download confirmation for packet " + packetNum);
+                        Logger.DebugLog("Resending Xfer download confirmation for packet " + packetNum, Client);
                         SendConfirmXferPacket(download.XferID, packetNum);
                     }
                     else
                     {
-                        Client.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
-                            Helpers.LogLevel.Warning);
+                        Logger.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
+                            Helpers.LogLevel.Warning, Client);
                     }
 
                     return;
@@ -1101,9 +1099,9 @@ namespace libsecondlife
                 {
                     // This is the last packet in the transfer
                     if (!String.IsNullOrEmpty(download.Filename))
-                        Client.DebugLog("Xfer download for asset " + download.Filename + " completed");
+                        Logger.DebugLog("Xfer download for asset " + download.Filename + " completed", Client);
                     else
-                        Client.DebugLog("Xfer download for asset " + download.VFileID.ToString() + " completed");
+                        Logger.DebugLog("Xfer download for asset " + download.VFileID.ToString() + " completed", Client);
 
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
@@ -1111,7 +1109,7 @@ namespace libsecondlife
                     if (OnXferReceived != null)
                     {
                         try { OnXferReceived(download); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
             }
@@ -1142,7 +1140,7 @@ namespace libsecondlife
                     if (OnImageReceiveProgress != null)
                     {
                         try { OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
 
                     transfer.Codec = data.ImageID.Codec;
@@ -1174,7 +1172,7 @@ namespace libsecondlife
                     asset.AssetID = transfer.ID;
 
                     try { OnImageReceived(transfer, asset); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -1200,8 +1198,8 @@ namespace libsecondlife
 
                         if (transfer.Size == 0)
                         {
-                            Client.Log("Timed out while waiting for the image header to download for " +
-                                transfer.ID.ToString(), Helpers.LogLevel.Warning);
+                            Logger.Log("Timed out while waiting for the image header to download for " +
+                                transfer.ID.ToString(), Helpers.LogLevel.Warning, Client);
 
                             transfer.Success = false;
                             Transfers.Remove(transfer.ID);
@@ -1239,7 +1237,7 @@ namespace libsecondlife
                 asset.AssetID = transfer.ID;
 
                 try { OnImageReceived(transfer, asset); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1265,7 +1263,7 @@ namespace libsecondlife
             if (transfer != null && OnImageReceived != null)
             {
                 try { OnImageReceived(transfer, null); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1300,11 +1298,11 @@ namespace libsecondlife
                 return null;
             }
             try {
-                Client.Log("Reading " + FileName(imageID) + " from texture cache.", Helpers.LogLevel.Debug);
+                Logger.DebugLog("Reading " + FileName(imageID) + " from texture cache.");
                 byte[] data = File.ReadAllBytes(FileName(imageID));
                 return data;
             } catch (Exception ex) {
-                Client.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning);
+                Logger.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
                 return null;
             }
         }
@@ -1357,7 +1355,7 @@ namespace libsecondlife
             }
             
             try {
-                Client.Log("Saving " + FileName(imageID) + " to texture cache.", Helpers.LogLevel.Debug);
+                Logger.DebugLog("Saving " + FileName(imageID) + " to texture cache.", Client);
                 
                 if (!Directory.Exists(Client.Settings.TEXTURE_CACHE_DIR)) {
                     Directory.CreateDirectory(Client.Settings.TEXTURE_CACHE_DIR);
@@ -1365,7 +1363,7 @@ namespace libsecondlife
                 
                 File.WriteAllBytes(FileName(imageID), imageData);
             } catch (Exception ex) {
-                Client.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning);
+                Logger.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
                 return false;
             }
             

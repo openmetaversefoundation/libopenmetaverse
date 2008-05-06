@@ -1431,7 +1431,7 @@ namespace libsecondlife
         public LLColor(float r, float g, float b, float a)
         {
             if (r > 1f || g > 1f || b > 1f || a > 1f)
-                SecondLife.LogStatic(
+                Logger.Log(
                     String.Format("Attempting to initialize LLColor with out of range values <{0},{1},{2},{3}>",
                     r, g, b, a), Helpers.LogLevel.Warning);
 

@@ -286,7 +286,7 @@ namespace libsecondlife
                 catch (SocketException)
                 {
                     // something bad happened
-                    //SecondLife.LogStatic(
+                    //Logger.Log(
                     //    "A SocketException occurred in UDPServer.AsyncBeginReceive()", 
                     //    Helpers.LogLevel.Error, se);
 
@@ -337,7 +337,7 @@ namespace libsecondlife
                 catch (SocketException)
                 {
                     // something bad happened
-                    //SecondLife.LogStatic(
+                    //Logger.Log(
                     //    "A SocketException occurred in UDPServer.AsyncEndReceive()",
                     //    Helpers.LogLevel.Error, se);
 
@@ -379,7 +379,7 @@ namespace libsecondlife
                 }
                 catch (SocketException)
                 {
-                    //SecondLife.LogStatic(
+                    //Logger.Log(
                     //    "A SocketException occurred in UDPServer.AsyncBeginSend()",
                     //    Helpers.LogLevel.Error, se);
                 }
@@ -408,7 +408,7 @@ namespace libsecondlife
                 }
                 catch (SocketException)
                 {
-                    //SecondLife.LogStatic(
+                    //Logger.Log(
                     //    "A SocketException occurred in UDPServer.AsyncEndSend()",
                     //    Helpers.LogLevel.Error, se);
                 }

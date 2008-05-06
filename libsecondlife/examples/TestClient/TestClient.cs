@@ -192,7 +192,7 @@ namespace libsecondlife.TestClient
         {
             AlertMessagePacket message = (AlertMessagePacket)packet;
 
-            Log("[AlertMessage] " + Helpers.FieldToUTF8String(message.AlertData.Message), Helpers.LogLevel.Info);
+            Logger.Log("[AlertMessage] " + Helpers.FieldToUTF8String(message.AlertData.Message), Helpers.LogLevel.Info, this);
         }
 
         private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)

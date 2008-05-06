@@ -41,7 +41,7 @@ namespace groupmanager
 
                 foreach (Group group in Groups.Values)
                 {
-                    Client.Log(String.Format("Adding group {0} ({1})", group.Name, group.ID), Helpers.LogLevel.Info);
+                    Logger.Log(String.Format("Adding group {0} ({1})", group.Name, group.ID), Helpers.LogLevel.Info, Client);
 
                     Invoke((MethodInvoker)delegate() { lstGroups.Items.Add(group); });
                 }

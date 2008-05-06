@@ -153,7 +153,7 @@ namespace libsecondlife.Packets
             }
             catch (Exception e)
             {
-                SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Warning);
+                Logger.Log(e.Message, Helpers.LogLevel.Error, e);
             }
 
             return packet;

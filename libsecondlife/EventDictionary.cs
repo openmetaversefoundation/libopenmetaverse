@@ -118,12 +118,12 @@ namespace libsecondlife
                 }
                 catch (Exception ex)
                 {
-                    Client.Log("Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
+                    Logger.Log("Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
                 }
             }
             else if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
-                Client.Log("No handler registered for packet event " + packetType, Helpers.LogLevel.Debug);
+                Logger.DebugLog("No handler registered for packet event " + packetType, Client);
             }
         }
 
@@ -153,7 +153,7 @@ namespace libsecondlife
 
             if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
-                Client.Log("No handler registered for packet event " + packetType, Helpers.LogLevel.Debug);
+                Logger.DebugLog("No handler registered for packet event " + packetType, Client);
             }
         }
 
@@ -167,7 +167,7 @@ namespace libsecondlife
             }
             catch (Exception ex)
             {
-                Client.Log("Async Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
+                Logger.Log("Async Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
             }
         }
     }
@@ -262,7 +262,7 @@ namespace libsecondlife
                 if (callback != null)
                 {
                     try { callback(capsEvent, body, simulator); }
-                    catch (Exception ex) { Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
                 }
             }
 
@@ -277,7 +277,7 @@ namespace libsecondlife
                     incomingPacket.Simulator = simulator;
                     incomingPacket.Packet = packet;
 
-                    Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
+                    Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
 
                     Client.Network.PacketInbox.Enqueue(incomingPacket);
                     specialHandler = true;
@@ -288,13 +288,13 @@ namespace libsecondlife
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
             {
                 try { callback(capsEvent, body, simulator); }
-                catch (Exception ex) { Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
 
                 specialHandler = true;
             }
 
             if (!specialHandler)
-                Client.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning);
+                Logger.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning, Client);
         }
 
         /// <summary>
@@ -334,7 +334,7 @@ namespace libsecondlife
                     incomingPacket.Simulator = simulator;
                     incomingPacket.Packet = packet;
 
-                    Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
+                    Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
 
                     Client.Network.PacketInbox.Enqueue(incomingPacket);
                     specialHandler = true;
@@ -355,7 +355,7 @@ namespace libsecondlife
             }
 
             if (!specialHandler)
-                Client.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning);
+                Logger.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning, Client);
         }
 
         private void ThreadPoolDelegate(Object state)
@@ -368,7 +368,7 @@ namespace libsecondlife
             }
             catch (Exception ex)
             {
-                Client.Log("Async CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
+                Logger.Log("Async CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
             }
         }
     }

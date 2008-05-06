@@ -469,7 +469,7 @@ namespace libsecondlife
 
             #endregion Start Timers
 
-            Client.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info);
+            Logger.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info, Client);
 
             try
             {
@@ -498,15 +498,15 @@ namespace libsecondlife
 
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
-                    Client.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
-                        Helpers.LogLevel.Warning);
+                    Logger.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
+                        Helpers.LogLevel.Warning, Client);
                 }
 
                 return true;
             }
             catch (Exception e)
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
 
             return false;
@@ -518,7 +518,7 @@ namespace libsecondlife
             {
                 if (Caps._SeedCapsURI == seedcaps) return;
 
-                Client.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
+                Logger.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning, Client);
                 Caps.Disconnect(true);
                 Caps = null;
             }
@@ -529,7 +529,7 @@ namespace libsecondlife
                 if (!String.IsNullOrEmpty(seedcaps))
                     Caps = new Caps(this, seedcaps);
                 else
-                    Client.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
+                    Logger.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error, Client);
             }
 
         }
@@ -609,9 +609,9 @@ namespace libsecondlife
                         if (!NeedAck.ContainsKey(packet.Header.Sequence))
                             NeedAck.Add(packet.Header.Sequence, packet);
                         else
-                            Client.Log("Attempted to add a duplicate sequence number (" +
+                            Logger.Log("Attempted to add a duplicate sequence number (" +
                                 packet.Header.Sequence + ") to the NeedAck dictionary for packet type " +
-                                packet.Type.ToString(), Helpers.LogLevel.Warning);
+                                packet.Type.ToString(), Helpers.LogLevel.Warning, Client);
                     }
 
                     // Don't append ACKs to resent packets, in case that's what was causing the
@@ -697,16 +697,16 @@ namespace libsecondlife
             }
             catch (SocketException)
             {
-                Client.Log("Tried to send a " + payload.Length +
+                Logger.Log("Tried to send a " + payload.Length +
                     " byte payload on a closed socket, shutting down " + this.ToString(),
-                    Helpers.LogLevel.Info);
+                    Helpers.LogLevel.Info, Client);
 
                 Network.DisconnectSim(this, false);
                 return;
             }
             catch (Exception e)
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
         }
 
@@ -717,7 +717,7 @@ namespace libsecondlife
         public void SendPacket(UDPPacketBuffer buffer)
         {
             try { AsyncBeginSend(buffer); }
-            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
         }
 
         /// <summary>
@@ -796,8 +796,8 @@ namespace libsecondlife
             // Check if this packet came from the server we expected it to come from
             if (!ipEndPoint.Address.Equals(((IPEndPoint)buffer.RemoteEndPoint).Address))
             {
-                Client.Log("Received " + buffer.DataLength + " bytes of data from unrecognized source " +
-                    ((IPEndPoint)buffer.RemoteEndPoint).ToString(), Helpers.LogLevel.Warning);
+                Logger.Log("Received " + buffer.DataLength + " bytes of data from unrecognized source " +
+                    ((IPEndPoint)buffer.RemoteEndPoint).ToString(), Helpers.LogLevel.Warning, Client);
                 return;
             }
 
@@ -812,7 +812,7 @@ namespace libsecondlife
             // Fail-safe check
             if (packet == null)
             {
-                Client.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning);
+                Logger.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning, Client);
                 return;
             }
 
@@ -868,7 +868,7 @@ namespace libsecondlife
                 {
                     if (PendingAcks.Count > 250)
                     {
-                        Client.Log("Too many ACKs queued up!", Helpers.LogLevel.Error);
+                        Logger.Log("Too many ACKs queued up!", Helpers.LogLevel.Error, Client);
                         return;
                     }
 
@@ -905,8 +905,8 @@ namespace libsecondlife
                         try
                         {
                             if (Client.Settings.LOG_RESENDS)
-                                Client.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                    packet.Header.Sequence, packet.GetType(), now - packet.TickCount));
+                                Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
+                                    packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
 
                             packet.Header.Resent = true;
                             packet.TickCount = now;
@@ -915,7 +915,7 @@ namespace libsecondlife
                         }
                         catch (Exception ex)
                         {
-                            Client.DebugLog("Exception trying to resend packet: " + ex.ToString());
+                            Logger.DebugLog("Exception trying to resend packet: " + ex.ToString(), Client);
                         }
                     }
                 }

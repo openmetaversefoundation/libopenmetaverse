@@ -692,7 +692,7 @@ namespace libsecondlife
                 }
 
                 try { OnClassifiedReply(classifieds); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -718,7 +718,7 @@ namespace libsecondlife
                 }
 
                 try { OnDirLandReply(parcelsForSale); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -737,7 +737,7 @@ namespace libsecondlife
                     matches.Add(searchData);
                 }
                 try { OnDirPeopleReply(peopleReply.QueryData.QueryID, matches); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -756,7 +756,7 @@ namespace libsecondlife
                     matches.Add(groupsData);
                 }
                 try { OnDirGroupsReply(groupsReply.QueryData.QueryID, matches); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -787,7 +787,7 @@ namespace libsecondlife
                     places.Add(place);
                 }
                 try { OnPlacesReply(placesReply.TransactionData.TransactionID, places); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -811,7 +811,7 @@ namespace libsecondlife
                 }
 
                 try { OnEventsReply(eventsReply.QueryData.QueryID, matches); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
         
@@ -836,7 +836,7 @@ namespace libsecondlife
                 evinfo.GlobalPos = eventReply.EventData.GlobalPos;
 
                 try { OnEventInfo(evinfo); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 

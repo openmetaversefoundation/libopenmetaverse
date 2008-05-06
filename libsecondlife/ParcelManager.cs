@@ -1128,8 +1128,8 @@ namespace libsecondlife
                 Parcel p;
                 if (!simulator.Parcels.TryGetValue((int)simulator.ParcelMap.GetValue(localID), out p))
                 {
-                    Client.Log(String.Format("Can't find parcel {0} in simulator {1}", localID, simulator),
-                        Helpers.LogLevel.Warning);
+                    Logger.Log(String.Format("Can't find parcel {0} in simulator {1}", localID, simulator),
+                        Helpers.LogLevel.Warning, Client);
                     return false;
                 }
 
@@ -1139,7 +1139,7 @@ namespace libsecondlife
 
             if (!Client.Terrain.TerrainHeightAtPoint(simulator.Handle, x, y, out height))
             {
-                Client.Log("Land Patch not stored for location", Helpers.LogLevel.Warning);
+                Logger.Log("Land Patch not stored for location", Helpers.LogLevel.Warning, Client);
                 return false;
             }
 
@@ -1274,7 +1274,7 @@ namespace libsecondlife
                 if (OnParcelDwell != null)
                 {
                     try { OnParcelDwell(dwell.Data.ParcelID, dwell.Data.LocalID, dwell.Data.Dwell); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -1304,7 +1304,7 @@ namespace libsecondlife
                 parcelInfo.SnapshotID = info.Data.SnapshotID;
 
                 try { OnParcelInfo(parcelInfo); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
         /// <summary>
@@ -1429,14 +1429,14 @@ namespace libsecondlife
                         OnParcelProperties(parcel, (ParcelResult)parcel.RequestResult,
                           parcel.SequenceID, parcel.SnapSelection);
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 // Check if all of the simulator parcels have been retrieved, if so fire another callback
                 if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
                 {
                     try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -1543,14 +1543,14 @@ namespace libsecondlife
                         OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
                             properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
 
                 // Check if all of the simulator parcels have been retrieved, if so fire another callback
                 if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
                 {
                     try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -1589,7 +1589,7 @@ namespace libsecondlife
                         OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
                       accessList);
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -1612,7 +1612,7 @@ namespace libsecondlife
                     primOwners.Add(poe);
                 }
                 try { OnPrimOwnersListReply(simulator, primOwners); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
 
         }

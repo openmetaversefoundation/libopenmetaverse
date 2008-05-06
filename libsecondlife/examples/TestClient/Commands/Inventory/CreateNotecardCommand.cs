@@ -54,7 +54,7 @@ namespace libsecondlife.TestClient
             }
             catch (System.Exception e)
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Logger.Log(e.ToString(), Helpers.LogLevel.Error, Client);
                 return "Error creating notecard.";
             }
         }

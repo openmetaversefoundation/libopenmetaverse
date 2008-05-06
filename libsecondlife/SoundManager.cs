@@ -60,7 +60,7 @@ namespace libsecondlife
             if (OnAttachSound != null)
             {
                 try { OnAttachSound(sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, sound.DataBlock.Gain, sound.DataBlock.Flags); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -70,7 +70,7 @@ namespace libsecondlife
             if (OnAttachSoundGainChange != null)
             {
                 try { OnAttachSoundGainChange(change.DataBlock.ObjectID, change.DataBlock.Gain); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -85,7 +85,7 @@ namespace libsecondlife
                     {
                         OnPreloadSound(data.SoundID, data.OwnerID, data.ObjectID);
                     }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace libsecondlife
                         trigger.SoundData.Position
                      );
                 }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
     }

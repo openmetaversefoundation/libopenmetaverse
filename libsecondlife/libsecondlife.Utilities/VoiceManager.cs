@@ -258,7 +258,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestCaptureDevices() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestCaptureDevices() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -276,7 +276,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestRenderDevices() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestRenderDevices() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -315,7 +315,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.CreateConnector() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.CreateConnector() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -339,15 +339,15 @@ namespace libsecondlife.Utilities
                     }
                     else
                     {
-                        Client.Log("VoiceManager." + me + "(): " + capsName + " capability is missing", 
-                                   Helpers.LogLevel.Info);
+                        Logger.Log("VoiceManager." + me + "(): " + capsName + " capability is missing", 
+                                   Helpers.LogLevel.Info, Client);
                         return false;
                     }
                 }
             }
 
-            Client.Log("VoiceManager.RequestVoiceInternal(): Voice system is currently disabled", 
-                       Helpers.LogLevel.Info);
+            Logger.Log("VoiceManager.RequestVoiceInternal(): Voice system is currently disabled", 
+                       Helpers.LogLevel.Info, Client);
             return false;
             
         }
@@ -381,7 +381,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.Login() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.Login() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -398,7 +398,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestSetRenderDevice() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestSetRenderDevice() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -415,7 +415,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestStartTuningMode() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestStartTuningMode() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -432,7 +432,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestStopTuningMode() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestStopTuningMode() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return _CommandCookie - 1;
             }
         }
@@ -452,7 +452,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestSetSpeakerVolume() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestSetSpeakerVolume() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -472,7 +472,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestSetCaptureVolume() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestSetCaptureVolume() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -496,7 +496,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestRenderAudioStart() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestRenderAudioStart() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -513,7 +513,7 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                Client.Log("VoiceManager.RequestRenderAudioStop() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                Logger.Log("VoiceManager.RequestRenderAudioStop() called when the daemon pipe is disconnected", Helpers.LogLevel.Error, Client);
                 return -1;
             }
         }
@@ -530,13 +530,13 @@ namespace libsecondlife.Utilities
 
                 if (VOICE_MAJOR_VERSION != majorVersion)
                 {
-                    Client.Log(String.Format("Voice version mismatch! Got {0}, expecting {1}. Disabling the voice manager",
-                        majorVersion, VOICE_MAJOR_VERSION), Helpers.LogLevel.Error);
+                    Logger.Log(String.Format("Voice version mismatch! Got {0}, expecting {1}. Disabling the voice manager",
+                        majorVersion, VOICE_MAJOR_VERSION), Helpers.LogLevel.Error, Client);
                     Enabled = false;
                 }
                 else
                 {
-                    Client.DebugLog("Voice version " + majorVersion + " verified");
+                    Logger.DebugLog("Voice version " + majorVersion + " verified", Client);
                 }
             }
         }
@@ -550,7 +550,7 @@ namespace libsecondlife.Utilities
                 if (OnProvisionAccount != null)
                 {
                     try { OnProvisionAccount(respTable["username"].AsString(), respTable["password"].AsString()); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -640,8 +640,8 @@ namespace libsecondlife.Utilities
 
                                     if (cookie == -1)
                                     {
-                                        Client.Log("VoiceManager._DaemonPipe_OnReceiveLine(): Failed to parse InputXml for the cookie",
-                                            Helpers.LogLevel.Warning);
+                                        Logger.Log("VoiceManager._DaemonPipe_OnReceiveLine(): Failed to parse InputXml for the cookie",
+                                            Helpers.LogLevel.Warning, Client);
                                     }
                                     break;
                                 case "CaptureDevices":

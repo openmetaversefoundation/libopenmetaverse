@@ -125,8 +125,8 @@ namespace libsecondlife.TestClient
                             double yTarget = (double)targetAv.Position.Y + (double)regionY;
                             double zTarget = targetAv.Position.Z - 2f;
 
-                            Client.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
-                                distance, xTarget, yTarget, zTarget));
+                            Logger.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
+                                distance, xTarget, yTarget, zTarget), Client);
 
                             Client.Self.AutoPilot(xTarget, yTarget, zTarget);
                         }
@@ -149,7 +149,7 @@ namespace libsecondlife.TestClient
 
             if (message.Contains("Autopilot cancel"))
             {
-                Client.Log("Server cancelled the autopilot", Helpers.LogLevel.Info);
+                Logger.Log("Server cancelled the autopilot", Helpers.LogLevel.Info, Client);
             }
         }
     }

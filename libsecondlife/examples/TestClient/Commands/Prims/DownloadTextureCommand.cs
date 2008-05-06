@@ -42,7 +42,7 @@ namespace libsecondlife.TestClient
                         if (Asset != null && Asset.Decode())
                         {
                             try { File.WriteAllBytes(Image.ID.ToString() + ".jp2", Asset.AssetData); }
-                            catch (Exception ex) { Client.Log(ex.Message, Helpers.LogLevel.Error); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
 
                             return String.Format("Saved {0}.jp2 ({1}x{2})", Image.ID, Asset.Image.Width, Asset.Image.Height);
                         }

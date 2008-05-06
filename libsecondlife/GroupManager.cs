@@ -636,7 +636,7 @@ namespace libsecondlife
                     {
                            
                         try { OnGroupNames(groupNames); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
             
@@ -683,7 +683,7 @@ namespace libsecondlife
             // fire handler from cache
             if(groupNames.Count > 0 && OnGroupNames != null)
                 try { OnGroupNames(groupNames); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
         }
 
         /// <summary>Lookup group profile data such as name, enrollment, founder, logo, etc</summary>
@@ -1083,7 +1083,7 @@ namespace libsecondlife
                 }
 
                 try { OnCurrentGroups(currentGroups); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1092,7 +1092,7 @@ namespace libsecondlife
             if (OnGroupDropped != null)
             {
                 try { OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1121,7 +1121,7 @@ namespace libsecondlife
                 group.ShowInList = profile.GroupData.ShowInList;
 
                 try { OnGroupProfile(group); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1143,7 +1143,7 @@ namespace libsecondlife
                 }
 
                 try { OnGroupTitles(groupTitleCache); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1179,7 +1179,7 @@ namespace libsecondlife
             if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
                 try { OnGroupMembers(groupMemberCache); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1214,7 +1214,7 @@ namespace libsecondlife
             if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
             {
                 try { OnGroupRoles(groupRoleCache); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1244,7 +1244,7 @@ namespace libsecondlife
             }
             catch (Exception e)
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
 
             //Client.DebugLog("Pairs Ratio: " + groupRoleMemberCache.Count + "/" + members.AgentData.TotalPairs);
@@ -1253,7 +1253,7 @@ namespace libsecondlife
             if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
                 try { OnGroupRolesMembers(groupRoleMemberCache); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1299,7 +1299,7 @@ namespace libsecondlife
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
                 try { OnGroupAccountSummary(account); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1325,7 +1325,7 @@ namespace libsecondlife
                 }
 
                 try { OnGroupAccountDetails(account); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1333,8 +1333,8 @@ namespace libsecondlife
         {
             GroupAccountTransactionsReplyPacket reply = (GroupAccountTransactionsReplyPacket)packet;
 
-            Client.Log("Got a GroupAccountTransactionsReply packet, implement this callback!\n" +
-                reply.ToString(), Helpers.LogLevel.Error);
+            Logger.Log("Got a GroupAccountTransactionsReply packet, implement this callback!\n" +
+                reply.ToString(), Helpers.LogLevel.Error, Client);
         }
 
         private void CreateGroupReplyHandler(Packet packet, Simulator simulator)
@@ -1346,7 +1346,7 @@ namespace libsecondlife
                 string message = Helpers.FieldToUTF8String(reply.ReplyData.Message);
 
                 try { OnGroupCreated(reply.ReplyData.GroupID, reply.ReplyData.Success, message); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1357,7 +1357,7 @@ namespace libsecondlife
                 JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
 
                 try { OnGroupJoined(reply.GroupData.GroupID, reply.GroupData.Success); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1368,7 +1368,7 @@ namespace libsecondlife
                 LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
 
                 try { OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1389,7 +1389,7 @@ namespace libsecondlife
             if (OnGroupNames != null)
             {    
                 try { OnGroupNames(groupNames); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 

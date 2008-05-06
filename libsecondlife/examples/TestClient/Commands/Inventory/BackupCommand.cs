@@ -181,7 +181,7 @@ namespace libsecondlife.TestClient
                     {
                         if ((qdi.WhenRequested + TimeSpan.FromSeconds(60)) < DateTime.Now)
                         {
-                            Client.DebugLog(Name + ": timeout on asset " + qdi.AssetID.ToString());
+                            Logger.DebugLog(Name + ": timeout on asset " + qdi.AssetID.ToString(), Client);
                             // submit request again
                             qdi.TransferID = Client.Assets.RequestInventoryAsset(
                                 qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true);
@@ -209,7 +209,7 @@ namespace libsecondlife.TestClient
 
                 if (CurrentDownloads.Count == 0 && PendingDownloads.Count == 0 && BackupWorker == null)
                 {
-                    Client.DebugLog(Name + ": both transfer queues empty AND inventory walking thread is done");
+                    Logger.DebugLog(Name + ": both transfer queues empty AND inventory walking thread is done", Client);
                     return;
                 }
 
@@ -329,7 +329,7 @@ namespace libsecondlife.TestClient
 
                         // write out the file
                         File.WriteAllBytes(r.FileName, asset.AssetData);
-                        Client.DebugLog(Name + " Wrote: " + r.FileName);
+                        Logger.DebugLog(Name + " Wrote: " + r.FileName, Client);
                         TextItemsTransferred++;
                     }
                     else

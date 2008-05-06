@@ -610,7 +610,7 @@ namespace libsecondlife
                     if (OnFriendOnline != null && doNotify)
                     {
                         try { OnFriendOnline(friend); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
             }
@@ -644,7 +644,7 @@ namespace libsecondlife
                     if (OnFriendOffline != null)
                     {
                         try { OnFriendOffline(friend); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
             }
@@ -673,7 +673,7 @@ namespace libsecondlife
                         if (OnFriendRights != null)
                         {
                             try { OnFriendRights(friend); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
                     }
                     else if (block.AgentRelated == Client.Self.AgentID)
@@ -684,7 +684,7 @@ namespace libsecondlife
                             if (OnFriendRights != null)
                             {
                                 try { OnFriendRights(friend); }
-                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                             }
                         }
                     }
@@ -710,7 +710,7 @@ namespace libsecondlife
             LLVector3 xyz = new LLVector3(x, y, 0f);
 
             try { OnFriendFound(prey, regionHandle, xyz); }
-            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -735,7 +735,7 @@ namespace libsecondlife
                         	FriendRequests.Add(im.FromAgentID, im.IMSessionID);
                     }
                     try { OnFriendshipOffered(im.FromAgentID, im.FromAgentName, im.IMSessionID); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
             else if (im.Dialog == InstantMessageDialog.FriendshipAccepted)
@@ -748,7 +748,7 @@ namespace libsecondlife
                 if (OnFriendshipResponse != null)
                 {
                     try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, true); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
             else if (im.Dialog == InstantMessageDialog.FriendshipDeclined)
@@ -756,7 +756,7 @@ namespace libsecondlife
                 if (OnFriendshipResponse != null)
                 {
                     try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, false); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }

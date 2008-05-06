@@ -94,16 +94,16 @@ namespace libsecondlife.TestClient
 
                 if (!complete)
                 {
-                    Client.Log("Warning: Unable to retrieve full properties for:", Helpers.LogLevel.Warning);
+                    Logger.Log("Warning: Unable to retrieve full properties for:", Helpers.LogLevel.Warning, Client);
                     foreach (LLUUID uuid in PrimsWaiting.Keys)
-                        Client.Log(uuid.ToString(), Helpers.LogLevel.Warning);
+                        Logger.Log(uuid.ToString(), Helpers.LogLevel.Warning, Client);
                 }
 
                 string output = LLSDParser.SerializeXmlString(Helpers.PrimListToLLSD(prims));
                 try { File.WriteAllText(file, output); }
                 catch (Exception e) { return e.Message; }
 
-                Client.Log("Exported " + prims.Count + " prims to " + file, Helpers.LogLevel.Info);
+                Logger.Log("Exported " + prims.Count + " prims to " + file, Helpers.LogLevel.Info, Client);
 
                 // Create a list of all of the textures to download
                 List<ImageRequest> textureRequests = new List<ImageRequest>();
@@ -184,23 +184,23 @@ namespace libsecondlife.TestClient
                 if (image.Success)
                 {
                     try { File.WriteAllBytes(image.ID.ToString() + ".jp2", asset.AssetData); }
-                    catch (Exception ex) { Client.Log(ex.Message, Helpers.LogLevel.Error); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
 
                     if (asset.Decode())
                     {
                         try { File.WriteAllBytes(image.ID.ToString() + ".tga", asset.Image.ExportTGA()); }
-                        catch (Exception ex) { Client.Log(ex.Message, Helpers.LogLevel.Error); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
                     }
                     else
                     {
-                        Client.Log("Failed to decode image " + image.ID.ToString(), Helpers.LogLevel.Error);
+                        Logger.Log("Failed to decode image " + image.ID.ToString(), Helpers.LogLevel.Error, Client);
                     }
 
-                    Client.Log("Finished downloading image " + image.ID.ToString(), Helpers.LogLevel.Info);
+                    Logger.Log("Finished downloading image " + image.ID.ToString(), Helpers.LogLevel.Info, Client);
                 }
                 else
                 {
-                    Client.Log("Failed to download image " + image.ID.ToString(), Helpers.LogLevel.Warning);
+                    Logger.Log("Failed to download image " + image.ID.ToString(), Helpers.LogLevel.Warning, Client);
                 }
             }
         }

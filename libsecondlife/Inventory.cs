@@ -156,7 +156,7 @@ namespace libsecondlife
             Manager = manager;
             _Owner = owner;
             if (owner == LLUUID.Zero)
-                client.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning);
+                Logger.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning, Client);
             Items = new Dictionary<LLUUID, InventoryNode>();
         }
 
@@ -212,9 +212,8 @@ namespace libsecondlife
                     // Unfortunately, this breaks the nice unified tree
                     // while we're waiting for the parent's data to come in.
                     // As soon as we get the parent, the tree repairs itself.
-                    Client.DebugLog("Attempting to update inventory child of " +
-                        item.ParentUUID.ToString() +
-                        " when we have no local reference to that folder");
+                    Logger.DebugLog("Attempting to update inventory child of " +
+                        item.ParentUUID.ToString() + " when we have no local reference to that folder", Client);
 
                     if (Client.Settings.FETCH_MISSING_INVENTORY)
                     {
@@ -333,8 +332,8 @@ namespace libsecondlife
                 {
                     // Log a warning if there is a UUID mismatch, this will cause problems
                     if (value.UUID != uuid)
-                        Client.Log("Inventory[uuid]: uuid " + uuid.ToString() + " is not equal to value.UUID " +
-                            value.UUID.ToString(), Helpers.LogLevel.Warning);
+                        Logger.Log("Inventory[uuid]: uuid " + uuid.ToString() + " is not equal to value.UUID " +
+                            value.UUID.ToString(), Helpers.LogLevel.Warning, Client);
 
                     UpdateNodeFor(value);
                 }
@@ -358,7 +357,7 @@ namespace libsecondlife
             if (OnInventoryObjectUpdated != null)
             {
                 try { OnInventoryObjectUpdated(oldObject, newObject); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -367,7 +366,7 @@ namespace libsecondlife
             if (OnInventoryObjectRemoved != null)
             {
                 try { OnInventoryObjectRemoved(obj); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -376,7 +375,7 @@ namespace libsecondlife
             if (OnInventoryObjectAdded != null)
             {
                 try { OnInventoryObjectAdded(obj); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 

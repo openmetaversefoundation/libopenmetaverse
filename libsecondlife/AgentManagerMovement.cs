@@ -518,7 +518,7 @@ namespace libsecondlife
                 }
                 else
                 {
-                    Client.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning);
+                    Logger.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning, Client);
                     return false;
                 }
             }
@@ -565,7 +565,7 @@ namespace libsecondlife
                 }
                 else
                 {
-                    Client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                    Logger.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning, Client);
                     return false;
                 }
             }

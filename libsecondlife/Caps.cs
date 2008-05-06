@@ -90,8 +90,8 @@ namespace libsecondlife
 
         public void Disconnect(bool immediate)
         {
-            Simulator.Client.Log(String.Format("Caps system for {0} is {1}", Simulator,
-                (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info);
+            Logger.Log(String.Format("Caps system for {0} is {1}", Simulator,
+                (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info, Simulator.Client);
 
             if (_SeedRequest != null)
                 _SeedRequest.Cancel();
@@ -176,11 +176,11 @@ namespace libsecondlife
                     _Caps[cap] = respTable[cap].AsUri();
                 }
 
-                Simulator.Client.DebugLog("Got capabilities: " + capsList.ToString());
+                Logger.DebugLog("Got capabilities: " + capsList.ToString(), Simulator.Client);
 
                 if (_Caps.ContainsKey("EventQueueGet"))
                 {
-                    Simulator.Client.DebugLog("Starting event queue for " + Simulator.ToString());
+                    Logger.DebugLog("Starting event queue for " + Simulator.ToString(), Simulator.Client);
 
                     _EventQueueCap = new EventQueueClient(_Caps["EventQueueGet"]);
                     _EventQueueCap.OnConnected += new EventQueueClient.ConnectedCallback(EventQueueConnectedHandler);

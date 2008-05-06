@@ -79,12 +79,12 @@ namespace libsecondlife.Capabilities
 
             if (_Client.IsBusy)
             {
-                SecondLife.DebugLogStatic("Stopping a running event queue");
+                Logger.DebugLog("Stopping a running event queue");
                 _Client.CancelAsync();
             }
             else
             {
-                SecondLife.DebugLogStatic("Stopping an already dead event queue");
+                Logger.DebugLog("Stopping an already dead event queue");
             }
         }
 
@@ -113,13 +113,13 @@ namespace libsecondlife.Capabilities
 
             if (raiseEvent)
             {
-                SecondLife.DebugLogStatic("Capabilities event queue connected");
+                Logger.DebugLog("Capabilities event queue connected");
 
                 // The event queue is starting up for the first time
                 if (OnConnected != null)
                 {
                     try { OnConnected(); }
-                    catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                 }
             }
         }
@@ -137,22 +137,26 @@ namespace libsecondlife.Capabilities
                 // Check what kind of exception happened
                 if (Helpers.StringContains(message, "404") || Helpers.StringContains(message, "410"))
                 {
-                    SecondLife.LogStatic("Closing event queue at " + _Client.Location  + " due to missing caps URI",
+                    Logger.Log("Closing event queue at " + _Client.Location  + " due to missing caps URI",
                         Helpers.LogLevel.Info);
 
                     _Running = false;
                     _Dead = true;
                 }
-                else if (!e.Cancelled && !Helpers.StringContains(message, "502"))
+                else if (!e.Cancelled)
                 {
-                    if (e.Error.InnerException != null)
+                    if (Helpers.StringContains(message, "502"))
                     {
-                        SecondLife.LogStatic("Unrecognized caps exception from " + _Client.Location +
+                        Logger.DebugLog("502 error from event queue " + _Client.Location);
+                    }
+                    else if (e.Error.InnerException != null)
+                    {
+                        Logger.Log("Unrecognized caps exception from " + _Client.Location +
                             ": " + e.Error.InnerException.Message, Helpers.LogLevel.Warning);
                     }
                     else
                     {
-                        SecondLife.LogStatic("Unrecognized caps exception from " + _Client.Location +
+                        Logger.Log("Unrecognized caps exception from " + _Client.Location +
                             ": " + e.Error.Message, Helpers.LogLevel.Warning);
                     }
                 }
@@ -173,7 +177,7 @@ namespace libsecondlife.Capabilities
             else if (e.Cancelled)
             {
                 // Connection was cancelled
-                SecondLife.DebugLogStatic("Cancelled connection to event queue at " + _Client.Location);
+                Logger.DebugLog("Cancelled connection to event queue at " + _Client.Location);
             }
 
             if (_Running)
@@ -192,7 +196,7 @@ namespace libsecondlife.Capabilities
                 if (_Dead)
                 {
                     _Running = false;
-                    SecondLife.DebugLogStatic("Sent event queue shutdown message");
+                    Logger.DebugLog("Sent event queue shutdown message");
                 }
             }
 
@@ -205,7 +209,7 @@ namespace libsecondlife.Capabilities
                     LLSDMap body = (LLSDMap)evt["body"];
 
                     try { OnEvent(msg, body); }
-                    catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                 }
             }
         }
