@@ -92,7 +92,7 @@
 		<mkdir dir="${bin_dir}" failonerror="true"/>
 		
 		<!-- Compile the library -->
-		<csc target="library" unsafe="true" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
+		<csc target="library" unsafe="true" output="${bin_dir}/libsecondlife.dll" doc="${bin_dir}/libsecondlife.xml" debug="${build.debug}">
 			<sources>
 				<include name="*.cs" />
 				<include name="LLSD/*.cs" />
@@ -104,7 +104,7 @@
                             <include name="Resources/*.xml" />
 			</resources>
 			<references>
-			    <include name="log4net.dll" />
+			    <include name="${bin_dir}//log4net.dll" />
 				<include name="System.Drawing.dll" />
 			</references>
 			<nowarn>
