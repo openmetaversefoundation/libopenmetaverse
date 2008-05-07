@@ -119,8 +119,6 @@ namespace libsecondlife
         /// would need to be rewritten as asynchronous code before this is
         /// feasible</remarks>
         public bool SYNC_PACKETCALLBACKS = false;
-        /// <summary>Enable/disable debugging log messages</summary>
-        public bool DEBUG = true;
         /// <summary>Attach avatar names to log messages</summary>
         public bool LOG_NAMES = true;
 	    /// <summary>Log packet retransmission info</summary>
@@ -163,7 +161,7 @@ namespace libsecondlife
         /// re-establish a connection. Set this to true to log those 502 errors</summary>
         public bool LOG_ALL_CAPS_ERRORS = false;
         /// <summary>If true, any reference received for a folder or item
-        /// libsecondlife is not aware of will automatically be fetched.</summary>
+        /// libsecondlife is not aware of will automatically be fetched</summary>
         public bool FETCH_MISSING_INVENTORY = true;
         /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
         /// AgentUpdate packets will continuously be sent out to give the bot
@@ -179,7 +177,7 @@ namespace libsecondlife
         public bool PARCEL_TRACKING = true;
         /// <summary>
         /// If true, an incoming parcel properties reply will automatically send
-        /// a request for the parcel access list.
+        /// a request for the parcel access list
         /// </summary>
         public bool ALWAYS_REQUEST_PARCEL_ACL = true;
         /// <summary>
@@ -191,25 +189,27 @@ namespace libsecondlife
         // Texture cache
 
         /// <summary>
-        /// if true, images downloaded from the server will be cached 
-        /// in a local directory.
+        /// If true, images downloaded from the server will be cached 
+        /// in a local directory
         /// </summary>
         public bool USE_TEXTURE_CACHE = false;
-        /// <summary>
-        /// Path where to store the cached images.
-        /// </summary>
+        /// <summary>Path to store cached texture data</summary>
         public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
-
-        // Misc
-        // allow client to bind to a different IP Address than the default
+        /// <summary>IP Address the client will bind to</summary>
         public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
-
         /// <summary>Default color used for viewer particle effects</summary>
         public LLColor DEFAULT_EFFECT_COLOR = new LLColor(255, 0, 0, 255);
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>
         public int UPLOAD_COST { get { return priceUpload; } }
+
+        /// <summary>Enable/disable debugging log messages</summary>
+        public bool DEBUG
+        {
+            get { return Logger.IsDebugEnabled; }
+            set { Logger.IsDebugEnabled = value; }
+        }
 
         private SecondLife Client;
         private int priceUpload = 0;

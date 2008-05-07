@@ -25,6 +25,8 @@ namespace libsecondlife
 
         /// <summary>log4net logging engine</summary>
         public static ILog LogInstance;
+        /// <summary>Whether the DEBUG level of logging is enabled</summary>
+        public static bool IsDebugEnabled;
 
         /// <summary>
         /// Default constructor
@@ -37,7 +39,10 @@ namespace libsecondlife
             // ConsoleAppender
             if (!LogInstance.Logger.IsEnabledFor(log4net.Core.Level.Error))
             {
-                BasicConfigurator.Configure();
+                log4net.Appender.ConsoleAppender appender = new log4net.Appender.ConsoleAppender();
+                appender.Layout = new log4net.Layout.PatternLayout("%timestamp [%thread] %-5level - %message%newline");
+                BasicConfigurator.Configure(appender);
+
                 LogInstance.Info("No log configuration found, defaulting to console logging");
             }
         }
@@ -130,13 +135,16 @@ namespace libsecondlife
         [System.Diagnostics.Conditional("DEBUG")]
         public static void DebugLog(object message, SecondLife client)
         {
-            if (client != null && client.Settings.LOG_NAMES)
-                message = String.Format("<{0}>: {1}", client.Self.Name, message);
+            if (IsDebugEnabled)
+            {
+                if (client != null && client.Settings.LOG_NAMES)
+                    message = String.Format("<{0}>: {1}", client.Self.Name, message);
 
-            if (OnLogMessage != null)
-                OnLogMessage(message, Helpers.LogLevel.Debug);
+                if (OnLogMessage != null)
+                    OnLogMessage(message, Helpers.LogLevel.Debug);
 
-            LogInstance.Debug(message);
+                LogInstance.Debug(message);
+            }
         }
     }
 }
