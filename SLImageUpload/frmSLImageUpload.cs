@@ -78,6 +78,9 @@ namespace SLImageUpload
 
         private void LoadImage()
         {
+        	if (FileName == null || FileName == "")
+        		return;
+        	
             string lowfilename = FileName.ToLower();
             Bitmap bitmap = null;
 
