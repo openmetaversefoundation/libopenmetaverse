@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+
+<project name="libsecondlife" default="build">
+  <!-- global framework settings -->
+  <property name="target.framework"
+    value="${framework::get-target-framework()}" />
+  <property name="assembly.dir"
+    value="${framework::get-assembly-directory(target.framework)}" />
+
+  <!-- global project settings -->
+  <xmlpeek
+    file="../../libsecondlife.build"
+    xpath="/project/property[@name = 'project.version']/@value"
+    property="project.version" />
+  <property name="assembly" value="examples" />
+  <property name="bin_dir" value="../../bin" />
+
+  <!-- default configuration -->
+  <property name="project.config" value="debug" /> <!-- debug|release -->
+
+  <!-- named configurations -->
+  <target name="init" description="Initializes build properties">
+    <echo message="assembly.dir=${assembly.dir}" />
+    <mkdir dir="${bin_dir}" failonerror="false" />
+    <call target="${project.config}" />
+  </target>
+
+  <target name="debug" description="configures a debug build">
+    <property name="build.debug" value="true" />
+    <property name="package.name"
+	     value="${project::get-name()}-${project.version}-${project.config}" />
+    <property name="assembly.configuration"
+      value="${framework::get-target-framework()}.${platform::get-name()} [${project.config}]" />
+  </target>
+
+  <target name="release" description="configures a release build">
+    <property name="project.config" value="release" />
+    <property name="build.debug"    value="false" />
+    <property name="package.name"   value="${project::get-name()}-${project.version}" />
+    <property name="assembly.configuration"
+      value="${framework::get-target-framework()}.${platform::get-name()}" />
+  </target>
+
+  <!-- build tasks -->
+  <target name="example" description="Build a particular example">
+    <property name="example_name" value="${path::get-file-name(example_path)}" />
+	<property name="example_buildfile" value="${example_path}/${example_name}.build" />
+    <echo message="building ${example_name}" />
+	<nant buildfile="${example_buildfile}" if="${file::exists(example_buildfile)}" />
+	  <csc target="exe" debug="${build.debug}" output="${bin_dir}/${example_name}.exe" unless="${file::exists(example_buildfile)}">
+		  <sources failonempty="true">
+			  <include name="${example_path}/**/*.cs"/>
+		  </sources>
+      <references basedir="${bin_dir}/">
+         <include name="libsecondlife.dll"/>
+         <include name="System.Data.dll" />
+         <include name="System.Drawing.dll" />
+         <include name="System.Windows.Forms.dll" />
+      </references>
+    </csc>
+  </target>
+
+  <target name="build" depends="init" description="Build all examples">
+	<foreach item="Folder" in="." property="example_path">
+	  <call target="example" unless="${string::ends-with(example_path,'svn') or string::contains(example_path,'IA_') or string::contains(example_path,'Heightmap')}"/>
+    </foreach>
+  </target>
+
+  <target name="clean" description="Clean all examples">
+    <foreach item="Folder" in="." property="example_path">
+	<call target="clean-examples" unless="${string::ends-with(example_path,'svn')}"/>
+    </foreach>
+  </target>
+
+  <target name="clean-example" description="Deletes files for a given example">
+    <property name="example_name" value="${path::get-file-name(example_path)}" />
+    <delete failonerror="false">
+      <fileset basedir="${bin_dir}/">
+        <include name="${example_name}.*" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="*" description="Handles unknown targets">
+    <echo message="skip" />
+  </target>
+</project>

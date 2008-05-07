@@ -1,0 +1,109 @@
+:: [ Walking (also Striding) ] ::
+
+:: [ Running ] ::
+
+:: [ CrouchWalking ] ::
+
+:: [ Flying (also FlyingSlow) ] ::
+
+:: [ Turning Left ] ::
+
+:: [ Turning Right ] ::
+
+:: [ Jumping ] ::
+
+:: [ Hovering Up ] ::
+
+:: [ Crouching ] ::
+
+:: [ Fly Down ] ::
+
+:: [ Standing 1 ] ::
+
+:: [ Standing 2 ] ::
+
+:: [ Standing 3 ] ::
+
+:: [ Standing 4 ] ::
+
+:: [ Standing 5 ] ::
+
+:: [ Hovering ] ::
+
+:: [ Sitting ] ::
+
+:: [ PreJumping ] ::
+
+:: [ Falling ] ::
+
+:: [ Soft Landing/Landing ] ::
+
+:: [ Standing Up (That anim you play after you fall when you stand up and brush yourself off) ] ::
+
+:: [ FlyingSlow ] ::
+
+:: [ Sitting on Ground ] ::
+
+:: [ Floating (Hovering underwater) ] ::
+
+:: [ Swimming Forward (Flying underwater) ] ::
+
+:: [ Swimming Up (Hover Up underwater) ] ::
+
+:: [ Swimming Down (Fly Down underwater) ] ::
+
+:: [ Walking (also Striding) ] ::
+
+:: [ Running ] ::
+
+:: [ CrouchWalking ] ::
+
+:: [ Flying (also FlyingSlow) ] ::
+
+:: [ Turning Left ] ::
+
+:: [ Turning Right ] ::
+
+:: [ Jumping ] ::
+
+:: [ Hovering Up ] ::
+
+:: [ Crouching ] ::
+
+:: [ Fly Down ] ::
+
+:: [ Standing 1 ] ::
+
+:: [ Standing 2 ] ::
+
+:: [ Standing 3 ] ::
+
+:: [ Standing 4 ] ::
+
+:: [ Standing 5 ] ::
+
+:: [ Hovering ] ::
+
+:: [ Sitting ] ::
+
+:: [ PreJumping ] ::
+
+:: [ Falling ] ::
+
+:: [ Soft Landing/Landing ] ::
+
+:: [ Standing Up (That anim you play after you fall when you stand up and brush yourself off) ] ::
+
+:: [ FlyingSlow ] ::
+
+:: [ Sitting on Ground ] ::
+
+:: [ Floating (Hovering underwater) ] ::
+
+:: [ Swimming Forward (Flying underwater) ] ::
+
+:: [ Swimming Up (Hover Up underwater) ] ::
+
+:: [ Swimming Down (Fly Down underwater) ] ::
+
+
