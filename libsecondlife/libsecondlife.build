@@ -104,6 +104,7 @@
                             <include name="Resources/*.xml" />
 			</resources>
 			<references>
+			    <include name="log4net.dll" />
 				<include name="System.Drawing.dll" />
 			</references>
 			<nowarn>
