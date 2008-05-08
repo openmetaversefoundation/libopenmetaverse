@@ -72,7 +72,7 @@ namespace VoiceTest
 
             SecondLife client = new SecondLife();
             client.Settings.MULTIPLE_SIMS = false;
-            client.Settings.DEBUG = true;
+            Settings.LOG_LEVEL = Helpers.LogLevel.None;
             client.Settings.LOG_RESENDS = false;
             client.Settings.STORE_LAND_PATCHES = true;
             client.Settings.ALWAYS_DECODE_OBJECTS = true;

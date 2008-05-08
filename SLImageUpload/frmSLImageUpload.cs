@@ -33,7 +33,7 @@ namespace SLImageUpload
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
             // Turn almost everything off since we are only interested in uploading textures
-            Client.Settings.DEBUG = true;
+            Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
