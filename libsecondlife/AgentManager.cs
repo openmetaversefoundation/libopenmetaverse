@@ -1447,13 +1447,13 @@ namespace libsecondlife
         /// <param name="sourceAvatar"><seealso cref="LLUUID"/> Key of the source agent</param>
         /// <param name="targetObject"><seealso cref="LLUUID"/> Key of the target object</param>
         /// <param name="globalOffset"></param>
-        /// <param name="type"><seealso cref="T:PointAtType"/></param>
-        /// <param name="effectID"></param>
+        /// <param name="type">The type from the <seealso cref="T:PointAtType"/> enum</param>
+        /// <param name="effectID">A unique <seealso cref="LLUUID"/> for this effect</param>
         public void PointAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, PointAtType type,
             LLUUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
-
+            
             effect.AgentData.AgentID = Client.Self.AgentID;
             effect.AgentData.SessionID = Client.Self.SessionID;
 

@@ -39,7 +39,7 @@ namespace libsecondlife.TestClient
 
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
-            Settings.DEBUG = true;
+            Settings.LOG_LEVEL = Helpers.LogLevel.Debug;
             Settings.LOG_RESENDS = false;
             Settings.STORE_LAND_PATCHES = true;
             Settings.ALWAYS_DECODE_OBJECTS = true;

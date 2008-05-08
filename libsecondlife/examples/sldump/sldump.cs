@@ -86,7 +86,7 @@ namespace sldump
 
             client = new SecondLife();
             // Turn off some unnecessary things
-            client.Settings.DEBUG = false;
+            Settings.LOG_LEVEL = Helpers.LogLevel.None;
             client.Settings.MULTIPLE_SIMS = false;
             // Throttle packets that we don't want all the way down
             client.Throttle.Land = 0;

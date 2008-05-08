@@ -12,6 +12,7 @@ namespace libsecondlife.TestClient
     {
         AutoResetEvent UploadCompleteEvent = new AutoResetEvent(false);
         LLUUID TextureID = LLUUID.Zero;
+        DateTime start;
 
         public UploadImageCommand(TestClient testClient)
         {
@@ -39,7 +40,7 @@ namespace libsecondlife.TestClient
             if (jpeg2k == null)
                 return "Failed to compress image to JPEG2000";
             Console.WriteLine("Finished compressing image to JPEG2000, uploading...");
-
+            start = DateTime.Now;
             DoUpload(jpeg2k, inventoryName);
 
             if (UploadCompleteEvent.WaitOne((int)timeout, false))
@@ -75,6 +76,7 @@ namespace libsecondlife.TestClient
                             success, status, itemID, assetID));
 
                         TextureID = assetID;
+                        Console.WriteLine(String.Format("Upload took {0}", DateTime.Now.Subtract(start)));
                         UploadCompleteEvent.Set();
                     }
                 );

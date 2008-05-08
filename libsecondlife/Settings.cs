@@ -39,55 +39,74 @@ namespace libsecondlife
     /// happen at login or dynamically</remarks>
     public class Settings
     {
+        #region Login/Networking Settings
+
         /// <summary>Main grid login server</summary>
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+
         /// <summary>Beta grid login server</summary>
         public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
+
         /// <summary>The relative directory where external resources are kept</summary>
         public const string RESOURCE_DIR = "libsl_data";
 
         /// <summary>Login server to connect to</summary>
         public string LOGIN_SERVER = AGNI_LOGIN_SERVER;
 
-	    // Timeouts and Intervals
+        /// <summary>IP Address the client will bind to</summary>
+        public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
+
+        #endregion
+        #region Timeouts and Intervals
 
         /// <summary>Number of milliseconds before an asset transfer will time
         /// out</summary>
         public const int TRANSFER_TIMEOUT = 30 * 1000;
+
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
         public int TELEPORT_TIMEOUT = 40 * 1000;
+
         /// <summary>Number of milliseconds before NetworkManager.Logout() will
         /// time out</summary>
         public int LOGOUT_TIMEOUT = 5 * 1000;
+
         /// <summary>Number of milliseconds before a CAPS call will time out 
         /// and try again</summary>
         /// <remarks>Setting this too low will cause web requests to repeatedly
         /// time out and retry</remarks>
         public int CAPS_TIMEOUT = 60 * 1000;
+
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
         public int LOGIN_TIMEOUT = 60 * 1000;
+
         /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
         public int RESEND_TIMEOUT = 4000;
+
         /// <summary>Milliseconds without receiving a packet before the 
         /// connection to a simulator is assumed lost</summary>
         public int SIMULATOR_TIMEOUT = 30 * 1000;
+
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
         public int MAP_REQUEST_TIMEOUT = 5 * 1000;
 
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public const int PING_INTERVAL = 2200;
+
         /// <summary>Number of milliseconds between sending camera updates</summary>
         public const int DEFAULT_AGENT_UPDATE_INTERVAL = 500;
+
         /// <summary>Number of milliseconds between updating the current
         /// positions of moving, non-accelerating and non-colliding objects</summary>
         public const int INTERPOLATION_INTERVAL = 250;
+
         /// <summary>Millisecond interval between ticks, where all ACKs are 
         /// sent out and the age of unACKed packets is checked</summary>
         public const int NETWORK_TICK_INTERVAL = 500;
 
-	    // Sizes
+        #endregion
+        #region Sizes
 
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
@@ -108,7 +127,8 @@ namespace libsecondlife
         /// <summary>Network stats queue length (seconds)</summary>
         public int STATS_QUEUE_SIZE = 5;
 
-	    // Configuration options (mostly booleans)
+        #endregion
+        #region Configuration opetions (mostly booleans)
 
         /// <summary>Enable to process packets synchronously, where all of the
         /// callbacks for each packet must return before the next packet is
@@ -119,15 +139,14 @@ namespace libsecondlife
         /// would need to be rewritten as asynchronous code before this is
         /// feasible</remarks>
         public bool SYNC_PACKETCALLBACKS = false;
-        /// <summary>Attach avatar names to log messages</summary>
-        public bool LOG_NAMES = true;
-	    /// <summary>Log packet retransmission info</summary>
-	    public bool LOG_RESENDS = true;
+
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
+
         /// <summary>Enable/disable sending periodic camera updates</summary>
         public bool SEND_AGENT_UPDATES = true;
+
         /// <summary>Enable/disable libsecondlife automatically setting the
         /// bandwidth throttle after connecting to each simulator</summary>
         /// <remarks>The default libsecondlife throttle uses the equivalent of
@@ -135,68 +154,88 @@ namespace libsecondlife
         /// set a throttle your connection will by default be throttled well
         /// below the minimum values and you may experience connection problems</remarks>
         public bool SEND_AGENT_THROTTLE = true;
+
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
         public bool SEND_PINGS = false;
+
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings
         /// (Experimental)</summary>
         public bool MULTIPLE_SIMS = true;
+
         /// <summary>If true, all object update packets will be decoded in to
         /// native objects. If false, only updates for our own agent will be
         /// decoded. Registering an event handler will force objects for that
         /// type to always be decoded. If this is disabled the object tracking
         /// will have missing or partial prim and avatar information</summary>
         public bool ALWAYS_DECODE_OBJECTS = true;
+
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>
         public bool ALWAYS_REQUEST_OBJECTS = false;
+
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
         public bool ENABLE_CAPS = true;
+
 	    /// <summary>Whether to decode sim stats</summary>
 	    public bool ENABLE_SIMSTATS = true;
+
         /// <summary>The capabilities servers are currently designed to
         /// periodically return a 502 error which signals for the client to
         /// re-establish a connection. Set this to true to log those 502 errors</summary>
         public bool LOG_ALL_CAPS_ERRORS = false;
+
         /// <summary>If true, any reference received for a folder or item
         /// libsecondlife is not aware of will automatically be fetched</summary>
         public bool FETCH_MISSING_INVENTORY = true;
+
         /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
         /// AgentUpdate packets will continuously be sent out to give the bot
         /// smoother movement and autopiloting</summary>
         public bool CONTINUOUS_AGENT_UPDATES = true;
+
         /// <summary>If true, currently visible primitives and avatars will be
         /// stored in dictionaries inside <code>Simulator.Objects</code>. If 
         /// false, a new Avatar or Primitive object will be created each time
         /// an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
+
+        #endregion
+        #region Parcel Tracking
+
         /// <summary>If true, parcel details will be stored in the 
         /// <code>Simulator.Parcels</code> dictionary as they are received</summary>
         public bool PARCEL_TRACKING = true;
+
         /// <summary>
         /// If true, an incoming parcel properties reply will automatically send
         /// a request for the parcel access list
         /// </summary>
         public bool ALWAYS_REQUEST_PARCEL_ACL = true;
+
         /// <summary>
         /// if true, an incoming parcel properties reply will automatically send 
         /// a request for the traffic count.
         /// </summary>
         public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
-        // Texture cache
+        #endregion
+        #region Texture Cache
 
         /// <summary>
         /// If true, images downloaded from the server will be cached 
         /// in a local directory
         /// </summary>
         public bool USE_TEXTURE_CACHE = false;
+
         /// <summary>Path to store cached texture data</summary>
         public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
-        /// <summary>IP Address the client will bind to</summary>
-        public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
+
+        #endregion
+        #region Misc
+
         /// <summary>Default color used for viewer particle effects</summary>
         public LLColor DEFAULT_EFFECT_COLOR = new LLColor(255, 0, 0, 255);
 
@@ -204,12 +243,26 @@ namespace libsecondlife
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>
         public int UPLOAD_COST { get { return priceUpload; } }
 
-        /// <summary>Enable/disable debugging log messages</summary>
-        public bool DEBUG
-        {
-            get { return Logger.IsDebugEnabled; }
-            set { Logger.IsDebugEnabled = value; }
-        }
+        #endregion
+        #region Logging Configuration
+
+        /// <summary>
+        /// Get or set the minimum log level to output to the console by default
+        /// 
+        /// If the library is not compiled with DEBUG defined and this level is set to DEBUG
+        /// You will get no output on the console. This behavior can be overriden by creating
+        /// a logger configuration file for log4net
+        /// </summary>
+        public static Helpers.LogLevel LOG_LEVEL = Helpers.LogLevel.Debug;
+
+        /// <summary>Attach avatar names to log messages</summary>
+        public bool LOG_NAMES = true;
+
+        /// <summary>Log packet retransmission info</summary>
+        public bool LOG_RESENDS = true;
+
+        #endregion
+        #region Private Fields
 
         private SecondLife Client;
         private int priceUpload = 0;
@@ -222,6 +275,9 @@ namespace libsecondlife
             Client.Network.RegisterCallback(Packets.PacketType.EconomyData, new NetworkManager.PacketCallback(EconomyDataHandler));
         }
 
+        #endregion
+        #region Packet Callbacks
+
         /// <summary>
         /// Gets the cost of uploading an asset to the grid
         /// </summary>
@@ -233,5 +289,7 @@ namespace libsecondlife
 
             priceUpload = econ.Info.PriceUpload;
         }
+
+        #endregion
     }
 }
