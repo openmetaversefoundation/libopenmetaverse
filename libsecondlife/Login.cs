@@ -147,17 +147,12 @@ namespace libsecondlife
 
             // Home
             LLSDMap home = null;
-            try
-            {
-                home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
-            }
-            catch (LLSDException e)
-            {
-                Logger.DebugLog("login server returned invalid home position: " + e.Message);
-            }
+            LLSD llsdHome = LLSDParser.DeserializeNotation(reply["home"].AsString());
 
-            if (home != null)
+            if (!String.IsNullOrEmpty(llsdHome.AsString()))
             {
+                home = (LLSDMap)llsdHome;
+
                 LLSD homeRegion;
                 if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == LLSDType.Array)
                 {
