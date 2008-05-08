@@ -4,7 +4,7 @@
 !define PRODUCT_NAME "libsecondlife"
 !define PRODUCT_MAJOR "0"
 !define PRODUCT_MINOR "4"
-!define PRODUCT_RELEASE "1"
+!define PRODUCT_RELEASE "1.1"
 !define PRODUCT_VERSION "${PRODUCT_MAJOR}.${PRODUCT_MINOR}.${PRODUCT_RELEASE}"
 !define PRODUCT_SETUP_NAME "libsecondlife-${PRODUCT_MAJOR}_${PRODUCT_MINOR}_${PRODUCT_RELEASE}-installer.exe"
 !define PRODUCT_PUBLISHER "libsecondlife reverse engineering team"
