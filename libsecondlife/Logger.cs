@@ -67,7 +67,8 @@ namespace libsecondlife
                 appender.Layout = new log4net.Layout.PatternLayout("%timestamp [%thread] %-5level - %message%newline");
                 BasicConfigurator.Configure(appender);
 
-                //LogInstance.Info("No log configuration found, defaulting to console logging");
+                if(Settings.LOG_LEVEL != Helpers.LogLevel.None)
+                    LogInstance.Info("No log configuration found, defaulting to console logging");
             }
         }
 
@@ -128,20 +129,21 @@ namespace libsecondlife
                         LogInstance.Debug(message, exception);
                     break;
                 case Helpers.LogLevel.Info:
-                    if(Settings.LOG_LEVEL == Helpers.LogLevel.Info
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Debug
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Error)
+                    if(Settings.LOG_LEVEL == Helpers.LogLevel.Info)
                         LogInstance.Info(message, exception);
                     break;
                 case Helpers.LogLevel.Warning:
                     if(Settings.LOG_LEVEL == Helpers.LogLevel.Warning 
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Debug)
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info)
                             LogInstance.Warn(message, exception);
                     break;
                 case Helpers.LogLevel.Error:
                     if(Settings.LOG_LEVEL == Helpers.LogLevel.Error
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Debug)
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info 
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning)
                         LogInstance.Error(message, exception);
+                    break;
+                default:
                     break;
             }
         }

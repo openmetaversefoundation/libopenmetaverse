@@ -84,6 +84,7 @@ namespace libsecondlife
         /// </summary>
         public enum LogLevel
         {
+            /// <summary>No logging information will be output</summary>
             None,
             /// <summary>Non-noisy useful information, may be helpful in 
             /// debugging a problem</summary>
