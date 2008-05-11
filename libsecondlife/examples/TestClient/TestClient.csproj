@@ -71,12 +71,15 @@
     <Compile Include="Commands\Groups\LeaveGroupCommand.cs" />
     <Compile Include="Commands\Inventory\BackupCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
+    <Compile Include="Commands\Inventory\ChangeDirectoryCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
     <Compile Include="Commands\Inventory\DumpOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\ExportOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />
+    <Compile Include="Commands\Inventory\GiveItemCommand.cs" />
     <Compile Include="Commands\Inventory\ImportOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
+    <Compile Include="Commands\Inventory\ListContentsCommand.cs" />
     <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
     <Compile Include="Commands\Inventory\CreateNotecardCommand.cs" />
     <Compile Include="Commands\Inventory\UploadImageCommand.cs" />

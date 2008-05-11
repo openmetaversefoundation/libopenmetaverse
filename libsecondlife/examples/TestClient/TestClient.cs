@@ -20,6 +20,8 @@ namespace libsecondlife.TestClient
         public LLUUID MasterKey = LLUUID.Zero;
 		public ClientManager ClientManager;
         public VoiceManager VoiceManager;
+        // Shell-like inventory commands need to be aware of the 'current' inventory folder.
+        public InventoryFolder CurrentDirectory = null;
 
         private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
@@ -48,7 +50,7 @@ namespace libsecondlife.TestClient
             Settings.USE_TEXTURE_CACHE = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
-
+            Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
             Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
             Inventory.OnObjectOffered += new InventoryManager.ObjectOfferedCallback(Inventory_OnInventoryObjectReceived);
@@ -59,6 +61,20 @@ namespace libsecondlife.TestClient
             VoiceManager = new VoiceManager(this);
 
             updateTimer.Start();
+        }
+
+        /// <summary>
+        /// Initialize everything that needs to be initialized once we're logged in.
+        /// </summary>
+        /// <param name="login">The status of the login</param>
+        /// <param name="message">Error message on failure, MOTD on success.</param>
+        public void  LoginHandler(LoginStatus login, string message)
+        {
+            if (login == LoginStatus.Success)
+            {
+                // Start in the inventory root folder.
+                CurrentDirectory = Inventory.Store.RootFolder;
+            }
         }
 
         public void RegisterAllCommands(Assembly assembly)
