@@ -2140,6 +2140,10 @@ namespace libsecondlife
                             simulator.ObjectsPrimitives.Dictionary.Remove(localID);
                     }
                 }
+            }
+            if (Client.Settings.AVATAR_TRACKING)
+            {
+                uint localID;
 
                 lock (simulator.ObjectsAvatars.Dictionary)
                 {
@@ -2480,7 +2484,7 @@ namespace libsecondlife
         /// <returns></returns>
         protected Avatar GetAvatar(Simulator simulator, uint localID, LLUUID fullID)
         {
-            if (Client.Settings.OBJECT_TRACKING)
+            if (Client.Settings.AVATAR_TRACKING)
             {
                 Avatar avatar;
 

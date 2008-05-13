@@ -196,10 +196,16 @@ namespace libsecondlife
         /// smoother movement and autopiloting</summary>
         public bool CONTINUOUS_AGENT_UPDATES = true;
 
-        /// <summary>If true, currently visible primitives and avatars will be
-        /// stored in dictionaries inside <code>Simulator.Objects</code>. If 
-        /// false, a new Avatar or Primitive object will be created each time
-        /// an object update packet is received</summary>
+        /// <summary>If true, currently visible avatars will be stored
+        /// in dictionaries inside <code>Simulator.ObjectAvatars</code>.
+        /// If false, a new Avatar or Primitive object will be created
+        /// each time an object update packet is received</summary>
+        public bool AVATAR_TRACKING = true;
+
+        /// <summary>If true, currently visible avatars will be stored
+        /// in dictionaries inside <code>Simulator.ObjectPrimitives</code>.
+        /// If false, a new Avatar or Primitive object will be created
+        /// each time an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
 
         #endregion
