@@ -67,7 +67,7 @@ namespace libsecondlife
         /// <param name="defaultTexture"></param>
         /// <param name="textureEntries"></param>
         /// <param name="visualParams"></param>
-        public delegate void AvatarAppearanceCallback(LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] textureEntries, List<byte> visualParams);
+        public delegate void AvatarAppearanceCallback(LLUUID avatarID, bool isTrial, LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] faceTextures, List<byte> visualParams);
         /// <summary>
         /// Triggered when a UUIDNameReply is received
         /// </summary>
@@ -305,7 +305,7 @@ namespace libsecondlife
                         LLObject.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
                         LLObject.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
 
-                        try { OnAvatarAppearance(defaultTexture, faceTextures, visualParams); }
+                        try { OnAvatarAppearance(appearance.Sender.ID, appearance.Sender.IsTrial, defaultTexture, faceTextures, visualParams); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 });

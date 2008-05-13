@@ -11,7 +11,7 @@ namespace libsecondlife.TestClient
             Name = "detectbot";
             Description = "Runs in the background, reporting any potential bots";
 
-            testClient.Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
+            testClient.Avatars.OnAvatarAppearance += new AvatarManager.AvatarAppearanceCallback(Avatars_OnAvatarAppearance);
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -19,20 +19,15 @@ namespace libsecondlife.TestClient
             return "This command is always running";
         }
 
-        private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
+        void Avatars_OnAvatarAppearance(LLUUID avatarID, bool isTrial, LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] faceTextures, System.Collections.Generic.List<byte> visualParams)
         {
-            AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
-
-            LLObject.TextureEntry te = new LLObject.TextureEntry(appearance.ObjectData.TextureEntry, 0, 
-                appearance.ObjectData.TextureEntry.Length);
-
-            if (IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.EyesBaked] ) &&
-                IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.HeadBaked]) &&
-                IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.LowerBaked]) &&
-                IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.SkirtBaked]) &&
-                IsNullOrZero(te.FaceTextures[(int)AppearanceManager.TextureIndex.UpperBaked]))
+            if (IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.EyesBaked]) &&
+                IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.HeadBaked]) &&
+                IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.LowerBaked]) &&
+                IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.SkirtBaked]) &&
+                IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.UpperBaked]))
             {
-                Console.WriteLine("Avatar " + appearance.Sender.ID.ToString() + " may be a bot");
+                Console.WriteLine("Avatar " + avatarID.ToString() + " may be a bot");
             }
         }
 
