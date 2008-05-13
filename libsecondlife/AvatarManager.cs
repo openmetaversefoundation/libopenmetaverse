@@ -62,6 +62,13 @@ namespace libsecondlife
     public class AvatarManager
     {
         /// <summary>
+        /// Triggered when AvatarAppearance is received
+        /// </summary>
+        /// <param name="defaultTexture"></param>
+        /// <param name="textureEntries"></param>
+        /// <param name="visualParams"></param>
+        public delegate void AvatarAppearanceCallback(LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] textureEntries, List<byte> visualParams);
+        /// <summary>
         /// Triggered when a UUIDNameReply is received
         /// </summary>
         /// <param name="names"></param>
@@ -124,7 +131,8 @@ namespace libsecondlife
         public delegate void EffectCallback(EffectType type, LLUUID sourceID, LLUUID targetID,
             LLVector3d targetPos, float duration, LLUUID id);
 
-
+        /// <summary></summary>
+        public event AvatarAppearanceCallback OnAvatarAppearance;
         /// <summary></summary>
         public event AvatarNamesCallback OnAvatarNames;
         /// <summary></summary>
@@ -151,6 +159,9 @@ namespace libsecondlife
         public AvatarManager(SecondLife client)
         {
             Client = client;
+
+            // Avatar appearance callback
+            Client.Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 
             // Avatar profile callbacks
             Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
@@ -265,6 +276,39 @@ namespace libsecondlife
                 }
                 
                 OnAvatarNames(names);
+            }
+        }
+
+        /// <summary>
+        /// Process incoming avatar appearance
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="sim"></param>
+        private void AvatarAppearanceHandler(Packet packet, Simulator sim)
+        {
+            if (OnAvatarAppearance != null)
+            {
+                AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
+                sim.ObjectsAvatars.ForEach(delegate(Avatar av)
+                {
+                    if (av.ID == appearance.Sender.ID)
+                    {
+                        List<byte> visualParams = new List<byte>();
+                        foreach (AvatarAppearancePacket.VisualParamBlock block in appearance.VisualParam)
+                        {
+                            visualParams.Add(block.ParamValue);
+                        }
+
+                        LLObject.TextureEntry textureEntry = new Primitive.TextureEntry(appearance.ObjectData.TextureEntry, 0,
+                                appearance.ObjectData.TextureEntry.Length);
+
+                        LLObject.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
+                        LLObject.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
+
+                        try { OnAvatarAppearance(defaultTexture, faceTextures, visualParams); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    }
+                });
             }
         }
 
