@@ -31,26 +31,46 @@ using System.Text;
 
 namespace libsecondlife.StructuredData
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum LLSDType
     {
+        /// <summary></summary>
         Unknown,
+        /// <summary></summary>
         Boolean,
+        /// <summary></summary>
         Integer,
+        /// <summary></summary>
         Real,
+        /// <summary></summary>
         String,
+        /// <summary></summary>
         UUID,
+        /// <summary></summary>
         Date,
+        /// <summary></summary>
         URI,
+        /// <summary></summary>
         Binary,
+        /// <summary></summary>
         Map,
+        /// <summary></summary>
         Array
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDException : Exception
     {
         public LLSDException(string message) : base(message) { }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class LLSD
     {
         public virtual LLSDType Type { get { return LLSDType.Unknown; } }
@@ -104,6 +124,9 @@ namespace libsecondlife.StructuredData
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDBoolean : LLSD
     {
         private bool value;
@@ -127,6 +150,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDInteger : LLSD
     {
         private int value;
@@ -153,6 +179,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }        
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDReal : LLSD
     {
         private double value;
@@ -188,6 +217,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDString : LLSD
     {
         private string value;
@@ -253,6 +285,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDUUID : LLSD
     {
         private LLUUID value;
@@ -271,6 +306,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDDate : LLSD
     {
         private DateTime value;
@@ -306,6 +344,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDURI : LLSD
     {
         private Uri value;
@@ -323,6 +364,9 @@ namespace libsecondlife.StructuredData
         public override string ToString() { return AsString(); }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDBinary : LLSD
     {
         private byte[] value;
@@ -358,6 +402,9 @@ namespace libsecondlife.StructuredData
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDMap : LLSD, IDictionary<string, LLSD>
     {
         private Dictionary<string, LLSD> value;
@@ -473,6 +520,9 @@ namespace libsecondlife.StructuredData
         #endregion IDictionary Implementation
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LLSDArray : LLSD, IList<LLSD>
     {
         private List<LLSD> value;

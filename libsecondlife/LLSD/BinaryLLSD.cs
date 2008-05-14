@@ -44,6 +44,9 @@ using System.Collections;
  
  namespace libsecondlife.StructuredData
  {
+     /// <summary>
+     /// 
+     /// </summary>
      public static partial class LLSDParser
     {
         private const int initialBufferSize = 128;
@@ -67,6 +70,11 @@ using System.Collections;
         private const byte mapEndBinaryMarker = (byte) '}';
         private const byte keyBinaryMarker = (byte) 'k';
         
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="binaryData"></param>
+         /// <returns></returns>
         public static LLSD DeserializeBinary(byte[] binaryData)
         {
         
@@ -76,6 +84,11 @@ using System.Collections;
             return llsd;
         }
         
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="stream"></param>
+         /// <returns></returns>
         public static LLSD DeserializeBinary( MemoryStream stream )
         {
             SkipWhiteSpace( stream );
@@ -87,6 +100,11 @@ using System.Collections;
             return ParseBinaryElement( stream );
          }
  
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="llsd"></param>
+         /// <returns></returns>
         public static byte[] SerializeBinary(LLSD llsd)
         {
             MemoryStream stream = SerializeBinaryStream( llsd );
@@ -96,6 +114,11 @@ using System.Collections;
             return binaryData;
          }
 
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="data"></param>
+         /// <returns></returns>
         public static MemoryStream SerializeBinaryStream(LLSD data)
         {
             MemoryStream stream = new MemoryStream( initialBufferSize );
@@ -306,6 +329,10 @@ using System.Collections;
             return (LLSD)llsdMap;
         }
         
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="stream"></param>
         public static void SkipWhiteSpace(MemoryStream stream)
         {
             int bt;
@@ -319,6 +346,12 @@ using System.Collections;
             stream.Seek( -1, SeekOrigin.Current );
         }
             
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="stream"></param>
+         /// <param name="toFind"></param>
+         /// <returns></returns>
         public static bool FindByte( MemoryStream stream, byte toFind )
         {
             int bt = stream.ReadByte();
@@ -328,12 +361,17 @@ using System.Collections;
                 return true;
             else 
             {
-                stream.Seek( -1l, SeekOrigin.Current );                    
+                stream.Seek( -1L, SeekOrigin.Current );                    
                 return false;
             }       
         }
                
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="toFind"></param>
+        /// <returns></returns>
         public static bool FindByteArray( MemoryStream stream, byte[] toFind )
         {
             int lastIndexToFind = toFind.Length - 1;
@@ -357,7 +395,7 @@ using System.Collections;
             
             if ( found && crrIndex > lastIndexToFind ) 
             {
-                stream.Seek( -1l, SeekOrigin.Current );
+                stream.Seek( -1L, SeekOrigin.Current );
                 return true;
             }
             else 
@@ -367,6 +405,12 @@ using System.Collections;
             }
         }
         
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="stream"></param>
+         /// <param name="consumeBytes"></param>
+         /// <returns></returns>
         public static byte[] ConsumeBytes( MemoryStream stream, int consumeBytes ) 
         {
             byte[] bytes = new byte[consumeBytes];
@@ -375,6 +419,11 @@ using System.Collections;
             return bytes;
         }
         
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="binaryNetEnd"></param>
+         /// <returns></returns>
         public static int NetworkToHostInt( byte[] binaryNetEnd )
         {
             if ( binaryNetEnd == null )
@@ -385,6 +434,11 @@ using System.Collections;
             return intHostEnd;
         }
         
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="binaryNetEnd"></param>
+         /// <returns></returns>
         public static double NetworkToHostDouble( byte[] binaryNetEnd )
         {
             if ( binaryNetEnd == null )
@@ -395,14 +449,18 @@ using System.Collections;
             double doubleHostEnd = BitConverter.ToDouble( binaryHostEnd, 0 );
             return doubleHostEnd; 
         }
-                
+  
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="intHostEnd"></param>
+         /// <returns></returns>   
         public static byte[] HostToNetworkIntBytes( int intHostEnd )
         {
             int intNetEnd = System.Net.IPAddress.HostToNetworkOrder( intHostEnd );
             byte[] bytesNetEnd = BitConverter.GetBytes( intNetEnd );
             return bytesNetEnd;
             
-        }
-                    
+        }                    
      }
  }

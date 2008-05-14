@@ -33,6 +33,9 @@ using System.Text;
 
 namespace libsecondlife.StructuredData
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static partial class LLSDParser
     {
         private static XmlSchema XmlSchema;
@@ -40,17 +43,32 @@ namespace libsecondlife.StructuredData
         private static string LastXmlErrors = String.Empty;
         private static object XmlValidationLock = new object();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xmlData"></param>
+        /// <returns></returns>
         public static LLSD DeserializeXml(byte[] xmlData)
         {
             return DeserializeXml(new XmlTextReader(new MemoryStream(xmlData, false)));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xmlData"></param>
+        /// <returns></returns>
         public static LLSD DeserializeXml(string xmlData)
         {
             byte[] bytes = Helpers.StringToField(xmlData);
             return DeserializeXml(new XmlTextReader(new MemoryStream(bytes, false)));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xmlData"></param>
+        /// <returns></returns>
         public static LLSD DeserializeXml(XmlTextReader xmlData)
         {
             xmlData.Read();
@@ -62,11 +80,21 @@ namespace libsecondlife.StructuredData
             return ret;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static byte[] SerializeXmlBytes(LLSD data)
         {
             return Encoding.UTF8.GetBytes(SerializeXmlString(data));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static string SerializeXmlString(LLSD data)
         {
             StringWriter sw = new StringWriter();
@@ -82,6 +110,11 @@ namespace libsecondlife.StructuredData
             return sw.ToString();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="data"></param>
         public static void SerializeXmlElement(XmlTextWriter writer, LLSD data)
         {
             switch (data.Type)
@@ -158,6 +191,12 @@ namespace libsecondlife.StructuredData
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xmlData"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         public static bool TryValidate(XmlTextReader xmlData, out string error)
         {
             lock (XmlValidationLock)
@@ -197,6 +236,11 @@ namespace libsecondlife.StructuredData
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private static LLSD ParseXmlElement(XmlTextReader reader)
         {
             SkipWhitespace(reader);

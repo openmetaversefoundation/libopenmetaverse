@@ -31,6 +31,9 @@ using System.IO;
 
 namespace libsecondlife.StructuredData
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static partial class LLSDParser
     {
         private const string notationHead = "<?llsd/notation?>\n";
@@ -71,6 +74,11 @@ namespace libsecondlife.StructuredData
         private const char doubleQuotesNotationMarker = '"';
         private const char singleQuotesNotationMarker = '\'';
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="notationData"></param>
+        /// <returns></returns>
         public static LLSD DeserializeNotation(string notationData)
         {
             StringReader reader = new StringReader(notationData);
@@ -79,12 +87,22 @@ namespace libsecondlife.StructuredData
             return llsd;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static LLSD DeserializeNotation(StringReader reader)
         {
             LLSD llsd = DeserializeNotationElement(reader);
             return llsd;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="llsd"></param>
+        /// <returns></returns>
         public static string SerializeNotation(LLSD llsd)
         {
             StringWriter writer = SerializeNotationStream(llsd);
@@ -94,6 +112,11 @@ namespace libsecondlife.StructuredData
             return s;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="llsd"></param>
+        /// <returns></returns>
         public static StringWriter SerializeNotationStream(LLSD llsd)
         {
             StringWriter writer = new StringWriter();
@@ -102,6 +125,11 @@ namespace libsecondlife.StructuredData
             return writer;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="llsd"></param>
+        /// <returns></returns>
         public static string SerializeNotationFormatted(LLSD llsd)
         {
             StringWriter writer = SerializeNotationStreamFormatted(llsd);
@@ -111,6 +139,11 @@ namespace libsecondlife.StructuredData
             return s;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="llsd"></param>
+        /// <returns></returns>
         public static StringWriter SerializeNotationStreamFormatted(LLSD llsd)
         {
             StringWriter writer = new StringWriter();
@@ -120,13 +153,16 @@ namespace libsecondlife.StructuredData
             return writer;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private static LLSD DeserializeNotationElement(StringReader reader)
         {
             int character = ReadAndSkipWhitespace(reader);
             if (character < 0)
                 return new LLSD(); // server returned an empty file, so we're going to pass along a null LLSD object
-
 
             LLSD llsd;
             int matching;
@@ -584,6 +620,11 @@ namespace libsecondlife.StructuredData
             writer.Write(mapEndNotationMarker);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static int PeekAndSkipWhitespace(StringReader reader)
         {
             int character;
@@ -601,6 +642,11 @@ namespace libsecondlife.StructuredData
             return character;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static int ReadAndSkipWhitespace(StringReader reader)
         {
             int character = PeekAndSkipWhitespace(reader);
@@ -608,6 +654,11 @@ namespace libsecondlife.StructuredData
             return character;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static int GetLengthInBrackets(StringReader reader)
         {
             int character;
@@ -632,6 +683,12 @@ namespace libsecondlife.StructuredData
             return length;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="delimiter"></param>
+        /// <returns></returns>
         public static string GetStringDelimitedBy(StringReader reader, char delimiter)
         {
             int character;
@@ -686,6 +743,13 @@ namespace libsecondlife.StructuredData
             return s.ToString();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public static int BufferCharactersEqual(StringReader reader, char[] buffer, int offset)
         {
 
@@ -710,6 +774,12 @@ namespace libsecondlife.StructuredData
             return crrIndex;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public static string UnescapeCharacter(String s, char c)
         {
             string oldOne = "\\" + c;
@@ -719,6 +789,12 @@ namespace libsecondlife.StructuredData
             return sOne;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public static string EscapeCharacter(String s, char c)
         {
             string oldOne = new String(c, 1);
