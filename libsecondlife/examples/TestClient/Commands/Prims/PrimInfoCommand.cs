@@ -34,6 +34,10 @@ namespace libsecondlife.TestClient
                     Logger.Log("TextureEntry:", Helpers.LogLevel.Info, Client);
                     if (target.Textures != null)
                     {
+                        Logger.Log(String.Format("Default texure: {0}",
+                            target.Textures.DefaultTexture.TextureID.ToString()),
+                            Helpers.LogLevel.Info);
+
                         for (int i = 0; i < target.Textures.FaceTextures.Length; i++)
                         {
                             if (target.Textures.FaceTextures[i] != null)
