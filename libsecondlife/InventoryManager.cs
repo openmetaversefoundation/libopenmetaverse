@@ -118,6 +118,19 @@ namespace libsecondlife
         SystemFoldersToTop = 4
     }
 
+    /// <summary>
+    /// Possible destinations for DeRezObject request
+    /// </summary>
+    public enum DeRezDestination : byte
+    {
+        /// <summary>Derez to TaskInventory</summary>
+        TaskInventory = 2,
+        /// <summary>Take Object</summary>
+        ObjectsFolder = 4,
+        /// <summary>Delete Object</summary>
+        TrashFolder = 6
+    }
+
     #endregion Enums
 
     #region Inventory Object Classes
@@ -1998,6 +2011,47 @@ namespace libsecondlife
 
             return queryID;
         }
+
+        /// <summary>
+        /// DeRez an object from the simulator to the agents Objects folder in the agents Inventory
+        /// </summary>
+        /// <param name="objectLocalID">The simulator Local ID of the object</param>
+        public void RequestDeRezToInventory(uint objectLocalID)
+        {
+            RequestDeRezToInventory(objectLocalID, DeRezDestination.ObjectsFolder, 
+                _Client.Inventory.FindFolderForType(AssetType.Object), LLUUID.Random());
+        }
+
+        /// <summary>
+        /// DeRez an object from the simulator and return to inventory
+        /// </summary>
+        /// <param name="objectLocalID">The simulator Local ID of the object</param>
+        /// <param name="destType">The type of destination from the <seealso cref="DeRezDestination"/> enum</param>
+        /// <param name="destFolder">The destination inventory folders <seealso cref="LLUUID"/> -or- 
+        /// if DeRezzing object to a tasks Inventory, the Tasks <seealso cref="LLUUID"/></param>
+        /// <param name="transactionID">The transaction ID for this request which
+        /// can be used to correlate this request with other packets</param>
+        public void RequestDeRezToInventory(uint objectLocalID, DeRezDestination destType, LLUUID destFolder, LLUUID transactionID)
+        {
+            DeRezObjectPacket take = new DeRezObjectPacket();
+
+            take.AgentData.AgentID = _Client.Self.AgentID;
+            take.AgentData.SessionID = _Client.Self.SessionID;
+            take.AgentBlock = new DeRezObjectPacket.AgentBlockBlock();
+            take.AgentBlock.GroupID = LLUUID.Zero;
+            take.AgentBlock.Destination = (byte)destType;
+            take.AgentBlock.DestinationID = destFolder;
+            take.AgentBlock.PacketCount = 1;
+            take.AgentBlock.PacketNumber = 1;
+            take.AgentBlock.TransactionID = transactionID;
+
+            take.ObjectData = new DeRezObjectPacket.ObjectDataBlock[1];
+            take.ObjectData[0] = new DeRezObjectPacket.ObjectDataBlock();
+            take.ObjectData[0].ObjectLocalID = objectLocalID;
+            
+            _Client.Network.SendPacket(take);
+        }
+
 
         /// <summary>
         /// Give an inventory item to another avatar
