@@ -202,7 +202,7 @@ namespace libsecondlife
         public delegate void GridItemsCallback(GridItemType type, List<GridItem> items);
 
         /// <summary>Triggered when coarse locations (minimap dots) are updated by the simulator</summary>
-        public event CoarseLocationUpdateCallback OnCourseLocationUpdate;
+        public event CoarseLocationUpdateCallback OnCoarseLocationUpdate;
         /// <summary>Triggered when a new region is discovered through GridManager</summary>
         public event GridRegionCallback OnGridRegion;
         /// <summary></summary>
@@ -594,9 +594,9 @@ namespace libsecondlife
                         coarse.Location[i].Z));
                 }
 
-                if (OnCourseLocationUpdate != null)
+                if (OnCoarseLocationUpdate != null)
                 {
-                    try { OnCourseLocationUpdate(simulator); }
+                    try { OnCoarseLocationUpdate(simulator); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
