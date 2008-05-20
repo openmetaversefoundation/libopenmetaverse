@@ -992,6 +992,8 @@ namespace libsecondlife
         /// <param name="timeoutMS">a integer representing the number of milliseconds to wait for results</param>
         /// <returns>A list of inventory items matching search criteria within folder</returns>
         /// <seealso cref="InventoryManager.RequestFolderContents"/>
+        /// <remarks>InventoryFolder.DescendentCount will only be accurate if both folders and items are
+        /// requested</remarks>
         public List<InventoryBase> FolderContents(LLUUID folder, LLUUID owner, bool folders, bool items,
             InventorySortOrder order, int timeoutMS)
         {
@@ -1001,8 +1003,20 @@ namespace libsecondlife
             FolderUpdatedCallback callback =
                 delegate(LLUUID folderID)
                 {
-                    if (folderID == folder)
+                    if (folderID == folder
+                        && _Store[folder] is InventoryFolder)
+                    {
+                        // InventoryDescendentsHandler only stores DescendendCount if both folders and items are fetched.
+                        if (_Store.GetContents(folder).Count >= ((InventoryFolder)_Store[folder]).DescendentCount)
+                        {
+                            
+                            fetchEvent.Set();
+                        }
+                    }
+                    else
+                    {
                         fetchEvent.Set();
+                    }
                 };
 
             OnFolderUpdated += callback;
