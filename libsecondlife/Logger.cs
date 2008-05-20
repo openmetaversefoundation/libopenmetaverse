@@ -122,30 +122,30 @@ namespace libsecondlife
             switch (level)
             {
                 case Helpers.LogLevel.Debug:
-                    if(Settings.LOG_LEVEL == Helpers.LogLevel.Debug 
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Error
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning)
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug)
                         LogInstance.Debug(message, exception);
                     break;
                 case Helpers.LogLevel.Info:
-                    if(Settings.LOG_LEVEL == Helpers.LogLevel.Info
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Error
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning)
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info)
                         LogInstance.Info(message, exception);
                     break;
                 case Helpers.LogLevel.Warning:
-                    if(Settings.LOG_LEVEL == Helpers.LogLevel.Warning 
-                        || Settings.LOG_LEVEL == Helpers.LogLevel.Error)
-                            LogInstance.Warn(message, exception);
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning)
+                        LogInstance.Warn(message, exception);
                     break;
                 case Helpers.LogLevel.Error:
-                    if(Settings.LOG_LEVEL == Helpers.LogLevel.Error)
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Error)
                         LogInstance.Error(message, exception);
                     break;
                 default:
                     break;
-            }
+            } 
         }
 
         /// <summary>
