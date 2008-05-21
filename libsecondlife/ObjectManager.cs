@@ -2137,7 +2137,19 @@ namespace libsecondlife
                         localID = kill.ObjectData[i].ID;
 
                         if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID))
+                        {
+                            FireOnObjectKilled(simulator, localID);
                             simulator.ObjectsPrimitives.Dictionary.Remove(localID);
+                        }
+
+                        foreach (Primitive prim in simulator.ObjectsPrimitives.Dictionary.Values)
+                        {
+                            if (prim.ParentID == localID)
+                            {
+                                FireOnObjectKilled(simulator, prim.LocalID);
+                                simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
+                            }
+                        }
                     }
                 }
             }
@@ -2153,6 +2165,28 @@ namespace libsecondlife
 
                         if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
                             simulator.ObjectsAvatars.Dictionary.Remove(localID);
+
+                        lock (simulator.ObjectsPrimitives.Dictionary)
+                        {
+                            List<uint> rootPrims = new List<uint>();
+                            foreach (Primitive prim in simulator.ObjectsPrimitives.Dictionary.Values)
+                            {
+                                if (prim.ParentID == localID)
+                                {
+                                    FireOnObjectKilled(simulator, prim.LocalID);
+                                    simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
+                                    rootPrims.Add(prim.LocalID);
+                                }
+                            }
+                            foreach (Primitive prim in simulator.ObjectsPrimitives.Dictionary.Values)
+                            {
+                                if (rootPrims.Contains(prim.ParentID))
+                                {
+                                    FireOnObjectKilled(simulator, prim.LocalID);
+                                    simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
+                                }
+                            }
+                        }
                     }
                 }
             }
