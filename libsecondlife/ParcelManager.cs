@@ -844,11 +844,12 @@ namespace libsecondlife
         /// <param name="refresh">If TRUE, will force a full refresh</param>
         public void RequestAllSimParcels(Simulator simulator, bool refresh)
         {
-
             if (refresh)
             {
                 lock (simulator.ParcelMap)
-                    simulator.ParcelMap = new int[64, 64];
+                    for (int y = 0; y < 64; y++)
+                        for (int x = 0; x < 64; x++)
+                            simulator.ParcelMap[y, x] = 0;
             }
 
             Thread th = new Thread(delegate()
@@ -869,6 +870,7 @@ namespace libsecondlife
                     }
                 }
             });
+
             th.Start();
         }
 
