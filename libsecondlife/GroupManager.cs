@@ -658,13 +658,15 @@ namespace libsecondlife
         public void RequestGroupNames(List<LLUUID> groupIDs)
         {
             Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
-            foreach (LLUUID groupID in groupIDs)
-                if (GroupName2KeyCache.ContainsKey(groupID))
+            lock (GroupName2KeyCache.Dictionary)
+            {
+                foreach (LLUUID groupID in groupIDs)
                 {
-                    groupIDs.Remove(groupID);
-                    lock (GroupName2KeyCache.Dictionary)
-                    groupNames.Add(groupID, GroupName2KeyCache.Dictionary[groupID]);
+                    if (GroupName2KeyCache.ContainsKey(groupID))
+                        groupNames[groupID] = GroupName2KeyCache.Dictionary[groupID];
                 }
+            }        
+            
             if (groupIDs.Count > 0)
             {
                 UUIDGroupNameRequestPacket req = new UUIDGroupNameRequestPacket();
