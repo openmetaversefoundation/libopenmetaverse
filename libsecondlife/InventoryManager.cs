@@ -2075,23 +2075,77 @@ namespace libsecondlife
         /// <param name="assetType">The type of the item from the <seealso cref="AssetType"/> enum</param>
         /// <param name="recipient">The <seealso cref="LLUUID"/> of the recipient</param>
         /// <param name="doEffect">true to generate a beameffect during transfer</param>
-        public void GiveItem(LLUUID itemID, string itemName, AssetType assetType, LLUUID recipient, 
+        public void GiveItem(LLUUID itemID, string itemName, AssetType assetType, LLUUID recipient,
             bool doEffect)
         {
-            byte[] bucket = new byte[17];
-            bucket[0] = (byte)assetType;
-            Buffer.BlockCopy(itemID.GetBytes(), 0, bucket, 1, 16);
+            byte[] bucket;
+
+
+                bucket = new byte[17];
+                bucket[0] = (byte)assetType;
+                Buffer.BlockCopy(itemID.GetBytes(), 0, bucket, 1, 16);
 
             _Client.Self.InstantMessage(
-                _Client.Self.Name,
-                recipient,
-                itemName,
-                LLUUID.Random(),
-                InstantMessageDialog.InventoryOffered,
-                InstantMessageOnline.Online,
-                _Client.Self.SimPosition,
-                _Client.Network.CurrentSim.ID,
-                bucket);
+                    _Client.Self.Name,
+                    recipient,
+                    itemName,
+                    LLUUID.Random(),
+                    InstantMessageDialog.InventoryOffered,
+                    InstantMessageOnline.Online,
+                    _Client.Self.SimPosition,
+                    _Client.Network.CurrentSim.ID,
+                    bucket);
+
+            if (doEffect)
+            {
+                _Client.Self.BeamEffect(_Client.Self.AgentID, recipient, LLVector3d.Zero,
+                    _Client.Settings.DEFAULT_EFFECT_COLOR, 1f, LLUUID.Random());
+            }
+        }
+
+        /// <summary>
+        /// Give an inventory Folder with contents to another avatar
+        /// </summary>
+        /// <param name="folderID">The <seealso cref="LLUUID"/> of the Folder to give</param>
+        /// <param name="folderName">The name of the folder</param>
+        /// <param name="assetType">The type of the item from the <seealso cref="AssetType"/> enum</param>
+        /// <param name="recipient">The <seealso cref="LLUUID"/> of the recipient</param>
+        /// <param name="doEffect">true to generate a beameffect during transfer</param>
+        public void GiveFolder(LLUUID folderID, string folderName, AssetType assetType, LLUUID recipient,
+            bool doEffect)
+        {
+            byte[] bucket;
+
+                List<InventoryItem> folderContents = new List<InventoryItem>();
+
+                _Client.Inventory.FolderContents(folderID, _Client.Self.AgentID, false, true, InventorySortOrder.ByDate, 1000 * 15).ForEach(
+                    delegate(InventoryBase ib)
+                    {
+                        folderContents.Add(_Client.Inventory.FetchItem(ib.UUID, _Client.Self.AgentID, 1000 * 10));
+                    });
+                bucket = new byte[17 * (folderContents.Count + 1)];
+
+                //Add parent folder (first item in bucket)
+                bucket[0] = (byte)assetType;
+                Buffer.BlockCopy(folderID.GetBytes(), 0, bucket, 1, 16);
+
+                //Add contents to bucket after folder
+                for (int i = 1; i <= folderContents.Count; ++i)
+                {
+                    bucket[i * 17] = (byte)folderContents[i - 1].AssetType;
+                    Buffer.BlockCopy(folderContents[i - 1].UUID.GetBytes(), 0, bucket, i * 17 + 1, 16);
+                }
+
+            _Client.Self.InstantMessage(
+                    _Client.Self.Name,
+                    recipient,
+                    folderName,
+                    LLUUID.Random(),
+                    InstantMessageDialog.InventoryOffered,
+                    InstantMessageOnline.Online,
+                    _Client.Self.SimPosition,
+                    _Client.Network.CurrentSim.ID,
+                    bucket);
 
             if (doEffect)
             {
