@@ -1618,6 +1618,8 @@ namespace libsecondlife
             {
                 Movement.StandUp = true;
                 Movement.SendUpdate();
+                Movement.StandUp = false;
+                Movement.SendUpdate();
                 return true;
             }
             else
