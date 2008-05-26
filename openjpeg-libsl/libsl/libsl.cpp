@@ -149,6 +149,7 @@ bool LibslEncode(MarshalledImage* image, bool lossless)
 		}
 		else
 		{
+			/* Updated see JIRA OPENMV-243
 			cparameters.tcp_numlayers = 6;
 			cparameters.tcp_rates[0] = 1280;
 			cparameters.tcp_rates[1] = 640;
@@ -156,6 +157,18 @@ bool LibslEncode(MarshalledImage* image, bool lossless)
 			cparameters.tcp_rates[3] = 160;
 			cparameters.tcp_rates[4] = 80;
 			cparameters.tcp_rates[5] = 40;
+			*/
+			cparameters.tcp_numlayers = 5;
+			cparameters.tcp_rates[0] = 1920;
+			cparameters.tcp_rates[1] = 480;
+			cparameters.tcp_rates[2] = 120;
+			cparameters.tcp_rates[3] = 30;
+			cparameters.tcp_rates[4] = 10;
+			cparameters.irreversible = 1;
+			if (image->components >= 3)
+			{
+				cparameters.tcp_mct = 1;
+			}
 		}
 
 		cparameters.cp_comment = "LL_RGBHM";
