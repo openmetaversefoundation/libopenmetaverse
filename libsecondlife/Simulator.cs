@@ -327,12 +327,15 @@ namespace libsecondlife
         /// </summary>
         public int[,] ParcelMap
         {
-            get { 
+            get
+            {
                 lock (this)
-                    return _ParcelMap; 
+                    return _ParcelMap;
             }
-            set { lock (this)
-                _ParcelMap = value; 
+            set
+            {
+                lock (this)
+                    _ParcelMap = value;
             }
         }
 
@@ -344,8 +347,10 @@ namespace libsecondlife
         {
             int ny = this.ParcelMap.GetLength(0);
             int nx = this.ParcelMap.GetLength(1);
-            for (int y=0; y<64; y++) {
-                for (int x=0; x<64; x++) {
+            for (int y = 0; y < 64; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
                     if (this.ParcelMap[y, x] == 0)
                         return false;
                 }
@@ -571,11 +576,15 @@ namespace libsecondlife
             }
         }
 
+
+
         /// <summary>
         /// Sends a packet
         /// </summary>
         /// <param name="packet">Packet to be sent</param>
         /// <param name="incrementSequence">Increment sequence number?</param>
+        /// 
+
         public void SendPacket(Packet packet, bool incrementSequence)
         {
             byte[] buffer;
@@ -597,10 +606,6 @@ namespace libsecondlife
                     packet.Header.Sequence = Sequence;
                 }
 
-                // Scrub any appended ACKs since all of the ACK handling is done here
-                if (packet.Header.AckList.Length > 0)
-                    packet.Header.AckList = new uint[0];
-                packet.Header.AppendedAcks = false;
 
                 if (packet.Header.Reliable)
                 {
@@ -614,27 +619,50 @@ namespace libsecondlife
                                 packet.Type.ToString(), Helpers.LogLevel.Warning, Client);
                     }
 
-                    // Don't append ACKs to resent packets, in case that's what was causing the
-                    // delivery to fail
-                    if (!packet.Header.Resent)
+                    //
+
+                    if (PendingAcks.Count > 0 && PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS &&
+                            packet.Type != PacketType.PacketAck &&
+                            packet.Type != PacketType.LogoutRequest)
                     {
+
                         // Append any ACKs that need to be sent out to this packet
                         lock (PendingAcks)
                         {
-                            if (PendingAcks.Count > 0 && PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS &&
-                                packet.Type != PacketType.PacketAck &&
-                                packet.Type != PacketType.LogoutRequest)
-                            {
-                                packet.Header.AckList = new uint[PendingAcks.Count];
 
-                                for (int i = 0; i < PendingAcks.Count; i++)
-                                    packet.Header.AckList[i] = PendingAcks.Values[i];
+                            packet.Header.AckList = new uint[PendingAcks.Count];
 
-                                PendingAcks.Clear();
-                                packet.Header.AppendedAcks = true;
-                            }
+                            for (int i = 0; i < PendingAcks.Count; i++)
+                                packet.Header.AckList[i] = PendingAcks.Values[i];
+
+                            PendingAcks.Clear();
+                            packet.Header.AppendedAcks = true;
+
                         }
                     }
+                    else
+                    {
+                        // Purge ACKs from resent package
+                        if (packet.Header.AppendedAcks)
+                        {
+                            Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.", packet.Header.Sequence, packet.GetType()));
+
+                            lock (PendingAcks)
+                            {
+                                foreach (uint sequence in packet.Header.AckList)
+                                {
+                                    if (!PendingAcks.ContainsKey(sequence)) PendingAcks[sequence] = sequence;
+                                }
+                            }
+                            packet.Header.AppendedAcks = false;
+                            packet.Header.AckList = new uint[0];
+                        }
+                    }
+
+
+                    //
+
+
                 }
             }
 
@@ -664,6 +692,7 @@ namespace libsecondlife
 
             AsyncBeginSend(buf);
         }
+
 
         /// <summary>
         /// Send a raw byte array payload as a packet
@@ -892,33 +921,64 @@ namespace libsecondlife
         /// <summary>
         /// Resend unacknowledged packets
         /// </summary>
+        /// 
         private void ResendUnacked()
         {
             int now = Environment.TickCount;
 
             lock (NeedAck)
             {
+                List<uint> dropAck = new List<uint>();
+
+                // Resend packets
                 foreach (Packet packet in NeedAck.Values)
                 {
                     if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
-                        try
+                        if (packet.ResendCount < Client.Settings.MAX_RESEND_COUNT)
+                        {
+                            try
+                            {
+
+                                if (Client.Settings.LOG_RESENDS)
+                                    Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
+                                        packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
+
+                                packet.Header.Resent = true;
+                                packet.TickCount = now;
+                                ++Stats.ResentPackets;
+                                packet.ResendCount++;
+
+                                SendPacket(packet, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.DebugLog("Exception trying to resend packet: " + ex.ToString(), Client);
+                            }
+                        }
+                        else
                         {
                             if (Client.Settings.LOG_RESENDS)
-                                Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                    packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
+                                Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts", packet.Header.Sequence, packet.GetType(), packet.ResendCount));
 
-                            packet.Header.Resent = true;
-                            packet.TickCount = now;
-                            ++Stats.ResentPackets;
-                            SendPacket(packet, false);
+                            dropAck.Add(packet.Header.Sequence);
                         }
-                        catch (Exception ex)
-                        {
-                            Logger.DebugLog("Exception trying to resend packet: " + ex.ToString(), Client);
-                        }
+
+
+
+
+
+
                     }
                 }
+
+                foreach (uint seq in dropAck)
+                {
+                    NeedAck.Remove(seq);
+                }
+
+
+
             }
         }
 

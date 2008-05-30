@@ -39,7 +39,7 @@ namespace libsecondlife
     /// happen at login or dynamically</remarks>
     public class Settings
     {
-        #region Login/Networking Settings
+       #region Login/Networking Settings
 
         /// <summary>Main grid login server</summary>
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
@@ -128,7 +128,7 @@ namespace libsecondlife
         public int STATS_QUEUE_SIZE = 5;
 
         #endregion
-        #region Configuration opetions (mostly booleans)
+        #region Configuration options (mostly booleans)
 
         /// <summary>Enable to process packets synchronously, where all of the
         /// callbacks for each packet must return before the next packet is
@@ -173,7 +173,7 @@ namespace libsecondlife
 
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>
-        public bool ALWAYS_REQUEST_OBJECTS = false;
+        public bool ALWAYS_REQUEST_OBJECTS = true;
 
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
@@ -249,6 +249,8 @@ namespace libsecondlife
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>
         public int UPLOAD_COST { get { return priceUpload; } }
 
+        /// <summary>Maximum number of times to resend a failed packet</summary>
+        public int MAX_RESEND_COUNT = 3;
         #endregion
         #region Logging Configuration
 
