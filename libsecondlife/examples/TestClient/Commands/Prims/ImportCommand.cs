@@ -112,6 +112,8 @@ namespace libsecondlife.TestClient
                     if (!primDone.WaitOne(10000, false))
                         return "Rez failed, timed out while creating the root prim.";
 
+                    Client.Objects.SetPosition(Client.Network.CurrentSim, primsCreated[primsCreated.Count - 1].LocalID, linkset.RootPrim.Position);
+
                     state = ImporterState.RezzingChildren;
 
                     // Rez the child prims
@@ -125,13 +127,17 @@ namespace libsecondlife.TestClient
 
                         if (!primDone.WaitOne(10000, false))
                             return "Rez failed, timed out while creating child prim.";
+                        Client.Objects.SetPosition(Client.Network.CurrentSim, primsCreated[primsCreated.Count - 1].LocalID, currentPosition);
+
                     }
 
+                    // Create a list of the local IDs of the newly created prims
+                    List<uint> primIDs = new List<uint>(primsCreated.Count);
+                    primIDs.Add(rootLocalID); // Root prim is first in list.
+                    
                     if (linkset.Children.Count != 0)
                     {
-                        // Create a list of the local IDs of the newly created prims
-                        List<uint> primIDs = new List<uint>(primsCreated.Count);
-                        primIDs.Add(rootLocalID); // Root prim is first in list.
+                        // Add the rest of the prims to the list of local IDs
                         foreach (Primitive prim in primsCreated)
                         {
                             if (prim.LocalID != rootLocalID)
@@ -149,14 +155,17 @@ namespace libsecondlife.TestClient
                         else
                             Console.WriteLine("Warning: Failed to link {0} prims", linkQueue.Count);
 
-                        Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
-                            PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
-                            PermissionMask.All, true);
                     }
                     else
                     {
                         Client.Objects.SetRotation(Client.Network.CurrentSim, rootLocalID, rootRotation);
                     }
+                    
+                    // Set permissions on newly created prims
+                    Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
+                        PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
+                        PermissionMask.All, true);
+                    
                     state = ImporterState.Idle;
                 }
                 else
@@ -189,8 +198,16 @@ namespace libsecondlife.TestClient
                         // TODO: Is there a way to set all of this at once, and update more ObjectProperties stuff?
                         Client.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
                         Client.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
-                        Client.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+
+                        if (currentPrim.Light.Intensity > 0) {
+                            Client.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+                        }
+
                         Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
+ 
+                        if (currentPrim.Sculpt.SculptTexture != LLUUID.Zero) {
+                            Client.Objects.SetSculpt(simulator, prim.LocalID, currentPrim.Sculpt);
+                        }
 
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
                             Client.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);

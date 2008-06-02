@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, the libsecondlife development team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without

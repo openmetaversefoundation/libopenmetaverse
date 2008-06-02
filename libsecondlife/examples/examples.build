@@ -51,8 +51,7 @@
 		  <sources failonempty="true">
 			  <include name="${example_path}/**/*.cs"/>
 		  </sources>
-      <references basedir="${bin_dir}/"> 
-         <include name="openjpegnet.dll"/>
+      <references basedir="${bin_dir}/">
          <include name="libsecondlife.dll"/>
          <include name="System.Data.dll" />
          <include name="System.Drawing.dll" />

@@ -44,9 +44,6 @@ namespace libsecondlife.TestClient
         public bool Running = true;
 
         string version = "1.0.0";
-        private LLUUID resolvedMasterKey = LLUUID.Zero;
-        private ManualResetEvent keyResolution = new ManualResetEvent(false);
-
         /// <summary>
         /// 
         /// </summary>
@@ -111,22 +108,89 @@ namespace libsecondlife.TestClient
             {
                 if (account.MasterKey == LLUUID.Zero && !String.IsNullOrEmpty(account.MasterName))
                 {
-                    Console.WriteLine("Resolving {0}'s UUID", account.MasterName);
+                    // To prevent security issues, we must resolve the specified master name to a key.
+                    ManualResetEvent keyResolution = new ManualResetEvent(false);
+                    List<DirectoryManager.AgentSearchData> masterMatches = new List<DirectoryManager.AgentSearchData>();
+                    
+                    // Set up the callback that handles the search results:
+                    DirectoryManager.DirPeopleReplyCallback callback = 
+                        delegate (LLUUID queryID, List<DirectoryManager.AgentSearchData> matches) {
+                            // This may be called several times with additional search results.
+                            if (matches.Count > 0)
+                            {
+                                lock (masterMatches)
+                                {
+                                    masterMatches.AddRange(matches);
+                                }
+                            }
+                            else
+                            {
+                                // No results to show.
+                                keyResolution.Set();
+                            }
+                        };
                     // Find master's key from name
-                    DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
+                    Console.WriteLine("Resolving {0}'s UUID", account.MasterName);
                     client.Directory.OnDirPeopleReply += callback;
                     client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, account.MasterName, 0);
-                    if (keyResolution.WaitOne(TimeSpan.FromMinutes(1), false))
+                    keyResolution.WaitOne(TimeSpan.FromSeconds(30), false);
+                    client.Directory.OnDirPeopleReply -= callback;
+
+                    LLUUID masterKey = LLUUID.Zero;
+                    string masterName = account.MasterName;
+                    lock (masterMatches) {
+                        if (masterMatches.Count == 1) {
+                            masterKey = masterMatches[0].AgentID;
+                            masterName = masterMatches[0].FirstName + " " + masterMatches[0].LastName;
+                        } else if (masterMatches.Count > 0) {
+                            // Print out numbered list of masters:
+                            Console.WriteLine("Possible masters:");
+                            for (int i = 0; i < masterMatches.Count; ++i)
+                            {
+                                Console.WriteLine("{0}: {1}", i, masterMatches[i].FirstName + " " + masterMatches[i].LastName);
+                            }
+                            Console.Write("Ambiguous master, choose one: ");
+                            // Read number from the console:
+                            string read = null;
+                            do
+                            {
+                                read = Console.ReadLine();
+                                int choice = 0;
+                                if (int.TryParse(read, out choice))
+                                {
+                                    if (choice == -1)
+                                    {
+                                        break;
+                                    } 
+                                    else if (choice < masterMatches.Count)
+                                    {
+                                        masterKey = masterMatches[choice].AgentID;
+                                        masterName = masterMatches[choice].FirstName + " " + masterMatches[choice].LastName;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Please type a number from the above list, -1 to cancel.");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("You didn't type a number.");
+                                    Console.WriteLine("Please type a number from the above list, -1 to cancel.");
+                                }
+                            } while (read != null); // Do it until the user selects a master.
+                        }
+                    }
+                    if (masterKey != LLUUID.Zero)
                     {
-                        account.MasterKey = resolvedMasterKey;
-                        Console.WriteLine("\"{0}\" resolved to {1}", account.MasterName, account.MasterKey);
+                        Console.WriteLine("\"{0}\" resolved to {1} ({2})", account.MasterName, masterName, masterKey);
+                        account.MasterName = masterName;
+                        account.MasterKey = masterKey;
                     }
                     else
                     {
                         Console.WriteLine("Unable to obtain UUID for \"{0}\". No master will be used. Try specifying a key with --masterkey.", account.MasterName);
                     }
-                    client.Directory.OnDirPeopleReply -= callback;
-                    keyResolution.Reset();
                 }
 
                 client.MasterKey = account.MasterKey;
@@ -141,38 +205,6 @@ namespace libsecondlife.TestClient
             }
 
             return client;
-        }
-
-        private void KeyResolvHandler(LLUUID queryid, List<DirectoryManager.AgentSearchData> matches)
-        {
-            LLUUID master = matches[0].AgentID;
-            if (matches.Count > 1)
-            {
-                Console.WriteLine("Possible masters:");
-                for (int i = 0; i < matches.Count; ++i)
-                {
-                    Console.WriteLine("{0}: {1}", i, matches[i].FirstName + " " + matches[i].LastName);
-                }
-                Console.Write("Ambiguous master, choose one:");
-                string read = Console.ReadLine();
-                while (read != null)
-                {
-                    int choice = 0;
-                    if (int.TryParse(read, out choice))
-                    {
-                        master = matches[choice].AgentID;
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Responce misunderstood.");
-                        Console.Write("Type the corresponding number:");
-                    }
-                    read = Console.ReadLine();
-                }
-            }
-            resolvedMasterKey = master;
-            keyResolution.Set();
         }
 
         /// <summary>

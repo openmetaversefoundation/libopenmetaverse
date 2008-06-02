@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ namespace libsecondlife
         /// <summary>Main grid login server</summary>
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
         /// <summary>Beta grid login server</summary>
-        public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login-llsd.cgi";
+        public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
         /// <summary>The relative directory where external resources are kept</summary>
         public const string RESOURCE_DIR = "libsl_data";
 
@@ -189,6 +189,8 @@ namespace libsecondlife
         public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
         // Misc
+        // allow client to bind to a different IP Address than the default
+        public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
 
         /// <summary>Default color used for viewer particle effects</summary>
         public LLColor DEFAULT_EFFECT_COLOR = new LLColor(255, 0, 0, 255);

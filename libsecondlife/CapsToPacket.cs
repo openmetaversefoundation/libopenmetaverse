@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -80,7 +80,7 @@ namespace libsecondlife.Packets
 
         public static byte[] ToBinary(Packet packet)
         {
-            throw new NotImplementedException("Need to finish BinaryLLSD first");
+            return LLSDParser.SerializeBinary(ToLLSD(packet));
         }
 
         public static Packet FromXmlString(string xml)

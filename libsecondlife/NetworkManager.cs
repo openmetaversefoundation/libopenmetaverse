@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -379,6 +379,9 @@ namespace libsecondlife
                 {
                     // Mark that we are connecting/connected to the grid
                     connected = true;
+
+                    // restart the blocking queue in case of re-connect
+                    PacketInbox.Open();
 
                     // Start the packet decoding thread
                     Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
@@ -915,14 +918,13 @@ namespace libsecondlife
                         simulator.Stats.PhysicsTime = s.StatValue;
 						break;
 					case 8:
-                        simulator.Stats.ImageTime = s.StatValue;
+                        simulator.Stats.AgentTime = s.StatValue;
 						break;
 					case 9:
-                        simulator.Stats.ScriptTime = s.StatValue;
+                        simulator.Stats.ImageTime = s.StatValue;
 						break;
 					case 10:
-                        //simulator.Stats.OtherTime = s.StatValue;
-						// This is not othertime, this is something else
+                        simulator.Stats.ScriptTime = s.StatValue;
                         break;
 					case 11:
                         simulator.Stats.Objects = Convert.ToInt32(s.StatValue);

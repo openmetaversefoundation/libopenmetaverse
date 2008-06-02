@@ -56,6 +56,12 @@ namespace libsecondlife.TestClient
                 {
                     file = arguments["file"];
 
+                    if (!File.Exists(file))
+                    {
+                        Console.WriteLine("File {0} Does not exist", file);
+                        return;
+                    }
+
                     // Loading names from a file
                     try
                     {

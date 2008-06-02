@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using libsecondlife;
+using libsecondlife.Capabilities;
 
 namespace SLImageUpload
 {
@@ -22,23 +23,29 @@ namespace SLImageUpload
         public frmSLImageUpload()
         {
             InitializeComponent();
+            InitClient();
+        }
 
+        private void InitClient()
+        {
             Client = new SecondLife();
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
-            Client.Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
+            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
             // Turn almost everything off since we are only interested in uploading textures
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
+            Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.CONTINUOUS_AGENT_UPDATES = false;
             Client.Settings.OBJECT_TRACKING = false;
-            Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.STORE_LAND_PATCHES = false;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
             Client.Throttle.Land = 0.0f;
             Client.Throttle.Wind = 0.0f;
+
+            Client.Throttle.Texture = 446000.0f;
         }
 
         private void EnableUpload()
@@ -159,31 +166,50 @@ namespace SLImageUpload
 
         private void cmdConnect_Click(object sender, EventArgs e)
         {
-            if (cmdConnect.Text == "Connect")
-            {
+            if (cmdConnect.Text == "Connect") {
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
-
-                if (!Client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "SL Image Upload",
-                    "jhurliman@metaverseindustries.com"))
-                {
-                    MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
-                        Client.Network.LoginMessage));
-                    cmdConnect.Text = "Connect";
-                    txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
-                    DisableUpload();
-                }
-            }
-            else
-            {
+                LoginParams lp = new LoginParams();
+                lp.FirstName = txtFirstName.Text;
+                lp.LastName = txtLastName.Text;
+                lp.Password = txtPassword.Text;
+                lp.URI = Client.Settings.LOGIN_SERVER;
+                lp.Start = "last";
+                cmdConnect.Enabled = false;
+                Client.Network.BeginLogin(lp);
+                return;
+            } else {
                 Client.Network.Logout();
                 cmdConnect.Text = "Connect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                 DisableUpload();
-
-                // HACK: Create a new SecondLife object until it can clean up properly after itself
-                Client = new SecondLife();
+                InitClient();
             }
+        }
+
+        void Network_OnLogin(LoginStatus login, string message)
+        {
+            if (InvokeRequired) {
+                BeginInvoke(new MethodInvoker(
+                    delegate()
+                    {
+                        Network_OnLogin(login, message);
+                    }
+                    ));
+                return;
+            }
+            if (login == LoginStatus.Success) {
+                MessageBox.Show("Connected: " + message);
+                cmdConnect.Enabled = true;
+            } else if (login == LoginStatus.Failed) {
+                MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
+     Client.Network.LoginMessage));
+                cmdConnect.Text = "Connect";
+                cmdConnect.Enabled = true;
+                txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
+                DisableUpload();
+            }
+
         }
 
         private void cmdLoad_Click(object sender, EventArgs e)
@@ -254,6 +280,16 @@ namespace SLImageUpload
 
                 Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
                     InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
+
+                    delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
+                    {
+                        if (bytesSent > 0)
+                        {
+                            Transferred = (int)bytesSent;
+                            BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
+                        }
+                    },
+
                     delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
                     {
                         if (this.InvokeRequired)
@@ -268,6 +304,9 @@ namespace SLImageUpload
 
                             // Fix the permissions on the new upload since they are fscked by default
                             InventoryItem item = Client.Inventory.FetchItem(itemID, Client.Self.AgentID, 1000 * 15);
+
+                            Transferred = UploadData.Length;
+                            BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
 
                             if (item != null)
                             {
@@ -303,16 +342,6 @@ namespace SLImageUpload
                     }
                 );
             }
-        }
-
-        private void Assets_OnUploadProgress(AssetUpload upload)
-        {
-            Transferred = upload.Transferred;
-
-            if (this.InvokeRequired)
-                BeginInvoke(new MethodInvoker(SetProgress));
-            else
-                SetProgress();
         }
 
         private void SetProgress()

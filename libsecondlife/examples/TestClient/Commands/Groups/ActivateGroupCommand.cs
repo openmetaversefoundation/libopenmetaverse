@@ -7,6 +7,9 @@ using System.Text;
 
 namespace libsecondlife.TestClient
 {
+    /// <summary>
+    /// Changes Avatars currently active group
+    /// </summary>
     public class ActivateGroupCommand : Command
     {
         ManualResetEvent GroupsEvent = new ManualResetEvent(false);

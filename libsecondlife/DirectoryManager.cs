@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -293,6 +293,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="queryID"></param>
         /// <param name="matchedPeople"></param>
         public delegate void DirPeopleReplyCallback(LLUUID queryID, List<AgentSearchData> matchedPeople);
 

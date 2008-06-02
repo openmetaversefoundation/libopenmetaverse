@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -209,7 +209,9 @@ namespace libsecondlife
 		/// <summary>Event message when an Avatar has stopped typing</summary>
 		StopTyping = 5,
 		/// <summary>Unknown</summary>
-		Debug = 6
+		Debug = 6,
+        /// <summary>Event message when an object uses llOwnerSay</summary>
+        OwnerSay = 8 
 	}
 
 	/// <summary>
@@ -469,6 +471,36 @@ namespace libsecondlife
         PhysicalObjectCollide
     }
 
+    /// <summary>
+    /// Flags sent when a script takes or releases a control
+    /// </summary>
+    /// <remarks>NOTE: (need to verify) These might be a subset of the ControlFlags enum in Movement,</remarks>
+    [Flags]
+    public enum ScriptControlChange : uint
+    {
+        /// <summary>No Flags set</summary>
+        None = 0,
+        /// <summary>Forward (W or up Arrow)</summary>
+        Forward = 1,
+        /// <summary>Back (S or down arrow)</summary>
+        Back = 2,
+        /// <summary>Move left (shift+A or left arrow)</summary>
+        Left = 4,
+        /// <summary>Move right (shift+D or right arrow)</summary>
+        Right = 8,
+        /// <summary>Up (E or PgUp)</summary>
+        Up = 16,
+        /// <summary>Down (C or PgDown</summary>
+        Down = 32,
+        /// <summary>Rotate left (A or left arrow)</summary>
+        RotateLeft = 256,
+        /// <summary>Rotate right (D or right arrow)</summary>
+        RotateRight = 512,
+        /// <summary>Left Mouse Button</summary>
+        LeftButton = 268435456,
+        /// <summary>Left Mouse button in MouseLook</summary>
+        MouseLookLeftButton = 1073741824
+    }
     #endregion Enums
     
     #region Structs
@@ -494,7 +526,7 @@ namespace libsecondlife
         public InstantMessageDialog Dialog;
         /// <summary>Group IM session toggle</summary>
         public bool GroupIM;
-        /// <summary>Key of IM session</summary>
+        /// <summary>Key of IM session, for Group Messages, the groups UUID</summary>
         public LLUUID IMSessionID;
         /// <summary>Timestamp of the instant message</summary>
         public DateTime Timestamp;
@@ -579,36 +611,46 @@ namespace libsecondlife
         [Flags]
         public enum TeleportFlags : uint
         {
-            /// <summary></summary>
+            /// <summary>No flags set, or teleport failed</summary>
             Default         =      0,
-            /// <summary></summary>
+            /// <summary>Set when newbie leaves help island for first time</summary>
             SetHomeToTarget = 1 << 0,
             /// <summary></summary>
             SetLastToTarget = 1 << 1,
-            /// <summary></summary>
+            /// <summary>Via Lure</summary>
             ViaLure         = 1 << 2,
-            /// <summary></summary>
+            /// <summary>Via Landmark</summary>
             ViaLandmark     = 1 << 3,
-            /// <summary></summary>
+            /// <summary>Via Location</summary>
             ViaLocation     = 1 << 4,
-            /// <summary></summary>
+            /// <summary>Via Home</summary>
             ViaHome         = 1 << 5,
-            /// <summary></summary>
+            /// <summary>Via Telehub</summary>
             ViaTelehub      = 1 << 6,
-            /// <summary></summary>
+            /// <summary>Via Login</summary>
             ViaLogin        = 1 << 7,
-            /// <summary></summary>
+            /// <summary>Linden Summoned</summary>
             ViaGodlikeLure  = 1 << 8,
-            /// <summary></summary>
+            /// <summary>Linden Forced me</summary>
             Godlike         = 1 << 9,
             /// <summary></summary>
             NineOneOne      = 1 << 10,
-            /// <summary></summary>
+            /// <summary>Agent Teleported Home via Script</summary>
             DisableCancel   = 1 << 11,
             /// <summary></summary>
             ViaRegionID     = 1 << 12,
             /// <summary></summary>
-            IsFlying        = 1 << 13
+            IsFlying        = 1 << 13,
+            /// <summary></summary>
+            ResetHome       = 1 << 14,
+            /// <summary>forced to new location for example when avatar is banned or ejected</summary>
+            ForceRedirect   = 1 << 15,
+            /// <summary>Teleport Finished via a Lure</summary>
+            FinishedViaLure = 1 << 26,
+            /// <summary>Finished, Sim Changed</summary>
+            FinishedViaNewSim = 1 << 28,
+            /// <summary>Finished, Same Sim</summary>
+            FinishedViaSameSim = 1 << 29
         }
 
         /// <summary>
@@ -623,6 +665,15 @@ namespace libsecondlife
             GodlikeLure = 1,
             /// <summary></summary>
             GodlikePursuit = 2
+        }
+
+        [Flags]
+        public enum ScriptSensorTypeFlags
+        {
+            Agent = 1,
+            Active = 2,
+            Passive = 4,
+            Scripted = 8,
         }
 
         #endregion
@@ -659,6 +710,7 @@ namespace libsecondlife
         /// <summary>
         /// Triggered when a script asks for permissions
         /// </summary>
+        /// <param name="simulator">Simulator object this request comes from</param>
         /// <param name="taskID">Task ID of the script requesting permissions</param>
         /// <param name="itemID">ID of the object containing the script</param>
         /// <param name="objectName">Name of the object containing the script</param>
@@ -769,7 +821,7 @@ namespace libsecondlife
 
         /// <summary>
         /// Fired when group chat session confirmed joined</summary>
-        /// <param name="groupchatSessionID">Key of Session (groups UUID)</param>
+        /// <param name="groupChatSessionID">Key of Session (groups UUID)</param>
         /// <param name="tmpSessionID">Temporary session Key</param>
         /// <param name="success"><see langword="true"/> if session start successful, 
         /// <see langword="false"/> otherwise</param>
@@ -784,6 +836,52 @@ namespace libsecondlife
         /// </summary>
         /// <param name="message">the message sent from the grid to our avatar.</param>
         public delegate void AlertMessage(string message);
+
+        /// <summary>
+        /// Fired when a script wants to give or release controls.
+        /// </summary>
+        /// <param name="controls">Control to give or take</param>
+        /// <param name="pass">true of passing control to agent</param>
+        /// <param name="take">true of taking control from agent</param>
+        public delegate void ScriptControlCallback(ScriptControlChange controls, bool pass, bool take);
+
+        /// <summary>
+        /// Fired when camera tries to view beyond its view limits
+        /// </summary>
+        /// <param name="collidePlane">LLVector4 representing plane where constraints were hit</param>
+        public delegate void CameraConstraintCallback(LLVector4 collidePlane);
+
+        /// <summary>
+        /// Fired when script sensor reply is received
+        /// </summary>
+        /// <param name="requestorID">requestors UUID</param>
+        /// <param name="groupID">Sources Group UUID</param>
+        /// <param name="name">Sources Name</param>
+        /// <param name="objectID">Objects UUID</param>
+        /// <param name="ownerID">Object owners UUID</param>
+        /// <param name="position">Position of Object</param>
+        /// <param name="range">Range of Object</param>
+        /// <param name="rotation">Rotation of object</param>
+        /// <param name="type">Objects Type</param>
+        /// <param name="velocity">LLVector3 representing the velocity of object</param>
+        /// TODO: this should probably be a struct, and there should be an enum added for type
+        public delegate void ScriptSensorReplyCallback(LLUUID requestorID, LLUUID groupID, string name, LLUUID objectID,
+            LLUUID ownerID, LLVector3 position, float range, LLQuaternion rotation, ScriptSensorTypeFlags type, LLVector3 velocity);
+
+        /// <summary>
+        /// Fired in response to a RequestSit()
+        /// </summary>
+        /// <param name="objectID">ID of primitive avatar will be sitting on</param>
+        /// <param name="autoPilot">true of avatar autopiloted there</param>
+        /// <param name="cameraAtOffset">Camera offset when avatar is seated</param>
+        /// <param name="cameraEyeOffset">Camera eye offset when avatar is seated</param>
+        /// <param name="forceMouselook">true of sitting on this object will force mouselook</param>
+        /// <param name="sitPosition">position avatar will be in when seated</param>
+        /// <param name="sitRotation">rotation avatar will be in when seated</param>
+        public delegate void AvatarSitResponseCallback(LLUUID objectID, bool autoPilot, LLVector3 cameraAtOffset, LLVector3 cameraEyeOffset,
+            bool forceMouselook, LLVector3 sitPosition, LLQuaternion sitRotation);
+
+        public delegate void AgentMovementCallback(LLVector3 agentPosition, ulong regionHandle, LLVector3 agentLookAt, string simVersion);
 
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -817,6 +915,17 @@ namespace libsecondlife
         public event GroupChatLeft OnGroupChatLeft;
         /// <summary>Alert messages sent to client from simulator</summary>
         public event AlertMessage OnAlertMessage;
+        /// <summary>Fired when a script wants to take or release control of your avatar.</summary>
+        public event ScriptControlCallback OnScriptControlChange;
+        /// <summary>Fired when our avatar camera reaches the maximum possible point</summary>
+        public event CameraConstraintCallback OnCameraConstraint;
+        /// <summary>Fired when a script sensor reply is received</summary>
+        public event ScriptSensorReplyCallback OnScriptSensorReply;
+        /// <summary>Fired in response to a sit request</summary>
+        public event AvatarSitResponseCallback OnAvatarSitResponse;
+        /// <summary>Fired when avatar moves to a new simulator</summary>
+        [Obsolete("This information is automatically stored in CurrentSim, Will be removed in 0.5.0")]
+        public event AgentMovementCallback OnAgentMovement;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -1066,6 +1175,12 @@ namespace libsecondlife
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse));
             // Alert Messages
             Client.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
+            // script control change messages, ie: when an in-world LSL script wants to take control of your agent.
+            Client.Network.RegisterCallback(PacketType.ScriptControlChange, new NetworkManager.PacketCallback(ScriptControlChangeHandler));
+            // Camera Constraint (probably needs to move to AgentManagerCamera TODO:
+            Client.Network.RegisterCallback(PacketType.CameraConstraint, new NetworkManager.PacketCallback(CameraConstraintHandler));
+            Client.Network.RegisterCallback(PacketType.ScriptSensorReply, new NetworkManager.PacketCallback(ScriptSensorReplyHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarSitResponse, new NetworkManager.PacketCallback(AvatarSitResponseHandler));
 
         }
 
@@ -1210,7 +1325,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an Instant Message to a group
         /// </summary>
-        /// <param name="groupUUID">Key of Group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of the group to send message to</param>
         /// <param name="message">Text Message being sent.</param>
         public void InstantMessageGroup(LLUUID groupUUID, string message)
         {
@@ -1221,7 +1336,7 @@ namespace libsecondlife
         /// Send an Instant Message to a group
         /// </summary>
         /// <param name="fromName">The name this IM will show up as being from</param>
-        /// <param name="groupUUID">Key of the group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of the group to send message to</param>
         /// <param name="message">Text message being sent</param>
         /// <remarks>This does not appear to function with groups the agent is not in</remarks>
         public void InstantMessageGroup(string fromName, LLUUID groupUUID, string message)
@@ -1256,7 +1371,7 @@ namespace libsecondlife
         /// <summary>
         /// Send a request to join a group chat session
         /// </summary>
-        /// <param name="groupUUID">UUID of Group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of Group to leave</param>
         public void RequestJoinGroupChat(LLUUID groupUUID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1280,7 +1395,7 @@ namespace libsecondlife
         /// Request self terminates group chat. This will stop Group IM's from showing up
         /// until session is rejoined or expires.
         /// </summary>
-        /// <param name="groupUUID">UUID of Group</param>
+        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of Group to leave</param>
         public void RequestLeaveGroupChat(LLUUID groupUUID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1370,9 +1485,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="sourceAvatar"><seealso cref="LLUUID"/> Key of the source agent</param>
         /// <param name="targetObject"><seealso cref="LLUUID"/> Key of the target object</param>
-        /// <param name="globalOffset"></param>
-        /// <param name="type"><seealso cref="T:PointAtType"/></param>
-        /// <param name="effectID"></param>
+        /// <param name="globalOffset">A <seealso cref="T:libsecondlife.LLVector3d"/> representing the beams offset from the source</param>
+        /// <param name="type">A <seealso cref="T:PointAtType"/> which sets the avatars lookat animation</param>
+        /// <param name="effectID"><seealso cref="T:libsecondlife.LLUUID"/> of the Effect</param>
         public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type,
             LLUUID effectID)
         {
@@ -1433,14 +1548,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Create a particle beam between an avatar and an primitive
         /// </summary>
-        /// <param name="sourceAvatar"></param>
-        /// <param name="targetObject"></param>
-        /// <param name="globalOffset"></param>
-        /// <param name="color"></param>
-        /// <param name="duration"></param>
-        /// <param name="effectID"></param>
+        /// <param name="sourceAvatar"><seealso cref="T:libsecondlife.LLUUID"/> of sources avatar</param>
+        /// <param name="targetObject"><seealso cref="T:libsecondlife.LLUUID"/> of the target</param>
+        /// <param name="globalOffset"><seealso cref="T:libsecondlife.LLVector3d"/>global offset</param>
+        /// <param name="color"><seealso cref="T:libsecondlife.LLColor"/>Color values of beam</param>
+        /// <param name="duration">a float representing the duration the beam will last</param>
+        /// <param name="effectID"><seealso cref="T:libsecondlife.LLUUID"/> of the Effect</param>
         public void BeamEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LLColor color, 
             float duration, LLUUID effectID)
         {
@@ -1498,6 +1613,7 @@ namespace libsecondlife
         }
 
         /// <summary>Stands up from sitting on a prim or the ground</summary>
+        /// <returns>true of AgentUpdate was sent</returns>
         public bool Stand()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
@@ -1629,8 +1745,9 @@ namespace libsecondlife
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
-        /// <summary>Cancels autopilot sim function</summary>
+        /// <summary>Macro to cancel autopilot sim function</summary>
         /// <remarks>Not certain if this is how it is really done</remarks>
+        /// <returns>true if control flags were set and AgentUpdate was sent to the simulator</returns>
         public bool AutoPilotCancel()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
@@ -1655,7 +1772,8 @@ namespace libsecondlife
         /// <summary>
         /// Grabs an object
         /// </summary>
-        /// <param name="objectLocalID">Local ID of Object to grab</param>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Grab(uint objectLocalID)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket();
@@ -1686,6 +1804,8 @@ namespace libsecondlife
         /// <summary>
         /// Releases a grabbed object
         /// </summary>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void DeGrab(uint objectLocalID)
         {
             ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
@@ -1698,6 +1818,8 @@ namespace libsecondlife
         /// <summary>
         /// Touches an object
         /// </summary>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Touch(uint objectLocalID)
         {
             Client.Self.Grab(objectLocalID);
@@ -1886,6 +2008,7 @@ namespace libsecondlife
         /// <summary>
         /// Teleports agent to their stored home location
         /// </summary>
+        /// <returns>true on successful teleport to home location</returns>
         public bool GoHome()
         {
             return Teleport(LLUUID.Zero);
@@ -2049,6 +2172,20 @@ namespace libsecondlife
                 teleportEvent.Set();
                 teleportStat = TeleportStatus.Failed;
             }
+        }
+
+        /// <summary>
+        /// Teleport agent to a landmark
+        /// </summary>
+        /// <param name="landmark"><seealso cref="libsecondlife.LLUUID"/> of the landmark to teleport agent to</param>
+        public void RequestTeleport(LLUUID landmark)
+        {
+            TeleportLandmarkRequestPacket p = new TeleportLandmarkRequestPacket();
+            p.Info = new TeleportLandmarkRequestPacket.InfoBlock();
+            p.Info.AgentID = Client.Self.AgentID;
+            p.Info.SessionID = Client.Self.SessionID;
+            p.Info.LandmarkID = landmark;
+            Client.Network.SendPacket(p);
         }
 
         /// <summary>
@@ -2242,8 +2379,35 @@ namespace libsecondlife
             InstantMessage(Name, groupID, String.Empty, imSessionID,
                 accept ? InstantMessageDialog.GroupInvitationAccept : InstantMessageDialog.GroupInvitationDecline,
                 InstantMessageOnline.Offline, LLVector3.Zero, LLUUID.Zero, new byte[0]);
-        }  
+        }
 
+        /// <summary>
+        /// Requests script detection of objects and avatars
+        /// </summary>
+        /// <param name="name">name of the object/avatar to search for</param>
+        /// <param name="searchID">UUID of the object or avatar to search for</param>
+        /// <param name="type">Type of search from ScriptSensorTypeFlags</param>
+        /// <param name="range">range of scan (96 max?)</param>
+        /// <param name="arc">the arc in radians to search within</param>
+        /// <param name="requestID">an user generated ID to correlate replies with</param>
+        /// <param name="sim">Simulator to perform search in</param>
+        public void RequestScriptSensor(string name, LLUUID searchID, ScriptSensorTypeFlags type, float range, float arc, LLUUID requestID, Simulator sim)
+        {
+            ScriptSensorRequestPacket request = new ScriptSensorRequestPacket();
+            request.Requester.Arc = arc;
+            request.Requester.Range = range;
+            request.Requester.RegionHandle = sim.Handle;
+            request.Requester.RequestID = requestID;
+            request.Requester.SearchDir = LLQuaternion.Identity; // TODO: this needs to be tested
+            request.Requester.SearchID = searchID;
+            request.Requester.SearchName = Helpers.StringToField(name);
+            request.Requester.SearchPos = LLVector3.Zero;
+            request.Requester.SearchRegions = 0; // TODO: ?
+            request.Requester.SourceID = Client.Self.AgentID;
+            request.Requester.Type = (int)type;
+
+            Client.Network.SendPacket(request, sim);
+        }
         #endregion Misc
 
         #region Packet Handlers
@@ -2360,6 +2524,29 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Handles Script Control changes when Script with permissions releases or takes a control
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void ScriptControlChangeHandler(Packet packet, Simulator simulator)
+        {
+            if (OnScriptControlChange != null)
+            {
+                ScriptControlChangePacket change = (ScriptControlChangePacket)packet;
+                for (int i = 0; i < change.Data.Length; i++)
+                {
+                    try
+                    {
+                        OnScriptControlChange((ScriptControlChange)change.Data[i].Controls,
+                            change.Data[i].PassToAgent,
+                            change.Data[i].TakeControls);
+                    }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+        }
+
+        /// <summary>
         /// Used for parsing llLoadURL Dialogs
         /// </summary>
         /// <param name="packet"></param>
@@ -2388,6 +2575,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="packet">Incoming AgentMovementCompletePacket</param>
         /// <param name="simulator">Unused</param>
+        /// <remarks>This occurs when after an avatar moves into a new sim</remarks>
         private void MovementCompleteHandler(Packet packet, Simulator simulator)
         {
             AgentMovementCompletePacket movement = (AgentMovementCompletePacket)packet;
@@ -2395,6 +2583,16 @@ namespace libsecondlife
             relativePosition = movement.Data.Position;
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
+            simulator.SimVersion = Helpers.FieldToUTF8String(movement.SimData.ChannelVersion);
+            if (OnAgentMovement != null)
+            {
+                try
+                {
+                    OnAgentMovement(movement.Data.Position, movement.Data.RegionHandle,
+                  movement.Data.LookAt, Helpers.FieldToUTF8String(movement.SimData.ChannelVersion));
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
 
         /// <summary>
@@ -2500,7 +2698,7 @@ namespace libsecondlife
         {
             bool finished = false;
             TeleportFlags flags = TeleportFlags.Default;
-
+            
             if (packet.Type == PacketType.TeleportStart)
             {
                 TeleportStartPacket start = (TeleportStartPacket)packet;
@@ -2738,22 +2936,16 @@ namespace libsecondlife
         /// <summary>
         /// Group Chat event handler
         /// </summary>
-        /// <param name="capsKey"></param>
+        /// <param name="capsKey">The capability Key</param>
         /// <param name="llsd"></param>
         /// <param name="simulator"></param>
         private void ChatterBoxSessionEventHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
-            // TODO: this appears to occur when you try and initiate group chat with an unopened session
-            //       
-            // Key=ChatterBoxSessionEventReply 
-            // llsd={
-            //    ("error": "generic")
-            //    ("event": "message")
-            //    ("session_id": "3dafea18-cda1-9813-d5f1-fd3de6b13f8c") // group uuid
-            //    ("success": "0")}
-            //LLSDMap map = (LLSDMap)llsd;
-            //LLUUID groupUUID = map["session_id"].AsUUID();
-            //Console.WriteLine("SessionEvent: Key={0} llsd={1}", capsKey, llsd.ToString());
+            LLSDMap map = (LLSDMap)llsd;
+            if (map["success"].AsBoolean() != true)
+            {
+                Client.Log("Attempt to send group chat to non-existant session for group " + map["session_id"].AsString(), Helpers.LogLevel.Info);
+            }
         }
 
         /// <summary>
@@ -2890,6 +3082,68 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+
+        /// <summary>
+        /// detects camera constraint collisions
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void CameraConstraintHandler(Packet packet, Simulator simulator)
+        {
+            if (OnCameraConstraint != null)
+            {
+                CameraConstraintPacket camera = (CameraConstraintPacket)packet;
+
+                try { OnCameraConstraint(camera.CameraCollidePlane.Plane); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        /// <summary>
+        /// Packet handler for ScriptSensorReply packet
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void ScriptSensorReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnScriptSensorReply != null)
+            {
+                ScriptSensorReplyPacket reply = (ScriptSensorReplyPacket)packet;
+
+                for (int i = 0; i < reply.SensedData.Length; i++)
+                {
+                    ScriptSensorReplyPacket.SensedDataBlock block = reply.SensedData[i];
+                    ScriptSensorReplyPacket.RequesterBlock requestor = reply.Requester;
+                    
+                    try { OnScriptSensorReply(requestor.SourceID, block.GroupID, Helpers.FieldToUTF8String(block.Name),
+                        block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            
+        }
+
+        /// <summary>
+        /// Packet handler for AvatarSitResponse packet
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void AvatarSitResponseHandler(Packet packet, Simulator simulator)
+        {
+            if (OnAvatarSitResponse != null)
+            {
+                AvatarSitResponsePacket sit = (AvatarSitResponsePacket)packet;
+
+                try
+                {
+                    OnAvatarSitResponse(sit.SitObject.ID, sit.SitTransform.AutoPilot, sit.SitTransform.CameraAtOffset,
+                  sit.SitTransform.CameraEyeOffset, sit.SitTransform.ForceMouselook, sit.SitTransform.SitPosition,
+                  sit.SitTransform.SitRotation);
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
         #endregion Packet Handlers
     }
 }

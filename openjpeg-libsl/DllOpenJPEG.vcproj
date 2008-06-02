@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="DllOpenJPEG"
-	ProjectGUID="{D1F3D377-653A-4B9B-B01F-C8DF3FA5C86F}"
+	ProjectGUID="{89AC992C-5E2C-4E6B-A453-61C1DF446216}"
 	RootNamespace="DllOpenJPEG"
 	>
 	<Platforms>
@@ -77,6 +77,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=""
+				LinkTimeCodeGeneration="0"
 				ImportLibrary=".\Release/openjpeg-libsl.lib"
 				TargetMachine="1"
 			/>
@@ -669,31 +670,32 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-			>
-			<File
-				RelativePath="OpenJPEG.rc"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-		</Filter>
+<Filter 	 
+Name="Resource Files" 	 
+Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe" 	 
+> 	 
+<File 	 
+RelativePath="OpenJPEG.rc" 	 
+> 	 
+<FileConfiguration 	 
+Name="Release|Win32" 	 
+> 	 
+<Tool 	 
+Name="VCResourceCompilerTool" 	 
+PreprocessorDefinitions="" 	 
+/> 	 
+</FileConfiguration> 	 
+<FileConfiguration 	 
+Name="Debug|Win32" 	 
+> 	 
+<Tool 	 
+Name="VCResourceCompilerTool" 	 
+PreprocessorDefinitions="" 	 
+/> 	 
+</FileConfiguration> 	 
+</File> 	 
+</Filter>
+
 	</Files>
 	<Globals>
 	</Globals>

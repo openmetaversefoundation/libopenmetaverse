@@ -258,43 +258,6 @@ char *j2k_convert_progression_order(OPJ_PROG_ORDER prg_order){
 	return po->str_prog;
 }
 
-static void j2k_check_poc_val(opj_cparameters_t *parameters, int numcomps, int numlayers){
-	int index, resno, compno, layno, i;
-	char loss = 0;
-	int step_c = 1;
-	int step_r = numcomps * step_c;
-	int step_l = parameters->numresolution * step_r;
-	int array_size = step_l * numlayers * sizeof(int);
-	int *packet_array = (int *) opj_malloc(array_size);
-	
-	for (i = 0; i < parameters->numpocs ; i++) {
-		int layno0 = 0;
-		if(i > 0)
-			layno0 = (parameters->POC[i].layno1 > parameters->POC[i-1].layno1 )? parameters->POC[i-1].layno1 : 0;
-		for (resno = parameters->POC[i].resno0 ; resno < parameters->POC[i].resno1 ; resno++) {
-			for (compno = parameters->POC[i].compno0 ; compno < parameters->POC[i].compno1 ; compno++) {
-				for (layno = layno0; layno < parameters->POC[i].layno1 ; layno++) {
-					index = step_r * resno + step_c * compno + step_l * layno;
-					packet_array[index]= 1;
-				}
-			}
-		}
-	}
-	for (resno = 0; resno < parameters->numresolution; resno++) {
-		for (compno = 0; compno < numcomps; compno++) {
-			for (layno = 0; layno < numlayers ; layno++) {
-				index = step_r * resno + step_c * compno + step_l * layno;
-				if(!(	packet_array[index]== 1)){
-					loss = 1;
-				}
-			}
-		}
-	}
-	if(loss == 1)
-		fprintf(stdout,"Missing packets possible loss of data\n");
-	opj_free(packet_array);
-}
-
 void j2k_dump_image(FILE *fd, opj_image_t * img) {
 	int compno;
 	fprintf(fd, "image {\n");
@@ -406,7 +369,7 @@ static int j2k_get_num_tp(opj_cp_t *cp,int pino,int tileno){
 
 /**	mem allocation for TLM marker*/
 int j2k_calculate_tp(opj_cp_t *cp,int img_numcomp,opj_image_t *image,opj_j2k_t *j2k ){
-	int pino,tileno,maxres=0,totnum_tp=0;
+	int pino,tileno,totnum_tp=0;
 	j2k->cur_totnum_tp = (int *) opj_malloc(cp->tw * cp->th * sizeof(int));
 	for (tileno = 0; tileno < cp->tw * cp->th; tileno++) {
 		int cur_totnum_tp = 0;
@@ -421,6 +384,12 @@ int j2k_calculate_tp(opj_cp_t *cp,int img_numcomp,opj_image_t *image,opj_j2k_t *
 			pi_destroy(pi, cp, tileno);
 		}
 		j2k->cur_totnum_tp[tileno] = cur_totnum_tp;
+		/* INDEX >> */
+		if (j2k->cstr_info) {
+			j2k->cstr_info->tile[tileno].num_tps = cur_totnum_tp;
+			j2k->cstr_info->tile[tileno].tp = (opj_tp_info_t *) opj_malloc(cur_totnum_tp * sizeof(opj_tp_info_t));
+		}
+		/* << INDEX */
 	}
 	return totnum_tp;
 }
@@ -428,10 +397,24 @@ int j2k_calculate_tp(opj_cp_t *cp,int img_numcomp,opj_image_t *image,opj_j2k_t *
 static void j2k_write_soc(opj_j2k_t *j2k) {
 	opj_cio_t *cio = j2k->cio;
 	cio_write(cio, J2K_MS_SOC, 2);
+
+/* UniPG>> */
+#ifdef USE_JPWL
+
+	/* update markers struct */
+	j2k_add_marker(j2k->cstr_info, J2K_MS_SOC, cio_tell(cio) - 2, 2);
+
+#endif /* USE_JPWL */
+/* <<UniPG */
 }
 
-static void j2k_read_soc(opj_j2k_t *j2k) {
+static void j2k_read_soc(opj_j2k_t *j2k) {	
 	j2k->state = J2K_STATE_MHSIZ;
+	/* Index */
+	if (j2k->cstr_info) {
+		j2k->cstr_info->main_head_start = cio_tell(j2k->cio) - 2;
+		j2k->cstr_info->codestream_size = cio_numbytesleft(j2k->cio) + 2 - j2k->cstr_info->main_head_start;
+	}
 }
 
 static void j2k_write_siz(opj_j2k_t *j2k) {
@@ -525,7 +508,7 @@ static void j2k_read_siz(opj_j2k_t *j2k) {
 	}
 #endif /* USE_JPWL */
 
-	image->comps = (opj_image_comp_t *) opj_malloc(image->numcomps * sizeof(opj_image_comp_t));
+	image->comps = (opj_image_comp_t*) opj_calloc(image->numcomps, sizeof(opj_image_comp_t));
 	for (i = 0; i < image->numcomps; i++) {
 		int tmp, w, h;
 		tmp = cio_read(cio, 1);		/* Ssiz_i */
@@ -563,13 +546,12 @@ static void j2k_read_siz(opj_j2k_t *j2k) {
 		}
 #endif /* USE_JPWL */
 
-
 		/* TODO: unused ? */
 		w = int_ceildiv(image->x1 - image->x0, image->comps[i].dx);
 		h = int_ceildiv(image->y1 - image->y0, image->comps[i].dy);
 
 		image->comps[i].resno_decoded = 0;	/* number of resolution decoded */
-		image->comps[i].factor = 0;			/* reducing factor per component */
+		image->comps[i].factor = cp->reduce; /* reducing factor per component */
 	}
 	
 	cp->tw = int_ceildiv(image->x1 - cp->tx0, cp->tdx);
@@ -615,8 +597,8 @@ static void j2k_read_siz(opj_j2k_t *j2k) {
 	}
 #endif /* USE_JPWL */
 
-	cp->tcps = (opj_tcp_t *) opj_malloc(cp->tw * cp->th * sizeof(opj_tcp_t));
-	cp->tileno = (int *) opj_malloc(cp->tw * cp->th * sizeof(int));
+	cp->tcps = (opj_tcp_t*) opj_calloc(cp->tw * cp->th, sizeof(opj_tcp_t));
+	cp->tileno = (int*) opj_malloc(cp->tw * cp->th * sizeof(int));
 	cp->tileno_size = 0;
 	
 #ifdef USE_JPWL
@@ -644,14 +626,29 @@ static void j2k_read_siz(opj_j2k_t *j2k) {
 	cp->ppm_data_first = NULL;
 	cp->ppm_previous = 0;
 	cp->ppm_store = 0;
-	
-	j2k->default_tcp->tccps = (opj_tccp_t *) opj_malloc(sizeof(opj_tccp_t) * image->numcomps);
+
+	j2k->default_tcp->tccps = (opj_tccp_t*) opj_calloc(image->numcomps, sizeof(opj_tccp_t));
 	for (i = 0; i < cp->tw * cp->th; i++) {
-		cp->tcps[i].tccps = (opj_tccp_t *) opj_malloc(sizeof(opj_tccp_t) * image->numcomps);
-	}
-	j2k->tile_data = (unsigned char **) opj_malloc(cp->tw * cp->th * sizeof(unsigned char *));
-	j2k->tile_len = (int *) opj_malloc(cp->tw * cp->th * sizeof(int));
+		cp->tcps[i].tccps = (opj_tccp_t*) opj_malloc(image->numcomps * sizeof(opj_tccp_t));
+	}	
+	j2k->tile_data = (unsigned char**) opj_calloc(cp->tw * cp->th, sizeof(unsigned char*));
+	j2k->tile_len = (int*) opj_calloc(cp->tw * cp->th, sizeof(int));
 	j2k->state = J2K_STATE_MH;
+
+	/* Index */
+	if (j2k->cstr_info) {
+		opj_codestream_info_t *cstr_info = j2k->cstr_info;
+		cstr_info->image_w = image->x1 - image->x0;
+		cstr_info->image_h = image->y1 - image->y0;
+		cstr_info->numcomps = image->numcomps;
+		cstr_info->tw = cp->tw;
+		cstr_info->th = cp->th;
+		cstr_info->tile_x = cp->tdx;	
+		cstr_info->tile_y = cp->tdy;	
+		cstr_info->tile_Ox = cp->tx0;	
+		cstr_info->tile_Oy = cp->ty0;			
+		cstr_info->tile = (opj_tile_info_t*) opj_calloc(cp->tw * cp->th, sizeof(opj_tile_info_t));		
+	}
 }
 
 static void j2k_write_com(opj_j2k_t *j2k) {
@@ -665,7 +662,7 @@ static void j2k_write_com(opj_j2k_t *j2k) {
 		cio_write(cio, J2K_MS_COM, 2);
 		lenp = cio_tell(cio);
 		cio_skip(cio, 2);
-		cio_write(cio, 0, 2);
+		cio_write(cio, 1, 2);		/* General use (IS 8859-15:1999 (Latin) values) */
 		for (i = 0; i < strlen(comment); i++) {
 			cio_write(cio, comment[i], 1);
 		}
@@ -716,8 +713,13 @@ static void j2k_read_cox(opj_j2k_t *j2k, int compno) {
 
 	tccp->numresolutions = cio_read(cio, 1) + 1;	/* SPcox (D) */
 
-	/* check the reduce value */
-	cp->reduce = int_min((tccp->numresolutions)-1, cp->reduce);
+	// If user wants to remove more resolutions than the codestream contains, return error
+	if (cp->reduce >= tccp->numresolutions) {
+		opj_event_msg(j2k->cinfo, EVT_ERROR, "Error decoding component %d.\nThe number of resolutions to remove is higher than the number "
+					"of resolutions of this component\nModify the cp_reduce parameter.\n\n", compno);
+		j2k->state |= J2K_STATE_ERR;
+	}
+
 	tccp->cblkw = cio_read(cio, 1) + 2;	/* SPcox (E) */
 	tccp->cblkh = cio_read(cio, 1) + 2;	/* SPcox (F) */
 	tccp->cblksty = cio_read(cio, 1);	/* SPcox (G) */
@@ -729,6 +731,21 @@ static void j2k_read_cox(opj_j2k_t *j2k, int compno) {
 			tccp->prch[i] = tmp >> 4;
 		}
 	}
+
+	/* INDEX >> */
+	if(j2k->cstr_info && compno == 0) {
+		for (i = 0; i < tccp->numresolutions; i++) {
+			if (tccp->csty & J2K_CP_CSTY_PRT) {
+				j2k->cstr_info->tile[j2k->curtileno].pdx[i] = tccp->prcw[i];
+				j2k->cstr_info->tile[j2k->curtileno].pdy[i] = tccp->prch[i];
+			}
+			else {
+				j2k->cstr_info->tile[j2k->curtileno].pdx[i] = 15;
+				j2k->cstr_info->tile[j2k->curtileno].pdx[i] = 15;
+			}
+		}
+	}
+	/* << INDEX */
 }
 
 static void j2k_write_cod(opj_j2k_t *j2k) {
@@ -777,6 +794,17 @@ static void j2k_read_cod(opj_j2k_t *j2k) {
 		tcp->tccps[i].csty = tcp->csty & J2K_CP_CSTY_PRT;
 		cio_seek(cio, pos);
 		j2k_read_cox(j2k, i);
+	}
+
+	/* Index */
+	if (j2k->cstr_info) {
+		opj_codestream_info_t *cstr_info = j2k->cstr_info;
+		cstr_info->prog = tcp->prg;
+		cstr_info->numlayers = tcp->numlayers;
+		cstr_info->numdecompos = (int*) opj_malloc(image->numcomps * sizeof(int));
+		for (i = 0; i < image->numcomps; i++) {
+			cstr_info->numdecompos[i] = tcp->tccps[i].numresolutions - 1;
+		}
 	}
 }
 
@@ -1018,7 +1046,6 @@ static void j2k_read_poc(opj_j2k_t *j2k) {
 	
 	opj_cp_t *cp = j2k->cp;
 	opj_tcp_t *tcp = j2k->state == J2K_STATE_TPH ? &cp->tcps[j2k->curtileno] : j2k->default_tcp;
-	opj_tccp_t *tccp = &tcp->tccps[0];
 	opj_cio_t *cio = j2k->cio;
 	
 	old_poc = tcp->POC ? tcp->numpocs + 1 : 0;
@@ -1149,7 +1176,7 @@ static void j2k_read_ppm(opj_j2k_t *j2k) {
 						"JPWL: failed memory allocation during PPM marker parsing (pos. %x)\n",
 						cio_tell(cio));
 					if (!JPWL_ASSUME || JPWL_ASSUME) {
-						free(cp->ppm_data);
+						opj_free(cp->ppm_data);
 						opj_event_msg(j2k->cinfo, EVT_ERROR, "JPWL: giving up\n");
 						return;
 					}
@@ -1229,6 +1256,13 @@ static void j2k_write_sot(opj_j2k_t *j2k) {
 	cio_seek(cio, lenp);
 	cio_write(cio, len, 2);				/* Lsot */
 	cio_seek(cio, lenp + len);
+
+	/* UniPG>> */
+#ifdef USE_JPWL
+	/* update markers struct */
+	j2k_add_marker(j2k->cstr_info, J2K_MS_SOT, j2k->sot_start, len + 2);
+#endif /* USE_JPWL */
+	/* <<UniPG */
 }
 
 static void j2k_read_sot(opj_j2k_t *j2k) {
@@ -1238,7 +1272,7 @@ static void j2k_read_sot(opj_j2k_t *j2k) {
 
 	opj_cp_t *cp = j2k->cp;
 	opj_cio_t *cio = j2k->cio;
-	
+
 	len = cio_read(cio, 2);
 	tileno = cio_read(cio, 2);
 
@@ -1267,7 +1301,6 @@ static void j2k_read_sot(opj_j2k_t *j2k) {
 		backup_tileno++;
 	};
 #endif /* USE_JPWL */
-
 	
 	if (cp->tileno_size == 0) {
 		cp->tileno[cp->tileno_size] = tileno;
@@ -1315,12 +1348,34 @@ static void j2k_read_sot(opj_j2k_t *j2k) {
 	numparts = cio_read(cio, 1);
 	
 	j2k->curtileno = tileno;
+	j2k->cur_tp_num = partno;
 	j2k->eot = cio_getbp(cio) - 12 + totlen;
 	j2k->state = J2K_STATE_TPH;
 	tcp = &cp->tcps[j2k->curtileno];
+
+	/* Index */
+	if (j2k->cstr_info) {
+		if (tcp->first) {
+			if (tileno == 0) 
+				j2k->cstr_info->main_head_end = cio_tell(cio) - 13;
+			j2k->cstr_info->tile[tileno].tileno = tileno;
+			j2k->cstr_info->tile[tileno].start_pos = cio_tell(cio) - 12;
+			j2k->cstr_info->tile[tileno].end_pos = j2k->cstr_info->tile[tileno].start_pos + totlen - 1;				
+			j2k->cstr_info->tile[tileno].num_tps = numparts;
+			if (numparts)
+				j2k->cstr_info->tile[tileno].tp = (opj_tp_info_t *) opj_malloc(numparts * sizeof(opj_tp_info_t));
+			else
+				j2k->cstr_info->tile[tileno].tp = (opj_tp_info_t *) opj_malloc(10 * sizeof(opj_tp_info_t)); // Fixme (10)
+		}
+		else {
+			j2k->cstr_info->tile[tileno].end_pos += totlen;
+		}		
+		j2k->cstr_info->tile[tileno].tp[partno].tp_start_pos = cio_tell(cio) - 12;
+		j2k->cstr_info->tile[tileno].tp[partno].tp_end_pos = 
+			j2k->cstr_info->tile[tileno].tp[partno].tp_start_pos + totlen - 1;
+	}
 	
-	if (tcp->first == 1) {
-		
+	if (tcp->first == 1) {		
 		/* Initialization PPT */
 		opj_tccp_t *tmp = tcp->tccps;
 		memcpy(tcp, j2k->default_tcp, sizeof(opj_tcp_t));
@@ -1340,7 +1395,7 @@ static void j2k_write_sod(opj_j2k_t *j2k, void *tile_coder) {
 	int l, layno;
 	int totlen;
 	opj_tcp_t *tcp = NULL;
-	opj_image_info_t *image_info = NULL;
+	opj_codestream_info_t *cstr_info = NULL;
 	
 	opj_tcd_t *tcd = (opj_tcd_t*)tile_coder;	/* cast is needed because of conflicts in header inclusions */
 	opj_cp_t *cp = j2k->cp;
@@ -1348,17 +1403,29 @@ static void j2k_write_sod(opj_j2k_t *j2k, void *tile_coder) {
 
 	tcd->tp_num = j2k->tp_num ;
 	tcd->cur_tp_num = j2k->cur_tp_num;
-	tcd->cur_totnum_tp = j2k->cur_totnum_tp[j2k->curtileno];
 	
 	cio_write(cio, J2K_MS_SOD, 2);
 	if (j2k->curtileno == 0) {
 		j2k->sod_start = cio_tell(cio) + j2k->pos_correction;
 	}
-	
+
 	/* INDEX >> */
-	image_info = j2k->image_info;
-	if (image_info && image_info->index_on) {
-		image_info->tile[j2k->curtileno].end_header = cio_tell(cio) + j2k->pos_correction - 1;
+	cstr_info = j2k->cstr_info;
+	if (cstr_info) {
+		if (!j2k->cur_tp_num ) {
+			cstr_info->tile[j2k->curtileno].end_header = cio_tell(cio) + j2k->pos_correction - 1;
+			j2k->cstr_info->tile[j2k->curtileno].tileno = j2k->curtileno;
+		}
+		else{
+			if(cstr_info->tile[j2k->curtileno].packet[cstr_info->packno - 1].end_pos < cio_tell(cio))
+				cstr_info->tile[j2k->curtileno].packet[cstr_info->packno].start_pos = cio_tell(cio);
+		}
+		/* UniPG>> */
+#ifdef USE_JPWL
+		/* update markers struct */
+		j2k_add_marker(j2k->cstr_info, J2K_MS_SOD, j2k->sod_start, 2);
+#endif /* USE_JPWL */
+		/* <<UniPG */
 	}
 	/* << INDEX */
 	
@@ -1366,11 +1433,13 @@ static void j2k_write_sod(opj_j2k_t *j2k, void *tile_coder) {
 	for (layno = 0; layno < tcp->numlayers; layno++) {
 		tcp->rates[layno] -= tcp->rates[layno] ? (j2k->sod_start / (cp->th * cp->tw)) : 0;
 	}
-	if(image_info) {
-		image_info->num = 0;
+	if(j2k->cur_tp_num == 0){
+		tcd->tcd_image->tiles->packno = 0;
+		if(cstr_info)
+			cstr_info->packno = 0;
 	}
 	
-	l = tcd_encode_tile(tcd, j2k->curtileno, cio_getbp(cio), cio_numbytesleft(cio) - 2, image_info);
+	l = tcd_encode_tile(tcd, j2k->curtileno, cio_getbp(cio), cio_numbytesleft(cio) - 2, cstr_info);
 	
 	/* Writing Psot in SOT marker */
 	totlen = cio_tell(cio) + l - j2k->sot_start;
@@ -1392,26 +1461,31 @@ static void j2k_read_sod(opj_j2k_t *j2k) {
 
 	opj_cio_t *cio = j2k->cio;
 	int curtileno = j2k->curtileno;
+
+	/* Index */
+	if (j2k->cstr_info) {
+		j2k->cstr_info->tile[j2k->curtileno].tp[j2k->cur_tp_num].tp_end_header =
+			cio_tell(cio) + j2k->pos_correction - 1;
+		if (j2k->cur_tp_num == 0)
+			j2k->cstr_info->tile[j2k->curtileno].end_header = cio_tell(cio) + j2k->pos_correction - 1;
+		j2k->cstr_info->packno = 0;
+	}
 	
 	len = int_min(j2k->eot - cio_getbp(cio), cio_numbytesleft(cio) + 1);
-	
+
 	if (len == cio_numbytesleft(cio) + 1) {
 		truncate = 1;		/* Case of a truncate codestream */
-	}
-	
-	data = (unsigned char *) opj_malloc((j2k->tile_len[curtileno] + len) * sizeof(unsigned char));
+	}	
 
-	for (i = 0; i < j2k->tile_len[curtileno]; i++) {
-		data[i] = j2k->tile_data[curtileno][i];
-	}
+	data = j2k->tile_data[curtileno];
+	data = (unsigned char*) opj_realloc(data, (j2k->tile_len[curtileno] + len) * sizeof(unsigned char));
 
 	data_ptr = data + j2k->tile_len[curtileno];
 	for (i = 0; i < len; i++) {
 		data_ptr[i] = cio_read(cio, 1);
 	}
-	
+
 	j2k->tile_len[curtileno] += len;
-	opj_free(j2k->tile_data[curtileno]);
 	j2k->tile_data[curtileno] = data;
 	
 	if (!truncate) {
@@ -1419,10 +1493,10 @@ static void j2k_read_sod(opj_j2k_t *j2k) {
 	} else {
 		j2k->state = J2K_STATE_NEOC;	/* RAJOUTE !! */
 	}
+	j2k->cur_tp_num++;
 }
 
 static void j2k_write_rgn(opj_j2k_t *j2k, int compno, int tileno) {
-	
 	opj_cp_t *cp = j2k->cp;
 	opj_tcp_t *tcp = &cp->tcps[tileno];
 	opj_cio_t *cio = j2k->cio;
@@ -1469,20 +1543,34 @@ static void j2k_write_eoc(opj_j2k_t *j2k) {
 	opj_cio_t *cio = j2k->cio;
 	/* opj_event_msg(j2k->cinfo, "%.8x: EOC\n", cio_tell(cio) + j2k->pos_correction); */
 	cio_write(cio, J2K_MS_EOC, 2);
+
+/* UniPG>> */
+#ifdef USE_JPWL
+	/* update markers struct */
+	j2k_add_marker(j2k->cstr_info, J2K_MS_EOC, cio_tell(cio) - 2, 2);
+#endif /* USE_JPWL */
+/* <<UniPG */
 }
 
 static void j2k_read_eoc(opj_j2k_t *j2k) {
 	int i, tileno;
+	bool success;
 
 	/* if packets should be decoded */
 	if (j2k->cp->limit_decoding != DECODE_ALL_BUT_PACKETS) {
 		opj_tcd_t *tcd = tcd_create(j2k->cinfo);
 		tcd_malloc_decode(tcd, j2k->image, j2k->cp);
 		for (i = 0; i < j2k->cp->tileno_size; i++) {
+			tcd_malloc_decode_tile(tcd, j2k->image, j2k->cp, i, j2k->cstr_info);
 			tileno = j2k->cp->tileno[i];
-			tcd_decode_tile(tcd, j2k->tile_data[tileno], j2k->tile_len[tileno], tileno);
+			success = tcd_decode_tile(tcd, j2k->tile_data[tileno], j2k->tile_len[tileno], tileno, j2k->cstr_info);
 			opj_free(j2k->tile_data[tileno]);
 			j2k->tile_data[tileno] = NULL;
+			tcd_free_decode_tile(tcd, i);
+			if (success == false) {
+				j2k->state |= J2K_STATE_ERR;
+				break;
+			}
 		}
 		tcd_free_decode(tcd);
 		tcd_destroy(tcd);
@@ -1494,9 +1582,11 @@ static void j2k_read_eoc(opj_j2k_t *j2k) {
 			opj_free(j2k->tile_data[tileno]);
 			j2k->tile_data[tileno] = NULL;
 		}
-	}
-	
-	j2k->state = J2K_STATE_MT;
+	}	
+	if (j2k->state & J2K_STATE_ERR)
+		j2k->state = J2K_STATE_MT + J2K_STATE_ERR;
+	else
+		j2k->state = J2K_STATE_MT; 
 }
 
 typedef struct opj_dec_mstabent {
@@ -1535,6 +1625,10 @@ opj_dec_mstabent_t j2k_dec_mstab[] = {
   {J2K_MS_ESD, J2K_STATE_MH | J2K_STATE_TPH, j2k_read_esd},
   {J2K_MS_RED, J2K_STATE_MH | J2K_STATE_TPH, j2k_read_red},
 #endif /* USE_JPWL */
+#ifdef USE_JPSEC
+  {J2K_MS_SEC, J2K_STATE_MH, j2k_read_sec},
+  {J2K_MS_INSEC, 0, j2k_read_insec},
+#endif /* USE_JPSEC */
 
   {0, J2K_STATE_MH | J2K_STATE_TPH, j2k_read_unk}
 };
@@ -1620,15 +1714,19 @@ static opj_dec_mstabent_t *j2k_dec_mstab_lookup(int id) {
 /* ----------------------------------------------------------------------- */
 
 opj_j2k_t* j2k_create_decompress(opj_common_ptr cinfo) {
-	opj_j2k_t *j2k = (opj_j2k_t*)opj_malloc(sizeof(opj_j2k_t));
-	if(j2k) {
-		j2k->cinfo = cinfo;
-		j2k->default_tcp = (opj_tcp_t*)opj_malloc(sizeof(opj_tcp_t));
-		if(!j2k->default_tcp) {
-			opj_free(j2k);
-			return NULL;
-		}
+	opj_j2k_t *j2k = (opj_j2k_t*) opj_calloc(1, sizeof(opj_j2k_t));
+	if(!j2k)
+		return NULL;
+
+	j2k->default_tcp = (opj_tcp_t*) opj_calloc(1, sizeof(opj_tcp_t));
+	if(!j2k->default_tcp) {
+		opj_free(j2k);
+		return NULL;
 	}
+
+	j2k->cinfo = cinfo;
+	j2k->tile_data = NULL;
+
 	return j2k;
 }
 
@@ -1676,14 +1774,13 @@ void j2k_destroy_decompress(opj_j2k_t *j2k) {
 
 		opj_free(cp);
 	}
-
 	opj_free(j2k);
 }
 
 void j2k_setup_decoder(opj_j2k_t *j2k, opj_dparameters_t *parameters) {
 	if(j2k && parameters) {
 		/* create and initialize the coding parameters structure */
-		opj_cp_t *cp = (opj_cp_t*)opj_malloc(sizeof(opj_cp_t));
+		opj_cp_t *cp = (opj_cp_t*) opj_calloc(1, sizeof(opj_cp_t));
 		cp->reduce = parameters->cp_reduce;	
 		cp->layer = parameters->cp_layer;
 		cp->limit_decoding = parameters->cp_limit_decoding;
@@ -1700,12 +1797,15 @@ void j2k_setup_decoder(opj_j2k_t *j2k, opj_dparameters_t *parameters) {
 	}
 }
 
-opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio) {
+opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio, opj_codestream_info_t *cstr_info) {
 	opj_image_t *image = NULL;
 
-	opj_common_ptr cinfo = j2k->cinfo;
+	opj_common_ptr cinfo = j2k->cinfo;	
 
 	j2k->cio = cio;
+	j2k->cstr_info = cstr_info;
+	if (cstr_info)
+		memset(cstr_info, 0, sizeof(opj_codestream_info_t));
 
 	/* create an empty image */
 	image = opj_image_create0();
@@ -1716,7 +1816,6 @@ opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio) {
 	for (;;) {
 		opj_dec_mstabent_t *e;
 		int id = cio_read(cio, 2);
-
 
 #ifdef USE_JPWL
 		/* we try to honor JPWL correction power */
@@ -1777,6 +1876,9 @@ opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio) {
 		if (e->handler) {
 			(*e->handler)(j2k);
 		}
+		if (j2k->state & J2K_STATE_ERR) 
+			return NULL;	
+
 		if (j2k->state == J2K_STATE_MT) {
 			break;
 		}
@@ -1799,7 +1901,7 @@ opj_image_t* j2k_decode(opj_j2k_t *j2k, opj_cio_t *cio) {
 * Read a JPT-stream and decode file
 *
 */
-opj_image_t* j2k_decode_jpt_stream(opj_j2k_t *j2k, opj_cio_t *cio) {
+opj_image_t* j2k_decode_jpt_stream(opj_j2k_t *j2k, opj_cio_t *cio,  opj_codestream_info_t *cstr_info) {
 	opj_image_t *image = NULL;
 	opj_jpt_msg_header_t header;
 	int position;
@@ -1810,6 +1912,7 @@ opj_image_t* j2k_decode_jpt_stream(opj_j2k_t *j2k, opj_cio_t *cio) {
 
 	/* create an empty image */
 	image = opj_image_create0();
+	j2k->image = image;
 
 	j2k->state = J2K_STATE_MHSOC;
 	
@@ -1882,7 +1985,7 @@ opj_image_t* j2k_decode_jpt_stream(opj_j2k_t *j2k, opj_cio_t *cio) {
 /* ----------------------------------------------------------------------- */
 
 opj_j2k_t* j2k_create_compress(opj_common_ptr cinfo) {
-	opj_j2k_t *j2k = (opj_j2k_t*)opj_malloc(sizeof(opj_j2k_t));
+	opj_j2k_t *j2k = (opj_j2k_t*) opj_calloc(1, sizeof(opj_j2k_t));
 	if(j2k) {
 		j2k->cinfo = cinfo;
 	}
@@ -1893,20 +1996,6 @@ void j2k_destroy_compress(opj_j2k_t *j2k) {
 	int tileno;
 
 	if(!j2k) return;
-
-	if(j2k->image_info != NULL) {
-		opj_image_info_t *image_info = j2k->image_info;
-		if (image_info->index_on && j2k->cp) {
-			opj_cp_t *cp = j2k->cp;
-			for (tileno = 0; tileno < cp->tw * cp->th; tileno++) {
-				opj_tile_info_t *tile_info = &image_info->tile[tileno];
-				opj_free(tile_info->thresh);
-				opj_free(tile_info->packet);
-			}
-			opj_free(image_info->tile);
-		}
-		opj_free(image_info);
-	}
 	if(j2k->cp != NULL) {
 		opj_cp_t *cp = j2k->cp;
 
@@ -1935,7 +2024,7 @@ void j2k_setup_encoder(opj_j2k_t *j2k, opj_cparameters_t *parameters, opj_image_
 	}
 
 	/* create and initialize the coding parameters structure */
-	cp = (opj_cp_t*)opj_malloc(sizeof(opj_cp_t));
+	cp = (opj_cp_t*) opj_calloc(1, sizeof(opj_cp_t));
 
 	/* keep a link to cp so that we can destroy it later in j2k_destroy_compress */
 	j2k->cp = cp;
@@ -1959,12 +2048,6 @@ void j2k_setup_encoder(opj_j2k_t *j2k, opj_cparameters_t *parameters, opj_image_
 		size_t array_size = parameters->tcp_numlayers * parameters->numresolution * 3 * sizeof(int);
 		cp->matrice = (int *) opj_malloc(array_size);
 		memcpy(cp->matrice, parameters->cp_matrice, array_size);
-	}
-
-	/* creation of an index file ? */
-	cp->index_on = parameters->index_on;
-	if(cp->index_on) {
-		j2k->image_info = (opj_image_info_t*)opj_malloc(sizeof(opj_image_info_t));
 	}
 
 	/* tiles */
@@ -2065,7 +2148,7 @@ void j2k_setup_encoder(opj_j2k_t *j2k, opj_cparameters_t *parameters, opj_image_
 
 	/* initialize the mutiple tiles */
 	/* ---------------------------- */
-	cp->tcps = (opj_tcp_t *) opj_malloc(cp->tw * cp->th * sizeof(opj_tcp_t));
+	cp->tcps = (opj_tcp_t*) opj_calloc(cp->tw * cp->th, sizeof(opj_tcp_t));
 
 	for (tileno = 0; tileno < cp->tw * cp->th; tileno++) {
 		opj_tcp_t *tcp = &cp->tcps[tileno];
@@ -2093,7 +2176,6 @@ void j2k_setup_encoder(opj_j2k_t *j2k, opj_cparameters_t *parameters, opj_image_
 		if (parameters->numpocs) {
 			/* initialisation of POC */
 			tcp->POC = 1;
-			j2k_check_poc_val(parameters, image->numcomps, tcp->numlayers);
 			for (i = 0; i < parameters->numpocs; i++) {
 				if((tileno == parameters->POC[i].tile - 1) || (parameters->POC[i].tile == -1)) {
 					opj_poc_t *tcp_poc = &tcp->pocs[numpocs_tile];
@@ -2112,8 +2194,8 @@ void j2k_setup_encoder(opj_j2k_t *j2k, opj_cparameters_t *parameters, opj_image_
 			tcp->numpocs = 0;
 		}
 
-		tcp->tccps = (opj_tccp_t *) opj_malloc(image->numcomps * sizeof(opj_tccp_t));
-		
+		tcp->tccps = (opj_tccp_t*) opj_calloc(image->numcomps, sizeof(opj_tccp_t));
+
 		for (i = 0; i < image->numcomps; i++) {
 			opj_tccp_t *tccp = &tcp->tccps[i];
 			tccp->csty = parameters->csty & 0x01;	/* 0 => one precinct || 1 => custom precinct  */
@@ -2191,244 +2273,8 @@ void j2k_setup_encoder(opj_j2k_t *j2k, opj_cparameters_t *parameters, opj_image_
 	}
 }
 
-/**
-Create an index file
-@param j2k
-@param cio
-@param image_info
-@param index Index filename
-@return Returns 1 if successful, returns 0 otherwise
-*/
-static int j2k_create_index(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_info_t *image_info, char *index) {
-	int tileno, compno, layno, resno, precno, pack_nb, x, y;
-	FILE *stream = NULL;
-	double total_disto = 0;
-
-	image_info->codestream_size = cio_tell(cio) + j2k->pos_correction;	/* Correction 14/4/03 suite rmq de Patrick */
-
-
-#ifdef USE_JPWL
-	/* if JPWL is enabled and the name coincides with our own set
-	   then discard the creation of the file: this was just done to
-	   enable indexing, we do not want an index file
-	*/
-	if (j2k->cp->epc_on && !strcmp(index, JPWL_PRIVATEINDEX_NAME))
-		return 1;
-#endif /* USE_JPWL */
-
-
-	stream = fopen(index, "w");
-	if (!stream) {
-		opj_event_msg(j2k->cinfo, EVT_ERROR, "failed to open %s for writing\n", index);
-		return 0;
-	}
-	
-	fprintf(stream, "%d %d\n", image_info->image_w, image_info->image_h);
-	fprintf(stream, "%d\n", image_info->prog);
-	fprintf(stream, "%d %d\n", image_info->tile_x, image_info->tile_y);
-	fprintf(stream, "%d %d\n", image_info->tw, image_info->th);
-	fprintf(stream, "%d\n", image_info->comp);
-	fprintf(stream, "%d\n", image_info->layer);
-	fprintf(stream, "%d\n", image_info->decomposition);
-	
-	for (resno = image_info->decomposition; resno >= 0; resno--) {
-		fprintf(stream, "[%d,%d] ", 
-			(1 << image_info->tile[0].pdx[resno]), (1 << image_info->tile[0].pdx[resno]));	/* based on tile 0 */
-	}
-	fprintf(stream, "\n");
-	fprintf(stream, "%d\n", image_info->main_head_end);
-	fprintf(stream, "%d\n", image_info->codestream_size);
-	
-	for (tileno = 0; tileno < image_info->tw * image_info->th; tileno++) {
-		fprintf(stream, "%4d %9d %9d %9d %9e %9d %9e\n",
-			image_info->tile[tileno].num_tile,
-			image_info->tile[tileno].start_pos,
-			image_info->tile[tileno].end_header,
-			image_info->tile[tileno].end_pos,
-			image_info->tile[tileno].distotile, image_info->tile[tileno].nbpix,
-			image_info->tile[tileno].distotile / image_info->tile[tileno].nbpix);
-	}
-	
-	for (tileno = 0; tileno < image_info->tw * image_info->th; tileno++) {
-		int start_pos, end_pos;
-		double disto = 0;
-		pack_nb = 0;
-		
-		/*
-		fprintf(stream, "pkno tileno layerno resno compno precno start_pos   end_pos       deltaSE        \n");
-		*/
-		
-		if (image_info->prog == LRCP) {	/* LRCP */
-			/*
-			fprintf(stream, "pack_nb tileno layno resno compno precno start_pos  end_pos   disto");
-			*/
-			for (layno = 0; layno < image_info->layer; layno++) {
-				for (resno = 0; resno < image_info->decomposition + 1; resno++) {
-					for (compno = 0; compno < image_info->comp; compno++) {
-						int prec_max = image_info->tile[tileno].pw[resno] * image_info->tile[tileno].ph[resno];
-						for (precno = 0; precno < prec_max; precno++) {
-							start_pos = image_info->tile[tileno].packet[pack_nb].start_pos;
-							end_pos = image_info->tile[tileno].packet[pack_nb].end_pos;
-							disto = image_info->tile[tileno].packet[pack_nb].disto;
-							fprintf(stream, "%4d %6d %7d %5d %6d %6d %9d %9d %8e\n",
-								pack_nb, tileno, layno, resno, compno, precno, start_pos, end_pos, disto);
-							total_disto += disto;
-							pack_nb++;
-						}
-					}
-				}
-			}
-		} /* LRCP */
-		else if (image_info->prog == RLCP) {	/* RLCP */
-			/*
-			fprintf(stream, "pack_nb tileno resno layno compno precno start_pos  end_pos   disto");
-			*/
-			for (resno = 0; resno < image_info->decomposition + 1; resno++) {
-				for (layno = 0; layno < image_info->layer; layno++) {
-					for (compno = 0; compno < image_info->comp; compno++) {
-						int prec_max = image_info->tile[tileno].pw[resno] * image_info->tile[tileno].ph[resno];
-						for (precno = 0; precno < prec_max; precno++) {
-							start_pos = image_info->tile[tileno].packet[pack_nb].start_pos;
-							end_pos = image_info->tile[tileno].packet[pack_nb].end_pos;
-							disto = image_info->tile[tileno].packet[pack_nb].disto;
-							fprintf(stream, "%4d %6d %5d %7d %6d %6d %9d %9d %8e\n",
-								pack_nb, tileno, resno, layno, compno, precno, start_pos, end_pos, disto);
-							total_disto += disto;
-							pack_nb++;
-						}
-					}
-				}
-			}
-		} /* RLCP */
-		else if (image_info->prog == RPCL) {	/* RPCL */
-			/*
-			fprintf(stream, "\npack_nb tileno resno precno compno layno start_pos  end_pos   disto\n"); 
-			*/
-			for (resno = 0; resno < image_info->decomposition + 1; resno++) {
-				/* I suppose components have same XRsiz, YRsiz */
-				int x0 = image_info->tile_Ox + tileno - (int)floor( (float)tileno/(float)image_info->tw ) * image_info->tw * image_info->tile_x;
-				int y0 = image_info->tile_Ox + (int)floor( (float)tileno/(float)image_info->tw ) * image_info->tile_y;
-				int x1 = x0 + image_info->tile_x;
-				int y1 = y0 + image_info->tile_y;
-				for(y = y0; y < y1; y++) {
-					for(x = x0; x < x1; x++) {
-						for (compno = 0; compno < image_info->comp; compno++) {
-							int prec_max = image_info->tile[tileno].pw[resno] * image_info->tile[tileno].ph[resno];
-							for (precno = 0; precno < prec_max; precno++) {
-								int pcnx = image_info->tile[tileno].pw[resno];
-								int pcx = (int) pow( 2, image_info->tile[tileno].pdx[resno] + image_info->decomposition - resno );
-								int pcy = (int) pow( 2, image_info->tile[tileno].pdy[resno] + image_info->decomposition - resno );
-								int precno_x = precno - (int) floor( (float)precno/(float)pcnx ) * pcnx;
-								int precno_y = (int) floor( (float)precno/(float)pcnx );
-								if (precno_y*pcy == y ) {
-									if (precno_x*pcx == x ) {
-										for (layno = 0; layno < image_info->layer; layno++) {
-											start_pos = image_info->tile[tileno].packet[pack_nb].start_pos;
-											end_pos = image_info->tile[tileno].packet[pack_nb].end_pos;
-											disto = image_info->tile[tileno].packet[pack_nb].disto;
-											fprintf(stream, "%4d %6d %5d %6d %6d %7d %9d %9d %8e\n",
-												pack_nb, tileno, resno, precno, compno, layno, start_pos, end_pos, disto); 
-											total_disto += disto;
-											pack_nb++; 
-										}
-									}
-								}
-							} /* precno */
-						} /* compno */
-					} /* x = x0..x1 */
-				} /* y = y0..y1 */
-			} /* resno */
-		} /* RPCL */
-		else if (image_info->prog == PCRL) {	/* PCRL */
-			/* I suppose components have same XRsiz, YRsiz */
-			int x0 = image_info->tile_Ox + tileno - (int)floor( (float)tileno/(float)image_info->tw ) * image_info->tw * image_info->tile_x;
-			int y0 = image_info->tile_Ox + (int)floor( (float)tileno/(float)image_info->tw ) * image_info->tile_y;
-			int x1 = x0 + image_info->tile_x;
-			int y1 = y0 + image_info->tile_y;
-			/*
-			fprintf(stream, "\npack_nb tileno precno compno resno layno start_pos  end_pos   disto\n"); 
-			*/
-			for(y = y0; y < y1; y++) {
-				for(x = x0; x < x1; x++) {
-					for (compno = 0; compno < image_info->comp; compno++) {
-						for (resno = 0; resno < image_info->decomposition + 1; resno++) {
-							int prec_max = image_info->tile[tileno].pw[resno] * image_info->tile[tileno].ph[resno];
-							for (precno = 0; precno < prec_max; precno++) {
-								int pcnx = image_info->tile[tileno].pw[resno];
-								int pcx = (int) pow( 2, image_info->tile[tileno].pdx[resno] + image_info->decomposition - resno );
-								int pcy = (int) pow( 2, image_info->tile[tileno].pdy[resno] + image_info->decomposition - resno );
-								int precno_x = precno - (int) floor( (float)precno/(float)pcnx ) * pcnx;
-								int precno_y = (int) floor( (float)precno/(float)pcnx );
-								if (precno_y*pcy == y ) {
-									if (precno_x*pcx == x ) {
-										for (layno = 0; layno < image_info->layer; layno++) {
-											start_pos = image_info->tile[tileno].packet[pack_nb].start_pos;
-											end_pos = image_info->tile[tileno].packet[pack_nb].end_pos;
-											disto = image_info->tile[tileno].packet[pack_nb].disto;
-											fprintf(stream, "%4d %6d %6d %6d %5d %7d %9d %9d %8e\n",
-												pack_nb, tileno, precno, compno, resno, layno, start_pos, end_pos, disto); 
-											total_disto += disto;
-											pack_nb++; 
-										}
-									}
-								}
-							} /* precno */
-						} /* resno */
-					} /* compno */
-				} /* x = x0..x1 */
-			} /* y = y0..y1 */
-		} /* PCRL */
-		else {	/* CPRL */
-			/*
-			fprintf(stream, "\npack_nb tileno compno precno resno layno start_pos  end_pos   disto\n"); 
-			*/
-			for (compno = 0; compno < image_info->comp; compno++) {
-				/* I suppose components have same XRsiz, YRsiz */
-				int x0 = image_info->tile_Ox + tileno - (int)floor( (float)tileno/(float)image_info->tw ) * image_info->tw * image_info->tile_x;
-				int y0 = image_info->tile_Ox + (int)floor( (float)tileno/(float)image_info->tw ) * image_info->tile_y;
-				int x1 = x0 + image_info->tile_x;
-				int y1 = y0 + image_info->tile_y;
-				for(y = y0; y < y1; y++) {
-					for(x = x0; x < x1; x++) {
-						for (resno = 0; resno < image_info->decomposition + 1; resno++) {
-							int prec_max = image_info->tile[tileno].pw[resno] * image_info->tile[tileno].ph[resno];
-							for (precno = 0; precno < prec_max; precno++) {
-								int pcnx = image_info->tile[tileno].pw[resno];
-								int pcx = (int) pow( 2, image_info->tile[tileno].pdx[resno] + image_info->decomposition - resno );
-								int pcy = (int) pow( 2, image_info->tile[tileno].pdy[resno] + image_info->decomposition - resno );
-								int precno_x = precno - (int) floor( (float)precno/(float)pcnx ) * pcnx;
-								int precno_y = (int) floor( (float)precno/(float)pcnx );
-								if (precno_y*pcy == y ) {
-									if (precno_x*pcx == x ) {
-										for (layno = 0; layno < image_info->layer; layno++) {
-											start_pos = image_info->tile[tileno].packet[pack_nb].start_pos;
-											end_pos = image_info->tile[tileno].packet[pack_nb].end_pos;
-											disto = image_info->tile[tileno].packet[pack_nb].disto;
-											fprintf(stream, "%4d %6d %6d %6d %5d %7d %9d %9d %8e\n",
-												pack_nb, tileno, compno, precno, resno, layno, start_pos, end_pos, disto); 
-											total_disto += disto;
-											pack_nb++; 
-										}
-									}
-								}
-							} /* precno */
-						} /* resno */
-					} /* x = x0..x1 */
-				} /* y = y0..y1 */
-			} /* comno */
-		} /* CPRL */   
-	} /* tileno */
-	
-	fprintf(stream, "%8e\n", image_info->D_max); /* SE max */
-	fprintf(stream, "%.8e\n", total_disto);	/* SE totale */
-	fclose(stream);
-
-	return 1;
-}
-
-bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, char *index) {
+bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, opj_codestream_info_t *cstr_info) {
 	int tileno, compno;
-	opj_image_info_t *image_info = NULL;
 	opj_cp_t *cp = NULL;
 
 	opj_tcd_t *tcd = NULL;	/* TCD component */
@@ -2441,31 +2287,38 @@ bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, char *index)
 	/* j2k_dump_cp(stdout, image, cp); */
 
 	/* INDEX >> */
-	image_info = j2k->image_info;
-	if (image_info && cp->index_on) {
-		image_info->index_on = cp->index_on;
-		image_info->tile = (opj_tile_info_t *) opj_malloc(cp->tw * cp->th * sizeof(opj_tile_info_t));
-		image_info->image_w = image->x1 - image->x0;
-		image_info->image_h = image->y1 - image->y0;
-		image_info->prog = (&cp->tcps[0])->prg;
-		image_info->tw = cp->tw;
-		image_info->th = cp->th;
-		image_info->tile_x = cp->tdx;	/* new version parser */
-		image_info->tile_y = cp->tdy;	/* new version parser */
-		image_info->tile_Ox = cp->tx0;	/* new version parser */
-		image_info->tile_Oy = cp->ty0;	/* new version parser */
-		image_info->comp = image->numcomps;
-		image_info->layer = (&cp->tcps[0])->numlayers;
-		image_info->decomposition = (&cp->tcps[0])->tccps->numresolutions - 1;
-		image_info->D_max = 0;		/* ADD Marcela */
+	j2k->cstr_info = cstr_info;
+	if (cstr_info) {
+		int compno;
+		cstr_info->tile = (opj_tile_info_t *) opj_malloc(cp->tw * cp->th * sizeof(opj_tile_info_t));
+		cstr_info->image_w = image->x1 - image->x0;
+		cstr_info->image_h = image->y1 - image->y0;
+		cstr_info->prog = (&cp->tcps[0])->prg;
+		cstr_info->tw = cp->tw;
+		cstr_info->th = cp->th;
+		cstr_info->tile_x = cp->tdx;	/* new version parser */
+		cstr_info->tile_y = cp->tdy;	/* new version parser */
+		cstr_info->tile_Ox = cp->tx0;	/* new version parser */
+		cstr_info->tile_Oy = cp->ty0;	/* new version parser */
+		cstr_info->numcomps = image->numcomps;
+		cstr_info->numlayers = (&cp->tcps[0])->numlayers;
+		cstr_info->numdecompos = (int*) opj_malloc(image->numcomps * sizeof(int));
+		for (compno=0; compno < image->numcomps; compno++) {
+			cstr_info->numdecompos[compno] = (&cp->tcps[0])->tccps->numresolutions - 1;
+		}
+		cstr_info->D_max = 0.0;		/* ADD Marcela */
+		cstr_info->main_head_start = cio_tell(cio); /* position of SOC */
+		cstr_info->maxmarknum = 100;
+		cstr_info->marker = (opj_marker_info_t *) opj_malloc(cstr_info->maxmarknum * sizeof(opj_marker_info_t));
+		cstr_info->marknum = 0;
 	}
 	/* << INDEX */
-	
+
 	j2k_write_soc(j2k);
 	j2k_write_siz(j2k);
 	j2k_write_cod(j2k);
 	j2k_write_qcd(j2k);
-	
+
 	if(cp->cinema){
 		for (compno = 1; compno < image->numcomps; compno++) {
 			j2k_write_coc(j2k, compno);
@@ -2481,61 +2334,72 @@ bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, char *index)
 	if (cp->comment != NULL) {
 		j2k_write_com(j2k);
 	}
-	/* INDEX >> */
-	if(image_info && image_info->index_on) {
-		image_info->main_head_end = cio_tell(cio) - 1;
-	}
-	/* << INDEX */
 
 	j2k->totnum_tp = j2k_calculate_tp(cp,image->numcomps,image,j2k);
-	/*	 TLM Marker*/
+	/* TLM Marker*/
 	if(cp->cinema){
 		j2k_write_tlm(j2k);
 		if (cp->cinema == CINEMA4K_24) {
 			j2k_write_poc(j2k);
 		}
 	}
+
+	/* uncomment only for testing JPSEC marker writing */
+	/* j2k_write_sec(j2k); */
+
+	/* INDEX >> */
+	if(cstr_info) {
+		cstr_info->main_head_end = cio_tell(cio) - 1;
+	}
+	/* << INDEX */
 	/**** Main Header ENDS here ***/
-	
+
 	/* create the tile encoder */
 	tcd = tcd_create(j2k->cinfo);
 
 	/* encode each tile */
-
 	for (tileno = 0; tileno < cp->tw * cp->th; tileno++) {
 		int pino;
 		int tilepartno=0;
+		/* UniPG>> */
+		int acc_pack_num = 0;
+		/* <<UniPG */
+
 
 		opj_tcp_t *tcp = &cp->tcps[tileno];
 		opj_event_msg(j2k->cinfo, EVT_INFO, "tile number %d / %d\n", tileno + 1, cp->tw * cp->th);
-		
+
 		j2k->curtileno = tileno;
 		j2k->cur_tp_num = 0;
-
+		tcd->cur_totnum_tp = j2k->cur_totnum_tp[j2k->curtileno];
 		/* initialisation before tile encoding  */
 		if (tileno == 0) {
 			tcd_malloc_encode(tcd, image, cp, j2k->curtileno);
 		} else {
 			tcd_init_encode(tcd, image, cp, j2k->curtileno);
 		}
-		
+
 		/* INDEX >> */
-		if(image_info && image_info->index_on) {
-			image_info->tile[j2k->curtileno].num_tile = j2k->curtileno;
-			image_info->tile[j2k->curtileno].start_pos = cio_tell(cio) + j2k->pos_correction;
+		if(cstr_info) {
+			cstr_info->tile[j2k->curtileno].start_pos = cio_tell(cio) + j2k->pos_correction;
 		}
 		/* << INDEX */
 
 		for(pino = 0; pino <= tcp->numpocs; pino++) {
 			int tot_num_tp;
 			tcd->cur_pino=pino;
-			
+
 			/*Get number of tile parts*/
 			tot_num_tp = j2k_get_num_tp(cp,pino,tileno);
 			tcd->tp_pos = cp->tp_pos;
 
 			for(tilepartno = 0; tilepartno < tot_num_tp ; tilepartno++){
 				j2k->tp_num = tilepartno;
+				/* INDEX >> */
+				if(cstr_info)
+					cstr_info->tile[j2k->curtileno].tp[j2k->cur_tp_num].tp_start_pos =
+					cio_tell(cio) + j2k->pos_correction;
+				/* << INDEX */
 				j2k_write_sot(j2k);
 
 				if(j2k->cur_tp_num == 0 && cp->cinema == 0){
@@ -2548,83 +2412,87 @@ bool j2k_encode(opj_j2k_t *j2k, opj_cio_t *cio, opj_image_t *image, char *index)
 					}
 				}
 
+				/* INDEX >> */
+				if(cstr_info)
+					cstr_info->tile[j2k->curtileno].tp[j2k->cur_tp_num].tp_end_header =
+					cio_tell(cio) + j2k->pos_correction + 1;
+				/* << INDEX */
+
 				j2k_write_sod(j2k, tcd);
-				j2k->cur_tp_num ++;
-			}
-			
+
+				/* INDEX >> */
+				if(cstr_info) {
+					cstr_info->tile[j2k->curtileno].tp[j2k->cur_tp_num].tp_end_pos =
+						cio_tell(cio) + j2k->pos_correction - 1;
+					cstr_info->tile[j2k->curtileno].tp[j2k->cur_tp_num].tp_start_pack =
+						acc_pack_num;
+					cstr_info->tile[j2k->curtileno].tp[j2k->cur_tp_num].tp_numpacks =
+						cstr_info->packno - acc_pack_num;
+					acc_pack_num = cstr_info->packno;
+				}
+				/* << INDEX */
+
+				j2k->cur_tp_num++;
+			}			
 		}
-		/* INDEX >> */
-		if(image_info && image_info->index_on) {
-			image_info->tile[j2k->curtileno].end_pos = cio_tell(cio) + j2k->pos_correction - 1;
+		if(cstr_info) {
+			cstr_info->tile[j2k->curtileno].end_pos = cio_tell(cio) + j2k->pos_correction - 1;
 		}
-		/* << INDEX */
-		
-		
+
+
 		/*
 		if (tile->PPT) { // BAD PPT !!! 
-			FILE *PPT_file;
-			int i;
-			PPT_file=fopen("PPT","rb");
-			fprintf(stderr,"%c%c%c%c",255,97,tile->len_ppt/256,tile->len_ppt%256);
-			for (i=0;i<tile->len_ppt;i++) {
-				unsigned char elmt;
-				fread(&elmt, 1, 1, PPT_file);
-				fwrite(&elmt,1,1,f);
-			}
-			fclose(PPT_file);
-			unlink("PPT");
+		FILE *PPT_file;
+		int i;
+		PPT_file=fopen("PPT","rb");
+		fprintf(stderr,"%c%c%c%c",255,97,tile->len_ppt/256,tile->len_ppt%256);
+		for (i=0;i<tile->len_ppt;i++) {
+		unsigned char elmt;
+		fread(&elmt, 1, 1, PPT_file);
+		fwrite(&elmt,1,1,f);
+		}
+		fclose(PPT_file);
+		unlink("PPT");
 		}
 		*/
-		
+
 	}
-	
+
 	/* destroy the tile encoder */
 	tcd_free_encode(tcd);
 	tcd_destroy(tcd);
 
-	j2k_write_eoc(j2k);
-	
-	/* Creation of the index file */
-	if(image_info && image_info->index_on) {
-		if(!j2k_create_index(j2k, cio, image_info, index)) {
-			opj_event_msg(j2k->cinfo, EVT_ERROR, "failed to create index file %s\n", index);
-			return false;
-		}
-	}
+	opj_free(j2k->cur_totnum_tp);
 
+	j2k_write_eoc(j2k);
+
+	if(cstr_info) {
+		cstr_info->codestream_size = cio_tell(cio) + j2k->pos_correction;
+		/* UniPG>> */
+		/* The following adjustment is done to adjust the codestream size */
+		/* if SOD is not at 0 in the buffer. Useful in case of JP2, where */
+		/* the first bunch of bytes is not in the codestream              */
+		cstr_info->codestream_size -= cstr_info->main_head_start;
+		/* <<UniPG */
+	}
 
 #ifdef USE_JPWL
 	/*
-	preparation of JPWL marker segments: can be finalized only when the whole
-	codestream is known
+	preparation of JPWL marker segments
 	*/
-	if(image_info && image_info->index_on && cp->epc_on) {
+	if(cp->epc_on) {
 
-		/* let's begin creating a marker list, according to user wishes */
-		jpwl_prepare_marks(j2k, cio, image);
-
-		/* now we dump the JPWL markers on the codestream */
-		jpwl_dump_marks(j2k, cio, image);
-
-		/* do not know exactly what is this for,
-		but it gets called during index creation */
-		j2k->pos_correction = 0;
-
-		/* Re-creation of the index file, with updated info */
-		if(image_info && image_info->index_on) {
-			if(!j2k_create_index(j2k, cio, image_info, index)) {
-				opj_event_msg(j2k->cinfo, EVT_ERROR, "failed to re-create index file %s\n", index);
-				return false;
-			}
-		}
-
-		/* now we finalize the marker contents */
-		/*jpwl_finalize_marks(j2k, cio, image);*/
+		/* encode according to JPWL */
+		jpwl_encode(j2k, cio, image);
 
 	}
 #endif /* USE_JPWL */
 
-	
 	return true;
 }
+
+
+
+
+
 

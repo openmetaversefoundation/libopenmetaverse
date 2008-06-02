@@ -36,12 +36,14 @@ namespace libsecondlife.TestClient
             System.IO.StreamReader reader = new StreamReader(file);
             string body = reader.ReadToEnd();
 
+            // FIXME: Upload the notecard asset first. When that completes, call RequestCreateItem
             try
             {
                 string desc = String.Format("{0} created by libsecondlife TestClient {1}", file, DateTime.Now);
                 // create the asset
-                Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard), file, desc, 
-                    AssetType.Notecard, InventoryType.Notecard, PermissionMask.All, 
+
+                Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
+                    file, desc, AssetType.Notecard, LLUUID.Random(), InventoryType.Notecard, PermissionMask.All,
                     delegate(bool success, InventoryItem item) { 
                     if(success) // upload the asset
                         Client.Inventory.RequestUploadNotecardAsset(CreateNotecardAsset(body), item.UUID, new InventoryManager.NotecardUploadedAssetCallback(OnNoteUpdate));

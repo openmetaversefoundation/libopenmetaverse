@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,29 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    #region Structs
+    /// <summary>
+    /// Holds group information for Avatars such as those you might find in a profile
+    /// </summary>
+    public struct AvatarGroup
+    {
+        /// <summary>true of Avatar accepts group notices</summary>
+        public bool AcceptNotices;
+        /// <summary>Groups Key</summary>
+        public LLUUID GroupID;
+        /// <summary>Texture Key for groups insignia</summary>
+        public LLUUID GroupInsigniaID;
+        /// <summary>Name of the group</summary>
+        public string GroupName;
+        /// <summary>Powers avatar has in the group</summary>
+        public GroupPowers GroupPowers;
+        /// <summary>Avatars Currently selected title</summary>
+        public string GroupTitle;
+        /// <summary>true of Avatar has chosen to list this in their profile</summary>
+        public bool ListInProfile;
+    } 
+    #endregion
+
     /// <summary>
     /// Retrieve friend status notifications, and retrieve avatar names and
     /// profiles
@@ -42,12 +65,6 @@ namespace libsecondlife
         /// </summary>
         /// <param name="names"></param>
         public delegate void AvatarNamesCallback(Dictionary<LLUUID, string> names);
-        /// <summary>
-        /// Triggered when a response for avatar statistics (ratings) is returned
-        /// </summary>
-        /// <param name="avatarID"></param>
-        /// <param name="statistics"></param>
-        // public delegate void AvatarStatisticsCallback(LLUUID avatarID, Avatar.Statistics statistics);
         /// <summary>
         /// Triggered when a response for avatar interests is returned
         /// </summary>
@@ -109,8 +126,6 @@ namespace libsecondlife
 
         /// <summary></summary>
         public event AvatarNamesCallback OnAvatarNames;
-        /// <summary></summary>
-        // public event AvatarStatisticsCallback OnAvatarStatistics;
         /// <summary></summary>
         public event AvatarInterestsCallback OnAvatarInterests;
         /// <summary></summary>

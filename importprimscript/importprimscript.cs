@@ -4,6 +4,7 @@ using System.Threading;
 using System.IO;
 using System.Drawing;
 using libsecondlife;
+using libsecondlife.Capabilities;
 
 namespace importprimscript
 {
@@ -214,6 +215,12 @@ namespace importprimscript
             AutoResetEvent uploadEvent = new AutoResetEvent(false);
             Client.Inventory.RequestCreateItemFromAsset(jp2data, Path.GetFileNameWithoutExtension(filename),
                 "Uploaded with importprimscript", AssetType.Texture, InventoryType.Texture, UploadFolderID,
+
+                delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
+                {
+                    // FIXME: Do something with progress?
+                },
+
                 delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
                 {
                     if (success)

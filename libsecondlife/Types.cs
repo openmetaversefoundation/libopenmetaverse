@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -34,6 +34,7 @@ namespace libsecondlife
     /// A 128-bit Universally Unique Identifier, used throughout the Second
     /// Life networking protocol
     /// </summary>
+    [Serializable]
     public struct LLUUID : IComparable
     {
         /// <summary>The System.Guid object this struct wraps around</summary>
@@ -647,11 +648,11 @@ namespace libsecondlife
         }
 
         //FIXME: Need comprehensive testing for this
-        /// <summary>
-        /// Assumes this vector represents euler rotations along the X, Y, and
-        /// Z axis and creates a quaternion representation of the rotations
-        /// </summary>
-        /// <returns>A quaternion representation of the euler rotations</returns>
+        // <summary>
+        // Assumes this vector represents euler rotations along the X, Y, and
+        // Z axis and creates a quaternion representation of the rotations
+        // </summary>
+        // <returns>A quaternion representation of the euler rotations</returns>
         //public LLQuaternion ToQuaternion()
         //{
         //    LLMatrix3 rotMat = new LLMatrix3(X, Y, Z);
@@ -1419,7 +1420,7 @@ namespace libsecondlife
         /// <param name="a"></param>
         public LLColor(byte r, byte g, byte b, byte a)
         {
-            float quanta = 1.0f / 255.0f;
+            const float quanta = 1.0f / 255.0f;
 
             R = (float)r * quanta;
             G = (float)g * quanta;
@@ -1796,9 +1797,16 @@ namespace libsecondlife
             {
                 norm = 1 / norm;
 
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * X), 0, bytes, 0, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * Y), 0, bytes, 4, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * Z), 0, bytes, 8, 4);
+                float x, y, z;
+                if (W >= 0) {
+                    x = X; y = Y; z = Z;
+                } else {
+                    x = -X; y = -Y; z = -Z;
+                }
+
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * x), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * y), 0, bytes, 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * z), 0, bytes, 8, 4);
 
                 if (!BitConverter.IsLittleEndian)
                 {
@@ -2026,19 +2034,38 @@ namespace libsecondlife
         public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
         {
             LLQuaternion ret = new LLQuaternion(
-                rhs.W * lhs.X + rhs.X * lhs.W + rhs.Y * lhs.Z - rhs.Z * lhs.Y,
-                rhs.W * lhs.Y + rhs.Y * lhs.W + rhs.Z * lhs.X - rhs.X * lhs.Z,
-                rhs.W * lhs.Z + rhs.Z * lhs.W + rhs.X * lhs.Y - rhs.Y * lhs.X,
-                rhs.W * lhs.W - rhs.X * lhs.X - rhs.Y * lhs.Y - rhs.Z * lhs.Z
+                (lhs.W * rhs.X) + (lhs.X * rhs.W) + (lhs.Y * rhs.Z) - (lhs.Z * rhs.Y),
+                (lhs.W * rhs.Y) - (lhs.X * rhs.Z) + (lhs.Y * rhs.W) + (lhs.Z * rhs.X),
+                (lhs.W * rhs.Z) + (lhs.X * rhs.Y) - (lhs.Y * rhs.X) + (lhs.Z * rhs.W),
+                (lhs.W * rhs.W) - (lhs.X * rhs.X) - (lhs.Y * rhs.Y) - (lhs.Z * rhs.Z)
             );
 
             return ret;
+        }
+
+        /// <summary>
+        /// Division operator (multiply by the conjugate)
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLQuaternion operator /(LLQuaternion lhs, LLQuaternion rhs)
+        {
+            return lhs * rhs.Conjugate;
         }
 
         #endregion Operators
 
         /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
         public readonly static LLQuaternion Identity = new LLQuaternion(0f, 0f, 0f, 1f);
+
+        public LLQuaternion Conjugate
+        {
+            get
+            {
+                return new LLQuaternion(-this.X, -this.Y, -this.Z, this.W);
+            }
+        }
 	}
 
     /// <summary>

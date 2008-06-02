@@ -38,32 +38,65 @@ namespace libsecondlife
         public GroundTextureSettings GroundTextures;
 
         /// <summary>
-        /// Triggered on incoming LandStatReply
-        /// </summary>
-        /// <param name="reportType"></param>
-        /// <param name="requestFlags"></param>
-        /// <param name="objectCount"></param>
-        /// <param name="task"></param>
-        //public delegate void LandStatReply(LandStatReportType reportType, uint requestFlags, int objectCount, List<EstateTask> Tasks);
-        /// <summary>
-        /// Triggered on incoming LandStatReply when the report type is for "top colliders"
+        /// Triggered on LandStatReply when the report type is for "top colliders"
         /// </summary>
         /// <param name="objectCount"></param>
         /// <param name="Tasks"></param>
         public delegate void GetTopCollidersReply(int objectCount, List<EstateTask> Tasks);
+
         /// <summary>
-        /// Triggered on incoming LandStatReply when the report type is for "top scripts"
+        /// Triggered on LandStatReply when the report type is for "top scripts"
         /// </summary>
         /// <param name="objectCount"></param>
         /// <param name="Tasks"></param>
         public delegate void GetTopScriptsReply(int objectCount, List<EstateTask> Tasks);
 
-        /// <summary>Callback for incoming LandStatReply packets</summary>
+        /// <summary>
+        /// Triggered when the list of estate managers is received for the current estate
+        /// </summary>
+        /// <param name="managers"></param>
+        /// <param name="count"></param>
+        /// <param name="estateID"></param>
+        public delegate void EstateManagersReply(uint estateID, int count, List<LLUUID> managers);
+
+        /// <summary>
+        /// FIXME - Enumerate all params from EstateOwnerMessage packet
+        /// </summary>
+        /// <param name="denyNoPaymentInfo"></param>
+        /// <param name="estateID"></param>
+        /// <param name="estateName"></param>
+        /// <param name="estateOwner"></param>
+        public delegate void EstateUpdateInfoReply(string estateName, LLUUID estateOwner, uint estateID, bool denyNoPaymentInfo);
+
+        public delegate void EstateManagersListReply(uint estateID, List<LLUUID> managers);
+
+        public delegate void EstateBansReply(uint estateID, int count, List<LLUUID> banned);
+
+        public delegate void EstateUsersReply(uint estateID, int count, List<LLUUID> allowedUsers);
+
+        public delegate void EstateGroupsReply(uint estateID, int count, List<LLUUID> allowedGroups);
+
+        public delegate void EstateCovenantReply(LLUUID covenantID, long timestamp, string estateName, LLUUID estateOwnerID);
+
+
+        /// <summary>Callback for LandStatReply packets</summary>
         //public event LandStatReply OnLandStatReply;
         /// <summary>Triggered upon a successful .GetTopColliders()</summary>
         public event GetTopCollidersReply OnGetTopColliders;
         /// <summary>Triggered upon a successful .GetTopScripts()</summary>
         public event GetTopScriptsReply OnGetTopScripts;
+        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
+        public event EstateUpdateInfoReply OnGetEstateUpdateInfo;
+        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
+        public event EstateManagersReply OnGetEstateManagers;
+        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
+        public event EstateBansReply OnGetEstateBans;
+        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
+        public event EstateGroupsReply OnGetAllowedGroups;
+        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
+        public event EstateUsersReply OnGetAllowedUsers;
+        /// <summary>Triggered upon a successful .RequestCovenant()</summary>
+        public event EstateCovenantReply OnGetCovenant;
 
         /// <summary>
         /// Constructor for EstateTools class
@@ -73,7 +106,8 @@ namespace libsecondlife
 		{
 			Client = client;
             Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
-            //Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
+            Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
+            Client.Network.RegisterCallback(PacketType.EstateCovenantReply, new NetworkManager.PacketCallback(EstateCovenantReplyHandler));
 		}
 
         /// <summary>Describes tasks returned in LandStatReply</summary>
@@ -99,6 +133,14 @@ namespace libsecondlife
         {
             BanUser = 64,
             UnbanUser = 128
+        }
+
+        public enum EstateAccessReplyDelta : uint
+        {
+            AllowedUsers = 17,
+            AllowedGroups = 18,
+            EstateBans = 20,
+            EstateManagers = 24
         }
 
         /// <summary>Used by GroundTextureSettings</summary>
@@ -137,6 +179,12 @@ namespace libsecondlife
             Client.Network.SendPacket(p);
         }
 
+        /// <summary>Requests estate settings, including estate manager and access/ban lists</summary>
+        public void GetInfo()
+        {
+            EstateOwnerMessage("getinfo", new List<string>());
+        }
+
         /// <summary>Requests the "Top Scripts" list for the current region</summary>
         public void GetTopScripts()
         {
@@ -151,22 +199,183 @@ namespace libsecondlife
             LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
         }
 
+        private void EstateCovenantReplyHandler(Packet packet, Simulator simulator)
+        {
+            EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)packet;
+            if (OnGetCovenant != null)
+            {
+                try
+                {
+                    OnGetCovenant(
+                       reply.Data.CovenantID,
+                       reply.Data.CovenantTimestamp,
+                       Helpers.FieldToUTF8String(reply.Data.EstateName),
+                       reply.Data.EstateOwnerID);
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
         /// <summary></summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
         private void EstateOwnerMessageHandler(Packet packet, Simulator simulator)
         {
             EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)packet;
+            uint estateID;
             string method = Helpers.FieldToUTF8String(message.MethodData.Method);
-            
-            //FIXME - remove debug output
+            List<string> parameters = new List<string>();
+
+            if (method == "estateupdateinfo")
+            {
+                string estateName = Helpers.FieldToUTF8String(message.ParamList[0].Parameter);
+                LLUUID estateOwner = new LLUUID(Helpers.FieldToUTF8String(message.ParamList[1].Parameter));
+                estateID = Helpers.BytesToUInt(message.ParamList[2].Parameter);
+                /*
+                foreach (EstateOwnerMessagePacket.ParamListBlock param in message.ParamList)
+                {
+                    parameters.Add(Helpers.FieldToUTF8String(param.Parameter));
+                }
+                */
+                bool denyNoPaymentInfo;
+                if (Helpers.BytesToUInt(message.ParamList[8].Parameter) == 0) denyNoPaymentInfo = true;
+                else denyNoPaymentInfo = false;
+
+                if (OnGetEstateUpdateInfo != null)
+                {
+                    try
+                    {
+                        OnGetEstateUpdateInfo(estateName, estateOwner, estateID, denyNoPaymentInfo);
+                    }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+
+            else if (method == "setaccess")
+            {
+                int count;
+                estateID = Helpers.BytesToUInt(message.ParamList[0].Parameter);
+                if (message.ParamList.Length > 1)
+                {
+                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)Helpers.BytesToUInt(message.ParamList[1].Parameter);
+                    switch (accessType)
+                    {
+                        case EstateAccessReplyDelta.EstateManagers:
+                            if (OnGetEstateManagers != null)
+                            {
+                                count = (int)Helpers.BytesToUInt(message.ParamList[3].Parameter);
+                                List<LLUUID> managers = new List<LLUUID>();
+                                if (message.ParamList.Length > 5)
+                                {
+                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    {
+                                        LLUUID managerID;
+                                        if (LLUUID.TryParse(Helpers.FieldToUTF8String(message.ParamList[i].Parameter), out managerID))
+                                        {
+                                            managers.Add(managerID);
+                                        }
+                                    }
+                                    try { OnGetEstateManagers(estateID, count, managers); }
+                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                }
+                            }
+                            break;
+
+                        case EstateAccessReplyDelta.EstateBans:
+                            if (OnGetEstateBans != null)
+                            {
+                                count = (int)Helpers.BytesToUInt(message.ParamList[4].Parameter);
+                                List<LLUUID> bannedUsers = new List<LLUUID>();
+                                if (message.ParamList.Length > 5)
+                                {
+                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    {
+                                        LLUUID bannedID;
+                                        if (LLUUID.TryParse(Helpers.FieldToUTF8String(message.ParamList[i].Parameter), out bannedID))
+                                        {
+                                            bannedUsers.Add(bannedID);
+                                        }
+                                    }
+                                    try { OnGetEstateBans(estateID, count, bannedUsers); }
+                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                }
+                            }
+                            break;                            
+
+                        case EstateAccessReplyDelta.AllowedUsers:
+                            if (OnGetAllowedUsers != null)
+                            {
+                                count = (int)Helpers.BytesToUInt(message.ParamList[2].Parameter);
+                                List<LLUUID> allowedUsers = new List<LLUUID>();
+                                if (message.ParamList.Length > 5)
+                                {
+                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    {
+                                        LLUUID userID;
+                                        if (LLUUID.TryParse(Helpers.FieldToUTF8String(message.ParamList[i].Parameter), out userID))
+                                        {
+                                            allowedUsers.Add(userID);
+                                        }
+                                    }
+                                    try { OnGetAllowedUsers(estateID, count, allowedUsers); }
+                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                }
+                            }
+                            break;
+
+                        case EstateAccessReplyDelta.AllowedGroups:
+                            if (OnGetAllowedGroups != null)
+                            {
+                                count = (int)Helpers.BytesToUInt(message.ParamList[3].Parameter);
+                                List<LLUUID> allowedGroups = new List<LLUUID>();
+                                if (message.ParamList.Length > 5)
+                                {
+                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    {
+                                        LLUUID groupID;
+                                        if (LLUUID.TryParse(Helpers.FieldToUTF8String(message.ParamList[i].Parameter), out groupID))
+                                        {
+                                            allowedGroups.Add(groupID);
+                                        }
+                                    }
+                                    try { OnGetAllowedGroups(estateID, count, allowedGroups); }
+                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                }
+                            }
+                            break;
+                    }
+
+                    if (accessType == EstateAccessReplyDelta.EstateManagers)
+                    {
+                        if (OnGetEstateManagers != null)
+                        {
+                            count = (int)Helpers.BytesToUInt(message.ParamList[5].Parameter);
+                            List<LLUUID> managers = new List<LLUUID>();
+
+                            for (int i = 5; i < message.ParamList.Length; i++)
+                            {
+                                LLUUID managerID;
+                                if (LLUUID.TryParse(Helpers.FieldToUTF8String(message.ParamList[i].Parameter), out managerID))
+                                {
+                                    managers.Add(managerID);
+                                }
+                            }
+                            try { OnGetEstateManagers(estateID, count, managers); }
+                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        }
+                    }
+
+                }
+            }
+
+            /*
             Console.WriteLine("--- " + method + " ---");
             foreach (EstateOwnerMessagePacket.ParamListBlock block in message.ParamList)
             {
                 Console.WriteLine(Helpers.FieldToUTF8String(block.Parameter));
             }
             Console.WriteLine("------");
-            
+            */
         }
 
         /// <summary></summary>
@@ -196,11 +405,13 @@ namespace libsecondlife
 
                 if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
                 {
-                    OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks);
+                    try { OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
                 else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
                 {
-                    OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks);
+                    try { OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
                 /*
@@ -236,6 +447,7 @@ namespace libsecondlife
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
             estate.AgentData.AgentID = Client.Self.AgentID;
             estate.AgentData.SessionID = Client.Self.SessionID;
+            estate.AgentData.TransactionID = LLUUID.Zero;
             estate.MethodData.Invoice = LLUUID.Random();
             estate.MethodData.Method = Helpers.StringToField(method);
             estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[listParams.Count];
@@ -250,13 +462,14 @@ namespace libsecondlife
         /// <summary>
         /// Kick an avatar from an estate
         /// </summary>
-        /// <param name="userID">Key of Avatar to kick</param>
+        /// <param name="userID">Key of Agent to remove</param>
 		public void KickUser(LLUUID userID) 
 		{
             EstateOwnerMessage("kickestate", userID.ToString());
 		}
 
         /// <summary>Ban an avatar from an estate</summary>
+        /// <param name="userID">Key of Agent to remove</param>
         public void BanUser(LLUUID userID)
         {
             List<string> listParams = new List<string>();
@@ -268,10 +481,11 @@ namespace libsecondlife
         }
 
         /// <summary>Unban an avatar from an estate</summary>
+        /// <param name="userID">Key of Agent to remove</param>
         public void UnbanUser(LLUUID userID)
         {
             List<string> listParams = new List<string>();
-            uint flag = (uint)EstateAccessDelta.BanUser;
+            uint flag = (uint)EstateAccessDelta.UnbanUser;
             listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
@@ -357,6 +571,14 @@ namespace libsecondlife
             if (disableCollisions) listParams.Add("Y"); else listParams.Add("N");
             if (disablePhysics) listParams.Add("Y"); else listParams.Add("N");
             EstateOwnerMessage("setregiondebug", listParams);
+        }
+
+        public void RequestCovenant()
+        {
+            EstateCovenantRequestPacket req = new EstateCovenantRequestPacket();
+            req.AgentData.AgentID = Client.Self.AgentID;
+            req.AgentData.SessionID = Client.Self.SessionID;
+            Client.Network.SendPacket(req);
         }
 
 	}

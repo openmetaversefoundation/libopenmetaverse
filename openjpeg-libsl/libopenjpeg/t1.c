@@ -39,9 +39,9 @@
 /** @name Local static functions */
 /*@{*/
 
-static char t1_getctxno_zc(int f, int orient);
+static INLINE char t1_getctxno_zc(int f, int orient);
 static char t1_getctxno_sc(int f);
-static char t1_getctxno_mag(int f);
+static INLINE int t1_getctxno_mag(int f);
 static char t1_getspb(int f);
 static short t1_getnmsedec_sig(int x, int bitpos);
 static short t1_getnmsedec_ref(int x, int bitpos);
@@ -194,7 +194,7 @@ Encode 1 code-block
 */
 static void t1_encode_cblk(
 		opj_t1_t *t1,
-		opj_tcd_cblk_t * cblk,
+		opj_tcd_cblk_enc_t* cblk,
 		int orient,
 		int compno,
 		int level,
@@ -213,7 +213,7 @@ Decode 1 code-block
 */
 static void t1_decode_cblk(
 		opj_t1_t *t1,
-		opj_tcd_cblk_t * cblk,
+		opj_tcd_cblk_dec_t* cblk,
 		int orient,
 		int roishift,
 		int cblksty);
@@ -232,8 +232,10 @@ static char t1_getctxno_sc(int f) {
 	return lut_ctxno_sc[(f & (T1_SIG_PRIM | T1_SGN)) >> 4];
 }
 
-static char t1_getctxno_mag(int f) {
-	return lut_ctxno_mag[(f & T1_SIG_OTH) | (((f & T1_REFINE) != 0) << 11)];
+static int t1_getctxno_mag(int f) {
+	int tmp1 = (f & T1_SIG_OTH) ? T1_CTXNO_MAG + 1 : T1_CTXNO_MAG;
+	int tmp2 = (f & T1_REFINE) ? T1_CTXNO_MAG + 2 : tmp1;
+	return (tmp2);
 }
 
 static char t1_getspb(int f) {
@@ -261,21 +263,22 @@ static void t1_updateflags(flag_t *flagsp, int s, int stride) {
 	flag_t *sp = flagsp + stride;
 
 	static const flag_t mod[] = {
-		T1_SIG_S,            T1_SIG_N,            T1_SIG_E,            T1_SIG_W,
-		T1_SIG_S | T1_SGN_S, T1_SIG_N | T1_SGN_N, T1_SIG_E | T1_SGN_E, T1_SIG_W | T1_SGN_W
+		T1_SIG_S, T1_SIG_S|T1_SGN_S,
+		T1_SIG_E, T1_SIG_E|T1_SGN_E,
+		T1_SIG_W, T1_SIG_W|T1_SGN_W,
+		T1_SIG_N, T1_SIG_N|T1_SGN_N
 	};
-
-	s <<= 2;
 
 	np[-1] |= T1_SIG_SE;
 	np[0]  |= mod[s];
 	np[1]  |= T1_SIG_SW;
 
 	flagsp[-1] |= mod[s+2];
-	flagsp[1]  |= mod[s+3];
+	flagsp[0]  |= T1_SIG;
+	flagsp[1]  |= mod[s+4];
 
 	sp[-1] |= T1_SIG_NE;
-	sp[0]  |= mod[s+1];
+	sp[0]  |= mod[s+6];
 	sp[1]  |= T1_SIG_NW;
 }
 
@@ -297,25 +300,22 @@ static void t1_enc_sigpass_step(
 	flag = vsc ? ((*flagsp) & (~(T1_SIG_S | T1_SIG_SE | T1_SIG_SW | T1_SGN_S))) : (*flagsp);
 	if ((flag & T1_SIG_OTH) && !(flag & (T1_SIG | T1_VISIT))) {
 		v = int_abs(*datap) & one ? 1 : 0;
+		mqc_setcurctx(mqc, t1_getctxno_zc(flag, orient));	/* ESSAI */
 		if (type == T1_TYPE_RAW) {	/* BYPASS/LAZY MODE */
-			mqc_setcurctx(mqc, t1_getctxno_zc(flag, orient));	/* ESSAI */
 			mqc_bypass_enc(mqc, v);
 		} else {
-			mqc_setcurctx(mqc, t1_getctxno_zc(flag, orient));
 			mqc_encode(mqc, v);
 		}
 		if (v) {
 			v = *datap < 0 ? 1 : 0;
 			*nmsedec +=	t1_getnmsedec_sig(int_abs(*datap), bpno + T1_NMSEDEC_FRACBITS);
+			mqc_setcurctx(mqc, t1_getctxno_sc(flag));	/* ESSAI */
 			if (type == T1_TYPE_RAW) {	/* BYPASS/LAZY MODE */
-				mqc_setcurctx(mqc, t1_getctxno_sc(flag));	/* ESSAI */
 				mqc_bypass_enc(mqc, v);
 			} else {
-				mqc_setcurctx(mqc, t1_getctxno_sc(flag));
 				mqc_encode(mqc, v ^ t1_getspb(flag));
 			}
 			t1_updateflags(flagsp, v, t1->flags_stride);
-			*flagsp |= T1_SIG;
 		}
 		*flagsp |= T1_VISIT;
 	}
@@ -342,7 +342,6 @@ static void t1_dec_sigpass_step(
 				v = raw_decode(raw);	/* ESSAI */
 				*datap = v ? -oneplushalf : oneplushalf;
 				t1_updateflags(flagsp, v, t1->flags_stride);
-				*flagsp |= T1_SIG;
 			}
 		} else {
 			mqc_setcurctx(mqc, t1_getctxno_zc(flag, orient));
@@ -351,7 +350,6 @@ static void t1_dec_sigpass_step(
 				v = mqc_decode(mqc) ^ t1_getspb(flag);
 				*datap = v ? -oneplushalf : oneplushalf;
 				t1_updateflags(flagsp, v, t1->flags_stride);
-				*flagsp |= T1_SIG;
 			}
 		}
 		*flagsp |= T1_VISIT;
@@ -434,11 +432,10 @@ static void t1_enc_refpass_step(
 	if ((flag & (T1_SIG | T1_VISIT)) == T1_SIG) {
 		*nmsedec += t1_getnmsedec_ref(int_abs(*datap), bpno + T1_NMSEDEC_FRACBITS);
 		v = int_abs(*datap) & one ? 1 : 0;
+		mqc_setcurctx(mqc, t1_getctxno_mag(flag));	/* ESSAI */
 		if (type == T1_TYPE_RAW) {	/* BYPASS/LAZY MODE */
-			mqc_setcurctx(mqc, t1_getctxno_mag(flag));	/* ESSAI */
 			mqc_bypass_enc(mqc, v);
 		} else {
-			mqc_setcurctx(mqc, t1_getctxno_mag(flag));
 			mqc_encode(mqc, v);
 		}
 		*flagsp |= T1_REFINE;
@@ -461,11 +458,10 @@ static void t1_dec_refpass_step(
 	
 	flag = vsc ? ((*flagsp) & (~(T1_SIG_S | T1_SIG_SE | T1_SIG_SW | T1_SGN_S))) : (*flagsp);
 	if ((flag & (T1_SIG | T1_VISIT)) == T1_SIG) {
+		mqc_setcurctx(mqc, t1_getctxno_mag(flag));	/* ESSAI */
 		if (type == T1_TYPE_RAW) {
-			mqc_setcurctx(mqc, t1_getctxno_mag(flag));	/* ESSAI */
 			v = raw_decode(raw);
 		} else {
-			mqc_setcurctx(mqc, t1_getctxno_mag(flag));
 			v = mqc_decode(mqc);
 		}
 		t = v ? poshalf : neghalf;
@@ -560,7 +556,6 @@ LABEL_PARTIAL:
 			v = *datap < 0 ? 1 : 0;
 			mqc_encode(mqc, v ^ t1_getspb(flag));
 			t1_updateflags(flagsp, v, t1->flags_stride);
-			*flagsp |= T1_SIG;
 		}
 	}
 	*flagsp &= ~T1_VISIT;
@@ -591,7 +586,6 @@ LABEL_PARTIAL:
 			v = mqc_decode(mqc) ^ t1_getspb(flag);
 			*datap = v ? -oneplushalf : oneplushalf;
 			t1_updateflags(flagsp, v, t1->flags_stride);
-			*flagsp |= T1_SIG;
 		}
 	}
 	*flagsp &= ~T1_VISIT;
@@ -758,53 +752,47 @@ static double t1_getwmsedec(
 	return wmsedec;
 }
 
-static void allocate_buffers(
+static bool allocate_buffers(
 		opj_t1_t *t1,
 		int w,
 		int h)
 {
-	int datasize;
+	int datasize=w * h;
 	int flagssize;
 
-	datasize=w * h;
-	//fprintf(stderr,"w=%i h=%i datasize=%i flagssize=%i\n",w,h,datasize,flagssize);
-
 	if(datasize > t1->datasize){
-		//fprintf(stderr,"Allocating t1->data: datasize=%i\n",datasize);
-		free(t1->data);
-		t1->data=malloc(datasize * sizeof(int));
+		opj_aligned_free(t1->data);
+		t1->data = (int*) opj_aligned_malloc(datasize * sizeof(int));
 		if(!t1->data){
-			return;
+			return false;
 		}
 		t1->datasize=datasize;
 	}
-	//memset(t1->data,0xff,t1->datasize);
 	memset(t1->data,0,datasize * sizeof(int));
 
 	t1->flags_stride=w+2;
 	flagssize=t1->flags_stride * (h+2);
 
 	if(flagssize > t1->flagssize){
-		//fprintf(stderr,"Allocating t1->flags: flagssize=%i\n",flagssize);
-		free(t1->flags);
-		t1->flags=malloc(flagssize * sizeof(flag_t));
+		opj_aligned_free(t1->flags);
+		t1->flags = (flag_t*) opj_aligned_malloc(flagssize * sizeof(flag_t));
 		if(!t1->flags){
-			fprintf(stderr,"Allocating t1->flags FAILED!\n");
-			return;
+			return false;
 		}
 		t1->flagssize=flagssize;
 	}
-	//memset(t1->flags,0xff,t1->flagssize);
 	memset(t1->flags,0,flagssize * sizeof(flag_t));
 
 	t1->w=w;
 	t1->h=h;
+
+	return true;
 }
 
 /** mod fixed_quality */
 static void t1_encode_cblk(
 		opj_t1_t *t1,
-		opj_tcd_cblk_t * cblk,
+		opj_tcd_cblk_enc_t* cblk,
 		int orient,
 		int compno,
 		int level,
@@ -814,23 +802,22 @@ static void t1_encode_cblk(
 		int numcomps,
 		opj_tcd_tile_t * tile)
 {
-	int i, j;
-	int passno;
-	int bpno, passtype;
-	int max;
-	int nmsedec = 0;
 	double cumwmsedec = 0.0;
-	char type = T1_TYPE_MQ;
-	
+
 	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
-	
+
+	int passno, bpno, passtype;
+	int nmsedec = 0;
+	int i, max;
+	char type = T1_TYPE_MQ;
+	double tempwmsedec;
+
 	max = 0;
-	for (j = 0; j < t1->h; ++j) {
-		for (i = 0; i < t1->w; ++i) {
-			max = int_max(max, int_abs(t1->data[(j * t1->w) + i]));
-		}
+	for (i = 0; i < t1->w * t1->h; ++i) {
+		int tmp = abs(t1->data[i]);
+		max = int_max(max, tmp);
 	}
-	
+
 	cblk->numbps = max ? (int_floorlog2(max) + 1) - T1_NMSEDEC_FRACBITS : 0;
 	
 	bpno = cblk->numbps - 1;
@@ -863,8 +850,9 @@ static void t1_encode_cblk(
 		}
 		
 		/* fixed_quality */
-		cumwmsedec += t1_getwmsedec(nmsedec, compno, level, orient, bpno, qmfbid, stepsize, numcomps);
-		tile->distotile += t1_getwmsedec(nmsedec, compno, level, orient, bpno, qmfbid, stepsize, numcomps);
+		tempwmsedec = t1_getwmsedec(nmsedec, compno, level, orient, bpno, qmfbid, stepsize, numcomps);
+		cumwmsedec += tempwmsedec;
+		tile->distotile += tempwmsedec;
 		
 		/* Code switch "RESTART" (i.e. TERMALL) */
 		if ((cblksty & J2K_CCP_CBLKSTY_TERMALL)	&& !((passtype == 2) && (bpno - 1 < 0))) {
@@ -937,23 +925,26 @@ static void t1_encode_cblk(
 
 static void t1_decode_cblk(
 		opj_t1_t *t1,
-		opj_tcd_cblk_t * cblk,
+		opj_tcd_cblk_dec_t* cblk,
 		int orient,
 		int roishift,
 		int cblksty)
 {
+	opj_raw_t *raw = t1->raw;	/* RAW component */
+	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
+
 	int bpno, passtype;
 	int segno, passno;
 	char type = T1_TYPE_MQ; /* BYPASS mode */
-	
-	opj_raw_t *raw = t1->raw;	/* RAW component */
-	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
-	
-	allocate_buffers(
-			t1,
-			cblk->x1 - cblk->x0,
-			cblk->y1 - cblk->y0);
-	
+
+	if(!allocate_buffers(
+				t1,
+				cblk->x1 - cblk->x0,
+				cblk->y1 - cblk->y0))
+	{
+		return;
+	}
+
 	bpno = roishift + cblk->numbps - 1;
 	passtype = 2;
 	
@@ -967,10 +958,14 @@ static void t1_decode_cblk(
 		
 		/* BYPASS mode */
 		type = ((bpno <= (cblk->numbps - 1) - 4) && (passtype < 2) && (cblksty & J2K_CCP_CBLKSTY_LAZY)) ? T1_TYPE_RAW : T1_TYPE_MQ;
+		/* FIXME: slviewer gets here with a null pointer. Why? Partially downloaded and/or corrupt textures? */
+		if(seg->data == NULL){
+			continue;
+		}
 		if (type == T1_TYPE_RAW) {
-			raw_init_dec(raw, seg->data, seg->len);
+			raw_init_dec(raw, (*seg->data) + seg->dataindex, seg->len);
 		} else {
-			mqc_init_dec(mqc, seg->data, seg->len);
+			mqc_init_dec(mqc, (*seg->data) + seg->dataindex, seg->len);
 		}
 		
 		for (passno = 0; passno < seg->numpasses; ++passno) {
@@ -1003,19 +998,19 @@ static void t1_decode_cblk(
 /* ----------------------------------------------------------------------- */
 
 opj_t1_t* t1_create(opj_common_ptr cinfo) {
-	opj_t1_t *t1 = (opj_t1_t*) malloc(sizeof(opj_t1_t));
+	opj_t1_t *t1 = (opj_t1_t*) opj_malloc(sizeof(opj_t1_t));
 	if(!t1)
 		return NULL;
 
-		t1->cinfo = cinfo;
-		/* create MQC and RAW handles */
-		t1->mqc = mqc_create();
-		t1->raw = raw_create();
+	t1->cinfo = cinfo;
+	/* create MQC and RAW handles */
+	t1->mqc = mqc_create();
+	t1->raw = raw_create();
 
-	t1->datasize=0;
 	t1->data=NULL;
-	t1->flagssize=0;
 	t1->flags=NULL;
+	t1->datasize=0;
+	t1->flagssize=0;
 
 	return t1;
 }
@@ -1025,9 +1020,9 @@ void t1_destroy(opj_t1_t *t1) {
 		/* destroy MQC and RAW handles */
 		mqc_destroy(t1->mqc);
 		raw_destroy(t1->raw);
-		free(t1->data);
-		free(t1->flags);
-		free(t1);
+		opj_aligned_free(t1->data);
+		opj_aligned_free(t1->flags);
+		opj_free(t1);
 	}
 }
 
@@ -1041,23 +1036,29 @@ void t1_encode_cblks(
 	tile->distotile = 0;		/* fixed_quality */
 
 	for (compno = 0; compno < tile->numcomps; ++compno) {
-		opj_tcd_tilecomp_t *tilec = &tile->comps[compno];
+		opj_tcd_tilecomp_t* tilec = &tile->comps[compno];
+		opj_tccp_t* tccp = &tcp->tccps[compno];
+		int tile_w = tilec->x1 - tilec->x0;
 
 		for (resno = 0; resno < tilec->numresolutions; ++resno) {
 			opj_tcd_resolution_t *res = &tilec->resolutions[resno];
 
 			for (bandno = 0; bandno < res->numbands; ++bandno) {
-				opj_tcd_band_t *band = &res->bands[bandno];
+				opj_tcd_band_t* restrict band = &res->bands[bandno];
 
 				for (precno = 0; precno < res->pw * res->ph; ++precno) {
 					opj_tcd_precinct_t *prc = &band->precincts[precno];
 
 					for (cblkno = 0; cblkno < prc->cw * prc->ch; ++cblkno) {
-						int x, y, w, i, j, orient;
-						opj_tcd_cblk_t *cblk = &prc->cblks[cblkno];
+						opj_tcd_cblk_enc_t* cblk = &prc->cblks.enc[cblkno];
+						int* restrict datap;
+						int* restrict tiledp;
+						int cblk_w;
+						int cblk_h;
+						int i, j;
 
-						x = cblk->x0 - band->x0;
-						y = cblk->y0 - band->y0;
+						int x = cblk->x0 - band->x0;
+						int y = cblk->y0 - band->y0;
 						if (band->bandno & 1) {
 							opj_tcd_resolution_t *pres = &tilec->resolutions[resno - 1];
 							x += pres->x1 - pres->x0;
@@ -1067,45 +1068,47 @@ void t1_encode_cblks(
 							y += pres->y1 - pres->y0;
 						}
 
-						allocate_buffers(
-								t1,
-								cblk->x1 - cblk->x0,
-								cblk->y1 - cblk->y0);
+						if(!allocate_buffers(
+									t1,
+									cblk->x1 - cblk->x0,
+									cblk->y1 - cblk->y0))
+						{
+							return;
+						}
 
-						w = tilec->x1 - tilec->x0;
-						if (tcp->tccps[compno].qmfbid == 1) {
-							for (j = 0; j < t1->h; ++j) {
-								for (i = 0; i < t1->w; ++i) {
-									t1->data[(j * t1->w) + i] =
-										tilec->data[(x + i) + (y + j) * w] << T1_NMSEDEC_FRACBITS;
+						datap=t1->data;
+						cblk_w = t1->w;
+						cblk_h = t1->h;
+
+						tiledp=&tilec->data[(y * tile_w) + x];
+						if (tccp->qmfbid == 1) {
+							for (j = 0; j < cblk_h; ++j) {
+								for (i = 0; i < cblk_w; ++i) {
+									int tmp = tiledp[(j * tile_w) + i];
+									datap[(j * cblk_w) + i] = tmp << T1_NMSEDEC_FRACBITS;
 								}
 							}
-						} else {		/* if (tcp->tccps[compno].qmfbid == 0) */
-							for (j = 0; j < t1->h; ++j) {
-								for (i = 0; i < t1->w; ++i) {
-									t1->data[(j * t1->w) + i] = 
+						} else {		/* if (tccp->qmfbid == 0) */
+							for (j = 0; j < cblk_h; ++j) {
+								for (i = 0; i < cblk_w; ++i) {
+									int tmp = tiledp[(j * tile_w) + i];
+									datap[(j * cblk_w) + i] =
 										fix_mul(
-										tilec->data[x + i + (y + j) * w],
+										tmp,
 										8192 * 8192 / ((int) floor(band->stepsize * 8192))) >> (11 - T1_NMSEDEC_FRACBITS);
 								}
 							}
-						}
-						orient = band->bandno;	/* FIXME */
-						if (orient == 2) {
-							orient = 1;
-						} else if (orient == 1) {
-							orient = 2;
 						}
 
 						t1_encode_cblk(
 								t1,
 								cblk,
-								orient,
+								band->bandno,
 								compno,
 								tilec->numresolutions - 1 - resno,
-								tcp->tccps[compno].qmfbid,
+								tccp->qmfbid,
 								band->stepsize,
-								tcp->tccps[compno].cblksty,
+								tccp->cblksty,
 								tile->numcomps,
 								tile);
 
@@ -1117,94 +1120,89 @@ void t1_encode_cblks(
 }
 
 void t1_decode_cblks(
-		opj_t1_t *t1,
-		opj_tcd_tile_t *tile,
-		opj_tcp_t *tcp)
+		opj_t1_t* t1,
+		opj_tcd_tilecomp_t* tilec,
+		opj_tccp_t* tccp)
 {
-	int compno, resno, bandno, precno, cblkno;
+	int resno, bandno, precno, cblkno;
 
-	for (compno = 0; compno < tile->numcomps; ++compno) {
-		opj_tcd_tilecomp_t *tilec = &tile->comps[compno];
+	int tile_w = tilec->x1 - tilec->x0;
 
-		for (resno = 0; resno < tilec->numresolutions; ++resno) {
-			opj_tcd_resolution_t *res = &tilec->resolutions[resno];
+	for (resno = 0; resno < tilec->numresolutions; ++resno) {
+		opj_tcd_resolution_t* res = &tilec->resolutions[resno];
 
-			for (bandno = 0; bandno < res->numbands; ++bandno) {
-				opj_tcd_band_t *band = &res->bands[bandno];
+		for (bandno = 0; bandno < res->numbands; ++bandno) {
+			opj_tcd_band_t* restrict band = &res->bands[bandno];
 
-				for (precno = 0; precno < res->pw * res->ph; ++precno) {
-					opj_tcd_precinct_t *prc = &band->precincts[precno];
+			for (precno = 0; precno < res->pw * res->ph; ++precno) {
+				opj_tcd_precinct_t* precinct = &band->precincts[precno];
 
-					for (cblkno = 0; cblkno < prc->cw * prc->ch; ++cblkno) {
-						int x, y, w, i, j, orient, cblk_w, cblk_h;
-						opj_tcd_cblk_t *cblk = &prc->cblks[cblkno];
+				for (cblkno = 0; cblkno < precinct->cw * precinct->ch; ++cblkno) {
+					opj_tcd_cblk_dec_t* cblk = &precinct->cblks.dec[cblkno];
+					int* restrict datap;
+					void* restrict tiledp;
+					int cblk_w, cblk_h;
+					int x, y;
+					int i, j;
 
-						orient = band->bandno;	/* FIXME */
-						if (orient == 2) {
-							orient = 1;
-						} else if (orient == 1) {
-							orient = 2;
-						}
-						
-						t1_decode_cblk(
-								t1,
-								cblk,
-								orient,
-								tcp->tccps[compno].roishift,
-								tcp->tccps[compno].cblksty);
+					t1_decode_cblk(
+							t1,
+							cblk,
+							band->bandno,
+							tccp->roishift,
+							tccp->cblksty);
 
-						x = cblk->x0 - band->x0;
-						y = cblk->y0 - band->y0;
-						if (band->bandno & 1) {
-							opj_tcd_resolution_t *pres = &tilec->resolutions[resno - 1];
-							x += pres->x1 - pres->x0;
-						}
-						if (band->bandno & 2) {
-							opj_tcd_resolution_t *pres = &tilec->resolutions[resno - 1];
-							y += pres->y1 - pres->y0;
-						}
+					x = cblk->x0 - band->x0;
+					y = cblk->y0 - band->y0;
+					if (band->bandno & 1) {
+						opj_tcd_resolution_t* pres = &tilec->resolutions[resno - 1];
+						x += pres->x1 - pres->x0;
+					}
+					if (band->bandno & 2) {
+						opj_tcd_resolution_t* pres = &tilec->resolutions[resno - 1];
+						y += pres->y1 - pres->y0;
+					}
 
-						cblk_w = cblk->x1 - cblk->x0;
-						cblk_h = cblk->y1 - cblk->y0;
+					datap=t1->data;
+					cblk_w = t1->w;
+					cblk_h = t1->h;
 
-						if (tcp->tccps[compno].roishift) {
-							int thresh = 1 << tcp->tccps[compno].roishift;
-							for (j = 0; j < cblk_h; ++j) {
-								for (i = 0; i < cblk_w; ++i) {
-									int val = t1->data[(j * t1->w) + i];
-									int mag = int_abs(val);
-									if (mag >= thresh) {
-										mag >>= tcp->tccps[compno].roishift;
-										t1->data[(j * t1->w) + i] = val < 0 ? -mag : mag;
-									}
+					if (tccp->roishift) {
+						int thresh = 1 << tccp->roishift;
+						for (j = 0; j < cblk_h; ++j) {
+							for (i = 0; i < cblk_w; ++i) {
+								int val = datap[(j * cblk_w) + i];
+								int mag = abs(val);
+								if (mag >= thresh) {
+									mag >>= tccp->roishift;
+									datap[(j * cblk_w) + i] = val < 0 ? -mag : mag;
 								}
 							}
 						}
-						
-						w = tilec->x1 - tilec->x0;
-						if (tcp->tccps[compno].qmfbid == 1) {
-							for (j = 0; j < cblk_h; ++j) {
-								for (i = 0; i < cblk_w; ++i) {
-									tilec->data[x + i + (y + j) * w] = t1->data[(j * t1->w) + i]/2;
-								}
-							}
-						} else {		/* if (tcp->tccps[compno].qmfbid == 0) */
-							for (j = 0; j < cblk_h; ++j) {
-								for (i = 0; i < cblk_w; ++i) {
-									if (t1->data[(j * t1->w) + i] >> 1 == 0) {
-										tilec->data[x + i + (y + j) * w] = 0;
-									} else {
-										double tmp = (double)(t1->data[(j * t1->w) + i] * band->stepsize * 4096.0);
-										int tmp2 = ((int) (floor(fabs(tmp)))) + ((int) floor(fabs(tmp*2))%2);									
-										tilec->data[x + i + (y + j) * w] = ((tmp<0)?-tmp2:tmp2);
-									}
-								}
+					}
+
+					tiledp=(void*)&tilec->data[(y * tile_w) + x];
+					if (tccp->qmfbid == 1) {
+						for (j = 0; j < cblk_h; ++j) {
+							for (i = 0; i < cblk_w; ++i) {
+								int tmp = datap[(j * cblk_w) + i];
+								((int*)tiledp)[(j * tile_w) + i] = tmp / 2;
 							}
 						}
-					} /* cblkno */
-				} /* precno */
-			} /* bandno */
-		} /* resno */
-	} /* compno */
+					} else {		/* if (tccp->qmfbid == 0) */
+						for (j = 0; j < cblk_h; ++j) {
+							for (i = 0; i < cblk_w; ++i) {
+								float tmp = datap[(j * cblk_w) + i] * band->stepsize;
+								((float*)tiledp)[(j * tile_w) + i] = tmp;
+							}
+						}
+					}
+					opj_free(cblk->data);
+					opj_free(cblk->segs);
+				} /* cblkno */
+				opj_free(precinct->cblks.dec);
+			} /* precno */
+		} /* bandno */
+	} /* resno */
 }
 

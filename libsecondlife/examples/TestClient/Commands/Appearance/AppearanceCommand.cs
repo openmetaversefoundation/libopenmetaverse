@@ -4,6 +4,9 @@ using libsecondlife;
 
 namespace libsecondlife.TestClient
 {
+    /// <summary>
+    /// Set avatars current appearance to appearance last stored on simulator
+    /// </summary>
     public class AppearanceCommand : Command
     {
 		public AppearanceCommand(TestClient testClient)

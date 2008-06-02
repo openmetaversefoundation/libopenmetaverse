@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -64,9 +64,9 @@ namespace libsecondlife
         /// <summary>
         /// Initializes a new instance of the <seealso cref="T:InternalDictionary"/> Class 
         /// with the specified key/value, has its initial valies copied from the specified 
-        /// <seealso cref="System.Collections.Generic.Dictionary"/>
+        /// <seealso cref="T:System.Collections.Generic.Dictionary"/>
         /// </summary>
-        /// <param name="dictionary"><seealso cref="System.Collections.Generic.Dictionary"/>
+        /// <param name="dictionary"><seealso cref="T:System.Collections.Generic.Dictionary"/>
         /// to copy initial values from</param>
         /// <example>
         /// <code>
@@ -181,8 +181,8 @@ namespace libsecondlife
             return found;
         }
 
-        /// <summary>Perform an <seealso cref="System.Action"/> on each entry in an <seealso cref="T:InternalDictionary"/></summary>
-        /// <param name="action"><seealso cref="System.Action"/> to perform</param>
+        /// <summary>Perform an <seealso cref="T:System.Action"/> on each entry in an <seealso cref="T:libsecondlife.InternalDictionary"/></summary>
+        /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
         /// <example>
         /// <code>
         /// // Iterates over the ObjectsPrimitives InternalDictionary and prints out some information.
@@ -204,6 +204,19 @@ namespace libsecondlife
                 foreach (TValue value in Dictionary.Values)
                 {
                     action(value);
+                }
+            }
+        }
+
+        /// <summary>Perform an <seealso cref="T:System.Action"/> on each key of an <seealso cref="T:libsecondlife.InternalDictionary"/></summary>
+        /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
+        public void ForEach(Action<TKey> action)
+        {
+            lock (Dictionary)
+            {
+                foreach (TKey key in Dictionary.Keys)
+                {
+                    action(key);
                 }
             }
         }
@@ -267,6 +280,17 @@ namespace libsecondlife
         {
             lock (Dictionary)
                 return Dictionary.Remove(key);
+        }
+
+        /// <summary>
+        /// Indexer for the dictionary
+        /// </summary>
+        /// <param name="key">The key</param>
+        /// <returns>The value</returns>
+	internal TValue this[TKey key]
+        {
+            get { return Dictionary[key]; }
+            set { Dictionary[key] = value; }
         }
     }
 }

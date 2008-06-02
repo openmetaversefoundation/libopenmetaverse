@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,6 +50,51 @@ namespace libsecondlife.Utilities
 
     public static class Realism
     {
+        /// <summary>
+        /// Aims at the specified position, enters mouselook, presses and
+        /// releases the left mouse button, and leaves mouselook
+        /// </summary>
+        /// <param name="target">Target to shoot at</param>
+        /// <returns></returns>
+        public static bool Shoot(SecondLife client, LLVector3 target)
+        {
+            if (client.Self.Movement.TurnToward(target))
+                return Shoot(client);
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
+        /// </summary>
+        /// <returns></returns>
+        public static bool Shoot(SecondLife client)
+        {
+            if (client.Settings.SEND_AGENT_UPDATES)
+            {
+                client.Self.Movement.Mouselook = true;
+                client.Self.Movement.MLButtonDown = true;
+                client.Self.Movement.SendUpdate();
+
+                client.Self.Movement.MLButtonUp = true;
+                client.Self.Movement.MLButtonDown = false;
+                client.Self.Movement.FinishAnim = true;
+                client.Self.Movement.SendUpdate();
+
+                client.Self.Movement.Mouselook = false;
+                client.Self.Movement.MLButtonUp = false;
+                client.Self.Movement.FinishAnim = false;
+                client.Self.Movement.SendUpdate();
+
+                return true;
+            }
+            else
+            {
+                client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
         /// <summary>
         ///  A psuedo-realistic chat function that uses the typing sound and
         /// animation, types at three characters per second, and randomly 

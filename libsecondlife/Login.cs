@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -127,20 +127,32 @@ namespace libsecondlife
 
         public void Parse(LLSDMap reply)
         {
-            AgentID = ParseUUID("agent_id", reply);
-            SessionID = ParseUUID("session_id", reply);
-            SecureSessionID = ParseUUID("secure_session_id", reply);
-            FirstName = ParseString("first_name", reply).Trim('"');
-            LastName = ParseString("last_name", reply).Trim('"');
-            StartLocation = ParseString("start_location", reply);
-            AgentAccess = ParseString("agent_access", reply);
-            LookAt = ParseLLVector3("look_at", reply);
+            try
+            {
+                AgentID = ParseUUID("agent_id", reply);
+                SessionID = ParseUUID("session_id", reply);
+                SecureSessionID = ParseUUID("secure_session_id", reply);
+                FirstName = ParseString("first_name", reply).Trim('"');
+                LastName = ParseString("last_name", reply).Trim('"');
+                StartLocation = ParseString("start_location", reply);
+                AgentAccess = ParseString("agent_access", reply);
+                LookAt = ParseLLVector3("look_at", reply); 
+            }
+            catch (LLSDException e)
+            {
+                // FIXME: sometimes look_at comes back with invalid values e.g: 'look_at':'[r1,r2.0193899999999998204e-06,r0]'
+                // need to handle that somehow
+                SecondLife.DebugLogStatic("login server returned (some) invalid data: " + e.Message);
+            }
 
             // Home
-            LLSDMap home = (LLSDMap)LLSDParser.DeserializeNotation(reply["home"].AsString());
+            LLSDMap home = null;
+            LLSD llsdHome = LLSDParser.DeserializeNotation(reply["home"].AsString());
 
-            if (home != null)
+            if (!String.IsNullOrEmpty(llsdHome.AsString()))
             {
+                home = (LLSDMap)llsdHome;
+
                 LLSD homeRegion;
                 if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == LLSDType.Array)
                 {
@@ -412,7 +424,10 @@ namespace libsecondlife
             loginParams.MAC = GetMAC();
             loginParams.ViewerDigest = String.Empty;
             loginParams.Options = options;
-            loginParams.id0 = "00000000000000000000000000000000";
+			// workaround for bots being caught up in a global ban
+			// This *should* be the hash of the first hard drive, 
+			// but any unique identifier works.
+            loginParams.id0 = GetMAC();
 
             return loginParams;
         }
@@ -655,7 +670,7 @@ namespace libsecondlife
                             catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
                         }
 
-                        if (loginSuccess)
+                        if (loginSuccess && !redirect)
                         {
                             // Login succeeded
 

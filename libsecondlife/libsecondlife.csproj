@@ -24,8 +24,6 @@
     </StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\bin\</OutputPath>
@@ -34,7 +32,7 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <DocumentationFile>
     </DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
@@ -73,6 +71,22 @@
     <DebugType>none</DebugType>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release-docs|AnyCPU' ">
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <BaseAddress>285212672</BaseAddress>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>
+    </DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleAssemblies>C:\Program Files\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <DocumentationFile>..\bin\libsecondlife.XML</DocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System">
       <Name>System</Name>
@@ -107,7 +121,6 @@
     <Compile Include="Capabilities\CapsClient.cs" />
     <Compile Include="Capabilities\CapsListener.cs" />
     <Compile Include="Capabilities\CapsBase.cs">
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Capabilities\EventQueueClient.cs" />
     <Compile Include="Capabilities\EventQueueListener.cs" />
@@ -179,6 +192,7 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>xcopy "$(ProjectDir)\Resources\*.*" "$(OutDir)libsl_data" /i /d /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)Resources\*.*" "$(OutDir)libsl_data" /i /d /y
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -19,11 +19,8 @@ namespace libsecondlife.TestClient
             testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }
 
-
-
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            
             StringBuilder sb = new StringBuilder();
             string result;
 

@@ -49,10 +49,10 @@ namespace libsecondlife.Capabilities
         public CapsClient(Uri capability)
         {
             _Client = new CapsBase(capability);
-            _Client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(Client_DownloadProgressChanged);
-            _Client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(Client_DownloadDataCompleted);
-            _Client.UploadProgressChanged += new UploadProgressChangedEventHandler(Client_UploadProgressChanged);
-            _Client.UploadDataCompleted += new UploadDataCompletedEventHandler(Client_UploadDataCompleted);
+            _Client.DownloadProgressChanged += new CapsBase.DownloadProgressChangedEventHandler(Client_DownloadProgressChanged);
+            _Client.UploadProgressChanged += new CapsBase.UploadProgressChangedEventHandler(Client_UploadProgressChanged);
+            _Client.UploadDataCompleted += new CapsBase.UploadDataCompletedEventHandler(Client_UploadDataCompleted);
+            _Client.DownloadStringCompleted += new CapsBase.DownloadStringCompletedEventHandler(Client_DownloadStringCompleted);
         }
 
         public void StartRequest()
@@ -112,7 +112,7 @@ namespace libsecondlife.Capabilities
 
         #region Callback Handlers
 
-        private void Client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        private void Client_DownloadProgressChanged(object sender, CapsBase.DownloadProgressChangedEventArgs e)
         {
             if (OnProgress != null)
             {
@@ -121,7 +121,16 @@ namespace libsecondlife.Capabilities
             }
         }
 
-        private void Client_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
+        private void Client_UploadProgressChanged(object sender, CapsBase.UploadProgressChangedEventArgs e)
+        {
+            if (OnProgress != null)
+            {
+                try { OnProgress(this, e.BytesReceived, e.BytesSent, e.TotalBytesToReceive, e.TotalBytesToSend); }
+                catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void Client_UploadDataCompleted(object sender, CapsBase.UploadDataCompletedEventArgs e)
         {
             if (OnComplete != null && !e.Cancelled)
             {
@@ -137,6 +146,7 @@ namespace libsecondlife.Capabilities
                     if (Helpers.StringContains(e.Error.Message, "502"))
                     {
                         // These are normal, retry the request automatically
+                        SecondLife.DebugLogStatic("502 error from capability " + _Client.Location);
                         StartRequest(_PostData, _ContentType);
                     }
                     else
@@ -146,18 +156,13 @@ namespace libsecondlife.Capabilities
                     }
                 }
             }
-        }
-
-        private void Client_UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
-        {
-            if (OnProgress != null)
+            else if (e.Cancelled)
             {
-                try { OnProgress(this, e.BytesReceived, e.BytesSent, e.TotalBytesToReceive, e.TotalBytesToSend); }
-                catch (Exception ex) { SecondLife.LogStatic(ex.ToString(), Helpers.LogLevel.Error); }
+                SecondLife.DebugLogStatic("Capability action at " + _Client.Location + " cancelled");
             }
         }
 
-        private void Client_UploadDataCompleted(object sender, UploadDataCompletedEventArgs e)
+        private void Client_DownloadStringCompleted(object sender, CapsBase.DownloadStringCompletedEventArgs e)
         {
             if (OnComplete != null && !e.Cancelled)
             {

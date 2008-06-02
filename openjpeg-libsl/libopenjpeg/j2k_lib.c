@@ -33,7 +33,7 @@
 #endif /* WIN32 */
 #include "opj_includes.h"
 
-double opj_clock() {
+double opj_clock(void) {
 #ifdef WIN32
 	/* WIN32: use QueryPerformance (very accurate) */
     LARGE_INTEGER freq , t ;
@@ -56,21 +56,4 @@ double opj_clock() {
     return ( procTime + (t.ru_utime.tv_usec + t.ru_stime.tv_usec) * 1e-6 ) ;
 #endif
 }
-
-void* opj_malloc( size_t size ) {
-	void *memblock = malloc(size);
-	if(memblock) {
-		memset(memblock, 0, size);
-	}
-	return memblock;
-}
-
-void* opj_realloc( void *memblock, size_t size ) {
-	return realloc(memblock, size);
-}
-
-void opj_free( void *memblock ) {
-	free(memblock);
-}
-
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -59,6 +59,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="obj">The InventoryObject that was removed.</param>
         public delegate void InventoryObjectRemoved(InventoryBase obj);
+        /// <summary>
+        /// Delegate to use for the OnInventoryObjectUpdated event.
+        /// </summary>
+        /// <param name="obj">The InventoryObject that has been stored.</param>
+        public delegate void InventoryObjectAdded(InventoryBase obj);
 
         /// <summary>
         /// Called when an InventoryObject's state is changed.
@@ -68,9 +73,17 @@ namespace libsecondlife
         /// Called when an item or folder is removed from inventory.
         /// </summary>
         public event InventoryObjectRemoved OnInventoryObjectRemoved;
+        /// <summary>
+        /// Called when an item is first added to the local inventory store.
+        /// This will occur most frequently when we're initially downloading
+        /// the inventory from the server.
+        /// 
+        /// This will also fire when another avatar or object offers us inventory
+        /// </summary>
+        public event InventoryObjectAdded OnInventoryObjectAdded;
 
         /// <summary>
-        /// 
+        /// The root folder of this avatars inventory
         /// </summary>
         public InventoryFolder RootFolder
         {
@@ -81,11 +94,25 @@ namespace libsecondlife
                 _RootNode = Items[value.UUID];
             }
         }
-        
+
+        /// <summary>
+        /// The default shared library folder
+        /// </summary>
+        public InventoryFolder LibraryFolder
+        {
+            get { return LibraryRootNode.Data as InventoryFolder; }
+            set
+            {
+                UpdateNodeFor(value);
+                _LibraryRootNode = Items[value.UUID];
+            }
+        }
+
+        private InventoryNode _LibraryRootNode;
         private InventoryNode _RootNode;
         
         /// <summary>
-        /// 
+        /// The root node of the avatars inventory
         /// </summary>
         public InventoryNode RootNode
         {
@@ -97,14 +124,39 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// The root node of the default shared library
+        /// </summary>
+        public InventoryNode LibraryRootNode
+        {
+            get
+            {
+                if (_LibraryRootNode == null)
+                    throw new InventoryException("Library Root node unknown. Are you completely logged in?");
+                return _LibraryRootNode;
+            }
+        }
+
+        public LLUUID Owner {
+            get { return _Owner; }
+        }
+
+        private LLUUID _Owner;
+
         private SecondLife Client;
         private InventoryManager Manager;
         private Dictionary<LLUUID, InventoryNode> Items = new Dictionary<LLUUID, InventoryNode>();
 
         public Inventory(SecondLife client, InventoryManager manager)
+            : this(client, manager, client.Self.AgentID) { }
+
+        public Inventory(SecondLife client, InventoryManager manager, LLUUID owner)
         {
             Client = client;
             Manager = manager;
+            _Owner = owner;
+            if (owner == LLUUID.Zero)
+                client.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning);
             Items = new Dictionary<LLUUID, InventoryNode>();
         }
 
@@ -203,8 +255,14 @@ namespace libsecondlife
                 {
                     itemNode = new InventoryNode(item, itemParent);
                     Items.Add(item.UUID, itemNode);
+                    FireOnInventoryObjectAdded(item);
                 }
             }
+        }
+
+        public InventoryNode GetNodeFor(LLUUID uuid)
+        {
+            return Items[uuid];
         }
 
         /// <summary>
@@ -309,6 +367,15 @@ namespace libsecondlife
             if (OnInventoryObjectRemoved != null)
             {
                 try { OnInventoryObjectRemoved(obj); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        protected void FireOnInventoryObjectAdded(InventoryBase obj)
+        {
+            if (OnInventoryObjectAdded != null)
+            {
+                try { OnInventoryObjectAdded(obj); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }

@@ -136,9 +136,10 @@ void jp2_setup_decoder(opj_jp2_t *jp2, opj_dparameters_t *parameters);
 Decode an image from a JPEG-2000 file stream
 @param jp2 JP2 decompressor handle
 @param cio Input buffer stream
+@param cstr_info Codestream information structure if required, NULL otherwise
 @return Returns a decoded image if successful, returns NULL otherwise
 */
-opj_image_t* jp2_decode(opj_jp2_t *jp2, opj_cio_t *cio);
+opj_image_t* jp2_decode(opj_jp2_t *jp2, opj_cio_t *cio, opj_codestream_info_t *cstr_info);
 /**
 Creates a JP2 compression structure
 @param cinfo Codec context info
@@ -163,10 +164,10 @@ Encode an image into a JPEG-2000 file stream
 @param jp2 JP2 compressor handle
 @param cio Output buffer stream
 @param image Image to encode
-@param index Name of the index file if required, NULL otherwise
+@param cstr_info Codestream information structure if required, NULL otherwise
 @return Returns true if successful, returns false otherwise
 */
-bool jp2_encode(opj_jp2_t *jp2, opj_cio_t *cio, opj_image_t *image, char *index);
+bool jp2_encode(opj_jp2_t *jp2, opj_cio_t *cio, opj_image_t *image, opj_codestream_info_t *cstr_info);
 /* ----------------------------------------------------------------------- */
 /*@}*/
 

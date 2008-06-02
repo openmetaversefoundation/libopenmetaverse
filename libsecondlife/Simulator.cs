@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, the libsecondlife development team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -193,6 +193,8 @@ namespace libsecondlife
             /// <summary></summary>
             public float ScriptTime;
             /// <summary></summary>
+            public float AgentTime;
+            /// <summary></summary>
             public float OtherTime;
             /// <summary>Total number of objects Simulator is simulating</summary>
             public int Objects;
@@ -237,6 +239,8 @@ namespace libsecondlife
         public Caps Caps = null;
         /// <summary></summary>
         public ulong Handle;
+        /// <summary>The current version of software this simulator is running</summary>
+        public string SimVersion = String.Empty;
         /// <summary></summary>
         public string Name = String.Empty;
         /// <summary></summary>

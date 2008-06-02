@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -568,6 +568,8 @@ namespace libsecondlife
             volume["profile"] = profile;
 
             LLSDMap prim = new LLSDMap(9);
+            prim["name"] = LLSD.FromString(Properties.Name);
+            prim["description"] = LLSD.FromString(Properties.Description);
             prim["phantom"] = LLSD.FromBoolean(((Flags & ObjectFlags.Phantom) != 0));
             prim["physical"] = LLSD.FromBoolean(((Flags & ObjectFlags.Physics) != 0));
             prim["position"] = Position.ToLLSD();
@@ -611,8 +613,8 @@ namespace libsecondlife
             data.PathSkew = (float)path["skew"].AsReal();
             data.PathTaperX = (float)path["taper_x"].AsReal();
             data.PathTaperY = (float)path["taper_y"].AsReal();
-            data.PathTwist = path["twist"].AsInteger();
-            data.PathTwistBegin = path["twist_begin"].AsInteger();
+            data.PathTwist = (float)path["twist"].AsReal();
+            data.PathTwistBegin = (float)path["twist_begin"].AsReal();
 
             data.ProfileBegin = (float)profile["begin"].AsReal();
             data.ProfileCurve = (ProfileCurve)profile["curve"].AsInteger();
@@ -642,6 +644,13 @@ namespace libsecondlife
             prim.Light = LightData.FromLLSD(map["light"]);
             prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);
             prim.Textures = TextureEntry.FromLLSD(map["textures"]);
+            if (!string.IsNullOrEmpty(map["name"].AsString())) {
+                prim.Properties.Name = map["name"].AsString();
+            }
+
+            if (!string.IsNullOrEmpty(map["description"].AsString())) {
+                prim.Properties.Description = map["description"].AsString();
+            }
 
             return prim;
         }

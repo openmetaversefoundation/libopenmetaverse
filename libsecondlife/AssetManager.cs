@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2007-2008, the libsecondlife development team
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -31,7 +57,7 @@ namespace libsecondlife
         Clothing = 5,
         /// <summary>Primitive that can contain textures, sounds, 
         /// scripts and more</summary>
-        Primitive = 6,
+        Object = 6,
         /// <summary>Notecard asset</summary>
         Notecard = 7,
         /// <summary>Holds a collection of inventory items</summary>
@@ -251,6 +277,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="transfer"></param>
         /// <param name="asset"></param>
         public delegate void AssetReceivedCallback(AssetDownload transfer, Asset asset);
         /// <summary>
@@ -262,7 +289,12 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="image"></param>
+        /// <param name="asset"></param>
         public delegate void ImageReceivedCallback(ImageDownload image, AssetTexture asset);
+	/// <summary>
+        /// 
+        /// </summary>
+        public delegate void ImageReceiveProgressCallback(LLUUID image, int recieved, int total);
         /// <summary>
         /// 
         /// </summary>
@@ -284,6 +316,8 @@ namespace libsecondlife
         public event XferReceivedCallback OnXferReceived;
         /// <summary></summary>
         public event ImageReceivedCallback OnImageReceived;
+	/// <summary></summary>
+        public event ImageReceiveProgressCallback OnImageReceiveProgress;
         /// <summary></summary>
         public event AssetUploadedCallback OnAssetUploaded;
         /// <summary></summary>
@@ -524,7 +558,10 @@ namespace libsecondlife
             for (int iri = 0; iri < Images.Count; iri++)
             {
                 if (Transfers.ContainsKey(Images[iri].ImageID))
+                {
                     Images.RemoveAt(iri);
+                }
+
             }
 
             if (Images.Count > 0)
@@ -672,7 +709,7 @@ namespace libsecondlife
                 case AssetType.Texture:
                     asset = new AssetTexture();
                     break;
-                case AssetType.Primitive:
+                case AssetType.Object:
                     asset = new AssetPrim();
                     break;
                 case AssetType.Clothing:
@@ -1088,6 +1125,11 @@ namespace libsecondlife
 
                     //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
                     //    data.ImageID.ID.ToString());
+                    if (OnImageReceiveProgress != null)
+                    {
+                        try { OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
 
                     transfer.Codec = data.ImageID.Codec;
                     transfer.PacketCount = data.ImageID.Packets;
@@ -1113,7 +1155,10 @@ namespace libsecondlife
 
                 if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
                 {
-                    try { OnImageReceived(transfer, new AssetTexture(transfer.AssetData)); }
+                    AssetTexture asset = new AssetTexture(transfer.AssetData);
+                    asset.AssetID = transfer.ID;
+
+                    try { OnImageReceived(transfer, asset); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
@@ -1170,7 +1215,10 @@ namespace libsecondlife
 
             if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
             {
-                try { OnImageReceived(transfer, new AssetTexture(transfer.AssetData)); }
+                AssetTexture asset = new AssetTexture(transfer.AssetData);
+                asset.AssetID = transfer.ID;
+
+                try { OnImageReceived(transfer, asset); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }

@@ -45,9 +45,10 @@ each other. The functions in TCD.C are used by some function in J2K.C.
 FIXME: documentation
 */
 typedef struct opj_tcd_seg {
+  unsigned char** data;
+  int dataindex;
   int numpasses;
   int len;
-  unsigned char *data;
   int maxpasses;
   int numnewpasses;
   int newlen;
@@ -75,21 +76,28 @@ typedef struct opj_tcd_layer {
 /**
 FIXME: documentation
 */
-typedef struct opj_tcd_cblk {
+typedef struct opj_tcd_cblk_enc {
+  unsigned char* data;	/* Data */
+  opj_tcd_layer_t* layers;	/* layer information */
+  opj_tcd_pass_t* passes;	/* information about the passes */
   int x0, y0, x1, y1;		/* dimension of the code-blocks : left upper corner (x0, y0) right low corner (x1,y1) */
   int numbps;
   int numlenbits;
-  int len;			/* length */
   int numpasses;		/* number of pass already done for the code-blocks */
+  int numpassesinlayers;	/* number of passes in the layer */
+  int totalpasses;		/* total number of passes */
+} opj_tcd_cblk_enc_t;
+
+typedef struct opj_tcd_cblk_dec {
+  unsigned char* data;	/* Data */
+  opj_tcd_seg_t* segs;		/* segments informations */
+	int x0, y0, x1, y1;		/* dimension of the code-blocks : left upper corner (x0, y0) right low corner (x1,y1) */
+  int numbps;
+  int numlenbits;
+  int len;			/* length */
   int numnewpasses;		/* number of pass added to the code-blocks */
   int numsegs;			/* number of segments */
-  opj_tcd_seg_t segs[100];		/* segments informations */
-  unsigned char data[8192];	/* Data */
-  int numpassesinlayers;	/* number of passes in the layer */
-  opj_tcd_layer_t layers[100];	/* layer information */
-  int totalpasses;		/* total number of passes */
-  opj_tcd_pass_t passes[100];	/* information about the passes */
-} opj_tcd_cblk_t;
+} opj_tcd_cblk_dec_t;
 
 /**
 FIXME: documentation
@@ -97,7 +105,10 @@ FIXME: documentation
 typedef struct opj_tcd_precinct {
   int x0, y0, x1, y1;		/* dimension of the precinct : left upper corner (x0, y0) right low corner (x1,y1) */
   int cw, ch;			/* number of precinct in width and heigth */
-  opj_tcd_cblk_t *cblks;		/* code-blocks informations */
+  union{		/* code-blocks informations */
+	  opj_tcd_cblk_enc_t* enc;
+	  opj_tcd_cblk_dec_t* dec;
+  } cblks;
   opj_tgt_tree_t *incltree;		/* inclusion tree */
   opj_tgt_tree_t *imsbtree;		/* IMSB tree */
 } opj_tcd_precinct_t;
@@ -131,7 +142,7 @@ typedef struct opj_tcd_tilecomp {
   int numresolutions;		/* number of resolutions level */
   opj_tcd_resolution_t *resolutions;	/* resolutions information */
   int *data;			/* data of the component */
-  int nbpix;			/* add fixed_quality */
+  int numpix;			/* add fixed_quality */
 } opj_tcd_tilecomp_t;
 
 /**
@@ -141,9 +152,11 @@ typedef struct opj_tcd_tile {
   int x0, y0, x1, y1;		/* dimension of the tile : left upper corner (x0, y0) right low corner (x1,y1) */
   int numcomps;			/* number of components in tile */
   opj_tcd_tilecomp_t *comps;	/* Components information */
-  int nbpix;			/* add fixed_quality */
+  int numpix;			/* add fixed_quality */
   double distotile;		/* add fixed_quality */
   double distolayer[100];	/* add fixed_quality */
+  /** packet number */
+  int packno;
 } opj_tcd_tile_t;
 
 /**
@@ -234,20 +247,21 @@ Initialize the tile decoder
 @param cp Coding parameters
 */
 void tcd_malloc_decode(opj_tcd_t *tcd, opj_image_t * image, opj_cp_t * cp);
+void tcd_malloc_decode_tile(opj_tcd_t *tcd, opj_image_t * image, opj_cp_t * cp, int tileno, opj_codestream_info_t *cstr_info);
 void tcd_makelayer_fixed(opj_tcd_t *tcd, int layno, int final);
 void tcd_rateallocate_fixed(opj_tcd_t *tcd);
 void tcd_makelayer(opj_tcd_t *tcd, int layno, double thresh, int final);
-bool tcd_rateallocate(opj_tcd_t *tcd, unsigned char *dest, int len, opj_image_info_t * image_info);
+bool tcd_rateallocate(opj_tcd_t *tcd, unsigned char *dest, int len, opj_codestream_info_t *cstr_info);
 /**
 Encode a tile from the raw image into a buffer
 @param tcd TCD handle
 @param tileno Number that identifies one of the tiles to be encoded
 @param dest Destination buffer
 @param len Length of destination buffer
-@param image_info Creation of index file
+@param cstr_info Codestream information structure 
 @return 
 */
-int tcd_encode_tile(opj_tcd_t *tcd, int tileno, unsigned char *dest, int len, opj_image_info_t * image_info);
+int tcd_encode_tile(opj_tcd_t *tcd, int tileno, unsigned char *dest, int len, opj_codestream_info_t *cstr_info);
 /**
 Decode a tile from a buffer into a raw image
 @param tcd TCD handle
@@ -255,12 +269,13 @@ Decode a tile from a buffer into a raw image
 @param len Length of source buffer
 @param tileno Number that identifies one of the tiles to be decoded
 */
-bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno);
+bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno, opj_codestream_info_t *cstr_info);
 /**
 Free the memory allocated for decoding
 @param tcd TCD handle
 */
 void tcd_free_decode(opj_tcd_t *tcd);
+void tcd_free_decode_tile(opj_tcd_t *tcd, int tileno);
 
 /* ----------------------------------------------------------------------- */
 /*@}*/

@@ -27,9 +27,22 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release-docs|AnyCPU' ">
+    <OutputPath>..\..\..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleAssemblies>C:\Program Files\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <DocumentationFile>..\..\..\bin\TestClient.XML</DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -66,6 +79,7 @@
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
     <Compile Include="Commands\Inventory\ObjectInventoryCommand.cs" />
     <Compile Include="Commands\Inventory\CreateNotecardCommand.cs" />
+    <Compile Include="Commands\Inventory\UploadImageCommand.cs" />
     <Compile Include="Commands\Land\ParcelDetailsCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
     <Compile Include="Commands\Land\AgentLocationsCommand.cs" />
@@ -84,6 +98,7 @@
     <Compile Include="Commands\Movement\SitOnCommand.cs" />
     <Compile Include="Commands\Movement\StandCommand.cs" />
     <Compile Include="Commands\Prims\ChangePermsCommand.cs" />
+    <Compile Include="Commands\Prims\DownloadTextureCommand.cs" />
     <Compile Include="Commands\Prims\ExportCommand.cs" />
     <Compile Include="Commands\Prims\ExportParticlesCommand.cs" />
     <Compile Include="Commands\Prims\FindObjectsCommand.cs" />
@@ -111,6 +126,8 @@
     <Compile Include="Commands\System\ShowEffectsCommand.cs" />
     <Compile Include="Commands\TouchCommand.cs" />
     <Compile Include="Commands\TreeCommand.cs" />
+    <Compile Include="Commands\Voice\ParcelVoiceInfo.cs" />
+    <Compile Include="Commands\Voice\VoiceAcountCommand.cs" />
     <Compile Include="Commands\WhoCommand.cs" />
     <Compile Include="Parsing.cs" />
     <Compile Include="Program.cs" />

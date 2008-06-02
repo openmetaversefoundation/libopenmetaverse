@@ -60,7 +60,7 @@ namespace libsecondlife
             Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
             ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
             // Will be modified later by BeginReceiveFrom()
-            RemoteEndPoint = (EndPoint)new IPEndPoint(IPAddress.Any, 0);
+            RemoteEndPoint = (EndPoint)new IPEndPoint(Settings.BIND_ADDR, 0);
         }
 
         public UDPPacketBuffer(IPEndPoint endPoint, bool allocate)
@@ -168,7 +168,7 @@ namespace libsecondlife
         public UDPBase(int port)
         {
             udpPort = port;
-            _bufferPool = new PacketBufferPool(new IPEndPoint(IPAddress.Any, udpPort), 64, 1);
+            _bufferPool = new PacketBufferPool(new IPEndPoint(Settings.BIND_ADDR, udpPort), 64, 1);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace libsecondlife
                     // Server mode
 
                     // create and bind the socket
-                    IPEndPoint ipep = new IPEndPoint(IPAddress.Any, udpPort);
+                    IPEndPoint ipep = new IPEndPoint(Settings.BIND_ADDR, udpPort);
                     udpSocket = new Socket(
                         AddressFamily.InterNetwork,
                         SocketType.Dgram,
@@ -204,7 +204,7 @@ namespace libsecondlife
                 else
                 {
                     // Client mode
-                    IPEndPoint ipep = new IPEndPoint(IPAddress.Any, udpPort);
+                    IPEndPoint ipep = new IPEndPoint(Settings.BIND_ADDR, udpPort);
                     udpSocket = new Socket(
                         AddressFamily.InterNetwork,
                         SocketType.Dgram,
