@@ -213,6 +213,42 @@ namespace libsecondlife
             return BitConverter.ToUInt32(output, 0);
         }
 
+        /// <summary>
+        /// Unpack a 16-bit signed integer
+        /// </summary>
+        /// <returns>16-bit signed integer</returns>
+        public short UnpackShort()
+        {
+            return (short)UnpackBits(16);
+        }
+
+        /// <summary>
+        /// Unpack a 16-bit unsigned integer
+        /// </summary>
+        /// <returns>16-bit unsigned integer</returns>
+        public ushort UnpackUShort()
+        {
+            return (ushort)UnpackUBits(16);
+        }
+
+        /// <summary>
+        /// Unpack a 32-bit signed integer
+        /// </summary>
+        /// <returns>32-bit signed integer</returns>
+        public int UnpackInt()
+        {
+            return UnpackBits(32);
+        }
+
+        /// <summary>
+        /// Unpack a 32-bit unsigned integer
+        /// </summary>
+        /// <returns>32-bit unsigned integer</returns>
+        public uint UnpackUInt()
+        {
+            return UnpackUBits(32);
+        }
+
         public byte UnpackByte()
         {
             byte[] output = UnpackBitsArray(8);
@@ -252,9 +288,18 @@ namespace libsecondlife
             return fixedVal;
         }
 
+        public string UnpackString(int size)
+        {
+            if (bitPos != 0 || bytePos + size > Data.Length) throw new IndexOutOfRangeException();
+
+            string str = System.Text.UTF8Encoding.UTF8.GetString(Data, bytePos, size);
+            bytePos += size;
+            return str;
+        }
+
         public LLUUID UnpackUUID()
         {
-            if (bitPos != 0) return LLUUID.Zero;
+            if (bitPos != 0) throw new IndexOutOfRangeException();
 
             LLUUID val = new LLUUID(Data, bytePos);
             bytePos += 16;
