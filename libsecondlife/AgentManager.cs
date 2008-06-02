@@ -209,7 +209,9 @@ namespace libsecondlife
 		/// <summary>Event message when an Avatar has stopped typing</summary>
 		StopTyping = 5,
 		/// <summary>Unknown</summary>
-		Debug = 6
+		Debug = 6,
+        /// <summary>Event message when an object uses llOwnerSay</summary>
+        OwnerSay = 8 
 	}
 
 	/// <summary>
