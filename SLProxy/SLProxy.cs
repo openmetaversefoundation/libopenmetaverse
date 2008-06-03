@@ -366,9 +366,6 @@ namespace SLProxy
                             ProxyHTTP(client);
 #if DEBUG_THREADS
 					Console.WriteLine("<T< ProxyHTTP");
-				} catch (Exception e) {
-					Console.WriteLine("ProxyHTTP: {0}", e.Message);
-				}
 #endif
                         });
                         connThread.IsBackground = true;
