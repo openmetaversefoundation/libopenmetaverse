@@ -477,6 +477,16 @@ namespace libsecondlife
             return new LLVector2(lhs.X * rhs.X, lhs.Y * rhs.Y);
         }
 
+        public static LLVector2 operator /(LLVector2 lhs, LLVector2 rhs)
+        {
+            return new LLVector2(lhs.X / rhs.X, lhs.Y / rhs.Y);
+        }
+
+        public static LLVector2 operator /(LLVector2 vec, float val)
+        {
+            return new LLVector2(vec.X / val, vec.Y / val);
+        }
+
         #endregion Operators
 
         /// <summary>An LLVector2 with a value of 0,0,0</summary>
@@ -897,6 +907,16 @@ namespace libsecondlife
         public static LLVector3 operator *(LLVector3 vector, LLMatrix3 matrix)
         {
             return LLVector3.Transform(vector, matrix);
+        }
+
+        public static LLVector3 operator /(LLVector3 lhs, LLVector3 rhs)
+        {
+            return new LLVector3(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
+        }
+
+        public static LLVector3 operator /(LLVector3 vec, float val)
+        {
+            return new LLVector3(vec.X / val, vec.Y / val, vec.Z / val);
         }
 
         public static LLVector3 operator %(LLVector3 lhs, LLVector3 rhs)
@@ -1387,6 +1407,16 @@ namespace libsecondlife
         public static LLVector4 operator *(LLVector4 lhs, LLVector4 rhs)
         {
             return new LLVector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
+        }
+
+        public static LLVector4 operator /(LLVector4 lhs, LLVector4 rhs)
+        {
+            return new LLVector4(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z, lhs.S / rhs.S);
+        }
+
+        public static LLVector4 operator /(LLVector4 vec, float val)
+        {
+            return new LLVector4(vec.X / val, vec.Y / val, vec.Z / val, vec.S / val);
         }
 
         #endregion Operators
