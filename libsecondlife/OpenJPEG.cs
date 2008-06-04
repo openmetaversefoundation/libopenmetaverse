@@ -276,10 +276,13 @@ namespace OpenJPEGNet
 
                 for (i = 0; i < pixelCount; i++)
                 {
-                    // turn 16 bit data in to 8 bit data (TODO: Does this work?)
-                    decoded.Red[i] = *(pixel);
-                    decoded.Green[i] = *(pixel);
-                    decoded.Blue[i] = *(pixel);
+                    // Normalize 16-bit data down to 8-bit
+                    ushort origVal = (byte)(*(pixel) + (*(pixel + 1) << 8));
+                    byte val = (byte)(((double)origVal / (double)UInt32.MaxValue) * (double)Byte.MaxValue);
+
+                    decoded.Red[i] = val;
+                    decoded.Green[i] = val;
+                    decoded.Blue[i] = val;
                     pixel += 2;
                 }
             }
