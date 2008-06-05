@@ -2128,10 +2128,9 @@ namespace libsecondlife
 
             if (Client.Settings.OBJECT_TRACKING)
             {
-                uint localID;
-
                 lock (simulator.ObjectsPrimitives.Dictionary)
                 {
+                    uint localID;
                     for (int i = 0; i < kill.ObjectData.Length; i++)
                     {
                         localID = kill.ObjectData[i].ID;
@@ -2142,34 +2141,35 @@ namespace libsecondlife
                             simulator.ObjectsPrimitives.Dictionary.Remove(localID);
                         }
 
-                        foreach (Primitive prim in simulator.ObjectsPrimitives.Dictionary.Values)
+                        simulator.ObjectsPrimitives.ForEach(delegate(Primitive prim)
                         {
                             if (prim.ParentID == localID)
                             {
                                 FireOnObjectKilled(simulator, prim.LocalID);
                                 simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
                             }
-                        }
+                        });
                     }
                 }
             }
+
             if (Client.Settings.AVATAR_TRACKING)
             {
-                uint localID;
-
-                lock (simulator.ObjectsAvatars.Dictionary)
+                lock (simulator.ObjectsPrimitives.Dictionary)
                 {
-                    for (int i = 0; i < kill.ObjectData.Length; i++)
+                    lock (simulator.ObjectsAvatars.Dictionary)
                     {
-                        localID = kill.ObjectData[i].ID;
-
-                        if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
-                            simulator.ObjectsAvatars.Dictionary.Remove(localID);
-
-                        lock (simulator.ObjectsPrimitives.Dictionary)
+                        uint localID;
+                        for (int i = 0; i < kill.ObjectData.Length; i++)
                         {
+                            localID = kill.ObjectData[i].ID;
+
+                            if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
+                                simulator.ObjectsAvatars.Dictionary.Remove(localID);
+
                             List<uint> rootPrims = new List<uint>();
-                            foreach (Primitive prim in simulator.ObjectsPrimitives.Dictionary.Values)
+
+                            simulator.ObjectsPrimitives.ForEach(delegate(Primitive prim)
                             {
                                 if (prim.ParentID == localID)
                                 {
@@ -2177,15 +2177,16 @@ namespace libsecondlife
                                     simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
                                     rootPrims.Add(prim.LocalID);
                                 }
-                            }
-                            foreach (Primitive prim in simulator.ObjectsPrimitives.Dictionary.Values)
+                            });
+
+                            simulator.ObjectsPrimitives.ForEach(delegate(Primitive prim)
                             {
                                 if (rootPrims.Contains(prim.ParentID))
                                 {
                                     FireOnObjectKilled(simulator, prim.LocalID);
                                     simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
                                 }
-                            }
+                            });
                         }
                     }
                 }
