@@ -959,7 +959,9 @@ namespace libsecondlife
             double AgentSizeBase = 1.706;
 
             // The calculation for the Head Size scalar may be incorrect.  But seems to work.
-            double AgentHeight = AgentSizeBase + (AgentSizeVPLegLength * .1918) + (AgentSizeVPHipLength * .0375) + (AgentSizeVPHeight * .12022) + (AgentSizeVPHeadSize * .01117) + (AgentSizeVPNeckLength * .038) + (AgentSizeVPHeelHeight * .08) + (AgentSizeVPPlatformHeight * .07);
+            double AgentHeight = AgentSizeBase + (AgentSizeVPLegLength * .1918) + (AgentSizeVPHipLength * .0375) +
+                (AgentSizeVPHeight * .12022) + (AgentSizeVPHeadSize * .01117) + (AgentSizeVPNeckLength * .038) +
+                (AgentSizeVPHeelHeight * .08) + (AgentSizeVPPlatformHeight * .07);
 
             set.AgentData.Size = new LLVector3(0.45f, 0.6f, (float)AgentHeight);
 

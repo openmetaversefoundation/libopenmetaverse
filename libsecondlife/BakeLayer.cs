@@ -39,24 +39,30 @@ namespace libsecondlife.Baking
     /// </summary>
     public class Baker
     {
+        public AssetTexture BakedTexture { get { return _bakedTexture; } }
+        public Dictionary<int, float> ParamValues { get { return _paramValues; } }
+        public Dictionary<AppearanceManager.TextureIndex, AssetTexture> Textures { get { return _textures; } }
+        public int TextureCount { get { return _textureCount; } }
+        public int BakeWidth { get { return _bakeWidth; } }
+        public int BakeHeight { get { return _bakeHeight; } }
+        public AppearanceManager.BakeType BakeType { get { return _bakeType; } }
+
         /// <summary>Reference to the SecondLife client</summary>
-        protected SecondLife Client;
-
+        protected SecondLife _client;
+        /// <summary>Finald baked texture</summary>
+        protected AssetTexture _bakedTexture;
         /// <summary>Appearance parameters the drive the baking process</summary>
-        protected Dictionary<int, float> ParamValues;
-
+        protected Dictionary<int, float> _paramValues;
         /// <summary>Wearable textures</summary>
-        protected Dictionary<AppearanceManager.TextureIndex, AssetTexture> Textures = new Dictionary<AppearanceManager.TextureIndex, AssetTexture>();
-        protected int TextureCount;
-
-        public AssetTexture BakedTexture;
-
+        protected Dictionary<AppearanceManager.TextureIndex, AssetTexture> _textures = new Dictionary<AppearanceManager.TextureIndex, AssetTexture>();
+        /// <summary>Total number of textures in the bake</summary>
+        protected int _textureCount;
         /// <summary>Width of the final baked image and scratchpad</summary>
-        protected int BakeWidth;
+        protected int _bakeWidth;
         /// <summary>Height of the final baked image and scratchpad</summary>
-        protected int BakeHeight;
+        protected int _bakeHeight;
         /// <summary>Bake type</summary>
-        public AppearanceManager.BakeType BakeType;
+        protected AppearanceManager.BakeType _bakeType;
 
         /// <summary>
         /// Default constructor
@@ -69,27 +75,25 @@ namespace libsecondlife.Baking
         /// baking process</param>
         public Baker(SecondLife client, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
         {
-            Client = client;
-            BakeType = bakeType;
-            TextureCount = textureCount;
+            _client = client;
+            _bakeType = bakeType;
+            _textureCount = textureCount;
 
             if (bakeType == AppearanceManager.BakeType.Eyes)
             {
-                BakeWidth = 128;
-                BakeHeight = 128;
+                _bakeWidth = 128;
+                _bakeHeight = 128;
             }
             else
             {
-                BakeWidth = 512;
-                BakeHeight = 512;
+                _bakeWidth = 512;
+                _bakeHeight = 512;
             }
 
-            ParamValues = paramValues;
+            _paramValues = paramValues;
 
             if (textureCount == 0)
-            {
                 Bake();
-            }
         }
 
         /// <summary>
@@ -103,95 +107,118 @@ namespace libsecondlife.Baking
         /// is available, otherwise false</returns>
         public bool AddTexture(AppearanceManager.TextureIndex index, AssetTexture texture)
         {
-            lock (Textures)
+            return AddTexture(index, texture, false);
+        }
+
+        /// <summary>
+        /// Adds an image to this baking texture and potentially processes it, or
+        /// stores it for processing later
+        /// </summary>
+        /// <param name="index">The baking texture index of the image to be added</param>
+        /// <param name="texture">JPEG2000 compressed image to be
+        /// added to the baking texture</param>
+        /// <param name="needsDecode">True if <code>Decode()</code> needs to be
+        /// called for the texture, otherwise false</param>
+        /// <returns>True if this texture is completely baked and JPEG2000 data 
+        /// is available, otherwise false</returns>
+        public bool AddTexture(AppearanceManager.TextureIndex index, AssetTexture texture, bool needsDecode)
+        {
+            lock (_textures)
             {
-                try 
+                if (needsDecode)
                 {
-                    texture.Decode();
-                    Textures.Add(index, texture);
-
-                    Logger.DebugLog(String.Format("Added texture {0} (ID: {1}) to bake {2}", index, texture.AssetID, BakeType), Client);
+                    try
+                    {
+                        texture.Decode();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(String.Format("AddTexture({0}, {1})", index, texture.AssetID), Helpers.LogLevel.Error, e);
+                        return false;
+                    }
                 }
-                catch ( Exception e )
-                {
-                    Logger.Log(String.Format("AddTexture({0}, {1})", index, texture.AssetID), Helpers.LogLevel.Error, e);
-                }
 
+                _textures.Add(index, texture);
+                Logger.DebugLog(String.Format("Added texture {0} (ID: {1}) to bake {2}", index, texture.AssetID, _bakeType), _client);
             }
 
-            if (Textures.Count == TextureCount)
+            if (_textures.Count == _textureCount)
             {
                 Bake();
-                
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
 
         public bool MissingTexture(AppearanceManager.TextureIndex index)
         {
-            Logger.DebugLog(String.Format("Missing texture {0} in bake {1}", index, BakeType), Client);
-            TextureCount--;
+            Logger.DebugLog(String.Format("Missing texture {0} in bake {1}", index, _bakeType), _client);
+            _textureCount--;
 
-            if (Textures.Count == TextureCount)
+            if (_textures.Count == _textureCount)
             {
                 Bake();
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
-
 
         protected void Bake()
         {
-            BakedTexture = new AssetTexture(new Image(BakeWidth, BakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
+            _bakedTexture = new AssetTexture(new Image(_bakeWidth, _bakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
 
-            if (BakeType == AppearanceManager.BakeType.Eyes)
+            if (_bakeType == AppearanceManager.BakeType.Eyes)
             {
-                initBakedLayerColor(255, 255, 255);
+                InitBakedLayerColor(255, 255, 255);
                 if (!DrawLayer(AppearanceManager.TextureIndex.EyesIris))
                 {
-                    Logger.Log("Missing texture for EYES - unable to bake layer", Helpers.LogLevel.Warning, Client);
+                    Logger.Log("Missing texture for EYES - unable to bake layer", Helpers.LogLevel.Warning, _client);
                 }
             }
-            else if (BakeType == AppearanceManager.BakeType.Head)
+            else if (_bakeType == AppearanceManager.BakeType.Head)
             {
-                // need to use the visual parameters to determine the base skin color in RGB but
+                // FIXME: Need to use the visual parameters to determine the base skin color in RGB but
                 // it's not apparent how to define RGB levels from the skin color parameters, so
                 // for now use a grey foundation for the skin and skirt layers
-                initBakedLayerColor(128, 128, 128);
+                InitBakedLayerColor(128, 128, 128);
                 DrawLayer(AppearanceManager.TextureIndex.HeadBodypaint);
             }
-            else if (BakeType == AppearanceManager.BakeType.Skirt)
+            else if (_bakeType == AppearanceManager.BakeType.Skirt)
             {
                 float skirtRed = 1.0f, skirtGreen = 1.0f, skirtBlue = 1.0f;
+
                 try
                 {
-                    ParamValues.TryGetValue(VisualParams.Find("skirt_red", "skirt").ParamID, out skirtRed);
-                    ParamValues.TryGetValue(VisualParams.Find("skirt_green", "skirt").ParamID, out skirtGreen);
-                    ParamValues.TryGetValue(VisualParams.Find("skirt_blue", "skirt").ParamID, out skirtBlue);
+                    _paramValues.TryGetValue(VisualParams.Find("skirt_red", "skirt").ParamID, out skirtRed);
+                    _paramValues.TryGetValue(VisualParams.Find("skirt_green", "skirt").ParamID, out skirtGreen);
+                    _paramValues.TryGetValue(VisualParams.Find("skirt_blue", "skirt").ParamID, out skirtBlue);
                 }
                 catch
                 {
-                    Logger.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning, Client);
+                    Logger.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning, _client);
                 }
-                initBakedLayerColor((int)(skirtRed * 255.0f), (int)(skirtGreen * 255.0f), (int)(skirtBlue * 255.0f));
+
+                InitBakedLayerColor((byte)(skirtRed * 255.0f), (byte)(skirtGreen * 255.0f), (byte)(skirtBlue * 255.0f));
                 DrawLayer(AppearanceManager.TextureIndex.Skirt);
             }
-            else if (BakeType == AppearanceManager.BakeType.UpperBody)
+            else if (_bakeType == AppearanceManager.BakeType.UpperBody)
             {
-                initBakedLayerColor(128, 128, 128);
+                InitBakedLayerColor(128, 128, 128);
                 DrawLayer(AppearanceManager.TextureIndex.UpperBodypaint);
                 DrawLayer(AppearanceManager.TextureIndex.UpperUndershirt);
                 DrawLayer(AppearanceManager.TextureIndex.UpperGloves);
                 DrawLayer(AppearanceManager.TextureIndex.UpperShirt);
                 DrawLayer(AppearanceManager.TextureIndex.UpperJacket);
             }
-            else if (BakeType == AppearanceManager.BakeType.LowerBody)
+            else if (_bakeType == AppearanceManager.BakeType.LowerBody)
             {
-                initBakedLayerColor(128, 128, 128);
+                InitBakedLayerColor(128, 128, 128);
                 DrawLayer(AppearanceManager.TextureIndex.LowerBodypaint);
                 DrawLayer(AppearanceManager.TextureIndex.LowerUnderpants);
                 DrawLayer(AppearanceManager.TextureIndex.LowerSocks);
@@ -200,20 +227,19 @@ namespace libsecondlife.Baking
                 DrawLayer(AppearanceManager.TextureIndex.LowerJacket);
             }
 
-            BakedTexture.Encode();
-
+            _bakedTexture.Encode();
         }
 
         private bool DrawLayer(AppearanceManager.TextureIndex textureIndex)
         {
             int i = 0;
+            AssetTexture texture;
 
-            AssetTexture texture = new AssetTexture();
-
-            if (!Textures.TryGetValue(textureIndex, out texture))
+            if (!_textures.TryGetValue(textureIndex, out texture))
                 return false;
 
             Image source = texture.Image;
+            
             bool sourceHasAlpha = ((source.Channels & ImageChannels.Alpha) != 0 && source.Alpha != null);
             bool sourceHasBump = ((source.Channels & ImageChannels.Bump) != 0 && source.Bump != null);
 
@@ -222,19 +248,18 @@ namespace libsecondlife.Baking
                 textureIndex == AppearanceManager.TextureIndex.Skirt
             );
 
-            if (source.Width != BakeWidth || source.Height != BakeHeight)
-                source.ResizeNearestNeighbor(BakeWidth, BakeHeight);
+            if (source.Width != _bakeWidth || source.Height != _bakeHeight)
+                source.ResizeNearestNeighbor(_bakeWidth, _bakeHeight);
 
+            int alpha = 255;
+            //int alphaInv = 255 - alpha;
+            int alphaInv = 256 - alpha;
 
-            Int32 alpha = 255;
-            //Int32 alphaInv = 255 - alpha;
-            Int32 alphaInv = 256 - alpha;
-
-            byte[] bakedRed = BakedTexture.Image.Red;
-            byte[] bakedGreen = BakedTexture.Image.Green;
-            byte[] bakedBlue = BakedTexture.Image.Blue;
-            byte[] bakedAlpha = BakedTexture.Image.Alpha;
-            byte[] bakedBump = BakedTexture.Image.Bump;
+            byte[] bakedRed = _bakedTexture.Image.Red;
+            byte[] bakedGreen = _bakedTexture.Image.Green;
+            byte[] bakedBlue = _bakedTexture.Image.Blue;
+            byte[] bakedAlpha = _bakedTexture.Image.Alpha;
+            byte[] bakedBump = _bakedTexture.Image.Bump;
 
             byte[] sourceRed = source.Red;
             byte[] sourceGreen = source.Green;
@@ -248,9 +273,9 @@ namespace libsecondlife.Baking
             if (sourceHasBump)
                 sourceBump = source.Bump;
 
-            for (int y = 0; y < BakeHeight; y++)
+            for (int y = 0; y < _bakeHeight; y++)
             {
-                for (int x = 0; x < BakeWidth; x++)
+                for (int x = 0; x < _bakeWidth; x++)
                 {
                     if (sourceHasAlpha)
                     {
@@ -273,25 +298,25 @@ namespace libsecondlife.Baking
 
                 }
             }
+
             return true;
         }
 
 
         /// <summary>
-        /// initBakedLayerColor()
-        /// fills a baked layer as a solid *appearing* color
-        /// the colors are subtly dithered on a 16x16 grid to prevent the jpeg2000 stage from compressing it
-        /// too far since it seems to cause upload failures if the image is a pure solid color
-        /// 
+        /// Fills a baked layer as a solid *appearing* color. The colors are 
+        /// subtly dithered on a 16x16 grid to prevent the JPEG2000 stage from 
+        /// compressing it too far since it seems to cause upload failures if 
+        /// the image is a pure solid color
         /// </summary>
-        /// <param name="r"></param>
-        /// <param name="g"></param>
-        /// <param name="b"></param>
-        private void initBakedLayerColor(int r, int g, int b)
+        /// <param name="r">Red value</param>
+        /// <param name="g">Green value</param>
+        /// <param name="b">Blue value</param>
+        private void InitBakedLayerColor(byte r, byte g, byte b)
         {
-            byte rByte = (byte)r;
-            byte gByte = (byte)g;
-            byte bByte = (byte)b;
+            byte rByte = r;
+            byte gByte = g;
+            byte bByte = b;
 
             byte rAlt, gAlt, bAlt;
 
@@ -313,15 +338,15 @@ namespace libsecondlife.Baking
 
             int i = 0;
 
-            byte[] red = BakedTexture.Image.Red;
-            byte[] green = BakedTexture.Image.Green;
-            byte[] blue = BakedTexture.Image.Blue;
-            byte[] alpha = BakedTexture.Image.Alpha;
-            byte[] bump = BakedTexture.Image.Bump;
+            byte[] red = _bakedTexture.Image.Red;
+            byte[] green = _bakedTexture.Image.Green;
+            byte[] blue = _bakedTexture.Image.Blue;
+            byte[] alpha = _bakedTexture.Image.Alpha;
+            byte[] bump = _bakedTexture.Image.Bump;
 
-            for (int y = 0; y < BakeHeight; y++)
+            for (int y = 0; y < _bakeHeight; y++)
             {
-                for (int x = 0; x < BakeWidth; x++)
+                for (int x = 0; x < _bakeWidth; x++)
                 {
                     if (((x ^ y) & 0x10) == 0)
                     {

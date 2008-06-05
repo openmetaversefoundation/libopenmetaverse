@@ -1105,10 +1105,11 @@ namespace libsecondlife
 
             try
             {
-                return new System.IO.FileStream(searchPath + System.IO.Path.DirectorySeparatorChar + resourceName,
+                return new System.IO.FileStream(
+                    System.IO.Path.Combine(System.IO.Path.Combine(System.Environment.CurrentDirectory, searchPath), resourceName),
                     System.IO.FileMode.Open);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Failed to load the resource from the given path
             }

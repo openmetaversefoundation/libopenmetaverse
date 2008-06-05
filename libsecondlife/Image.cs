@@ -31,9 +31,10 @@ namespace libsecondlife
     [Flags]
     public enum ImageChannels
     {
-        Color = 1,
-        Bump = 2,
+        Gray = 1,
+        Color = 2,
         Alpha = 4,
+        Bump = 8
     };
 
     public enum ImageResizeAlgorithm
@@ -97,18 +98,101 @@ namespace libsecondlife
 
             int n = width * height;
 
-            if ((channels & ImageChannels.Color) != 0)
+            if ((channels & ImageChannels.Gray) != 0)
+            {
+                Red = new byte[n];
+            }
+            else if ((channels & ImageChannels.Color) != 0)
             {
                 Red = new byte[n];
                 Green = new byte[n];
                 Blue = new byte[n];
             }
 
-            if ((channels & ImageChannels.Bump) != 0) Bump = new byte[n];
-
             if ((channels & ImageChannels.Alpha) != 0)
                 Alpha = new byte[n];
+
+            if ((channels & ImageChannels.Bump) != 0)
+                Bump = new byte[n];
         }
+
+#if !NO_UNSAFE
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bitmap"></param>
+        public Image(System.Drawing.Bitmap bitmap)
+        {
+            Width = bitmap.Width;
+            Height = bitmap.Height;
+
+            int pixelCount = Width * Height;
+
+            if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+            {
+                Channels = ImageChannels.Alpha & ImageChannels.Color;
+                Red = new byte[pixelCount];
+                Green = new byte[pixelCount];
+                Blue = new byte[pixelCount];
+                Alpha = new byte[pixelCount];
+
+                System.Drawing.Imaging.BitmapData bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height),
+                    System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                unsafe
+                {
+                    byte* pixel = (byte*)bd.Scan0;
+
+                    for (int i = 0; i < pixelCount; i++)
+                    {
+                        // GDI+ gives us BGRA and we need to turn that in to RGBA
+                        Blue[i] = *(pixel++);
+                        Green[i] = *(pixel++);
+                        Red[i] = *(pixel++);
+                        Alpha[i] = *(pixel++);
+                    }
+                }
+
+                bitmap.UnlockBits(bd);
+            }
+            else if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format16bppGrayScale)
+            {
+                Channels = ImageChannels.Gray;
+                Red = new byte[pixelCount];
+
+                throw new NotImplementedException("16bpp grayscale image support is incomplete");
+            }
+            else if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb)
+            {
+                Channels = ImageChannels.Color;
+                Red = new byte[pixelCount];
+                Green = new byte[pixelCount];
+                Blue = new byte[pixelCount];
+
+                System.Drawing.Imaging.BitmapData bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height),
+                        System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+
+                unsafe
+                {
+                    byte* pixel = (byte*)bd.Scan0;
+
+                    for (int i = 0; i < pixelCount; i++)
+                    {
+                        // GDI+ gives us BGR and we need to turn that in to RGB
+                        Blue[i] = *(pixel++);
+                        Green[i] = *(pixel++);
+                        Red[i] = *(pixel++);
+                    }
+                }
+
+                bitmap.UnlockBits(bd);
+            }
+            else
+            {
+                throw new NotSupportedException("Unrecognized pixel format: " + bitmap.PixelFormat.ToString());
+            }
+        }
+#endif
 
         /// <summary>
         /// Convert the channels in the image. Channels are created or destroyed as required.

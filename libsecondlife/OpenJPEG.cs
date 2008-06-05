@@ -306,6 +306,5 @@ namespace OpenJPEGNet
             return encoded;
         }
     }
-
 #endif
 }

@@ -33,6 +33,8 @@ namespace Baker
             {
                 AlphaMask = OpenJPEGNet.LoadTGAClass.LoadTGA(stream);
                 pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
+
+                stream.Close();
             }
             else
             {
