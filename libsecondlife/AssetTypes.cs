@@ -327,7 +327,6 @@ namespace libsecondlife
                         fields = line.Split(' ');
                         if (fields[0] == "parameters")
                         {
-
                             int count = Int32.Parse(fields[1]) + stri;
                             for (; stri < count; )
                             {
@@ -337,14 +336,10 @@ namespace libsecondlife
 
                                 int id = Int32.Parse(fields[0]);
                                 if (fields[1] == ",")
-                                {
                                     fields[1] = "0";
-                                }
-
                                 else
-                                {
                                     fields[1] = fields[1].Replace(',', '.');
-                                }
+
                                 float weight = float.Parse(fields[1], System.Globalization.NumberStyles.Float,
                                     Helpers.EnUsCulture.NumberFormat);
 

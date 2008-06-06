@@ -45,6 +45,12 @@
   <ItemGroup>
     <Compile Include="VisualParamGenerator.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libsecondlife.csproj">
+      <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
+      <Name>libsecondlife</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

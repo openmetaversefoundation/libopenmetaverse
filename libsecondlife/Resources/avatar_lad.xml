@@ -3154,6 +3154,30 @@
 
 <!--
         ##############
+        # Lipsync morphs
+        ##############
+        -->
+
+      <param
+       id="70"
+       group="1"
+       name="Lipsync_Aah"
+       value_min="0"
+       value_max="1">
+         <param_morph />
+      </param>
+
+      <param
+       id="71"
+       group="1"
+       name="Lipsync_Ooh"
+       value_min="0"
+       value_max="1">
+         <param_morph />
+      </param>
+
+<!--
+        ##############
         # other morphs (not user controlled)
         ##############
         -->

@@ -95,9 +95,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="wearables">A mapping of WearableTypes to KeyValuePairs
-        /// with Asset ID of the wearable as key and Item ID as value</param>
-        public delegate void AgentWearablesCallback(Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables);
+        public delegate void AgentWearablesCallback();
         /// <summary>
         /// 
         /// </summary>
@@ -176,6 +174,8 @@ namespace libsecondlife
         //private bool DownloadWearables = false;
         private static int CacheCheckSerialNum = 1; //FIXME
         private static uint SetAppearanceSerialNum = 1; //FIXME
+        private WearParams _wearOutfitParams;
+        private bool _bake;
         private AutoResetEvent WearablesRequestEvent = new AutoResetEvent(false);
         private AutoResetEvent WearablesDownloadedEvent = new AutoResetEvent(false);
         private AutoResetEvent CachedResponseEvent = new AutoResetEvent(false);
@@ -255,7 +255,6 @@ namespace libsecondlife
             appearanceThread.Start();
         }
 
-        private bool _bake;
         private void StartSetPreviousAppearance()
         {
             SendAgentWearablesRequest();
@@ -360,7 +359,6 @@ namespace libsecondlife
             appearanceThread.Start();
         }
 
-        private WearParams _wearOutfitParams;
         private void StartWearOutfitFolder()
         {
             SendAgentWearablesRequest(); // request current wearables async
@@ -820,12 +818,10 @@ namespace libsecondlife
             set.AgentData.SerialNum = SetAppearanceSerialNum++;
             set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[VisualParams.Params.Count];
 
-
-
             float AgentSizeVPHeight = 0.0f;
             float AgentSizeVPHeelHeight = 0.0f;
             float AgentSizeVPPlatformHeight = 0.0f;
-            float AgentSizeVPHeadSize = 0.0f;
+            float AgentSizeVPHeadSize = 0.5f;
             float AgentSizeVPLegLength = 0.0f;
             float AgentSizeVPNeckLength = 0.0f;
             float AgentSizeVPHipLength = 0.0f;
@@ -838,7 +834,6 @@ namespace libsecondlife
                 // Build the visual param array
                 foreach (KeyValuePair<int, VisualParam> kvp in VisualParams.Params)
                 {
-                    bool found = false;
                     set.VisualParam[vpIndex] = new AgentSetAppearancePacket.VisualParamBlock();
                     VisualParam vp = kvp.Value;
 
@@ -848,7 +843,6 @@ namespace libsecondlife
                         if (data.Asset != null && data.Asset.Params.ContainsKey(vp.ParamID))
                         {
                             set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], vp.MinValue, vp.MaxValue);
-                            found = true;
                             count++;
 
                             switch (vp.ParamID)
@@ -876,37 +870,6 @@ namespace libsecondlife
                                     break;
                             }
                             break;
-                        }
-                    }
-
-                    // Use a default value if we don't have one set for it
-                    if (!found)
-                    {
-                        set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(vp.DefaultValue, vp.MinValue, vp.MaxValue);
-
-                        switch (vp.ParamID)
-                        {
-                            case 33:
-                                AgentSizeVPHeight = vp.DefaultValue;
-                                break;
-                            case 198:
-                                AgentSizeVPHeelHeight = vp.DefaultValue;
-                                break;
-                            case 503:
-                                AgentSizeVPPlatformHeight = vp.DefaultValue;
-                                break;
-                            case 682:
-                                AgentSizeVPHeadSize = vp.DefaultValue;
-                                break;
-                            case 692:
-                                AgentSizeVPLegLength = vp.DefaultValue;
-                                break;
-                            case 756:
-                                AgentSizeVPNeckLength = vp.DefaultValue;
-                                break;
-                            case 842:
-                                AgentSizeVPHipLength = vp.DefaultValue;
-                                break;
                         }
                     }
 
@@ -1054,25 +1017,6 @@ namespace libsecondlife
             {
                 PendingAssetDownload pad = AssetDownloads.Dequeue();
                 Assets.RequestAsset(pad.Id, pad.Type, true);
-            }
-        }
-
-        private void CallOnAgentWearables()
-        {
-            if (OnAgentWearables != null)
-            {
-                // Refactor our internal Wearables dictionary in to something for the callback
-                Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables =
-                    new Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>>();
-
-                lock (Wearables.Dictionary)
-                {
-                    foreach (KeyValuePair<WearableType, WearableData> data in Wearables.Dictionary)
-                        wearables.Add(data.Key, new KeyValuePair<LLUUID, LLUUID>(data.Value.Item.AssetUUID, data.Value.Item.UUID));
-                }
-
-                try { OnAgentWearables(wearables); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -1309,6 +1253,12 @@ namespace libsecondlife
             else
             {
                 // Everything is downloaded
+                if (OnAgentWearables != null)
+                {
+                    try { OnAgentWearables(); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
+
                 WearablesDownloadedEvent.Set();
             }
         }

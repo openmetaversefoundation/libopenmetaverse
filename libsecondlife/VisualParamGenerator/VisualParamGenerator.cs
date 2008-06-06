@@ -13,9 +13,9 @@ namespace VisualParamGenerator
 
         static void Main(string[] args)
         {
-            if (args.Length < 3)
+            if (args.Length < 2)
             {
-                Console.WriteLine("Usage: VisualParamGenerator.exe [avatar_lad.xml] [template.cs] [_VisualParams_.cs]");
+                Console.WriteLine("Usage: VisualParamGenerator.exe [template.cs] [_VisualParams_.cs]");
                 return;
             }
             else if (!File.Exists(args[0]))
@@ -29,32 +29,44 @@ namespace VisualParamGenerator
 
             try
             {
-                writer = new StreamWriter(args[2]);
+                writer = new StreamWriter(args[1]);
             }
             catch (Exception)
             {
-                Console.WriteLine("Couldn't open " + args[2] + " for writing");
+                Console.WriteLine("Couldn't open " + args[1] + " for writing");
                 return;
             }
 
             try
             {
                 // Read in the template.cs file and write it to our output
-                TextReader reader = new StreamReader(args[1]);
+                TextReader reader = new StreamReader(args[0]);
                 writer.WriteLine(reader.ReadToEnd());
                 reader.Close();
             }
             catch (Exception)
             {
-                Console.WriteLine("Couldn't read from file " + args[1]);
+                Console.WriteLine("Couldn't read from file " + args[0]);
                 return;
             }
 
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(File.ReadAllText(args[0]));
-                list = doc.GetElementsByTagName("param");
+                // Read in avatar_lad.xml
+                Stream stream = libsecondlife.Helpers.GetResourceStream("avatar_lad.xml");
+                StreamReader reader = new StreamReader(stream);
+
+                if (stream != null)
+                {
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml(reader.ReadToEnd());
+                    list = doc.GetElementsByTagName("param");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to load resource avatar_lad.xml. Are you missing a data folder?");
+                    return;
+                }
             }
             catch (Exception e)
             {
@@ -100,17 +112,17 @@ namespace VisualParamGenerator
                         int group = Int32.Parse(node.Attributes["group"].Value);
                         string wearable = node.Attributes["wearable"].Value;
 
-                        string label = String.Empty;
+                        string label = "String.Empty";
                         if (node.Attributes["label"] != null)
-                            label = node.Attributes["label"].Value;
+                            label = "\"" + node.Attributes["label"].Value + "\"";
 
-                        string label_min = String.Empty;
+                        string label_min = "String.Empty";
                         if (node.Attributes["label_min"] != null)
-                            label_min = node.Attributes["label_min"].Value;
+                            label_min = "\"" + node.Attributes["label_min"].Value + "\"";
 
-                        string label_max = String.Empty;
+                        string label_max = "String.Empty";
                         if (node.Attributes["label_max"] != null)
-                            label_max = node.Attributes["label_max"].Value;
+                            label_max = "\"" + node.Attributes["label_max"].Value + "\"";
 
                         float min = Single.Parse(node.Attributes["value_min"].Value, 
                             System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat);
@@ -125,8 +137,8 @@ namespace VisualParamGenerator
                             def = min;
 
                         IDs.Add(id, "            new VisualParam(" + id + ", \"" + name + "\", " + group + 
-                            ", \"" + wearable + "\", \"" + label + "\", \"" + label_min + "\", \"" + label_max + 
-                            "\", " + def + "f, " + min + "f, " + max + "f)," + Environment.NewLine);
+                            ", \"" + wearable + "\", " + label + ", " + label_min + ", " + label_max + 
+                            ", " + def + "f, " + min + "f, " + max + "f)," + Environment.NewLine);
                     }
                     catch (Exception e)
                     {
