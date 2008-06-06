@@ -142,7 +142,7 @@ namespace libsecondlife.Baking
                 Logger.DebugLog(String.Format("Added texture {0} (ID: {1}) to bake {2}", index, texture.AssetID, _bakeType), _client);
             }
 
-            if (_textures.Count == _textureCount)
+            if (_textures.Count >= _textureCount)
             {
                 Bake();
                 return true;
@@ -158,7 +158,7 @@ namespace libsecondlife.Baking
             Logger.DebugLog(String.Format("Missing texture {0} in bake {1}", index, _bakeType), _client);
             _textureCount--;
 
-            if (_textures.Count == _textureCount)
+            if (_textures.Count >= _textureCount)
             {
                 Bake();
                 return true;

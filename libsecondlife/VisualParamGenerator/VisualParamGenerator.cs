@@ -77,11 +77,15 @@ namespace VisualParamGenerator
             SortedList<int, string> IDs = new SortedList<int, string>();
             StringWriter output = new StringWriter();
 
+            // Make sure we end up with 218 Group-0 VisualParams as a sanity check
+            int count = 0;
+
             foreach (XmlNode node in list)
             {
-                if ((node.Attributes["group"] == null) || !(node.Attributes["group"].Value.Equals("0")))
+                if (node.Attributes["group"] == null)
                 {
-                    // We're only interested in group 0 parameters
+                    // Sanity check that a group is assigned
+                    Console.WriteLine("Encountered a param with no group set!");
                     continue;
                 }
                 if ((node.Attributes["shared"] != null) && (node.Attributes["shared"].Value.Equals("1")))
@@ -89,7 +93,7 @@ namespace VisualParamGenerator
                     // This param will have been already been defined
                     continue;
                 }
-                if ((node.Attributes["edit_group"] != null) && (node.Attributes["edit_group"].Value.Equals("driven")))
+                if ((node.Attributes["edit_group"] == null))
                 {
                     // This param is calculated by the client based on other params
                     continue;
@@ -97,8 +101,7 @@ namespace VisualParamGenerator
 
                 // Confirm this is a valid VisualParam
                 if (node.Attributes["id"] != null &&
-                    node.Attributes["name"] != null &&
-                    node.Attributes["wearable"] != null)
+                    node.Attributes["name"] != null)
                 {
                     try
                     {
@@ -110,7 +113,10 @@ namespace VisualParamGenerator
 
                         string name = node.Attributes["name"].Value;
                         int group = Int32.Parse(node.Attributes["group"].Value);
-                        string wearable = node.Attributes["wearable"].Value;
+
+                        string wearable = "null";
+                        if (node.Attributes["wearable"] != null)
+                            wearable = "\"" + node.Attributes["wearable"].Value + "\"";
 
                         string label = "String.Empty";
                         if (node.Attributes["label"] != null)
@@ -136,9 +142,12 @@ namespace VisualParamGenerator
                         else
                             def = min;
 
-                        IDs.Add(id, "            new VisualParam(" + id + ", \"" + name + "\", " + group + 
-                            ", \"" + wearable + "\", " + label + ", " + label_min + ", " + label_max + 
-                            ", " + def + "f, " + min + "f, " + max + "f)," + Environment.NewLine);
+                        IDs.Add(id,
+                            String.Format("            Params[{0}] = new VisualParam({0}, \"{1}\", {2}, {3}, {4}, {5}, {6}, {7}f, {8}f, {9}f);{10}",
+                            id, name, group, wearable, label, label_min, label_max, def, min, max, Environment.NewLine));
+
+                        if (group == 0)
+                            ++count;
                     }
                     catch (Exception e)
                     {
@@ -147,13 +156,19 @@ namespace VisualParamGenerator
                 }
             }
 
+            if (count != 218)
+            {
+                Console.WriteLine("Ended up with the wrong number of Group-8 VisualParams! Exiting...");
+                return;
+            }
+
             // Now that we've collected all the entries and sorted them, add them to our output buffer
             foreach (string line in IDs.Values)
             {
                 output.Write(line);
             }
 
-            output.Write("        };" + Environment.NewLine);
+            output.Write("        }" + Environment.NewLine);
             output.Write("    }" + Environment.NewLine);
             output.Write("}" + Environment.NewLine);
 

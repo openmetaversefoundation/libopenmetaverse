@@ -62,5 +62,16 @@ namespace libsecondlife
     /// </summary>
     public static class VisualParams
     {
-        public static VisualParam[] Params = new VisualParam[]
+        public static VisualParam Find(string name, string wearable)
+        {
+            foreach (KeyValuePair<int, VisualParam> param in Params)
+                if (param.Value.Name == name && param.Value.Wearable == wearable)
+                    return param.Value;
+
+            return new VisualParam();
+        }
+
+        public static SortedList<int, VisualParam> Params = new SortedList<int, VisualParam>();
+
+        static VisualParams()
         {

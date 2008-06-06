@@ -816,7 +816,7 @@ namespace libsecondlife
             set.AgentData.AgentID = Client.Self.AgentID;
             set.AgentData.SessionID = Client.Self.SessionID;
             set.AgentData.SerialNum = SetAppearanceSerialNum++;
-            set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[VisualParams.Params.Count];
+            set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
 
             float AgentSizeVPHeight = 0.0f;
             float AgentSizeVPHeelHeight = 0.0f;
@@ -834,49 +834,52 @@ namespace libsecondlife
                 // Build the visual param array
                 foreach (KeyValuePair<int, VisualParam> kvp in VisualParams.Params)
                 {
-                    set.VisualParam[vpIndex] = new AgentSetAppearancePacket.VisualParamBlock();
                     VisualParam vp = kvp.Value;
 
-                    // Try and find this value in our collection of downloaded wearables
-                    foreach (WearableData data in Wearables.Dictionary.Values)
+                    // Only Group-0 parameters are sent in AgentSetAppearance packets
+                    if (vp.Group == 0)
                     {
-                        if (data.Asset != null && data.Asset.Params.ContainsKey(vp.ParamID))
+                        set.VisualParam[vpIndex] = new AgentSetAppearancePacket.VisualParamBlock();
+
+                        // Try and find this value in our collection of downloaded wearables
+                        foreach (WearableData data in Wearables.Dictionary.Values)
                         {
-                            set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], vp.MinValue, vp.MaxValue);
-                            count++;
-
-                            switch (vp.ParamID)
+                            if (data.Asset != null && data.Asset.Params.ContainsKey(vp.ParamID))
                             {
-                                case 33:
-                                    AgentSizeVPHeight = data.Asset.Params[vp.ParamID];
-                                    break;
-                                case 198:
-                                    AgentSizeVPHeelHeight = data.Asset.Params[vp.ParamID];
-                                    break;
-                                case 503:
-                                    AgentSizeVPPlatformHeight = data.Asset.Params[vp.ParamID];
-                                    break;
-                                case 682:
-                                    AgentSizeVPHeadSize = data.Asset.Params[vp.ParamID];
-                                    break;
-                                case 692:
-                                    AgentSizeVPLegLength = data.Asset.Params[vp.ParamID];
-                                    break;
-                                case 756:
-                                    AgentSizeVPNeckLength = data.Asset.Params[vp.ParamID];
-                                    break;
-                                case 842:
-                                    AgentSizeVPHipLength = data.Asset.Params[vp.ParamID];
-                                    break;
+                                set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], vp.MinValue, vp.MaxValue);
+                                count++;
+
+                                switch (vp.ParamID)
+                                {
+                                    case 33:
+                                        AgentSizeVPHeight = data.Asset.Params[vp.ParamID];
+                                        break;
+                                    case 198:
+                                        AgentSizeVPHeelHeight = data.Asset.Params[vp.ParamID];
+                                        break;
+                                    case 503:
+                                        AgentSizeVPPlatformHeight = data.Asset.Params[vp.ParamID];
+                                        break;
+                                    case 682:
+                                        AgentSizeVPHeadSize = data.Asset.Params[vp.ParamID];
+                                        break;
+                                    case 692:
+                                        AgentSizeVPLegLength = data.Asset.Params[vp.ParamID];
+                                        break;
+                                    case 756:
+                                        AgentSizeVPNeckLength = data.Asset.Params[vp.ParamID];
+                                        break;
+                                    case 842:
+                                        AgentSizeVPHipLength = data.Asset.Params[vp.ParamID];
+                                        break;
+                                }
+                                break;
                             }
-                            break;
                         }
+
+                        ++vpIndex;
                     }
-
-                    vpIndex++;
                 }
-
-                Logger.DebugLog("AgentSetAppearance contains " + count + " VisualParams", Client);
 
                 // Build the texture entry for our agent
                 LLObject.TextureEntry te = new LLObject.TextureEntry(DEFAULT_AVATAR_TEXTURE);
@@ -903,7 +906,7 @@ namespace libsecondlife
                             LLObject.TextureEntryFace face = te.CreateFace((uint)texture.Key);
                             face.TextureID = texture.Value;
 
-                            Logger.DebugLog("Setting texture " + ((TextureIndex)texture.Key).ToString() + " to " +
+                            Logger.DebugLog("Setting agent texture " + ((TextureIndex)texture.Key).ToString() + " to " +
                                 texture.Value.ToString(), Client);
                         }
                     }
@@ -1062,22 +1065,26 @@ namespace libsecondlife
             // Build a dictionary of appearance parameter indices and values from the wearables
             foreach (KeyValuePair<int,VisualParam> kvp in VisualParams.Params)
             {
-                bool found = false;
-                VisualParam vp = kvp.Value;
-
-                // Try and find this value in our collection of downloaded wearables
-                foreach (WearableData data in Wearables.Dictionary.Values)
+                // Only Group-0 parameters are sent in AgentSetAppearance packets
+                if (kvp.Value.Group == 0)
                 {
-                    if (data.Asset.Params.ContainsKey(vp.ParamID))
-                    {
-                        paramValues.Add(vp.ParamID,data.Asset.Params[vp.ParamID]);
-                        found = true;
-                        break;
-                    }
-                }
+                    bool found = false;
+                    VisualParam vp = kvp.Value;
 
-                // Use a default value if we don't have one set for it
-                if (!found) paramValues.Add(vp.ParamID, vp.DefaultValue);
+                    // Try and find this value in our collection of downloaded wearables
+                    foreach (WearableData data in Wearables.Dictionary.Values)
+                    {
+                        if (data.Asset.Params.ContainsKey(vp.ParamID))
+                        {
+                            paramValues.Add(vp.ParamID, data.Asset.Params[vp.ParamID]);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    // Use a default value if we don't have one set for it
+                    if (!found) paramValues.Add(vp.ParamID, vp.DefaultValue);
+                }
             }
 
             lock (AgentTextures)
@@ -1269,15 +1276,16 @@ namespace libsecondlife
             {
                 if (ImageDownloads.ContainsKey(image.ID))
                 {
-                    // NOTE: this image may occupy more than one TextureIndex! We must finish this loop
+                    ImageDownloads.Remove(image.ID);
+
+                    // NOTE: This image may occupy more than one TextureIndex! We must finish this loop
                     for (int at = 0; at < AgentTextures.Length; at++)
                     {
                         if (AgentTextures[at] == image.ID)
                         {
                             TextureIndex index = (TextureIndex)at;
-                            Logger.DebugLog("Finished downloading texture for " + index.ToString(), Client);
                             BakeType type = Baker.BakeTypeFor(index);
-                            
+
                             //BinaryWriter writer = new BinaryWriter(File.Create("wearable_" + index.ToString() + "_" + image.ID.ToString() + ".jp2"));
                             //writer.Write(image.AssetData);
                             //writer.Close();
@@ -1287,12 +1295,14 @@ namespace libsecondlife
                             if (PendingBakes.ContainsKey(type))
                             {
                                 if (image.Success)
+                                {
+                                    Logger.DebugLog("Finished downloading texture for " + index.ToString(), Client);
                                     baked = PendingBakes[type].AddTexture(index, assetTexture);
+                                }
                                 else
                                 {
                                     Logger.Log("Texture for " + index.ToString() + " failed to download, " +
                                         "bake will be incomplete", Helpers.LogLevel.Warning, Client);
-
                                     baked = PendingBakes[type].MissingTexture(index);
                                 }
                             }
@@ -1302,8 +1312,6 @@ namespace libsecondlife
                                 UploadBake(PendingBakes[type]);
                                 PendingBakes.Remove(type);
                             }
-
-                            ImageDownloads.Remove(image.ID);
 
                             if (ImageDownloads.Count == 0 && PendingUploads.Count == 0)
                             {
@@ -1322,8 +1330,10 @@ namespace libsecondlife
                     }
                 }
                 else
+                {
                     Logger.Log("Received an image download callback for an image we did not request " + image.ID.ToString(),
                         Helpers.LogLevel.Warning, Client);
+                }
             }
         }
 

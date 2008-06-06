@@ -307,6 +307,7 @@ namespace libsecondlife
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
         private AssetUpload PendingUpload;
         private AutoResetEvent PendingUploadEvent = new AutoResetEvent(true);
+        private System.Timers.Timer RefreshDownloadsTimer = new System.Timers.Timer(500.0);
         
         /// <summary>
         /// Default constructor
@@ -333,6 +334,31 @@ namespace libsecondlife
 
             // Xfer packet for downloading misc assets
             Client.Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
+
+            // HACK: Re-request stale pending image downloads
+            RefreshDownloadsTimer.Elapsed += new System.Timers.ElapsedEventHandler(RefreshDownloadsTimer_Elapsed);
+            RefreshDownloadsTimer.Start();
+        }
+
+        private void RefreshDownloadsTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            lock (Transfers)
+            {
+                foreach (Transfer transfer in Transfers.Values)
+                {
+                    if (transfer is ImageDownload)
+                    {
+                        ImageDownload download = (ImageDownload)transfer;
+
+                        if (download.TransferTime > 3000)
+                        {
+                            Logger.DebugLog("Image download refresh timer is re-requesting texture " + download.ID.ToString());
+                            // FIXME: This will probably break on baked textures and doesn't preserve the originally requested discardlevel
+                            RequestImage(download.ID, ImageType.Normal, 1013010.0f, 0);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -512,19 +538,51 @@ namespace libsecondlife
                 }
             }
 
-            // allows aborting of download
-            if (Transfers.ContainsKey(imageID) && priority.Equals(0) && discardLevel.Equals(-1))
-                Transfers.Remove(imageID);
-
-            if (!Transfers.ContainsKey(imageID) && !priority.Equals(0) && !discardLevel.Equals(-1))
+            // Priority == 0 && DiscardLevel == -1 means cancel the transfer
+            if (priority.Equals(0) && discardLevel.Equals(-1))
             {
-                ImageDownload transfer = new ImageDownload();
-                //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
-                transfer.ID = imageID;
-                transfer.Simulator = Client.Network.CurrentSim;
+                if (Transfers.ContainsKey(imageID))
+                    Transfers.Remove(imageID);
 
-                // Add this transfer to the dictionary
-                lock (Transfers) Transfers[transfer.ID] = transfer;
+                RequestImagePacket cancel = new RequestImagePacket();
+                cancel.AgentData.AgentID = Client.Self.AgentID;
+                cancel.AgentData.SessionID = Client.Self.SessionID;
+                cancel.RequestImage = new RequestImagePacket.RequestImageBlock[1];
+                cancel.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
+                cancel.RequestImage[0].DiscardLevel = -1;
+                cancel.RequestImage[0].DownloadPriority = 0;
+                cancel.RequestImage[0].Packet = 0;
+                cancel.RequestImage[0].Image = imageID;
+                cancel.RequestImage[0].Type = 0;
+            }
+            else
+            {
+                Simulator currentSim = Client.Network.CurrentSim;
+
+                if (!Transfers.ContainsKey(imageID))
+                {
+                    // New download
+                    ImageDownload transfer = new ImageDownload();
+                    //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
+                    transfer.ID = imageID;
+                    transfer.Simulator = currentSim;
+
+                    // Add this transfer to the dictionary
+                    lock (Transfers) Transfers[transfer.ID] = transfer;
+
+                    Logger.DebugLog("Adding image " + imageID.ToString() + " to the download queue");
+                }
+                else
+                {
+                    // Already downloading, just updating the priority
+                    Transfer transfer = Transfers[imageID];
+                    float percentComplete = (float)transfer.Transferred / (float)transfer.Size;
+                    if (Single.IsNaN(percentComplete))
+                        percentComplete = 0f;
+
+                    Logger.DebugLog(String.Format("Updating priority on image transfer {0}, ({1}% complete, running for {2}ms",
+                        imageID, percentComplete, transfer.TransferTime));
+                }
 
                 // Build and send the request packet
                 RequestImagePacket request = new RequestImagePacket();
@@ -538,14 +596,10 @@ namespace libsecondlife
                 request.RequestImage[0].Image = imageID;
                 request.RequestImage[0].Type = (byte)type;
 
-                Client.Network.SendPacket(request, transfer.Simulator);
-            }
-            else
-            {
-                Logger.Log("RequestImage() called for an image we are already downloading, ignoring",
-                    Helpers.LogLevel.Info, Client);
+                Client.Network.SendPacket(request, currentSim);
             }
         }
+
         /// <summary>
         /// Requests multiple Images
         /// </summary>
