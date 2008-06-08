@@ -846,7 +846,7 @@ namespace libsecondlife
         {
             if (refresh)
             {
-                lock (simulator.ParcelMap)
+                //lock (simulator.ParcelMap)
                     for (int y = 0; y < 64; y++)
                         for (int x = 0; x < 64; x++)
                             simulator.ParcelMap[y, x] = 0;
@@ -1253,6 +1253,21 @@ namespace libsecondlife
 
             Client.Network.SendPacket(frz);
         }
+
+        /// <summary>
+        /// Abandon a parcel of land
+        /// </summary>
+        /// <param name="simulator">Simulator parcel is in</param>
+        /// <param name="localID">Simulator local ID of parcel</param>
+        public void ReleaseParcel(Simulator simulator, int localID)
+        {
+            ParcelReleasePacket abandon = new ParcelReleasePacket();
+            abandon.AgentData.AgentID = Client.Self.AgentID;
+            abandon.AgentData.SessionID = Client.Self.SessionID;
+            abandon.Data.LocalID = localID;
+
+            Client.Network.SendPacket(abandon, simulator);
+        }
         #endregion Public Methods
 
         #region Packet Handlers
@@ -1338,7 +1353,7 @@ namespace libsecondlife
                 parcel.ClaimDate = Helpers.UnixTimeToDateTime((uint)parcelDataBlock["ClaimDate"].AsInteger());
                 parcel.ClaimPrice = parcelDataBlock["ClaimPrice"].AsInteger();
                 parcel.Desc = parcelDataBlock["Desc"].AsString();
-
+                
                 // TODO: this probably needs to happen when the packet is deserialized.
                 byte[] bytes = parcelDataBlock["ParcelFlags"].AsBinary();
                 if (BitConverter.IsLittleEndian)
