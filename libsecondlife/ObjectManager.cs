@@ -2123,73 +2123,66 @@ namespace libsecondlife
             for (int i = 0; i < kill.ObjectData.Length; i++)
                 FireOnObjectKilled(simulator, kill.ObjectData[i].ID);
 
-            // Run the for loop multiple times so we only have to lock a total
-            // of two times. Locking is by far the most expensive operation here
-
-            if (Client.Settings.OBJECT_TRACKING)
+            lock (simulator.ObjectsPrimitives.Dictionary)
             {
-                lock (simulator.ObjectsPrimitives.Dictionary)
+                List<uint> removePrims = new List<uint>();
+
+                if (Client.Settings.OBJECT_TRACKING)
                 {
                     uint localID;
                     for (int i = 0; i < kill.ObjectData.Length; i++)
                     {
                         localID = kill.ObjectData[i].ID;
 
-                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID))
-                        {
-                            FireOnObjectKilled(simulator, localID);
-                            simulator.ObjectsPrimitives.Dictionary.Remove(localID);
-                        }
+                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID)) removePrims.Add(localID);
 
-                        simulator.ObjectsPrimitives.ForEach(delegate(Primitive prim)
+                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
                         {
-                            if (prim.ParentID == localID)
+                            if (prim.Value.ParentID == localID)
                             {
-                                FireOnObjectKilled(simulator, prim.LocalID);
-                                simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
+                                FireOnObjectKilled(simulator, prim.Key);
+                                removePrims.Add(prim.Key);
                             }
-                        });
-                    }
-                }
-            }
-
-            if (Client.Settings.AVATAR_TRACKING)
-            {
-                lock (simulator.ObjectsPrimitives.Dictionary)
-                {
-                    lock (simulator.ObjectsAvatars.Dictionary)
-                    {
-                        uint localID;
-                        for (int i = 0; i < kill.ObjectData.Length; i++)
-                        {
-                            localID = kill.ObjectData[i].ID;
-
-                            if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
-                                simulator.ObjectsAvatars.Dictionary.Remove(localID);
-
-                            List<uint> rootPrims = new List<uint>();
-
-                            simulator.ObjectsPrimitives.ForEach(delegate(Primitive prim)
-                            {
-                                if (prim.ParentID == localID)
-                                {
-                                    FireOnObjectKilled(simulator, prim.LocalID);
-                                    simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
-                                    rootPrims.Add(prim.LocalID);
-                                }
-                            });
-
-                            simulator.ObjectsPrimitives.ForEach(delegate(Primitive prim)
-                            {
-                                if (rootPrims.Contains(prim.ParentID))
-                                {
-                                    FireOnObjectKilled(simulator, prim.LocalID);
-                                    simulator.ObjectsPrimitives.Dictionary.Remove(prim.LocalID);
-                                }
-                            });
                         }
                     }
                 }
+
+                if (Client.Settings.AVATAR_TRACKING)
+                {
+                    uint localID;
+                    for (int i = 0; i < kill.ObjectData.Length; i++)
+                    {
+                        localID = kill.ObjectData[i].ID;
+
+                        if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID)) removePrims.Add(localID);                            
+
+                        List<uint> rootPrims = new List<uint>();
+
+                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
+                        {
+                            if (prim.Value.ParentID == localID)
+                            {
+                                FireOnObjectKilled(simulator, prim.Key);
+                                removePrims.Add(prim.Key);
+                                rootPrims.Add(prim.Key);
+                            }
+                        }
+
+                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
+                        {
+                            if (rootPrims.Contains(prim.Value.ParentID))
+                            {
+                                FireOnObjectKilled(simulator, prim.Key);
+                                removePrims.Add(prim.Key);
+                            }
+                        }
+                    }
+                }
+
+                //Do the actual removing outside of the loops but still inside the lock.
+                //This safely prevents the collection from being modified during a loop.
+                foreach (uint removeID in removePrims)
+                    simulator.ObjectsPrimitives.Remove(removeID);
             }
         }
 
