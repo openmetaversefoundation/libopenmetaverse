@@ -1128,7 +1128,7 @@ namespace libsecondlife
             else
             {
                 Parcel p;
-                if (!simulator.Parcels.TryGetValue((int)simulator.ParcelMap.GetValue(localID), out p))
+                if (!simulator.Parcels.TryGetValue(localID, out p))
                 {
                     Logger.Log(String.Format("Can't find parcel {0} in simulator {1}", localID, simulator),
                         Helpers.LogLevel.Warning, Client);
