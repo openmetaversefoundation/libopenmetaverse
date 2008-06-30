@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, the libsecondlife development team
+ * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -24158,11 +24158,60 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        public class PidStatBlock
+        {
+            public int PID;
+
+            public int Length
+            {
+                get
+                {
+                    return 4;
+                }
+            }
+
+            public PidStatBlock() { }
+            public PidStatBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    PID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = (byte)(PID % 256);
+                bytes[i++] = (byte)((PID >> 8) % 256);
+                bytes[i++] = (byte)((PID >> 16) % 256);
+                bytes[i++] = (byte)((PID >> 24) % 256);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- PidStat --");
+                output.Append(String.Format("PID: {0}", PID));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SimStats; } }
         public RegionBlock Region;
         public StatBlock[] Stat;
+        public PidStatBlock PidStat;
 
         public SimStatsPacket()
         {
@@ -24171,6 +24220,7 @@ namespace libsecondlife.Packets
             Header.Reliable = true;
             Region = new RegionBlock();
             Stat = new StatBlock[0];
+            PidStat = new PidStatBlock();
         }
 
         public SimStatsPacket(byte[] bytes, ref int i) : this()
@@ -24195,6 +24245,7 @@ namespace libsecondlife.Packets
             }
             for (int j = 0; j < count; j++)
             { Stat[j].FromBytes(bytes, ref i); }
+            PidStat.FromBytes(bytes, ref i);
         }
 
         public SimStatsPacket(Header head, byte[] bytes, ref int i): this()
@@ -24219,12 +24270,13 @@ namespace libsecondlife.Packets
             }
             for (int j = 0; j < count; j++)
             { Stat[j].FromBytes(bytes, ref i); }
+            PidStat.FromBytes(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
-            length += Region.Length;;
+            length += Region.Length;            length += PidStat.Length;;
             length++;
             for (int j = 0; j < Stat.Length; j++) { length += Stat[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
@@ -24234,6 +24286,7 @@ namespace libsecondlife.Packets
             Region.ToBytes(bytes, ref i);
             bytes[i++] = (byte)Stat.Length;
             for (int j = 0; j < Stat.Length; j++) { Stat[j].ToBytes(bytes, ref i); }
+            PidStat.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -24246,6 +24299,7 @@ namespace libsecondlife.Packets
             {
                 output += Stat[j].ToString() + Environment.NewLine;
             }
+                output += PidStat.ToString() + Environment.NewLine;
             return output;
         }
 
