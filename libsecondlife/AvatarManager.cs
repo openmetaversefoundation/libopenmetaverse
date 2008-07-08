@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Threading;
 using libsecondlife.Packets;
@@ -52,7 +53,27 @@ namespace libsecondlife
         public string GroupTitle;
         /// <summary>true of Avatar has chosen to list this in their profile</summary>
         public bool ListInProfile;
-    } 
+    }
+
+    /// <summary>
+    /// Holds group information on an individual profile pick
+    /// </summary>
+    public struct ProfilePick
+    {
+        public LLUUID PickID;
+        public LLUUID CreatorID;
+        public bool TopPick;
+        public LLUUID ParcelID;
+        public string Name;
+        public string Desc;
+        public LLUUID SnapshotID;
+        public string User;
+        public string OriginalName;
+        public string SimName;
+        public LLVector3d PosGlobal;
+        public int SortOrder;
+        public bool Enabled;
+    }
     #endregion
 
     /// <summary>
@@ -130,7 +151,18 @@ namespace libsecondlife
         /// <param name="id"></param>
         public delegate void EffectCallback(EffectType type, LLUUID sourceID, LLUUID targetID,
             LLVector3d targetPos, float duration, LLUUID id);
-
+        /// <summary>
+        /// Callback returning a dictionary of avatar's picks
+        /// </summary>
+        /// <param name="avatarid"></param>
+        /// <param name="picks"></param>
+        public delegate void AvatarPicksCallback(LLUUID avatarid, Dictionary<LLUUID, string> picks);
+        /// <summary>
+        /// Callback returning a details of a specifick pick
+        /// </summary>
+        /// <param name="pickid"></param>
+        /// <param name="pick"></param>
+        public delegate void PickInfoCallback(LLUUID pickid, ProfilePick pick);
         /// <summary></summary>
         public event AvatarAppearanceCallback OnAvatarAppearance;
         /// <summary></summary>
@@ -149,6 +181,10 @@ namespace libsecondlife
         public event LookAtCallback OnLookAt;
         /// <summary></summary>
         public event EffectCallback OnEffect;
+        /// <summary></summary>
+        public event AvatarPicksCallback OnAvatarPicks;
+        /// <summary></summary>
+        public event PickInfoCallback OnPickInfo;
 
         private SecondLife Client;
 
@@ -178,6 +214,10 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
             Client.Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
 	        Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
+
+            // Picks callbacks
+            Client.Network.RegisterCallback(PacketType.AvatarPicksReply, new NetworkManager.PacketCallback(AvatarPicksHandler));
+            Client.Network.RegisterCallback(PacketType.PickInfoReply, new NetworkManager.PacketCallback(PickInfoHandler));
         }
 
         /// <summary>Tracks the specified avatar on your map</summary>
@@ -253,6 +293,51 @@ namespace libsecondlife
             aprp.Data.Name = Helpers.StringToField(name);
 
             Client.Network.SendPacket(aprp);
+        }
+
+        /// <summary>
+        /// Start a request for Avatar Picks
+        /// </summary>
+        /// <param name="avatarid">UUID of the avatar</param>
+        public void RequestAvatarPicks(LLUUID avatarid)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+
+            gmp.AgentData.AgentID = Client.Self.AgentID;
+            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.TransactionID = LLUUID.Zero;
+
+            gmp.MethodData.Method = Helpers.StringToField("avatarpicksrequest");
+            gmp.MethodData.Invoice = LLUUID.Zero;
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[1];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Helpers.StringToField(avatarid.ToString());
+
+            Client.Network.SendPacket(gmp);
+        }
+
+        /// <summary>
+        /// Start a request for details of a specific profile pick
+        /// </summary>
+        /// <param name="avatarid">UUID of the avatar</param>
+        /// <param name="pickid">UUID of the profile pick</param>
+        public void RequestPickInfo(LLUUID avatarid, LLUUID pickid)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+
+            gmp.AgentData.AgentID = Client.Self.AgentID;
+            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.TransactionID = LLUUID.Zero;
+
+            gmp.MethodData.Method = Helpers.StringToField("pickinforequest");
+            gmp.MethodData.Invoice = LLUUID.Zero;
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[2];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Helpers.StringToField(avatarid.ToString());
+            gmp.ParamList[1] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[1].Parameter = Helpers.StringToField(pickid.ToString());
+
+            Client.Network.SendPacket(gmp);
         }
 
         #region Packet Handlers
@@ -543,6 +628,60 @@ namespace libsecondlife
                         Logger.Log("Received a ViewerEffect with an unknown type " + type, Helpers.LogLevel.Warning, Client);
                         break;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming list of profile picks
+        /// </summary>
+        private void AvatarPicksHandler(Packet packet, Simulator simulator)
+        {
+            if (OnAvatarPicks == null) {
+                return;
+            }
+            AvatarPicksReplyPacket p = (AvatarPicksReplyPacket)packet;
+            Dictionary<LLUUID, string> picks = new Dictionary<LLUUID,string>();
+
+            foreach (AvatarPicksReplyPacket.DataBlock b in p.Data) {
+                picks.Add(b.PickID, Helpers.FieldToUTF8String(b.PickName));
+            }
+
+            try {
+                OnAvatarPicks(p.AgentData.TargetID, picks);
+            } catch (Exception ex) {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming details of a profile pick
+        /// </summary>
+        private void PickInfoHandler(Packet packet, Simulator simulator)
+        {
+            if (OnPickInfo == null) {
+                return;
+            }
+
+            PickInfoReplyPacket p = (PickInfoReplyPacket)packet;
+            ProfilePick ret = new ProfilePick();
+            ret.CreatorID = p.Data.CreatorID;
+            ret.Desc = Helpers.FieldToUTF8String(p.Data.Desc);
+            ret.Enabled = p.Data.Enabled;
+            ret.Name = Helpers.FieldToUTF8String(p.Data.Name);
+            ret.OriginalName = Helpers.FieldToUTF8String(p.Data.OriginalName);
+            ret.ParcelID = p.Data.ParcelID;
+            ret.PickID = p.Data.PickID;
+            ret.PosGlobal = p.Data.PosGlobal;
+            ret.SimName = Helpers.FieldToUTF8String(p.Data.SimName);
+            ret.SnapshotID = p.Data.SnapshotID;
+            ret.SortOrder = p.Data.SortOrder;
+            ret.TopPick = p.Data.TopPick;
+            ret.User = Helpers.FieldToUTF8String(p.Data.User);
+
+            try {
+                OnPickInfo(ret.PickID, ret);
+            } catch (Exception ex) {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
             }
         }
 
