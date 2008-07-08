@@ -64,7 +64,6 @@ namespace importprimscript
 
             // Add callback handlers for asset uploads finishing. new prims spotted, and logging
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            Client.OnLogMessage += new SecondLife.LogCallback(Client_OnLogMessage);
 
             // Optimize the connection for our purposes
             Client.Self.Movement.Camera.Far = 64f;
@@ -188,12 +187,6 @@ namespace importprimscript
             Console.WriteLine("Rezzed, textured, and linked " + RezzedPrims.Count + " sculpted prims, logging out...");
 
             Client.Network.Logout();
-        }
-
-        static void Client_OnLogMessage(string message, Helpers.LogLevel level)
-        {
-            if (level >= Helpers.LogLevel.Warning)
-                Console.WriteLine(level + ": " + message);
         }
 
         static LLUUID UploadImage(string filename, bool lossless)
