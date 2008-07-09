@@ -372,6 +372,9 @@ namespace libsecondlife.Utilities
                 request.Append(String.Format("<AccountName>{0}</AccountName>", accountName));
                 request.Append(String.Format("<AccountPassword>{0}</AccountPassword>", password));
                 request.Append("<AudioSessionAnswerMode>VerifyAnswer</AudioSessionAnswerMode>");
+                request.Append("<AccountURI />");
+                request.Append("<ParticipantPropertyFrequency>10</ParticipantPropertyFrequency>");
+                request.Append("<EnableBuddiesAndPresence>false</EnableBuddiesAndPresence>");
                 request.Append("</Request>");
                 request.Append(REQUEST_TERMINATOR);
 

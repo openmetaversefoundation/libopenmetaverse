@@ -103,7 +103,7 @@ namespace libsecondlife.Utilities
             AutoResetEvent evt = new AutoResetEvent(false);
             Events[_CommandCookie] = evt;
 
-            if (RequestLogin(accountHandle, password, connectorHandle) == -1)
+            if (RequestLogin(accountName, password, connectorHandle) == -1)
             {
                 Events.Remove(_CommandCookie);
                 return String.Empty;
