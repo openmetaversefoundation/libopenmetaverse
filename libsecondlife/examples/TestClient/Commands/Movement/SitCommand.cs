@@ -37,7 +37,7 @@ namespace libsecondlife.TestClient
                 Client.Self.RequestSit(closest.ID, LLVector3.Zero);
                 Client.Self.Sit();
 
-                return "Sat on " + closest.ID + ". Distance: " + closestDistance;
+                return "Sat on " + closest.ID + " (" + closest.LocalID + "). Distance: " + closestDistance;
             }
             else
             {
