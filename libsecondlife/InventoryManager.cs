@@ -1718,13 +1718,12 @@ namespace libsecondlife
                 query.Add("name", LLSD.FromString(name));
                 query.Add("description", LLSD.FromString(description));
 
-                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(query);
-
                 // Make the request
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
                 request.UserData = new object[] { progCallback, callback, data };
-                request.StartRequest(postData);
+
+                request.StartRequest(query);
             }
             else
             {
@@ -2881,11 +2880,13 @@ namespace libsecondlife
                 return;
             }
 
-            string status = contents["state"].AsString();
+            string status = contents["state"].AsString().ToLower();
 
             if (status == "upload")
             {
                 string uploadURL = contents["uploader"].AsString();
+
+                Logger.DebugLog("CreateItemFromAsset: uploading to " + uploadURL);
 
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
@@ -2897,6 +2898,8 @@ namespace libsecondlife
             }
             else if (status == "complete")
             {
+                Logger.DebugLog("CreateItemFromAsset: completed"); 
+
                 if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
                 {
                     try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
