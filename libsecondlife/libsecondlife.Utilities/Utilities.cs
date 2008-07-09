@@ -211,13 +211,16 @@ namespace libsecondlife.Utilities
                     Logger.Log("This account has been banned! Giving up on login", Helpers.LogLevel.Error, client);
                     return false;
                 }
-                else if (client.Network.LoginErrorKey == "timed out")
+                else if (client.Network.LoginErrorKey == "timed out" ||client.Network.LoginErrorKey == "no connection" )
                 {
                     Logger.Log("Login request timed out, waiting 1 minute", Helpers.LogLevel.Warning, client);
                     LoginWait(1);
                     goto Start;
-                }
-                else
+                } else if (client.Network.LoginErrorKey == "bad response") {
+                    Logger.Log("Login server returned unparsable result", Helpers.LogLevel.Warning, client);
+                    LoginWait(1);
+                    goto Start;
+                } else
                 {
                     ++unknownLogins;
 

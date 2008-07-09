@@ -750,12 +750,14 @@ namespace libsecondlife
                 else
                 {
                     // No LLSD response
+                    InternalErrorKey = "bad response";
                     UpdateLoginStatus(LoginStatus.Failed, "Empty or unparseable login response");
                 }
             }
             else
             {
                 // Connection error
+                InternalErrorKey = "no connection";
                 UpdateLoginStatus(LoginStatus.Failed, error.Message);
             }
         }
