@@ -1174,6 +1174,7 @@ namespace libsecondlife
             land.ModifyBlock.Seconds = seconds;
             land.ModifyBlock.Height = height;
 
+            land.ParcelData[0] = new ModifyLandPacket.ParcelDataBlock(); 
             land.ParcelData[0].LocalID = localID;
             land.ParcelData[0].West = west;
             land.ParcelData[0].South = south;
