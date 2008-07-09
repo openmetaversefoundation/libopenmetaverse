@@ -425,6 +425,8 @@ namespace libsecondlife.Capabilities
             request.KeepAlive = false;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
+            // Crank up the max number of connections (default is 2!)
+            request.ServicePoint.ConnectionLimit = 20;
 
             return request;
         }
