@@ -145,19 +145,39 @@ namespace libsecondlife.Capabilities
                 }
                 else if (!e.Cancelled)
                 {
-                    if (Helpers.StringContains(message, "502"))
+                    // Figure out what type of error was thrown so we can print a meaningful
+                    // error message
+                    if (e.Error is WebException)
                     {
-                        Logger.DebugLog("502 error from event queue " + _Client.Location);
+                        WebException err = (WebException)e.Error;
+                        HttpWebResponse errResponse = (HttpWebResponse)err.Response;
+
+                        switch (errResponse.StatusCode)
+                        {
+                            case HttpStatusCode.BadGateway:
+                                // This is not good (server) protocol design, but it's normal.
+                                // The EventQueue server is a proxy that connects to a Squid
+                                // cache which will time out periodically. The EventQueue server
+                                // interprets this as a generic error and returns a 502 to us
+                                // that we ignore
+                                break;
+                            default:
+                                Logger.Log(String.Format(
+                                    "Unrecognized caps connection problem from {0}: {1} (Server returned: {2})",
+                                    _Client.Location, errResponse.StatusCode, errResponse.StatusDescription),
+                                    Helpers.LogLevel.Warning);
+                                break;
+                        }
                     }
                     else if (e.Error.InnerException != null)
                     {
-                        Logger.Log("Unrecognized caps exception from " + _Client.Location +
-                            ": " + e.Error.InnerException.Message, Helpers.LogLevel.Warning);
+                        Logger.Log(String.Format("Unrecognized caps exception from {0}: {1}",
+                            _Client.Location, e.Error.InnerException.Message), Helpers.LogLevel.Warning);
                     }
                     else
                     {
-                        Logger.Log("Unrecognized caps exception from " + _Client.Location +
-                            ": " + e.Error.Message, Helpers.LogLevel.Warning);
+                        Logger.Log(String.Format("Unrecognized caps exception from {0}: {1}",
+                            _Client.Location, e.Error.Message), Helpers.LogLevel.Warning);
                     }
                 }
             }

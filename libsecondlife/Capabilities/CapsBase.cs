@@ -423,6 +423,8 @@ namespace libsecondlife.Capabilities
 
             // Disable keep-alive by default
             request.KeepAlive = false;
+            // Set the closed connection (idle) time to one second
+            request.ServicePoint.MaxIdleTime = 1000;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
             // Crank up the max number of connections (default is 2!)
@@ -442,7 +444,7 @@ namespace libsecondlife.Capabilities
         {
             HttpWebRequest request = (HttpWebRequest)SetupRequest(address);
             // Re-enable Keep-Alive
-            request.KeepAlive = true;
+            //request.KeepAlive = true;
 
             try
             {
