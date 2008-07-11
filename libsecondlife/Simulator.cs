@@ -606,9 +606,9 @@ namespace libsecondlife
                     packet.Header.Sequence = Sequence;
                 }
 
-
                 if (packet.Header.Reliable)
                 {
+                    // Add this packet to the list of ACK responses we are waiting on from the server
                     lock (NeedAck)
                     {
                         if (!NeedAck.ContainsKey(packet.Header.Sequence))
@@ -619,50 +619,59 @@ namespace libsecondlife
                                 packet.Type.ToString(), Helpers.LogLevel.Warning, Client);
                     }
 
-                    //
-
-                    if (PendingAcks.Count > 0 && PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS &&
-                            packet.Type != PacketType.PacketAck &&
-                            packet.Type != PacketType.LogoutRequest)
+                    if (packet.Header.Resent)
                     {
-
-                        // Append any ACKs that need to be sent out to this packet
-                        lock (PendingAcks)
+                        // This packet has already been sent out once, strip any appended ACKs
+                        // off it and reinsert them into the outgoing ACK queue under the 
+                        // assumption that this packet will continually be rejected from the
+                        // server or that the appended ACKs are possibly making the delivery fail
+                        if (packet.Header.AckList.Length > 0)
                         {
-
-                            packet.Header.AckList = new uint[PendingAcks.Count];
-
-                            for (int i = 0; i < PendingAcks.Count; i++)
-                                packet.Header.AckList[i] = PendingAcks.Values[i];
-
-                            PendingAcks.Clear();
-                            packet.Header.AppendedAcks = true;
-
-                        }
-                    }
-                    else
-                    {
-                        // Purge ACKs from resent package
-                        if (packet.Header.AppendedAcks)
-                        {
-                            Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.", packet.Header.Sequence, packet.GetType()));
+                            Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
+                                packet.Header.Sequence, packet.GetType()));
 
                             lock (PendingAcks)
                             {
                                 foreach (uint sequence in packet.Header.AckList)
                                 {
-                                    if (!PendingAcks.ContainsKey(sequence)) PendingAcks[sequence] = sequence;
+                                    if (!PendingAcks.ContainsKey(sequence))
+                                        PendingAcks[sequence] = sequence;
                                 }
                             }
+
                             packet.Header.AppendedAcks = false;
                             packet.Header.AckList = new uint[0];
                         }
                     }
+                    else
+                    {
+                        // This packet is not a resend, check if the conditions are favorable
+                        // to ACK appending
+                        if (packet.Type != PacketType.PacketAck &&
+                            packet.Type != PacketType.LogoutRequest)
+                        {
+                            lock (PendingAcks)
+                            {
+                                if (PendingAcks.Count > 0 &&
+                                    PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS)
+                                {
+                                    // Append all of the queued up outgoing ACKs to this packet
+                                    packet.Header.AckList = new uint[PendingAcks.Count];
 
+                                    for (int i = 0; i < PendingAcks.Count; i++)
+                                        packet.Header.AckList[i] = PendingAcks.Values[i];
 
-                    //
-
-
+                                    PendingAcks.Clear();
+                                    packet.Header.AppendedAcks = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (packet.Header.AckList.Length > 0)
+                {
+                    // Sanity check for ACKS appended on an unreliable packet, this is bad form
+                    Logger.Log("Sending appended ACKs on an unreliable packet", Helpers.LogLevel.Warning);
                 }
             }
 
@@ -924,11 +933,10 @@ namespace libsecondlife
         /// 
         private void ResendUnacked()
         {
-            int now = Environment.TickCount;
-
             lock (NeedAck)
             {
                 List<uint> dropAck = new List<uint>();
+                int now = Environment.TickCount;
 
                 // Resend packets
                 foreach (Packet packet in NeedAck.Values)
@@ -939,7 +947,6 @@ namespace libsecondlife
                         {
                             try
                             {
-
                                 if (Client.Settings.LOG_RESENDS)
                                     Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
                                         packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
@@ -947,7 +954,7 @@ namespace libsecondlife
                                 packet.Header.Resent = true;
                                 packet.TickCount = now;
                                 ++Stats.ResentPackets;
-                                packet.ResendCount++;
+                                ++packet.ResendCount;
 
                                 SendPacket(packet, false);
                             }
@@ -963,12 +970,6 @@ namespace libsecondlife
 
                             dropAck.Add(packet.Header.Sequence);
                         }
-
-
-
-
-
-
                     }
                 }
 
@@ -976,9 +977,6 @@ namespace libsecondlife
                 {
                     NeedAck.Remove(seq);
                 }
-
-
-
             }
         }
 
