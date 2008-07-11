@@ -164,11 +164,15 @@ namespace libsecondlife
         public bool Success;
         public AssetType AssetType;
 
-        internal int transferStart;
+        private int transferStart;
 
-        /// <summary>Number of milliseconds passed since this transfer was
-        /// initialized</summary>
-        public int TransferTime { get { return Environment.TickCount - transferStart; } }
+        /// <summary>Number of milliseconds passed since the last transfer
+        /// packet was received</summary>
+        public int TimeSinceLastPacket
+        {
+            get { return Environment.TickCount - transferStart; }
+            internal set { transferStart = Environment.TickCount + value; }
+        }
 
         public Transfer()
         {
@@ -211,6 +215,7 @@ namespace libsecondlife
         public int Codec;
         public bool NotFound;
         public Simulator Simulator;
+        public SortedList<ushort, ushort> PacketsSeen;
 
         internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
@@ -350,10 +355,12 @@ namespace libsecondlife
                     {
                         ImageDownload download = (ImageDownload)transfer;
 
-                        if (download.TransferTime > 3000)
+                        if (download.TimeSinceLastPacket > 5000)
                         {
                             Logger.DebugLog("Image download refresh timer is re-requesting texture " + download.ID.ToString());
+
                             // FIXME: This will probably break on baked textures and doesn't preserve the originally requested discardlevel
+                            download.TimeSinceLastPacket = 0;
                             RequestImage(download.ID, ImageType.Normal, 1013010.0f, 0);
                         }
                     }
@@ -580,8 +587,8 @@ namespace libsecondlife
                     if (Single.IsNaN(percentComplete))
                         percentComplete = 0f;
 
-                    Logger.DebugLog(String.Format("Updating priority on image transfer {0}, ({1}% complete, running for {2}ms",
-                        imageID, percentComplete, transfer.TransferTime));
+                    Logger.DebugLog(String.Format("Updating priority on image transfer {0}, ({1:#.#}% complete",
+                        imageID, percentComplete));
                 }
 
                 // Build and send the request packet
@@ -1189,29 +1196,36 @@ namespace libsecondlife
                 {
                     transfer = (ImageDownload)Transfers[data.ImageID.ID];
 
-                    //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
-                    //    data.ImageID.ID.ToString());
-                    if (OnImageReceiveProgress != null)
+                    // Don't set header information if we have already
+                    // received it (due to re-request)
+                    if (transfer.Size == 0)
                     {
-                        try { OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                    }
+                        //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
+                        //    data.ImageID.ID.ToString());
 
-                    transfer.Codec = data.ImageID.Codec;
-                    transfer.PacketCount = data.ImageID.Packets;
-                    transfer.Size = (int)data.ImageID.Size;
-                    transfer.AssetData = new byte[transfer.Size];
-                    transfer.AssetType = AssetType.Texture;
-                    Buffer.BlockCopy(data.ImageData.Data, 0, transfer.AssetData, 0, data.ImageData.Data.Length);
-                    transfer.InitialDataSize = data.ImageData.Data.Length;
-                    transfer.Transferred += data.ImageData.Data.Length;
+                        if (OnImageReceiveProgress != null)
+                        {
+                            try { OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        }
 
-                    // Check if we downloaded the full image
-                    if (transfer.Transferred >= transfer.Size)
-                    {
-                        Transfers.Remove(transfer.ID);
-                        transfer.Success = true;
-                        Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
+                        transfer.Codec = data.ImageID.Codec;
+                        transfer.PacketCount = data.ImageID.Packets;
+                        transfer.Size = (int)data.ImageID.Size;
+                        transfer.AssetData = new byte[transfer.Size];
+                        transfer.AssetType = AssetType.Texture;
+                        transfer.PacketsSeen = new SortedList<ushort, ushort>();
+                        Buffer.BlockCopy(data.ImageData.Data, 0, transfer.AssetData, 0, data.ImageData.Data.Length);
+                        transfer.InitialDataSize = data.ImageData.Data.Length;
+                        transfer.Transferred += data.ImageData.Data.Length;
+			            
+                        // Check if we downloaded the full image
+                        if (transfer.Transferred >= transfer.Size)
+                        {
+                            Transfers.Remove(transfer.ID);
+                            transfer.Success = true;
+                            Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
+                        }
                     }
                 }
             }
@@ -1262,16 +1276,26 @@ namespace libsecondlife
                     }
 
                     // The header is downloaded, we can insert this data in to the proper position
-                    Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize +
-                        (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
-                    transfer.Transferred += image.ImageData.Data.Length;
-                    
-                    if (OnImageReceiveProgress != null) {
-                        OnImageReceiveProgress(image.ImageID.ID, transfer.Transferred, transfer.Size);
+                    // Only insert if we haven't seen this packet before
+                    if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
+                    {
+                        transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
+                        Array.Copy(image.ImageData.Data, 0, transfer.AssetData,
+                            transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
+                            image.ImageData.Data.Length);
+                        transfer.Transferred += image.ImageData.Data.Length;
                     }
 
                     //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
                     //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToString());
+
+                    transfer.TimeSinceLastPacket = 0;
+                    
+                    if (OnImageReceiveProgress != null)
+                    {
+                        try { OnImageReceiveProgress(image.ImageID.ID, transfer.Transferred, transfer.Size); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    }
 
                     // Check if we downloaded the full image
                     if (transfer.Transferred >= transfer.Size)
