@@ -145,13 +145,18 @@ namespace libsecondlife.Capabilities
                 }
                 else if (!e.Cancelled)
                 {
-                    // Figure out what type of error was thrown so we can print a meaningful
-                    // error message
+                    HttpWebResponse errResponse = null;
+
                     if (e.Error is WebException)
                     {
                         WebException err = (WebException)e.Error;
-                        HttpWebResponse errResponse = (HttpWebResponse)err.Response;
+                        errResponse = (HttpWebResponse)err.Response;
+                    }
 
+                    // Figure out what type of error was thrown so we can print a meaningful
+                    // error message
+                    if (errResponse != null)
+                    {
                         switch (errResponse.StatusCode)
                         {
                             case HttpStatusCode.BadGateway:
