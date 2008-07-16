@@ -25,6 +25,7 @@
  */
 
 using System;
+using libsecondlife;
 
 namespace OpenJPEGNet
 {
@@ -492,12 +493,12 @@ namespace OpenJPEGNet
             return b;
         }
 
-        public static unsafe libsecondlife.Image LoadTGAImage(System.IO.Stream source)
+        public static unsafe ManagedImage LoadTGAImage(System.IO.Stream source)
         {
             return LoadTGAImage(source, false);
         }
         
-        public static unsafe libsecondlife.Image LoadTGAImage(System.IO.Stream source, bool mask)
+        public static unsafe ManagedImage LoadTGAImage(System.IO.Stream source, bool mask)
         {
             byte[] buffer = new byte[source.Length];
             source.Read(buffer, 0, buffer.Length);
@@ -559,11 +560,11 @@ namespace OpenJPEGNet
             }
 
             int n = header.ImageSpec.Width * header.ImageSpec.Height;
-            libsecondlife.Image image;
+            ManagedImage image;
             
             if (mask && header.ImageSpec.AlphaBits == 0 && header.ImageSpec.PixelDepth == 8)
             {
-                image = new libsecondlife.Image(header.ImageSpec.Width, header.ImageSpec.Height, libsecondlife.ImageChannels.Alpha);
+                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height, ImageChannels.Alpha);
                 int p = 3;
 
                 for (int i = 0; i < n; i++)
@@ -574,7 +575,7 @@ namespace OpenJPEGNet
             }
             else
             {
-                image = new libsecondlife.Image(header.ImageSpec.Width, header.ImageSpec.Height, libsecondlife.ImageChannels.Color | libsecondlife.ImageChannels.Alpha);
+                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height, ImageChannels.Color | ImageChannels.Alpha);
                 int p = 0;
 
                 for (int i = 0; i < n; i++)

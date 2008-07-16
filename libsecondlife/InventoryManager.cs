@@ -299,7 +299,7 @@ namespace libsecondlife
     /// <summary>
     /// InventoryTexture Class representing a graphical image
     /// </summary>
-    /// <seealso cref="libsecondlife.Image"/>
+    /// <seealso cref="ManagedImage"/>
     public class InventoryTexture : InventoryItem 
     { 
         /// <summary>

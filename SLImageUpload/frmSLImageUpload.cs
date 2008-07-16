@@ -87,7 +87,7 @@ namespace SLImageUpload
             {
                 if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
                 {
-                    libsecondlife.Image imgData;
+                    ManagedImage imgData;
 
                     // Upload JPEG2000 images untouched
                     UploadData = System.IO.File.ReadAllBytes(FileName);

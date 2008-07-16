@@ -96,7 +96,7 @@ namespace libsecondlife.TestClient
                             File.WriteAllBytes(image.ID.ToString() + ".jp2", image.AssetData);
                             Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToString() + ".jp2");
 
-                            libsecondlife.Image imgData;
+                            ManagedImage imgData;
                             byte[] tgaFile = OpenJPEGNet.OpenJPEG.DecodeToTGA(image.AssetData, out imgData);
                             File.WriteAllBytes(image.ID.ToString() + ".tga", tgaFile);
                             Console.WriteLine("Wrote TGA image " + image.ID.ToString() + ".tga");

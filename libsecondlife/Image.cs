@@ -42,7 +42,7 @@ namespace libsecondlife
         NearestNeighbor
     }
 
-    public class Image
+    public class ManagedImage
     {
         /// <summary>
         /// Image width
@@ -90,7 +90,7 @@ namespace libsecondlife
         /// <param name="width">width</param>
         /// <param name="height">height</param>
         /// <param name="channels">channel flags</param>
-        public Image(int width, int height, ImageChannels channels)
+        public ManagedImage(int width, int height, ImageChannels channels)
         {
             Width = width;
             Height = height;
@@ -121,7 +121,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="bitmap"></param>
-        public Image(System.Drawing.Bitmap bitmap)
+        public ManagedImage(System.Drawing.Bitmap bitmap)
         {
             Width = bitmap.Width;
             Height = bitmap.Height;
@@ -363,9 +363,9 @@ namespace libsecondlife
             Fill(Bump, 0);
         }
 
-        public Image Clone()
+        public ManagedImage Clone()
         {
-            Image image = new Image(Width, Height, Channels);
+            ManagedImage image = new ManagedImage(Width, Height, Channels);
             if (Red != null) image.Red = (byte[])Red.Clone();
             if (Green != null) image.Green = (byte[])Green.Clone();
             if (Blue != null) image.Blue = (byte[])Blue.Clone();

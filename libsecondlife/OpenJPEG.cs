@@ -75,12 +75,12 @@ namespace OpenJPEGNet
         private static extern bool LibslDecode(ref MarshalledImage image);
         
         /// <summary>
-        /// Encode a <seealso cref="libsecondlife.Image"/> object into a byte array
+        /// Encode a <seealso cref="ManagedImage"/> object into a byte array
         /// </summary>
-        /// <param name="image">The <seealso cref="libsecondlife.Image"/> object to encode</param>
+        /// <param name="image">The <seealso cref="ManagedImage"/> object to encode</param>
         /// <param name="lossless">true to enable lossless conversion, only useful for small images ie: sculptmaps</param>
         /// <returns>A byte array containing the encoded Image object</returns>
-        public static byte[] Encode(libsecondlife.Image image, bool lossless)
+        public static byte[] Encode(ManagedImage image, bool lossless)
         {
             if (
                 (image.Channels & ImageChannels.Color) == 0 ||
@@ -126,21 +126,21 @@ namespace OpenJPEGNet
         }
 
         /// <summary>
-        /// Encode a <seealso cref="libsecondlife.Image"/> object into a byte array
+        /// Encode a <seealso cref="ManagedImage"/> object into a byte array
         /// </summary>
-        /// <param name="image">The <seealso cref="libsecondlife.Image"/> object to encode</param>
+        /// <param name="image">The <seealso cref="ManagedImage"/> object to encode</param>
         /// <returns>a byte array of the encoded image</returns>
-        public static byte[] Encode(libsecondlife.Image image)
+        public static byte[] Encode(ManagedImage image)
         {
             return Encode(image, false);
         }
 
         /// <summary>
-        /// Decode a <seealso cref="libsecondlife.Image"/> object from a byte array
+        /// Decode a <seealso cref="ManagedImage"/> object from a byte array
         /// </summary>
         /// <param name="encoded">The encoded byte array to decode</param>
-        /// <returns>A <seealso cref="libsecondlife.image"/> object</returns>
-        public static libsecondlife.Image Decode(byte[] encoded)
+        /// <returns>A <seealso cref="ManagedImage"/> object</returns>
+        public static ManagedImage Decode(byte[] encoded)
         {
             MarshalledImage marshalled = new MarshalledImage();
 
@@ -152,20 +152,20 @@ namespace OpenJPEGNet
             // codec will allocate output buffer
             LibslDecode(ref marshalled);
 
-            libsecondlife.Image image;
+            ManagedImage image;
             int n = marshalled.width * marshalled.height;
 
             switch (marshalled.components)
             {
                 case 1: // grayscale
-                    image = new libsecondlife.Image(marshalled.width, marshalled.height, ImageChannels.Color);
+                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color);
                     Marshal.Copy(marshalled.decoded, image.Red, 0, n);
                     Array.Copy(image.Red, image.Green, n);
                     Array.Copy(image.Red, image.Blue, n);
                     break;
 
                 case 2: // grayscale + alpha
-                    image = new libsecondlife.Image(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha);
+                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha);
                     Marshal.Copy(marshalled.decoded, image.Red, 0, n);
                     Array.Copy(image.Red, image.Green, n);
                     Array.Copy(image.Red, image.Blue, n);
@@ -173,14 +173,14 @@ namespace OpenJPEGNet
                     break;
 
                 case 3: // RGB
-                    image = new libsecondlife.Image(marshalled.width, marshalled.height, ImageChannels.Color);
+                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color);
                     Marshal.Copy(marshalled.decoded, image.Red, 0, n);
                     Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Green, 0, n);
                     Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), image.Blue, 0, n);
                     break;
 
                 case 4: // RGBA
-                    image = new libsecondlife.Image(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha);
+                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha);
                     Marshal.Copy(marshalled.decoded, image.Red, 0, n);
                     Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Green, 0, n);
                     Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), image.Blue, 0, n);
@@ -188,7 +188,7 @@ namespace OpenJPEGNet
                     break;
 
                 case 5: // RGBBA
-                    image = new libsecondlife.Image(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump);
+                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump);
                     Marshal.Copy(marshalled.decoded, image.Red, 0, n);
                     Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Green, 0, n);
                     Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), image.Blue, 0, n);
@@ -212,12 +212,12 @@ namespace OpenJPEGNet
         public const int TGA_HEADER_SIZE = 32;
         
         /// <summary>
-        /// Decode an encoded <seealso cref="libsecondlife.Image"/> byte array to a TGA byte array
+        /// Decode an encoded <seealso cref="ManagedImage"/> byte array to a TGA byte array
         /// </summary>
         /// <param name="encoded">The encoded image</param>
-        /// <param name="image">A <seealso cref="libsecondlife.Image"/> object</param>
+        /// <param name="image">A <seealso cref="ManagedImage"/> object</param>
         /// <returns>A TGA decoded byte array containing the encoded image</returns>
-        public static byte[] DecodeToTGA(byte[] encoded, out libsecondlife.Image image)
+        public static byte[] DecodeToTGA(byte[] encoded, out ManagedImage image)
         {
             image = Decode(encoded);
             return image.ExportTGA();
@@ -228,9 +228,9 @@ namespace OpenJPEGNet
         /// directly in Windows Forms or by the System.Drawing.Image class
         /// </summary>
         /// <param name="encoded">A encoded byte array containing the source image to decode</param>
-        /// <param name="image">A <seealso cref="libsecondlife.Image"/> object</param>
+        /// <param name="image">A <seealso cref="ManagedImage"/> object</param>
         /// <returns>A <seealso cref="System.Drawing.Image"/> object</returns>
-        public static System.Drawing.Image DecodeToImage(byte[] encoded, out libsecondlife.Image image)
+        public static System.Drawing.Image DecodeToImage(byte[] encoded, out ManagedImage image)
         {
             return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded, out image)));
         }
@@ -244,7 +244,7 @@ namespace OpenJPEGNet
         public unsafe static byte[] EncodeFromImage(Bitmap bitmap, bool lossless)
         {
             BitmapData bd;
-            libsecondlife.Image decoded;
+            ManagedImage decoded;
 
             int bitmapWidth = bitmap.Width;
             int bitmapHeight = bitmap.Height;
@@ -254,7 +254,7 @@ namespace OpenJPEGNet
             if ((bitmap.PixelFormat & PixelFormat.Alpha) != 0 || (bitmap.PixelFormat & PixelFormat.PAlpha) != 0)
             {
                 // four layers, RGBA
-                decoded = new libsecondlife.Image(bitmapWidth, bitmapHeight, ImageChannels.Color | ImageChannels.Alpha);
+                decoded = new ManagedImage(bitmapWidth, bitmapHeight, ImageChannels.Color | ImageChannels.Alpha);
                 bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
                 byte* pixel = (byte*)bd.Scan0;
 
@@ -270,7 +270,7 @@ namespace OpenJPEGNet
             else if (bitmap.PixelFormat == PixelFormat.Format16bppGrayScale)
             {
                 // one layer
-                decoded = new libsecondlife.Image(bitmapWidth, bitmapHeight, ImageChannels.Color);
+                decoded = new ManagedImage(bitmapWidth, bitmapHeight, ImageChannels.Color);
                 bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format16bppGrayScale);
                 byte* pixel = (byte*)bd.Scan0;
 
@@ -289,7 +289,7 @@ namespace OpenJPEGNet
             else
             {
                 // three layers, RGB
-                decoded = new libsecondlife.Image(bitmapWidth, bitmapHeight, ImageChannels.Color);
+                decoded = new ManagedImage(bitmapWidth, bitmapHeight, ImageChannels.Color);
                 bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
                 byte* pixel = (byte*)bd.Scan0;
 

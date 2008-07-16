@@ -216,13 +216,13 @@ namespace libsecondlife
     {
         public override AssetType AssetType { get { return AssetType.Texture; } }
 
-        public Image Image;
+        public ManagedImage Image;
         
         public AssetTexture() { }
 
         public AssetTexture(byte[] assetData) : base(assetData) { }
         
-        public AssetTexture(Image image)
+        public AssetTexture(ManagedImage image)
         {
             Image = image;
         }

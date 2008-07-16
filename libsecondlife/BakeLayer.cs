@@ -171,7 +171,7 @@ namespace libsecondlife.Baking
 
         protected void Bake()
         {
-            _bakedTexture = new AssetTexture(new Image(_bakeWidth, _bakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
+            _bakedTexture = new AssetTexture(new ManagedImage(_bakeWidth, _bakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
 
             if (_bakeType == AppearanceManager.BakeType.Eyes)
             {
@@ -232,14 +232,12 @@ namespace libsecondlife.Baking
 
         private bool DrawLayer(AppearanceManager.TextureIndex textureIndex)
         {
-            int i = 0;
             AssetTexture texture;
-
-            Image source;
-
+            ManagedImage source;
             bool sourceHasAlpha;
             bool sourceHasBump;
             bool copySourceAlphaToBakedLayer;
+            int i = 0;
 
             try
             {
