@@ -1012,7 +1012,7 @@ namespace libsecondlife
         {
             foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables.Dictionary)
             {
-                Logger.DebugLog("Requesting asset for wearable item" + kvp.Value.Item.Name + " (" + kvp.Value.Item.AssetUUID + ")", Client);
+                Logger.DebugLog("Requesting asset for wearable item " + kvp.Value.Item.WearableType + " (" + kvp.Value.Item.AssetUUID + ")", Client);
                 AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
             }
 
@@ -1297,6 +1297,7 @@ namespace libsecondlife
                                 if (image.Success)
                                 {
                                     Logger.DebugLog("Finished downloading texture for " + index.ToString(), Client);
+                                    OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData, out assetTexture.Image);
                                     baked = PendingBakes[type].AddTexture(index, assetTexture);
                                 }
                                 else
