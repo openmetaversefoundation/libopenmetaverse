@@ -235,21 +235,31 @@ namespace libsecondlife.Baking
             int i = 0;
             AssetTexture texture;
 
-            if (!_textures.TryGetValue(textureIndex, out texture))
-                return false;
+            Image source;
 
-            Image source = texture.Image;
-            
-            bool sourceHasAlpha = ((source.Channels & ImageChannels.Alpha) != 0 && source.Alpha != null);
-            bool sourceHasBump = ((source.Channels & ImageChannels.Bump) != 0 && source.Bump != null);
+            bool sourceHasAlpha;
+            bool sourceHasBump;
+            bool copySourceAlphaToBakedLayer;
 
-            bool copySourceAlphaToBakedLayer = sourceHasAlpha && (
-                textureIndex == AppearanceManager.TextureIndex.HeadBodypaint ||
-                textureIndex == AppearanceManager.TextureIndex.Skirt
-            );
+            try
+            {
+                if (!_textures.TryGetValue(textureIndex, out texture))
+                    return false;
 
-            if (source.Width != _bakeWidth || source.Height != _bakeHeight)
-                source.ResizeNearestNeighbor(_bakeWidth, _bakeHeight);
+                source = texture.Image;
+
+                sourceHasAlpha = ((source.Channels & ImageChannels.Alpha) != 0 && source.Alpha != null);
+                sourceHasBump = ((source.Channels & ImageChannels.Bump) != 0 && source.Bump != null);
+
+                copySourceAlphaToBakedLayer = sourceHasAlpha && (
+                    textureIndex == AppearanceManager.TextureIndex.HeadBodypaint ||
+                    textureIndex == AppearanceManager.TextureIndex.Skirt
+                );
+
+                if (source.Width != _bakeWidth || source.Height != _bakeHeight)
+                    source.ResizeNearestNeighbor(_bakeWidth, _bakeHeight);
+            }
+            catch { return false; }
 
             int alpha = 255;
             //int alphaInv = 255 - alpha;
