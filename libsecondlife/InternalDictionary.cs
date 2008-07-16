@@ -41,6 +41,7 @@ namespace libsecondlife
     public class InternalDictionary<TKey, TValue>
     {
         internal Dictionary<TKey, TValue> Dictionary;
+
         /// <summary>
         /// Gets the number of Key/Value pairs contained in the <seealso cref="T:InternalDictionary"/>
         /// </summary>
@@ -123,7 +124,6 @@ namespace libsecondlife
         {
             return Dictionary.TryGetValue(key, out value);
         }
-
 
         /// <summary>
         /// Finds the specified match.

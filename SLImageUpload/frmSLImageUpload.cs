@@ -37,7 +37,6 @@ namespace SLImageUpload
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
-            Client.Settings.CONTINUOUS_AGENT_UPDATES = false;
             Client.Settings.OBJECT_TRACKING = false;
             Client.Settings.STORE_LAND_PATCHES = false;
             Client.Settings.MULTIPLE_SIMS = false;

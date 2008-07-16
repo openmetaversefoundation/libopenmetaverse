@@ -64,12 +64,13 @@ namespace importprimscript
 
             // Add callback handlers for asset uploads finishing. new prims spotted, and logging
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
+            Logger.OnLogMessage += new Logger.LogCallback(Client_OnLogMessage);
 
             // Optimize the connection for our purposes
             Client.Self.Movement.Camera.Far = 64f;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
-            Client.Settings.CONTINUOUS_AGENT_UPDATES = true;
+            Client.Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.ALWAYS_DECODE_OBJECTS = true;
@@ -187,6 +188,12 @@ namespace importprimscript
             Console.WriteLine("Rezzed, textured, and linked " + RezzedPrims.Count + " sculpted prims, logging out...");
 
             Client.Network.Logout();
+        }
+
+        static void Client_OnLogMessage(object message, Helpers.LogLevel level)
+        {
+            if (level >= Helpers.LogLevel.Warning)
+                Console.WriteLine(level + ": " + message);
         }
 
         static LLUUID UploadImage(string filename, bool lossless)

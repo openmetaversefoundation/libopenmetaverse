@@ -5,12 +5,12 @@ using System.Runtime.CompilerServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("libsecondlife")]
-[assembly: AssemblyDescription("Networking layer for the Second Life world")]
+[assembly: AssemblyTitle("libopenmv")]
+[assembly: AssemblyDescription("Open metaverse networking layer")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("libsecondlife")]
-[assembly: AssemblyProduct("libsecondlife")]
-[assembly: AssemblyCopyright("Copyright © libsecondlife 2006")]
+[assembly: AssemblyCompany("libopenmv")]
+[assembly: AssemblyProduct("libopenmv")]
+[assembly: AssemblyCopyright("Copyright © libopenmv 2006-2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 
@@ -25,7 +25,7 @@ using System.Runtime.CompilerServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("0.9.0.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the 

@@ -622,9 +622,9 @@ namespace libsecondlife
                     duplicateCount = 0;
                 }
 
-                if (Client.Settings.CONTINUOUS_AGENT_UPDATES || duplicateCount < 10)
+                if (Client.Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK || duplicateCount < 10)
                 {
-                    // Store the current state to do duplicate checking in the future
+                    // Store the current state to do duplicate checking
                     LastHeadRotation = HeadRotation;
                     LastBodyRotation = BodyRotation;
                     LastCameraYAxis = yAxis;

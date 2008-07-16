@@ -1109,7 +1109,7 @@ namespace libsecondlife
                     System.IO.Path.Combine(System.IO.Path.Combine(System.Environment.CurrentDirectory, searchPath), resourceName),
                     System.IO.FileMode.Open);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Failed to load the resource from the given path
             }
