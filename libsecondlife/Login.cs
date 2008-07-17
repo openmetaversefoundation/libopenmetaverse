@@ -149,7 +149,7 @@ namespace libsecondlife
             LLSDMap home = null;
             LLSD llsdHome = LLSDParser.DeserializeNotation(reply["home"].AsString());
 
-            if (!String.IsNullOrEmpty(llsdHome.AsString()))
+            if (llsdHome.Type == LLSDType.Map)
             {
                 home = (LLSDMap)llsdHome;
 
