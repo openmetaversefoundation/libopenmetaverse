@@ -260,6 +260,26 @@ namespace libsecondlife
         OpenMedia = 6
     }
 
+    /// <summary>
+    /// Specific Flags for MultipleObjectUpdate requests
+    /// </summary>
+    [Flags]
+    public enum UpdateType : uint
+    {
+        /// <summary>None</summary>
+        None = 0x00,
+        /// <summary>Change Position of prims</summary>
+        Position = 0x01,
+        /// <summary>Change Rotation of prims</summary>
+        Rotation = 0x02,
+        /// <summary>Change Size of Prims</summary>
+        Scale = 0x04,
+        /// <summary>Perform operation on link set</summary>
+        Linked = 0x08,
+        /// <summary>Scale prims uniformly, same as selecing ctrl+shift in viewer</summary>
+        Uniform = 0x10
+    }
+
     #endregion Enums
 
     #region Structs
@@ -1118,12 +1138,79 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Change the position of an object
+        /// Change the position of an object, Will change position of entire linkset
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="position">The new position of the object</param>
         public void SetPosition(Simulator simulator, uint localID, LLVector3 position)
+        {
+            UpdateObject(simulator, localID, position, UpdateType.Position | UpdateType.Linked);
+        }
+
+        /// <summary>
+        /// Change the position of an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="position">The new position of the object</param>
+        /// <param name="childOnly">if true, will change position of (this) child prim only, not entire linkset</param>
+        public void SetPosition(Simulator simulator, uint localID, LLVector3 position, bool childOnly)
+        {
+            UpdateType type = UpdateType.Position;
+
+            if (!childOnly)
+                type |= UpdateType.Linked;
+
+            UpdateObject(simulator, localID, position, type);
+        }
+
+        /// <summary>
+        /// Change the Scale (size) of an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="scale">The new scale of the object</param>
+        /// <param name="childOnly">If true, will change scale of this prim only, not entire linkset</param>
+        /// <param name="uniform">True to resize prims uniformly</param>
+        public void SetScale(Simulator simulator, uint localID, LLVector3 scale, bool childOnly, bool uniform)
+        {
+            UpdateType type = UpdateType.Scale;
+
+            if (!childOnly)
+                type |= UpdateType.Linked;
+
+            if (uniform)
+                type |= UpdateType.Uniform;
+
+            UpdateObject(simulator, localID, scale, type);
+        }
+
+        /// <summary>
+        /// Change the Rotation of an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="scale">The new scale of the object</param>
+        /// <param name="childOnly">If true, will change rotation of this prim only, not entire linkset</param>
+        public void SetRotation(Simulator simulator, uint localID, LLVector3 scale, bool childOnly)
+        {
+            UpdateType type = UpdateType.Rotation;
+
+            if (!childOnly)
+                type |= UpdateType.Linked;
+
+            UpdateObject(simulator, localID, scale, type);
+        }
+
+        /// <summary>
+        /// Send a Multiple Object Update packet to change the size, scale or rotation of a primitive
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="data">The new rotation, size, or position of the target object</param>
+        /// <param name="type">The flags from the <seealso cref="UpdateType"/> Enum</param>
+        public void UpdateObject(Simulator simulator, uint localID, LLVector3 data, UpdateType type)
         {
             MultipleObjectUpdatePacket multiObjectUpdate = new MultipleObjectUpdatePacket();
             multiObjectUpdate.AgentData.AgentID = Client.Self.AgentID;
@@ -1132,9 +1219,9 @@ namespace libsecondlife
             multiObjectUpdate.ObjectData = new MultipleObjectUpdatePacket.ObjectDataBlock[1];
 
             multiObjectUpdate.ObjectData[0] = new MultipleObjectUpdatePacket.ObjectDataBlock();
-            multiObjectUpdate.ObjectData[0].Type = 9;
+            multiObjectUpdate.ObjectData[0].Type = (byte)type;
             multiObjectUpdate.ObjectData[0].ObjectLocalID = localID;
-            multiObjectUpdate.ObjectData[0].Data = position.GetBytes();
+            multiObjectUpdate.ObjectData[0].Data = data.GetBytes();
 
             Client.Network.SendPacket(multiObjectUpdate, simulator);
         }
