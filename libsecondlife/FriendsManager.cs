@@ -243,7 +243,7 @@ namespace libsecondlife
         /// <param name="friend"> System ID of the avatar</param>
         public delegate void FriendOfflineEvent(FriendInfo friend);
         /// <summary>
-        /// Triggered in response to a call to the GrantRighs() method, or when a friend changes your rights
+        /// Triggered in response to a call to the FriendRights() method, or when a friend changes your rights
         /// </summary>
         /// <param name="friend"> System ID of the avatar you changed the right of</param>
         public delegate void FriendRightsEvent(FriendInfo friend);
@@ -476,9 +476,6 @@ namespace libsecondlife
             request.Rights[0] = new GrantUserRightsPacket.RightsBlock();
             request.Rights[0].AgentRelated = friendID;
             request.Rights[0].RelatedRights = (int)rights;
-
-            if (FriendList.ContainsKey(friendID))
-                FriendList[friendID].TheirFriendRights = rights;
 
             Client.Network.SendPacket(request);
         }
