@@ -29,9 +29,8 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using libsecondlife;
 
-namespace OpenJPEGNet
+namespace libsecondlife.Imaging
 {
 #if !NO_UNSAFE
     /// <summary>
@@ -39,6 +38,9 @@ namespace OpenJPEGNet
     /// </summary>
     public class OpenJPEG
     {
+        /// <summary>TGA Header size</summary>
+        public const int TGA_HEADER_SIZE = 32;
+
         // This structure is used to marshal both encoded and decoded images
         // MUST MATCH THE STRUCT IN libsl.h!
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -83,8 +85,8 @@ namespace OpenJPEGNet
         public static byte[] Encode(ManagedImage image, bool lossless)
         {
             if (
-                (image.Channels & ImageChannels.Color) == 0 ||
-                ((image.Channels & ImageChannels.Bump) != 0 && (image.Channels & ImageChannels.Alpha) == 0))
+                (image.Channels & ManagedImage.ImageChannels.Color) == 0 ||
+                ((image.Channels & ManagedImage.ImageChannels.Bump) != 0 && (image.Channels & ManagedImage.ImageChannels.Alpha) == 0))
                 throw new ArgumentException("JPEG2000 encoding is not supported for this channel combination");
             
             MarshalledImage marshalled = new MarshalledImage();
@@ -93,23 +95,23 @@ namespace OpenJPEGNet
             marshalled.width = image.Width;
             marshalled.height = image.Height;
             marshalled.components = 3;
-            if ((image.Channels & ImageChannels.Alpha) != 0) marshalled.components++;
-            if ((image.Channels & ImageChannels.Bump) != 0) marshalled.components++;
+            if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) marshalled.components++;
+            if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) marshalled.components++;
 
             if (!LibslAllocDecoded(ref marshalled))
                 throw new Exception("LibslAllocDecoded failed");
 
             int n = image.Width * image.Height;
 
-            if ((image.Channels & ImageChannels.Color) != 0)
+            if ((image.Channels & ManagedImage.ImageChannels.Color) != 0)
             {
                 Marshal.Copy(image.Red, 0, marshalled.decoded, n);
                 Marshal.Copy(image.Green, 0, (IntPtr)(marshalled.decoded.ToInt64() + n), n);
                 Marshal.Copy(image.Blue, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 2), n);
             }
 
-            if ((image.Channels & ImageChannels.Alpha) != 0) Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
-            if ((image.Channels & ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
+            if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
+            if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
 
             // codec will allocate output buffer
             if (!LibslEncode(ref marshalled, lossless))
@@ -136,103 +138,114 @@ namespace OpenJPEGNet
         }
 
         /// <summary>
-        /// Decode a <seealso cref="ManagedImage"/> object from a byte array
+        /// Decode JPEG2000 data to an <seealso cref="System.Drawing.Image"/> and
+        /// <seealso cref="ManagedImage"/>
         /// </summary>
-        /// <param name="encoded">The encoded byte array to decode</param>
-        /// <returns>A <seealso cref="ManagedImage"/> object</returns>
-        public static ManagedImage Decode(byte[] encoded)
+        /// <param name="encoded">JPEG2000 encoded data</param>
+        /// <param name="managedImage">ManagedImage object to decode to</param>
+        /// <param name="image">Image object to decode to</param>
+        /// <returns>True if the decode succeeds, otherwise false</returns>
+        public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage, out Image image)
+        {
+            managedImage = null;
+            image = null;
+
+            if (DecodeToImage(encoded, out managedImage))
+            {
+                try
+                {
+                    image = LoadTGAClass.LoadTGA(new MemoryStream(managedImage.ExportTGA()));
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to export and load TGA data from decoded image", Helpers.LogLevel.Error, ex);
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="encoded"></param>
+        /// <param name="managedImage"></param>
+        /// <returns></returns>
+        public static bool DecodeToImage(byte[] encoded, out ManagedImage managedImage)
         {
             MarshalledImage marshalled = new MarshalledImage();
 
-            // allocate and copy to input buffer
+            // Allocate and copy to input buffer
             marshalled.length = encoded.Length;
             LibslAllocEncoded(ref marshalled);
             Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-            // codec will allocate output buffer
+            // Codec will allocate output buffer
             LibslDecode(ref marshalled);
 
-            ManagedImage image;
             int n = marshalled.width * marshalled.height;
 
             switch (marshalled.components)
             {
-                case 1: // grayscale
-                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color);
-                    Marshal.Copy(marshalled.decoded, image.Red, 0, n);
-                    Array.Copy(image.Red, image.Green, n);
-                    Array.Copy(image.Red, image.Blue, n);
+                case 1: // Grayscale
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
                     break;
 
-                case 2: // grayscale + alpha
-                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha);
-                    Marshal.Copy(marshalled.decoded, image.Red, 0, n);
-                    Array.Copy(image.Red, image.Green, n);
-                    Array.Copy(image.Red, image.Blue, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Alpha, 0, n);
+                case 2: // Grayscale + alpha
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
+                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Alpha, 0, n);
                     break;
 
                 case 3: // RGB
-                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color);
-                    Marshal.Copy(marshalled.decoded, image.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), image.Blue, 0, n);
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
                     break;
 
                 case 4: // RGBA
-                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha);
-                    Marshal.Copy(marshalled.decoded, image.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), image.Blue, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), image.Alpha, 0, n);
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), managedImage.Alpha, 0, n);
                     break;
 
                 case 5: // RGBBA
-                    image = new ManagedImage(marshalled.width, marshalled.height, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump);
-                    Marshal.Copy(marshalled.decoded, image.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), image.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), image.Blue, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), image.Bump, 0, n); // bump comes before alpha in 5 channel encode
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 4), image.Alpha, 0, n);
+                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump);
+                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    // Bump comes before alpha in 5 channel encode
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), managedImage.Bump, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 4), managedImage.Alpha, 0, n);
                     break;
 
                 default:
-                    throw new Exception("Decoded image with unhandled number of components (" + marshalled.components + ")");
+                    Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
+                        Helpers.LogLevel.Error);
+                    LibslFree(ref marshalled);
+                    managedImage = null;
+                    return false;
             }
 
-            // free buffers
             LibslFree(ref marshalled);
-
-            return image;
-        }
-
-        /// <summary>
-        /// TGA Header size
-        /// </summary>
-        public const int TGA_HEADER_SIZE = 32;
-        
-        /// <summary>
-        /// Decode an encoded <seealso cref="ManagedImage"/> byte array to a TGA byte array
-        /// </summary>
-        /// <param name="encoded">The encoded image</param>
-        /// <param name="image">A <seealso cref="ManagedImage"/> object</param>
-        /// <returns>A TGA decoded byte array containing the encoded image</returns>
-        public static byte[] DecodeToTGA(byte[] encoded, out ManagedImage image)
-        {
-            image = Decode(encoded);
-            return image.ExportTGA();
-        }
-
-        /// <summary>
-        /// Decode an encoded image byte array to a <seealso cref="System.Drawing.Image"/> which can be used
-        /// directly in Windows Forms or by the System.Drawing.Image class
-        /// </summary>
-        /// <param name="encoded">A encoded byte array containing the source image to decode</param>
-        /// <param name="image">A <seealso cref="ManagedImage"/> object</param>
-        /// <returns>A <seealso cref="System.Drawing.Image"/> object</returns>
-        public static System.Drawing.Image DecodeToImage(byte[] encoded, out ManagedImage image)
-        {
-            return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded, out image)));
+            return true;
         }
 
         /// <summary>
@@ -253,9 +266,11 @@ namespace OpenJPEGNet
 
             if ((bitmap.PixelFormat & PixelFormat.Alpha) != 0 || (bitmap.PixelFormat & PixelFormat.PAlpha) != 0)
             {
-                // four layers, RGBA
-                decoded = new ManagedImage(bitmapWidth, bitmapHeight, ImageChannels.Color | ImageChannels.Alpha);
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                // Four layers, RGBA
+                decoded = new ManagedImage(bitmapWidth, bitmapHeight,
+                    ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight),
+                    ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
                 byte* pixel = (byte*)bd.Scan0;
 
                 for (i = 0; i < pixelCount; i++)
@@ -269,9 +284,11 @@ namespace OpenJPEGNet
             }
             else if (bitmap.PixelFormat == PixelFormat.Format16bppGrayScale)
             {
-                // one layer
-                decoded = new ManagedImage(bitmapWidth, bitmapHeight, ImageChannels.Color);
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format16bppGrayScale);
+                // One layer
+                decoded = new ManagedImage(bitmapWidth, bitmapHeight,
+                    ManagedImage.ImageChannels.Color);
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight),
+                    ImageLockMode.ReadOnly, PixelFormat.Format16bppGrayScale);
                 byte* pixel = (byte*)bd.Scan0;
 
                 for (i = 0; i < pixelCount; i++)
@@ -288,9 +305,11 @@ namespace OpenJPEGNet
             }
             else
             {
-                // three layers, RGB
-                decoded = new ManagedImage(bitmapWidth, bitmapHeight, ImageChannels.Color);
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                // Three layers, RGB
+                decoded = new ManagedImage(bitmapWidth, bitmapHeight,
+                    ManagedImage.ImageChannels.Color);
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight),
+                    ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
                 byte* pixel = (byte*)bd.Scan0;
 
                 for (i = 0; i < pixelCount; i++)

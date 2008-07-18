@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Threading;
 using libsecondlife;
 using libsecondlife.Capabilities;
+using libsecondlife.Imaging;
 
 namespace SLImageUpload
 {
@@ -87,18 +88,21 @@ namespace SLImageUpload
             {
                 if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
                 {
-                    ManagedImage imgData;
+                    Image image;
+                    ManagedImage managedImage;
 
                     // Upload JPEG2000 images untouched
                     UploadData = System.IO.File.ReadAllBytes(FileName);
-                    bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData, out imgData);
+
+                    OpenJPEG.DecodeToImage(UploadData, out managedImage, out image);
+                    bitmap = (Bitmap)image;
 
                     Logger.Log("Loaded raw JPEG2000 data " + FileName, Helpers.LogLevel.Info, Client);
                 }
                 else
                 {
                     if (lowfilename.EndsWith(".tga"))
-                        bitmap = OpenJPEGNet.LoadTGAClass.LoadTGA(FileName);
+                        bitmap = LoadTGAClass.LoadTGA(FileName);
                     else
                         bitmap = (Bitmap)System.Drawing.Image.FromFile(FileName);
 
@@ -150,7 +154,7 @@ namespace SLImageUpload
 
                     Logger.Log("Encoding image...", Helpers.LogLevel.Info, Client);
 
-                    UploadData = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, chkLossless.Checked);
+                    UploadData = OpenJPEG.EncodeFromImage(bitmap, chkLossless.Checked);
 
                     Logger.Log("Finished encoding", Helpers.LogLevel.Info, Client);
                 }

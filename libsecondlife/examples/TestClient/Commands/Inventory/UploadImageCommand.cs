@@ -5,6 +5,7 @@ using System.Threading;
 using System.Drawing;
 using libsecondlife;
 using libsecondlife.Capabilities;
+using libsecondlife.Imaging;
 
 namespace libsecondlife.TestClient
 {
@@ -93,16 +94,19 @@ namespace libsecondlife.TestClient
             {
                 if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
                 {
-                    ManagedImage imgData;
+                    Image image;
+                    ManagedImage managedImage;
 
                     // Upload JPEG2000 images untouched
                     UploadData = System.IO.File.ReadAllBytes(fileName);
-                    bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData, out imgData);
+                    
+                    OpenJPEG.DecodeToImage(UploadData, out managedImage, out image);
+                    bitmap = (Bitmap)image;
                 }
                 else
                 {
                     if (lowfilename.EndsWith(".tga"))
-                        bitmap = OpenJPEGNet.LoadTGAClass.LoadTGA(fileName);
+                        bitmap = LoadTGAClass.LoadTGA(fileName);
                     else
                         bitmap = (Bitmap)System.Drawing.Image.FromFile(fileName);
 
@@ -144,7 +148,7 @@ namespace libsecondlife.TestClient
                         bitmap = resized;
                     }
 
-                    UploadData = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, false);
+                    UploadData = OpenJPEG.EncodeFromImage(bitmap, false);
                 }
             }
             catch (Exception ex)

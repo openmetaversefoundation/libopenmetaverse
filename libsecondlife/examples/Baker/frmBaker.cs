@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using libsecondlife.Imaging;
 
 namespace Baker
 {
@@ -31,7 +32,7 @@ namespace Baker
 
             if (stream != null)
             {
-                AlphaMask = OpenJPEGNet.LoadTGAClass.LoadTGA(stream);
+                AlphaMask = LoadTGAClass.LoadTGA(stream);
                 pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
 
                 stream.Close();

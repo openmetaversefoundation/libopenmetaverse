@@ -3,6 +3,7 @@ using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using libsecondlife;
+using libsecondlife.Imaging;
 
 namespace libsecondlife.TestClient
 {
@@ -97,7 +98,8 @@ namespace libsecondlife.TestClient
                             Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToString() + ".jp2");
 
                             ManagedImage imgData;
-                            byte[] tgaFile = OpenJPEGNet.OpenJPEG.DecodeToTGA(image.AssetData, out imgData);
+                            OpenJPEG.DecodeToImage(image.AssetData, out imgData);
+                            byte[] tgaFile = imgData.ExportTGA();
                             File.WriteAllBytes(image.ID.ToString() + ".tga", tgaFile);
                             Console.WriteLine("Wrote TGA image " + image.ID.ToString() + ".tga");
                         }

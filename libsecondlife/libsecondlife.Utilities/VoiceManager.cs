@@ -110,7 +110,7 @@ namespace libsecondlife.Utilities
         public string VoiceServer = VOICE_RELEASE_SERVER;
         public bool Enabled;
 
-        protected TCPPipe _DaemonPipe;
+        protected Voice.TCPPipe _DaemonPipe;
         protected VoiceStatus _Status;
         protected int _CommandCookie = 0;
         protected string _TuningSoundFile = String.Empty;
@@ -184,9 +184,9 @@ namespace libsecondlife.Utilities
         {
             if (!Enabled) return false;
 
-            _DaemonPipe = new TCPPipe();
-            _DaemonPipe.OnDisconnected += new TCPPipe.OnDisconnectedCallback(_DaemonPipe_OnDisconnected);
-            _DaemonPipe.OnReceiveLine += new TCPPipe.OnReceiveLineCallback(_DaemonPipe_OnReceiveLine);
+            _DaemonPipe = new Voice.TCPPipe();
+            _DaemonPipe.OnDisconnected += new Voice.TCPPipe.OnDisconnectedCallback(_DaemonPipe_OnDisconnected);
+            _DaemonPipe.OnReceiveLine += new Voice.TCPPipe.OnReceiveLineCallback(_DaemonPipe_OnReceiveLine);
 
             SocketException se = _DaemonPipe.Connect(address, port);
 

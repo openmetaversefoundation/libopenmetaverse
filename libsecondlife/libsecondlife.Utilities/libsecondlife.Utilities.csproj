@@ -49,7 +49,6 @@
     <Compile Include="RegistrationApi.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TCPPipe.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VoiceManager.cs">

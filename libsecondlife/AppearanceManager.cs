@@ -31,7 +31,7 @@ using System.Threading;
 using System.IO;
 using libsecondlife;
 using libsecondlife.Packets;
-using libsecondlife.Baking;
+using libsecondlife.Imaging;
 
 namespace libsecondlife
 {
@@ -1297,8 +1297,8 @@ namespace libsecondlife
                                 if (image.Success)
                                 {
                                     Logger.DebugLog("Finished downloading texture for " + index.ToString(), Client);
-                                    OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData, out assetTexture.Image);
-                                    baked = PendingBakes[type].AddTexture(index, assetTexture);
+                                    OpenJPEG.DecodeToImage(image.AssetData, out assetTexture.Image);
+                                    baked = PendingBakes[type].AddTexture(index, assetTexture, false);
                                 }
                                 else
                                 {

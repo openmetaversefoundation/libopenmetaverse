@@ -25,9 +25,8 @@
  */
 
 using System;
-using libsecondlife;
 
-namespace OpenJPEGNet
+namespace libsecondlife.Imaging
 {
 #if !NO_UNSAFE
 
@@ -455,8 +454,6 @@ namespace OpenJPEGNet
                 header.ImageSpec.Height > 4096)
                 throw new ArgumentException("Image too large.");
 
-
-
             System.Drawing.Bitmap b = new System.Drawing.Bitmap(
                 header.ImageSpec.Width, header.ImageSpec.Height);
 
@@ -564,7 +561,8 @@ namespace OpenJPEGNet
             
             if (mask && header.ImageSpec.AlphaBits == 0 && header.ImageSpec.PixelDepth == 8)
             {
-                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height, ImageChannels.Alpha);
+                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height,
+                    ManagedImage.ImageChannels.Alpha);
                 int p = 3;
 
                 for (int i = 0; i < n; i++)
@@ -575,7 +573,8 @@ namespace OpenJPEGNet
             }
             else
             {
-                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height, ImageChannels.Color | ImageChannels.Alpha);
+                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height,
+                    ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
                 int p = 0;
 
                 for (int i = 0; i < n; i++)

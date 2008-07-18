@@ -27,6 +27,7 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
+using libsecondlife.Imaging;
 
 namespace libsecondlife
 {
@@ -227,22 +228,30 @@ namespace libsecondlife
             Image = image;
         }
 
+        /// <summary>
+        /// Populates the <code>AssetData</code> byte array with a JPEG2000
+        /// encoded image created from the data in <code>Image</code>
+        /// </summary>
         public override void Encode()
         {
 #if PocketPC
             throw new Exception("OpenJPEG encoding is not supported on the PocketPC");
 #else
-            AssetData = OpenJPEGNet.OpenJPEG.Encode(Image);
+            AssetData = OpenJPEG.Encode(Image);
 #endif
         }
         
+        /// <summary>
+        /// Decodes the JPEG2000 data in <code>AssetData</code> to the
+        /// <code>ManagedImage</code> object <code>Image</code>
+        /// </summary>
+        /// <returns>True if the decoding was successful, otherwise false</returns>
         public override bool Decode()
         {
 #if PocketPC
             throw new Exception("OpenJPEG decoding is not supported on the PocketPC");
 #else
-            Image = OpenJPEGNet.OpenJPEG.Decode(AssetData);
-            return true;
+            return OpenJPEG.DecodeToImage(AssetData, out Image);
 #endif
         }
     }

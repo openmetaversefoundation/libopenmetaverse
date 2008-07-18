@@ -5,6 +5,7 @@ using System.IO;
 using System.Drawing;
 using libsecondlife;
 using libsecondlife.Capabilities;
+using libsecondlife.Imaging;
 
 namespace importprimscript
 {
@@ -204,7 +205,7 @@ namespace importprimscript
             try
             {
                 Bitmap image = (Bitmap)Bitmap.FromFile(filename);
-                jp2data = OpenJPEGNet.OpenJPEG.EncodeFromImage(image, lossless);
+                jp2data = OpenJPEG.EncodeFromImage(image, lossless);
             }
             catch (Exception ex)
             {

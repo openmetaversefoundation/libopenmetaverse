@@ -31,7 +31,7 @@ using System.Reflection;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace libsecondlife.Baking
+namespace libsecondlife.Imaging
 {
     /// <summary>
     /// A set of textures that are layered on texture of each other and "baked"
@@ -103,20 +103,6 @@ namespace libsecondlife.Baking
         /// <param name="index">The baking texture index of the image to be added</param>
         /// <param name="texture">JPEG2000 compressed image to be
         /// added to the baking texture</param>
-        /// <returns>True if this texture is completely baked and JPEG2000 data 
-        /// is available, otherwise false</returns>
-        public bool AddTexture(AppearanceManager.TextureIndex index, AssetTexture texture)
-        {
-            return AddTexture(index, texture, false);
-        }
-
-        /// <summary>
-        /// Adds an image to this baking texture and potentially processes it, or
-        /// stores it for processing later
-        /// </summary>
-        /// <param name="index">The baking texture index of the image to be added</param>
-        /// <param name="texture">JPEG2000 compressed image to be
-        /// added to the baking texture</param>
         /// <param name="needsDecode">True if <code>Decode()</code> needs to be
         /// called for the texture, otherwise false</param>
         /// <returns>True if this texture is completely baked and JPEG2000 data 
@@ -171,7 +157,8 @@ namespace libsecondlife.Baking
 
         protected void Bake()
         {
-            _bakedTexture = new AssetTexture(new ManagedImage(_bakeWidth, _bakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
+            _bakedTexture = new AssetTexture(new ManagedImage(_bakeWidth, _bakeHeight,
+                ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump));
 
             if (_bakeType == AppearanceManager.BakeType.Eyes)
             {
@@ -246,8 +233,8 @@ namespace libsecondlife.Baking
 
                 source = texture.Image;
 
-                sourceHasAlpha = ((source.Channels & ImageChannels.Alpha) != 0 && source.Alpha != null);
-                sourceHasBump = ((source.Channels & ImageChannels.Bump) != 0 && source.Bump != null);
+                sourceHasAlpha = ((source.Channels & ManagedImage.ImageChannels.Alpha) != 0 && source.Alpha != null);
+                sourceHasBump = ((source.Channels & ManagedImage.ImageChannels.Bump) != 0 && source.Bump != null);
 
                 copySourceAlphaToBakedLayer = sourceHasAlpha && (
                     textureIndex == AppearanceManager.TextureIndex.HeadBodypaint ||

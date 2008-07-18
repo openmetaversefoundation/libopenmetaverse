@@ -26,24 +26,24 @@
 
 using System;
 
-namespace libsecondlife
+namespace libsecondlife.Imaging
 {
-    [Flags]
-    public enum ImageChannels
-    {
-        Gray = 1,
-        Color = 2,
-        Alpha = 4,
-        Bump = 8
-    };
-
-    public enum ImageResizeAlgorithm
-    {
-        NearestNeighbor
-    }
-
     public class ManagedImage
     {
+        [Flags]
+        public enum ImageChannels
+        {
+            Gray = 1,
+            Color = 2,
+            Alpha = 4,
+            Bump = 8
+        };
+
+        public enum ImageResizeAlgorithm
+        {
+            NearestNeighbor
+        }
+
         /// <summary>
         /// Image width
         /// </summary>

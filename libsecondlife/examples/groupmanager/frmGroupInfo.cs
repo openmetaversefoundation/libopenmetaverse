@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using libsecondlife;
+using libsecondlife.Imaging;
 
 namespace groupmanager
 {
@@ -81,9 +82,13 @@ namespace groupmanager
         void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
         {
             ManagedImage imgData;
+            Image bitmap;
 
             if (image.Success)
-                picInsignia.Image = OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData, out imgData);
+            {
+                OpenJPEG.DecodeToImage(image.AssetData, out imgData, out bitmap);
+                picInsignia.Image = bitmap;
+            }
         }
 
         private void UpdateProfile()
