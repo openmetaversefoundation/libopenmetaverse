@@ -331,27 +331,7 @@ namespace libsecondlife
                 new string[] { "buddy-list" });
         }
         #region Public Methods
-        /// <summary>
-        /// Get a list of all the friends we are currently aware of
-        /// </summary>
-        /// <returns>A List containing the avatars friends</returns>
-        /// <remarks>
-        /// This function performs a shallow copy from the internal dictionary
-        /// in FriendsManager. Avoid calling it multiple times when it is not 
-        /// necessary to as it can be expensive memory-wise
-        /// </remarks>
-        [Obsolete("Use Friends InternalDictionary instead")] // can remove in 0.5.0
-        public List<FriendInfo> FriendsList()
-        {
-            List<FriendInfo> friends = new List<FriendInfo>();
-
-            FriendList.ForEach(delegate(FriendInfo friend)
-            {
-                friends.Add(friend);
-            });
-            return friends;
-        }
-
+        
         /// <summary>
         /// Dictionary of unanswered/pending friendship offers
         /// </summary>
@@ -480,20 +460,25 @@ namespace libsecondlife
                 OnFriendshipTerminated(itsOver.ExBlock.OtherID, name);
             }
         }
+
         /// <summary>
-        /// Change the rights of a friend avatar.  To use this routine, first change the right of the
-        /// avatar stored in the item property.
+        /// Change the rights of a friend avatar.
         /// </summary>
-        /// <param name="agentID">System ID of the avatar you are changing the rights of</param>
-        public void GrantRights(LLUUID agentID)
+        /// <param name="friendID">the <seealso cref="LLUUID"/> of the friend</param>
+        /// <param name="rights">the new rights to give the friend</param>
+        /// <remarks>This method will implicitly set the rights to those passed in the rights parameter.</remarks>
+        public void GrantRights(LLUUID friendID, FriendRights rights)
         {
             GrantUserRightsPacket request = new GrantUserRightsPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
             request.AgentData.SessionID = Client.Self.SessionID;
             request.Rights = new GrantUserRightsPacket.RightsBlock[1];
             request.Rights[0] = new GrantUserRightsPacket.RightsBlock();
-            request.Rights[0].AgentRelated = agentID;
-            request.Rights[0].RelatedRights = (int)(FriendList[agentID].TheirFriendRights);
+            request.Rights[0].AgentRelated = friendID;
+            request.Rights[0].RelatedRights = (int)rights;
+
+            if (FriendList.ContainsKey(friendID))
+                FriendList[friendID].TheirFriendRights = rights;
 
             Client.Network.SendPacket(request);
         }
@@ -508,7 +493,6 @@ namespace libsecondlife
             FindAgentPacket stalk = new FindAgentPacket();
             stalk.AgentBlock.Hunter = Client.Self.AgentID;
             stalk.AgentBlock.Prey = friendID;
-            Console.WriteLine(stalk.ToString());
 
             Client.Network.SendPacket(stalk);
         }
@@ -523,8 +507,6 @@ namespace libsecondlife
             stalk.AgentData.AgentID = Client.Self.AgentID;
             stalk.AgentData.SessionID = Client.Self.SessionID;
             stalk.TargetData.PreyID = friendID;
-
-            Console.WriteLine(stalk.ToString());
 
             Client.Network.SendPacket(stalk);
         }
