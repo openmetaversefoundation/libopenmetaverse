@@ -723,7 +723,14 @@ namespace libsecondlife
                             LoginParams loginParams = CurrentContext.Value;
                             loginParams.URI = LoginResponseData.ParseString("next_url", map);
                             //CurrentContext.Params.MethodName = LoginResponseData.ParseString("next_method", map);
-                            // Ignore next_options and next_duration for now
+
+                            // Sleep for some amount of time while the servers work
+                            int seconds = (int)LoginResponseData.ParseUInt("next_duration", map);
+                            Logger.Log("Sleeping for " + seconds + " seconds during a login redirect",
+                                Helpers.LogLevel.Info);
+                            Thread.Sleep(seconds * 1000);
+
+                            // Ignore next_options for now
                             CurrentContext = loginParams;
 
                             BeginLogin();
