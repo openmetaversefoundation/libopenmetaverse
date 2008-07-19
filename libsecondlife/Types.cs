@@ -1970,6 +1970,29 @@ namespace libsecondlife
         #region Static Methods
 
         /// <summary>
+        /// Creates a quaternion from a euler vector
+        /// </summary>
+        /// <param name="euler">Vector representation of the euler angle</param>
+        /// <returns>Quaternion representation of Euler angle</returns>
+        public static LLQuaternion FromEuler(LLVector3 euler)
+        {
+            double atCos = Math.Cos(euler.X / 2);
+            double atSin = Math.Sin(euler.X / 2);
+            double leftCos = Math.Cos(euler.Y / 2);
+            double leftSin = Math.Sin(euler.Y / 2);
+            double upCos = Math.Cos(euler.Z / 2);
+            double upSin = Math.Sin(euler.Z / 2);
+            double atLeftCos = atCos * leftCos;
+            double atLeftSin = atSin * leftSin;
+            return new LLQuaternion(
+                (float)(atSin * leftCos * upCos + atCos * leftSin * upSin),
+                (float)(atCos * leftSin * upCos - atSin * leftCos * upSin),
+                (float)(atLeftCos * upSin + atLeftSin * upCos),
+                (float)(atLeftCos * upCos - atLeftSin * upSin)
+            );
+        }
+
+        /// <summary>
         /// Calculate the magnitude of the supplied quaternion
         /// </summary>
         public static float Mag(LLQuaternion q)
