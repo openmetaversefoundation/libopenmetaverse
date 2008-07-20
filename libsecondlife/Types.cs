@@ -87,6 +87,15 @@ namespace libsecondlife
             UUID = new Guid(0, 0, 0, BitConverter.GetBytes(val));
         }
 
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="val">UUID to copy</param>
+        public LLUUID(LLUUID val)
+        {
+            UUID = val.UUID;
+        }
+
         #endregion Constructors
 
         #region Public Methods
@@ -335,6 +344,7 @@ namespace libsecondlife
     /// <summary>
     /// A two-dimensional vector with floating-point values
     /// </summary>
+    [Serializable]
     public struct LLVector2
     {
         /// <summary>X value</summary>
@@ -342,17 +352,63 @@ namespace libsecondlife
         /// <summary>Y value</summary>
         public float Y;
 
-        #region Constructors
+        // Used for little to big endian conversion on big endian architectures
+        private byte[] conversionBuffer;
+
+        #region Public Methods
 
         /// <summary>
-        /// Constructor, copies a single-precision vector
+        /// Builds a vector from a byte array
         /// </summary>
-        /// <param name="vector">Single-precision vector to copy</param>
-        public LLVector2(LLVector2 vector)
+        /// <param name="byteArray">Byte array containing two four-byte floats</param>
+        /// <param name="pos">Beginning position in the byte array</param>
+        public void FromBytes(byte[] byteArray, int pos)
         {
-            X = vector.X;
-            Y = vector.Y;
+            if (!BitConverter.IsLittleEndian)
+            {
+                // Big endian architecture
+                if (conversionBuffer == null)
+                    conversionBuffer = new byte[8];
+
+                Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 8);
+
+                Array.Reverse(conversionBuffer, 0, 4);
+                Array.Reverse(conversionBuffer, 4, 4);
+
+                X = BitConverter.ToSingle(conversionBuffer, 0);
+                Y = BitConverter.ToSingle(conversionBuffer, 4);
+            }
+            else
+            {
+                // Little endian architecture
+                X = BitConverter.ToSingle(byteArray, pos);
+                Y = BitConverter.ToSingle(byteArray, pos + 4);
+            }
         }
+
+        /// <summary>
+        /// Returns the raw bytes for this vector
+        /// </summary>
+        /// <returns>An eight-byte array containing X and Y</returns>
+        public byte[] GetBytes()
+        {
+            byte[] byteArray = new byte[8];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(byteArray, 0, 4);
+                Array.Reverse(byteArray, 4, 4);
+            }
+
+            return byteArray;
+        }
+
+        #endregion Public Methods
+
+        #region Constructors
 
         /// <summary>
         /// Constructor, builds a vector for individual float values
@@ -361,8 +417,20 @@ namespace libsecondlife
         /// <param name="y">Y value</param>
 		public LLVector2(float x, float y)
 		{
+            conversionBuffer = null;
 			X = x;
 			Y = y;
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="vector">Vector to copy</param>
+        public LLVector2(LLVector2 vector)
+        {
+            conversionBuffer = null;
+            X = vector.X;
+            Y = vector.Y;
         }
 
         #endregion Constructors
@@ -496,6 +564,7 @@ namespace libsecondlife
     /// <summary>
     /// A three-dimensional vector with floating-point values
     /// </summary>
+    [Serializable]
 	public struct LLVector3
 	{
         /// <summary>X value</summary>
@@ -511,34 +580,9 @@ namespace libsecondlife
         #region Constructors
 
         /// <summary>
-        /// Constructor, copies a single-precision vector
-        /// </summary>
-        /// <param name="vector">Single-precision vector to copy</param>
-        public LLVector3(LLVector3 vector)
-        {
-            conversionBuffer = null;
-            X = vector.X;
-            Y = vector.Y;
-            Z = vector.Z;
-        }
-
-        /// <summary>
-        /// Constructor, builds a single-precision vector from a 
-        /// double-precision one
-        /// </summary>
-        /// <param name="vector">A double-precision vector</param>
-		public LLVector3(LLVector3d vector)
-		{
-            conversionBuffer = null;
-			X = (float)vector.X;
-			Y = (float)vector.Y;
-			Z = (float)vector.Z;
-		}
-
-        /// <summary>
         /// Constructor, builds a vector from a byte array
         /// </summary>
-        /// <param name="byteArray">Byte array containing a 12 byte vector</param>
+        /// <param name="byteArray">Byte array containing three four-byte floats</param>
         /// <param name="pos">Beginning position in the byte array</param>
 		public LLVector3(byte[] byteArray, int pos)
 		{
@@ -559,6 +603,18 @@ namespace libsecondlife
 			X = x;
 			Y = y;
 			Z = z;
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="vector">Vector to copy</param>
+        public LLVector3(LLVector3 vector)
+        {
+            conversionBuffer = null;
+            X = (float)vector.X;
+            Y = (float)vector.Y;
+            Z = (float)vector.Z;
         }
 
         #endregion Constructors
@@ -936,7 +992,8 @@ namespace libsecondlife
     /// <summary>
     /// A double-precision three-dimensional vector
     /// </summary>
-	public struct LLVector3d
+	[Serializable]
+    public struct LLVector3d
 	{
         /// <summary>X value</summary>
         public double X;
@@ -986,6 +1043,18 @@ namespace libsecondlife
             conversionBuffer = null;
             X = Y = Z = 0;
             FromBytes(byteArray, pos);
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="vector">Vector to copy</param>
+        public LLVector3d(LLVector3d vector)
+        {
+            conversionBuffer = null;
+            X = vector.X;
+            Y = vector.Y;
+            Z = vector.Z;
         }
 
         #endregion Constructors
@@ -1160,7 +1229,8 @@ namespace libsecondlife
     /// <summary>
     /// A four-dimensional vector
     /// </summary>
-	public struct LLVector4
+	[Serializable]
+    public struct LLVector4
 	{
         /// <summary></summary>
         public float X;
@@ -1202,6 +1272,19 @@ namespace libsecondlife
             conversionBuffer = null;
             X = Y = Z = S = 0;
             FromBytes(byteArray, pos);
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="vector">Vector to copy</param>
+        public LLVector4(LLVector4 vector)
+        {
+            conversionBuffer = null;
+            X = vector.X;
+            Y = vector.Y;
+            Z = vector.Z;
+            S = vector.S;
         }
 
         #endregion Constructors
@@ -1428,6 +1511,7 @@ namespace libsecondlife
     /// <summary>
     /// An 8-bit color structure including an alpha channel
     /// </summary>
+    [Serializable]
     public struct LLColor
     {
         /// <summary>Red</summary>
@@ -1482,6 +1566,18 @@ namespace libsecondlife
         {
             R = G = B = A = 0f;
             FromBytes(byteArray, pos, inverted, alphaInverted);
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="color">Color to copy</param>
+        public LLColor(LLColor color)
+        {
+            R = color.R;
+            G = color.G;
+            B = color.B;
+            A = color.A;
         }
 
         #endregion Constructors
@@ -1675,7 +1771,8 @@ namespace libsecondlife
     /// <summary>
     /// A quaternion, used for rotations
     /// </summary>
-	public struct LLQuaternion
+	[Serializable]
+    public struct LLQuaternion
 	{
         /// <summary>X value</summary>
         public float X;
@@ -1694,7 +1791,7 @@ namespace libsecondlife
         /// <summary>
         /// Constructor, builds a quaternion object from a byte array
         /// </summary>
-        /// <param name="byteArray">The source byte array</param>
+        /// <param name="byteArray">Byte array containing four four-byte floats</param>
         /// <param name="pos">Offset in the byte array to start reading at</param>
         /// <param name="normalized">Whether the source data is normalized or
         /// not. If this is true 12 bytes will be read, otherwise 16 bytes will
@@ -1749,6 +1846,19 @@ namespace libsecondlife
             conversionBuffer = null;
             X = Y = Z = W = 0f;
             SetQuaternion(angle, vec);
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="quaternion">Quaternion to copy</param>
+        public LLQuaternion(LLQuaternion quaternion)
+        {
+            conversionBuffer = null;
+            X = quaternion.X;
+            Y = quaternion.Y;
+            Z = quaternion.Z;
+            W = quaternion.W;
         }
 
         #endregion Constructors
@@ -2136,8 +2246,9 @@ namespace libsecondlife
 	}
 
     /// <summary>
-    /// 
+    /// A 3x3 matrix
     /// </summary>
+    [Serializable]
     public struct LLMatrix3
     {
         public float M11, M12, M13;
@@ -2180,6 +2291,22 @@ namespace libsecondlife
             M33 = m33;
         }
 
+        public LLMatrix3(LLQuaternion q)
+        {
+            this = q.ToMatrix();
+        }
+
+        //FIXME:
+        //public LLMatrix3(float roll, float pitch, float yaw)
+        //{
+        //    M11 = M12 = M13 = M21 = M22 = M23 = M31 = M32 = M33 = 0f;
+        //    FromEulers(roll, pitch, yaw);
+        //}
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="m">Matrix to copy</param>
         public LLMatrix3(LLMatrix3 m)
         {
             M11 = m.M11;
@@ -2192,18 +2319,6 @@ namespace libsecondlife
             M32 = m.M32;
             M33 = m.M33;
         }
-
-        public LLMatrix3(LLQuaternion q)
-        {
-            this = q.ToMatrix();
-        }
-
-        //FIXME:
-        //public LLMatrix3(float roll, float pitch, float yaw)
-        //{
-        //    M11 = M12 = M13 = M21 = M22 = M23 = M31 = M32 = M33 = 0f;
-        //    FromEulers(roll, pitch, yaw);
-        //}
 
         #endregion Constructors
 

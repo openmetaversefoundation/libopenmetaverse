@@ -672,12 +672,12 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                DefaultTexture.RGBA = new LLColor(data, i, true);
+                DefaultTexture.RGBA = new LLColor(data, i, false);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    LLColor tmpColor = new LLColor(data, i, true);
+                    LLColor tmpColor = new LLColor(data, i, false);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
@@ -914,13 +914,15 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                binWriter.Write(DefaultTexture.RGBA.GetBytes());
+                // Serialize the color bytes inverted to optimize for zerocoding
+                binWriter.Write(DefaultTexture.RGBA.GetBytes(true));
                 for (int i = 0; i < rgbas.Length; i++)
                 {
                     if (rgbas[i] != UInt32.MaxValue)
                     {
                         binWriter.Write(GetFaceBitfieldBytes(rgbas[i]));
-                        binWriter.Write(FaceTextures[i].RGBA.GetBytes());
+                        // Serialize the color bytes inverted to optimize for zerocoding
+                        binWriter.Write(FaceTextures[i].RGBA.GetBytes(true));
                     }
                 }
                 binWriter.Write((byte)0);

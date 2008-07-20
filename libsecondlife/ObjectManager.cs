@@ -879,7 +879,15 @@ namespace libsecondlife
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
             extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Light;
-            extra.ObjectData[0].ParamInUse = true;
+            if (light.Intensity == 0.0f) 
+            {
+                // Disables the light if intensity is 0
+                extra.ObjectData[0].ParamInUse = false;
+            } 
+            else 
+            {
+                extra.ObjectData[0].ParamInUse = true;
+            }
             extra.ObjectData[0].ParamData = light.GetBytes();
             extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
 
