@@ -179,7 +179,11 @@ namespace libsecondlife.Voice
             }
             catch (SocketException se)
             {
-                if (!_TCPSocket.Connected) OnDisconnected(se);
+                if (!_TCPSocket.Connected)
+                {
+                    if(OnDisconnected != null)
+                        OnDisconnected(se);
+                }
             }
         }
 
