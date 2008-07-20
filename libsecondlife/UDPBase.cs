@@ -152,10 +152,10 @@ namespace libsecondlife
         // which we use to ensure that the threads exit cleanly. Note that
         // we need this because the threads will potentially still need to process
         // data even after the socket is closed.
-        private int rwOperationCount = 0;
+        private volatile int rwOperationCount = 0;
 
         // the all important shutdownFlag.  This is synchronized through the ReaderWriterLock.
-        private bool shutdownFlag = true;
+        private volatile bool shutdownFlag = true;
 
         //
         private IPEndPoint remoteEndPoint = null;
@@ -241,8 +241,19 @@ namespace libsecondlife
 
                 // wait for any pending operations to complete on other
                 // threads before exiting.
-                while (rwOperationCount > 0)
-                    Thread.Sleep(1);
+                const int FORCE_STOP = 100;
+                int i = 0;
+                while (rwOperationCount > 0 && i < FORCE_STOP)
+                {
+                    Thread.Sleep(10);
+                    ++i;
+                }
+
+                if (i >= FORCE_STOP)
+                {
+                    Logger.Log("UDPBase.Stop() forced shutdown while waiting on pending operations",
+                        Helpers.LogLevel.Warning);
+                }
             }
         }
 
