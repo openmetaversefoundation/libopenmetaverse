@@ -254,6 +254,9 @@ namespace libsecondlife
         /// <summary>Path to store cached texture data</summary>
         public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
 
+        /// <summary>Maximum size cached files are allowed to take on disk (bytes)</summary>
+        public long TEXTURE_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
+
         #endregion
         #region Misc
 
