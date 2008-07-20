@@ -1187,20 +1187,31 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Change the Rotation of an object
+        /// Change the Rotation of an object that is either a child or a whole linkset
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
-        /// <param name="scale">The new scale of the object</param>
+        /// <param name="quat">The new scale of the object</param>
         /// <param name="childOnly">If true, will change rotation of this prim only, not entire linkset</param>
-        public void SetRotation(Simulator simulator, uint localID, LLVector3 scale, bool childOnly)
+        public void SetRotation(Simulator simulator, uint localID, LLQuaternion quat, bool childOnly)
         {
             UpdateType type = UpdateType.Rotation;
 
             if (!childOnly)
                 type |= UpdateType.Linked;
 
-            UpdateObject(simulator, localID, scale, type);
+            MultipleObjectUpdatePacket multiObjectUpdate = new MultipleObjectUpdatePacket();
+            multiObjectUpdate.AgentData.AgentID = Client.Self.AgentID;
+            multiObjectUpdate.AgentData.SessionID = Client.Self.SessionID;
+
+            multiObjectUpdate.ObjectData = new MultipleObjectUpdatePacket.ObjectDataBlock[1];
+
+            multiObjectUpdate.ObjectData[0] = new MultipleObjectUpdatePacket.ObjectDataBlock();
+            multiObjectUpdate.ObjectData[0].Type = (byte)type;
+            multiObjectUpdate.ObjectData[0].ObjectLocalID = localID;
+            multiObjectUpdate.ObjectData[0].Data = quat.GetBytes();
+
+            Client.Network.SendPacket(multiObjectUpdate, simulator);
         }
 
         /// <summary>
