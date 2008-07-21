@@ -10,15 +10,21 @@
         <namespaceSummaryItem name="libsecondlife" isDocumented="True">This is the root namespace for the libsecondlife library.</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.Baking" isDocumented="True">libsecondlife.Baking</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.Capabilities" isDocumented="True">libsecondlife.Capabilities</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Imaging" isDocumented="True">Image Handling</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.Packets" isDocumented="True">libsecondlife.Packets</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.StructuredData" isDocumented="True">libsecondlife.StructuredData</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.TestClient" isDocumented="True">The TestClient is a working text based client which illustrates many of the library features and are created by developers to test new library functionality. The TestClient is not intended as a fully functional client however could be used as a basis for one.</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.TestClient.Commands" isDocumented="True">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Inventory.Shell" isDocumented="True" />
         <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Movement" isDocumented="True">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.Utilities" isDocumented="True">Utilities Class</namespaceSummaryItem>
-        <namespaceSummaryItem name="OpenJPEGNet" isDocumented="False" />
+        <namespaceSummaryItem name="libsecondlife.Voice" isDocumented="True">Voice Classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenJPEGNet" isDocumented="True">Image Encoding/Decoding</namespaceSummaryItem>
         <namespaceSummaryItem name="System.Collections" isDocumented="False" />
     </namespaceSummaries>
+    <dependencies>
+        <dependencyItem depPath="..\bin\log4net.dll" />
+    </dependencies>
     <ProjectSummary>&lt;p&gt;
 The libsecondlife project is an effort directed at understanding how Second Life works from a technical perspective, and extending and integrating the metaverse with the rest of the web. This includes understanding how the official Second Life client operates and how it communicates with the Second Life simulator servers, as well as development of independent third party clients and tools.&lt;/p&gt;
 &lt;ul&gt;
