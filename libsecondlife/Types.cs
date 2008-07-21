@@ -1158,6 +1158,35 @@ namespace libsecondlife
             return Math.Sqrt(xd * xd + yd * yd + zd * zd);
         }
 
+        /// <summary>
+        /// Generate an LLVector3d from a string
+        /// </summary>
+        /// <param name="val">A string representation of a 3D vector, enclosed 
+        /// in arrow brackets and separated by commas</param>
+        public static LLVector3d Parse(string val)
+        {
+            char[] splitChar = { ',' };
+            string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
+            return new LLVector3d(
+                double.Parse(split[0].Trim(), Helpers.EnUsCulture),
+                double.Parse(split[1].Trim(), Helpers.EnUsCulture),
+                double.Parse(split[2].Trim(), Helpers.EnUsCulture));
+        }
+
+        public static bool TryParse(string val, out LLVector3d result)
+        {
+            try
+            {
+                result = Parse(val);
+                return true;
+            }
+            catch (Exception)
+            {
+                result = new LLVector3d();
+                return false;
+            }
+        }
+
         #endregion Static Methods
 
         #region Overrides
@@ -1383,6 +1412,31 @@ namespace libsecondlife
         #endregion Public Methods
 
         #region Static Methods
+
+        public static LLVector4 Parse(string val)
+        {
+            char[] splitChar = { ',' };
+            string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
+            return new LLVector4(
+                float.Parse(split[0].Trim(), Helpers.EnUsCulture),
+                float.Parse(split[1].Trim(), Helpers.EnUsCulture),
+                float.Parse(split[2].Trim(), Helpers.EnUsCulture),
+                float.Parse(split[3].Trim(), Helpers.EnUsCulture));
+        }
+
+        public static bool TryParse(string val, out LLVector4 result)
+        {
+            try
+            {
+                result = Parse(val);
+                return true;
+            }
+            catch (Exception)
+            {
+                result = new LLVector4();
+                return false;
+            }
+        }
 
         #endregion Static Methods
 
@@ -2137,6 +2191,41 @@ namespace libsecondlife
             }
 
             return q;
+        }
+
+        public static LLQuaternion Parse(string val)
+        {
+            char[] splitChar = { ',' };
+            string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
+            if (split.Length == 3)
+            {
+                return new LLQuaternion(
+                    float.Parse(split[0].Trim(), Helpers.EnUsCulture),
+                    float.Parse(split[1].Trim(), Helpers.EnUsCulture),
+                    float.Parse(split[2].Trim(), Helpers.EnUsCulture));
+            }
+            else
+            {
+                return new LLQuaternion(
+                    float.Parse(split[0].Trim(), Helpers.EnUsCulture),
+                    float.Parse(split[1].Trim(), Helpers.EnUsCulture),
+                    float.Parse(split[2].Trim(), Helpers.EnUsCulture),
+                    float.Parse(split[3].Trim(), Helpers.EnUsCulture));
+            }
+        }
+
+        public static bool TryParse(string val, out LLQuaternion result)
+        {
+            try
+            {
+                result = Parse(val);
+                return true;
+            }
+            catch (Exception)
+            {
+                result = new LLQuaternion();
+                return false;
+            }
         }
 
         #endregion Static Methods

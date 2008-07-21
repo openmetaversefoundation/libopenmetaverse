@@ -540,52 +540,35 @@ public class Analyst : ProxyPlugin
             }
             else if (fieldClass == typeof(LLVector3))
             {
-                Match vector3Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-                if (!vector3Match.Success)
+                LLVector3 result;
+                if(LLVector3.TryParse(value, out result))
+                    return result;
+                else
                     throw new Exception();
-                return new LLVector3
-                    (Convert.ToSingle(vector3Match.Groups[1].Captures[0].ToString())
-                    , Convert.ToSingle(vector3Match.Groups[2].Captures[0].ToString())
-                    , Convert.ToSingle(vector3Match.Groups[3].Captures[0].ToString())
-                    );
             }
             else if (fieldClass == typeof(LLVector3d))
             {
-                Match vector3dMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-                if (!vector3dMatch.Success)
+                LLVector3d result;
+                if (LLVector3d.TryParse(value, out result))
+                    return result;
+                else
                     throw new Exception();
-                return new LLVector3d
-                    (Convert.ToDouble(vector3dMatch.Groups[1].Captures[0].ToString())
-                    , Convert.ToDouble(vector3dMatch.Groups[2].Captures[0].ToString())
-                    , Convert.ToDouble(vector3dMatch.Groups[3].Captures[0].ToString())
-                    );
             }
             else if (fieldClass == typeof(LLVector4))
             {
-                Match vector4Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-                if (!vector4Match.Success)
+                LLVector4 result;
+                if (LLVector4.TryParse(value, out result))
+                    return result;
+                else
                     throw new Exception();
-                float vector4X = Convert.ToSingle(vector4Match.Groups[1].Captures[0].ToString());
-                float vector4Y = Convert.ToSingle(vector4Match.Groups[2].Captures[0].ToString());
-                float vector4Z = Convert.ToSingle(vector4Match.Groups[3].Captures[0].ToString());
-                float vector4S = Convert.ToSingle(vector4Match.Groups[4].Captures[0].ToString());
-                byte[] vector4Bytes = new byte[16];
-                Array.Copy(BitConverter.GetBytes(vector4X), 0, vector4Bytes, 0, 4);
-                Array.Copy(BitConverter.GetBytes(vector4Y), 0, vector4Bytes, 4, 4);
-                Array.Copy(BitConverter.GetBytes(vector4Z), 0, vector4Bytes, 8, 4);
-                Array.Copy(BitConverter.GetBytes(vector4S), 0, vector4Bytes, 12, 4);
-                return new LLVector4(vector4Bytes, 0);
             }
             else if (fieldClass == typeof(LLQuaternion))
             {
-                Match quaternionMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-                if (!quaternionMatch.Success)
+                LLQuaternion result;
+                if (LLQuaternion.TryParse(value, out result))
+                    return result;
+                else
                     throw new Exception();
-                return new LLQuaternion
-                    (Convert.ToSingle(quaternionMatch.Groups[1].Captures[0].ToString())
-                    , Convert.ToSingle(quaternionMatch.Groups[2].Captures[0].ToString())
-                    , Convert.ToSingle(quaternionMatch.Groups[3].Captures[0].ToString())
-                    );
             }
             else
             {

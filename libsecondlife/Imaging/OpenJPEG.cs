@@ -205,35 +205,35 @@ namespace libsecondlife.Imaging
                     Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
                     Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
                     Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Alpha, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Alpha, 0, n);
                     break;
 
                 case 3: // RGB
                     managedImage = new ManagedImage(marshalled.width, marshalled.height,
                         ManagedImage.ImageChannels.Color);
                     Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
                     break;
 
                 case 4: // RGBA
                     managedImage = new ManagedImage(marshalled.width, marshalled.height,
                         ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
                     Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), managedImage.Alpha, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
                     break;
 
                 case 5: // RGBBA
                     managedImage = new ManagedImage(marshalled.width, marshalled.height,
                         ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump);
                     Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n), managedImage.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 2), managedImage.Blue, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
                     // Bump comes before alpha in 5 channel encode
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 3), managedImage.Bump, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + n * 4), managedImage.Alpha, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Bump, 0, n);
+                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 4)), managedImage.Alpha, 0, n);
                     break;
 
                 default:

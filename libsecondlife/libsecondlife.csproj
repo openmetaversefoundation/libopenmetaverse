@@ -197,6 +197,9 @@
     <Compile Include="_Packets_.cs" />
     <Compile Include="_VisualParam_.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

@@ -223,7 +223,7 @@ namespace libsecondlife.Imaging
             if ((add & ImageChannels.Alpha) != 0)
             {
                 Alpha = new byte[n];
-                Fill(Alpha, 255);
+                FillArray(Alpha, 255);
             }
             else if ((del & ImageChannels.Alpha) != 0)
                 Alpha = null;
@@ -284,9 +284,55 @@ namespace libsecondlife.Imaging
             Bump = bump;
         }
 
+        public byte[] ExportRaw()
+        {
+            int n = Width * Height;
+            int di = 0;
+            byte[] raw = new byte[n * 4];
+
+            if ((Channels & ImageChannels.Alpha) != 0)
+            {
+                if ((Channels & ImageChannels.Color) != 0)
+                {
+                    // RGBA
+                    for (int i = 0; i < n; i++)
+                    {
+                        raw[di++] = Red[i];
+                        raw[di++] = Green[i];
+                        raw[di++] = Blue[i];
+                        raw[di++] = Alpha[i];
+                    }
+                }
+                else
+                {
+                    // Alpha only
+                    for (int i = 0; i < n; i++)
+                    {
+                        raw[di++] = Alpha[i];
+                        raw[di++] = Alpha[i];
+                        raw[di++] = Alpha[i];
+                        raw[di++] = Byte.MaxValue;
+                    }
+                }
+            }
+            else
+            {
+                // RGB
+                for (int i = 0; i < n; i++)
+                {
+                    raw[di++] = Red[i];
+                    raw[di++] = Green[i];
+                    raw[di++] = Blue[i];
+                    raw[di++] = Byte.MaxValue;
+                }
+            }
+
+            return raw;
+        }
+
         public byte[] ExportTGA()
         {
-            byte[] tga = new byte[Width * Height * 4 + 32];
+            byte[] tga = new byte[Width * Height * ((Channels & ImageChannels.Alpha) == 0 ? 3 : 4) + 32];
             int di = 0;
             tga[di++] = 0; // idlength
             tga[di++] = 0; // colormaptype = 0: no colormap
@@ -313,6 +359,7 @@ namespace libsecondlife.Imaging
             {
                 if ((Channels & ImageChannels.Color) != 0)
                 {
+                    // RGBA
                     for (int i = 0; i < n; i++)
                     {
                         tga[di++] = Blue[i];
@@ -323,17 +370,19 @@ namespace libsecondlife.Imaging
                 }
                 else
                 {
+                    // Alpha only
                     for (int i = 0; i < n; i++)
                     {
                         tga[di++] = Alpha[i];
                         tga[di++] = Alpha[i];
                         tga[di++] = Alpha[i];
-                        tga[di++] = Alpha[i];
+                        tga[di++] = Byte.MaxValue;
                     }
                 }
             }
             else
             {
+                // RGB
                 for (int i = 0; i < n; i++)
                 {
                     tga[di++] = Blue[i];
@@ -345,7 +394,7 @@ namespace libsecondlife.Imaging
             return tga;
         }
 
-        private void Fill(byte[] array, byte value)
+        private static void FillArray(byte[] array, byte value)
         {
             if (array != null)
             {
@@ -356,11 +405,11 @@ namespace libsecondlife.Imaging
 
         public void Clear()
         {
-            Fill(Red, 0);
-            Fill(Green, 0);
-            Fill(Blue, 0);
-            Fill(Alpha, 0);
-            Fill(Bump, 0);
+            FillArray(Red, 0);
+            FillArray(Green, 0);
+            FillArray(Blue, 0);
+            FillArray(Alpha, 0);
+            FillArray(Bump, 0);
         }
 
         public ManagedImage Clone()
