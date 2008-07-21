@@ -1,0 +1,72 @@
+﻿<project schemaVersion="1.6.0.5">
+    <assemblies>
+        <assembly assemblyPath="..\bin\libsecondlife.dll" xmlCommentsPath="..\bin\libsecondlife.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\libsecondlife.Utilities.dll" xmlCommentsPath="..\bin\libsecondlife.Utilities.xml" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\TestClient.exe" xmlCommentsPath="..\bin\TestClient.xml" commentsOnly="False" />
+    </assemblies>
+    <namespaceSummaries>
+        <namespaceSummaryItem name="" isDocumented="False" />
+        <namespaceSummaryItem name="CommandLine.Utility" isDocumented="False" />
+        <namespaceSummaryItem name="libsecondlife" isDocumented="True">This is the root namespace for the libsecondlife library.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Baking" isDocumented="True">libsecondlife.Baking</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Capabilities" isDocumented="True">libsecondlife.Capabilities</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Imaging" isDocumented="True">Image Handling</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Packets" isDocumented="True">libsecondlife.Packets</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.StructuredData" isDocumented="True">libsecondlife.StructuredData</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient" isDocumented="True">The TestClient is a working text based client which illustrates many of the library features and are created by developers to test new library functionality. The TestClient is not intended as a fully functional client however could be used as a basis for one.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands" isDocumented="True">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Inventory.Shell" isDocumented="True" />
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Movement" isDocumented="True">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Utilities" isDocumented="True">Utilities Class</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Voice" isDocumented="True">Voice Classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenJPEGNet" isDocumented="True">Image Encoding/Decoding</namespaceSummaryItem>
+        <namespaceSummaryItem name="System.Collections" isDocumented="False" />
+    </namespaceSummaries>
+    <dependencies>
+        <dependencyItem depPath="..\bin\log4net.dll" />
+    </dependencies>
+    <ProjectSummary>&lt;p&gt;
+The libsecondlife project is an effort directed at understanding how Second Life works from a technical perspective, and extending and integrating the metaverse with the rest of the web. This includes understanding how the official Second Life client operates and how it communicates with the Second Life simulator servers, as well as development of independent third party clients and tools.&lt;/p&gt;
+&lt;ul&gt;
+    &lt;li&gt; See &lt;A HREF="http://www.libsecondlife.org/wiki/libsecondlife:License"&gt;http://www.libsecondlife.org/wiki/libsecondlife:License&lt;/A&gt; for a copy of the source license used by libsecondlife.&lt;/li&gt;
+    &lt;li&gt; The collective authors make no guarantee as to the reliability of this documentation and it is formally considered alpha status.&lt;/li&gt;
+    &lt;li&gt; This research and documentation is protected under the exceptions granted in the Second Life Terms of Service section 4.1 and DMCA section 1201(f), and is formally endorsed by Linden Labs. &lt;/li&gt;
+&lt;/ul&gt;</ProjectSummary>
+    <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace</MissingTags>
+    <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
+    <HtmlHelp1xCompilerPath path="" />
+    <HtmlHelp2xCompilerPath path="" />
+    <OutputPath>.\trunk\</OutputPath>
+    <SandcastlePath path="" />
+    <WorkingPath path="" />
+    <CleanIntermediates>True</CleanIntermediates>
+    <KeepLogFile>True</KeepLogFile>
+    <HelpFileFormat>Help1xAndWebsite</HelpFileFormat>
+    <PurgeDuplicateTopics>True</PurgeDuplicateTopics>
+    <CppCommentsFixup>False</CppCommentsFixup>
+    <FrameworkVersion>2.0.50727</FrameworkVersion>
+    <BinaryTOC>True</BinaryTOC>
+    <IncludeFavorites>True</IncludeFavorites>
+    <Preliminary>False</Preliminary>
+    <RootNamespaceContainer>False</RootNamespaceContainer>
+    <RootNamespaceTitle />
+    <HelpTitle>libsecondlife API Developers Documentation</HelpTitle>
+    <HtmlHelpName>libsecondlife</HtmlHelpName>
+    <Language>en-US</Language>
+    <CopyrightHref>http://www.libsecondlife.org/wiki/libsecondlife:License</CopyrightHref>
+    <CopyrightText>License</CopyrightText>
+    <FeedbackEMailAddress>contact@libsecondlife.org</FeedbackEMailAddress>
+    <FeedbackEMailLinkText>the libsecondlife team.</FeedbackEMailLinkText>
+    <HeaderText />
+    <FooterText />
+    <ProjectLinkType>Local</ProjectLinkType>
+    <SdkLinkType>Msdn</SdkLinkType>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
+    <PresentationStyle>Prototype</PresentationStyle>
+    <NamingMethod>MemberName</NamingMethod>
+    <SyntaxFilters>Standard</SyntaxFilters>
+    <ShowFeedbackControl>False</ShowFeedbackControl>
+    <ContentPlacement>AboveNamespaces</ContentPlacement>
+    <ContentSiteMap path="" />
+    <TopicFileTransform path="" />
+</project>

@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{19DE5831-C10D-4013-A054-92E7F10EC115}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Documentation</RootNamespace>
+    <AssemblyName>Documentation</AssemblyName>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release-docs|AnyCPU' ">
+    <OutputPath>bin\Release-docs\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleAssemblies>C:\Program Files\Microsoft Visual Studio 8\Team Tools\Static Analysis Tools\FxCop\\rules</CodeAnalysisRuleAssemblies>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Target Name="AfterBuild" Condition="'$(Configuration)|$(Platform)' == 'Release-docs|AnyCPU'">
+    <!-- Automate build of html documentation using sandcastle -->
+    <Message Text="Building HTML Documentation" Condition="Exists('$(SANDCASTLE)')" />
+    <Exec Command="SandCastleBuilderConsole.exe ..\docs\libsecondlife-docs.shfb" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(SANDCASTLE)')" ContinueOnError="true" />
+    <Message Text="Compressing Documentation (if 7-Zip/7za.exe is installed)"/>
+    <Exec Command="7za.exe a -tzip ..\docs\documentation.zip ..\docs\trunk" WorkingDirectory="$(SolutionRoot)" ContinueOnError="true"/>
+    <!-- Automate exe builds for nightly snapshots-->
+    <Message Text="Building Snapshot" Condition="Exists('$(NSIS)')" />
+    <Exec Command="makensis.exe /O..\docs\makeinstaller.log /DPlatform=$(Platform) ..\docs\libsecondlife-installer.nsi" WorkingDirectory="$(SolutionRoot)" Condition="Exists('$(NSIS)')" ContinueOnError="true" />
+  </Target>
+  <ItemGroup>
+    <Compile Include="Class1.cs" />
+  </ItemGroup>
+</Project>

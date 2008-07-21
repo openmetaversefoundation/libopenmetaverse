@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+<!-- this is a nAnt build file;  use http://nant.sourceforge.net to build me -->
+
+<project name="libsecondlife" default="build">
+  <sysinfo />
+
+  <!-- global framework settings -->
+  <property name="nant.settings.currentframework" value="mono-2.0" />
+  <property name="target.framework" value="${framework::get-target-framework()}" />
+  <property name="assembly.dir" value="${framework::get-assembly-directory(target.framework)}" />
+
+  <!-- default configuration -->
+  <property name="build.number"
+     value="${string::replace(string::replace(string::substring(datetime::to-string(datetime::now()),0,10),'/200','0'),'/','')}" />
+  <property name="project.version" value="${build.number}" />
+  <property name="project.config"  value="debug" /> <!-- debug|release -->
+  <property name="package.config"  value="dist" /> <!-- dist|src -->
+  <property name="bin_dir"  value="bin" /> 
+
+  <property name="temp.dir" value="/tmp" if="${platform::is-unix()}" />
+  <property name="temp.dir" value="${sys.env.TEMP}" if="${platform::is-win32()}" />
+
+
+  <!-- build sets -->
+  <fileset id="apps">
+    <include name="importprimscript/*.build" />
+    <include name="SLImageUpload/*.build" />
+    <include name="SLProxy/*.build" />
+	<include name="VoiceTest/*.build" />
+  </fileset>
+  <fileset id="lib">
+    <include name="libsecondlife/*.build" />
+  </fileset>
+  <fileset id="examples">
+    <include name="libsecondlife/examples/examples.build" />
+  </fileset>
+
+  <!-- named configurations -->
+  <target name="init" description="Initializes building properties">
+    <echo message="assembly.dir=${assembly.dir}" />
+    <call target="${project.config}" />
+  </target>
+
+  <target name="init-package" description="Initializes packaging properties">
+    <call target="${package.config}" />
+  </target>
+
+  <target name="debug" description="Configures a debug build">
+    <property name="build.debug" value="true" />
+    <property name="package.name" value="${project::get-name()}-${project.version}-${project.config}" />
+    <if test="${property::exists('CCNetLabel')}">
+      <property name="package.name" value="${project::get-name()}-${CCNetLabel}-${project.config}" />
+    </if>
+  </target>
+
+  <target name="release" description="Configures a release build">
+    <property name="project.config" value="release" />
+    <property name="build.debug"    value="false"/>
+    <property name="package.name" value="${project::get-name()}-${project.version}" />
+    <if test="${property::exists('CCNetLabel')}">
+      <property name="package.name" value="${project::get-name()}-${CCNetLabel}-${project.config}" />
+    </if>
+  </target>
+
+  <target name="dist" description="Configures a distribution package">
+    <property name="dist" value="true" />
+    <property name="src"  value="false" />
+    <property name="archive.name" value="${package.name}.zip" />
+    <property name="archive.dir" value="${temp.dir}/${project::get-name()}-${project.version}" />
+    <property name="srcarchive.name" value="${project::get-name()}-${project.version}-src.zip" />
+    <property name="srcarchive.dir" value="${temp.dir}/${project::get-name()}-${project.version}-src" />
+    
+    <if test="${property::exists('CCNetLabel')}">
+      <property name="srcarchive.name" value="${project::get-name()}-${CCNetLabel}-src.zip" />
+    </if>
+  </target>
+
+  <!-- <target name="src" description="Configures a source package">
+    <property name="package.config" value="src" />
+    <property name="dist"           value="false" />
+    <property name="src"            value="true" />
+    <property name="archive.dir"
+      value="${temp.dir}/${project::get-name()}-${project.version}" />
+    <property name="archive.name"
+      value="${project::get-name()}-${project.version}-src.zip" />
+  </target> -->
+
+  <zipfileset id="archive.set" basedir="${temp.dir}">
+      <include name="${project::get-name()}-${project.version}/**" />
+  </zipfileset>
+  
+  <zipfileset id="srcarchive.set" basedir="${temp.dir}">
+      <include name="${project::get-name()}-${project.version}-src/**" />
+  </zipfileset>
+
+  <!-- build tasks -->
+  <target name="build"
+    depends="build-lib build-examples build-apps"
+    description="Builds the current configuration">
+  </target>
+
+  <target name="build-lib" depends="init"
+    description="Builds the libsecondlife dll for the current configuration">
+    <nant target="${project.config} build">
+      <buildfiles refid="lib" />
+    </nant>
+    <copy todir="bin" overwrite="true">
+	  <fileset basedir="data">
+        <include name="*.crt" />
+        <include name="message_template.msg" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="build-apps" depends="init"
+    description="Builds the application suite for the current configuration">
+    <nant target="${project.config} build">
+      <buildfiles refid="apps" />
+    </nant>
+  </target>
+
+  <target name="build-examples" depends="init"
+    description="Builds the libsecondlife examples for the current configuration">
+    <nant target="${project.config} build">
+      <buildfiles refid="examples" />
+    </nant>
+  </target>
+
+  <target name="clean" depends="init"
+    description="Deletes the built products"> 
+	 <delete failonerror="false">
+      <fileset basedir="${bin_dir}">
+		<include name="*" />
+		<exclude name="openjpeg-libsl.dll" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="clean-all" depends="clean"
+    description="Deletes all built products and packagess">
+    <delete failonerror="false">
+      <fileset basedir=".">
+        <include name="*.zip" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="package" depends="init init-package"
+    description="Creates a zip archive for the current configuration">
+    
+    <delete file="${archive.name}" failonerror="true" />
+    <delete file="${srcarchive.name}" failonerror="true" />
+    
+    <!-- <if test="${src}"> -->
+      <mkdir dir="${srcarchive.dir}" failonerror="false" />
+      <copy todir="${srcarchive.dir}" overwrite="true">
+        <fileset basedir=".">
+          <include name="**" />
+          <exclude name="*.zip" />
+        </fileset>
+      </copy>
+    <!-- </if> -->
+    
+    <if test="${dist}">
+      <call target="build" />
+      <mkdir dir="${archive.dir}" failonerror="false" />
+      <copy todir="${archive.dir}" overwrite="true">
+				<fileset basedir=".">
+				  <include name="LICENSE.txt" />
+				  <include name="README.txt" />
+				</fileset>
+      </copy>
+      <copy todir="${archive.dir}" overwrite="true">
+        <fileset basedir="bin">
+          <include name="*.exe" />
+          <include name="*.dll" />
+		    </fileset>
+      </copy>
+    </if>
+    
+    <zip zipfile="${archive.name}">
+      <fileset refid="archive.set" />
+    </zip>
+    
+    <zip zipfile="${srcarchive.name}">
+      <fileset refid="srcarchive.set" />
+    </zip>
+    
+    <delete dir="${archive.dir}" failonerror="false" />
+    <echo message="Created archive at file://${project::get-base-directory()}/${archive.name}" />
+    <echo message="Created archive at file://${project::get-base-directory()}/${srcarchive.name}" />
+  </target>
+  
+  <!--<target name="doc" depends="build"
+    description="Compiles html documentation for libsecondlife">
+  </target>-->
+</project>
