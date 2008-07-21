@@ -79,7 +79,7 @@ namespace libsecondlife
     /// <summary>
     /// The level of shininess applied to a face
     /// </summary>
-    public enum Shininess
+    public enum Shininess : byte
     {
         /// <summary></summary>
         None = 0,
@@ -94,7 +94,7 @@ namespace libsecondlife
     /// <summary>
     /// The texture mapping style used for a face
     /// </summary>
-    public enum MappingType
+    public enum MappingType : byte
     {
         /// <summary></summary>
         Default = 0,
@@ -672,12 +672,12 @@ namespace libsecondlife
                 #endregion Texture
 
                 #region Color
-                DefaultTexture.RGBA = new LLColor(data, i, false);
+                DefaultTexture.RGBA = new LLColor(data, i, true);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    LLColor tmpColor = new LLColor(data, i, false);
+                    LLColor tmpColor = new LLColor(data, i, true);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
