@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, the libsecondlife development team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -28,7 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// 
@@ -209,14 +209,14 @@ namespace libsecondlife
         /// <summary></summary>
 		public MapPacket[] HighMaps;
 
-        private SecondLife Client;
+        private GridClient Client;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mapFile"></param>
         /// <param name="client"></param>
-		public ProtocolManager(string mapFile, SecondLife client)
+		public ProtocolManager(string mapFile, GridClient client)
 		{
             Client = client;
 

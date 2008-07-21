@@ -10,7 +10,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -32,13 +32,13 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 class Decoder {
 	private static int BUFSIZE = 8096;
 
-	private static SecondLife client = new SecondLife();
+	private static GridClient client = new GridClient();
 	private static string grep = null;
 	private static byte[] data = new byte[BUFSIZE];
 	private static byte[] temp = new byte[BUFSIZE];
@@ -181,7 +181,7 @@ class Decoder {
 			if (grep != null) {
 				bool match = false;
 
-                //FIXME: This needs to be updated for the new libsecondlife API
+                //FIXME: This needs to be updated for the new API
                 //foreach (Block block in packet.Blocks())
                 //{
                 //    foreach (Field field in block.Fields)

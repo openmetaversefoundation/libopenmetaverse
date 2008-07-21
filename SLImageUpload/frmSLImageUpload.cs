@@ -6,15 +6,15 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Capabilities;
-using libsecondlife.Imaging;
+using OpenMetaverse;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.Imaging;
 
 namespace SLImageUpload
 {
     public partial class frmSLImageUpload : Form
     {
-        private SecondLife Client;
+        private GridClient Client;
         private byte[] UploadData = null;
         private int Transferred = 0;
         private string FileName = String.Empty;
@@ -29,7 +29,7 @@ namespace SLImageUpload
 
         private void InitClient()
         {
-            Client = new SecondLife();
+            Client = new GridClient();
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 

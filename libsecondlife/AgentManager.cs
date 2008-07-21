@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -30,11 +30,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Text;
 using System.Reflection;
-using libsecondlife.StructuredData;
-using libsecondlife.Capabilities;
-using libsecondlife.Packets;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
 	#region Enums
 	
@@ -554,7 +554,6 @@ namespace libsecondlife
     /// <summary>
     /// Manager class for our own avatar
     /// </summary>
-    /// <remarks>This class is instantianted automatically by the SecondLife class.</remarks>
     public partial class AgentManager
     {
         #region Enums
@@ -925,8 +924,8 @@ namespace libsecondlife
         public event AvatarSitResponseCallback OnAvatarSitResponse;
         #endregion
 
-        /// <summary>Reference to the SecondLife client object</summary>
-        public readonly SecondLife Client;
+        /// <summary>Reference to the GridClient object</summary>
+        public readonly GridClient Client;
         /// <summary>Used for movement and camera tracking</summary>
         public readonly AgentMovement Movement;
         /// <summary>Currently playing animations for the agent. Can be used to
@@ -941,26 +940,26 @@ namespace libsecondlife
 
         #region Properties
 
-        /// <summary>Your (client) avatars <seealso cref="T:libsecondlife.LLUUID"/></summary>
+        /// <summary>Your (client) avatars <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
         /// <remarks>"client", "agent", and "avatar" all represent the same thing</remarks>
         public LLUUID AgentID { get { return id; } }
-        /// <summary>Temporary <seealso cref="T:libsecondlife.LLUUID"/> assigned to this session, used for 
+        /// <summary>Temporary <seealso cref="T:OpenMetaverse.LLUUID"/> assigned to this session, used for 
         /// verifying our identity in packets</summary>
         public LLUUID SessionID { get { return sessionID; } }
-        /// <summary>Shared secret <seealso cref="T:libsecondlife.LLUUID"/> that is never sent over the wire</summary>
+        /// <summary>Shared secret <seealso cref="T:LLUUID"/> that is never sent over the wire</summary>
         public LLUUID SecureSessionID { get { return secureSessionID; } }
         /// <summary>Your (client) avatar ID, local to the current region/sim</summary>
         public uint LocalID { get { return localID; } }
         /// <summary>Where the avatar started at login. Can be "last", "home" 
-        /// or a login <seealso cref="T:libsecondlife.URI"/></summary>
+        /// or a login <seealso cref="T:OpenMetaverse.URI"/></summary>
         public string StartLocation { get { return startLocation; } }
         /// <summary>The access level of this agent, usually M or PG</summary>
         public string AgentAccess { get { return agentAccess; } }
         /// <summary></summary>
         public LLVector4 CollisionPlane { get { return collisionPlane; } }
-        /// <summary>An <seealso cref="T:libsecondlife.LLVector3"/> representing the velocity of our agent</summary>
+        /// <summary>An <seealso cref="T:OpenMetaverse.LLVector3"/> representing the velocity of our agent</summary>
         public LLVector3 Velocity { get { return velocity; } }
-        /// <summary>An <seealso cref="T:libsecondlife.LLVector3"/> representing the acceleration of our agent</summary>
+        /// <summary>An <seealso cref="T:OpenMetaverse.LLVector3"/> representing the acceleration of our agent</summary>
         public LLVector3 Acceleration { get { return acceleration; } }
         /// <summary></summary>
         public LLVector3 AngularVelocity { get { return angularVelocity; } }
@@ -992,7 +991,7 @@ namespace libsecondlife
         /// <summary>Gets the local ID of the prim the agent is sitting on,
         /// zero if the avatar is not currently sitting</summary>
         public uint SittingOn { get { return sittingOn; } }
-        /// <summary>Gets the <seealso cref="T:libsecondlife.LLUUID"/> of the agents active group.</summary>
+        /// <summary>Gets the <seealso cref="T:OpenMetaverse.LLUUID"/> of the agents active group.</summary>
         public LLUUID ActiveGroup { get { return activeGroup; } }
         /// <summary>Current status message for teleporting</summary>
         public string TeleportMessage { get { return teleportMessage; } }
@@ -1028,7 +1027,7 @@ namespace libsecondlife
             }
         }
         /// <summary>
-        /// A <seealso cref="T:libsecondlife.LLQuaternion"/> representing the agents current rotation
+        /// A <seealso cref="T:OpenMetaverse.LLQuaternion"/> representing the agents current rotation
         /// </summary>
         public LLQuaternion SimRotation
         {
@@ -1111,8 +1110,8 @@ namespace libsecondlife
         /// <summary>
         /// Constructor, setup callbacks for packets related to our avatar
         /// </summary>
-        /// <param name="client">A reference to the <seealso cref="T:libsecondlife.SecondLife"/> Class</param>
-        public AgentManager(SecondLife client)
+        /// <param name="client">A reference to the <seealso cref="T:OpenMetaverse.GridClient"/> Class</param>
+        public AgentManager(GridClient client)
         {
             Client = client;
             Movement = new AgentMovement(Client);
@@ -1315,7 +1314,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an Instant Message to a group
         /// </summary>
-        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of the group to send message to</param>
+        /// <param name="groupUUID"><seealso cref="T:OpenMetaverse.LLUUID"/> of the group to send message to</param>
         /// <param name="message">Text Message being sent.</param>
         public void InstantMessageGroup(LLUUID groupUUID, string message)
         {
@@ -1326,7 +1325,7 @@ namespace libsecondlife
         /// Send an Instant Message to a group
         /// </summary>
         /// <param name="fromName">The name this IM will show up as being from</param>
-        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of the group to send message to</param>
+        /// <param name="groupUUID"><seealso cref="T:OpenMetaverse.LLUUID"/> of the group to send message to</param>
         /// <param name="message">Text message being sent</param>
         /// <remarks>This does not appear to function with groups the agent is not in</remarks>
         public void InstantMessageGroup(string fromName, LLUUID groupUUID, string message)
@@ -1361,7 +1360,7 @@ namespace libsecondlife
         /// <summary>
         /// Send a request to join a group chat session
         /// </summary>
-        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of Group to leave</param>
+        /// <param name="groupUUID"><seealso cref="T:OpenMetaverse.LLUUID"/> of Group to leave</param>
         public void RequestJoinGroupChat(LLUUID groupUUID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1385,7 +1384,7 @@ namespace libsecondlife
         /// Request self terminates group chat. This will stop Group IM's from showing up
         /// until session is rejoined or expires.
         /// </summary>
-        /// <param name="groupUUID"><seealso cref="T:libsecondlife.LLUUID"/> of Group to leave</param>
+        /// <param name="groupUUID"><seealso cref="T:OpenMetaverse.LLUUID"/> of Group to leave</param>
         public void RequestLeaveGroupChat(LLUUID groupUUID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1475,9 +1474,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="sourceAvatar"><seealso cref="LLUUID"/> Key of the source agent</param>
         /// <param name="targetObject"><seealso cref="LLUUID"/> Key of the target object</param>
-        /// <param name="globalOffset">A <seealso cref="T:libsecondlife.LLVector3d"/> representing the beams offset from the source</param>
+        /// <param name="globalOffset">A <seealso cref="T:OpenMetaverse.LLVector3d"/> representing the beams offset from the source</param>
         /// <param name="type">A <seealso cref="T:PointAtType"/> which sets the avatars lookat animation</param>
-        /// <param name="effectID"><seealso cref="T:libsecondlife.LLUUID"/> of the Effect</param>
+        /// <param name="effectID"><seealso cref="T:OpenMetaverse.LLUUID"/> of the Effect</param>
         public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type,
             LLUUID effectID)
         {
@@ -1540,12 +1539,12 @@ namespace libsecondlife
         /// <summary>
         /// Create a particle beam between an avatar and an primitive
         /// </summary>
-        /// <param name="sourceAvatar"><seealso cref="T:libsecondlife.LLUUID"/> of sources avatar</param>
-        /// <param name="targetObject"><seealso cref="T:libsecondlife.LLUUID"/> of the target</param>
-        /// <param name="globalOffset"><seealso cref="T:libsecondlife.LLVector3d"/>global offset</param>
-        /// <param name="color"><seealso cref="T:libsecondlife.LLColor"/>Color values of beam</param>
+        /// <param name="sourceAvatar"><seealso cref="T:OpenMetaverse.LLUUID"/> of sources avatar</param>
+        /// <param name="targetObject"><seealso cref="T:OpenMetaverse.LLUUID"/> of the target</param>
+        /// <param name="globalOffset"><seealso cref="T:OpenMetaverse.LLVector3d"/>global offset</param>
+        /// <param name="color"><seealso cref="T:OpenMetaverse.LLColor"/>Color values of beam</param>
         /// <param name="duration">a float representing the duration the beam will last</param>
-        /// <param name="effectID"><seealso cref="T:libsecondlife.LLUUID"/> of the Effect</param>
+        /// <param name="effectID"><seealso cref="T:OpenMetaverse.LLUUID"/> of the Effect</param>
         public void BeamEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LLColor color, 
             float duration, LLUUID effectID)
         {
@@ -1765,7 +1764,7 @@ namespace libsecondlife
         /// Grabs an object
         /// </summary>
         /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
-        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
+        /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Grab(uint objectLocalID)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket();
@@ -1797,7 +1796,7 @@ namespace libsecondlife
         /// Releases a grabbed object
         /// </summary>
         /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
-        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
+        /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void DeGrab(uint objectLocalID)
         {
             ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
@@ -1811,7 +1810,7 @@ namespace libsecondlife
         /// Touches an object
         /// </summary>
         /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
-        /// <seealso cref="T:libsecondlife.NetworkManager.CurrentSim.ObjectsPrimitives"/>
+        /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Touch(uint objectLocalID)
         {
             Client.Self.Grab(objectLocalID);
@@ -1860,7 +1859,7 @@ namespace libsecondlife
         /// <summary>
         /// Give L$ to an object
         /// </summary>
-        /// <param name="target">object <seealso cref="libsecondlife.LLUUID"/> to give money to</param>
+        /// <param name="target">object <seealso cref="OpenMetaverse.LLUUID"/> to give money to</param>
         /// <param name="amount">amount of L$ to give</param>
         /// <param name="objectName">name of object</param>
         public void GiveObjectMoney(LLUUID target, int amount, string objectName)
@@ -1871,7 +1870,7 @@ namespace libsecondlife
         /// <summary>
         /// Give L$ to a group
         /// </summary>
-        /// <param name="target">group <seealso cref="libsecondlife.LLUUID"/> to give money to</param>
+        /// <param name="target">group <seealso cref="OpenMetaverse.LLUUID"/> to give money to</param>
         /// <param name="amount">amount of L$ to give</param>
         public void GiveGroupMoney(LLUUID target, int amount)
         {
@@ -1881,7 +1880,7 @@ namespace libsecondlife
         /// <summary>
         /// Give L$ to a group
         /// </summary>
-        /// <param name="target">group <seealso cref="libsecondlife.LLUUID"/> to give money to</param>
+        /// <param name="target">group <seealso cref="OpenMetaverse.LLUUID"/> to give money to</param>
         /// <param name="amount">amount of L$ to give</param>
         /// <param name="description">description of transaction</param>
         public void GiveGroupMoney(LLUUID target, int amount, string description)
@@ -1941,7 +1940,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an AgentAnimation packet that toggles a single animation on
         /// </summary>
-        /// <param name="animation">The <seealso cref="libsecondlife.LLUUID"/> of the animation to start playing</param>
+        /// <param name="animation">The <seealso cref="OpenMetaverse.LLUUID"/> of the animation to start playing</param>
         /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
         public void AnimationStart(LLUUID animation, bool reliable)
         {
@@ -1954,7 +1953,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an AgentAnimation packet that toggles a single animation off
         /// </summary>
-        /// <param name="animation">The <seealso cref="libsecondlife.LLUUID"/> of a 
+        /// <param name="animation">The <seealso cref="OpenMetaverse.LLUUID"/> of a 
         /// currently playing animation to stop playing</param>
         /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
         public void AnimationStop(LLUUID animation, bool reliable)
@@ -1968,7 +1967,7 @@ namespace libsecondlife
         /// <summary>
         /// Send an AgentAnimation packet that will toggle animations on or off
         /// </summary>
-        /// <param name="animations">A list of animation <seealso cref="libsecondlife.LLUUID"/>s, and whether to
+        /// <param name="animations">A list of animation <seealso cref="OpenMetaverse.LLUUID"/>s, and whether to
         /// turn that animation on or off</param>
         /// <param name="reliable">Whether to ensure delivery of this packet or not</param>
         public void Animate(Dictionary<LLUUID, bool> animations, bool reliable)
@@ -2009,7 +2008,7 @@ namespace libsecondlife
 		/// <summary>
 		/// Teleport agent to a landmark
 		/// </summary>
-		/// <param name="landmark"><seealso cref="libsecondlife.LLUUID"/> of the landmark to teleport agent to</param>
+		/// <param name="landmark"><seealso cref="OpenMetaverse.LLUUID"/> of the landmark to teleport agent to</param>
 		/// <returns>true on success, false on failure</returns>
 		public bool Teleport(LLUUID landmark)
 		{
@@ -2089,7 +2088,7 @@ namespace libsecondlife
         /// Teleport agent to another region
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
+        /// <param name="position"><seealso cref="OpenMetaverse.LLVector3"/> position in destination sim to teleport to</param>
         /// <returns>true on success, false on failure</returns>
         /// <remarks>This call is blocking</remarks>
         public bool Teleport(ulong regionHandle, LLVector3 position)
@@ -2101,8 +2100,8 @@ namespace libsecondlife
         /// Teleport agent to another region
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
-        /// <param name="lookAt"><seealso cref="libsecondlife.LLVector3"/> direction in destination sim agent will look at</param>
+        /// <param name="position"><seealso cref="OpenMetaverse.LLVector3"/> position in destination sim to teleport to</param>
+        /// <param name="lookAt"><seealso cref="OpenMetaverse.LLVector3"/> direction in destination sim agent will look at</param>
         /// <returns>true on success, false on failure</returns>
         /// <remarks>This call is blocking</remarks>
         public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
@@ -2129,7 +2128,7 @@ namespace libsecondlife
         /// Request teleport to a another simulator
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
+        /// <param name="position"><seealso cref="OpenMetaverse.LLVector3"/> position in destination sim to teleport to</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position)
         {
             RequestTeleport(regionHandle, position, new LLVector3(0.0f, 1.0f, 0.0f));
@@ -2139,8 +2138,8 @@ namespace libsecondlife
         /// Request teleport to a another simulator
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="libsecondlife.LLVector3"/> position in destination sim to teleport to</param>
-        /// <param name="lookAt"><seealso cref="libsecondlife.LLVector3"/> direction in destination sim agent will look at</param>
+        /// <param name="position"><seealso cref="OpenMetaverse.LLVector3"/> position in destination sim to teleport to</param>
+        /// <param name="lookAt"><seealso cref="OpenMetaverse.LLVector3"/> direction in destination sim agent will look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
             if (Client.Network.CurrentSim != null &&
@@ -2169,7 +2168,7 @@ namespace libsecondlife
         /// <summary>
         /// Teleport agent to a landmark
         /// </summary>
-        /// <param name="landmark"><seealso cref="libsecondlife.LLUUID"/> of the landmark to teleport agent to</param>
+        /// <param name="landmark"><seealso cref="OpenMetaverse.LLUUID"/> of the landmark to teleport agent to</param>
         public void RequestTeleport(LLUUID landmark)
         {
             TeleportLandmarkRequestPacket p = new TeleportLandmarkRequestPacket();
@@ -2183,7 +2182,7 @@ namespace libsecondlife
         /// <summary>
         /// Send a teleport lure to another avatar with default "Join me in ..." invitation message
         /// </summary>
-        /// <param name="targetID">target avatars <seealso cref="libsecondlife.LLUUID"/> to lure</param>
+        /// <param name="targetID">target avatars <seealso cref="OpenMetaverse.LLUUID"/> to lure</param>
         public void SendTeleportLure(LLUUID targetID)
         {
             SendTeleportLure(targetID, "Join me in " + Client.Network.CurrentSim.Name + "!");
@@ -2192,7 +2191,7 @@ namespace libsecondlife
         /// <summary>
         /// Send a teleport lure to another avatar with custom invitation message
         /// </summary>
-        /// <param name="targetID">target avatars <seealso cref="libsecondlife.LLUUID"/> to lure</param>
+        /// <param name="targetID">target avatars <seealso cref="OpenMetaverse.LLUUID"/> to lure</param>
         /// <param name="message">custom message to send with invitation</param>
         public void SendTeleportLure(LLUUID targetID, string message)
         {
@@ -2210,7 +2209,7 @@ namespace libsecondlife
         /// Respond to a teleport lure by either accepting it and initiating 
         /// the teleport, or denying it
         /// </summary>
-        /// <param name="requesterID"><seealso cref="libsecondlife.LLUUID"/> of the avatar sending the lure</param>
+        /// <param name="requesterID"><seealso cref="OpenMetaverse.LLUUID"/> of the avatar sending the lure</param>
         /// <param name="accept">true to accept the lure, false to decline it</param>
         public void TeleportLureRespond(LLUUID requesterID, bool accept)
         {
@@ -2238,7 +2237,7 @@ namespace libsecondlife
         /// <summary>
         /// Update agent profile
         /// </summary>
-        /// <param name="profile"><seealso cref="libsecondlife.Avatar.AvatarProperties"/> struct containing updated 
+        /// <param name="profile"><seealso cref="OpenMetaverse.Avatar.AvatarProperties"/> struct containing updated 
         /// profile information</param>
         public void UpdateProfile(Avatar.AvatarProperties profile)
         {
@@ -2259,7 +2258,7 @@ namespace libsecondlife
         /// <summary>
         /// Update agents profile interests
         /// </summary>
-        /// <param name="interests">selection of interests from <seealso cref="T:libsecondlife.Avatar.Interests"/> struct</param>
+        /// <param name="interests">selection of interests from <seealso cref="T:OpenMetaverse.Avatar.Interests"/> struct</param>
         public void UpdateInterests(Avatar.Interests interests)
         {
             AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
@@ -2309,7 +2308,7 @@ namespace libsecondlife
         /// <summary>
         /// Sets home location to agents current position
         /// </summary>
-        /// <remarks>will fire an AlertMessage (<seealso cref="E:libsecondlife.AgentManager.OnAlertMessage"/>) with 
+        /// <remarks>will fire an AlertMessage (<seealso cref="E:OpenMetaverse.AgentManager.OnAlertMessage"/>) with 
         /// success or failure message</remarks>
         public void SetHome()
         {
@@ -2329,7 +2328,7 @@ namespace libsecondlife
         /// Move an agent in to a simulator. This packet is the last packet
         /// needed to complete the transition in to a new simulator
         /// </summary>
-        /// <param name="simulator"><seealso cref="T:libsecondlife.Simulator"/> Object</param>
+        /// <param name="simulator"><seealso cref="T:OpenMetaverse.Simulator"/> Object</param>
         public void CompleteAgentMovement(Simulator simulator)
         {
             CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
@@ -2344,10 +2343,10 @@ namespace libsecondlife
         /// <summary>
         /// Reply to script permissions request
         /// </summary>
-        /// <param name="simulator"><seealso cref="T:libsecondlife.Simulator"/> Object</param>
-        /// <param name="itemID"><seealso cref="libsecondlife.LLUUID"/> of the itemID requesting permissions</param>
-        /// <param name="taskID"><seealso cref="libsecondlife.LLUUID"/> of the taskID requesting permissions</param>
-        /// <param name="permissions"><seealso cref="libsecondlife.ScriptPermission"/> list of permissions to allow</param>
+        /// <param name="simulator"><seealso cref="T:OpenMetaverse.Simulator"/> Object</param>
+        /// <param name="itemID"><seealso cref="OpenMetaverse.LLUUID"/> of the itemID requesting permissions</param>
+        /// <param name="taskID"><seealso cref="OpenMetaverse.LLUUID"/> of the taskID requesting permissions</param>
+        /// <param name="permissions"><seealso cref="OpenMetaverse.ScriptPermission"/> list of permissions to allow</param>
         public void ScriptQuestionReply(Simulator simulator, LLUUID itemID, LLUUID taskID, ScriptPermission permissions)
         {
             ScriptAnswerYesPacket yes = new ScriptAnswerYesPacket();
@@ -2878,7 +2877,7 @@ namespace libsecondlife
         {
             // Null out the cached fullName since it can change after logging
             // in again (with a different account name or different login
-            // server but using the same SecondLife object
+            // server but using the same GridClient object
             fullName = null;
         }
 

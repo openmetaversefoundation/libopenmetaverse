@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,7 +26,7 @@
 
 using System;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     public class CoordinateFrame
     {
@@ -45,7 +45,7 @@ namespace libsecondlife
                 origin = value;
             }
         }
-        /// <summary>X axis of this coordinate frame, or Forward/At in Second Life terms</summary>
+        /// <summary>X axis of this coordinate frame, or Forward/At in grid terms</summary>
         public LLVector3 XAxis
         {
             get { return xAxis; }
@@ -56,7 +56,7 @@ namespace libsecondlife
                 xAxis = value;
             }
         }
-        /// <summary>Y axis of this coordinate frame, or Left in Second Life terms</summary>
+        /// <summary>Y axis of this coordinate frame, or Left in grid terms</summary>
         public LLVector3 YAxis
         {
             get { return yAxis; }
@@ -67,7 +67,7 @@ namespace libsecondlife
                 yAxis = value;
             }
         }
-        /// <summary>Z axis of this coordinate frame, or Up in Second Life terms</summary>
+        /// <summary>Z axis of this coordinate frame, or Up in grid terms</summary>
         public LLVector3 ZAxis
         {
             get { return zAxis; }

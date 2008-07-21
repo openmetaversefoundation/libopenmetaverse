@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -28,9 +28,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using libsecondlife.StructuredData;
+using OpenMetaverse.StructuredData;
 
-namespace libsecondlife.Packets
+namespace OpenMetaverse.Packets
 {
     public abstract partial class Packet
     {
@@ -111,7 +111,7 @@ namespace libsecondlife.Packets
             Assembly assembly = Assembly.GetExecutingAssembly();
 
             // Check if we have a subclass of packet with the same name as this event
-            Type type = assembly.GetType("libsecondlife.Packets." + capsEventName + "Packet", false);
+            Type type = assembly.GetType("OpenMetaverse.Packets." + capsEventName + "Packet", false);
             if (type == null)
                 return null;
 

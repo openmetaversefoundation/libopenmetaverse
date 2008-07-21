@@ -4,9 +4,9 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.GUITestClient
+namespace OpenMetaverse.GUITestClient
 {
     class TeleportInterface : Interface
     {

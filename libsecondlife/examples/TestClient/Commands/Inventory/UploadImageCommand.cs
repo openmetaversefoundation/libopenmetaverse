@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Drawing;
-using libsecondlife;
-using libsecondlife.Capabilities;
-using libsecondlife.Imaging;
+using OpenMetaverse;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.Imaging;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class UploadImageCommand : Command
     {

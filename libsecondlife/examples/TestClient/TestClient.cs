@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
-using libsecondlife;
-using libsecondlife.Packets;
-using libsecondlife.Utilities;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using OpenMetaverse.Utilities;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
-    public class TestClient : SecondLife
+    public class TestClient : GridClient
     {
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
@@ -107,7 +107,7 @@ namespace libsecondlife.TestClient
         }
 
         //breaks up large responses to deal with the max IM size
-        private void SendResponseIM(SecondLife client, LLUUID fromAgentID, string data)
+        private void SendResponseIM(GridClient client, LLUUID fromAgentID, string data)
         {
             for ( int i = 0 ; i < data.Length ; i += 1024 ) {
                 int y;

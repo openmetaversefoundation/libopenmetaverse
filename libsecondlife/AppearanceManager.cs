@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,11 +29,11 @@ using System.Text;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
-using libsecondlife;
-using libsecondlife.Packets;
-using libsecondlife.Imaging;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using OpenMetaverse.Imaging;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     public class InvalidOutfitException : Exception
     {
@@ -139,7 +139,7 @@ namespace libsecondlife
         public static readonly LLUUID DEFAULT_AVATAR_TEXTURE = new LLUUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97");
 
 
-        private SecondLife Client;
+        private GridClient Client;
         private AssetManager Assets;
 
         /// <summary>
@@ -185,9 +185,9 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">This agents <seealso cref="libsecondlife.SecondLife"/> Object</param>
+        /// <param name="client">This agents <seealso cref="OpenMetaverse.GridClient"/> Object</param>
         /// <param name="assets">Reference to an AssetManager object</param>
-        public AppearanceManager(SecondLife client, AssetManager assets)
+        public AppearanceManager(GridClient client, AssetManager assets)
         {
             Client = client;
             Assets = assets;
@@ -228,8 +228,8 @@ namespace libsecondlife
         /// <summary>
         /// Returns the assetID for a given WearableType 
         /// </summary>
-        /// <param name="type">the <seealso cref="libsecondlife.WearableType"/> of the asset</param>
-        /// <returns>The <seealso cref="libsecondlife.LLUUID"/> of the WearableType</returns>
+        /// <param name="type">the <seealso cref="OpenMetaverse.WearableType"/> of the asset</param>
+        /// <returns>The <seealso cref="OpenMetaverse.LLUUID"/> of the WearableType</returns>
         public LLUUID GetWearableAsset(WearableType type)
         {
             WearableData wearable;
@@ -526,8 +526,8 @@ namespace libsecondlife
         /// <summary>
         /// Attach an item to an avatar at a specific attach point
         /// </summary>
-        /// <param name="item">A <seealso cref="libsecondlife.InventoryItem"/> to attach</param>
-        /// <param name="attachPoint">the <seealso cref="libsecondlife.AttachmentPoint"/> on the avatar 
+        /// <param name="item">A <seealso cref="OpenMetaverse.InventoryItem"/> to attach</param>
+        /// <param name="attachPoint">the <seealso cref="OpenMetaverse.AttachmentPoint"/> on the avatar 
         /// to attach the item to</param>
         public void Attach(InventoryItem item, AttachmentPoint attachPoint)
         {
@@ -538,13 +538,13 @@ namespace libsecondlife
         /// <summary>
         /// Attach an item to an avatar specifying attachment details
         /// </summary>
-        /// <param name="itemID">The <seealso cref="libsecondlife.LLUUID"/> of the item to attach</param>
-        /// <param name="ownerID">The <seealso cref="libsecondlife.LLUUID"/> attachments owner</param>
+        /// <param name="itemID">The <seealso cref="OpenMetaverse.LLUUID"/> of the item to attach</param>
+        /// <param name="ownerID">The <seealso cref="OpenMetaverse.LLUUID"/> attachments owner</param>
         /// <param name="name">The name of the attachment</param>
         /// <param name="description">The description of the attahment</param>
-        /// <param name="perms">The <seealso cref="libsecondlife.Permissions"/> to apply when attached</param>
-        /// <param name="itemFlags">The <seealso cref="libsecondlife.InventoryItemFlags"/> of the attachment</param>
-        /// <param name="attachPoint">the <seealso cref="libsecondlife.AttachmentPoint"/> on the avatar 
+        /// <param name="perms">The <seealso cref="OpenMetaverse.Permissions"/> to apply when attached</param>
+        /// <param name="itemFlags">The <seealso cref="OpenMetaverse.InventoryItemFlags"/> of the attachment</param>
+        /// <param name="attachPoint">the <seealso cref="OpenMetaverse.AttachmentPoint"/> on the avatar 
         /// to attach the item to</param>
         public void Attach(LLUUID itemID, LLUUID ownerID, string name, string description,
             Permissions perms, uint itemFlags, AttachmentPoint attachPoint)
@@ -571,16 +571,16 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Detach an item from avatar using an <seealso cref="libsecondlife.InventoryItem"/> object
+        /// Detach an item from avatar using an <seealso cref="OpenMetaverse.InventoryItem"/> object
         /// </summary>
-        /// <param name="item">An <seealso cref="libsecondlife.InventoryItem"/> object</param>
+        /// <param name="item">An <seealso cref="OpenMetaverse.InventoryItem"/> object</param>
         public void Detach(InventoryItem item)
         {
             Detach(item.UUID); 
         }
 
         /// <summary>
-        /// Detach an Item from avatar by items <seealso cref="libsecondlife.LLUUID"/>
+        /// Detach an Item from avatar by items <seealso cref="OpenMetaverse.LLUUID"/>
         /// </summary>
         /// <param name="itemID">The items ID to detach</param>
         public void Detach(LLUUID itemID)
@@ -917,7 +917,7 @@ namespace libsecondlife
             }
 
             // FIXME: Our hackish algorithm is making squished avatars. See
-            // http://www.libsecondlife.org/wiki/Agent_Size for discussion of the correct algorithm
+            // http://www.OpenMetaverse.org/wiki/Agent_Size for discussion of the correct algorithm
             //float height = Helpers.ByteToFloat(set.VisualParam[33].ParamValue, VisualParams.Params[33].MinValue,
             //    VisualParams.Params[33].MaxValue);
 

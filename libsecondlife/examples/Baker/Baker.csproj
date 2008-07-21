@@ -70,9 +70,9 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libsecondlife.csproj">
+    <ProjectReference Include="..\..\OpenMetaverse.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
-      <Name>libsecondlife</Name>
+      <Name>OpenMetaverse</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

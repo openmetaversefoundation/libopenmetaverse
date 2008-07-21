@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, the libsecondlife development team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,9 +29,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// 
@@ -232,7 +232,7 @@ namespace libsecondlife
 
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
-        public SecondLife Client;
+        public GridClient Client;
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
@@ -295,7 +295,7 @@ namespace libsecondlife
         public float BillableFactor;
         /// <summary>Statistics information for this simulator and the
         /// connection to the simulator, calculated by the simulator itself
-        /// and libsecondlife</summary>
+        /// and the library</summary>
         public SimStats Stats;
 
         /// <summary>Provides access to two thread-safe dictionaries containing
@@ -412,10 +412,10 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
+        /// <param name="client">Reference to the GridClient object</param>
         /// <param name="address">IPEndPoint of the simulator</param>
         /// <param name="handle">handle of the simulator</param>
-        public Simulator(SecondLife client, IPEndPoint address, ulong handle)
+        public Simulator(GridClient client, IPEndPoint address, ulong handle)
             : base(address)
         {
             Client = client;

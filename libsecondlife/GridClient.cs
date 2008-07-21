@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,14 +26,14 @@
 
 using System;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
-    /// Main class to expose Second Life functionality to clients. All of the
+    /// Main class to expose grid functionality to clients. All of the
     /// classes needed for sending and receiving data are accessible through 
     /// this class.
     /// </summary>
-    public class SecondLife
+    public class GridClient
     {
         /// <summary>Networking subsystem</summary>
         public NetworkManager Network;
@@ -74,7 +74,7 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        public SecondLife()
+        public GridClient()
         {
             // These are order-dependant
             Network = new NetworkManager(this);

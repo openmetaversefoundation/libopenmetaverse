@@ -6,14 +6,14 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 namespace Heightmap
 {
     public partial class frmHeightmap : Form
     {
-        private SecondLife Client = new SecondLife();
+        private GridClient Client = new GridClient();
         private PictureBox[,] Boxes = new PictureBox[16, 16];
         private System.Timers.Timer UpdateTimer = new System.Timers.Timer(1000);
         private string FirstName, LastName, Password;

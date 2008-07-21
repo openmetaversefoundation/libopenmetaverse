@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     /// <summary>
     /// Set avatars current appearance to appearance last stored on simulator

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -41,9 +41,9 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using NUnit.Framework;
-using libsecondlife.StructuredData;
+using OpenMetaverse.StructuredData;
 
-namespace libsecondlife.Tests
+namespace OpenMetaverse.Tests
 {
 
     [TestFixture()]

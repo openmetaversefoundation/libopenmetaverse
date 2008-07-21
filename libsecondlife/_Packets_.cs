@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,9 +26,9 @@
 
 using System;
 using System.Text;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.Packets
+namespace OpenMetaverse.Packets
 {
     /// <summary>
     /// Thrown when a packet could not be successfully deserialized
@@ -52,8 +52,8 @@ namespace libsecondlife.Packets
     }
     
     /// <summary>
-    /// The Second Life header of a message template packet. Either 5, 6, or 8 
-    /// bytes in length at the beginning of the packet, and encapsulates any 
+    /// The header of a message template packet. Either 5, 6, or 8 bytes in
+    /// length at the beginning of the packet, and encapsulates any 
     /// appended ACKs at the end of the packet as well
     /// </summary>
     public abstract class Header

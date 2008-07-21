@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife", "libsecondlife.csproj", "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMetaverse", "OpenMetaverse.csproj", "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
 EndProject
@@ -14,9 +14,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "groupmanager", "examples\gr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "examples\TestClient\TestClient.csproj", "{B87682F6-B2D7-4C4D-A529-400C24FD4880}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Utilities", "libsecondlife.Utilities\libsecondlife.Utilities.csproj", "{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMetaverse.Utilities", "libsecondlife.Utilities\OpenMetaverse.Utilities.csproj", "{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Tests", "libsecondlife.Tests\libsecondlife.Tests.csproj", "{E0BCBBAE-A620-431A-9EB7-30173EAF195B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMetaverse.Tests", "libsecondlife.Tests\OpenMetaverse.Tests.csproj", "{E0BCBBAE-A620-431A-9EB7-30173EAF195B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualParamGenerator", "VisualParamGenerator\VisualParamGenerator.csproj", "{D2A514C5-5590-4789-9032-6E5B4C297B80}"
 EndProject

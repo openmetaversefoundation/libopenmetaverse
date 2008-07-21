@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -31,7 +31,7 @@ using System.Reflection;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace libsecondlife.Imaging
+namespace OpenMetaverse.Imaging
 {
     /// <summary>
     /// A set of textures that are layered on texture of each other and "baked"
@@ -47,8 +47,8 @@ namespace libsecondlife.Imaging
         public int BakeHeight { get { return _bakeHeight; } }
         public AppearanceManager.BakeType BakeType { get { return _bakeType; } }
 
-        /// <summary>Reference to the SecondLife client</summary>
-        protected SecondLife _client;
+        /// <summary>Reference to the GridClient object</summary>
+        protected GridClient _client;
         /// <summary>Finald baked texture</summary>
         protected AssetTexture _bakedTexture;
         /// <summary>Appearance parameters the drive the baking process</summary>
@@ -67,13 +67,13 @@ namespace libsecondlife.Imaging
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
+        /// <param name="client">Reference to the GridClient object</param>
         /// <param name="bakeType"></param>
         /// <param name="textureCount">Total number of layers this layer set is
         /// composed of</param>
         /// <param name="paramValues">Appearance parameters the drive the 
         /// baking process</param>
-        public Baker(SecondLife client, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
+        public Baker(GridClient client, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
         {
             _client = client;
             _bakeType = bakeType;

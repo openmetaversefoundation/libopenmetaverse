@@ -5,11 +5,11 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using libsecondlife;
+using OpenMetaverse;
 using System.Net;
 using System.Diagnostics;
 
-namespace libsecondlife.GUITestClient
+namespace OpenMetaverse.GUITestClient
 {
     public class MinimapInterface : Interface
     {
@@ -107,7 +107,7 @@ namespace libsecondlife.GUITestClient
             TabPage.Controls.Add(cmdRefresh);
         }
 
-        // Ripped from "Terrain Scultor" by Cadroe with minors changes
+        // Ripped from "Terrain Sculptor" by Cadroe with minors changes
         // http://spinmass.blogspot.com/2007/08/terrain-sculptor-maps-sims-and-creates.html
         private System.Drawing.Image DownloadWebMapImage()
         {

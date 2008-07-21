@@ -6,15 +6,15 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using libsecondlife;
-using libsecondlife.Imaging;
+using OpenMetaverse;
+using OpenMetaverse.Imaging;
 
 namespace groupmanager
 {
     public partial class frmGroupInfo : Form
     {
         Group Group;
-        SecondLife Client;
+        GridClient Client;
         GroupProfile Profile = new GroupProfile();
         Dictionary<LLUUID, GroupMember> Members = new Dictionary<LLUUID,GroupMember>();
         Dictionary<LLUUID, GroupTitle> Titles = new Dictionary<LLUUID,GroupTitle>();
@@ -26,7 +26,7 @@ namespace groupmanager
         AvatarManager.AvatarNamesCallback AvatarNamesCallback;
         AssetManager.ImageReceivedCallback ImageReceivedCallback;
         
-        public frmGroupInfo(Group group, SecondLife client)
+        public frmGroupInfo(Group group, GridClient client)
         {
             InitializeComponent();
 

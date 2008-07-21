@@ -1,7 +1,7 @@
 using System;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class WearCommand : Command
     {

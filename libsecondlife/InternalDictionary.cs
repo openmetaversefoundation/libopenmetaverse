@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,7 +27,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// The InternalDictionary class is used through the library for storing key/value pairs.
@@ -89,7 +89,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Initializes a new instance of the <seealso cref="T:libsecondlife.InternalDictionary"/> Class 
+        /// Initializes a new instance of the <seealso cref="T:OpenMetaverse.InternalDictionary"/> Class 
         /// with the specified key/value, With its initial capacity specified.
         /// </summary>
         /// <param name="capacity">Initial size of dictionary</param>
@@ -106,7 +106,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Try to get entry from <seealso cref="T:libsecondlife.InternalDictionary"/> with specified key 
+        /// Try to get entry from <seealso cref="T:OpenMetaverse.InternalDictionary"/> with specified key 
         /// </summary>
         /// <param name="key">Key to use for lookup</param>
         /// <param name="value">Value returned</param>
@@ -181,7 +181,7 @@ namespace libsecondlife
             return found;
         }
 
-        /// <summary>Perform an <seealso cref="T:System.Action"/> on each entry in an <seealso cref="T:libsecondlife.InternalDictionary"/></summary>
+        /// <summary>Perform an <seealso cref="T:System.Action"/> on each entry in an <seealso cref="T:OpenMetaverse.InternalDictionary"/></summary>
         /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
         /// <example>
         /// <code>
@@ -208,7 +208,7 @@ namespace libsecondlife
             }
         }
 
-        /// <summary>Perform an <seealso cref="T:System.Action"/> on each key of an <seealso cref="T:libsecondlife.InternalDictionary"/></summary>
+        /// <summary>Perform an <seealso cref="T:System.Action"/> on each key of an <seealso cref="T:OpenMetaverse.InternalDictionary"/></summary>
         /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
         public void ForEach(Action<TKey> action)
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,9 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     #region Enums
 
@@ -471,33 +471,30 @@ namespace libsecondlife
 
         #endregion
 
-        /// <summary>Reference to the SecondLife client</summary>
-        protected SecondLife Client;
+        /// <summary>Reference to the GridClient object</summary>
+        protected GridClient Client;
         /// <summary>Does periodic dead reckoning calculation to convert
         /// velocity and acceleration to new positions for objects</summary>
         private Timer InterpolationTimer;
 
         /// <summary>
-        /// Instantiates a new ObjectManager class. This class should only be accessed
-        /// through SecondLife.Objects, client applications should never create their own
+        /// Instantiates a new ObjectManager class
         /// </summary>
         /// <param name="client">A reference to the client</param>
-        public ObjectManager(SecondLife client)
+        internal ObjectManager(GridClient client)
         {
             Client = client;
             RegisterCallbacks();
         }
 
         /// <summary>
-        /// Instantiates a new ObjectManager class. This class should only be 
-        /// accessed through SecondLife.Objects, client applications should 
-        /// never create their own
+        /// Instantiates a new ObjectManager class
         /// </summary>
         /// <param name="client">A reference to the client</param>
         /// <param name="registerCallbacks">If false, the ObjectManager won't
         /// register any packet callbacks and won't decode incoming object
         /// packets</param>
-        protected ObjectManager(SecondLife client, bool registerCallbacks)
+        protected ObjectManager(GridClient client, bool registerCallbacks)
         {
             Client = client;
 
@@ -549,7 +546,7 @@ namespace libsecondlife
         /// Request object information for multiple objects all contained in
         /// the same sim, primarily used for stale or missing cache entries
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to request</param>
         public void RequestObjects(Simulator simulator, List<uint> localIDs)
         {
@@ -576,7 +573,7 @@ namespace libsecondlife
         /// Attempt to purchase an original object, a copy, or the contents of
         /// an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>        
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>        
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="saleType">Whether the original, a copy, or the object
         /// contents are on sale. This is used for verification, if the this
@@ -618,7 +615,7 @@ namespace libsecondlife
         /// an ObjectProperties packet so we can get the full information for
         /// this object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void SelectObject(Simulator simulator, uint localID)
         {
@@ -638,7 +635,7 @@ namespace libsecondlife
         /// Select multiple objects. This will trigger the simulator to send us
         /// back ObjectProperties for each object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
         public void SelectObjects(Simulator simulator, uint[] localIDs)
         {
@@ -661,7 +658,7 @@ namespace libsecondlife
         /// <summary>
         /// Deselect an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void DeselectObject(Simulator simulator, uint localID)
         {
@@ -680,7 +677,7 @@ namespace libsecondlife
         /// <summary>
         /// Perform a click action on an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void ClickObject(Simulator simulator, uint localID)
         {
@@ -706,7 +703,7 @@ namespace libsecondlife
         /// <summary>
         /// Create, or "rez" a new prim object in a simulator
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object to place the object in</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
         /// <param name="prim">Data describing the prim object to rez</param>
         /// <param name="groupID">Group ID that this prim will be set to, or LLUUID.Zero if you
         /// do not want the object to be associated with a specific group</param>
@@ -768,7 +765,7 @@ namespace libsecondlife
         /// <summary>
         /// Rez a Linden tree
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="scale">The size of the tree</param>
         /// <param name="rotation">The rotation of the tree</param>
         /// <param name="position">The position of the tree</param>
@@ -801,7 +798,7 @@ namespace libsecondlife
         /// <summary>
         /// Rez grass and ground cover
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="scale">The size of the grass</param>
         /// <param name="rotation">The rotation of the grass</param>
         /// <param name="position">The position of the grass</param>
@@ -833,7 +830,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the textures to apply to the faces of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="textures">The texture data to apply</param>
         public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures)
@@ -844,7 +841,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the textures to apply to the faces of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="textures">The texture data to apply</param>
         /// <param name="mediaUrl">A media URL (not used)</param>
@@ -866,7 +863,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the Light data on an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="light">A <seealso cref="Primitive.LightData"/> object containing the data to set</param>
         public void SetLight(Simulator simulator, uint localID, Primitive.LightData light)
@@ -897,7 +894,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the flexible data on an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="flexible">A <seealso cref="Primitive.FlexibleData"/> object containing the data to set</param>
         public void SetFlexible(Simulator simulator, uint localID, Primitive.FlexibleData flexible)
@@ -920,7 +917,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the sculptie texture and data on an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="sculpt">A <seealso cref="Primitive.SculptData"/> object containing the data to set</param>
         public void SetSculpt(Simulator simulator, uint localID, Primitive.SculptData sculpt)
@@ -946,8 +943,8 @@ namespace libsecondlife
             shape.AgentData.AgentID = Client.Self.AgentID;
             shape.AgentData.SessionID = Client.Self.SessionID;
 
-            shape.ObjectData = new libsecondlife.Packets.ObjectShapePacket.ObjectDataBlock[1];
-            shape.ObjectData[0] = new libsecondlife.Packets.ObjectShapePacket.ObjectDataBlock();
+            shape.ObjectData = new OpenMetaverse.Packets.ObjectShapePacket.ObjectDataBlock[1];
+            shape.ObjectData[0] = new OpenMetaverse.Packets.ObjectShapePacket.ObjectDataBlock();
             shape.ObjectData[0].ObjectLocalID = localID;
             shape.ObjectData[0].PathScaleX = 100;
             shape.ObjectData[0].PathScaleY = 150;
@@ -959,7 +956,7 @@ namespace libsecondlife
         /// <summary>
         /// Set additional primitive parameters on an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="type">The extra parameters to set</param>
         public void SetExtraParamOff(Simulator simulator, uint localID, Primitive.ExtraParamType type)
@@ -982,7 +979,7 @@ namespace libsecondlife
         /// <summary>
         /// Link multiple prims into a linkset
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to link</param>
         /// <remarks>The last object in the array will be the root object of the linkset TODO: Is this true?</remarks>
         public void LinkPrims(Simulator simulator, List<uint> localIDs)
@@ -1009,7 +1006,7 @@ namespace libsecondlife
         /// <summary>
         /// Change the rotation of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="rotation">The new rotation of the object</param>
         public void SetRotation(Simulator simulator, uint localID, LLQuaternion rotation)
@@ -1029,7 +1026,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the name of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="name">A string containing the new name of the object</param>
         public void SetName(Simulator simulator, uint localID, string name)
@@ -1040,7 +1037,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the name of multiple objects
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to change the name of</param>
         /// <param name="names">An array which contains the new names of the objects</param>
         public void SetNames(Simulator simulator, uint[] localIDs, string[] names)
@@ -1064,7 +1061,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the description of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="description">A string containing the new description of the object</param>
         public void SetDescription(Simulator simulator, uint localID, string description)
@@ -1075,7 +1072,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the descriptions of multiple objects
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to change the description of</param>
         /// <param name="descriptions">An array which contains the new descriptions of the objects</param>
         public void SetDescriptions(Simulator simulator, uint[] localIDs, string[] descriptions)
@@ -1099,7 +1096,7 @@ namespace libsecondlife
         /// <summary>
         /// Attach an object to this avatar
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="attachPoint">The point on the avatar the object will be attached</param>
         /// <param name="rotation">The rotation of the attached object</param>
@@ -1121,7 +1118,7 @@ namespace libsecondlife
         /// <summary>
         /// Detach an object from yourself
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> 
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> 
         /// object where the objects reside
         /// 
         /// This will always be the simulator the avatar is currently in
@@ -1148,7 +1145,7 @@ namespace libsecondlife
         /// <summary>
         /// Change the position of an object, Will change position of entire linkset
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="position">The new position of the object</param>
         public void SetPosition(Simulator simulator, uint localID, LLVector3 position)
@@ -1159,7 +1156,7 @@ namespace libsecondlife
         /// <summary>
         /// Change the position of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="position">The new position of the object</param>
         /// <param name="childOnly">if true, will change position of (this) child prim only, not entire linkset</param>
@@ -1176,7 +1173,7 @@ namespace libsecondlife
         /// <summary>
         /// Change the Scale (size) of an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="scale">The new scale of the object</param>
         /// <param name="childOnly">If true, will change scale of this prim only, not entire linkset</param>
@@ -1197,7 +1194,7 @@ namespace libsecondlife
         /// <summary>
         /// Change the Rotation of an object that is either a child or a whole linkset
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="quat">The new scale of the object</param>
         /// <param name="childOnly">If true, will change rotation of this prim only, not entire linkset</param>
@@ -1225,7 +1222,7 @@ namespace libsecondlife
         /// <summary>
         /// Send a Multiple Object Update packet to change the size, scale or rotation of a primitive
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="data">The new rotation, size, or position of the target object</param>
         /// <param name="type">The flags from the <seealso cref="UpdateType"/> Enum</param>
@@ -1249,7 +1246,7 @@ namespace libsecondlife
         /// Deed an object (prim) to a group, Object must be shared with group which
         /// can be accomplished with SetPermissions()
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to deed the object to</param>
         public void DeedObject(Simulator simulator, uint localID, LLUUID groupOwner)
@@ -1275,7 +1272,7 @@ namespace libsecondlife
         /// Deed multiple objects (prims) to a group, Objects must be shared with group which
         /// can be accomplished with SetPermissions()
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to deed</param>
         /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to deed the object to</param>
         public void DeedObjects(Simulator simulator, List<uint> localIDs, LLUUID groupOwner)
@@ -1302,7 +1299,7 @@ namespace libsecondlife
         /// <summary>
         /// Set the permissions on multiple objects
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to set the permissions on</param>
         /// <param name="who">The new Who mask to set</param>
         /// <param name="permissions">The new Permissions mark to set</param>
@@ -1336,7 +1333,7 @@ namespace libsecondlife
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="objectID"></param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID)
         {
@@ -1346,7 +1343,7 @@ namespace libsecondlife
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the object resides</param>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="objectID">Absolute UUID of the object</param>
         /// <param name="reliable">Whether to require server acknowledgement of this request</param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID, bool reliable)

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class ExportParticlesCommand : Command
     {

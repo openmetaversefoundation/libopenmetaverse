@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using CommandLine.Utility;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class CommandLineArgumentsException : Exception
     {

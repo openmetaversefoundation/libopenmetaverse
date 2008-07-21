@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -28,14 +28,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using libsecondlife.StructuredData;
-using libsecondlife.Capabilities;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Capabilities;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
-    /// Capabilities is the name of the bi-directional HTTP REST protocol that
-    /// Second Life uses to communicate transactions such as teleporting or
+    /// Capabilities is the name of the bi-directional HTTP REST protocol
+    /// used to communicate non real-time transactions such as teleporting or
     /// group messaging
     /// </summary>
     public class Caps

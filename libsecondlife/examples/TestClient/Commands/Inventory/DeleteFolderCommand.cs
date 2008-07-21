@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     /// <summary>
     /// Inventory Example, Moves a folder to the Trash folder

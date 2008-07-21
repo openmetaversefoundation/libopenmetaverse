@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class AttachmentsCommand : Command
     {

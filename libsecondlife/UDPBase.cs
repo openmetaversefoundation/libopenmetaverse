@@ -8,7 +8,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -30,7 +30,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     // this class encapsulates a single packet that
     // is either sent or received by a UDP socket
@@ -143,7 +143,7 @@ namespace libsecondlife
         // this avoids the problem of closing the socket with outstanding operations
         // and trying to catch the inevitable ObjectDisposedException.
 #if PocketPC
-        private libsecondlife.ReaderWriterLock rwLock = new libsecondlife.ReaderWriterLock();
+        private OpenMetaverse.ReaderWriterLock rwLock = new OpenMetaverse.ReaderWriterLock();
 #else
         private ReaderWriterLock rwLock = new ReaderWriterLock();
 #endif

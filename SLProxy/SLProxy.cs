@@ -1,5 +1,5 @@
 /*
- * SLProxy.cs: implementation of Second Life proxy library
+ * SLProxy.cs: implementation of OpenMetaverse proxy library
  *
  * Copyright (c) 2006 Austin Jennings
  * Pregen modifications made by Andrew Ortman on Dec 10, 2006 -> Dec 20, 2006
@@ -12,7 +12,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  * 
@@ -44,12 +44,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
-using libsecondlife;
-using libsecondlife.Capabilities;
-using libsecondlife.StructuredData;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Packets;
 
-// SLProxy: proxy library for Second Life
+// SLProxy: OpenMetaverse proxy library
 namespace SLProxy
 {
     // ProxyConfig: configuration for proxy objects
@@ -65,7 +65,7 @@ namespace SLProxy
         public IPAddress clientFacingAddress = IPAddress.Loopback;
         // remoteFacingAddress: address from which to communicate with the server
         public IPAddress remoteFacingAddress = IPAddress.Any;
-        // remoteLoginUri: URI for Second Life's login server
+        // remoteLoginUri: URI for the login server
         public Uri remoteLoginUri = new Uri("https://login.agni.lindenlab.com/cgi-bin/login.cgi");
         // verbose: whether or not to print informative messages
         public bool verbose = true;
@@ -167,7 +167,7 @@ namespace SLProxy
         }
     }
 
-    // Proxy: Second Life proxy server
+    // Proxy: OpenMetaverse proxy server
     // A Proxy instance is only prepared to deal with one client at a time.
     public class Proxy
     {
@@ -1554,7 +1554,7 @@ namespace SLProxy
 
                         // interpret the packet according to the SL protocol
                         int end = length - 1;
-                        Packet packet = libsecondlife.Packets.Packet.BuildPacket(receiveBuffer, ref end, zeroBuffer);
+                        Packet packet = OpenMetaverse.Packets.Packet.BuildPacket(receiveBuffer, ref end, zeroBuffer);
 
 #if DEBUG_SEQUENCE
 				Console.WriteLine("-> " + packet.Type + " #" + packet.Header.Sequence);

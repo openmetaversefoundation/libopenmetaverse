@@ -1,5 +1,5 @@
 using System;
-using libsecondlife;
+using OpenMetaverse;
 
 namespace Key2Name
 {
@@ -15,13 +15,13 @@ namespace Key2Name
                 return;
             }
 
-            SecondLife client = new SecondLife();
+            GridClient client = new GridClient();
             client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
 
-            Console.WriteLine("Attempting to connect and login to Second Life.");
+            Console.WriteLine("Attempting to connect and login to the grid.");
 
-            // Login to Second Life
-            if (!client.Network.Login(args[0], args[1], args[2], "key2name", "jessemalthus@gmail.com"))
+            // Login to the grid
+            if (!client.Network.Login(args[0], args[1], args[2], "key2name", "1.0.0"))
             {
                 // Login failed
                 Console.WriteLine("Error logging in: " + client.Network.LoginMessage);

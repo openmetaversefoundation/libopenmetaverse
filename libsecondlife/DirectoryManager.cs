@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,14 +27,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// Access to the Linden dataserver which allows searching for land, events, people, etc
     /// </summary>
-    /// <remarks>This class is automatically instantiated by the SecondLife class</remarks>
     public class DirectoryManager
     {
         /// <summary>
@@ -161,7 +160,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// A classified ad in Second Life
+        /// A classified ad on the grid
         /// </summary>
         public struct Classified
         {
@@ -211,7 +210,7 @@ namespace libsecondlife
             public string FirstName;
             /// <summary>Agents last name</summary>
             public string LastName;
-            /// <summary>Agents <seealso cref="T:libsecondlife.LLUUID"/></summary>
+            /// <summary>Agents <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
             public LLUUID AgentID;
         }
         /// <summary>
@@ -345,10 +344,10 @@ namespace libsecondlife
         // Event Details
         public event EventInfoCallback OnEventInfo;
 
-        private SecondLife Client;
+        private GridClient Client;
 
 
-        public DirectoryManager(SecondLife client)
+        public DirectoryManager(GridClient client)
         {
             Client = client;
 

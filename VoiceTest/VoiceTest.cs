@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,8 +27,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Utilities;
+using OpenMetaverse;
+using OpenMetaverse.Utilities;
 
 namespace VoiceTest
 {
@@ -70,7 +70,7 @@ namespace VoiceTest
             string password = args[2];
             
 
-            SecondLife client = new SecondLife();
+            GridClient client = new GridClient();
             client.Settings.MULTIPLE_SIMS = false;
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             client.Settings.LOG_RESENDS = false;
@@ -108,11 +108,10 @@ namespace VoiceTest
                 Console.WriteLine();
 
 
-                // Login to SL
-                Console.WriteLine("Logging in to Second Life as " + firstName + " " + lastName + "...");
+                // Login
+                Console.WriteLine("Logging into the grid as " + firstName + " " + lastName + "...");
                 LoginParams loginParams = 
-                    client.Network.DefaultLoginParams(firstName, lastName, password, "Voice Test", 
-                                                      "Metaverse Industries LLC <jhurliman@metaverseindustries.com>");
+                    client.Network.DefaultLoginParams(firstName, lastName, password, "Voice Test", "1.0.0");
                 loginParams.URI = loginURI;
                 if (!client.Network.Login(loginParams))
                     throw new VoiceException("Login to SL failed: " + client.Network.LoginMessage);

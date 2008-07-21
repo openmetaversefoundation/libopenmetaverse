@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.StructuredData;
+using OpenMetaverse;
+using OpenMetaverse.StructuredData;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class ExportCommand : Command
     {

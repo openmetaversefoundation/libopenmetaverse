@@ -1,8 +1,8 @@
 using System;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class DetectBotCommand : Command
     {

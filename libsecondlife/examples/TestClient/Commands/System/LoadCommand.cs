@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class LoadCommand: Command
     {

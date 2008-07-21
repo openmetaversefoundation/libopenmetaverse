@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// A single visual characteristic of an avatar mesh, such as eyebrow height

@@ -5,12 +5,12 @@ using System.Runtime.CompilerServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("libopenmv")]
-[assembly: AssemblyDescription("Open metaverse networking layer")]
+[assembly: AssemblyTitle("OpenMetaverse")]
+[assembly: AssemblyDescription("OpenMetaverse library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("libopenmv")]
-[assembly: AssemblyProduct("libopenmv")]
-[assembly: AssemblyCopyright("Copyright © libopenmv 2006-2008")]
+[assembly: AssemblyCompany("openmetaverse.org")]
+[assembly: AssemblyProduct("OpenMetaverse")]
+[assembly: AssemblyCopyright("Copyright © openmetaverse.org 2006-2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 

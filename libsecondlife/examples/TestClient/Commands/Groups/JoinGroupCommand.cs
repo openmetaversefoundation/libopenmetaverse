@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 using System.Text;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class JoinGroupCommand : Command
     {

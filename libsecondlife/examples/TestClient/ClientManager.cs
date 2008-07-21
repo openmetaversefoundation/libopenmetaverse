@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class LoginDetails
     {
@@ -38,7 +38,7 @@ namespace libsecondlife.TestClient
 
     public class ClientManager
     {
-        public Dictionary<LLUUID, SecondLife> Clients = new Dictionary<LLUUID, SecondLife>();
+        public Dictionary<LLUUID, GridClient> Clients = new Dictionary<LLUUID, GridClient>();
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
@@ -241,7 +241,7 @@ namespace libsecondlife.TestClient
                 DoCommandAll(input, LLUUID.Zero);
             }
 
-            foreach (SecondLife client in Clients.Values)
+            foreach (GridClient client in Clients.Values)
             {
                 if (client.Network.Connected)
                     client.Network.Logout();
@@ -252,7 +252,7 @@ namespace libsecondlife.TestClient
         {
             int online = 0;
 
-            foreach (SecondLife client in Clients.Values)
+            foreach (GridClient client in Clients.Values)
             {
                 if (client.Network.Connected) online++;
             }
@@ -290,7 +290,7 @@ namespace libsecondlife.TestClient
             else
             {
                 // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-                Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
+                Dictionary<LLUUID, GridClient> clientsCopy = new Dictionary<LLUUID, GridClient>(Clients);
 
                 foreach (TestClient client in clientsCopy.Values)
                     client.DoCommand(cmd, fromAgentID);
@@ -313,7 +313,7 @@ namespace libsecondlife.TestClient
         public void LogoutAll()
         {
             // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-            Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
+            Dictionary<LLUUID, GridClient> clientsCopy = new Dictionary<LLUUID, GridClient>(Clients);
 
             foreach (TestClient client in clientsCopy.Values)
                 Logout(client);

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("libsecondlife.Utilities")]
+[assembly: AssemblyTitle("OpenMetaverse.Utilities")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("libsecondlife.Utilities")]
-[assembly: AssemblyCopyright("Copyright ©  2006")]
+[assembly: AssemblyProduct("OpenMetaverse.Utilities")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

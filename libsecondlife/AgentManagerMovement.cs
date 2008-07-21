@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,10 +26,10 @@
 
 using System;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     public partial class AgentManager
     {
@@ -455,7 +455,7 @@ namespace libsecondlife
             #endregion Change tracking
 
             private bool alwaysRun;
-            private SecondLife Client;
+            private GridClient Client;
             private uint agentControls;
             private int duplicateCount;
             private AgentState lastState;
@@ -465,7 +465,7 @@ namespace libsecondlife
             private bool autoResetControls = true;
 
             /// <summary>Default constructor</summary>
-            public AgentMovement(SecondLife client)
+            public AgentMovement(GridClient client)
             {
                 Client = client;
                 Camera = new AgentCamera();

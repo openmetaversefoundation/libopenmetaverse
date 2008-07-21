@@ -7,7 +7,7 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using libsecondlife.Imaging;
+using OpenMetaverse.Imaging;
 
 namespace Baker
 {
@@ -28,7 +28,7 @@ namespace Baker
 
         private void DisplayResource(string resource)
         {
-            Stream stream = libsecondlife.Helpers.GetResourceStream(resource + ".tga");
+            Stream stream = OpenMetaverse.Helpers.GetResourceStream(resource + ".tga");
 
             if (stream != null)
             {

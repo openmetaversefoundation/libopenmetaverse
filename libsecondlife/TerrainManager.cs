@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,9 +26,9 @@
 
 using System;
 using System.Collections.Generic;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     public class TerrainManager
     {
@@ -91,7 +91,7 @@ namespace libsecondlife
         private const int NEGATIVE_VALUE = 0x7;
         private const int END_OF_PATCHES = 97;
 
-        private SecondLife Client;
+        private GridClient Client;
         private float[] DequantizeTable16 = new float[16 * 16];
         private float[] DequantizeTable32 = new float[32 * 32];
         private float[] CosineTable16 = new float[16 * 16];
@@ -107,7 +107,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="client"></param>
-        public TerrainManager(SecondLife client)
+        public TerrainManager(GridClient client)
         {
             Client = client;
 

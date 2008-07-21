@@ -1,8 +1,8 @@
 using System;
 using System.Text;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class RegionInfoCommand : Command
     {

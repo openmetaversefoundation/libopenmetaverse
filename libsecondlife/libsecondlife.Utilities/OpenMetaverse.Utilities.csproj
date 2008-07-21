@@ -7,8 +7,8 @@
     <ProjectGuid>{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>libsecondlife.Utilities</RootNamespace>
-    <AssemblyName>libsecondlife.Utilities</AssemblyName>
+    <RootNamespace>OpenMetaverse.Utilities</RootNamespace>
+    <AssemblyName>libopenmetaverse.Utilities</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -59,9 +59,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\libsecondlife.csproj">
+    <ProjectReference Include="..\OpenMetaverse.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
-      <Name>libsecondlife</Name>
+      <Name>OpenMetaverse</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

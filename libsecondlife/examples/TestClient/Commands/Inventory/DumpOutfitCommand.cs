@@ -2,10 +2,10 @@ using System;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
-using libsecondlife;
-using libsecondlife.Imaging;
+using OpenMetaverse;
+using OpenMetaverse.Imaging;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class DumpOutfitCommand : Command
     {

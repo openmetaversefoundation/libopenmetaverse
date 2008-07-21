@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class InventoryCommand : Command
     {

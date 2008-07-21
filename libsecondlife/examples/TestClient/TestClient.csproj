@@ -7,7 +7,7 @@
     <ProjectGuid>{B87682F6-B2D7-4C4D-A529-400C24FD4880}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>libsecondlife.TestClient</RootNamespace>
+    <RootNamespace>OpenMetaverse.TestClient</RootNamespace>
     <AssemblyName>TestClient</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -138,13 +138,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\libsecondlife.csproj">
+    <ProjectReference Include="..\..\OpenMetaverse.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
-      <Name>libsecondlife</Name>
+      <Name>OpenMetaverse</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\libsecondlife.Utilities\libsecondlife.Utilities.csproj">
+    <ProjectReference Include="..\..\libsecondlife.Utilities\OpenMetaverse.Utilities.csproj">
       <Project>{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}</Project>
-      <Name>libsecondlife.Utilities</Name>
+      <Name>OpenMetaverse.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

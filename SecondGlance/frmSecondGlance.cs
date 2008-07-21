@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2007 John Hurliman
+ * Copyright (c) 2007 openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -8,7 +8,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -32,8 +32,8 @@ using System.Data;
 using System.Drawing;
 using System.Net;
 using System.Windows.Forms;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 using SLProxy;
 
 namespace SecondGlance

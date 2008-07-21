@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace libsecondlife.TestClient.Commands
+namespace OpenMetaverse.TestClient.Commands
 {
     class ShowEventDetailsCommand : Command
     {

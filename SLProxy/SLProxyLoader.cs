@@ -1,7 +1,7 @@
 using SLProxy;
-using libsecondlife;
+using OpenMetaverse;
 using Nwc.XmlRpc;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 using System.Reflection;
 
 using System;

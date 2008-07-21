@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -28,10 +28,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.Utilities
+namespace OpenMetaverse.Utilities
 {
     /// <summary>
     /// 
@@ -56,7 +56,7 @@ namespace libsecondlife.Utilities
         /// </summary>
         /// <param name="target">Target to shoot at</param>
         /// <returns></returns>
-        public static bool Shoot(SecondLife client, LLVector3 target)
+        public static bool Shoot(GridClient client, LLVector3 target)
         {
             if (client.Self.Movement.TurnToward(target))
                 return Shoot(client);
@@ -68,7 +68,7 @@ namespace libsecondlife.Utilities
         /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
         /// </summary>
         /// <returns></returns>
-        public static bool Shoot(SecondLife client)
+        public static bool Shoot(GridClient client)
         {
             if (client.Settings.SEND_AGENT_UPDATES)
             {
@@ -102,7 +102,7 @@ namespace libsecondlife.Utilities
         /// </summary>
         /// <param name="client">A reference to the client that will chat</param>
         /// <param name="message">The chat message to send</param>
-        public static void Chat(SecondLife client, string message)
+        public static void Chat(GridClient client, string message)
         {
             Chat(client, message, ChatType.Normal, 3);
         }
@@ -116,7 +116,7 @@ namespace libsecondlife.Utilities
         /// <param name="message">The chat message to send</param>
         /// <param name="type">The chat type (usually Normal, Whisper or Shout)</param>
         /// <param name="cps">Characters per second rate for chatting</param>
-        public static void Chat(SecondLife client, string message, ChatType type, int cps)
+        public static void Chat(GridClient client, string message, ChatType type, int cps)
         {
             Random rand = new Random();
             int characters = 0;
@@ -162,12 +162,12 @@ namespace libsecondlife.Utilities
 
     public class ConnectionManager
     {
-        private SecondLife Client;
+        private GridClient Client;
         private ulong SimHandle;
         private LLVector3 Position = LLVector3.Zero;
         private System.Timers.Timer CheckTimer;
 
-        public ConnectionManager(SecondLife client, int timerFrequency)
+        public ConnectionManager(GridClient client, int timerFrequency)
         {
             Client = client;
 
@@ -175,7 +175,7 @@ namespace libsecondlife.Utilities
             CheckTimer.Elapsed += new System.Timers.ElapsedEventHandler(CheckTimer_Elapsed);
         }
 
-        public static bool PersistentLogin(SecondLife client, string firstName, string lastName, string password,
+        public static bool PersistentLogin(GridClient client, string firstName, string lastName, string password,
             string userAgent, string start, string author)
         {
             int unknownLogins = 0;
@@ -285,7 +285,7 @@ namespace libsecondlife.Utilities
         /// </summary>
         public event ParcelsDownloadedCallback OnParcelsDownloaded;
 
-        private SecondLife Client;
+        private GridClient Client;
         /// <summary>Dictionary of 64x64 arrays of parcels which have been successfully downloaded 
         /// for each simulator (and their LocalID's, 0 = Null)</summary>
         private Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
@@ -295,8 +295,8 @@ namespace libsecondlife.Utilities
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">A reference to the SecondLife client</param>
-        public ParcelDownloader(SecondLife client)
+        /// <param name="client">A reference to the GridClient object</param>
+        public ParcelDownloader(GridClient client)
         {
             Client = client;
             Client.Parcels.OnParcelProperties += new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);

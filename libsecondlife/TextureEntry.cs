@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,9 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using libsecondlife.StructuredData;
+using OpenMetaverse.StructuredData;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     #region Enumerations
 
@@ -497,7 +497,7 @@ namespace libsecondlife
         /// <summary>
         /// Represents all of the texturable faces for an object
         /// </summary>
-        /// <remarks>Objects in Second Life have infinite faces, with each face
+        /// <remarks>Grid objects have infinite faces, with each face
         /// using the properties of the default face unless set otherwise. So if
         /// you have a TextureEntry with a default texture uuid of X, and face 18
         /// has a texture UUID of Y, every face would be textured with X except for

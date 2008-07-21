@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,9 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// Static helper functions and global variables
@@ -80,7 +80,7 @@ namespace libsecondlife
         public static DateTime Epoch = new DateTime(1970, 1, 1);
 
         /// <summary>
-        /// Passed to SecondLife.Log() to identify the severity of a log entry
+        /// Passed to Logger.Log() to identify the severity of a log entry
         /// </summary>
         public enum LogLevel
         {
@@ -90,12 +90,12 @@ namespace libsecondlife
             /// debugging a problem</summary>
             Info,
             /// <summary>A non-critical error occurred. A warning will not 
-            /// prevent the rest of libsecondlife from operating as usual, 
+            /// prevent the rest of the library from operating as usual, 
             /// although it may be indicative of an underlying issue</summary>
             Warning,
             /// <summary>A critical error has occurred. Generally this will 
             /// be followed by the network layer shutting down, although the 
-            /// stability of libsecondlife after an error is uncertain</summary>
+            /// stability of the library after an error is uncertain</summary>
             Error,
             /// <summary>Used for internal testing, this logging level can 
             /// generate very noisy (long and/or repetitive) messages. Don't
@@ -110,7 +110,7 @@ namespace libsecondlife
             new System.Security.Cryptography.MD5CryptoServiceProvider();
 
         /// <summary>Provide a single instance of the CultureInfo class to
-        /// help parsing in situations where Second Life assumes an en-us 
+        /// help parsing in situations where the grid assumes an en-us 
         /// culture</summary>
         public static readonly System.Globalization.CultureInfo EnUsCulture =
             new System.Globalization.CultureInfo("en-us");
@@ -1095,7 +1095,7 @@ namespace libsecondlife
             try
             {
                 System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-                System.IO.Stream s = a.GetManifestResourceStream("libsecondlife.Resources." + resourceName);
+                System.IO.Stream s = a.GetManifestResourceStream("OpenMetaverse.Resources." + resourceName);
                 if (s != null) return s;
             }
             catch (Exception)
@@ -1155,7 +1155,7 @@ namespace libsecondlife
         /// <returns>An object that can be serialized with LLSD</returns>
         public static StructuredData.LLSD PrimListToLLSD(List<Primitive> prims)
         {
-            StructuredData.LLSDMap map = new libsecondlife.StructuredData.LLSDMap(prims.Count);
+            StructuredData.LLSDMap map = new OpenMetaverse.StructuredData.LLSDMap(prims.Count);
 
             for (int i = 0; i < prims.Count; i++)
                 map.Add(prims[i].LocalID.ToString(), prims[i].ToLLSD());

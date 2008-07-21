@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -25,13 +25,13 @@
  */
 
 using System;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// Throttles the network traffic for various different traffic types.
-    /// Access this class through SecondLife.Throttle
+    /// Access this class through GridClient.Throttle
     /// </summary>
     public class AgentThrottle
     {
@@ -120,7 +120,7 @@ namespace libsecondlife
             get { return Resend + Land + Wind + Cloud + Task + Texture + Asset; }
             set
             {
-                // These sane initial values were pulled from the Second Life client
+                // Sane initial values
                 Resend = (value * 0.1f);
                 Land = (float)(value * 0.52f / 3f);
                 Wind = (float)(value * 0.05f);
@@ -131,7 +131,7 @@ namespace libsecondlife
             }
         }
 
-        private SecondLife Client;
+        private GridClient Client;
         private float resend;
         private float land;
         private float wind;
@@ -143,7 +143,7 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor, uses a default high total of 1500 KBps (1536000)
         /// </summary>
-        public AgentThrottle(SecondLife client)
+        public AgentThrottle(GridClient client)
         {
             Client = client;
             Total = 1536000.0f;
@@ -157,8 +157,8 @@ namespace libsecondlife
         /// packet</param>
         /// <param name="pos">Offset position to start reading at in the 
         /// throttle data</param>
-        /// <remarks>This is generally not needed in libsecondlife clients as 
-        /// the server will never send a throttle packet to the client</remarks>
+        /// <remarks>This is generally not needed in clients as the server will
+        /// never send a throttle packet to the client</remarks>
         public AgentThrottle(byte[] data, int pos)
         {
             int i;

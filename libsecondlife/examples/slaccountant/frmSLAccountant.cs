@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -30,8 +30,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 namespace SLAccountant
 {
@@ -67,8 +67,7 @@ namespace SLAccountant
 		private System.Windows.Forms.ColumnHeader colOnline;
 		private System.Windows.Forms.ColumnHeader colUuid;
 
-		// libsecondlife instance
-		private SecondLife Client;
+		private GridClient Client;
 
 		public frmSLAccountant()
 		{
@@ -392,7 +391,7 @@ namespace SLAccountant
 
 		private void frmSLAccountant_Load(object sender, System.EventArgs e)
 		{
-			Client = new SecondLife();
+			Client = new GridClient();
 
             Client.Settings.MULTIPLE_SIMS = false;
 

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Drawing;
-using libsecondlife;
-using libsecondlife.Capabilities;
-using libsecondlife.Imaging;
+using OpenMetaverse;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.Imaging;
 
 namespace importprimscript
 {
@@ -22,7 +22,7 @@ namespace importprimscript
 
     class importprimscript
     {
-        static SecondLife Client = new SecondLife();
+        static GridClient Client = new GridClient();
         static Sculpt CurrentSculpt = null;
         static AutoResetEvent RezzedEvent = new AutoResetEvent(false);
         static LLVector3 RootPosition = LLVector3.Zero;

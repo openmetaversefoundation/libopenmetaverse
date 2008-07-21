@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient.Commands.Inventory.Shell
+namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
 {
     public class ListContentsCommand : Command
     {
         private InventoryManager Manager;
-        private libsecondlife.Inventory Inventory;
+        private OpenMetaverse.Inventory Inventory;
         public ListContentsCommand(TestClient client)
         {
             Name = "ls";

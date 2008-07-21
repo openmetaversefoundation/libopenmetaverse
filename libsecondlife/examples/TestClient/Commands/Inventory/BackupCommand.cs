@@ -6,11 +6,11 @@ using System.Threading;
 using System.ComponentModel;
 using System.Xml;
 using System.Xml.Serialization;
-using libsecondlife;
-using libsecondlife.Packets;
-using libsecondlife.TestClient;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using OpenMetaverse.TestClient;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class QueuedDownloadInfo
     {
@@ -261,7 +261,7 @@ namespace libsecondlife.TestClient
             {
                 if (BackupWorker.CancellationPending)
                     return;
-                if (iNode.Data is libsecondlife.InventoryItem)
+                if (iNode.Data is OpenMetaverse.InventoryItem)
                 {
                     InventoryItem ii = iNode.Data as InventoryItem;
                     if (ii.AssetType == AssetType.LSLText || ii.AssetType == AssetType.Notecard)
@@ -299,7 +299,7 @@ namespace libsecondlife.TestClient
             {
                 if (BackupWorker.CancellationPending)
                     return;
-                else if (i.Data is libsecondlife.InventoryFolder)
+                else if (i.Data is OpenMetaverse.InventoryFolder)
                     BackupFolder(i, sPathSoFar + @"\" + MakeValid(i.Data.Name.Trim()));
             }
         }

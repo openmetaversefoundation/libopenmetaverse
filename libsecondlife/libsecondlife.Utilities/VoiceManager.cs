@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -31,11 +31,11 @@ using System.Text;
 using System.IO;
 using System.Xml;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.StructuredData;
-using libsecondlife.Capabilities;
+using OpenMetaverse;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Capabilities;
 
-namespace libsecondlife.Utilities
+namespace OpenMetaverse.Utilities
 {
     public enum VoiceStatus
     {
@@ -106,7 +106,7 @@ namespace libsecondlife.Utilities
         public event ProvisionAccountCallback OnProvisionAccount;
         public event ParcelVoiceInfoCallback OnParcelVoiceInfo;
 
-        public SecondLife Client;
+        public GridClient Client;
         public string VoiceServer = VOICE_RELEASE_SERVER;
         public bool Enabled;
 
@@ -147,7 +147,7 @@ namespace libsecondlife.Utilities
 
         #endregion Response Processing Variables
 
-        public VoiceManager(SecondLife client)
+        public VoiceManager(GridClient client)
         {
             Client = client;
             Client.Network.RegisterEventCallback("RequiredVoiceVersion", new Caps.EventQueueCallback(RequiredVoiceVersionEventHandler));

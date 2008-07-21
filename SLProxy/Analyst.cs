@@ -12,7 +12,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -30,9 +30,9 @@
  */
 
 using SLProxy;
-using libsecondlife;
+using OpenMetaverse;
 using Nwc.XmlRpc;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 using System.Reflection;
 
 using System;
@@ -49,7 +49,7 @@ public class Analyst : ProxyPlugin
     private Hashtable loggedPackets = new Hashtable();
     private string logGrep = null;
     private Hashtable modifiedPackets = new Hashtable();
-    private Assembly libslAssembly;
+    private Assembly openmvAssembly;
 
     public Analyst(ProxyFrame frame)
     {
@@ -59,8 +59,8 @@ public class Analyst : ProxyPlugin
 
     public override void Init()
     {
-        libslAssembly = Assembly.Load("libsecondlife");
-        if (libslAssembly == null) throw new Exception("Assembly load exception");
+        openmvAssembly = Assembly.Load("OpenMetaverse");
+        if (openmvAssembly == null) throw new Exception("Assembly load exception");
 
         // build the table of /command delegates
         InitializeCommandDelegates();
@@ -306,7 +306,7 @@ public class Analyst : ProxyPlugin
                         }
 
                         name = lineName;
-                        packetClass = libslAssembly.GetType("libsecondlife.Packets." + name + "Packet");
+                        packetClass = openmvAssembly.GetType("OpenMetaverse.Packets." + name + "Packet");
                         if (packetClass == null) throw new Exception("Couldn't get class " + name + "Packet");
                         ConstructorInfo ctr = packetClass.GetConstructor(new Type[] { });
                         if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + name + "Packet");
@@ -457,7 +457,7 @@ public class Analyst : ProxyPlugin
     // MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
     private object MagicCast(string name, string block, string field, string value)
     {
-        Type packetClass = libslAssembly.GetType("libsecondlife.Packets." + name + "Packet");
+        Type packetClass = openmvAssembly.GetType("OpenMetaverse.Packets." + name + "Packet");
         if (packetClass == null) throw new Exception("Couldn't get class " + name + "Packet");
 
         FieldInfo blockField = packetClass.GetField(block);

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class LoginCommand : Command
     {
@@ -19,7 +19,7 @@ namespace libsecondlife.TestClient
             if (args.Length != 3 && args.Length != 4)
                 return "usage: login firstname lastname password [simname]";
 
-            SecondLife newClient = Client.ClientManager.Login(args);
+            GridClient newClient = Client.ClientManager.Login(args);
 
             if (newClient.Network.Connected)
             {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,11 +29,11 @@ using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife.StructuredData;
-using libsecondlife.Capabilities;
-using libsecondlife.Packets;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// 
@@ -222,7 +222,7 @@ namespace libsecondlife
         /// <summary>A dictionary of all the regions, indexed by region handle</summary>
         internal Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong, GridRegion>();
 
-		private SecondLife Client;
+		private GridClient Client;
         private float sunPhase;
         private LLVector3 sunDirection;
         private LLVector3 sunAngVelocity;
@@ -230,8 +230,8 @@ namespace libsecondlife
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="client">Instance of type SecondLife to associate with this GridManager instance</param>
-		public GridManager(SecondLife client)
+        /// <param name="client">Instance of GridClient object to associate with this GridManager instance</param>
+		public GridManager(GridClient client)
 		{
 			Client = client;
 

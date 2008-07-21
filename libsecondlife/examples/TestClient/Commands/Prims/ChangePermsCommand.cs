@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class ChangePermsCommand : Command
     {

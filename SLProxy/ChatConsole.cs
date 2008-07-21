@@ -1,6 +1,6 @@
 /*
  * ChatConsole.cs: sample SLProxy appliation that writes chat to the console.
- *   Typing on the console will send chat to Second Life.
+ *   Typing on the console will send chat to the grid.
  *
  * Copyright (c) 2006 Austin Jennings
  * Modified by Andrew Ortman ("qode") on Decemeber 21, 2006 to work with the new pregen proxy.
@@ -11,7 +11,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,8 +29,8 @@
  */
 
 using SLProxy;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 using Nwc.XmlRpc;
 
 using System;

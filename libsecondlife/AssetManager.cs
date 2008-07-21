@@ -1,16 +1,42 @@
+/*
+ * Copyright (c) 2007-2008, openmetaverse.org
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without 
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the openmetaverse.org nor the names 
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     #region Enums
 
     /// <summary>
-    /// The different types of assets in Second Life
+    /// The different types of grid assets
     /// </summary>
     public enum AssetType : sbyte
     {
@@ -308,7 +334,7 @@ namespace libsecondlife
         /// <summary>Texture download cache</summary>
         public TextureCache Cache;
 
-        private SecondLife Client;
+        private GridClient Client;
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
         private AssetUpload PendingUpload;
         private object PendingUploadLock = new object();
@@ -318,8 +344,8 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">A reference to the SecondLife client object</param>
-        public AssetManager(SecondLife client)
+        /// <param name="client">A reference to the GridClient object</param>
+        public AssetManager(GridClient client)
         {
             Client = client;
             Cache = new TextureCache(client);
@@ -1370,7 +1396,7 @@ namespace libsecondlife
     /// </summary>
     public class TextureCache
     {
-        private SecondLife Client;
+        private GridClient Client;
         private Thread cleanerThread;
         private System.Timers.Timer cleanerTimer;
         private double pruneInterval = 1000 * 60 * 5;
@@ -1407,8 +1433,8 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">A reference to the SecondLife client object</param>
-        public TextureCache(SecondLife client)
+        /// <param name="client">A reference to the GridClient object</param>
+        public TextureCache(GridClient client)
         {
             Client = client;
             cleanerTimer = new System.Timers.Timer(pruneInterval);

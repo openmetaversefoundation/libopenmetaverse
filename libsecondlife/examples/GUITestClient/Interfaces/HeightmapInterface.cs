@@ -2,9 +2,9 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.GUITestClient
+namespace OpenMetaverse.GUITestClient
 {
     public class HeightmapInterface : Interface
     {

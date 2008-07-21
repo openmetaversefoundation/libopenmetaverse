@@ -1,4 +1,4 @@
-namespace libsecondlife.GUITestClient
+namespace OpenMetaverse.GUITestClient
 {
     partial class frmTestClient
     {

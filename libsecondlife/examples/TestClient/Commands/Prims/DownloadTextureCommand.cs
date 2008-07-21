@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Threading;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class DownloadTextureCommand : Command
     {

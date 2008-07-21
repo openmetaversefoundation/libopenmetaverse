@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -27,8 +27,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 namespace sldump
 {
@@ -61,7 +61,7 @@ namespace sldump
 		[STAThread]
 		static void Main(string[] args)
 		{
-			SecondLife client;
+			GridClient client;
 
 			if (args.Length == 0 || (args.Length < 4 && args[0] != "--printmap"))
 			{
@@ -84,7 +84,7 @@ namespace sldump
 				return;
 			}
 
-            client = new SecondLife();
+            client = new GridClient();
             // Turn off some unnecessary things
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             client.Settings.MULTIPLE_SIMS = false;
@@ -118,7 +118,7 @@ namespace sldump
 
             client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "sldump",
-                "contact@libsecondlife.org"));
+                "contact@OpenMetaverse.org"));
 
             LoginEvent.WaitOne();
 

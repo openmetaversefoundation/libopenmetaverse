@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -28,10 +28,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
-using libsecondlife.Packets;
-using libsecondlife.StructuredData;
+using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     #region Structs
 
@@ -42,7 +42,7 @@ namespace libsecondlife
     {
         /// <summary>Global Key of record</summary>
         public LLUUID ID;
-        /// <summary>Parcel Owners <seealso cref="T:libsecondlife.LLUUID"/></summary>
+        /// <summary>Parcel Owners <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
         public LLUUID OwnerID;
         /// <summary>Name field of parcel, limited to 128 characters</summary>
         public string Name;
@@ -62,7 +62,7 @@ namespace libsecondlife
         public float GlobalZ;
         /// <summary>Name of simulator parcel is located in</summary>
         public string SimName;
-        /// <summary>Texture <seealso cref="T:libsecondlife.LLUUID"/> of parcels display picture</summary>
+        /// <summary>Texture <seealso cref="T:OpenMetaverse.LLUUID"/> of parcels display picture</summary>
         public LLUUID SnapshotID;
         /// <summary>Float representing calculated traffic based on time spent on parcel by avatars</summary>
         public float Dwell;
@@ -608,7 +608,7 @@ namespace libsecondlife
         /// </summary>
         public struct ParcelAccessEntry
         {
-            /// <summary>Agents <seealso cref="T:libsecondlife.LLUUID"/></summary>
+            /// <summary>Agents <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
             public LLUUID AgentID;
             /// <summary></summary>
             public DateTime Time;
@@ -621,7 +621,7 @@ namespace libsecondlife
         /// </summary>
         public struct ParcelPrimOwners
         {
-            /// <summary>Prim Owners <seealso cref="T:libsecondlife.LLUUID"/></summary>
+            /// <summary>Prim Owners <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
             public LLUUID OwnerID;
             /// <summary>True of owner is group</summary>
             public bool IsGroupOwned;
@@ -707,15 +707,15 @@ namespace libsecondlife
         public event ForceSelectObjects OnParcelSelectedObjects;
         #endregion Events
 
-        private SecondLife Client;
+        private GridClient Client;
 
         #region Public Methods
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">A reference to the SecondLife client</param>
-        public ParcelManager(SecondLife client)
+        /// <param name="client">A reference to the GridClient object</param>
+        public ParcelManager(GridClient client)
         {
             Client = client;
             // Setup the callbacks
@@ -888,7 +888,7 @@ namespace libsecondlife
         /// <param name="simulator">The Simulator the parcel is located in</param>
         /// <param name="localID">The parcels region specific local ID</param>
         /// <param name="forGroup">true if this parcel is being purchased by a group</param>
-        /// <param name="groupID">The groups <seealso cref="T:libsecondlife.LLUUID"/></param>
+        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.LLUUID"/></param>
         /// <param name="removeContribution">true to remove tier contribution if purchase is successful</param>
         /// <param name="parcelArea">The parcels size</param>
         /// <param name="parcelPrice">The purchase price of the parcel</param>
@@ -934,7 +934,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator">The simulator the parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
-        /// <param name="groupID">The groups <seealso cref="T:libsecondlife.LLUUID"/></param>
+        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.LLUUID"/></param>
         public void DeedToGroup(Simulator simulator, int localID, LLUUID groupID)
         {
             ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
@@ -968,8 +968,8 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
-        /// <param name="type">the type of objects to return, <seealso cref="T:libsecondlife.ObjectReturnType"/></param>
-        /// <param name="ownerIDs">A list containing object owners <seealso cref="libsecondlife.LLUUID"/>s to return</param>
+        /// <param name="type">the type of objects to return, <seealso cref="T:OpenMetaverse.ObjectReturnType"/></param>
+        /// <param name="ownerIDs">A list containing object owners <seealso cref="OpenMetaverse.LLUUID"/>s to return</param>
         public void ReturnObjects(Simulator simulator, int localID, ObjectReturnType type, List<LLUUID> ownerIDs)
         {
             ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();

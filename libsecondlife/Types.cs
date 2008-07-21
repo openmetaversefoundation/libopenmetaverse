@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,9 +26,9 @@
 
 using System;
 using System.Collections.Generic;
-using libsecondlife.StructuredData;
+using OpenMetaverse.StructuredData;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// A 128-bit Universally Unique Identifier, used throughout the Second
@@ -463,8 +463,7 @@ namespace libsecondlife
         /// <summary>
         /// Get a formatted string representation of the vector
         /// </summary>
-        /// <returns>A string representation of the vector, similar to the LSL
-        /// vector to string conversion in Second Life</returns>
+        /// <returns>A string representation of the vector</returns>
         public override string ToString()
         {
             return String.Format(Helpers.EnUsCulture, "<{0}, {1}>", X, Y);
@@ -869,8 +868,7 @@ namespace libsecondlife
         /// <summary>
         /// Get a formatted string representation of the vector
         /// </summary>
-        /// <returns>A string representation of the vector, similar to the LSL
-        /// vector to string conversion in Second Life</returns>
+        /// <returns>A string representation of the vector</returns>
         public override string ToString()
         {
             return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}>", X, Y, Z);

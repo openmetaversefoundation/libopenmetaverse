@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 using System.Text;
 
 // the Namespace used for all TestClient commands
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     /// <summary>
     /// Shows a list of friends
@@ -29,7 +29,7 @@ namespace libsecondlife.TestClient
         /// Get a list of current friends
         /// </summary>
         /// <param name="args">optional testClient command arguments</param>
-        /// <param name="fromAgentID">The <seealso cref="libsecondlife.LLUUID"/> 
+        /// <param name="fromAgentID">The <seealso cref="OpenMetaverse.LLUUID"/> 
         /// of the agent making the request</param>
         /// <returns></returns>
         public override string Execute(string[] args, LLUUID fromAgentID)

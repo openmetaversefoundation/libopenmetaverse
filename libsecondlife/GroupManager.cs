@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,9 +26,9 @@
 
 using System;
 using System.Collections.Generic;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     #region Structs
 
@@ -88,7 +88,7 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// Represents a group in Second Life
+    /// Represents a group on the grid
     /// </summary>
     public struct Group
     {
@@ -565,7 +565,7 @@ namespace libsecondlife
         #endregion Events
 
 
-        private SecondLife Client;
+        private GridClient Client;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>> GroupMembersCaches;
         /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
@@ -578,7 +578,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="client"></param>
-        public GroupManager(SecondLife client)
+        public GroupManager(GridClient client)
         {
             Client = client;
 
@@ -880,7 +880,7 @@ namespace libsecondlife
         /// <param name="group">Group struct containing the new group info</param>
         public void RequestCreateGroup(Group group)
         {
-            libsecondlife.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
+            OpenMetaverse.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
             //Fill in agent data
             cgrp.AgentData = new CreateGroupRequestPacket.AgentDataBlock();
             cgrp.AgentData.AgentID = Client.Self.AgentID;
@@ -904,7 +904,7 @@ namespace libsecondlife
         /// <param name="group">Group struct to update.</param>
         public void UpdateGroup(LLUUID id, Group group)
         {
-            libsecondlife.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
+            OpenMetaverse.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
             //Fill in agent data
             cgrp.AgentData = new UpdateGroupInfoPacket.AgentDataBlock();
             cgrp.AgentData.AgentID = Client.Self.AgentID;
@@ -928,7 +928,7 @@ namespace libsecondlife
         /// <param name="member">Avatar's key to eject</param>
         public void EjectUser(LLUUID group, LLUUID member)
         {
-            libsecondlife.Packets.EjectGroupMemberRequestPacket eject = new EjectGroupMemberRequestPacket();
+            OpenMetaverse.Packets.EjectGroupMemberRequestPacket eject = new EjectGroupMemberRequestPacket();
             eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
             eject.AgentData.AgentID = Client.Self.AgentID;
             eject.AgentData.SessionID = Client.Self.SessionID;
@@ -948,7 +948,7 @@ namespace libsecondlife
         /// <param name="role">Role to update</param>
         public void UpdateRole(LLUUID group, GroupRole role)
         {
-            libsecondlife.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
+            OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
             gru.AgentData.AgentID = Client.Self.AgentID;
             gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
@@ -966,7 +966,7 @@ namespace libsecondlife
         /// <param name="role">Role to create</param>
         public void CreateRole(LLUUID group, GroupRole role)
         {
-            libsecondlife.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
+            OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
             gru.AgentData.AgentID = Client.Self.AgentID;
             gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
@@ -985,7 +985,7 @@ namespace libsecondlife
         /// <param name="member">Avatar's Key to remove</param>
         public void RemoveFromRole(LLUUID group, LLUUID role, LLUUID member)
         {
-            libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
+            OpenMetaverse.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
             grc.AgentData.AgentID = Client.Self.AgentID;
             grc.AgentData.SessionID = Client.Self.SessionID;
             grc.AgentData.GroupID = group;
@@ -1005,7 +1005,7 @@ namespace libsecondlife
         /// <param name="member">Avatar's ID to assign to role</param>
         public void AddToRole(LLUUID group, LLUUID role, LLUUID member)
         {
-            libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
+            OpenMetaverse.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
             grc.AgentData.AgentID = Client.Self.AgentID;
             grc.AgentData.SessionID = Client.Self.SessionID;
             grc.AgentData.GroupID = group;

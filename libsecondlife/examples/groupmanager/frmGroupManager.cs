@@ -5,19 +5,19 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 namespace groupmanager
 {
     public partial class frmGroupManager : Form
     {
-        SecondLife Client;
+        GridClient Client;
         Dictionary<LLUUID, Group> Groups;
 
         public frmGroupManager()
         {
-            Client = new SecondLife();
+            Client = new GridClient();
 
             Client.Settings.MULTIPLE_SIMS = false;
 

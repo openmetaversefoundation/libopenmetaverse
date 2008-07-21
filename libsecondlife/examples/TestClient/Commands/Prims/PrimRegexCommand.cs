@@ -1,8 +1,8 @@
 using System;
 using System.Text.RegularExpressions;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class PrimRegexCommand : Command
     {

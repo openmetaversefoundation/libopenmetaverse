@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -32,9 +32,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
 using System.IO;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// This exception is thrown whenever a network operation is attempted 
@@ -44,7 +44,7 @@ namespace libsecondlife
 
     /// <summary>
     /// NetworkManager is responsible for managing the network layer of 
-    /// libsecondlife. It tracks all the server connections, serializes 
+    /// OpenMetaverse. It tracks all the server connections, serializes 
     /// outgoing traffic and deserializes incoming traffic, and provides
     /// instances of delegates for network-related events.
     /// </summary>
@@ -87,7 +87,7 @@ namespace libsecondlife
         /// <summary>
         /// Assigned by the OnConnected event. Raised when login was a success
         /// </summary>
-        /// <param name="sender">Reference to the SecondLife class that called the event</param>
+        /// <param name="sender">Reference to the GridClient object that called the event</param>
         public delegate void ConnectedCallback(object sender);
         /// <summary>
         /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
@@ -197,15 +197,15 @@ namespace libsecondlife
         /// <summary>Incoming packets that are awaiting handling</summary>
         internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
-        private SecondLife Client;
+        private GridClient Client;
         private Timer DisconnectTimer;
         private bool connected = false;
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
-        public NetworkManager(SecondLife client)
+        /// <param name="client">Reference to the GridClient object</param>
+        public NetworkManager(GridClient client)
         {
             Client = client;
 
@@ -230,7 +230,7 @@ namespace libsecondlife
         /// <summary>
         /// Register an event handler for a packet. This is a low level event
         /// interface and should only be used if you are doing something not
-        /// supported in libsecondlife
+        /// supported in the library
         /// </summary>
         /// <param name="type">Packet type to trigger events for</param>
         /// <param name="callback">Callback to fire when a packet of this type
@@ -243,7 +243,7 @@ namespace libsecondlife
         /// <summary>
         /// Unregister an event handler for a packet. This is a low level event
         /// interface and should only be used if you are doing something not 
-        /// supported in libsecondlife
+        /// supported in the library
         /// </summary>
         /// <param name="type">Packet type this callback is registered with</param>
         /// <param name="callback">Callback to stop firing events for</param>
@@ -255,7 +255,7 @@ namespace libsecondlife
         /// <summary>
         /// Register a CAPS event handler. This is a low level event interface
         /// and should only be used if you are doing something not supported in
-        /// libsecondlife
+        /// the library
         /// </summary>
         /// <param name="capsEvent">Name of the CAPS event to register a handler for</param>
         /// <param name="callback">Callback to fire when a CAPS event is received</param>
@@ -267,7 +267,7 @@ namespace libsecondlife
         /// <summary>
         /// Unregister a CAPS event handler. This is a low level event interface
         /// and should only be used if you are doing something not supported in
-        /// libsecondlife
+        /// the library
         /// </summary>
         /// <param name="capsEvent">Name of the CAPS event this callback is
         /// registered with</param>

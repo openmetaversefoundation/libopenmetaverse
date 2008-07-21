@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -24,17 +24,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 using System.Collections.Generic;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
 	/// <summary>
 	/// Estate level administration and utilities
 	/// </summary>
 	public class EstateTools
 	{
-		private SecondLife Client;
+		private GridClient Client;
         public GroundTextureSettings GroundTextures;
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace libsecondlife
         /// Constructor for EstateTools class
         /// </summary>
         /// <param name="client"></param>
-		public EstateTools(SecondLife client)
+		public EstateTools(GridClient client)
 		{
 			Client = client;
             Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));

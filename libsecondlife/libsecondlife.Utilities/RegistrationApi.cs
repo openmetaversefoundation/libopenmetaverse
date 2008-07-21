@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -28,10 +28,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
-using libsecondlife.StructuredData;
-using libsecondlife.Capabilities;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Capabilities;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     public class RegistrationApi
     {
@@ -57,7 +57,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// see https://secure-web6.secondlife.com/developers/third_party_reg/#service_create_user or
+        /// See https://secure-web6.secondlife.com/developers/third_party_reg/#service_create_user or
         /// https://wiki.secondlife.com/wiki/RegAPIDoc for description
         /// </summary>
         public class CreateUserParam

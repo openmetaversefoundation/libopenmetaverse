@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,13 +26,13 @@
 
 using System;
 using System.Collections.Generic;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     public class SoundManager
     {
-        public readonly SecondLife Client;
+        public readonly GridClient Client;
 
         public delegate void AttachSoundCallback(LLUUID soundID, LLUUID ownerID, LLUUID objectID, float gain, byte flags);
         public delegate void AttachedSoundGainChangeCallback(LLUUID objectID, float gain);
@@ -44,7 +44,7 @@ namespace libsecondlife
         public event SoundTriggerCallback OnSoundTrigger;
         public event PreloadSoundCallback OnPreloadSound;
 
-        public SoundManager(SecondLife client)
+        public SoundManager(GridClient client)
         {
             Client = client;
 

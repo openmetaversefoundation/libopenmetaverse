@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,15 +26,15 @@
 
 using System;
 using System.Collections.Generic;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// Class for controlling various system settings.
     /// </summary>
     /// <remarks>Some values are readonly because they affect things that
-    /// happen when the SecondLife object is initialized, so changing them at 
+    /// happen when the GridClient object is initialized, so changing them at 
     /// runtime won't do any good. Non-readonly values may affect things that 
     /// happen at login or dynamically</remarks>
     public class Settings
@@ -162,12 +162,12 @@ namespace libsecondlife
         /// <summary>Enable/disable sending periodic camera updates</summary>
         public bool SEND_AGENT_UPDATES = true;
 
-        /// <summary>Enable/disable libsecondlife automatically setting the
-        /// bandwidth throttle after connecting to each simulator</summary>
-        /// <remarks>The default libsecondlife throttle uses the equivalent of
-        /// the maximum bandwidth setting in the official client. If you do not
-        /// set a throttle your connection will by default be throttled well
-        /// below the minimum values and you may experience connection problems</remarks>
+        /// <summary>Enable/disable automatically setting the bandwidth throttle
+        /// after connecting to each simulator</summary>
+        /// <remarks>The default throttle uses the equivalent of the maximum
+        /// bandwidth setting in the official client. If you do not set a
+        /// throttle your connection will by default be throttled well below
+        /// the minimum values and you may experience connection problems</remarks>
         public bool SEND_AGENT_THROTTLE = true;
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
@@ -203,7 +203,7 @@ namespace libsecondlife
         public bool LOG_ALL_CAPS_ERRORS = false;
 
         /// <summary>If true, any reference received for a folder or item
-        /// libsecondlife is not aware of will automatically be fetched</summary>
+        /// the library is not aware of will automatically be fetched</summary>
         public bool FETCH_MISSING_INVENTORY = true;
 
         /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
@@ -290,12 +290,12 @@ namespace libsecondlife
         #endregion
         #region Private Fields
 
-        private SecondLife Client;
+        private GridClient Client;
         private int priceUpload = 0;
 
         /// <summary>Constructor</summary>
-        /// <param name="client">Reference to a SecondLife client object</param>
-        public Settings(SecondLife client)
+        /// <param name="client">Reference to a GridClient object</param>
+        public Settings(GridClient client)
         {
             Client = client;
             Client.Network.RegisterCallback(Packets.PacketType.EconomyData, new NetworkManager.PacketCallback(EconomyDataHandler));

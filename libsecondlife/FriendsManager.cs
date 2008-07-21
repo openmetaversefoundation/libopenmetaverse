@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2007-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
  *   modification, are permitted provided that the following conditions are met:
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -26,9 +26,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using libsecondlife.Packets;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     /// <summary>
     /// 
@@ -49,8 +49,8 @@ namespace libsecondlife
     /// <summary>
     /// This class holds information about an avatar in the friends list.  There are two ways 
     /// to interface to this class.  The first is through the set of boolean properties.  This is the typical
-    /// way clients of this class will use it.  The second interface is through two bitmap properties.  While 
-    /// the bitmap interface is public, it is intended for use the libsecondlife framework.
+    /// way clients of this class will use it.  The second interface is through two bitflag properties,
+    /// TheirFriendsRights and MyFriendsRights
     /// </summary>
     public class FriendInfo
     {
@@ -64,24 +64,7 @@ namespace libsecondlife
         private bool m_canSeeThemOnMap;
         private bool m_canModifyTheirObjects;
 
-        /// <summary>
-        /// Used by the libsecondlife framework when building the initial list of friends
-        /// at login time.  This constructor should not be called by consummer of this class.
-        /// </summary>
-        /// <param name="id">System ID of the avatar being prepesented</param>
-        /// <param name="theirRights">Rights the friend has to see you online and to modify your objects</param>
-        /// <param name="myRights">Rights you have to see your friend online and to modify their objects</param>
-        public FriendInfo(LLUUID id, FriendRights theirRights, FriendRights myRights)
-        {
-            m_id = id;
-            m_canSeeMeOnline = (theirRights & FriendRights.CanSeeOnline) != 0;
-            m_canSeeMeOnMap = (theirRights & FriendRights.CanSeeOnMap) != 0;
-            m_canModifyMyObjects = (theirRights & FriendRights.CanModifyObjects) != 0;
-
-            m_canSeeThemOnline = (myRights & FriendRights.CanSeeOnline) != 0;
-            m_canSeeThemOnMap = (myRights & FriendRights.CanSeeOnMap) != 0;
-            m_canModifyTheirObjects = (myRights & FriendRights.CanModifyObjects) != 0;
-        }
+        #region Properties
 
         /// <summary>
         /// System ID of the avatar
@@ -210,6 +193,26 @@ namespace libsecondlife
             }
         }
 
+        #endregion Properties
+
+        /// <summary>
+        /// Used internally when building the initial list of friends at login time
+        /// </summary>
+        /// <param name="id">System ID of the avatar being prepesented</param>
+        /// <param name="theirRights">Rights the friend has to see you online and to modify your objects</param>
+        /// <param name="myRights">Rights you have to see your friend online and to modify their objects</param>
+        internal FriendInfo(LLUUID id, FriendRights theirRights, FriendRights myRights)
+        {
+            m_id = id;
+            m_canSeeMeOnline = (theirRights & FriendRights.CanSeeOnline) != 0;
+            m_canSeeMeOnMap = (theirRights & FriendRights.CanSeeOnMap) != 0;
+            m_canModifyMyObjects = (theirRights & FriendRights.CanModifyObjects) != 0;
+
+            m_canSeeThemOnline = (myRights & FriendRights.CanSeeOnline) != 0;
+            m_canSeeThemOnMap = (myRights & FriendRights.CanSeeOnMap) != 0;
+            m_canModifyTheirObjects = (myRights & FriendRights.CanModifyObjects) != 0;
+        }
+
         /// <summary>
         /// FriendInfo represented as a string
         /// </summary>
@@ -291,7 +294,7 @@ namespace libsecondlife
 
         #endregion Events
 
-        private SecondLife Client;
+        private GridClient Client;
         /// <summary>
         /// A dictionary of key/value pairs containing known friends of this avatar. 
         /// 
@@ -310,10 +313,10 @@ namespace libsecondlife
         public InternalDictionary<LLUUID, LLUUID> FriendRequests = new InternalDictionary<LLUUID, LLUUID>();
 
         /// <summary>
-        /// This constructor is intened to only be used by the libsecondlife framework
+        /// Internal constructor
         /// </summary>
-        /// <param name="client">A reference to the SecondLife Object</param>
-        public FriendsManager(SecondLife client)
+        /// <param name="client">A reference to the GridClient Object</param>
+        internal FriendsManager(GridClient client)
         {
             Client = client;
 

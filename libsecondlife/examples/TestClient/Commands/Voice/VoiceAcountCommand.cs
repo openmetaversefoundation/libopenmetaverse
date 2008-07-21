@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Packets;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class VoiceAccountCommand : Command
     {

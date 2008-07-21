@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -29,11 +29,11 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
-using libsecondlife.Capabilities;
-using libsecondlife.StructuredData;
-using libsecondlife.Packets;
+using OpenMetaverse.Capabilities;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Packets;
 
-namespace libsecondlife
+namespace OpenMetaverse
 {
     #region Enums
     /// <summary>
@@ -139,19 +139,19 @@ namespace libsecondlife
     /// </summary>
     public abstract class InventoryBase
     {
-        /// <summary><seealso cref="libsecondlife.LLUUID"/> of item/folder</summary>
+        /// <summary><seealso cref="OpenMetaverse.LLUUID"/> of item/folder</summary>
         public readonly LLUUID UUID;
-        /// <summary><seealso cref="libsecondlife.LLUUID"/> of parent folder</summary>
+        /// <summary><seealso cref="OpenMetaverse.LLUUID"/> of parent folder</summary>
         public LLUUID ParentUUID;
         /// <summary>Name of item/folder</summary>
         public string Name;
-        /// <summary>Item/Folder Owners <seealso cref="libsecondlife.LLUUID"/></summary>
+        /// <summary>Item/Folder Owners <seealso cref="OpenMetaverse.LLUUID"/></summary>
         public LLUUID OwnerID;
 
         /// <summary>
         /// Constructor, takes an itemID as a parameter
         /// </summary>
-        /// <param name="itemID">The <seealso cref="libsecondlife.LLUUID"/> of the item</param>
+        /// <param name="itemID">The <seealso cref="OpenMetaverse.LLUUID"/> of the item</param>
         public InventoryBase(LLUUID itemID)
         {
             if (itemID == LLUUID.Zero)
@@ -170,7 +170,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Determine whether the specified <seealso cref="libsecondlife.InventoryBase"/> object is equal to the current object
+        /// Determine whether the specified <seealso cref="OpenMetaverse.InventoryBase"/> object is equal to the current object
         /// </summary>
         /// <param name="o">InventoryBase object to compare against</param>
         /// <returns>true if objects are the same</returns>
@@ -181,7 +181,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Determine whether the specified <seealso cref="libsecondlife.InventoryBase"/> object is equal to the current object
+        /// Determine whether the specified <seealso cref="OpenMetaverse.InventoryBase"/> object is equal to the current object
         /// </summary>
         /// <param name="o">InventoryBase object to compare against</param>
         /// <returns>true if objects are the same</returns>
@@ -199,27 +199,27 @@ namespace libsecondlife
     /// </summary>
     public class InventoryItem : InventoryBase
     {
-        /// <summary>The <seealso cref="libsecondlife.LLUUID"/> of this item</summary>
+        /// <summary>The <seealso cref="OpenMetaverse.LLUUID"/> of this item</summary>
         public LLUUID AssetUUID;
-        /// <summary>The combined <seealso cref="libsecondlife.Permissions"/> of this item</summary>
+        /// <summary>The combined <seealso cref="OpenMetaverse.Permissions"/> of this item</summary>
         public Permissions Permissions;
-        /// <summary>The type of item from <seealso cref="libsecondlife.AssetType"/></summary>
+        /// <summary>The type of item from <seealso cref="OpenMetaverse.AssetType"/></summary>
         public AssetType AssetType;
-        /// <summary>The type of item from the <seealso cref="libsecondlife.InventoryType"/> enum</summary>
+        /// <summary>The type of item from the <seealso cref="OpenMetaverse.InventoryType"/> enum</summary>
         public InventoryType InventoryType;
-        /// <summary>The <seealso cref="libsecondlife.LLUUID"/> of the creator of this item</summary>
+        /// <summary>The <seealso cref="OpenMetaverse.LLUUID"/> of the creator of this item</summary>
         public LLUUID CreatorID;
         /// <summary>A Description of this item</summary>
         public string Description;
-        /// <summary>The <seealso cref="libsecondlife.Group"/>s <seealso cref="libsecondlife.LLUUID"/> this item is set to or owned by</summary>
+        /// <summary>The <seealso cref="OpenMetaverse.Group"/>s <seealso cref="OpenMetaverse.LLUUID"/> this item is set to or owned by</summary>
         public LLUUID GroupID;
         /// <summary>If true, item is owned by a group</summary>
         public bool GroupOwned;
         /// <summary>The price this item can be purchased for</summary>
         public int SalePrice;
-        /// <summary>The type of sale from the <seealso cref="libsecondlife.SaleType"/> enum</summary>
+        /// <summary>The type of sale from the <seealso cref="OpenMetaverse.SaleType"/> enum</summary>
         public SaleType SaleType;
-        /// <summary>Combined flags from <seealso cref="libsecondlife.InventoryItemFlags"/></summary>
+        /// <summary>Combined flags from <seealso cref="OpenMetaverse.InventoryItemFlags"/></summary>
         public uint Flags;
         /// <summary>Time and date this inventory item was created, stored as
         /// UTC (Coordinated Universal Time)</summary>
@@ -228,15 +228,15 @@ namespace libsecondlife
         /// <summary>
         ///  Construct a new InventoryItem object
         /// </summary>
-        /// <param name="itemID">The <seealso cref="libsecondlife.LLUUID"/> of the item</param>
+        /// <param name="itemID">The <seealso cref="OpenMetaverse.LLUUID"/> of the item</param>
         public InventoryItem(LLUUID itemID) 
             : base(itemID) { }
 
         /// <summary>
         /// Construct a new InventoryItem object of a specific Type
         /// </summary>
-        /// <param name="type">The type of item from <seealso cref="libsecondlife.InventoryType"/></param>
-        /// <param name="itemID"><seealso cref="libsecondlife.LLUUID"/> of the item</param>
+        /// <param name="type">The type of item from <seealso cref="OpenMetaverse.InventoryType"/></param>
+        /// <param name="itemID"><seealso cref="OpenMetaverse.LLUUID"/> of the item</param>
         public InventoryItem(InventoryType type, LLUUID itemID) : base(itemID) { InventoryType = type; }
 
         /// <summary>
@@ -264,9 +264,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Determine whether the specified <seealso cref="libsecondlife.InventoryBase"/> object is equal to the current object
+        /// Determine whether the specified <seealso cref="OpenMetaverse.InventoryBase"/> object is equal to the current object
         /// </summary>
-        /// <param name="o">The <seealso cref="libsecondlife.InventoryBase"/> object to compare against</param>
+        /// <param name="o">The <seealso cref="OpenMetaverse.InventoryBase"/> object to compare against</param>
         /// <returns>true if objects are the same</returns>
         public override bool Equals(InventoryBase o)
         {
@@ -275,9 +275,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Determine whether the specified <seealso cref="libsecondlife.InventoryItem"/> object is equal to the current object
+        /// Determine whether the specified <seealso cref="OpenMetaverse.InventoryItem"/> object is equal to the current object
         /// </summary>
-        /// <param name="o">The <seealso cref="libsecondlife.InventoryItem"/> object to compare against</param>
+        /// <param name="o">The <seealso cref="OpenMetaverse.InventoryItem"/> object to compare against</param>
         /// <returns>true if objects are the same</returns>
         public bool Equals(InventoryItem o)
         {
@@ -305,8 +305,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryTexture object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryTexture(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Texture; 
@@ -321,8 +321,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventorySound object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventorySound(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Sound; 
@@ -337,8 +337,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryCallingCard object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryCallingCard(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.CallingCard; 
@@ -353,8 +353,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryLandmark object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryLandmark(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Landmark; 
@@ -378,8 +378,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryObject object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryObject(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Object; 
@@ -406,8 +406,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryNotecard object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryNotecard(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Notecard; 
@@ -423,8 +423,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryCategory object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryCategory(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Category; 
@@ -439,8 +439,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryLSL object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryLSL(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.LSL; 
@@ -455,8 +455,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventorySnapshot object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventorySnapshot(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Snapshot; 
@@ -471,8 +471,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryAttachment object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryAttachment(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Attachment; 
@@ -496,12 +496,12 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryWearable object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryWearable(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Wearable; }
 
         /// <summary>
-        /// The <seealso cref="libsecondlife.WearableType"/>, Skin, Shape, Skirt, Etc
+        /// The <seealso cref="OpenMetaverse.WearableType"/>, Skin, Shape, Skirt, Etc
         /// </summary>
         public WearableType WearableType
         {
@@ -518,8 +518,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryAnimation object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryAnimation(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Animation; 
@@ -534,8 +534,8 @@ namespace libsecondlife
         /// <summary>
         /// Construct an InventoryGesture object
         /// </summary>
-        /// <param name="itemID">A <seealso cref="libsecondlife.LLUUID"/> which becomes the 
-        /// <seealso cref="libsecondlife.InventoryItem"/> objects AssetUUID</param>
+        /// <param name="itemID">A <seealso cref="OpenMetaverse.LLUUID"/> which becomes the 
+        /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryGesture(LLUUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Gesture; 
@@ -543,12 +543,12 @@ namespace libsecondlife
     }
     
     /// <summary>
-    /// A folder contains <seealso cref="T:libsecondlife.InventoryItem"/>s and has certain attributes specific 
+    /// A folder contains <seealso cref="T:OpenMetaverse.InventoryItem"/>s and has certain attributes specific 
     /// to itself
     /// </summary>
     public class InventoryFolder : InventoryBase
     {
-        /// <summary>The Preferred <seealso cref="T:libsecondlife.AssetType"/> for a folder.</summary>
+        /// <summary>The Preferred <seealso cref="T:OpenMetaverse.AssetType"/> for a folder.</summary>
         public AssetType PreferredType;
         /// <summary>The Version of this folder</summary>
         public int Version;
@@ -763,7 +763,7 @@ namespace libsecondlife
 
         #endregion Events
 
-        private SecondLife _Client;
+        private GridClient _Client;
         private Inventory _Store;
         private Random _RandNumbers = new Random();
         private object _CallbacksLock = new object();
@@ -875,8 +875,8 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
-        public InventoryManager(SecondLife client)
+        /// <param name="client">Reference to the GridClient object</param>
+        public InventoryManager(GridClient client)
         {
             _Client = client;
 
@@ -905,7 +905,7 @@ namespace libsecondlife
         /// Fetch an inventory item from the dataserver
         /// </summary>
         /// <param name="itemID">The items <seealso cref="LLUUID"/></param>
-        /// <param name="ownerID">The item Owners <seealso cref="libsecondlife.LLUUID"/></param>
+        /// <param name="ownerID">The item Owners <seealso cref="OpenMetaverse.LLUUID"/></param>
         /// <param name="timeoutMS">a integer representing the number of milliseconds to wait for results</param>
         /// <returns>An <seealso cref="InventoryItem"/> object on success, or null if no item was found</returns>
         /// <remarks>Items will also be sent to the <seealso cref="InventoryManager.OnItemReceived"/> event</remarks>
@@ -936,8 +936,8 @@ namespace libsecondlife
         /// <summary>
         /// Request A single inventory item
         /// </summary>
-        /// <param name="itemID">The items <seealso cref="libsecondlife.LLUUID"/></param>
-        /// <param name="ownerID">The item Owners <seealso cref="libsecondlife.LLUUID"/></param>
+        /// <param name="itemID">The items <seealso cref="OpenMetaverse.LLUUID"/></param>
+        /// <param name="ownerID">The item Owners <seealso cref="OpenMetaverse.LLUUID"/></param>
         /// <seealso cref="InventoryManager.OnItemReceived"/>
         public void RequestFetchInventory(LLUUID itemID, LLUUID ownerID)
         {

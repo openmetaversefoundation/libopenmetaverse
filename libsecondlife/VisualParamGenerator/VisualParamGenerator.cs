@@ -53,7 +53,7 @@ namespace VisualParamGenerator
             try
             {
                 // Read in avatar_lad.xml
-                Stream stream = libsecondlife.Helpers.GetResourceStream("avatar_lad.xml");
+                Stream stream = OpenMetaverse.Helpers.GetResourceStream("avatar_lad.xml");
                 StreamReader reader = new StreamReader(stream);
 
                 if (stream != null)

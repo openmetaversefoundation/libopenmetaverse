@@ -6,13 +6,13 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.GUITestClient
+namespace OpenMetaverse.GUITestClient
 {
     public partial class frmTestClient : Form
     {
-        private SecondLife Client = new SecondLife();
+        private GridClient Client = new GridClient();
         private Dictionary<Interface, TabPage> Interfaces = new Dictionary<Interface, TabPage>();
 
         public frmTestClient()

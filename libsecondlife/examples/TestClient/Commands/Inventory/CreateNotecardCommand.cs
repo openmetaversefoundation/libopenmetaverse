@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using libsecondlife;
+using OpenMetaverse;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class CreateNotecardCommand : Command
     {
@@ -39,7 +39,7 @@ namespace libsecondlife.TestClient
             // FIXME: Upload the notecard asset first. When that completes, call RequestCreateItem
             try
             {
-                string desc = String.Format("{0} created by libsecondlife TestClient {1}", file, DateTime.Now);
+                string desc = String.Format("{0} created by OpenMetaverse TestClient {1}", file, DateTime.Now);
                 // create the asset
 
                 Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),

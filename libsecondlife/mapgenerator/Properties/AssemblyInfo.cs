@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("mapgenerator")]
-[assembly: AssemblyDescription("C# class generator from the Second Life message template")]
+[assembly: AssemblyDescription("C# class generator from the message_template.msg format")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("libsecondlife")]
+[assembly: AssemblyCompany("openmetaverse.org")]
 [assembly: AssemblyProduct("mapgenerator")]
-[assembly: AssemblyCopyright("Copyright © libsecondlife 2006")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

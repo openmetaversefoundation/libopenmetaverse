@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Text;
 
-namespace libsecondlife.Voice
+namespace OpenMetaverse.Voice
 {
     public partial class VoiceGateway
     {

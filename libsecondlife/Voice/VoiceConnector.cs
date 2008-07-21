@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace libsecondlife.Voice
+namespace OpenMetaverse.Voice
 {
     public partial class VoiceGateway
     {

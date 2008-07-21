@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace libsecondlife.TestClient.Commands.Movement
+namespace OpenMetaverse.TestClient.Commands.Movement
 {
     class MovetoCommand : Command
     {

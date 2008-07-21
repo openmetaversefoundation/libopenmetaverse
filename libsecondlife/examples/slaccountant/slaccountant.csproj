@@ -101,8 +101,8 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
-    <ProjectReference Include="..\..\libsecondlife.csproj">
-      <Name>libsecondlife</Name>
+    <ProjectReference Include="..\..\OpenMetaverse.csproj">
+      <Name>OpenMetaverse</Name>
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
       <Private>False</Private>

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using libsecondlife;
-using libsecondlife.Utilities;
+using OpenMetaverse;
+using OpenMetaverse.Utilities;
 
-namespace libsecondlife.TestClient
+namespace OpenMetaverse.TestClient
 {
     public class ParcelInfoCommand : Command
     {
