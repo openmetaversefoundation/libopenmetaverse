@@ -474,23 +474,11 @@ namespace libsecondlife
 
         #region Operators
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator ==(LLVector2 lhs, LLVector2 rhs)
         {
             return (lhs.X == rhs.X && lhs.Y == rhs.Y);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator !=(LLVector2 lhs, LLVector2 rhs)
         {
             return !(lhs == rhs);
@@ -501,45 +489,26 @@ namespace libsecondlife
             return new LLVector2(lhs.X + rhs.X, lhs.Y + rhs.Y);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
+        public static LLVector2 operator -(LLVector2 vec)
+        {
+            return new LLVector2(-vec.X, -vec.Y);
+        }
+
         public static LLVector2 operator -(LLVector2 lhs, LLVector2 rhs)
         {
             return new LLVector2(lhs.X - rhs.X, lhs.Y - rhs.Y);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vec"></param>
-        /// <param name="val"></param>
-        /// <returns></returns>
         public static LLVector2 operator *(LLVector2 vec, float val)
         {
             return new LLVector2(vec.X * val, vec.Y * val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
-        /// <param name="vec"></param>
-        /// <returns></returns>
         public static LLVector2 operator *(float val, LLVector2 vec)
         {
             return new LLVector2(vec.X * val, vec.Y * val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static LLVector2 operator *(LLVector2 lhs, LLVector2 rhs)
         {
             return new LLVector2(lhs.X * rhs.X, lhs.Y * rhs.Y);
@@ -926,6 +895,11 @@ namespace libsecondlife
             return new LLVector3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
         }
 
+        public static LLVector3 operator -(LLVector3 vec)
+        {
+            return new LLVector3(-vec.X, -vec.Y, -vec.Z);
+        }
+
         public static LLVector3 operator -(LLVector3 lhs, LLVector3 rhs)
         {
             return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
@@ -987,6 +961,12 @@ namespace libsecondlife
 
         /// <summary>An LLVector3 with a value of 0,0,0</summary>
         public readonly static LLVector3 Zero = new LLVector3();
+        /// <summary>A unit vector facing up (Z axis)</summary>
+        public readonly static LLVector3 Up = new LLVector3(0f, 0f, 1f);
+        /// <summary>A unit vector facing forward (X axis)</summary>
+        public readonly static LLVector3 Fwd = new LLVector3(1f, 0f, 0f);
+        /// <summary>A unit vector facing left (Y axis)</summary>
+        public readonly static LLVector3 Left = new LLVector3(0f, 1f, 0f);
 	}
 
     /// <summary>
@@ -1227,26 +1207,62 @@ namespace libsecondlife
 
         #region Operators
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator ==(LLVector3d lhs, LLVector3d rhs)
         {
             return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator !=(LLVector3d lhs, LLVector3d rhs)
         {
             return !(lhs == rhs);
+        }
+
+        public static LLVector3d operator +(LLVector3d lhs, LLVector3d rhs)
+        {
+            return new LLVector3d(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+        }
+
+        public static LLVector3d operator -(LLVector3d vec)
+        {
+            return new LLVector3d(-vec.X, -vec.Y, -vec.Z);
+        }
+
+        public static LLVector3d operator -(LLVector3d lhs, LLVector3d rhs)
+        {
+            return new LLVector3d(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+        }
+
+        public static LLVector3d operator *(LLVector3d vec, float val)
+        {
+            return new LLVector3d(vec.X * val, vec.Y * val, vec.Z * val);
+        }
+
+        public static LLVector3d operator *(double val, LLVector3d vec)
+        {
+            return new LLVector3d(vec.X * val, vec.Y * val, vec.Z * val);
+        }
+
+        public static LLVector3d operator *(LLVector3d lhs, LLVector3d rhs)
+        {
+            return new LLVector3d(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
+        }
+
+        public static LLVector3d operator /(LLVector3d lhs, LLVector3d rhs)
+        {
+            return new LLVector3d(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
+        }
+
+        public static LLVector3d operator /(LLVector3d vec, double val)
+        {
+            return new LLVector3d(vec.X / val, vec.Y / val, vec.Z / val);
+        }
+
+        public static LLVector3d operator %(LLVector3d lhs, LLVector3d rhs)
+        {
+            return new LLVector3d(
+                lhs.Y * rhs.Z - rhs.Y * lhs.Z,
+                lhs.Z * rhs.X - rhs.Z * lhs.X,
+                lhs.X * rhs.Y - rhs.X * lhs.Y);
         }
 
         #endregion Operators
@@ -1475,23 +1491,11 @@ namespace libsecondlife
 
         #region Operators
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator ==(LLVector4 lhs, LLVector4 rhs)
         {
             return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.S == rhs.S);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator !=(LLVector4 lhs, LLVector4 rhs)
         {
             return !(lhs == rhs);
@@ -1502,45 +1506,26 @@ namespace libsecondlife
             return new LLVector4(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.S + rhs.S);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
+        public static LLVector4 operator -(LLVector4 vec)
+        {
+            return new LLVector4(-vec.X, -vec.Y, -vec.Z, -vec.S);
+        }
+
         public static LLVector4 operator -(LLVector4 lhs, LLVector4 rhs)
         {
             return new LLVector4(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z, lhs.S - rhs.S);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vec"></param>
-        /// <param name="val"></param>
-        /// <returns></returns>
         public static LLVector4 operator *(LLVector4 vec, float val)
         {
             return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
-        /// <param name="vec"></param>
-        /// <returns></returns>
         public static LLVector4 operator *(float val, LLVector4 vec)
         {
             return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static LLVector4 operator *(LLVector4 lhs, LLVector4 rhs)
         {
             return new LLVector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
@@ -1839,6 +1824,21 @@ namespace libsecondlife
 
         // Used for little to big endian conversion on big endian architectures
         private byte[] conversionBuffer;
+
+        #region Properties
+
+        /// <summary>
+        /// Returns the conjugate (spatial inverse) of this quaternion
+        /// </summary>
+        public LLQuaternion Conjugate
+        {
+            get
+            {
+                return new LLQuaternion(-this.X, -this.Y, -this.Z, this.W);
+            }
+        }
+
+        #endregion Properties
 
         #region Constructors
 
@@ -2268,31 +2268,19 @@ namespace libsecondlife
 
         #region Operators
 
-        /// <summary>
-        /// Comparison operator
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator ==(LLQuaternion lhs, LLQuaternion rhs)
         {
             // Return true if the fields match:
             return lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.W == rhs.W;
         }
 
-        /// <summary>
-        /// Not comparison operator
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
         public static bool operator !=(LLQuaternion lhs, LLQuaternion rhs)
         {
             return !(lhs == rhs);
         }
 
         /// <summary>
-        /// Multiplication operator
+        /// Performs quaternion multiplication
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
@@ -2324,14 +2312,6 @@ namespace libsecondlife
 
         /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
         public readonly static LLQuaternion Identity = new LLQuaternion(0f, 0f, 0f, 1f);
-
-        public LLQuaternion Conjugate
-        {
-            get
-            {
-                return new LLQuaternion(-this.X, -this.Y, -this.Z, this.W);
-            }
-        }
 	}
 
     /// <summary>
