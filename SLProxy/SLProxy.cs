@@ -1273,13 +1273,20 @@ namespace SLProxy
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
+                    Console.WriteLine(e.ToString());
                 }
                 finally
                 {
                     // resume listening
-                    simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
+                    try
+                    {
+                        simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+                            ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
         }
 
@@ -1645,13 +1652,20 @@ namespace SLProxy
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
-                        Console.WriteLine(e.StackTrace);
+                        Console.WriteLine(e.ToString());
                     }
                     finally
                     {
                         // resume listening
-                        socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
+                        try
+                        {
+                            socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None,
+                                ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
                     }
                 }
             }
