@@ -91,8 +91,8 @@ namespace libsecondlife
             /// <summary></summary>
             Online = 1 << 1,
             /// <summary></summary>
-            [Obsolete]
-            Places = 1 << 2,
+            //[Obsolete]
+            //Places = 1 << 2,
             /// <summary></summary>
             Events = 1 << 3,
             /// <summary></summary>
@@ -106,8 +106,8 @@ namespace libsecondlife
             /// <summary></summary>
             GroupOwned = 1 << 8,
             /// <summary></summary>
-            [Obsolete]
-            Auction = 1 << 9,
+            //[Obsolete]
+            //Auction = 1 << 9,
             /// <summary></summary>
             DwellSort = 1 << 10,
             /// <summary></summary>
@@ -145,8 +145,8 @@ namespace libsecondlife
             /// <summary>Land which is currently up for auction</summary>
             Auction = 1 << 1,
             /// <summary>Land available to new landowners (formerly the FirstLand program)</summary>
-            [Obsolete]
-            Newbie = 1 << 2,
+            //[Obsolete]
+            //Newbie = 1 << 2,
             /// <summary>Parcels which are on the mainland (Linden owned) continents</summary>
             Mainland = 1 << 3,
             /// <summary>Parcels which are on privately owned simulators</summary>

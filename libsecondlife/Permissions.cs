@@ -38,12 +38,12 @@ namespace libsecondlife
         Transfer    = 1 << 13,
         Modify      = 1 << 14,
         Copy        = 1 << 15,
-        [Obsolete]
-        EnterParcel = 1 << 16,
-        [Obsolete]
-        Terraform   = 1 << 17,
-        [Obsolete]
-        OwnerDebit  = 1 << 18,
+        //[Obsolete]
+        //EnterParcel = 1 << 16,
+        //[Obsolete]
+        //Terraform   = 1 << 17,
+        //[Obsolete]
+        //OwnerDebit  = 1 << 18,
         Move        = 1 << 19,
         Damage      = 1 << 20,
         All         = 0x7FFFFFFF

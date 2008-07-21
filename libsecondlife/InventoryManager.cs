@@ -52,9 +52,9 @@ namespace libsecondlife
         /// <summary>Landmark</summary>
         Landmark = 3,
         /// <summary>Script</summary>
-        [Obsolete("See LSL")] Script = 4,
+        //[Obsolete("See LSL")] Script = 4,
         /// <summary>Clothing</summary>
-        [Obsolete("See Wearable")] Clothing = 5,
+        //[Obsolete("See Wearable")] Clothing = 5,
         /// <summary>Object, both single and coalesced</summary>
         Object = 6,
         /// <summary>Notecard</summary>
@@ -68,17 +68,17 @@ namespace libsecondlife
         /// <summary>an LSL Script</summary>
         LSL = 10,
         /// <summary></summary>
-        [Obsolete("See LSL")] LSLBytecode = 11,
+        //[Obsolete("See LSL")] LSLBytecode = 11,
         /// <summary></summary>
-        [Obsolete("See Texture")] TextureTGA = 12,
+        //[Obsolete("See Texture")] TextureTGA = 12,
         /// <summary></summary>
-        [Obsolete] Bodypart = 13,
+        //[Obsolete] Bodypart = 13,
         /// <summary></summary>
-        [Obsolete] Trash = 14,
+        //[Obsolete] Trash = 14,
         /// <summary></summary>
         Snapshot = 15,
         /// <summary></summary>
-        [Obsolete] LostAndFound = 16,
+        //[Obsolete] LostAndFound = 16,
         /// <summary></summary>
         Attachment = 17,
         /// <summary></summary>
@@ -1578,24 +1578,6 @@ namespace libsecondlife
         #endregion Remove
 
         #region Create
-
-        [Obsolete("Incorrect handling of TransactionID",false)]
-        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type,
-            InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask,
-            ItemCreatedCallback callback)
-        {
-            RequestCreateItem(parentFolder, name, description, type, LLUUID.Random(), invType, wearableType, nextOwnerMask, callback);
-        }
-
-        [Obsolete("Incorrect handling of TransactionID", false)]
-        public void RequestCreateItem(LLUUID parentFolder, string name, string description, AssetType type,
-            InventoryType invType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
-        {
-            // Even though WearableType 0 is Shape, in this context it is treated as NOT_WEARABLE
-            RequestCreateItem(parentFolder, name, description, type, LLUUID.Random(), invType, (WearableType)0, nextOwnerMask,
-                callback);
-        }
-
         /// <summary>
         /// 
         /// </summary>

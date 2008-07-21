@@ -333,24 +333,6 @@ namespace libsecondlife
         #region Public Methods
         
         /// <summary>
-        /// Dictionary of unanswered/pending friendship offers
-        /// </summary>
-        /// <returns>A Dictionary object where the Key is TODO</returns>
-        [Obsolete("Use FriendRequests InternalDictionary instead")] // can remove in 0.5.0
-        public Dictionary<LLUUID, LLUUID> PendingOffers()
-        {
-            Dictionary<LLUUID, LLUUID> requests = new Dictionary<LLUUID,LLUUID>();
-            
-            lock (FriendRequests)
-            {
-                foreach(KeyValuePair<LLUUID, LLUUID> req in FriendRequests.Dictionary)
-                    requests.Add(req.Key, req.Value);
-            }
-
-            return requests;
-        }
-
-        /// <summary>
         /// Accept a friendship request
         /// </summary>
         /// <param name="fromAgentID">agentID of avatatar to form friendship with</param>

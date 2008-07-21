@@ -1187,33 +1187,6 @@ namespace libsecondlife
             return prims;
         }
 
-        /// <summary>
-        /// Looks up parcel localID from ParcelTracker Dictionary based on parcel bounding box.
-        /// </summary>
-        /// <param name="sim">Simulator parcel is in</param>
-        /// <param name="location">llVector3 location</param>
-        /// <returns>parcel localID, 0 = not found</returns>
-        /// <remarks>Bounding box is defined by parcel landing point.</remarks>
-        [Obsolete("Replaced by ParcelManager.GetParcelLocalID")]
-        public static int VecToParcelLocalID(Simulator sim, LLVector3 location)
-        {
-            int localID = 0;
-            sim.Parcels.ForEach(delegate(Parcel parcel)
-            {
-                if (location.X <= parcel.AABBMax.X &&
-                    location.X >= parcel.AABBMin.X &&
-                    location.Y <= parcel.AABBMax.Y &&
-                    location.Y >= parcel.AABBMin.Y)
-                {
-                    // FIXME: This only checks the AABB of parcels. For non-rectangular parcels
-                    // it will return random results
-                    localID = parcel.LocalID;
-                }
-            });
-
-            return localID;
-        }
-
         public static AttachmentPoint StateToAttachmentPoint(uint state)
         {
             const uint ATTACHMENT_MASK = 0xF0;

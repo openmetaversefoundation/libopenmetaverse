@@ -25,8 +25,8 @@ namespace libsecondlife
         /// <summary>Link to a location in world</summary>
         Landmark = 3,
         /// <summary>Legacy script asset, you should never see one of these</summary>
-        [Obsolete]
-        Script = 4,
+        //[Obsolete]
+        //Script = 4,
         /// <summary>Collection of textures and parameters that can be 
         /// worn by an avatar</summary>
         Clothing = 5,
@@ -114,8 +114,8 @@ namespace libsecondlife
         /// <summary></summary>
         Unknown = 0,
         /// <summary>Arbitrary system files off the server</summary>
-        [Obsolete]
-        File = 1,
+        //[Obsolete]
+        //File = 1,
         /// <summary>Asset from the asset server</summary>
         Asset = 2,
         /// <summary>Inventory item</summary>

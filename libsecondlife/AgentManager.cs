@@ -86,8 +86,8 @@ namespace libsecondlife
 		MessageBox = 1,
 		/// <summary>Used to show a countdown notification with an OK
 		/// button, deprecated now</summary>
-		[Obsolete]
-		MessageBoxCountdown = 2,
+        //[Obsolete]
+        //MessageBoxCountdown = 2,
 		/// <summary>You've been invited to join a group.</summary>
 		GroupInvitation = 3,
 		/// <summary>Inventory offer</summary>
@@ -100,8 +100,8 @@ namespace libsecondlife
 		GroupVote = 7,
 		/// <summary>A message to everyone in the agent's group, no longer
 		/// used</summary>
-		[Obsolete]
-		DeprecatedGroupMessage = 8,
+        //[Obsolete]
+        //DeprecatedGroupMessage = 8,
 		/// <summary>An object is offering its inventory</summary>
 		TaskInventoryOffered = 9,
 		/// <summary>Accept an inventory offer from an object</summary>
@@ -141,8 +141,8 @@ namespace libsecondlife
 		CurrentlyUnused = 26,
 		/// <summary>Notification of a new group election, this is 
 		/// deprecated</summary>
-		[Obsolete]
-		DeprecatedGroupElection = 27,
+        //[Obsolete]
+        //DeprecatedGroupElection = 27,
 		/// <summary>IM to tell the user to go to an URL</summary>
 		GotoUrl = 28,
 		/// <summary>IM for help</summary>
@@ -202,8 +202,8 @@ namespace libsecondlife
 		Shout = 2,
 		/// <summary>Say chat (10/20m radius) - The official viewer will 
 		/// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
-		[Obsolete]
-		Say = 3,
+        //[Obsolete]
+        //Say = 3,
 		/// <summary>Event message when an Avatar has begun to type</summary>
 		StartTyping = 4,
 		/// <summary>Event message when an Avatar has stopped typing</summary>
@@ -923,9 +923,6 @@ namespace libsecondlife
         public event ScriptSensorReplyCallback OnScriptSensorReply;
         /// <summary>Fired in response to a sit request</summary>
         public event AvatarSitResponseCallback OnAvatarSitResponse;
-        /// <summary>Fired when avatar moves to a new simulator</summary>
-        [Obsolete("This information is automatically stored in CurrentSim, Will be removed in 0.5.0")]
-        public event AgentMovementCallback OnAgentMovement;
         #endregion
 
         /// <summary>Reference to the SecondLife client object</summary>
@@ -1077,13 +1074,6 @@ namespace libsecondlife
                     return LLVector3d.Zero;
             }
         }
-
-        /// <summary>The Position field has been replaced by RelativePosition, SimPosition, and GlobalPosition</summary>
-        [Obsolete("Position has been replaced by RelativePosition, SimPosition, and GlobalPosition")]
-        public LLVector3 Position { get { return SimPosition; } }
-        /// <summary>The Rotation field has been replaced by RelativeRotation and SimRotation</summary>
-        [Obsolete("Rotation has been replaced by RelativeRotation and SimRotation")]
-        public LLQuaternion Rotation { get { return SimRotation; } }
 
         #endregion Properties
 
@@ -2586,15 +2576,6 @@ namespace libsecondlife
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
             simulator.SimVersion = Helpers.FieldToUTF8String(movement.SimData.ChannelVersion);
-            if (OnAgentMovement != null)
-            {
-                try
-                {
-                    OnAgentMovement(movement.Data.Position, movement.Data.RegionHandle,
-                  movement.Data.LookAt, Helpers.FieldToUTF8String(movement.SimData.ChannelVersion));
-                }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
         }
 
         /// <summary>

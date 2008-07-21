@@ -190,13 +190,6 @@ namespace libsecondlife
         public bool Connected { get { return connected; } }
         public int InboxCount { get { return PacketInbox.Count; } }
 
-        [Obsolete("AgentID has been moved to Self.AgentID")]
-        public LLUUID AgentID { get { return Client.Self.AgentID; } }
-        [Obsolete("SessionID has been moved to Self.SessionID")]
-        public LLUUID SessionID { get { return Client.Self.SessionID; } }
-        [Obsolete("SecureSessionID has been mvoed to Self.SecureSessionID")]
-        public LLUUID SecureSessionID { get { return Client.Self.SecureSessionID; } }
-
         /// <summary>Handlers for incoming capability events</summary>
         internal CapsEventDictionary CapsEvents;
         /// <summary>Handlers for incoming packets</summary>

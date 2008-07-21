@@ -141,11 +141,11 @@ namespace libsecondlife
             /// <summary>Ban all non identified/transacted avatars</summary>
             DenyAnonymous = 1 << 22,
             /// <summary>Ban all identified avatars [OBSOLETE]</summary>
-            [Obsolete]
-            DenyIdentified = 1 << 23,
+            //[Obsolete]
+            //DenyIdentified = 1 << 23,
             /// <summary>Ban all transacted avatars [OBSOLETE]</summary>
-            [Obsolete]
-            DenyTransacted = 1 << 24,
+            //[Obsolete]
+            //DenyTransacted = 1 << 24,
             /// <summary>Allow group-owned scripts to run</summary>
             AllowGroupScripts = 1 << 25,
             /// <summary>Allow object creation by group members or group 
@@ -321,12 +321,6 @@ namespace libsecondlife
         /// <summary></summary>
         public bool RegionDenyAnonymous;
         /// <summary></summary>
-        [Obsolete]
-        public bool RegionDenyIdentified; // no longer used as of 1.19
-        /// <summary></summary>
-        [Obsolete]
-        public bool RegionDenyTransacted; // no longer used as of 1.19
-        /// <summary></summary>
         public bool RegionPushOverride;
         /// <summary>Simulator Object, containing details from Simulator class</summary>
         public Simulator Simulator;
@@ -421,8 +415,6 @@ namespace libsecondlife
             LandingType = 0x0;
             Dwell = 0;
             RegionDenyAnonymous = false;
-            RegionDenyIdentified = false; // no longer used as of 1.19
-            RegionDenyTransacted = false; // no longer used as of 1.19
             RegionPushOverride = false;
             AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
             RegionDenyAgeUnverified = false;
@@ -1504,8 +1496,6 @@ namespace libsecondlife
                 parcel.PassPrice = properties.ParcelData.PassPrice;
                 parcel.PublicCount = properties.ParcelData.PublicCount;
                 parcel.RegionDenyAnonymous = properties.ParcelData.RegionDenyAnonymous;
-                //parcel.RegionDenyIdentified = properties.ParcelData.RegionDenyIdentified;
-                //parcel.RegionDenyTransacted = properties.ParcelData.RegionDenyTransacted;
                 parcel.RegionPushOverride = properties.ParcelData.RegionPushOverride;
                 parcel.RentPrice = properties.ParcelData.RentPrice;
                 parcel.SalePrice = properties.ParcelData.SalePrice;

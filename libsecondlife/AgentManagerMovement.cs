@@ -524,53 +524,6 @@ namespace libsecondlife
             }
 
             /// <summary>
-            /// Aims at the specified position, enters mouselook, presses and
-            /// releases the left mouse button, and leaves mouselook
-            /// </summary>
-            /// <param name="target">Target to shoot at</param>
-            /// <returns></returns>
-            [Obsolete("Moved to libsecondlife.Utilities")]
-            public bool Shoot(LLVector3 target)
-            {
-                if (TurnToward(target))
-                    return Shoot();
-                else
-                    return false;
-            }
-
-            /// <summary>
-            /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
-            /// </summary>
-            /// <returns></returns>
-            [Obsolete("Moved to libsecondlife.Utilities")]
-            public bool Shoot()
-            {
-                if (Client.Settings.SEND_AGENT_UPDATES)
-                {
-                    Mouselook = true;
-                    MLButtonDown = true;
-                    SendUpdate();
-
-                    MLButtonUp = true;
-                    MLButtonDown = false;
-                    FinishAnim = true;
-                    SendUpdate();
-
-                    Mouselook = false;
-                    MLButtonUp = false;
-                    FinishAnim = false;
-                    SendUpdate();
-
-                    return true;
-                }
-                else
-                {
-                    Logger.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning, Client);
-                    return false;
-                }
-            }
-
-            /// <summary>
             /// Send new AgentUpdate packet to update our current camera 
             /// position and rotation
             /// </summary>

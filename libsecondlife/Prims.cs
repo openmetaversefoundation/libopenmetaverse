@@ -86,11 +86,11 @@ namespace libsecondlife
             /// <summary></summary>
             Point = 2,
             /// <summary></summary>
-            [Obsolete]
-            LPoint = 3,
-            /// <summary></summary>
-            [Obsolete]
-            Wheel = 4
+            //[Obsolete]
+            //LPoint = 3,
+            ///// <summary></summary>
+            //[Obsolete]
+            //Wheel = 4
         }
 
         /// <summary>
