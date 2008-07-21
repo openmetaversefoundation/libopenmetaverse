@@ -57,22 +57,27 @@ namespace OpenMetaverse.Imaging
         }
 
         // allocate encoded buffer based on length field
+        [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslAllocEncoded(ref MarshalledImage image);
 
         // allocate decoded buffer based on width and height fields
+        [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslAllocDecoded(ref MarshalledImage image);
         
         // free buffers
+        [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslFree(ref MarshalledImage image);
         
         // encode raw to jpeg2000
+        [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslEncode(ref MarshalledImage image, bool lossless);
 
         // decode jpeg2000 to raw
+        [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslDecode(ref MarshalledImage image);
         
