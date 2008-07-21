@@ -311,7 +311,8 @@ namespace libsecondlife
         private SecondLife Client;
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
         private AssetUpload PendingUpload;
-        private AutoResetEvent PendingUploadEvent = new AutoResetEvent(true);
+        private object PendingUploadLock = new object();
+        private volatile bool WaitingForUploadConfirm = false;
         private System.Timers.Timer RefreshDownloadsTimer = new System.Timers.Timer(500.0);
         
         /// <summary>
@@ -740,26 +741,31 @@ namespace libsecondlife
                 request.AssetBlock.AssetData = new byte[0];
             }
 
-            //Client.DebugLog(request.ToString());
-
-            /*
-            // Add this upload to the Transfers dictionary using the assetID as the key.
-            // Once the simulator assigns an actual identifier for this upload it will be
-            // removed from Transfers and reinserted with the proper identifier
-            lock (Transfers) Transfers[upload.AssetID] = upload;
-            */
-
             // Wait for the previous upload to receive a RequestXferPacket
-            if (PendingUploadEvent.WaitOne(10000, false))
+            lock (PendingUploadLock)
             {
-                PendingUpload = upload;
+                const int UPLOAD_CONFIRM_TIMEOUT = 10000;
+                const int SLEEP_INTERVAL = 50;
+                int t = 0;
+                while (WaitingForUploadConfirm && t < UPLOAD_CONFIRM_TIMEOUT)
+                {
+                    System.Threading.Thread.Sleep(SLEEP_INTERVAL);
+                    t += SLEEP_INTERVAL;
+                }
 
-                Client.Network.SendPacket(request);
+                if (t < UPLOAD_CONFIRM_TIMEOUT)
+                {
+                    WaitingForUploadConfirm = true;
+                    PendingUpload = upload;
+                    Client.Network.SendPacket(request);
 
-                return upload.ID;
+                    return upload.ID;
+                }
+                else
+                {
+                    throw new Exception("Timeout waiting for previous asset upload to begin");
+                }
             }
-            else
-                throw new Exception("Timeout waiting for previous asset upload to begin");
         }
 
         #region Helpers
@@ -1019,7 +1025,7 @@ namespace libsecondlife
             {
                 AssetUpload upload = PendingUpload;
                 PendingUpload = null;
-                PendingUploadEvent.Set();
+                WaitingForUploadConfirm = false;
                 RequestXferPacket request = (RequestXferPacket)packet;
 
                 upload.XferID = request.XferID.ID;
@@ -1065,6 +1071,10 @@ namespace libsecondlife
         {
             AssetUploadCompletePacket complete = (AssetUploadCompletePacket)packet;
 
+            // If we uploaded an asset in a single packet, RequestXferHandler()
+            // will never be called so we need to set this here as well
+            WaitingForUploadConfirm = false;
+
             if (OnAssetUploaded != null)
             {
                 bool found = false;
@@ -1085,7 +1095,6 @@ namespace libsecondlife
                                 foundTransfer = transfer;
                                 upload.Success = complete.AssetBlock.Success;
                                 upload.Type = (AssetType)complete.AssetBlock.Type;
-                                found = true;
                                 break;
                             }
                         }
@@ -1098,6 +1107,13 @@ namespace libsecondlife
 
                     try { OnAssetUploaded((AssetUpload)foundTransfer.Value); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
+                else
+                {
+                    Logger.Log(String.Format(
+                        "Got an AssetUploadComplete on an unrecognized asset, AssetID: {0}, Type: {1}, Success: {2}",
+                        complete.AssetBlock.UUID, (AssetType)complete.AssetBlock.Type, complete.AssetBlock.Success),
+                        Helpers.LogLevel.Warning);
                 }
             }
         }
