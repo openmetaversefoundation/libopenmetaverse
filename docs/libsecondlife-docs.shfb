@@ -1,25 +1,34 @@
 ﻿<project schemaVersion="1.6.0.5">
     <assemblies>
-        <assembly assemblyPath="..\bin\libsecondlife.dll" xmlCommentsPath="..\bin\libsecondlife.XML" commentsOnly="False" />
-        <assembly assemblyPath="..\bin\libsecondlife.Utilities.dll" xmlCommentsPath="..\bin\libsecondlife.Utilities.xml" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\libopenmetaverse.Utilities.dll" xmlCommentsPath="..\bin\libsecondlife.Utilities.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\OpenMetaverse.dll" xmlCommentsPath="..\bin\OpenMetaverse.xml" commentsOnly="False" />
         <assembly assemblyPath="..\bin\TestClient.exe" xmlCommentsPath="..\bin\TestClient.xml" commentsOnly="False" />
     </assemblies>
     <namespaceSummaries>
         <namespaceSummaryItem name="" isDocumented="False" />
         <namespaceSummaryItem name="CommandLine.Utility" isDocumented="False" />
-        <namespaceSummaryItem name="libsecondlife" isDocumented="True">This is the root namespace for the libsecondlife library.</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.Baking" isDocumented="True">libsecondlife.Baking</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.Capabilities" isDocumented="True">libsecondlife.Capabilities</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.Imaging" isDocumented="True">Image Handling</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.Packets" isDocumented="True">libsecondlife.Packets</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.StructuredData" isDocumented="True">libsecondlife.StructuredData</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.TestClient" isDocumented="True">The TestClient is a working text based client which illustrates many of the library features and are created by developers to test new library functionality. The TestClient is not intended as a fully functional client however could be used as a basis for one.</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.TestClient.Commands" isDocumented="True">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Inventory.Shell" isDocumented="True" />
-        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Movement" isDocumented="True">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.Utilities" isDocumented="True">Utilities Class</namespaceSummaryItem>
-        <namespaceSummaryItem name="libsecondlife.Voice" isDocumented="True">Voice Classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife" isDocumented="False">This is the root namespace for the libsecondlife library.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Baking" isDocumented="False">libsecondlife.Baking</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Capabilities" isDocumented="False">libsecondlife.Capabilities</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Imaging" isDocumented="False">Image Handling</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Packets" isDocumented="False">libsecondlife.Packets</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.StructuredData" isDocumented="False">libsecondlife.StructuredData</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient" isDocumented="False">The TestClient is a working text based client which illustrates many of the library features and are created by developers to test new library functionality. The TestClient is not intended as a fully functional client however could be used as a basis for one.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands" isDocumented="False">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Inventory.Shell" isDocumented="False" />
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Movement" isDocumented="False">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Utilities" isDocumented="False">Utilities Class</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Voice" isDocumented="False">Voice Classes</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenJPEGNet" isDocumented="True">Image Encoding/Decoding</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse" isDocumented="True">The OpenMetaverse library primary namespace</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Capabilities" isDocumented="True">Capabilities is a method of transferring data between the client and Simulator, The Caps Client and EventQueue classes are contained within this namespace.</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Imaging" isDocumented="True">Classes for dealing with images (Textures), including encoding/decoding and our wrapper class for OpenJpeg</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Packets" isDocumented="True">Packet information classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.StructuredData" isDocumented="True">LLSD (Structured Data) classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.TestClient" isDocumented="True">TestClient for code examples and developer testing tools</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.TestClient.Commands.Inventory.Shell" isDocumented="True">TestClient commands to emulate a shell for managing inventory</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Utilities" isDocumented="True">Utilities Class</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Voice" isDocumented="True">Voice Handling Classes</namespaceSummaryItem>
         <namespaceSummaryItem name="System.Collections" isDocumented="False" />
     </namespaceSummaries>
     <dependencies>
