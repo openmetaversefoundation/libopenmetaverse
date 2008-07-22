@@ -660,10 +660,11 @@ namespace OpenMetaverse
                         bool redirect = (llsd.AsString() == "indeterminate");
                         LoginResponseData data = new LoginResponseData();
 
-                        // Parse successful login replies in to LoginResponseData structs
-                        if (loginSuccess)
+                        // Parse successful login replies into LoginResponseData structs
+                        if (loginSuccess && !redirect)
                             data.Parse(map);
 
+                        // Fire the login callback
                         if (OnLoginResponse != null)
                         {
                             try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
