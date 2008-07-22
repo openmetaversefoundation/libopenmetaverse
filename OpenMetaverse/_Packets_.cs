@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -6510,7 +6510,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
@@ -6817,7 +6817,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
@@ -9308,7 +9308,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _fromname = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
                 }
             }
@@ -9319,7 +9319,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _subject = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _subject = new byte[value.Length]; Buffer.BlockCopy(value, 0, _subject, 0, value.Length); }
                 }
             }
@@ -10506,7 +10506,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _seedcapability = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _seedcapability = new byte[value.Length]; Buffer.BlockCopy(value, 0, _seedcapability, 0, value.Length); }
                 }
             }
@@ -12269,7 +12269,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
@@ -13116,7 +13116,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
@@ -15364,7 +15364,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
@@ -22942,7 +22942,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _details = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _details = new byte[value.Length]; Buffer.BlockCopy(value, 0, _details, 0, value.Length); }
                 }
             }
@@ -23881,7 +23881,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
@@ -25937,7 +25937,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _params = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _params = new byte[value.Length]; Buffer.BlockCopy(value, 0, _params, 0, value.Length); }
                 }
             }
@@ -26099,7 +26099,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _params = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _params = new byte[value.Length]; Buffer.BlockCopy(value, 0, _params, 0, value.Length); }
                 }
             }
@@ -26732,7 +26732,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
@@ -27624,7 +27624,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _reason = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
                 }
             }
@@ -27899,7 +27899,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _reason = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
                 }
             }
@@ -28584,7 +28584,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _abouttext = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _abouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abouttext, 0, value.Length); }
                 }
             }
@@ -29418,7 +29418,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _abouttext = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _abouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abouttext, 0, value.Length); }
                 }
             }
@@ -29902,7 +29902,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _notes = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _notes = new byte[value.Length]; Buffer.BlockCopy(value, 0, _notes, 0, value.Length); }
                 }
             }
@@ -30096,7 +30096,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _notes = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _notes = new byte[value.Length]; Buffer.BlockCopy(value, 0, _notes, 0, value.Length); }
                 }
             }
@@ -30705,7 +30705,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
@@ -31631,7 +31631,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
@@ -31937,7 +31937,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
@@ -32817,7 +32817,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
@@ -33937,7 +33937,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -41459,7 +41459,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _channelversion = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _channelversion = new byte[value.Length]; Buffer.BlockCopy(value, 0, _channelversion, 0, value.Length); }
                 }
             }
@@ -41986,7 +41986,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
@@ -41997,7 +41997,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _binarybucket = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _binarybucket = new byte[value.Length]; Buffer.BlockCopy(value, 0, _binarybucket, 0, value.Length); }
                 }
             }
@@ -56269,7 +56269,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _assetdata = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _assetdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _assetdata, 0, value.Length); }
                 }
             }
@@ -56601,7 +56601,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _charter = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
                 }
             }
@@ -57022,7 +57022,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _charter = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
                 }
             }
@@ -59021,7 +59021,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _charter = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
                 }
             }
@@ -61804,7 +61804,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _proposaltext = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
                 }
             }
@@ -68667,7 +68667,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _email = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _email = new byte[value.Length]; Buffer.BlockCopy(value, 0, _email, 0, value.Length); }
                 }
             }
@@ -71013,7 +71013,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _msg = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _msg = new byte[value.Length]; Buffer.BlockCopy(value, 0, _msg, 0, value.Length); }
                 }
             }
@@ -72150,7 +72150,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
@@ -72161,7 +72161,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -74273,7 +74273,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _seedcapability = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _seedcapability = new byte[value.Length]; Buffer.BlockCopy(value, 0, _seedcapability, 0, value.Length); }
                 }
             }
@@ -77305,7 +77305,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -77496,7 +77496,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -77682,7 +77682,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -77919,7 +77919,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
@@ -77941,7 +77941,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _namevalue = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _namevalue = new byte[value.Length]; Buffer.BlockCopy(value, 0, _namevalue, 0, value.Length); }
                 }
             }
@@ -77952,7 +77952,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -78434,7 +78434,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -78882,7 +78882,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
@@ -79192,7 +79192,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -79407,7 +79407,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
@@ -80347,7 +80347,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _bitmap = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _bitmap = new byte[value.Length]; Buffer.BlockCopy(value, 0, _bitmap, 0, value.Length); }
                 }
             }
@@ -80885,7 +80885,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _agenttextures = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _agenttextures = new byte[value.Length]; Buffer.BlockCopy(value, 0, _agenttextures, 0, value.Length); }
                 }
             }
@@ -81211,7 +81211,7 @@ namespace OpenMetaverse.Packets
                 set
                 {
                     if (value == null) { _nvpairs = null; return; }
-                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
                     else { _nvpairs = new byte[value.Length]; Buffer.BlockCopy(value, 0, _nvpairs, 0, value.Length); }
                 }
             }
