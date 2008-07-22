@@ -172,9 +172,22 @@ namespace OpenMetaverse.Imaging
             {
                 // FIXME: Need to use the visual parameters to determine the base skin color in RGB but
                 // it's not apparent how to define RGB levels from the skin color parameters, so
-                // for now use a grey foundation for the skin and skirt layers
+                // for now use a grey foundation for the skin
                 InitBakedLayerColor(128, 128, 128);
                 DrawLayer(AppearanceManager.TextureIndex.HeadBodypaint);
+
+                // HACK: Bake the eyelashes in if we have them
+                ManagedImage eyelashes = LoadAlphaLayer("head_alpha.tga");
+
+                if (eyelashes != null)
+                {
+                    Logger.DebugLog("Loaded head_alpha.tga, baking in eyelashes");
+                    DrawLayer(eyelashes, true);
+                }
+                else
+                {
+                    Logger.Log("head_alpha.tga resource not found, skipping eyelashes", Helpers.LogLevel.Info);
+                }
             }
             else if (_bakeType == AppearanceManager.BakeType.Skirt)
             {
@@ -220,31 +233,35 @@ namespace OpenMetaverse.Imaging
         private bool DrawLayer(AppearanceManager.TextureIndex textureIndex)
         {
             AssetTexture texture;
-            ManagedImage source;
+            bool useSourceAlpha = 
+                (textureIndex == AppearanceManager.TextureIndex.HeadBodypaint ||
+                textureIndex == AppearanceManager.TextureIndex.Skirt);
+
+            if (_textures.TryGetValue(textureIndex, out texture))
+                return DrawLayer(texture.Image, useSourceAlpha);
+            else
+                return false;
+        }
+
+        private bool DrawLayer(ManagedImage source, bool useSourceAlpha)
+        {
+            bool sourceHasColor;
             bool sourceHasAlpha;
             bool sourceHasBump;
-            bool copySourceAlphaToBakedLayer;
             int i = 0;
 
-            try
+            sourceHasColor = ((source.Channels & ManagedImage.ImageChannels.Color) != 0 &&
+                    source.Red != null && source.Green != null && source.Blue != null);
+            sourceHasAlpha = ((source.Channels & ManagedImage.ImageChannels.Alpha) != 0 && source.Alpha != null);
+            sourceHasBump = ((source.Channels & ManagedImage.ImageChannels.Bump) != 0 && source.Bump != null);
+
+            useSourceAlpha = (useSourceAlpha && sourceHasAlpha);
+
+            if (source.Width != _bakeWidth || source.Height != _bakeHeight)
             {
-                if (!_textures.TryGetValue(textureIndex, out texture))
-                    return false;
-
-                source = texture.Image;
-
-                sourceHasAlpha = ((source.Channels & ManagedImage.ImageChannels.Alpha) != 0 && source.Alpha != null);
-                sourceHasBump = ((source.Channels & ManagedImage.ImageChannels.Bump) != 0 && source.Bump != null);
-
-                copySourceAlphaToBakedLayer = sourceHasAlpha && (
-                    textureIndex == AppearanceManager.TextureIndex.HeadBodypaint ||
-                    textureIndex == AppearanceManager.TextureIndex.Skirt
-                );
-
-                if (source.Width != _bakeWidth || source.Height != _bakeHeight)
-                    source.ResizeNearestNeighbor(_bakeWidth, _bakeHeight);
+                try { source.ResizeNearestNeighbor(_bakeWidth, _bakeHeight); }
+                catch { return false; }
             }
-            catch { return false; }
 
             int alpha = 255;
             //int alphaInv = 255 - alpha;
@@ -279,24 +296,25 @@ namespace OpenMetaverse.Imaging
                         alphaInv = 256 - alpha;
                     }
 
-                    bakedRed[i] = (byte)((bakedRed[i] * alphaInv + sourceRed[i] * alpha) >> 8);
-                    bakedGreen[i] = (byte)((bakedGreen[i] * alphaInv + sourceGreen[i] * alpha) >> 8);
-                    bakedBlue[i] = (byte)((bakedBlue[i] * alphaInv + sourceBlue[i] * alpha) >> 8);
+                    if (sourceHasColor)
+                    {
+                        bakedRed[i] = (byte)((bakedRed[i] * alphaInv + sourceRed[i] * alpha) >> 8);
+                        bakedGreen[i] = (byte)((bakedGreen[i] * alphaInv + sourceGreen[i] * alpha) >> 8);
+                        bakedBlue[i] = (byte)((bakedBlue[i] * alphaInv + sourceBlue[i] * alpha) >> 8);
+                    }
 
-                    if (copySourceAlphaToBakedLayer)
+                    if (useSourceAlpha)
                         bakedAlpha[i] = sourceAlpha[i];
 
                     if (sourceHasBump)
                         bakedBump[i] = sourceBump[i];
 
-                    i++;
-
+                    ++i;
                 }
             }
 
             return true;
         }
-
 
         /// <summary>
         /// Fills a baked layer as a solid *appearing* color. The colors are 
@@ -348,7 +366,7 @@ namespace OpenMetaverse.Imaging
                         red[i] = rAlt;
                         green[i] = gByte;
                         blue[i] = bByte;
-                        alpha[i] = 255;
+                        alpha[i] = 128;
                         bump[i] = 0;
                     }
                     else
@@ -356,7 +374,7 @@ namespace OpenMetaverse.Imaging
                         red[i] = rByte;
                         green[i] = gAlt;
                         blue[i] = bAlt;
-                        alpha[i] = 255;
+                        alpha[i] = 128;
                         bump[i] = 0;
                     }
 
@@ -364,6 +382,45 @@ namespace OpenMetaverse.Imaging
                 }
             }
 
+        }
+
+        public static ManagedImage LoadAlphaLayer(string fileName)
+        {
+            Stream stream = Helpers.GetResourceStream(fileName);
+
+            if (stream != null)
+            {
+                try
+                {
+                    // FIXME: It would save cycles and memory if we wrote a direct
+                    // loader to ManagedImage for these files instead of using the
+                    // TGA loader
+                    Bitmap bitmap = LoadTGAClass.LoadTGA(stream);
+                    stream.Close();
+
+                    ManagedImage alphaLayer = new ManagedImage(bitmap);
+
+                    // Disable all layers except the alpha layer
+                    alphaLayer.Red = null;
+                    alphaLayer.Green = null;
+                    alphaLayer.Blue = null;
+                    alphaLayer.Channels = ManagedImage.ImageChannels.Alpha;
+
+                    return alphaLayer;
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(String.Format("LoadAlphaLayer() failed on file: {0} ({1}", fileName, e.Message),
+                        Helpers.LogLevel.Error, e);
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+            
         }
 
         public static AppearanceManager.BakeType BakeTypeFor(AppearanceManager.TextureIndex index)

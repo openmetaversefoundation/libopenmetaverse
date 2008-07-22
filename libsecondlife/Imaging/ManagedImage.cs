@@ -130,7 +130,7 @@ namespace OpenMetaverse.Imaging
 
             if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb)
             {
-                Channels = ImageChannels.Alpha & ImageChannels.Color;
+                Channels = ImageChannels.Alpha | ImageChannels.Color;
                 Red = new byte[pixelCount];
                 Green = new byte[pixelCount];
                 Blue = new byte[pixelCount];

@@ -79,8 +79,8 @@ namespace mapgenerator
                 writer.WriteLine("                    if (value == null) { _" + 
                     field.Name.ToLower() + " = null; return; }");
                 writer.WriteLine("                    if (value.Length > " + 
-                    ((field.Count == 1) ? "255" : "1500") + ") { throw new OverflowException(" + 
-                    "\"Value exceeds " + ((field.Count == 1) ? "255" : "1500") + " characters\"); }");
+                    ((field.Count == 1) ? "255" : "1100") + ") { throw new OverflowException(" + 
+                    "\"Value exceeds " + ((field.Count == 1) ? "255" : "1100") + " characters\"); }");
                 writer.WriteLine("                    else { _" + field.Name.ToLower() +
                     " = new byte[value.Length]; Buffer.BlockCopy(value, 0, _" + 
                     field.Name.ToLower() + ", 0, value.Length); }");

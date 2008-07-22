@@ -1026,7 +1026,7 @@ namespace OpenMetaverse
         private void UploadBake(Baker bake)
         {
             // Upload the completed layer data
-            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
+            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true);
 
             Logger.DebugLog(String.Format("Bake {0} completed. Uploading asset {1}", bake.BakeType,
                 bake.BakedTexture.AssetID.ToString()), Client);

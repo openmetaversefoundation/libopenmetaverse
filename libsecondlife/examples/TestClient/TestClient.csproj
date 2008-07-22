@@ -51,6 +51,7 @@
     <Compile Include="ClientManager.cs" />
     <Compile Include="Commands\Appearance\AppearanceCommand.cs" />
     <Compile Include="Commands\Appearance\AttachmentsCommand.cs" />
+    <Compile Include="Commands\Appearance\AvatarInfoCommand.cs" />
     <Compile Include="Commands\Appearance\CloneCommand.cs" />
     <Compile Include="Commands\Appearance\WearCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />

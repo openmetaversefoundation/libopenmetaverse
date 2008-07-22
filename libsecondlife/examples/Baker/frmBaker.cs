@@ -33,9 +33,12 @@ namespace Baker
             if (stream != null)
             {
                 AlphaMask = LoadTGAClass.LoadTGA(stream);
-                pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
-
                 stream.Close();
+
+                ManagedImage managedImage = new ManagedImage(AlphaMask);
+
+                // FIXME: Operate on ManagedImage instead of Bitmap
+                pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
             }
             else
             {

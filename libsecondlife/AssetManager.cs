@@ -700,21 +700,21 @@ namespace OpenMetaverse
             }
         }
 
-        public LLUUID RequestUpload(Asset asset, bool tempFile, bool storeLocal, bool isPriority)
+        public LLUUID RequestUpload(Asset asset, bool storeLocal)
         {
             if (asset.AssetData == null)
                 throw new ArgumentException("Can't upload an asset with no data (did you forget to call Encode?)");
 
             LLUUID assetID;
-            LLUUID transferID = RequestUpload(out assetID, asset.AssetType, asset.AssetData, tempFile, storeLocal, isPriority);
+            LLUUID transferID = RequestUpload(out assetID, asset.AssetType, asset.AssetData, storeLocal);
             asset.AssetID = assetID;
             return transferID;
         }
         
-        public LLUUID RequestUpload(AssetType type, byte[] data, bool tempFile, bool storeLocal, bool isPriority)
+        public LLUUID RequestUpload(AssetType type, byte[] data, bool storeLocal)
         {
             LLUUID assetID;
-            return RequestUpload(out assetID, type, data, tempFile, storeLocal, isPriority);
+            return RequestUpload(out assetID, type, data, storeLocal);
         }
 
         /// <summary>
@@ -724,12 +724,10 @@ namespace OpenMetaverse
         /// upload succeeds</param>
         /// <param name="type">Asset type to upload this data as</param>
         /// <param name="data">Raw asset data to upload</param>
-        /// <param name="tempFile">Whether this is a temporary file or not</param>
         /// <param name="storeLocal">Whether to store this asset on the local
         /// simulator or the grid-wide asset server</param>
-        /// <param name="isPriority">Give this upload a higher priority</param>
         /// <returns>The transaction ID of this transfer</returns>
-        public LLUUID RequestUpload(out LLUUID assetID, AssetType type, byte[] data, bool tempFile, bool storeLocal, bool isPriority)
+        public LLUUID RequestUpload(out LLUUID assetID, AssetType type, byte[] data, bool storeLocal)
         {
             AssetUpload upload = new AssetUpload();
             upload.AssetData = data;
@@ -743,7 +741,7 @@ namespace OpenMetaverse
             // Build and send the upload packet
             AssetUploadRequestPacket request = new AssetUploadRequestPacket();
             request.AssetBlock.StoreLocal = storeLocal;
-            request.AssetBlock.Tempfile = tempFile;
+            request.AssetBlock.Tempfile = false; // This field is deprecated
             request.AssetBlock.TransactionID = upload.ID;
             request.AssetBlock.Type = (sbyte)type;
 
