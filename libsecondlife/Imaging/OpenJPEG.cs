@@ -42,7 +42,7 @@ namespace OpenMetaverse.Imaging
         public const int TGA_HEADER_SIZE = 32;
 
         // This structure is used to marshal both encoded and decoded images
-        // MUST MATCH THE STRUCT IN libsl.h!
+        // MUST MATCH THE STRUCT IN dotnet.h!
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private struct MarshalledImage
         {
@@ -58,28 +58,28 @@ namespace OpenMetaverse.Imaging
 
         // allocate encoded buffer based on length field
         [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool LibslAllocEncoded(ref MarshalledImage image);
+        [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetAllocEncoded(ref MarshalledImage image);
 
         // allocate decoded buffer based on width and height fields
         [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool LibslAllocDecoded(ref MarshalledImage image);
+        [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetAllocDecoded(ref MarshalledImage image);
         
         // free buffers
         [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool LibslFree(ref MarshalledImage image);
+        [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetFree(ref MarshalledImage image);
         
         // encode raw to jpeg2000
         [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool LibslEncode(ref MarshalledImage image, bool lossless);
+        [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetEncode(ref MarshalledImage image, bool lossless);
 
         // decode jpeg2000 to raw
         [System.Security.SuppressUnmanagedCodeSecurity]
-        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool LibslDecode(ref MarshalledImage image);
+        [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetDecode(ref MarshalledImage image);
         
         /// <summary>
         /// Encode a <seealso cref="ManagedImage"/> object into a byte array
@@ -103,7 +103,7 @@ namespace OpenMetaverse.Imaging
             if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) marshalled.components++;
             if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) marshalled.components++;
 
-            if (!LibslAllocDecoded(ref marshalled))
+            if (!DotNetAllocDecoded(ref marshalled))
                 throw new Exception("LibslAllocDecoded failed");
 
             int n = image.Width * image.Height;
@@ -119,7 +119,7 @@ namespace OpenMetaverse.Imaging
             if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
 
             // codec will allocate output buffer
-            if (!LibslEncode(ref marshalled, lossless))
+            if (!DotNetEncode(ref marshalled, lossless))
                 throw new Exception("LibslEncode failed");
 
             // copy output buffer
@@ -127,7 +127,7 @@ namespace OpenMetaverse.Imaging
             Marshal.Copy(marshalled.encoded, encoded, 0, marshalled.length);
 
             // free buffers
-            LibslFree(ref marshalled);
+            DotNetFree(ref marshalled);
 
             return encoded;
         }
@@ -186,11 +186,11 @@ namespace OpenMetaverse.Imaging
 
             // Allocate and copy to input buffer
             marshalled.length = encoded.Length;
-            LibslAllocEncoded(ref marshalled);
+            DotNetAllocEncoded(ref marshalled);
             Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
             // Codec will allocate output buffer
-            LibslDecode(ref marshalled);
+            DotNetDecode(ref marshalled);
 
             int n = marshalled.width * marshalled.height;
 
@@ -244,12 +244,12 @@ namespace OpenMetaverse.Imaging
                 default:
                     Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
                         Helpers.LogLevel.Error);
-                    LibslFree(ref marshalled);
+                    DotNetFree(ref marshalled);
                     managedImage = null;
                     return false;
             }
 
-            LibslFree(ref marshalled);
+            DotNetFree(ref marshalled);
             return true;
         }
 
