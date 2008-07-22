@@ -171,7 +171,15 @@ bool LibslEncode(MarshalledImage* image, bool lossless)
 			}
 		}
 
-		cparameters.cp_comment = "LL_RGBHM";
+		if (image->components == 5)
+		{
+			cparameters.cp_comment = "LL_RGBHM"; // RGB, Heightfield/Alpha, Mask
+		}
+		else
+		{
+			cparameters.cp_comment = (char*)"";
+		}
+
 		opj_image_comptparm comptparm[5];
 
 		for (int i = 0; i < image->components; i++)
