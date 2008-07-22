@@ -131,7 +131,7 @@
 	 <delete failonerror="false">
       <fileset basedir="${bin_dir}">
 		<include name="*" />
-		<exclude name="openjpeg-libsl.dll" />
+		<exclude name="*openjpeg-dotnet*" />
       </fileset>
     </delete>
   </target>
