@@ -1,6 +1,6 @@
 // This is the main DLL file.
 
-#include "libsl.h"
+#include "dotnet.h"
 extern "C" {
 #include "../libopenjpeg/openjpeg.h"
 }
@@ -95,7 +95,7 @@ struct cio_wrapper
 	}
 };
 
-bool LibslAllocEncoded(MarshalledImage* image)
+bool DotNetAllocEncoded(MarshalledImage* image)
 {
 	try
 	{
@@ -111,7 +111,7 @@ bool LibslAllocEncoded(MarshalledImage* image)
 	return true;
 }
 
-bool LibslAllocDecoded(MarshalledImage* image)
+bool DotNetAllocDecoded(MarshalledImage* image)
 {
 	try
 	{
@@ -127,14 +127,14 @@ bool LibslAllocDecoded(MarshalledImage* image)
 	return true;
 }
 
-void LibslFree(MarshalledImage* image)
+void DotNetFree(MarshalledImage* image)
 {
 	if (image->encoded != 0) delete[] image->encoded;
 	if (image->decoded != 0) delete[] image->decoded;
 }
 
 
-bool LibslEncode(MarshalledImage* image, bool lossless)
+bool DotNetEncode(MarshalledImage* image, bool lossless)
 {
 	try
 	{
@@ -149,15 +149,6 @@ bool LibslEncode(MarshalledImage* image, bool lossless)
 		}
 		else
 		{
-			/* Updated see JIRA OPENMV-243
-			cparameters.tcp_numlayers = 6;
-			cparameters.tcp_rates[0] = 1280;
-			cparameters.tcp_rates[1] = 640;
-			cparameters.tcp_rates[2] = 320;
-			cparameters.tcp_rates[3] = 160;
-			cparameters.tcp_rates[4] = 80;
-			cparameters.tcp_rates[5] = 40;
-			*/
 			cparameters.tcp_numlayers = 5;
 			cparameters.tcp_rates[0] = 1920;
 			cparameters.tcp_rates[1] = 480;
@@ -171,14 +162,7 @@ bool LibslEncode(MarshalledImage* image, bool lossless)
 			}
 		}
 
-		if (image->components == 5)
-		{
-			cparameters.cp_comment = "LL_RGBHM"; // RGB, Heightfield/Alpha, Mask
-		}
-		else
-		{
-			cparameters.cp_comment = (char*)"";
-		}
+		cparameters.cp_comment = (char*)"";
 
 		opj_image_comptparm comptparm[5];
 
