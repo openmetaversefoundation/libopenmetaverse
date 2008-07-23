@@ -32,6 +32,8 @@
       </Options>
     </Configuration>
 
+	<!-- Libraries -->
+	
     <Project name="OpenMetaverse" path="OpenMetaverse" type="Library" rootNamespace="OpenMetaverse">
       <Configuration name="Debug">
         <Options>
@@ -100,6 +102,103 @@
       </Files>
     </Project>
 
+	<!-- Programs -->
+	
+	<Project name="importprimscript" path="Programs/importprimscript" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="mapgenerator" path="Programs/mapgenerator" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+        <Match pattern="mapgenerator.cs"/>
+        <Match pattern="ProtocolManager.cs"/>
+      </Files>
+    </Project>
+    
+    <Project name="SecondGlance" path="Programs/SecondGlance" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="SLProxy"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmSecondGlance.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="SLImageUpload" path="Programs/SLImageUpload" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmSLImageUpload.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+	
     <Project name="SLProxy" path="Programs/SLProxy" type="Exe">
       <Configuration name="Debug">
         <Options>
@@ -116,6 +215,50 @@
       <Reference name="System"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverse"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+        <Match pattern="VisualParamGenerator.cs"/>
+      </Files>
+    </Project>
+    
+    <Project name="VoiceTest" path="Programs/VoiceTest" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverse.Utilities"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
