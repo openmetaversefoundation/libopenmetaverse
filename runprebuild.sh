@@ -3,3 +3,8 @@
 mono bin/Prebuild.exe /target nant
 mono bin/Prebuild.exe /target monodev
 mono bin/Prebuild.exe /target vs2005
+
+if [ x$1 == xnant ]
+then
+	nant
+fi
