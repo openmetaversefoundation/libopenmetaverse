@@ -1,6 +1,6 @@
-namespace primpreview
+namespace PrimWorkshop
 {
-    partial class frmPrimPreview
+    partial class frmPrimWorkshop
     {
         /// <summary>
         /// Required designer variable.
@@ -31,6 +31,9 @@ namespace primpreview
         {
             this.menu = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.opToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openPrimXMLToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.textureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.savePrimXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveTextureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,9 +61,6 @@ namespace primpreview
             this.scrollYaw = new System.Windows.Forms.HScrollBar();
             this.picTexture = new System.Windows.Forms.PictureBox();
             this.scrollZoom = new System.Windows.Forms.HScrollBar();
-            this.openPrimXMLToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.textureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.opToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menu.SuspendLayout();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
@@ -97,6 +97,29 @@ namespace primpreview
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem.Text = "File";
+            // 
+            // opToolStripMenuItem
+            // 
+            this.opToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openPrimXMLToolStripMenuItem1,
+            this.textureToolStripMenuItem});
+            this.opToolStripMenuItem.Name = "opToolStripMenuItem";
+            this.opToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.opToolStripMenuItem.Text = "Open";
+            // 
+            // openPrimXMLToolStripMenuItem1
+            // 
+            this.openPrimXMLToolStripMenuItem1.Name = "openPrimXMLToolStripMenuItem1";
+            this.openPrimXMLToolStripMenuItem1.Size = new System.Drawing.Size(127, 22);
+            this.openPrimXMLToolStripMenuItem1.Text = "Prim XML";
+            this.openPrimXMLToolStripMenuItem1.Click += new System.EventHandler(this.openPrimXMLToolStripMenuItem1_Click);
+            // 
+            // textureToolStripMenuItem
+            // 
+            this.textureToolStripMenuItem.Name = "textureToolStripMenuItem";
+            this.textureToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.textureToolStripMenuItem.Text = "Texture";
+            this.textureToolStripMenuItem.Click += new System.EventHandler(this.textureToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -377,30 +400,7 @@ namespace primpreview
             this.scrollZoom.Value = -50;
             this.scrollZoom.ValueChanged += new System.EventHandler(this.scrollZoom_ValueChanged);
             // 
-            // openPrimXMLToolStripMenuItem1
-            // 
-            this.openPrimXMLToolStripMenuItem1.Name = "openPrimXMLToolStripMenuItem1";
-            this.openPrimXMLToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
-            this.openPrimXMLToolStripMenuItem1.Text = "Prim XML";
-            this.openPrimXMLToolStripMenuItem1.Click += new System.EventHandler(this.openPrimXMLToolStripMenuItem1_Click);
-            // 
-            // textureToolStripMenuItem
-            // 
-            this.textureToolStripMenuItem.Name = "textureToolStripMenuItem";
-            this.textureToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.textureToolStripMenuItem.Text = "Texture";
-            this.textureToolStripMenuItem.Click += new System.EventHandler(this.textureToolStripMenuItem_Click);
-            // 
-            // opToolStripMenuItem
-            // 
-            this.opToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openPrimXMLToolStripMenuItem1,
-            this.textureToolStripMenuItem});
-            this.opToolStripMenuItem.Name = "opToolStripMenuItem";
-            this.opToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-            this.opToolStripMenuItem.Text = "Open";
-            // 
-            // frmPrimPreview
+            // frmPrimWorkshop
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -408,8 +408,9 @@ namespace primpreview
             this.Controls.Add(this.splitContainer);
             this.Controls.Add(this.menu);
             this.MainMenuStrip = this.menu;
-            this.Name = "frmPrimPreview";
-            this.Text = "Prim Preview";
+            this.Name = "frmPrimWorkshop";
+            this.Text = "Prim Workshop";
+            this.Shown += new System.EventHandler(this.frmPrimWorkshop_Shown);
             this.menu.ResumeLayout(false);
             this.menu.PerformLayout();
             this.splitContainer.Panel1.ResumeLayout(false);

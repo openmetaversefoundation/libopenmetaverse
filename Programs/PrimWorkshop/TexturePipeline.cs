@@ -1,8 +1,10 @@
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using libsecondlife;
+using OpenMetaverse;
+
 /*
  * [14:09]	<jhurliman>	the onnewprim function will add missing texture uuids to the download queue, 
  * and a separate thread will pull entries off that queue. 
@@ -19,7 +21,7 @@ using libsecondlife;
  * request image data with GetTextureToRender() using key returned in OnImageRenderReady event
  * (optionally) use RemoveFromPipeline() with key to cleanup dictionary
  */
-namespace primpreview
+namespace PrimWorkshop
 {
     class TaskInfo
     {
@@ -39,7 +41,7 @@ namespace primpreview
     /// </summary>
     public class TexturePipeline
     {
-        private static SecondLife Client;
+        private static GridClient Client;
 
         // queue for requested images
         private Queue<LLUUID> RequestQueue;
@@ -95,7 +97,7 @@ namespace primpreview
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to <code>SecondLife</code> client</param>
-        public TexturePipeline(SecondLife client)
+        public TexturePipeline(GridClient client)
         {
             Running = true;
 

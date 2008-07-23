@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace primpreview.Properties
+namespace PrimWorkshop.Properties
 {
 
 

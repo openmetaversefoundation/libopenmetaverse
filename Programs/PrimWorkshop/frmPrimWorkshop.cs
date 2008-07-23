@@ -7,14 +7,14 @@ using System.IO;
 using System.Windows.Forms;
 using Tao.OpenGl;
 using Tao.Platform.Windows;
-using libsecondlife;
-using libsecondlife.StructuredData;
-using libsecondlife.Imaging;
-using libsecondlife.Rendering;
+using OpenMetaverse;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Imaging;
+using OpenMetaverse.Rendering;
 
 // NOTE: Batches are divided by texture, fullbright, shiny, transparent, and glow
 
-namespace primpreview
+namespace PrimWorkshop
 {
     public struct FaceData
     {
@@ -26,12 +26,17 @@ namespace primpreview
         // TODO: Normals / binormals?
     }
 
-    public partial class frmPrimPreview : Form
+    public static class Render
+    {
+        public static IRendering Plugin;
+    }
+
+    public partial class frmPrimWorkshop : Form
     {
         #region Form Globals
 
-        List<PrimMeshMultiFace> Prims = null;
-        PrimMeshMultiFace CurrentPrim = null;
+        List<FacetedMesh> Prims = null;
+        FacetedMesh CurrentPrim = null;
         ProfileFace? CurrentFace = null;
 
         bool DraggingTexture = false;
@@ -40,7 +45,7 @@ namespace primpreview
 
         #endregion Form Globals
 
-        public frmPrimPreview()
+        public frmPrimWorkshop()
         {
             InitializeComponent();
             glControl.InitializeContexts();
@@ -59,6 +64,30 @@ namespace primpreview
             // Call the resizing function which sets up the GL drawing window
             // and will also invalidate the GL control
             glControl_Resize(null, null);
+        }
+
+        private void frmPrimWorkshop_Shown(object sender, EventArgs e)
+        {
+            // Get a list of rendering plugins
+            List<string> renderers = RenderingLoader.ListRenderers(".");
+
+            foreach (string r in renderers)
+            {
+                DialogResult result = MessageBox.Show(
+                    String.Format("Use renderer {0}?", r), "Select Rendering Plugin", MessageBoxButtons.YesNo);
+
+                if (result == DialogResult.Yes)
+                {
+                    Render.Plugin = RenderingLoader.LoadRenderer(r);
+                    break;
+                }
+            }
+
+            if (Render.Plugin == null)
+            {
+                MessageBox.Show("No valid rendering plugin loaded, exiting...");
+                Application.Exit();
+            }
         }
 
         #region GLControl Callbacks
@@ -246,7 +275,7 @@ namespace primpreview
                 if (llsd != null && llsd.Type == LLSDType.Map)
                 {
                     List<Primitive> primList = Helpers.LLSDToPrimList(llsd);
-                    Prims = new List<PrimMeshMultiFace>(primList.Count);
+                    Prims = new List<FacetedMesh>(primList.Count);
 
                     for (int i = 0; i < primList.Count; i++)
                     {
@@ -255,7 +284,7 @@ namespace primpreview
                             continue;
 
                         Primitive prim = primList[i];
-                        PrimMeshMultiFace mesh = Render.GenerateMeshWithFaces(prim, 4f);
+                        FacetedMesh mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.Highest);
 
                         // Create a FaceData struct for each face that stores the 3D data
                         // in a Tao.OpenGL friendly format
@@ -278,7 +307,7 @@ namespace primpreview
 
                             // Texture transform for this face
                             LLObject.TextureEntryFace teFace = prim.Textures.GetFace((uint)j);
-                            Render.TransformTexCoords(face.Vertices, face.Center, teFace);
+                            Render.Plugin.TransformTexCoords(face.Vertices, face.Center, teFace);
 
                             // Texcoords for this face
                             data.TexCoords = new float[face.Vertices.Count * 2];
@@ -484,7 +513,7 @@ namespace primpreview
 
         private void cboPrim_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CurrentPrim = (PrimMeshMultiFace)cboPrim.Items[cboPrim.SelectedIndex];
+            CurrentPrim = (FacetedMesh)cboPrim.Items[cboPrim.SelectedIndex];
             PopulateFaceCombobox();
 
             glControl.Invalidate();

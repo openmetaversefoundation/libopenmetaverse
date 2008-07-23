@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using libsecondlife;
-using libsecondlife.Rendering;
+using OpenMetaverse;
+using OpenMetaverse.Rendering;
 
-namespace primpreview
+namespace PrimWorkshop
 {
     public static class MeshToOBJ
     {
-        public static bool MeshesToOBJ(List<PrimMeshMultiFace> meshes, string filename)
+        public static bool MeshesToOBJ(List<FacetedMesh> meshes, string filename)
         {
             StringBuilder obj = new StringBuilder();
             StringBuilder mtl = new StringBuilder();
@@ -28,7 +28,7 @@ namespace primpreview
 
             for (int i = 0; i < meshes.Count; i++)
             {
-                PrimMeshMultiFace mesh = meshes[i];
+                FacetedMesh mesh = meshes[i];
 
                 for (int j = 0; j < mesh.Faces.Count; j++)
                 {

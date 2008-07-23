@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace primpreview
+namespace PrimWorkshop
 {
     static class Program
     {
@@ -14,7 +14,7 @@ namespace primpreview
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmPrimPreview());
+            Application.Run(new frmPrimWorkshop());
         }
     }
 }

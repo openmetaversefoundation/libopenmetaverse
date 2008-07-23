@@ -9,12 +9,12 @@ using System.Runtime.InteropServices;
 using Tao.OpenGl;
 using Tao.Platform.Windows;
 using ICSharpCode.SharpZipLib.Zip;
-using libsecondlife;
-using libsecondlife.StructuredData;
-using libsecondlife.Imaging;
-using libsecondlife.Rendering;
+using OpenMetaverse;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Imaging;
+using OpenMetaverse.Rendering;
 
-namespace primpreview
+namespace PrimWorkshop
 {
     public partial class frmBrowser : Form
     {
@@ -24,7 +24,7 @@ namespace primpreview
         ContextMenu ExportPrimMenu;
         ContextMenu ExportTerrainMenu;
 
-        SecondLife Client;
+        GridClient Client;
         Camera Camera;
         Dictionary<uint, Primitive> RenderFoliageList = new Dictionary<uint, Primitive>();
         Dictionary<uint, RenderablePrim> RenderPrimList = new Dictionary<uint, RenderablePrim>();
@@ -40,7 +40,7 @@ namespace primpreview
 
         // Terrain
         float MaxHeight = 0.1f;
-        libsecondlife.TerrainManager.Patch[,] Heightmap;
+        TerrainManager.Patch[,] Heightmap;
         HeightmapLookupValue[] LookupHeightTable;
 
         // Picking globals
@@ -142,7 +142,7 @@ namespace primpreview
                     DownloadList.Clear();
 
             // Initialize the SL client
-            Client = new SecondLife();
+            Client = new GridClient();
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Settings.ALWAYS_DECODE_OBJECTS = true;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
@@ -930,7 +930,7 @@ namespace primpreview
         {
             RenderablePrim render = new RenderablePrim();
             render.Prim = prim;
-            render.Mesh = Render.GenerateMeshWithFaces(prim, 2.5f);
+            render.Mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.High);
 
             // Create a FaceData struct for each face that stores the 3D data
             // in a Tao.OpenGL friendly format
@@ -953,7 +953,7 @@ namespace primpreview
 
                 // Texture transform for this face
                 LLObject.TextureEntryFace teFace = prim.Textures.GetFace((uint)j);
-                Render.TransformTexCoords(face.Vertices, face.Center, teFace);
+                Render.Plugin.TransformTexCoords(face.Vertices, face.Center, teFace);
 
                 // Texcoords for this face
                 data.TexCoords = new float[face.Vertices.Count * 2];
@@ -1843,7 +1843,7 @@ StartRender:
     public struct RenderablePrim
     {
         public Primitive Prim;
-        public PrimMeshMultiFace Mesh;
+        public FacetedMesh Mesh;
 
         public readonly static RenderablePrim Empty = new RenderablePrim();
     }

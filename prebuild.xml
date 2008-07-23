@@ -233,12 +233,14 @@
 
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
+      <Reference name="System.Xml"/>
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="Tao.OpenGL"/>
       <Reference name="Tao.Platform.Windows"/>
       <Reference name="GlacialList"/>
+      <Reference name="ICSharpCode.SharpZipLib.Zip"/>
       <Reference name="OpenMetaverse"/>
 
       <Files>

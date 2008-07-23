@@ -1,4 +1,4 @@
-namespace primpreview
+namespace PrimWorkshop
 {
     partial class frmBrowser
     {
