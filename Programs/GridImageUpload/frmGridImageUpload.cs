@@ -10,9 +10,9 @@ using OpenMetaverse;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.Imaging;
 
-namespace SLImageUpload
+namespace GridImageUpload
 {
-    public partial class frmSLImageUpload : Form
+    public partial class frmGridImageUpload : Form
     {
         private GridClient Client;
         private byte[] UploadData = null;
@@ -21,7 +21,7 @@ namespace SLImageUpload
         private LLUUID SendToID;
         private LLUUID AssetID;
 
-        public frmSLImageUpload()
+        public frmGridImageUpload()
         {
             InitializeComponent();
             InitClient();
@@ -371,7 +371,7 @@ namespace SLImageUpload
             grpLogin.Enabled = true;
         }
 
-        private void frmSLImageUpload_FormClosed(object sender, FormClosedEventArgs e)
+        private void frmGridImageUpload_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (Client.Network.Connected)
                 Client.Network.Logout();

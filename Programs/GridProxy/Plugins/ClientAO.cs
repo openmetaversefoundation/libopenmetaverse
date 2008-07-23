@@ -1,5 +1,5 @@
 /*
- * ClientAO.cs: SLProxy application that acts as a client side animation overrider.
+ * ClientAO.cs: GridProxy application that acts as a client side animation overrider.
  * The application will start and stop animations corresponding to the movements
  * of the avatar on screen.
  *
@@ -38,7 +38,7 @@ using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using Nwc.XmlRpc;
-using SLProxy;
+using GridProxy;
 
 
 public class ClientAO : ProxyPlugin

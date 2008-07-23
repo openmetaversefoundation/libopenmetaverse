@@ -30,9 +30,9 @@ using System.Threading;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace sldump
+namespace PacketDump
 {
-	class sldump
+	class PacketDump
 	{
         static bool LoginSuccess = false;
         static AutoResetEvent LoginEvent = new AutoResetEvent(false);
@@ -65,7 +65,7 @@ namespace sldump
 
 			if (args.Length == 0 || (args.Length < 4 && args[0] != "--printmap"))
 			{
-				Console.WriteLine("Usage: sldump [--printmap] [--decrypt] [inputfile] [outputfile] "
+				Console.WriteLine("Usage: PacketDump [--printmap] [--decrypt] [inputfile] [outputfile] "
                     + "[--protocol] [firstname] [lastname] [password] [seconds (0 for infinite)]");
 				return;
 			}
@@ -117,8 +117,7 @@ namespace sldump
             client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
 
             client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
-            client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "sldump",
-                "contact@OpenMetaverse.org"));
+            client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "PacketDump", "1.0.0"));
 
             LoginEvent.WaitOne();
 

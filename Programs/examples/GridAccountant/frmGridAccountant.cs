@@ -33,12 +33,12 @@ using System.Data;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace SLAccountant
+namespace GridAccountant
 {
 	/// <summary>
 	/// Summary description for Form1.
 	/// </summary>
-	public class frmSLAccountant : System.Windows.Forms.Form
+	public class frmGridAccountant : System.Windows.Forms.Form
 	{
 		private System.Windows.Forms.GroupBox grpLogin;
 		private System.Windows.Forms.TextBox txtPassword;
@@ -69,7 +69,7 @@ namespace SLAccountant
 
 		private GridClient Client;
 
-		public frmSLAccountant()
+		public frmGridAccountant()
 		{
 			//
 			// Required for Windows Form Designer support
@@ -318,7 +318,7 @@ namespace SLAccountant
 			this.colUuid.Text = "UUID";
 			this.colUuid.Width = 150;
 			// 
-			// frmSLAccountant
+			// frmGridAccountant
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.ClientSize = new System.Drawing.Size(592, 437);
@@ -334,9 +334,9 @@ namespace SLAccountant
 			this.Controls.Add(this.lblName);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.grpLogin);
-			this.Name = "frmSLAccountant";
-			this.Text = "SL Accountant";
-			this.Load += new System.EventHandler(this.frmSLAccountant_Load);
+			this.Name = "frmGridAccountant";
+			this.Text = "Grid Accountant";
+			this.Load += new System.EventHandler(this.frmGridAccountant_Load);
 			this.grpLogin.ResumeLayout(false);
 			this.ResumeLayout(false);
 
@@ -349,7 +349,7 @@ namespace SLAccountant
 		[STAThread]
 		static void Main() 
 		{
-            frmSLAccountant frm = new frmSLAccountant();
+            frmGridAccountant frm = new frmGridAccountant();
             frm.ShowDialog();
 		}
 
@@ -389,7 +389,7 @@ namespace SLAccountant
             }
 		}
 
-		private void frmSLAccountant_Load(object sender, System.EventArgs e)
+		private void frmGridAccountant_Load(object sender, System.EventArgs e)
 		{
 			Client = new GridClient();
 
@@ -461,7 +461,7 @@ namespace SLAccountant
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
                 LoginParams loginParams = Client.Network.DefaultLoginParams(txtFirstName.Text, txtLastName.Text,
-                    txtPassword.Text, "slaccountant", "1.0.0");
+                    txtPassword.Text, "GridAccountant", "1.0.0");
                 Client.Network.BeginLogin(loginParams);
 			}
 			else
@@ -513,7 +513,7 @@ namespace SLAccountant
 			}
 			
 			Client.Self.GiveAvatarMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
-			    amount, "SLAccountant payment");
+			    amount, "GridAccountant payment");
 		}
 	}
 }

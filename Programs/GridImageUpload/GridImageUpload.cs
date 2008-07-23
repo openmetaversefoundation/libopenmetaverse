@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace SLImageUpload
+namespace GridImageUpload
 {
-    static class SLImageUpload
+    static class GridImageUpload
     {
         /// <summary>
         /// The main entry point for the application.
@@ -14,7 +14,7 @@ namespace SLImageUpload
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmSLImageUpload());
+            Application.Run(new frmGridImageUpload());
         }
     }
 }

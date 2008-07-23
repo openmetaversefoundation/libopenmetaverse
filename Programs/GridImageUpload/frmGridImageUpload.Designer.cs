@@ -1,6 +1,6 @@
-namespace SLImageUpload
+namespace GridImageUpload
 {
-    partial class frmSLImageUpload
+    partial class frmGridImageUpload
     {
         /// <summary>
         /// Required designer variable.
@@ -230,7 +230,7 @@ namespace SLImageUpload
             this.cmdUpload.UseVisualStyleBackColor = true;
             this.cmdUpload.Click += new System.EventHandler(this.cmdUpload_Click);
             // 
-            // frmSLImageUpload
+            // frmGridImageUpload
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -240,10 +240,10 @@ namespace SLImageUpload
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(410, 400);
             this.MinimumSize = new System.Drawing.Size(410, 400);
-            this.Name = "frmSLImageUpload";
+            this.Name = "frmGridImageUpload";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "SL Image Upload";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmSLImageUpload_FormClosed);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmGridImageUpload_FormClosed);
             this.grpLogin.ResumeLayout(false);
             this.grpLogin.PerformLayout();
             this.grpUpload.ResumeLayout(false);

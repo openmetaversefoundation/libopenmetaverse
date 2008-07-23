@@ -29,18 +29,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using SLProxy;
-using OpenMetaverse;
-using Nwc.XmlRpc;
-using OpenMetaverse.Packets;
-using System.Reflection;
-
 using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Reflection;
+using Nwc.XmlRpc;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using GridProxy;
+
 
 public class Analyst : ProxyPlugin
 {

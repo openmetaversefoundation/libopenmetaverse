@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SLImageUpload")]
+[assembly: AssemblyTitle("GridImageUpload")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Metaverse Industries LLC")]
-[assembly: AssemblyProduct("SLImageUpload")]
-[assembly: AssemblyCopyright("Copyright © Metaverse Industries LLC 2007")]
+[assembly: AssemblyCompany("openmetaverse.org")]
+[assembly: AssemblyProduct("GridImageUpload")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

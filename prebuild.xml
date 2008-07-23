@@ -103,6 +103,31 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
+    
+    <Project name="GridProxy" path="Programs/GridProxy" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+        <Match pattern="GridProxy.cs"/>
+        <Match pattern="GridProxyLoader.cs"/>
+        <Match pattern="Plugins/*.cs" recurse="true"/>
+        <Match pattern="XmlRpcCS/*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
 	<!-- Programs -->
 	
@@ -193,7 +218,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="SLProxy"/>
+      <Reference name="GridProxy"/>
 
       <Files>
       	<File buildAction="EmbeddedResource">frmSecondGlance.resx</File>
@@ -201,7 +226,7 @@
       </Files>
     </Project>
     
-    <Project name="SLImageUpload" path="Programs/SLImageUpload" type="Exe">
+    <Project name="GridImageUpload" path="Programs/GridImageUpload" type="Exe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -221,12 +246,12 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmSLImageUpload.resx</File>
+      	<File buildAction="EmbeddedResource">frmGridImageUpload.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
-	
-    <Project name="SLProxy" path="Programs/SLProxy" type="Exe">
+    
+    <Project name="GridProxyApp" path="Programs/GridProxy" type="Exe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -241,10 +266,10 @@
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Xml"/>
-      <Reference name="OpenMetaverse"/>
+      <Reference name="GridProxy"/>
 
       <Files>
-        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="GridProxyMain.cs"/>
       </Files>
     </Project>
     
@@ -370,7 +395,7 @@
       </Files>
     </Project>
     
-    <Project name="SLAccountant" path="Programs/examples/slaccountant" type="Exe">
+    <Project name="GridAccountant" path="Programs/examples/GridAccountant" type="Exe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -390,12 +415,12 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmSLAccountant.resx</File>
+      	<File buildAction="EmbeddedResource">frmGridAccountant.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
     
-    <Project name="sldump" path="Programs/examples/sldump" type="Exe">
+    <Project name="PacketDump" path="Programs/examples/PacketDump" type="Exe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>

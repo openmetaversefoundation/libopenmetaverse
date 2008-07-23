@@ -1,8 +1,3 @@
-using SLProxy;
-using OpenMetaverse;
-using Nwc.XmlRpc;
-using OpenMetaverse.Packets;
-using System.Reflection;
 
 using System;
 using System.Collections.Generic;
@@ -10,9 +5,14 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Reflection;
+using Nwc.XmlRpc;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using GridProxy;
 
 
-namespace SLProxy
+namespace GridProxy
 {
     public class ProxyFrame
     {
@@ -56,7 +56,7 @@ namespace SLProxy
             //bool externalPlugin = false;
             this.args = args;
 
-            ProxyConfig proxyConfig = new ProxyConfig("SLProxy", "Austin Jennings / Andrew Ortman", args);
+            ProxyConfig proxyConfig = new ProxyConfig("GridProxy", "Austin Jennings / Andrew Ortman", args);
             proxy = new Proxy(proxyConfig);
 
             // add delegates for login
@@ -187,7 +187,7 @@ namespace SLProxy
         public void SayToUser(string message)
         {
             ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
-            packet.ChatData.FromName = Helpers.StringToField("SLProxy");
+            packet.ChatData.FromName = Helpers.StringToField("GridProxy");
             packet.ChatData.SourceID = LLUUID.Random();
             packet.ChatData.OwnerID = agentID;
             packet.ChatData.SourceType = (byte)2;

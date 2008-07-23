@@ -34,7 +34,7 @@ using System.Net;
 using System.Windows.Forms;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
-using SLProxy;
+using GridProxy;
 
 namespace SecondGlance
 {

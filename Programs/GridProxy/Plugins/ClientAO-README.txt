@@ -1,7 +1,6 @@
 ClientAO by Issarlk Chatnoir
 
 
-
 What is it?
 ***********
 
@@ -23,10 +22,8 @@ How to use
 
 - Login like usual
 
-- once logged in, load the ClientAO plugin: /load ClientAO.dll
-
-- Point it to a folder where you have previously put animations and a configuration 
-  notecard, ex: /ao Objects/MyAO/*Default Anims
+- Point the plugin to a folder where you have previously put animations and a
+  configuration notecard, ex: /ao Objects/MyAO/*Default Anims
 
 The AO will load the notecard.
 

@@ -1,5 +1,5 @@
 /*
- * SLProxy.cs: implementation of OpenMetaverse proxy library
+ * GridProxy.cs: implementation of OpenMetaverse proxy library
  *
  * Copyright (c) 2006 Austin Jennings
  * Pregen modifications made by Andrew Ortman on Dec 10, 2006 -> Dec 20, 2006
@@ -34,7 +34,6 @@
 // #define DEBUG_CAPS
 // #define DEBUG_THREADS
 
-using Nwc.XmlRpc;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,13 +43,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 
-// SLProxy: OpenMetaverse proxy library
-namespace SLProxy
+namespace GridProxy
 {
     // ProxyConfig: configuration for proxy objects
     public class ProxyConfig
