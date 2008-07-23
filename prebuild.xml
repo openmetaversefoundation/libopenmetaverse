@@ -104,6 +104,31 @@
 
 	<!-- Programs -->
 	
+	<Project name="Baker" path="Programs/Baker" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmBaker.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+	
 	<Project name="importprimscript" path="Programs/importprimscript" type="Exe">
       <Configuration name="Debug">
         <Options>
@@ -257,6 +282,154 @@
 
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverse.Utilities"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <!-- Examples -->
+    
+    <Project name="groupmanager" path="Programs/examples/groupmanager" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmGroupManager.resx</File>
+      	<File buildAction="EmbeddedResource">frmGroupInfo.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="GUITestClient" path="Programs/examples/GUITestClient" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmTestClient.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="Heightmap" path="Programs/examples/Heightmap" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmHeightmap.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="SLAccountant" path="Programs/examples/slaccountant" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmSLAccountant.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="sldump" path="Programs/examples/sldump" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="TestClient" path="Programs/examples/TestClient" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverse.Utilities"/>
 
