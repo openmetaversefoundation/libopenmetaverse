@@ -192,7 +192,6 @@
 
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
-      <Reference name="OpenMetaverse"/>
 
       <Files>
         <Match pattern="mapgenerator.cs"/>
