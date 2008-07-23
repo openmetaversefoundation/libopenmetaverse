@@ -28,17 +28,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using SLProxy;
-using libsecondlife;
-using libsecondlife.Packets;
-using libsecondlife.StructuredData;
-using Nwc.XmlRpc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Reflection;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
+using Nwc.XmlRpc;
+using SLProxy;
 
 
 public class ClientAO : ProxyPlugin

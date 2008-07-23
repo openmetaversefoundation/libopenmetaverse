@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.Net;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
-using OpenMetaverse.Utilities;
 using NUnit.Framework;
 
 namespace OpenMetaverse.Tests
