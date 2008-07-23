@@ -42,7 +42,8 @@
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../bin/</OutputPath>
+	<OutputPath>../bin/</OutputPath>
+	<XmlDocFile>../bin/OpenMetaverse.XML</XmlDocFile>
         </Options>
       </Configuration>
 
@@ -65,7 +66,8 @@
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../bin/</OutputPath>
+	<OutputPath>../bin/</OutputPath>
+	<XmlDocFile>../bin/OpenMetaverse.Utilities.XML</XmlDocFile>
         </Options>
       </Configuration>
 
