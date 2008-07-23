@@ -1,4 +1,5 @@
-libsecondlife 
+OpenMetaverse Library Quick Start (Formerly known as libsecondlife) 
+
 
 Finding Help
 ------------
@@ -13,21 +14,20 @@ or at our HQ and testing area in Hooper(SLURL: http://xrl.us/bi233).
 
 Source Code:
    To checkout a copy of libsecondlife trunk
-   svn co svn://openmetaverse.org/libsl/trunk libsl
+   svn co svn://openmetaverse.org/libsl/trunk libopenmv
 
 For more details see: 
    http://www.libsecondlife.org/wiki/SVN
    http://www.libsecondlife.org/wiki/Getting_Started
 
 Getting started on Windows
-------------------------------------------------------------------
-------------------------------------------------------------------
+====================================================================================
 
 
-Software Needed (all Freeware)
-------------------------------
+Prerequisites (all Freely Available)
+--------------------------------------
 
-MS .NET Framework 2.0 - Get directly from Windows Update.
+Microsoft .NET Framework 2.0 (v2.0.50727 or later) - Get directly from Windows Update.
 Visual C# Express - http://msdn.microsoft.com/vstudio/express/visualcsharp/
 
 Optional-
@@ -37,22 +37,35 @@ nUnit Framework (2.2.8 or greater) - http://www.nunit.org/
 
 Compiling
 ---------
+For Visual Studio 2005:
+1. Open Explorer and browse to the directory you extracted the source distribution to
+2. Double click the runprebuild.bat file, this will create the necessary solution and project files
+3. open the solution OpenMetaverse.sln from within Visual Studio
+4. From the Build Menu choose Build Solution (or press the F6 Key)
 
-If you are using Visual Studio or Visual C# Express you can simply open 
-the libsecondlife.sln solution file and begin compiling. It will complain 
-about a missing dependency if you didn't install the nUnit framework, you 
-can either install it now or remove libsecondlife.Tests from the solution 
-file.
+The library, example applications and tools will be in the bin directory
+
+
+For Visual Studio 2008/Visual C# Express 2008
+1. Open Explorer and browse to the directory you extracted the source distribution to
+2. Double click the runprebuild2008.bat file, this will create the necessary solution and project files
+3. open the solution OpenMetaverse.sln from within Visual Studio
+4. From the Build Menu choose Build Solution (or press the F6 Key)
+
+The library, example applications and tools will be in the bin directory
+
+When compiling It will complain about a missing dependency if you didn't install 
+the nUnit framework, you can either install it now or remove libsecondlife.Tests 
+from the solution file.
 
 For more details http://www.libsecondlife.org/wiki/Getting_Started
 
+
 Getting started on Linux
------------------------------------------------------------------
------------------------------------------------------------------
+====================================================================================
 
-
-Software Needed
----------------
+Prerequisites Needed
+--------------------
 
 mono 1.9 - http://www.mono-project.com/
 nAnt (0.85) - http://nant.sourceforge.net/
@@ -64,12 +77,14 @@ nUnit Framework (2.2.8 or greater) - http://www.nunit.org/
 Compiling
 ---------
 
-Simply go to the directory where you extracted libsecondlife, where the 
-libsecondlife.build file is located and type "nant". To build a zip file 
-package use "nant package", and to generate documentation use "nant doc".
+1. Change to the directory you extracted the source distribution to
+2. run the prebuild file: % sh runprebuild.sh - This will generate the required nant build files
+3. type "nant" to compile the library, example applications and tools. 
+
+The library, example applications and tools will be in the bin directory
 
 For more details http://www.libsecondlife.org/wiki/Getting_Started
 
 
 Happy fiddling,
---libsecondlife Team 
+-- OpenMetaverse Ninjas 
