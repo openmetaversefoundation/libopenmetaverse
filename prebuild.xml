@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Prebuild xmlns="http://dnpb.sourceforge.net/schemas/prebuild-1.7.xsd" version="1.7">
-  <Solution name="OpenMetaverse" activeConfig="Debug" path="./" version="0.6.0">
+<Prebuild xmlns="http://dnpb.sourceforge.net/schemas/prebuild-1.6.xsd" version="1.6">
+  <Solution name="OpenMetaverse" activeConfig="Debug" version="0.6.0">
     <Configuration name="Debug">
       <Options>
         <CompilerDefines>TRACE;DEBUG</CompilerDefines>
@@ -151,7 +151,35 @@
     
 	<!-- Programs -->
 	
-	<Project name="Baker" path="Programs/Baker" type="Exe">
+	<Project name="AvatarPreview" path="Programs/AvatarPreview" type="WinExe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="Tao.OpenGL"/>
+      <Reference name="Tao.Platform.Windows"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmAvatarPreview.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+	
+	<Project name="Baker" path="Programs/Baker" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -219,7 +247,7 @@
       </Files>
     </Project>
     
-    <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="Exe">
+    <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -240,16 +268,16 @@
       <Reference name="Tao.OpenGL"/>
       <Reference name="Tao.Platform.Windows"/>
       <Reference name="GlacialList"/>
-      <Reference name="ICSharpCode.SharpZipLib.Zip"/>
+      <Reference name="ICSharpCode.SharpZipLib"/>
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmPrimPreview.resx</File>
+      	<File buildAction="EmbeddedResource">frmPrimWorkshop.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
     
-    <Project name="SecondGlance" path="Programs/SecondGlance" type="Exe">
+    <Project name="SecondGlance" path="Programs/SecondGlance" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -275,7 +303,7 @@
       </Files>
     </Project>
     
-    <Project name="GridImageUpload" path="Programs/GridImageUpload" type="Exe">
+    <Project name="GridImageUpload" path="Programs/GridImageUpload" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -368,7 +396,7 @@
     
     <!-- Examples -->
     
-    <Project name="groupmanager" path="Programs/examples/groupmanager" type="Exe">
+    <Project name="groupmanager" path="Programs/examples/groupmanager" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -394,7 +422,7 @@
       </Files>
     </Project>
     
-    <Project name="GUITestClient" path="Programs/examples/GUITestClient" type="Exe">
+    <Project name="GUITestClient" path="Programs/examples/GUITestClient" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -419,7 +447,7 @@
       </Files>
     </Project>
     
-    <Project name="Heightmap" path="Programs/examples/Heightmap" type="Exe">
+    <Project name="Heightmap" path="Programs/examples/Heightmap" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -444,7 +472,7 @@
       </Files>
     </Project>
     
-    <Project name="GridAccountant" path="Programs/examples/GridAccountant" type="Exe">
+    <Project name="GridAccountant" path="Programs/examples/GridAccountant" type="WinExe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
