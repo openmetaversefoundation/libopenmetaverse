@@ -31,7 +31,7 @@
         <NoStdLib>false</NoStdLib>
       </Options>
     </Configuration>
-
+    
 	<!-- Libraries -->
 	
     <Project name="OpenMetaverse" path="OpenMetaverse" type="Library" rootNamespace="OpenMetaverse">
@@ -128,7 +128,27 @@
         <Match pattern="XmlRpcCS/*.cs" recurse="true"/>
       </Files>
     </Project>
+    
+    <Project name="OpenMetaverse.Rendering.Simple" path="OpenMetaverse.Rendering.Simple" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
 
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="OpenMetaverse"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
 	<!-- Programs -->
 	
 	<Project name="Baker" path="Programs/Baker" type="Exe">
@@ -196,6 +216,34 @@
       <Files>
         <Match pattern="mapgenerator.cs"/>
         <Match pattern="ProtocolManager.cs"/>
+      </Files>
+    </Project>
+    
+    <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="Tao.OpenGL"/>
+      <Reference name="Tao.Platform.Windows"/>
+      <Reference name="GlacialList"/>
+      <Reference name="OpenMetaverse"/>
+
+      <Files>
+      	<File buildAction="EmbeddedResource">frmPrimPreview.resx</File>
+        <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
     
@@ -463,6 +511,60 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
+    
+  </Solution>
+  
+  <Solution name="OpenMetaverse.Rendering.GPL" activeConfig="Debug" path="./" version="1.0.0">
+    <Configuration name="Debug">
+      <Options>
+        <CompilerDefines>TRACE;DEBUG</CompilerDefines>
+        <OptimizeCode>false</OptimizeCode>
+        <CheckUnderflowOverflow>false</CheckUnderflowOverflow>
+        <AllowUnsafe>true</AllowUnsafe>
+        <WarningLevel>4</WarningLevel>
+        <WarningsAsErrors>false</WarningsAsErrors>
+        <SuppressWarnings></SuppressWarnings>
+        <OutputPath>bin</OutputPath>
+        <DebugInformation>true</DebugInformation>
+        <IncrementalBuild>true</IncrementalBuild>
+        <NoStdLib>false</NoStdLib>
+      </Options>
+    </Configuration>
+    <Configuration name="Release">
+      <Options>
+        <CompilerDefines>TRACE</CompilerDefines>
+        <OptimizeCode>true</OptimizeCode>
+        <CheckUnderflowOverflow>false</CheckUnderflowOverflow>
+        <AllowUnsafe>true</AllowUnsafe>
+        <WarningLevel>4</WarningLevel>
+        <WarningsAsErrors>false</WarningsAsErrors>
+        <SuppressWarnings></SuppressWarnings>
+        <OutputPath>bin</OutputPath>
+        <DebugInformation>false</DebugInformation>
+        <IncrementalBuild>true</IncrementalBuild>
+        <NoStdLib>false</NoStdLib>
+      </Options>
+    </Configuration>
+    
+    <Project name="OpenMetaverse.Rendering.GPL" path="OpenMetaverse.Rendering.GPL" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
 
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="OpenMetaverse"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
   </Solution>
 </Prebuild>
