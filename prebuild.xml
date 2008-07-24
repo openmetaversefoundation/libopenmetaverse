@@ -194,7 +194,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmAvatar.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -219,7 +218,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmBaker.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -292,7 +290,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmPrimWorkshop.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -318,7 +315,6 @@
       <Reference name="GridProxy"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmSecondGlance.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -343,7 +339,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmGridImageUpload.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -436,8 +431,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmGroupManager.resx</File>
-      	<File buildAction="EmbeddedResource">frmGroupInfo.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -462,7 +455,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmTestClient.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -487,7 +479,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmHeightmap.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
@@ -512,7 +503,6 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-      	<File buildAction="EmbeddedResource">frmGridAccountant.resx</File>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>

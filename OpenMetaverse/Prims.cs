@@ -88,7 +88,6 @@ namespace OpenMetaverse
             /// <summary></summary>
             //[Obsolete]
             //LPoint = 3,
-            ///// <summary></summary>
             //[Obsolete]
             //Wheel = 4
         }
