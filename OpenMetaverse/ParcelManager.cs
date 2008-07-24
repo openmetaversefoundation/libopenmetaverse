@@ -1628,13 +1628,18 @@ namespace OpenMetaverse
         private void SelectParcelObjectsReplyHandler(Packet packet, Simulator simulator)
         {
             ForceObjectSelectPacket reply = (ForceObjectSelectPacket)packet;
-            List<uint> ObjectIDs = new List<uint>(reply.Data.Length);
+            List<uint> objectIDs = new List<uint>(reply.Data.Length);
 
             for (int i = 0; i < reply.Data.Length; i++)
             {
-                ObjectIDs.Add(reply.Data[i].LocalID);
+                objectIDs.Add(reply.Data[i].LocalID);
             }
 
+            if (OnParcelSelectedObjects != null)
+            {
+                try { OnParcelSelectedObjects(simulator, objectIDs); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
         }
 
         #endregion Packet Handlers
