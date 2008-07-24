@@ -122,10 +122,9 @@
       <Reference name="OpenMetaverse"/>
 
       <Files>
-        <Match pattern="GridProxy.cs"/>
-        <Match pattern="GridProxyLoader.cs"/>
-        <Match pattern="Plugins/*.cs" recurse="true"/>
-        <Match pattern="XmlRpcCS/*.cs" recurse="true"/>
+      	<Match pattern="*.cs" recurse="true">
+      	  <Exclude name="GridProxyMain.cs"/>
+      	</Match>
       </Files>
     </Project>
 
