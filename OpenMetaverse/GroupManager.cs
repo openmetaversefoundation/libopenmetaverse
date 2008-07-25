@@ -531,6 +531,14 @@ namespace OpenMetaverse
         /// <param name="groupID"></param>
         public delegate void GroupDroppedCallback(LLUUID groupID);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupID"></param>
+        /// <param name="memberID"></param>
+        /// <param name="success"></param>
+        public delegate void GroupMemberEjectedCallback(LLUUID groupID, LLUUID memberID, bool success);
+
         #endregion Delegates
 
         #region Events
@@ -561,6 +569,8 @@ namespace OpenMetaverse
         public event GroupLeftCallback OnGroupLeft;
         /// <summary></summary>
         public event GroupDroppedCallback OnGroupDropped;
+        /// <summary></summary>
+        public event GroupMemberEjectedCallback OnGroupMemberEjected;
 
         #endregion Events
 
@@ -603,6 +613,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
+            Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
         }
 
         /// <summary>
@@ -1391,6 +1402,19 @@ namespace OpenMetaverse
             if (OnGroupNames != null)
             {    
                 try { OnGroupNames(groupNames); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        private void EjectGroupMemberReplyHandler(Packet packet, Simulator simulator)
+        {
+            EjectGroupMemberReplyPacket reply = (EjectGroupMemberReplyPacket)packet;
+
+            // TODO: On Success remove the member from the cache(s)
+
+            if(OnGroupMemberEjected != null)
+            {
+                try { OnGroupMemberEjected(reply.GroupData.GroupID, reply.AgentData.AgentID, reply.EjectData.Success); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
