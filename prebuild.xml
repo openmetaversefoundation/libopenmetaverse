@@ -188,7 +188,7 @@
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
-      <Reference name="Tao.OpenGL"/>
+      <Reference name="Tao.OpenGl"/>
       <Reference name="Tao.Platform.Windows"/>
       <Reference name="OpenMetaverse"/>
 
@@ -285,7 +285,7 @@
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
-      <Reference name="Tao.OpenGL"/>
+      <Reference name="Tao.OpenGl"/>
       <Reference name="Tao.Platform.Windows"/>
       <Reference name="GlacialList"/>
       <Reference name="ICSharpCode.SharpZipLib"/>
