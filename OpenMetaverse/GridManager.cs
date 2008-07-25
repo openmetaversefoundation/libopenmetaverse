@@ -200,6 +200,12 @@ namespace OpenMetaverse
         /// <param name="type"></param>
         /// <param name="items"></param>
         public delegate void GridItemsCallback(GridItemType type, List<GridItem> items);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionID"></param>
+        /// <param name="regionHandle"></param>
+        public delegate void RegionHandleReplyCallback(UUID regionID, ulong regionHandle);
 
         /// <summary>Triggered when coarse locations (minimap dots) are updated by the simulator</summary>
         public event CoarseLocationUpdateCallback OnCoarseLocationUpdate;
@@ -209,6 +215,8 @@ namespace OpenMetaverse
         public event GridLayerCallback OnGridLayer;
         /// <summary></summary>
         public event GridItemsCallback OnGridItems;
+        /// <summary></summary>
+        public event RegionHandleReplyCallback OnRegionHandleReply;
 
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
@@ -239,6 +247,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.MapItemReply, new NetworkManager.PacketCallback(MapItemReplyHandler));
             Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new NetworkManager.PacketCallback(TimeMessageHandler));
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
+            Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, new NetworkManager.PacketCallback(RegionHandleReplyHandler));
 		}
 
         /// <summary>
@@ -368,6 +377,18 @@ namespace OpenMetaverse
         public void RequestMainlandSims(GridLayerType layer)
         {
             RequestMapBlocks(layer, 0, 0, 65535, 65535, false);
+        }
+
+        /// <summary>
+        /// Request the region handle for the specified region UUID
+        /// </summary>
+        /// <param name="regionID">UUID of the region to look up</param>
+        public void RequestRegionHandle(UUID regionID)
+        {
+            RegionHandleRequestPacket request = new RegionHandleRequestPacket();
+            request.RequestBlock = new RegionHandleRequestPacket.RequestBlockBlock();
+            request.RequestBlock.RegionID = regionID;
+            Client.Network.SendPacket(request);
         }
 
         /// <summary>
@@ -601,5 +622,16 @@ namespace OpenMetaverse
                 }
             }
         }
+
+        private void RegionHandleReplyHandler(Packet packet, Simulator simulator)
+        {
+            RegionIDAndHandleReplyPacket reply = (RegionIDAndHandleReplyPacket)packet;
+            if (OnRegionHandleReply != null)
+            {
+                try { OnRegionHandleReply(reply.ReplyBlock.RegionID, reply.ReplyBlock.RegionHandle); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
     }
 }
