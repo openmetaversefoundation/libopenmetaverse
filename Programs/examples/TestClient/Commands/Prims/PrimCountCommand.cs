@@ -9,6 +9,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "primcount";
 			Description = "Shows the number of objects currently being tracked.";
+            Category = CommandCategory.TestClient;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

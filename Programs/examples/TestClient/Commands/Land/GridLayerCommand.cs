@@ -9,6 +9,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "gridlayer";
             Description = "Downloads all of the layer chunks for the grid object map";
+            Category = CommandCategory.Simulator;
 
             testClient.Grid.OnGridLayer += new GridManager.GridLayerCallback(Grid_OnGridLayer);
         }

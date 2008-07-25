@@ -17,6 +17,7 @@ namespace OpenMetaverse.TestClient
             Name = "downloadtexture";
             Description = "Downloads the specified texture. " +
                 "Usage: downloadtexture [texture-uuid]";
+            Category = CommandCategory.Inventory;
 
             testClient.Assets.OnImageReceiveProgress += new AssetManager.ImageReceiveProgressCallback(Assets_OnImageReceiveProgress);
             testClient.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);

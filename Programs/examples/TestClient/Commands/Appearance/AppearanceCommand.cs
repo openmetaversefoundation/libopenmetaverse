@@ -13,6 +13,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "appearance";
             Description = "Set your current appearance to your last saved appearance";
+            Category = CommandCategory.Appearance;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

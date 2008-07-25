@@ -26,6 +26,7 @@ namespace OpenMetaverse.TestClient
             Name = "cloneprofile";
             Description = "Clones another avatars profile as closely as possible. WARNING: This command will " +
                 "destroy your existing profile! Usage: cloneprofile [targetuuid]";
+            Category = CommandCategory.Other;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

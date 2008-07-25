@@ -17,6 +17,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "leavegroup";
             Description = "Leave a group. Usage: leavegroup GroupName";
+            Category = CommandCategory.Groups;
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {

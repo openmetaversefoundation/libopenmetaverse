@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "giveAll";
 			Description = "Gives you all it's money.";
+            Category = CommandCategory.Other;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

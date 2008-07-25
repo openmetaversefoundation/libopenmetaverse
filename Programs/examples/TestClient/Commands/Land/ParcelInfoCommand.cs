@@ -14,6 +14,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "parcelinfo";
             Description = "Prints out info about all the parcels in this simulator";
+            Category = CommandCategory.Parcel;
 
             testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }

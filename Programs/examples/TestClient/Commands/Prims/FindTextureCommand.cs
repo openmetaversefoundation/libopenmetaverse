@@ -10,6 +10,7 @@ namespace OpenMetaverse.TestClient
             Name = "findtexture";
             Description = "Checks if a specified texture is currently visible on a specified face. " +
                 "Usage: findtexture [face-index] [texture-uuid]";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

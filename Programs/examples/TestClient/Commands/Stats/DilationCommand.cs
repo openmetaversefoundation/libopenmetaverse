@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "dilation";
             Description = "Shows time dilation for current sim.";
+            Category = CommandCategory.Simulator;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -17,6 +17,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "voiceparcel";
             Description = "obtain parcel voice info. Usage: voiceparcel";
+            Category = CommandCategory.Other;
 
             Client = testClient;
         }

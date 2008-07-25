@@ -19,6 +19,7 @@ namespace OpenMetaverse.TestClient
 
             Name = "changeperms";
             Description = "Recursively changes all of the permissions for child and task inventory objects. Usage prim-uuid [copy] [mod] [xfer]";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

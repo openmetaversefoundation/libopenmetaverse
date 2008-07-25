@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "follow";
 			Description = "Follow another avatar. (usage: follow [FirstName LastName])  If no target is set then will follow master.";
+            Category = CommandCategory.Movement;
 
             testClient.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
 		}

@@ -27,6 +27,7 @@ namespace OpenMetaverse.TestClient
 
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

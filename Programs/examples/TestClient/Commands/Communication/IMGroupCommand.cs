@@ -15,6 +15,7 @@ namespace OpenMetaverse.TestClient
 
             Name = "imgroup";
             Description = "Send an instant message to a group. Usage: imgroup [group_uuid] [message]";
+            Category = CommandCategory.Communication;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

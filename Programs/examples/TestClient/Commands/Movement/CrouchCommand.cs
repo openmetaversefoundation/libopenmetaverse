@@ -9,6 +9,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "crouch";
             Description = "Starts or stops crouching. Usage: crouch [start/stop]";
+            Category = CommandCategory.Movement;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

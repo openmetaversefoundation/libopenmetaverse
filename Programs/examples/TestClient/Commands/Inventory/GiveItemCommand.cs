@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         {
             Name = "give";
             Description = "Gives items from the current working directory to an avatar.";
+            Category = CommandCategory.Inventory;
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {

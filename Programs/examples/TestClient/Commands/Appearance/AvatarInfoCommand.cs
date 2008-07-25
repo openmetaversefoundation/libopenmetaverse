@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient.Commands.Appearance
         {
             Name = "avatarinfo";
             Description = "Print out information on a nearby avatar. Usage: avatarinfo [firstname] [lastname]";
+            Category = CommandCategory.Appearance;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

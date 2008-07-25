@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "exportparticles";
             Description = "Reverse engineers a prim with a particle system to an LSL script. Usage: exportscript [prim-uuid]";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

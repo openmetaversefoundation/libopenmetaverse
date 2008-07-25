@@ -18,6 +18,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "setmaster";
             Description = "Sets the user name of the master user. The master user can IM to run commands. Usage: setmaster [name]";
+            Category = CommandCategory.TestClient;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

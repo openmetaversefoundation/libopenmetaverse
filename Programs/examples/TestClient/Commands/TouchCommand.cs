@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "touch";
 			Description = "Attempt to touch a prim with specified UUID";
+            Category = CommandCategory.Objects;
 		}
 		
         public override string Execute(string[] args, UUID fromAgentID)

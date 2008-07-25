@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "echoMaster";
 			Description = "Repeat everything that master says.";
+            Category = CommandCategory.Communication;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

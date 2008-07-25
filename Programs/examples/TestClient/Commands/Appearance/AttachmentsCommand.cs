@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
             Client = testClient;
             Name = "attachments";
             Description = "Prints a list of the currently known agent attachments";
+            Category = CommandCategory.Appearance;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

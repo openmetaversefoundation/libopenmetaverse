@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "sit";
 			Description = "Attempt to sit on the closest prim";
+            Category = CommandCategory.Movement;
 		}
 			
         public override string Execute(string[] args, UUID fromAgentID)

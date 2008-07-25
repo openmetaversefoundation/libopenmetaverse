@@ -9,6 +9,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "fly";
             Description = "Starts or stops flying. Usage: fly [start/stop]";
+            Category = CommandCategory.Movement;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

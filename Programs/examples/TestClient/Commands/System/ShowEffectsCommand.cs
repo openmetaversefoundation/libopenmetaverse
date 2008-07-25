@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "showeffects";
             Description = "Prints out information for every viewer effect that is received. Usage: showeffects [on/off]";
+            Category = CommandCategory.Other;
 
             testClient.Avatars.OnEffect += new AvatarManager.EffectCallback(Avatars_OnEffect);
             testClient.Avatars.OnLookAt += new AvatarManager.LookAtCallback(Avatars_OnLookAt);

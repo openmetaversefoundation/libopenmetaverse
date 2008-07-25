@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "goto";
 			Description = "Teleport to a location (e.g. \"goto Hooper/100/100/30\")";
+            Category = CommandCategory.Movement;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

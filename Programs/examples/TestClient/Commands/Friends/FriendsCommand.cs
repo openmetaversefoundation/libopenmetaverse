@@ -23,6 +23,7 @@ namespace OpenMetaverse.TestClient
             Name = "friends";
             // A short description of the command with usage instructions
             Description = "List avatar friends. Usage: friends";
+            Category = CommandCategory.Friends;
         }
 
         /// <summary>

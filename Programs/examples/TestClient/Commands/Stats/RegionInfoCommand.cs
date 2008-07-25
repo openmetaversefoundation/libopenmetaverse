@@ -10,6 +10,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "regioninfo";
 			Description = "Prints out info about all the current region";
+            Category = CommandCategory.Simulator;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

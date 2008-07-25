@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 	{
 		Name = "stand";
 		Description = "Stand";
+        Category = CommandCategory.Movement;
 	}
 	
         public override string Execute(string[] args, UUID fromAgentID)

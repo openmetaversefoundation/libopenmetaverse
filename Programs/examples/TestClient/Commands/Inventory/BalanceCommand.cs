@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "balance";
 			Description = "Shows the amount of L$.";
+            Category = CommandCategory.Other;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

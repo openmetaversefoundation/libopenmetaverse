@@ -17,6 +17,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "voiceaccount";
             Description = "obtain voice account info. Usage: voiceaccount";
+            Category = CommandCategory.Voice;
 
             Client = testClient;
         }

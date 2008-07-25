@@ -10,6 +10,7 @@ namespace OpenMetaverse.TestClient.Commands
         {
             Name = "showevent";
             Description = "Shows an Events details. Usage: showevent [eventID]";
+            Category = CommandCategory.Other;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

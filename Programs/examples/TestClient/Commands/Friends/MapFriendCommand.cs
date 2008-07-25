@@ -15,6 +15,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "mapfriend";
             Description = "Show a friends location. Usage: mapfriend UUID";
+            Category = CommandCategory.Friends;
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {

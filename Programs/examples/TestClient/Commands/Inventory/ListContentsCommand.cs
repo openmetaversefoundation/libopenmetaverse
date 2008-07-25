@@ -13,6 +13,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         {
             Name = "ls";
             Description = "Lists the contents of the current working inventory folder.";
+            Category = CommandCategory.Inventory;
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {

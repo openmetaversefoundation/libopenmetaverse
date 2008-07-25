@@ -6,10 +6,29 @@ using OpenMetaverse.Packets;
 
 namespace OpenMetaverse.TestClient
 {
-    public abstract class Command
+    public enum CommandCategory : int
+    {
+        Parcel,
+        Appearance,
+        Movement,
+        Simulator,
+        Communication,
+        Inventory,
+        Objects,
+        Voice,
+        TestClient,
+        Friends,
+        Groups,
+        Other,
+        Unknown
+    }
+
+    public abstract class Command : IComparable
     {
 		public string Name;
 		public string Description;
+        public CommandCategory Category;
+
 		public TestClient Client;
 
 		public abstract string Execute(string[] args, UUID fromAgentID);
@@ -25,5 +44,17 @@ namespace OpenMetaverse.TestClient
 		public virtual void Think()
 		{
 		}
+
+        public int CompareTo(object obj)
+        {
+            if (obj is Command)
+            {
+                Command c2 = (Command)obj;
+                return Category.CompareTo(c2.Category);
+            }
+            else
+                throw new ArgumentException("Object is not of type Command.");
+        }
+
     }
 }

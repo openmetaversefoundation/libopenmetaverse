@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "quit";
 			Description = "Log all avatars out and shut down";
+            Category = CommandCategory.TestClient;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

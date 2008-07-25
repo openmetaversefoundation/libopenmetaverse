@@ -10,6 +10,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "objectinventory";
             Description = "Retrieves a listing of items inside an object (task inventory). Usage: objectinventory [objectID]";
+            Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

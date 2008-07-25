@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "who";
 			Description = "Lists seen avatars.";
+            Category = CommandCategory.Other;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

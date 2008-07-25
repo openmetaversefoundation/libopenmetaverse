@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "debug";
             Description = "Turn debug messages on or off. Usage: debug [level] where level is one of None, Debug, Error, Info, Warn";
+            Category = CommandCategory.TestClient;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -14,6 +14,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "uptime";
             Description = "Shows the login name, login time and length of time logged on.";
+            Category = CommandCategory.TestClient;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

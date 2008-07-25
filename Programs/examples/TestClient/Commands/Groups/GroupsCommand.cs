@@ -18,6 +18,7 @@ namespace OpenMetaverse.TestClient
 
             Name = "groups";
             Description = "List avatar groups. Usage: groups";
+            Category = CommandCategory.Groups;
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {

@@ -19,6 +19,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "uploadimage";
             Description = "Upload an image to your inventory. Usage: uploadimage [inventoryname] [timeout] [filename]";
+            Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "stats";
             Description = "Provide connection figures and statistics";
+            Category = CommandCategory.Simulator;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

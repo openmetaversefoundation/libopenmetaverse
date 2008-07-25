@@ -20,6 +20,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "activategroup";
             Description = "Set a group as active. Usage: activategroup GroupName";
+            Category = CommandCategory.Groups;
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {

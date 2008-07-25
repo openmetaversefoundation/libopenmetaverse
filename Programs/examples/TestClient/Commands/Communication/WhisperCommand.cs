@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "whisper";
             Description = "Whisper something.";
+            Category = CommandCategory.Communication;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

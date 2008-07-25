@@ -20,6 +20,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "joingroup";
             Description = "join a group. Usage: joingroup GroupName | joingroup UUID GroupId";
+            Category = CommandCategory.Groups;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

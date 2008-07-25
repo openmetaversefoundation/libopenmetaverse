@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
             Name = "primregex";
             Description = "Find prim by text predicat. " +
                 "Usage: primregex [text predicat] (eg findprim .away.)";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -11,7 +11,8 @@ namespace OpenMetaverse.TestClient
         public LocationCommand(TestClient testClient)
 		{
 			Name = "location";
-			Description = "Show the location.";
+			Description = "Show current location of avatar.";
+            Category = CommandCategory.Movement;
 		}
 
 		public override string Execute(string[] args, UUID fromAgentID)

@@ -18,6 +18,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "deleteFolder";
             Description = "Moves a folder to the Trash Folder";
+            Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

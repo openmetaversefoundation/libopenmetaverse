@@ -14,6 +14,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "clone";
             Description = "Clone the appearance of a nearby avatar. Usage: clone [name]";
+            Category = CommandCategory.Appearance;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

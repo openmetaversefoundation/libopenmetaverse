@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "say";
 			Description = "Say something.  (usage: say (optional channel) whatever)";
+            Category = CommandCategory.Communication;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

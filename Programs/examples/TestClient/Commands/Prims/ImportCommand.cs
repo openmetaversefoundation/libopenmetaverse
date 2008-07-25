@@ -45,6 +45,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "import";
             Description = "Import prims from an exported xml file. Usage: import inputfile.xml [usegroup]";
+            Category = CommandCategory.Objects;
 
             testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
         }

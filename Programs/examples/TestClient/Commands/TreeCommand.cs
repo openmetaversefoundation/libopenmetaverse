@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
 		{
 			Name = "tree";
 			Description = "Rez a tree.";
+            Category = CommandCategory.Objects;
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)

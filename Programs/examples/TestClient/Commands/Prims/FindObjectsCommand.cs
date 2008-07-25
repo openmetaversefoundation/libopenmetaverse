@@ -19,6 +19,7 @@ namespace OpenMetaverse.TestClient
             Name = "findobjects";
             Description = "Finds all objects, which name contains search-string. " +
                 "Usage: findobjects [radius] <search-string>";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

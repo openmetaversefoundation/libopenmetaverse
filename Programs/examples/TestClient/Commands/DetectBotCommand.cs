@@ -10,6 +10,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "detectbot";
             Description = "Runs in the background, reporting any potential bots";
+            Category = CommandCategory.TestClient;
 
             testClient.Avatars.OnAvatarAppearance += new AvatarManager.AvatarAppearanceCallback(Avatars_OnAvatarAppearance);
         }

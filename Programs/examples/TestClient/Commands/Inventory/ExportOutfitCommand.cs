@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "exportoutfit";
             Description = "Exports an avatars outfit to an xml file. Usage: exportoutfit [avataruuid] outputfile.xml";
+            Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

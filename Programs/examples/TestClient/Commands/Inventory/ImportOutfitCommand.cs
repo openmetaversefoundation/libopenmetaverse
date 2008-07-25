@@ -14,6 +14,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "importoutfit";
             Description = "Imports an appearance from an xml file. Usage: importoutfit inputfile.xml";
+            Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

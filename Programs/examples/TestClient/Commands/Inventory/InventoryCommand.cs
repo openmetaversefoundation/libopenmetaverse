@@ -19,6 +19,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "i";
             Description = "Prints out inventory.";
+            Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

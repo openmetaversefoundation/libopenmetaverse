@@ -9,6 +9,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "priminfo";
             Description = "Dumps information about a specified prim. " + "Usage: priminfo [prim-uuid]";
+            Category = CommandCategory.Objects;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -18,6 +18,7 @@ namespace OpenMetaverse.TestClient
 
             Name = "im";
             Description = "Instant message someone. Usage: im [firstname] [lastname] [message]";
+            Category = CommandCategory.Communication;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

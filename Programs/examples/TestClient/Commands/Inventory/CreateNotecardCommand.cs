@@ -11,6 +11,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "createnotecard";
             Description = "Creates a notecard from a local text file.";
+            Category = CommandCategory.Inventory;
         }
 
         void OnNoteUpdate(bool success, string status, UUID itemID, UUID assetID)
