@@ -532,11 +532,11 @@ namespace OpenMetaverse
         public delegate void GroupDroppedCallback(UUID groupID);
 
         /// <summary>
-        /// 
+        /// Fired when a member of a group is ejected
         /// </summary>
-        /// <param name="groupID"></param>
-        /// <param name="memberID"></param>
-        /// <param name="success"></param>
+        /// <param name="groupID">The Group UUID the member was ejected from</param>
+        /// <param name="memberID">the Avatars UUID that was ejected</param>
+        /// <param name="success">true of member was successfully ejected</param>
         public delegate void GroupMemberEjectedCallback(UUID groupID, UUID memberID, bool success);
 
         #endregion Delegates
@@ -569,7 +569,7 @@ namespace OpenMetaverse
         public event GroupLeftCallback OnGroupLeft;
         /// <summary></summary>
         public event GroupDroppedCallback OnGroupDropped;
-        /// <summary></summary>
+        /// <summary>Fired when a member of a group is ejected</summary>
         public event GroupMemberEjectedCallback OnGroupMemberEjected;
 
         #endregion Events
@@ -1406,6 +1406,12 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Packet Handler for EjectGroupMemberReply, fired when an avatar is ejected from 
+        /// a group.
+        /// </summary>
+        /// <param name="packet">The EjectGroupMemberReply packet</param>
+        /// <param name="simulator">The simulator where the message originated</param>
         private void EjectGroupMemberReplyHandler(Packet packet, Simulator simulator)
         {
             EjectGroupMemberReplyPacket reply = (EjectGroupMemberReplyPacket)packet;

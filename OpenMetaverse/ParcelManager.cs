@@ -685,7 +685,8 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">simulator the objects are in</param>
         /// <param name="objectIDs">Local IDs of the selected objects</param>
-        public delegate void ForceSelectObjects(Simulator simulator, List<uint> objectIDs);
+        /// <param name="resetList">If true, list is start of a new selection</param>
+        public delegate void ForceSelectObjects(Simulator simulator, List<uint> objectIDs, bool resetList);
 
         #endregion Delegates
 
@@ -1184,7 +1185,7 @@ namespace OpenMetaverse
         /// <param name="ownerIDs">List containing keys of avatars objects to select; 
         /// if List is null will return Objects of type <c>selectType</c></param>
         /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
-        public void SelectObjects(int localID, ObjectReturnType selectType, List<UUID> ownerIDs)
+        public void SelectObjects(int localID, ObjectReturnType selectType, UUID ownerID)
         {
             if (OnParcelSelectedObjects != null)
             {
@@ -1195,20 +1196,9 @@ namespace OpenMetaverse
                 select.ParcelData.LocalID = localID;
                 select.ParcelData.ReturnType = (uint)selectType;
 
-                if (ownerIDs != null)
-                {
-                    select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[ownerIDs.Count];
-
-                    for (int i = 0; i < ownerIDs.Count; i++)
-                    {
-                        select.ReturnIDs[i] = new ParcelSelectObjectsPacket.ReturnIDsBlock();
-                        select.ReturnIDs[i].ReturnID = ownerIDs[i];
-                    }
-                }
-                else
-                {
-                    select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[0];
-                }
+                select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[1];
+                select.ReturnIDs[0] = new ParcelSelectObjectsPacket.ReturnIDsBlock();
+                select.ReturnIDs[0].ReturnID = ownerID;
                 Client.Network.SendPacket(select);
             }
         }
@@ -1637,7 +1627,7 @@ namespace OpenMetaverse
 
             if (OnParcelSelectedObjects != null)
             {
-                try { OnParcelSelectedObjects(simulator, objectIDs); }
+                try { OnParcelSelectedObjects(simulator, objectIDs, reply._Header.ResetList); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
