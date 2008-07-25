@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
             Description = "Wear an outfit folder from inventory. Usage: wear [outfit name] [nobake]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: wear [outfit name] eg: 'wear /My Outfit/Dance Party";

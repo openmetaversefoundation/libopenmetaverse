@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Sets home to the current location.";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
 			Client.Self.SetHome();
             return "Home Set";

@@ -93,7 +93,7 @@ namespace OpenMetaverse
         /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
         /// </summary>
         /// <param name="inventoryItems"></param>
-        public delegate void LogoutCallback(List<LLUUID> inventoryItems);
+        public delegate void LogoutCallback(List<UUID> inventoryItems);
         /// <summary>
         /// Triggered before a new connection to a simulator is established
         /// </summary>
@@ -458,7 +458,7 @@ namespace OpenMetaverse
         {
             AutoResetEvent logoutEvent = new AutoResetEvent(false);
             LogoutCallback callback = 
-                delegate(List<LLUUID> inventoryItems) { logoutEvent.Set(); };
+                delegate(List<UUID> inventoryItems) { logoutEvent.Set(); };
             OnLogoutReply += callback;
 
             // Send the packet requesting a clean logout
@@ -831,7 +831,7 @@ namespace OpenMetaverse
                 // Deal with callbacks, if any
                 if (OnLogoutReply != null)
                 {
-                    List<LLUUID> itemIDs = new List<LLUUID>();
+                    List<UUID> itemIDs = new List<UUID>();
 
                     foreach (LogoutReplyPacket.InventoryDataBlock InventoryData in logout.InventoryData)
                     {

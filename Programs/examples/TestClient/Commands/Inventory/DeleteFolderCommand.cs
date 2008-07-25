@@ -20,7 +20,7 @@ namespace OpenMetaverse.TestClient
             Description = "Moves a folder to the Trash Folder";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             // parse the command line
             string target = String.Empty;

@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Lists seen avatars.";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
 

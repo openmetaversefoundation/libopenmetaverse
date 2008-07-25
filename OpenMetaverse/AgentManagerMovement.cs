@@ -433,23 +433,23 @@ namespace OpenMetaverse
             /// typing and editing</summary>
             public AgentState State = AgentState.None;
             /// <summary></summary>
-            public LLQuaternion BodyRotation = LLQuaternion.Identity;
+            public Quaternion BodyRotation = Quaternion.Identity;
             /// <summary></summary>
-            public LLQuaternion HeadRotation = LLQuaternion.Identity;
+            public Quaternion HeadRotation = Quaternion.Identity;
 
             #region Change tracking
             /// <summary></summary>
-            private LLQuaternion LastBodyRotation;
+            private Quaternion LastBodyRotation;
             /// <summary></summary>
-            private LLQuaternion LastHeadRotation;
+            private Quaternion LastHeadRotation;
             /// <summary></summary>
-            private LLVector3 LastCameraCenter;
+            private Vector3 LastCameraCenter;
             /// <summary></summary>
-            private LLVector3 LastCameraXAxis;
+            private Vector3 LastCameraXAxis;
             /// <summary></summary>
-            private LLVector3 LastCameraYAxis;
+            private Vector3 LastCameraYAxis;
             /// <summary></summary>
-            private LLVector3 LastCameraZAxis;
+            private Vector3 LastCameraZAxis;
             /// <summary></summary>
             private float LastFar;
             #endregion Change tracking
@@ -499,14 +499,14 @@ namespace OpenMetaverse
             /// This will also anchor the camera position on the avatar
             /// </summary>
             /// <param name="target">Region coordinates to turn toward</param>
-            public bool TurnToward(LLVector3 target)
+            public bool TurnToward(Vector3 target)
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
-                    LLVector3 myPos = Client.Self.SimPosition;
-                    LLVector3 forward = new LLVector3(1, 0, 0);
-                    LLVector3 offset = LLVector3.Norm(target - myPos);
-                    LLQuaternion newRot = LLVector3.RotBetween(forward, offset);
+                    Vector3 myPos = Client.Self.SimPosition;
+                    Vector3 forward = new Vector3(1, 0, 0);
+                    Vector3 offset = Vector3.Norm(target - myPos);
+                    Quaternion newRot = Vector3.RotBetween(forward, offset);
 
                     BodyRotation = newRot;
                     HeadRotation = newRot;
@@ -552,10 +552,10 @@ namespace OpenMetaverse
             /// <param name="simulator">Simulator to send the update to</param>
             public void SendUpdate(bool reliable, Simulator simulator)
             {
-                LLVector3 origin = Camera.Position;
-                LLVector3 xAxis = Camera.LeftAxis;
-                LLVector3 yAxis = Camera.AtAxis;
-                LLVector3 zAxis = Camera.UpAxis;
+                Vector3 origin = Camera.Position;
+                Vector3 xAxis = Camera.LeftAxis;
+                Vector3 yAxis = Camera.AtAxis;
+                Vector3 zAxis = Camera.UpAxis;
 
                 // Attempted to sort these in a rough order of how often they might change
                 if (agentControls == 0 &&
@@ -628,8 +628,8 @@ namespace OpenMetaverse
             /// <param name="reliable"></param>
             /// <param name="flags"></param>
             /// <param name="state"></param>
-            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
-                LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
+            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, Vector3 position, Vector3 forwardAxis,
+                Vector3 leftAxis, Vector3 upAxis, Quaternion bodyRotation, Quaternion headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();

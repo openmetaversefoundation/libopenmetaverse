@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Log all avatars out and shut down";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
 			Client.ClientManager.LogoutAll();
             Client.ClientManager.Running = false;

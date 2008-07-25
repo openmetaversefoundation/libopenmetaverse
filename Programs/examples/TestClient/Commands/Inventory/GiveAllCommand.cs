@@ -14,9 +14,9 @@ namespace OpenMetaverse.TestClient
 			Description = "Gives you all it's money.";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
-			if (fromAgentID == LLUUID.Zero)
+			if (fromAgentID == UUID.Zero)
 				return "Unable to send money to console.  This command only works when IMed.";
 
 		    int amount = Client.Self.Balance;

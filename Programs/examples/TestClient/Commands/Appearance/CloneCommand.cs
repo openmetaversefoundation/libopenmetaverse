@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
             Description = "Clone the appearance of a nearby avatar. Usage: clone [name]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             string targetName = String.Empty;
             List<DirectoryManager.AgentSearchData> matches;
@@ -31,7 +31,7 @@ namespace OpenMetaverse.TestClient
             if (Client.Directory.PeopleSearch(DirectoryManager.DirFindFlags.People, targetName, 0, 1000 * 10,
                 out matches) && matches.Count > 0)
             {
-                LLUUID target = matches[0].AgentID;
+                UUID target = matches[0].AgentID;
                 targetName += String.Format(" ({0})", target);
 
                 if (Client.Appearances.ContainsKey(target))
@@ -44,7 +44,7 @@ namespace OpenMetaverse.TestClient
                     set.AgentData.AgentID = Client.Self.AgentID;
                     set.AgentData.SessionID = Client.Self.SessionID;
                     set.AgentData.SerialNum = SerialNum++;
-                    set.AgentData.Size = new LLVector3(2f, 2f, 2f); // HACK
+                    set.AgentData.Size = new Vector3(2f, 2f, 2f); // HACK
 
                     set.WearableData = new AgentSetAppearancePacket.WearableDataBlock[0];
                     set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[appearance.VisualParam.Length];

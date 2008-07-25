@@ -79,7 +79,7 @@ namespace OpenMetaverse.StructuredData
         public virtual int AsInteger() { return 0; }
         public virtual double AsReal() { return 0d; }
         public virtual string AsString() { return String.Empty; }
-        public virtual LLUUID AsUUID() { return LLUUID.Zero; }
+        public virtual UUID AsUUID() { return UUID.Zero; }
         public virtual DateTime AsDate() { return Helpers.Epoch; }
         public virtual Uri AsUri() { return new Uri(String.Empty); }
         public virtual byte[] AsBinary() { return new byte[0]; }
@@ -95,7 +95,7 @@ namespace OpenMetaverse.StructuredData
         public static LLSD FromReal(double value) { return new LLSDReal(value); }
         public static LLSD FromReal(float value) { return new LLSDReal((double)value); }
         public static LLSD FromString(string value) { return new LLSDString(value); }
-        public static LLSD FromUUID(LLUUID value) { return new LLSDUUID(value); }
+        public static LLSD FromUUID(UUID value) { return new LLSDUUID(value); }
         public static LLSD FromDate(DateTime value) { return new LLSDDate(value); }
         public static LLSD FromUri(Uri value) { return new LLSDURI(value); }
         public static LLSD FromBinary(byte[] value) { return new LLSDBinary(value); }
@@ -114,7 +114,7 @@ namespace OpenMetaverse.StructuredData
             else if (value is double) { return new LLSDReal((double)value); }
             else if (value is float) { return new LLSDReal((double)(float)value); }
             else if (value is string) { return new LLSDString((string)value); }
-            else if (value is LLUUID) { return new LLSDUUID((LLUUID)value); }
+            else if (value is UUID) { return new LLSDUUID((UUID)value); }
             else if (value is DateTime) { return new LLSDDate((DateTime)value); }
             else if (value is Uri) { return new LLSDURI((Uri)value); }
             else if (value is byte[]) { return new LLSDBinary((byte[])value); }
@@ -264,13 +264,13 @@ namespace OpenMetaverse.StructuredData
         }
         public override string AsString() { return value; } 
         public override byte[] AsBinary() { return Encoding.UTF8.GetBytes( value ); }
-        public override LLUUID AsUUID()
+        public override UUID AsUUID()
         {
-            LLUUID uuid;
-            if (LLUUID.TryParse(value, out uuid))
+            UUID uuid;
+            if (UUID.TryParse(value, out uuid))
                 return uuid;
             else
-                return LLUUID.Zero;
+                return UUID.Zero;
         }
         public override DateTime AsDate()
         {
@@ -290,18 +290,18 @@ namespace OpenMetaverse.StructuredData
     /// </summary>
     public class LLSDUUID : LLSD
     {
-        private LLUUID value;
+        private UUID value;
 
         public override LLSDType Type { get { return LLSDType.UUID; } }
 
-        public LLSDUUID(LLUUID value)
+        public LLSDUUID(UUID value)
         {
             this.value = value;
         }
 
-        public override bool AsBoolean() { return (value == LLUUID.Zero) ? false : true; }
+        public override bool AsBoolean() { return (value == UUID.Zero) ? false : true; }
         public override string AsString() { return value.ToString(); }
-        public override LLUUID AsUUID() { return value; }
+        public override UUID AsUUID() { return value; }
         public override byte[] AsBinary() { return value.GetBytes(); }
         public override string ToString() { return AsString(); }
     }

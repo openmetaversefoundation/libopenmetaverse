@@ -23,7 +23,7 @@ namespace OpenMetaverse.Rendering
 {
     public partial class GPLRenderer : IRendering
     {
-        public void TransformTexCoords(List<Vertex> vertices, LLVector3 center, LLObject.TextureEntryFace teFace)
+        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, LLObject.TextureEntryFace teFace)
         {
             float r = teFace.Rotation;
             float os = teFace.OffsetU;
@@ -43,7 +43,7 @@ namespace OpenMetaverse.Rendering
                 }
                 else if (teFace.TexMapType == MappingType.Planar)
                 {
-                    LLVector3 vec = vertex.Position;
+                    Vector3 vec = vertex.Position;
                     vec.X *= vec.X;
                     vec.Y *= vec.Y;
                     vec.Z *= vec.Z;
@@ -55,7 +55,7 @@ namespace OpenMetaverse.Rendering
             }
         }
 
-        private static void TransformTexCoord(ref LLVector2 texCoord, float cosAng, float sinAng, float offsetS,
+        private static void TransformTexCoord(ref Vector2 texCoord, float cosAng, float sinAng, float offsetS,
             float offsetT, float magS, float magT)
         {
             float s = texCoord.X;
@@ -82,14 +82,14 @@ namespace OpenMetaverse.Rendering
             texCoord.Y = t;
         }
 
-        private static void TransformPlanarTexCoord(ref LLVector2 texCoord, Vertex vertex, LLVector3 center,
-            LLVector3 vec)
+        private static void TransformPlanarTexCoord(ref Vector2 texCoord, Vertex vertex, Vector3 center,
+            Vector3 vec)
         {
-            LLVector3 binormal;
-            float d = LLVector3.Dot(vertex.Normal, LLVector3.Fwd);
+            Vector3 binormal;
+            float d = Vector3.Dot(vertex.Normal, Vector3.Fwd);
             if (d >= 0.5f || d <= -0.5f)
             {
-                binormal = new LLVector3(0f, 1f, 0f);
+                binormal = new Vector3(0f, 1f, 0f);
 
                 if (vertex.Normal.X < 0f)
                 {
@@ -100,7 +100,7 @@ namespace OpenMetaverse.Rendering
             }
             else
             {
-                binormal = new LLVector3(1f, 0f, 0f);
+                binormal = new Vector3(1f, 0f, 0f);
 
                 if (vertex.Normal.Y > 0f)
                 {
@@ -110,10 +110,10 @@ namespace OpenMetaverse.Rendering
                 }
             }
 
-            LLVector3 tangent = binormal % vertex.Normal;
+            Vector3 tangent = binormal % vertex.Normal;
 
-            texCoord.Y = -(LLVector3.Dot(tangent, vec) * 2f - 0.5f);
-            texCoord.X = 1f + (LLVector3.Dot(binormal, vec) * 2f - 0.5f);
+            texCoord.Y = -(Vector3.Dot(tangent, vec) * 2f - 0.5f);
+            texCoord.X = 1f + (Vector3.Dot(binormal, vec) * 2f - 0.5f);
         }
     }
 }

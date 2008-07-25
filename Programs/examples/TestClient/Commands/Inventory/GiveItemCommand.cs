@@ -13,14 +13,14 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Name = "give";
             Description = "Gives items from the current working directory to an avatar.";
         }
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 2)
             {
                 return "Usage: give <agent uuid> <item1> [item2] [item3] [...]";
             }
-            LLUUID dest;
-            if (!LLUUID.TryParse(args[0], out dest))
+            UUID dest;
+            if (!UUID.TryParse(args[0], out dest))
             {
                 return "First argument expected agent UUID.";
             }

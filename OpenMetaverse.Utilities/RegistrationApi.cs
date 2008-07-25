@@ -71,8 +71,8 @@ namespace OpenMetaverse
             // optional:
             public Nullable<int> LimitedToEstate;
             public string StartRegionName;
-            public Nullable<LLVector3> StartLocation;
-            public Nullable<LLVector3> StartLookAt;
+            public Nullable<Vector3> StartLocation;
+            public Nullable<Vector3> StartLookAt;
         }
 
         private UserInfo _userInfo;
@@ -275,7 +275,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="user">New user account to create</param>
         /// <returns>The UUID of the new user account</returns>
-        public LLUUID CreateUser(CreateUserParam user)
+        public UUID CreateUser(CreateUserParam user)
         {
             if (Initializing)
                 throw new InvalidOperationException("still initializing");
@@ -319,7 +319,7 @@ namespace OpenMetaverse
             request.StartRequest();
 
             // FIXME: Block
-            return LLUUID.Zero;
+            return UUID.Zero;
         }
 
         private void CreateUserResponse(CapsClient client, LLSD response, Exception error)

@@ -54,7 +54,7 @@ namespace OpenMetaverse
     /// </summary>
     public class FriendInfo
     {
-        private LLUUID m_id;
+        private UUID m_id;
         private string m_name;
         private bool m_isOnline;
         private bool m_canSeeMeOnline;
@@ -69,7 +69,7 @@ namespace OpenMetaverse
         /// <summary>
         /// System ID of the avatar
         /// </summary>
-        public LLUUID UUID { get { return m_id; } }
+        public UUID UUID { get { return m_id; } }
 
         /// <summary>
         /// full name of the avatar
@@ -201,7 +201,7 @@ namespace OpenMetaverse
         /// <param name="id">System ID of the avatar being prepesented</param>
         /// <param name="theirRights">Rights the friend has to see you online and to modify your objects</param>
         /// <param name="myRights">Rights you have to see your friend online and to modify their objects</param>
-        internal FriendInfo(LLUUID id, FriendRights theirRights, FriendRights myRights)
+        internal FriendInfo(UUID id, FriendRights theirRights, FriendRights myRights)
         {
             m_id = id;
             m_canSeeMeOnline = (theirRights & FriendRights.CanSeeOnline) != 0;
@@ -257,20 +257,20 @@ namespace OpenMetaverse
         /// <param name="agentName">full name of the agent offereing friendship</param>
         /// <param name="IMSessionID">session ID need when accepting/declining the offer</param>
         /// <returns>Return true to accept the friendship, false to deny it</returns>
-        public delegate void FriendshipOfferedEvent(LLUUID agentID, string agentName, LLUUID imSessionID);
+        public delegate void FriendshipOfferedEvent(UUID agentID, string agentName, UUID imSessionID);
         /// <summary>
         /// Trigger when your friendship offer has been accepted or declined
         /// </summary>
         /// <param name="agentID">System ID of the avatar who accepted your friendship offer</param>
         /// <param name="agentName">Full name of the avatar who accepted your friendship offer</param>
         /// <param name="accepted">Whether the friendship request was accepted or declined</param>
-        public delegate void FriendshipResponseEvent(LLUUID agentID, string agentName, bool accepted);
+        public delegate void FriendshipResponseEvent(UUID agentID, string agentName, bool accepted);
         /// <summary>
         /// Trigger when someone terminates your friendship.
         /// </summary>
         /// <param name="agentID">System ID of the avatar who terminated your friendship</param>
         /// <param name="agentName">Full name of the avatar who terminated your friendship</param>
-        public delegate void FriendshipTerminatedEvent(LLUUID agentID, string agentName);
+        public delegate void FriendshipTerminatedEvent(UUID agentID, string agentName);
 
         /// <summary>
         /// Triggered in response to a FindFriend request
@@ -278,7 +278,7 @@ namespace OpenMetaverse
         /// <param name="agentID">Friends Key</param>
         /// <param name="regionHandle">region handle friend is in</param>
         /// <param name="location">X/Y location of friend</param>
-        public delegate void FriendFoundEvent(LLUUID agentID, ulong regionHandle, LLVector3 location);
+        public delegate void FriendFoundEvent(UUID agentID, ulong regionHandle, Vector3 location);
 
         #endregion Delegates
 
@@ -301,7 +301,7 @@ namespace OpenMetaverse
         /// The Key is the <seealso cref="LLUUID"/> of the friend, the value is a <seealso cref="FriendInfo"/>
         /// object that contains detailed information including permissions you have and have given to the friend
         /// </summary>
-        public InternalDictionary<LLUUID, FriendInfo> FriendList = new InternalDictionary<LLUUID, FriendInfo>();
+        public InternalDictionary<UUID, FriendInfo> FriendList = new InternalDictionary<UUID, FriendInfo>();
 
         /// <summary>
         /// A Dictionary of key/value pairs containing current pending frienship offers.
@@ -310,7 +310,7 @@ namespace OpenMetaverse
         /// the value is the <seealso cref="LLUUID"/> of the request which is used to accept
         /// or decline the friendship offer
         /// </summary>
-        public InternalDictionary<LLUUID, LLUUID> FriendRequests = new InternalDictionary<LLUUID, LLUUID>();
+        public InternalDictionary<UUID, UUID> FriendRequests = new InternalDictionary<UUID, UUID>();
 
         /// <summary>
         /// Internal constructor
@@ -340,9 +340,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="fromAgentID">agentID of avatatar to form friendship with</param>
         /// <param name="imSessionID">imSessionID of the friendship request message</param>
-        public void AcceptFriendship(LLUUID fromAgentID, LLUUID imSessionID)
+        public void AcceptFriendship(UUID fromAgentID, UUID imSessionID)
         {
-            LLUUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
+            UUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
 
             AcceptFriendshipPacket request = new AcceptFriendshipPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -369,7 +369,7 @@ namespace OpenMetaverse
         /// Decline a friendship request
         /// </summary>
         /// <param name="imSessionID">imSessionID of the friendship request message</param>
-        public void DeclineFriendship(LLUUID fromAgentID, LLUUID imSessionID)
+        public void DeclineFriendship(UUID fromAgentID, UUID imSessionID)
         {
             DeclineFriendshipPacket request = new DeclineFriendshipPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -384,14 +384,14 @@ namespace OpenMetaverse
         /// Offer friendship to an avatar.
         /// </summary>
         /// <param name="agentID">System ID of the avatar you are offering friendship to</param>
-        public void OfferFriendship(LLUUID agentID)
+        public void OfferFriendship(UUID agentID)
         {
             // HACK: folder id stored as "message"
-            LLUUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
+            UUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
             Client.Self.InstantMessage(Client.Self.Name,
                 agentID,
                 callingCardFolder.ToString(),
-                LLUUID.Random(),
+                UUID.Random(),
                 InstantMessageDialog.FriendshipOffered,
                 InstantMessageOnline.Online,
                 Client.Self.SimPosition,
@@ -404,7 +404,7 @@ namespace OpenMetaverse
         /// Terminate a friendship with an avatar
         /// </summary>
         /// <param name="agentID">System ID of the avatar you are terminating the friendship with</param>
-        public void TerminateFriendship(LLUUID agentID)
+        public void TerminateFriendship(UUID agentID)
         {
             if (FriendList.ContainsKey(agentID))
             {
@@ -452,7 +452,7 @@ namespace OpenMetaverse
         /// <param name="friendID">the <seealso cref="LLUUID"/> of the friend</param>
         /// <param name="rights">the new rights to give the friend</param>
         /// <remarks>This method will implicitly set the rights to those passed in the rights parameter.</remarks>
-        public void GrantRights(LLUUID friendID, FriendRights rights)
+        public void GrantRights(UUID friendID, FriendRights rights)
         {
             GrantUserRightsPacket request = new GrantUserRightsPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -470,7 +470,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="friendID">Friends UUID to find</param>
         /// <remarks><seealso cref="E:OnFriendFound"/></remarks>
-        public void MapFriend(LLUUID friendID)
+        public void MapFriend(UUID friendID)
         {
             FindAgentPacket stalk = new FindAgentPacket();
             stalk.AgentBlock.Hunter = Client.Self.AgentID;
@@ -483,7 +483,7 @@ namespace OpenMetaverse
         /// Use to track a friends movement on the grid
         /// </summary>
         /// <param name="friendID">Friends Key</param>
-        public void TrackFriend(LLUUID friendID)
+        public void TrackFriend(UUID friendID)
         {
             TrackAgentPacket stalk = new TrackAgentPacket();
             stalk.AgentData.AgentID = Client.Self.AgentID;
@@ -503,13 +503,13 @@ namespace OpenMetaverse
         /// <param name="sender"></param>
         private void Network_OnConnect(object sender)
         {
-            List<LLUUID> names = new List<LLUUID>();
+            List<UUID> names = new List<UUID>();
 
             if ( FriendList.Count > 0 )
             {
                 lock (FriendList)
                 {
-                    foreach (KeyValuePair<LLUUID, FriendInfo> kvp in FriendList.Dictionary)
+                    foreach (KeyValuePair<UUID, FriendInfo> kvp in FriendList.Dictionary)
                     {
                         if (String.IsNullOrEmpty(kvp.Value.Name))
                             names.Add(kvp.Key);
@@ -525,11 +525,11 @@ namespace OpenMetaverse
         /// This handles the asynchronous response of a RequestAvatarNames call.
         /// </summary>
         /// <param name="names">names cooresponding to the the list of IDs sent the the RequestAvatarNames call.</param>
-        private void Avatars_OnAvatarNames(Dictionary<LLUUID, string> names)
+        private void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
         {
             lock (FriendList)
             {
-                foreach (KeyValuePair<LLUUID, string> kvp in names)
+                foreach (KeyValuePair<UUID, string> kvp in names)
                 {
                     if (FriendList.ContainsKey(kvp.Key))
                         FriendList[kvp.Key].Name = names[kvp.Key];
@@ -668,10 +668,10 @@ namespace OpenMetaverse
             FindAgentPacket reply = (FindAgentPacket)packet;
 
             float x,y;
-            LLUUID prey = reply.AgentBlock.Prey;
+            UUID prey = reply.AgentBlock.Prey;
             ulong regionHandle = Helpers.GlobalPosToRegionHandle((float)reply.LocationBlock[0].GlobalX, 
                 (float)reply.LocationBlock[0].GlobalY, out x, out y);
-            LLVector3 xyz = new LLVector3(x, y, 0f);
+            Vector3 xyz = new Vector3(x, y, 0f);
 
             try { OnFriendFound(prey, regionHandle, xyz); }
             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }

@@ -34,7 +34,7 @@ namespace OpenMetaverse.TestClient
         }
 
         Primitive currentPrim;
-        LLVector3 currentPosition;
+        Vector3 currentPosition;
         AutoResetEvent primDone = new AutoResetEvent(false);
         List<Primitive> primsCreated;
         List<uint> linkQueue;
@@ -49,13 +49,13 @@ namespace OpenMetaverse.TestClient
             testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: import inputfile.xml [usegroup]";
 
             string filename = args[0];
-            LLUUID GroupID = (args.Length > 1) ? Client.GroupID : LLUUID.Zero;
+            UUID GroupID = (args.Length > 1) ? Client.GroupID : UUID.Zero;
             string xml;
             List<Primitive> prims;
 
@@ -103,8 +103,8 @@ namespace OpenMetaverse.TestClient
                     currentPosition = linkset.RootPrim.Position;
 
                     // Rez the root prim with no rotation
-                    LLQuaternion rootRotation = linkset.RootPrim.Rotation;
-                    linkset.RootPrim.Rotation = LLQuaternion.Identity;
+                    Quaternion rootRotation = linkset.RootPrim.Rotation;
+                    linkset.RootPrim.Rotation = Quaternion.Identity;
 
                     Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.Data, GroupID,
                         linkset.RootPrim.Position, linkset.RootPrim.Scale, linkset.RootPrim.Rotation);
@@ -205,7 +205,7 @@ namespace OpenMetaverse.TestClient
 
                         Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
  
-                        if (currentPrim.Sculpt.SculptTexture != LLUUID.Zero) {
+                        if (currentPrim.Sculpt.SculptTexture != UUID.Zero) {
                             Client.Objects.SetSculpt(simulator, prim.LocalID, currentPrim.Sculpt);
                         }
 

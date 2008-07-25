@@ -18,9 +18,9 @@ namespace GridProxy
     {
         public Proxy proxy;
         private Dictionary<string, CommandDelegate> commandDelegates = new Dictionary<string, CommandDelegate>();
-        private LLUUID agentID;
-        private LLUUID sessionID;
-        private LLUUID inventoryRoot;
+        private UUID agentID;
+        private UUID sessionID;
+        private UUID inventoryRoot;
         private bool logLogin = false;
         private string[] args;
 
@@ -31,17 +31,17 @@ namespace GridProxy
             get { return args; }
         }
 
-        public LLUUID AgentID
+        public UUID AgentID
         {
             get { return agentID; }
         }
 
-        public LLUUID SessionID
+        public UUID SessionID
         {
             get { return sessionID; }
         }
 
-        public LLUUID InventoryRoot
+        public UUID InventoryRoot
         {
             get { return inventoryRoot; }
         }
@@ -144,12 +144,12 @@ namespace GridProxy
         {
             System.Collections.Hashtable values = (System.Collections.Hashtable)response.Value;
             if (values.Contains("agent_id"))
-                agentID = new LLUUID((string)values["agent_id"]);
+                agentID = new UUID((string)values["agent_id"]);
             if (values.Contains("session_id"))
-                sessionID = new LLUUID((string)values["session_id"]);
+                sessionID = new UUID((string)values["session_id"]);
             if (values.Contains("inventory-root")) 
             {
-                inventoryRoot = new LLUUID(
+                inventoryRoot = new UUID(
                     (string)((System.Collections.Hashtable)(((System.Collections.ArrayList)values["inventory-root"])[0]))["folder_id"]
                     );
                 Console.WriteLine("inventory root: " + inventoryRoot);
@@ -188,12 +188,12 @@ namespace GridProxy
         {
             ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
             packet.ChatData.FromName = Helpers.StringToField("GridProxy");
-            packet.ChatData.SourceID = LLUUID.Random();
+            packet.ChatData.SourceID = UUID.Random();
             packet.ChatData.OwnerID = agentID;
             packet.ChatData.SourceType = (byte)2;
             packet.ChatData.ChatType = (byte)1;
             packet.ChatData.Audible = (byte)1;
-            packet.ChatData.Position = new LLVector3(0, 0, 0);
+            packet.ChatData.Position = new Vector3(0, 0, 0);
             packet.ChatData.Message = Helpers.StringToField(message);
             proxy.InjectPacket(packet, Direction.Incoming);
         }

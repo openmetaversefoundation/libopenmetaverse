@@ -227,7 +227,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public float Tension;
             /// <summary></summary>
-            public LLVector3 Force;
+            public Vector3 Force;
 
             /// <summary>
             /// 
@@ -244,7 +244,7 @@ namespace OpenMetaverse
                     Drag = (float)(data[pos++] & 0x7F) / 10.0f;
                     Gravity = (float)(data[pos++] / 10.0f) - 10.0f;
                     Wind = (float)data[pos++] / 10.0f;
-                    Force = new LLVector3(data, pos);
+                    Force = new Vector3(data, pos);
                 }
                 else
                 {
@@ -254,7 +254,7 @@ namespace OpenMetaverse
                     Drag = 0.0f;
                     Gravity = 0.0f;
                     Wind = 0.0f;
-                    Force = LLVector3.Zero;
+                    Force = Vector3.Zero;
                 }
             }
 
@@ -325,7 +325,7 @@ namespace OpenMetaverse
         public struct LightData
         {
             /// <summary></summary>
-            public LLColor Color;
+            public Color4 Color;
             /// <summary></summary>
             public float Intensity;
             /// <summary></summary>
@@ -344,7 +344,7 @@ namespace OpenMetaverse
             {
                 if (data.Length - pos >= 16)
                 {
-                    Color = new LLColor(data, pos, false);
+                    Color = new Color4(data, pos, false);
                     Radius = Helpers.BytesToFloat(data, pos + 4);
                     Cutoff = Helpers.BytesToFloat(data, pos + 8);
                     Falloff = Helpers.BytesToFloat(data, pos + 12);
@@ -355,7 +355,7 @@ namespace OpenMetaverse
                 }
                 else
                 {
-                    Color = LLColor.Black;
+                    Color = Color4.Black;
                     Radius = 0f;
                     Cutoff = 0f;
                     Falloff = 0f;
@@ -372,7 +372,7 @@ namespace OpenMetaverse
                 byte[] data = new byte[16];
 
                 // Alpha channel in color is intensity
-                LLColor tmpColor = Color;
+                Color4 tmpColor = Color;
                 tmpColor.A = Intensity;
                 tmpColor.GetBytes().CopyTo(data, 0);
                 Helpers.FloatToBytes(Radius).CopyTo(data, 4);
@@ -429,19 +429,19 @@ namespace OpenMetaverse
         /// </summary>
         public struct SculptData
         {
-            public LLUUID SculptTexture;
+            public UUID SculptTexture;
             public SculptType Type;
 
             public SculptData(byte[] data, int pos)
             {
                 if (data.Length >= 17)
                 {
-                    SculptTexture = new LLUUID(data, pos);
+                    SculptTexture = new UUID(data, pos);
                     Type = (SculptType)data[pos + 16];
                 }
                 else
                 {
-                    SculptTexture = LLUUID.Zero;
+                    SculptTexture = UUID.Zero;
                     Type = SculptType.None;
                 }
             }
@@ -499,9 +499,9 @@ namespace OpenMetaverse
         /// <summary></summary>
         public ClickAction ClickAction;
         /// <summary></summary>
-        public LLUUID Sound;
+        public UUID Sound;
         /// <summary>Identifies the owner of the audio or particle system</summary>
-        public LLUUID OwnerID;
+        public UUID OwnerID;
         /// <summary></summary>
         public byte SoundFlags;
         /// <summary></summary>
@@ -511,15 +511,15 @@ namespace OpenMetaverse
         /// <summary></summary>
         public string Text;
         /// <summary></summary>
-        public LLColor TextColor;
+        public Color4 TextColor;
         /// <summary></summary>
         public string MediaURL;
         /// <summary></summary>
         public JointType Joint;
         /// <summary></summary>
-        public LLVector3 JointPivot;
+        public Vector3 JointPivot;
         /// <summary></summary>
-        public LLVector3 JointAxisOrAnchor;
+        public Vector3 JointAxisOrAnchor;
 
         #endregion Public Members
 

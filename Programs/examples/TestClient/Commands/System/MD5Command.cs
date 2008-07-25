@@ -11,7 +11,7 @@ namespace OpenMetaverse.TestClient
             Description = "Creates an MD5 hash from a given password. Usage: md5 [password]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length == 1)
                 return Helpers.MD5(args[0]);

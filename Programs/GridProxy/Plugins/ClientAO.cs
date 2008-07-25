@@ -45,7 +45,7 @@ public class ClientAO : ProxyPlugin
 {
     private ProxyFrame frame;
     private Proxy proxy;
-    private LLUUID[] wetikonanims = {
+    private UUID[] wetikonanims = {
             Animations.WALK,
             Animations.RUN,
             Animations.CROUCHWALK,
@@ -69,10 +69,10 @@ public class ClientAO : ProxyPlugin
             Animations.STANDUP,
             Animations.FLYSLOW,
             Animations.SIT_GROUND_staticRAINED,
-            LLUUID.Zero, //swimming doesnt exist
-            LLUUID.Zero,
-            LLUUID.Zero,
-            LLUUID.Zero
+            UUID.Zero, //swimming doesnt exist
+            UUID.Zero,
+            UUID.Zero,
+            UUID.Zero
         };
 
     private string[] wetikonanimnames = {
@@ -105,7 +105,7 @@ public class ClientAO : ProxyPlugin
             "swim (ignored)"
         };
 
-    private Dictionary<LLUUID, string> animuid2name;
+    private Dictionary<UUID, string> animuid2name;
     
     //private Assembly libslAssembly;
 
@@ -165,26 +165,26 @@ public class ClientAO : ProxyPlugin
 
 
     //map of built in SL animations and their overrides
-    private Dictionary<LLUUID,LLUUID> overrides = new Dictionary<LLUUID,LLUUID>();
+    private Dictionary<UUID,UUID> overrides = new Dictionary<UUID,UUID>();
 
     //list of animations currently running
-    private Dictionary<LLUUID, int> SignaledAnimations = new Dictionary<LLUUID, int>();
+    private Dictionary<UUID, int> SignaledAnimations = new Dictionary<UUID, int>();
 
     //playing status of animations'override animation
-    private Dictionary<LLUUID, bool> overrideanimationisplaying;
+    private Dictionary<UUID, bool> overrideanimationisplaying;
 
     //Current inventory path search
     string[] searchPath;
     //Search level
     int searchLevel;
     //Current folder
-    LLUUID currentFolder;
+    UUID currentFolder;
     // Number of directory descendents received
     int nbdescendantsreceived;
     //List of items in the current folder
     Dictionary<string,InventoryItem> currentFolderItems;
     //Asset download request ID
-    LLUUID assetdownloadID;
+    UUID assetdownloadID;
     //Downloaded bytes so far
     int downloadedbytes;
     //size of download
@@ -264,7 +264,7 @@ public class ClientAO : ProxyPlugin
         // remove the delegate to track agent movements
         proxy.RemoveDelegate(PacketType.AvatarAnimation, Direction.Incoming, this.packetDelegate);
         //Stop all override animations
-        foreach (LLUUID tmp in overrides.Values)
+        foreach (UUID tmp in overrides.Values)
         {
             Animate(tmp, false);
         }
@@ -273,7 +273,7 @@ public class ClientAO : ProxyPlugin
     // Inventory functions
 
     //start requesting an item by its path
-    public void RequestFindObjectByPath(LLUUID baseFolder, string path)
+    public void RequestFindObjectByPath(UUID baseFolder, string path)
     {
         if (path == null || path.Length == 0)
             throw new ArgumentException("Empty path is not supported");
@@ -291,7 +291,7 @@ public class ClientAO : ProxyPlugin
     }
 
     //request a folder content
-    public void RequestFolderContents(LLUUID folder, bool folders, bool items,
+    public void RequestFolderContents(UUID folder, bool folders, bool items,
         InventorySortOrder order)
     {
         //empty the dictionnary containing current folder items by name
@@ -324,7 +324,7 @@ public class ClientAO : ProxyPlugin
         {            
             //SayToUser("nb descendents: " + reply.AgentData.Descendents);
             //this packet concerns the folder we asked for            
-            if (reply.FolderData[0].FolderID != LLUUID.Zero 
+            if (reply.FolderData[0].FolderID != UUID.Zero 
                 && searchLevel < searchPath.Length - 1)
             {
                 nbdescendantsreceived += reply.FolderData.Length;
@@ -373,7 +373,7 @@ public class ClientAO : ProxyPlugin
                 nbdescendantsreceived += reply.FolderData.Length;
                 //SayToUser("nb received: " + nbdescendantsreceived);                
             }
-            if (reply.ItemData[0].ItemID != LLUUID.Zero
+            if (reply.ItemData[0].ItemID != UUID.Zero
                 && searchLevel == searchPath.Length - 1)
             {
                 //there are items returned and we are looking for one 
@@ -386,7 +386,7 @@ public class ClientAO : ProxyPlugin
                     //we are going to store info on all items. we'll need
                     //it to get the asset ID of animations refered to by the
                     //configuration notecard
-                    if (reply.ItemData[i].ItemID != LLUUID.Zero)
+                    if (reply.ItemData[i].ItemID != UUID.Zero)
                     {
                         InventoryItem item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType, reply.ItemData[i].ItemID);
                         item.ParentUUID = reply.ItemData[i].FolderID;
@@ -465,7 +465,7 @@ public class ClientAO : ProxyPlugin
         }
     }
 
-    public static InventoryItem CreateInventoryItem(InventoryType type, LLUUID id)
+    public static InventoryItem CreateInventoryItem(InventoryType type, UUID id)
     {
         switch (type)
         {
@@ -487,21 +487,21 @@ public class ClientAO : ProxyPlugin
     }
 
     //Ask for download of an item
-    public LLUUID RequestInventoryAsset(InventoryItem item)
+    public UUID RequestInventoryAsset(InventoryItem item)
     {
         // Build the request packet and send it
         TransferRequestPacket request = new TransferRequestPacket();
         request.TransferInfo.ChannelType = (int)ChannelType.Asset;
         request.TransferInfo.Priority = 101.0f;
         request.TransferInfo.SourceType = (int)SourceType.SimInventoryItem;
-        LLUUID transferID = LLUUID.Random();
+        UUID transferID = UUID.Random();
         request.TransferInfo.TransferID = transferID;
 
         byte[] paramField = new byte[100];
         Buffer.BlockCopy(frame.AgentID.GetBytes(), 0, paramField, 0, 16);
         Buffer.BlockCopy(frame.SessionID.GetBytes(), 0, paramField, 16, 16);
         Buffer.BlockCopy(item.OwnerID.GetBytes(), 0, paramField, 32, 16);
-        Buffer.BlockCopy(LLUUID.Zero.GetBytes(), 0, paramField, 48, 16);
+        Buffer.BlockCopy(UUID.Zero.GetBytes(), 0, paramField, 48, 16);
         Buffer.BlockCopy(item.UUID.GetBytes(), 0, paramField, 64, 16);
         Buffer.BlockCopy(item.AssetUUID.GetBytes(), 0, paramField, 80, 16);
         Buffer.BlockCopy(Helpers.IntToBytes((int)item.AssetType), 0, paramField, 96, 4);
@@ -528,18 +528,18 @@ public class ClientAO : ProxyPlugin
     {
         ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
         packet.ChatData.FromName = Helpers.StringToField("ClientAO");
-        packet.ChatData.SourceID = LLUUID.Random();
+        packet.ChatData.SourceID = UUID.Random();
         packet.ChatData.OwnerID = frame.AgentID;
         packet.ChatData.SourceType = (byte)2;
         packet.ChatData.ChatType = (byte)1;
         packet.ChatData.Audible = (byte)1;
-        packet.ChatData.Position = new LLVector3(0, 0, 0);
+        packet.ChatData.Position = new Vector3(0, 0, 0);
         packet.ChatData.Message = Helpers.StringToField(message);
         proxy.InjectPacket(packet, Direction.Incoming);
     }
 
     //start or stop an animation
-    public void Animate(LLUUID animationuuid, bool run)
+    public void Animate(UUID animationuuid, bool run)
     {
         AgentAnimationPacket animate = new AgentAnimationPacket();
         animate.Header.Reliable = true;
@@ -556,7 +556,7 @@ public class ClientAO : ProxyPlugin
     }
 
     //return the name of an animation by its UUID
-    private string animname(LLUUID arg)
+    private string animname(UUID arg)
     {
         return animuid2name[arg];
     }
@@ -575,7 +575,7 @@ public class ClientAO : ProxyPlugin
                 //fill it with the fresh list from simulator
                 for (int i = 0; i < animation.AnimationList.Length; i++)
                 {
-                    LLUUID animID = animation.AnimationList[i].AnimID;
+                    UUID animID = animation.AnimationList[i].AnimID;
                     int sequenceID = animation.AnimationList[i].AnimSequenceID;
 
                     // Add this animation to the list of currently signaled animations
@@ -586,7 +586,7 @@ public class ClientAO : ProxyPlugin
 
             //we now have a list of currently running animations
             //Start override animations if necessary
-            foreach (LLUUID key in overrides.Keys) 
+            foreach (UUID key in overrides.Keys) 
             {                
                 //For each overriden animation key, test if its override is running
                 if (SignaledAnimations.ContainsKey(key) && (!overrideanimationisplaying[key] ))
@@ -677,11 +677,11 @@ public class ClientAO : ProxyPlugin
     private void loadWetIkon(string config)
     {
         //Reinitialise override table
-        overrides = new Dictionary<LLUUID,LLUUID>();
-        overrideanimationisplaying = new Dictionary<LLUUID, bool>();
+        overrides = new Dictionary<UUID,UUID>();
+        overrideanimationisplaying = new Dictionary<UUID, bool>();
 
-        animuid2name = new Dictionary<LLUUID,string>();
-        foreach (LLUUID key in wetikonanims )
+        animuid2name = new Dictionary<UUID,string>();
+        foreach (UUID key in wetikonanims )
         {
             animuid2name[key] = wetikonanimnames[Array.IndexOf(wetikonanims, key)];            
         }        
@@ -701,8 +701,8 @@ public class ClientAO : ProxyPlugin
             {
                 if (currentFolderItems.ContainsKey(animname))
                 {
-                    LLUUID over = currentFolderItems[animname].AssetUUID;
-                    LLUUID orig = wetikonanims[((i + 1) / 2) - 1];
+                    UUID over = currentFolderItems[animname].AssetUUID;
+                    UUID orig = wetikonanims[((i + 1) / 2) - 1];
                     //put it in overrides
                     animuid2name[over] = animname;                    
                     overrides[orig] = over;

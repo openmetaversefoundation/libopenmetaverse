@@ -14,17 +14,17 @@ namespace OpenMetaverse.TestClient
 {
     public class QueuedDownloadInfo
     {
-        public LLUUID TransferID;
-        public LLUUID AssetID;
-        public LLUUID ItemID;
-        public LLUUID TaskID;
-        public LLUUID OwnerID;
+        public UUID TransferID;
+        public UUID AssetID;
+        public UUID ItemID;
+        public UUID TaskID;
+        public UUID OwnerID;
         public AssetType Type;
         public string FileName;
         public DateTime WhenRequested;
         public bool IsRequested;
 
-        public QueuedDownloadInfo(string file, LLUUID asset, LLUUID item, LLUUID task, LLUUID owner, AssetType type)
+        public QueuedDownloadInfo(string file, UUID asset, UUID item, UUID task, UUID owner, AssetType type)
         {
             FileName = file;
             AssetID = asset;
@@ -32,7 +32,7 @@ namespace OpenMetaverse.TestClient
             TaskID = task;
             OwnerID = owner;
             Type = type;
-            TransferID = LLUUID.Zero;
+            TransferID = UUID.Zero;
             WhenRequested = DateTime.Now;
             IsRequested = false;
         }
@@ -116,7 +116,7 @@ namespace OpenMetaverse.TestClient
             testClient.Assets.OnAssetReceived += new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             StringBuilder sbResult = new StringBuilder();
 
@@ -281,7 +281,7 @@ namespace OpenMetaverse.TestClient
                         string sPath = sPathSoFar + @"\" + MakeValid(ii.Name.Trim()) + sExtension;
 
                         // create the new qdi
-                        QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.AssetUUID, iNode.Data.UUID, LLUUID.Zero, 
+                        QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.AssetUUID, iNode.Data.UUID, UUID.Zero, 
                             Client.Self.AgentID, ii.AssetType);
                         
                         // add it to the queue

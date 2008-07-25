@@ -14,14 +14,14 @@ namespace OpenMetaverse.TestClient
 			Description = "Attempt to touch a prim with specified UUID";
 		}
 		
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
-            LLUUID target;
+            UUID target;
 
             if (args.Length != 1)
                 return "Usage: touch UUID";
             
-            if (LLUUID.TryParse(args[0], out target))
+            if (UUID.TryParse(args[0], out target))
             {
                 Primitive targetPrim = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim)

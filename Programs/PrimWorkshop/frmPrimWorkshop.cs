@@ -103,7 +103,7 @@ namespace PrimWorkshop
             else
                 Gl.glPolygonMode(Gl.GL_FRONT, Gl.GL_FILL);
 
-            LLVector3 center = LLVector3.Zero;
+            Vector3 center = Vector3.Zero;
 
             Glu.gluLookAt(
                     center.X, (double)scrollZoom.Value * 0.1d + center.Y, center.Z,
@@ -146,7 +146,7 @@ namespace PrimWorkshop
                         // Using euler angles because I have no clue what I'm doing
                         float roll, pitch, yaw;
 
-                        LLMatrix3 rotation = prim.Rotation.ToMatrix();
+                        Matrix3 rotation = prim.Rotation.ToMatrix();
                         rotation.GetEulerAngles(out roll, out pitch, out yaw);
 
                         Gl.glRotatef(roll * 57.2957795f, 1f, 0f, 0f);
@@ -280,7 +280,7 @@ namespace PrimWorkshop
                     for (int i = 0; i < primList.Count; i++)
                     {
                         // TODO: Can't render sculpted prims without the textures
-                        if (primList[i].Sculpt.SculptTexture != LLUUID.Zero)
+                        if (primList[i].Sculpt.SculptTexture != UUID.Zero)
                             continue;
 
                         Primitive prim = primList[i];
@@ -360,7 +360,7 @@ namespace PrimWorkshop
             }
         }
 
-        private bool LoadTexture(string basePath, LLUUID textureID, ref System.Drawing.Image texture)
+        private bool LoadTexture(string basePath, UUID textureID, ref System.Drawing.Image texture)
         {
             if (File.Exists(textureID.ToString() + ".tga"))
             {

@@ -9,13 +9,13 @@ namespace OpenMetaverse.TestClient
 {
     public class ExportCommand : Command
     {
-        List<LLUUID> Textures = new List<LLUUID>();
+        List<UUID> Textures = new List<UUID>();
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
         LLObject.ObjectPropertiesFamily Properties;
         bool GotPermissions = false;
-        LLUUID SelectedObject = LLUUID.Zero;
+        UUID SelectedObject = UUID.Zero;
 
-        Dictionary<LLUUID, Primitive> PrimsWaiting = new Dictionary<LLUUID, Primitive>();
+        Dictionary<UUID, Primitive> PrimsWaiting = new Dictionary<UUID, Primitive>();
         AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
 
         public ExportCommand(TestClient testClient)
@@ -29,19 +29,19 @@ namespace OpenMetaverse.TestClient
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
-            if (args.Length != 2 && !(args.Length == 1 && SelectedObject != LLUUID.Zero))
+            if (args.Length != 2 && !(args.Length == 1 && SelectedObject != UUID.Zero))
                 return "Usage: export uuid outputfile.xml";
 
-            LLUUID id;
+            UUID id;
             uint localid;
             string file;
 
             if (args.Length == 2)
             {
                 file = args[1];
-                if (!LLUUID.TryParse(args[0], out id))
+                if (!UUID.TryParse(args[0], out id))
                     return "Usage: export uuid outputfile.xml";
             }
             else
@@ -95,7 +95,7 @@ namespace OpenMetaverse.TestClient
                 if (!complete)
                 {
                     Logger.Log("Warning: Unable to retrieve full properties for:", Helpers.LogLevel.Warning, Client);
-                    foreach (LLUUID uuid in PrimsWaiting.Keys)
+                    foreach (UUID uuid in PrimsWaiting.Keys)
                         Logger.Log(uuid.ToString(), Helpers.LogLevel.Warning, Client);
                 }
 
@@ -130,7 +130,7 @@ namespace OpenMetaverse.TestClient
                             }
                         }
 
-                        if (prim.Sculpt.SculptTexture != LLUUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture)) {
+                        if (prim.Sculpt.SculptTexture != UUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture)) {
                             Textures.Add(prim.Sculpt.SculptTexture);
                         }
                     }
@@ -205,8 +205,8 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnPointAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
-            PointAtType pointType, float duration, LLUUID id)
+        void Avatars_OnPointAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
+            PointAtType pointType, float duration, UUID id)
         {
             if (sourceID == Client.MasterKey)
             {

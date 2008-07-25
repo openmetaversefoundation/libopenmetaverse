@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Prints out info about all the current region";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             StringBuilder output = new StringBuilder();
             output.AppendLine(Client.Network.CurrentSim.ToString());

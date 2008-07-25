@@ -95,7 +95,7 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(tempLLSD is LLSDUUID);
             Assert.IsTrue(tempLLSD.Type == LLSDType.UUID);
             tempUUID = (LLSDUUID)tempLLSD;
-            Assert.AreEqual(new LLUUID("67153d5b-3659-afb4-8510-adda2c034649"), tempUUID.AsUUID());
+            Assert.AreEqual(new UUID("67153d5b-3659-afb4-8510-adda2c034649"), tempUUID.AsUUID());
 
             tempLLSD = map["scale"];
             Assert.IsNotNull(tempLLSD);
@@ -326,11 +326,11 @@ namespace OpenMetaverse.Tests
 
             Assert.AreEqual(LLSDType.UUID, array[0].Type);
             tempUUID = (LLSDUUID)array[0];
-            Assert.AreEqual(new LLUUID("d7f4aeca-88f1-42a1-b385-b9db18abb255"), tempUUID.AsUUID());
+            Assert.AreEqual(new UUID("d7f4aeca-88f1-42a1-b385-b9db18abb255"), tempUUID.AsUUID());
 
             Assert.AreEqual(LLSDType.UUID, array[1].Type);
             tempUUID = (LLSDUUID)array[1];
-            Assert.AreEqual(LLUUID.Zero, tempUUID.AsUUID());
+            Assert.AreEqual(UUID.Zero, tempUUID.AsUUID());
         }
 
         /// <summary>

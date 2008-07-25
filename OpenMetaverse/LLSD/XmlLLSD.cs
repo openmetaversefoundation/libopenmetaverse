@@ -328,18 +328,18 @@ namespace OpenMetaverse.StructuredData
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromUUID(LLUUID.Zero);
+                        return LLSD.FromUUID(UUID.Zero);
                     }
 
                     if (reader.Read())
                     {
-                        LLUUID value = LLUUID.Zero;
-                        LLUUID.TryParse(reader.ReadString().Trim(), out value);
+                        UUID value = UUID.Zero;
+                        UUID.TryParse(reader.ReadString().Trim(), out value);
                         ret = LLSD.FromUUID(value);
                         break;
                     }
 
-                    ret = LLSD.FromUUID(LLUUID.Zero);
+                    ret = LLSD.FromUUID(UUID.Zero);
                     break;
                 case "date":
                     if (reader.IsEmptyElement)

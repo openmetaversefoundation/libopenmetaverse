@@ -11,7 +11,7 @@ namespace OpenMetaverse.TestClient
             Description = "Logs a given number of packets to an xml file. Usage: packetlog 10 tenpackets.xml";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 2)
                 return "Usage: packetlog 10 tenpackets.xml";

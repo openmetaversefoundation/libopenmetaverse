@@ -362,7 +362,7 @@ public class Analyst : ProxyPlugin
                             if (lineValue == "$Value")
                                 fval = MagicCast(name, block, lineField, value);
                             else if (lineValue == "$UUID")
-                                fval = LLUUID.Random();
+                                fval = UUID.Random();
                             else if (lineValue == "$AgentID")
                                 fval = frame.AgentID;
                             else if (lineValue == "$SessionID")
@@ -412,12 +412,12 @@ public class Analyst : ProxyPlugin
     {
         ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
         packet.ChatData.FromName = Helpers.StringToField("Analyst");
-        packet.ChatData.SourceID = LLUUID.Random();
+        packet.ChatData.SourceID = UUID.Random();
         packet.ChatData.OwnerID = frame.AgentID;
         packet.ChatData.SourceType = (byte)2;
         packet.ChatData.ChatType = (byte)1;
         packet.ChatData.Audible = (byte)1;
-        packet.ChatData.Position = new LLVector3(0, 0, 0);
+        packet.ChatData.Position = new Vector3(0, 0, 0);
         packet.ChatData.Message = Helpers.StringToField(message);
         proxy.InjectPacket(packet, Direction.Incoming);
     }
@@ -521,9 +521,9 @@ public class Analyst : ProxyPlugin
             {
                 return Convert.ToDouble(value);
             }
-            else if (fieldClass == typeof(LLUUID))
+            else if (fieldClass == typeof(UUID))
             {
-                return new LLUUID(value);
+                return new UUID(value);
             }
             else if (fieldClass == typeof(bool))
             {
@@ -538,34 +538,34 @@ public class Analyst : ProxyPlugin
             {
                 return Helpers.StringToField(value);
             }
-            else if (fieldClass == typeof(LLVector3))
+            else if (fieldClass == typeof(Vector3))
             {
-                LLVector3 result;
-                if(LLVector3.TryParse(value, out result))
+                Vector3 result;
+                if(Vector3.TryParse(value, out result))
                     return result;
                 else
                     throw new Exception();
             }
-            else if (fieldClass == typeof(LLVector3d))
+            else if (fieldClass == typeof(Vector3d))
             {
-                LLVector3d result;
-                if (LLVector3d.TryParse(value, out result))
+                Vector3d result;
+                if (Vector3d.TryParse(value, out result))
                     return result;
                 else
                     throw new Exception();
             }
-            else if (fieldClass == typeof(LLVector4))
+            else if (fieldClass == typeof(Vector4))
             {
-                LLVector4 result;
-                if (LLVector4.TryParse(value, out result))
+                Vector4 result;
+                if (Vector4.TryParse(value, out result))
                     return result;
                 else
                     throw new Exception();
             }
-            else if (fieldClass == typeof(LLQuaternion))
+            else if (fieldClass == typeof(Quaternion))
             {
-                LLQuaternion result;
-                if (LLQuaternion.TryParse(value, out result))
+                Quaternion result;
+                if (Quaternion.TryParse(value, out result))
                     return result;
                 else
                     throw new Exception();

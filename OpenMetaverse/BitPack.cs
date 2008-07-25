@@ -152,7 +152,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="data"></param>
-        public void PackUUID(LLUUID data)
+        public void PackUUID(UUID data)
         {
             byte[] bytes = data.GetBytes();
 
@@ -166,7 +166,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="data"></param>
-        public void PackColor(LLColor data)
+        public void PackColor(Color4 data)
         {
             byte[] bytes = data.GetBytes();
             PackBitArray(bytes, 32);
@@ -297,11 +297,11 @@ namespace OpenMetaverse
             return str;
         }
 
-        public LLUUID UnpackUUID()
+        public UUID UnpackUUID()
         {
             if (bitPos != 0) throw new IndexOutOfRangeException();
 
-            LLUUID val = new LLUUID(Data, bytePos);
+            UUID val = new UUID(Data, bytePos);
             bytePos += 16;
             return val;
         }

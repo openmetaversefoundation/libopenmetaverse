@@ -12,14 +12,14 @@ namespace OpenMetaverse.TestClient
             Description = "Retrieves a listing of items inside an object (task inventory). Usage: objectinventory [objectID]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: objectinventory [objectID]";
 
             uint objectLocalID;
-            LLUUID objectID;
-            if (!LLUUID.TryParse(args[0], out objectID))
+            UUID objectID;
+            if (!UUID.TryParse(args[0], out objectID))
                 return "Usage: objectinventory [objectID]";
 
             Primitive found = Client.Network.CurrentSim.ObjectsPrimitives.Find(delegate(Primitive prim) { return prim.ID == objectID; });

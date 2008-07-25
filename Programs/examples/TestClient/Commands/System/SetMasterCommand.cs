@@ -10,9 +10,9 @@ namespace OpenMetaverse.TestClient
     public class SetMasterCommand: Command
     {
 		public DateTime Created = DateTime.Now;
-        private LLUUID resolvedMasterKey = LLUUID.Zero;
+        private UUID resolvedMasterKey = UUID.Zero;
         private ManualResetEvent keyResolution = new ManualResetEvent(false);
-        private LLUUID query = LLUUID.Zero;
+        private UUID query = UUID.Zero;
 
         public SetMasterCommand(TestClient testClient)
 		{
@@ -20,7 +20,7 @@ namespace OpenMetaverse.TestClient
             Description = "Sets the user name of the master user. The master user can IM to run commands. Usage: setmaster [name]";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
 			string masterName = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)
@@ -55,14 +55,14 @@ namespace OpenMetaverse.TestClient
             return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToString());
 		}
 
-        private void KeyResolvHandler(LLUUID queryid, List<DirectoryManager.AgentSearchData> matches)
+        private void KeyResolvHandler(UUID queryid, List<DirectoryManager.AgentSearchData> matches)
         {
             if (query != queryid)
                 return;
 
             resolvedMasterKey = matches[0].AgentID;
             keyResolution.Set();
-            query = LLUUID.Zero;
+            query = UUID.Zero;
         }
     }
 }

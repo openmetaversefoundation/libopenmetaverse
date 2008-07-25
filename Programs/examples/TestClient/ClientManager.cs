@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
         public string StartLocation;
         public bool GroupCommands;
         public string MasterName;
-        public LLUUID MasterKey;
+        public UUID MasterKey;
         public string URI;
     }
 
@@ -38,7 +38,7 @@ namespace OpenMetaverse.TestClient
 
     public class ClientManager
     {
-        public Dictionary<LLUUID, GridClient> Clients = new Dictionary<LLUUID, GridClient>();
+        public Dictionary<UUID, GridClient> Clients = new Dictionary<UUID, GridClient>();
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
@@ -106,7 +106,7 @@ namespace OpenMetaverse.TestClient
             
             if (client.Network.Login(loginParams))
             {
-                if (account.MasterKey == LLUUID.Zero && !String.IsNullOrEmpty(account.MasterName))
+                if (account.MasterKey == UUID.Zero && !String.IsNullOrEmpty(account.MasterName))
                 {
                     // To prevent security issues, we must resolve the specified master name to a key.
                     ManualResetEvent keyResolution = new ManualResetEvent(false);
@@ -114,7 +114,7 @@ namespace OpenMetaverse.TestClient
                     
                     // Set up the callback that handles the search results:
                     DirectoryManager.DirPeopleReplyCallback callback = 
-                        delegate (LLUUID queryID, List<DirectoryManager.AgentSearchData> matches) {
+                        delegate (UUID queryID, List<DirectoryManager.AgentSearchData> matches) {
                             // This may be called several times with additional search results.
                             if (matches.Count > 0)
                             {
@@ -136,7 +136,7 @@ namespace OpenMetaverse.TestClient
                     keyResolution.WaitOne(TimeSpan.FromSeconds(30), false);
                     client.Directory.OnDirPeopleReply -= callback;
 
-                    LLUUID masterKey = LLUUID.Zero;
+                    UUID masterKey = UUID.Zero;
                     string masterName = account.MasterName;
                     lock (masterMatches) {
                         if (masterMatches.Count == 1) {
@@ -181,7 +181,7 @@ namespace OpenMetaverse.TestClient
                             } while (read != null); // Do it until the user selects a master.
                         }
                     }
-                    if (masterKey != LLUUID.Zero)
+                    if (masterKey != UUID.Zero)
                     {
                         Console.WriteLine("\"{0}\" resolved to {1} ({2})", account.MasterName, masterName, masterKey);
                         account.MasterName = masterName;
@@ -238,7 +238,7 @@ namespace OpenMetaverse.TestClient
             {
                 PrintPrompt();
                 string input = Console.ReadLine();
-                DoCommandAll(input, LLUUID.Zero);
+                DoCommandAll(input, UUID.Zero);
             }
 
             foreach (GridClient client in Clients.Values)
@@ -266,7 +266,7 @@ namespace OpenMetaverse.TestClient
         /// <param name="cmd"></param>
         /// <param name="fromAgentID"></param>
         /// <param name="imSessionID"></param>
-        public void DoCommandAll(string cmd, LLUUID fromAgentID)
+        public void DoCommandAll(string cmd, UUID fromAgentID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
             string firstToken = tokens[0].ToLower();
@@ -290,7 +290,7 @@ namespace OpenMetaverse.TestClient
             else
             {
                 // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-                Dictionary<LLUUID, GridClient> clientsCopy = new Dictionary<LLUUID, GridClient>(Clients);
+                Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
 
                 foreach (TestClient client in clientsCopy.Values)
                     client.DoCommand(cmd, fromAgentID);
@@ -313,7 +313,7 @@ namespace OpenMetaverse.TestClient
         public void LogoutAll()
         {
             // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-            Dictionary<LLUUID, GridClient> clientsCopy = new Dictionary<LLUUID, GridClient>(Clients);
+            Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
 
             foreach (TestClient client in clientsCopy.Values)
                 Logout(client);

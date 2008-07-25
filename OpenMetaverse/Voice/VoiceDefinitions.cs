@@ -347,15 +347,15 @@ namespace OpenMetaverse.Voice
         public class VoicePosition
         {
             /// <summary>Positional vector of the users position</summary>
-            public LLVector3d Position;
+            public Vector3d Position;
             /// <summary>Velocity vector of the position</summary>
-            public LLVector3d Velocity;
+            public Vector3d Velocity;
             /// <summary>At Orientation (X axis) of the position</summary>
-            public LLVector3d AtOrientation;
+            public Vector3d AtOrientation;
             /// <summary>Up Orientation (Y axis) of the position</summary>
-            public LLVector3d UpOrientation;
+            public Vector3d UpOrientation;
             /// <summary>Left Orientation (Z axis) of the position</summary>
-            public LLVector3d LeftOrientation;
+            public Vector3d LeftOrientation;
         }
 
         #endregion XML Serialization Classes

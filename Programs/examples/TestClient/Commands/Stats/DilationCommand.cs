@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Shows time dilation for current sim.";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             return "Dilation is " + Client.Network.CurrentSim.Stats.Dilation.ToString();
         }

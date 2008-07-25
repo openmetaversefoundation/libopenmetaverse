@@ -159,7 +159,7 @@ namespace OpenMetaverse
             private const byte MEDIA_MASK = 0x01;
             private const byte TEX_MAP_MASK = 0x06;
 
-            private LLColor rgba;
+            private Color4 rgba;
             private float repeatU;
             private float repeatV;
             private float offsetU;
@@ -167,7 +167,7 @@ namespace OpenMetaverse
             private float rotation;
             private float glow;
             private TextureAttributes hasAttribute;
-            private LLUUID textureID;
+            private UUID textureID;
             private TextureEntryFace DefaultTexture;
 
             internal byte material;
@@ -176,7 +176,7 @@ namespace OpenMetaverse
             #region Properties
 
             /// <summary></summary>
-            public LLColor RGBA
+            public Color4 RGBA
             {
                 get
                 {
@@ -397,7 +397,7 @@ namespace OpenMetaverse
             }
 
             /// <summary></summary>
-            public LLUUID TextureID
+            public UUID TextureID
             {
                 get
                 {
@@ -451,7 +451,7 @@ namespace OpenMetaverse
                 if (TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
                     tex["imageid"] = LLSD.FromUUID(TextureID);
                 else
-                    tex["imageid"] = LLSD.FromUUID(LLUUID.Zero);
+                    tex["imageid"] = LLSD.FromUUID(UUID.Zero);
 
                 return tex;
             }
@@ -462,7 +462,7 @@ namespace OpenMetaverse
 
                 TextureEntryFace face = new TextureEntryFace(defaultFace);
                 faceNumber = (map.ContainsKey("face_number")) ? map["face_number"].AsInteger() : -1;
-                LLColor rgba = face.RGBA;
+                Color4 rgba = face.RGBA;
                 rgba.FromLLSD(map["colors"]);
                 face.RGBA = rgba;
                 face.RepeatU = (float)map["scales"].AsReal();
@@ -506,7 +506,7 @@ namespace OpenMetaverse
         public class TextureEntry
         {
             public const int MAX_FACES = 32;
-            public static readonly LLUUID WHITE_TEXTURE = new LLUUID("5748decc-f629-461c-9a36-a35a221fe21f");
+            public static readonly UUID WHITE_TEXTURE = new UUID("5748decc-f629-461c-9a36-a35a221fe21f");
 
             /// <summary></summary>
             public TextureEntryFace DefaultTexture;
@@ -517,7 +517,7 @@ namespace OpenMetaverse
             /// Constructor that takes a default texture UUID
             /// </summary>
             /// <param name="defaultTextureID">Texture UUID to use as the default texture</param>
-            public TextureEntry(LLUUID defaultTextureID)
+            public TextureEntry(UUID defaultTextureID)
             {
                 DefaultTexture = new TextureEntryFace(null);
                 DefaultTexture.TextureID = defaultTextureID;
@@ -657,12 +657,12 @@ namespace OpenMetaverse
                 int i = pos;
 
                 #region Texture
-                DefaultTexture.TextureID = new LLUUID(data, i);
+                DefaultTexture.TextureID = new UUID(data, i);
                 i += 16;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    LLUUID tmpUUID = new LLUUID(data, i);
+                    UUID tmpUUID = new UUID(data, i);
                     i += 16;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
@@ -672,12 +672,12 @@ namespace OpenMetaverse
                 #endregion Texture
 
                 #region Color
-                DefaultTexture.RGBA = new LLColor(data, i, true);
+                DefaultTexture.RGBA = new Color4(data, i, true);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    LLColor tmpColor = new LLColor(data, i, true);
+                    Color4 tmpColor = new Color4(data, i, true);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)

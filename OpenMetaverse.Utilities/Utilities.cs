@@ -56,7 +56,7 @@ namespace OpenMetaverse.Utilities
         /// </summary>
         /// <param name="target">Target to shoot at</param>
         /// <returns></returns>
-        public static bool Shoot(GridClient client, LLVector3 target)
+        public static bool Shoot(GridClient client, Vector3 target)
         {
             if (client.Self.Movement.TurnToward(target))
                 return Shoot(client);
@@ -164,7 +164,7 @@ namespace OpenMetaverse.Utilities
     {
         private GridClient Client;
         private ulong SimHandle;
-        private LLVector3 Position = LLVector3.Zero;
+        private Vector3 Position = Vector3.Zero;
         private System.Timers.Timer CheckTimer;
 
         public ConnectionManager(GridClient client, int timerFrequency)
@@ -240,7 +240,7 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        public void StayInSim(ulong handle, LLVector3 desiredPosition)
+        public void StayInSim(ulong handle, Vector3 desiredPosition)
         {
             SimHandle = handle;
             Position = desiredPosition;
@@ -381,7 +381,7 @@ namespace OpenMetaverse.Utilities
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
-                                    LLVector3 position = new LLVector3((float)(x * 4 + x1), (float)(y * 4 + y1),
+                                    Vector3 position = new Vector3((float)(x * 4 + x1), (float)(y * 4 + y1),
                                         Client.Self.SimPosition.Z);
                                     Client.Self.Movement.Camera.Position = position;
 
@@ -471,7 +471,7 @@ namespace OpenMetaverse.Utilities
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
-                                    LLVector3 position = new LLVector3((float)(x * 4 + x1), (float)(y * 4 + y1),
+                                    Vector3 position = new Vector3((float)(x * 4 + x1), (float)(y * 4 + y1),
                                         Client.Self.SimPosition.Z);
                                     Client.Self.Movement.Camera.Position = position;
 
@@ -505,7 +505,7 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        public int GetRectangularDeviation(LLVector3 aabbmin, LLVector3 aabbmax, int area)
+        public int GetRectangularDeviation(Vector3 aabbmin, Vector3 aabbmax, int area)
         {
             int xlength = (int)(aabbmax.X - aabbmin.X);
             int ylength = (int)(aabbmax.Y - aabbmin.Y);

@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
             Description = "Downloads all of the agent locations in a specified region. Usage: agentlocations [regionhandle]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             ulong regionHandle;
 

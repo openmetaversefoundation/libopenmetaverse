@@ -43,7 +43,7 @@ namespace AvatarPreview
             public float[] Vertices;
             public ushort[] Indices;
             public float[] TexCoords;
-            public LLVector3 Center;
+            public Vector3 Center;
         }
 
         public GLData RenderData;
@@ -88,7 +88,7 @@ namespace AvatarPreview
             }
 
             // Calculate the center-point from the bounding box edges
-            RenderData.Center = new LLVector3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
+            RenderData.Center = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
 
             // Generate the index array
             RenderData.Indices = new ushort[_numFaces * 3];

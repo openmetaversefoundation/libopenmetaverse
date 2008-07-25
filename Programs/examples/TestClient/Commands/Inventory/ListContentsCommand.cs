@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Name = "ls";
             Description = "Lists the contents of the current working inventory folder.";
         }
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length > 1)
                 return "Usage: ls [-l]";

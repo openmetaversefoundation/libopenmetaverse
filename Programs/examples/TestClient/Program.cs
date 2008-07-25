@@ -26,7 +26,7 @@ namespace OpenMetaverse.TestClient
             LoginDetails account;
             bool groupCommands = false;
             string masterName = String.Empty;
-            LLUUID masterKey = LLUUID.Zero;
+            UUID masterKey = UUID.Zero;
             string file = String.Empty;
 			string loginuri = String.Empty;
 
@@ -39,7 +39,7 @@ namespace OpenMetaverse.TestClient
 
                 if (arguments["masterkey"] != null)
                 {
-                    masterKey = LLUUID.Parse(arguments["masterkey"]);
+                    masterKey = UUID.Parse(arguments["masterkey"]);
                 }
 
                 if (arguments["master"] != null)

@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             Description = "Moves the avatar to the specified global position using simulator autopilot. Usage: moveto x y z";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 3)
                 return "Usage: moveto x y z";

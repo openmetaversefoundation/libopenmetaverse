@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient.Commands.Appearance
             Description = "Print out information on a nearby avatar. Usage: avatarinfo [firstname] [lastname]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 2)
                 return "Usage: avatarinfo [firstname] [lastname]";

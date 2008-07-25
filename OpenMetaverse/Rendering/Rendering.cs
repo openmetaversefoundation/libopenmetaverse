@@ -78,10 +78,10 @@ namespace OpenMetaverse.Rendering
 
     public struct Vertex
     {
-        public LLVector3 Position;
-        public LLVector3 Normal;
-        public LLVector3 Binormal;
-        public LLVector2 TexCoord;
+        public Vector3 Position;
+        public Vector3 Normal;
+        public Vector3 Binormal;
+        public Vector2 TexCoord;
     }
 
     public struct ProfileFace
@@ -106,15 +106,15 @@ namespace OpenMetaverse.Rendering
         public bool Open;
         public bool Concave;
         public int TotalOutsidePoints;
-        public List<LLVector3> Positions;
+        public List<Vector3> Positions;
         public List<ProfileFace> Faces;
     }
 
     public struct PathPoint
     {
-        public LLVector3 Position;
-        public LLVector2 Scale;
-        public LLQuaternion Rotation;
+        public Vector3 Position;
+        public Vector2 Scale;
+        public Quaternion Rotation;
         public float TexT;
     }
 
@@ -133,9 +133,9 @@ namespace OpenMetaverse.Rendering
         public int NumT;
 
         public int ID;
-        public LLVector3 Center;
-        public LLVector3 MinExtent;
-        public LLVector3 MaxExtent;
+        public Vector3 Center;
+        public Vector3 MinExtent;
+        public Vector3 MaxExtent;
         public List<Vertex> Vertices;
         public List<ushort> Indices;
         public List<int> Edge;

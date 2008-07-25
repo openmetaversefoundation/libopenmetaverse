@@ -7,8 +7,8 @@ namespace OpenMetaverse.TestClient
     public class ChangePermsCommand : Command
     {
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
-        LLUUID SelectedObject = LLUUID.Zero;
-        Dictionary<LLUUID, Primitive> Objects = new Dictionary<LLUUID, Primitive>();
+        UUID SelectedObject = UUID.Zero;
+        Dictionary<UUID, Primitive> Objects = new Dictionary<UUID, Primitive>();
         PermissionMask Perms = PermissionMask.None;
         bool PermsSent = false;
         int PermCount = 0;
@@ -21,9 +21,9 @@ namespace OpenMetaverse.TestClient
             Description = "Recursively changes all of the permissions for child and task inventory objects. Usage prim-uuid [copy] [mod] [xfer]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
-            LLUUID rootID;
+            UUID rootID;
             Primitive rootPrim;
             List<Primitive> childPrims;
             List<uint> localIDs = new List<uint>();
@@ -37,7 +37,7 @@ namespace OpenMetaverse.TestClient
             if (args.Length < 1 || args.Length > 4)
                 return "Usage prim-uuid [copy] [mod] [xfer]";
 
-            if (!LLUUID.TryParse(args[0], out rootID))
+            if (!UUID.TryParse(args[0], out rootID))
                 return "Usage prim-uuid [copy] [mod] [xfer]";
 
             for (int i = 1; i < args.Length; i++)

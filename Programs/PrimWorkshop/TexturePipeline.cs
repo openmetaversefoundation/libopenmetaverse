@@ -25,11 +25,11 @@ namespace PrimWorkshop
 {
     class TaskInfo
     {
-        public LLUUID RequestID;
+        public UUID RequestID;
         public int RequestNbr;
 
 
-        public TaskInfo(LLUUID reqID, int reqNbr)
+        public TaskInfo(UUID reqID, int reqNbr)
         {
             RequestID = reqID;
             RequestNbr = reqNbr;
@@ -44,10 +44,10 @@ namespace PrimWorkshop
         private static GridClient Client;
 
         // queue for requested images
-        private Queue<LLUUID> RequestQueue;
+        private Queue<UUID> RequestQueue;
 
         // list of current requests in process
-        private Dictionary<LLUUID, int> CurrentRequests;
+        private Dictionary<UUID, int> CurrentRequests;
 
         private static AutoResetEvent[] resetEvents;
 
@@ -63,7 +63,7 @@ namespace PrimWorkshop
         }
 
         // storage for images ready to render
-        private Dictionary<LLUUID, ImageDownload> RenderReady;
+        private Dictionary<UUID, ImageDownload> RenderReady;
 
         // maximum allowed concurrent requests at once
         const int MAX_TEXTURE_REQUESTS = 3;
@@ -73,14 +73,14 @@ namespace PrimWorkshop
         /// </summary>
         /// <param name="id"></param>
         /// <param name="success"></param>
-        public delegate void DownloadFinishedCallback(LLUUID id, bool success);
+        public delegate void DownloadFinishedCallback(UUID id, bool success);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="id"></param>
         /// <param name="received"></param>
         /// <param name="total"></param>
-        public delegate void DownloadProgressCallback(LLUUID image, int recieved, int total);
+        public delegate void DownloadProgressCallback(UUID image, int recieved, int total);
 
         /// <summary>Fired when a texture download completes</summary>
         public event DownloadFinishedCallback OnDownloadFinished;
@@ -101,10 +101,10 @@ namespace PrimWorkshop
         {
             Running = true;
 
-            RequestQueue = new Queue<LLUUID>();
-            CurrentRequests = new Dictionary<LLUUID, int>(MAX_TEXTURE_REQUESTS);
+            RequestQueue = new Queue<UUID>();
+            CurrentRequests = new Dictionary<UUID, int>(MAX_TEXTURE_REQUESTS);
 
-            RenderReady = new Dictionary<LLUUID, ImageDownload>();
+            RenderReady = new Dictionary<UUID, ImageDownload>();
 
             resetEvents = new AutoResetEvent[MAX_TEXTURE_REQUESTS];
             threadpoolSlots = new int[MAX_TEXTURE_REQUESTS];
@@ -147,7 +147,7 @@ namespace PrimWorkshop
         /// containing texture key which can be used to retrieve texture with GetTextureToRender method
         /// </summary>
         /// <param name="textureID">id of Texture to request</param>
-        public void RequestTexture(LLUUID textureID)
+        public void RequestTexture(UUID textureID)
         {
             if (Client.Assets.Cache.HasImage(textureID))
             {
@@ -188,7 +188,7 @@ namespace PrimWorkshop
         /// </summary>
         /// <param name="textureID">Texture ID</param>
         /// <returns>ImageDownload object</returns>
-        public ImageDownload GetTextureToRender(LLUUID textureID)
+        public ImageDownload GetTextureToRender(UUID textureID)
         {
             ImageDownload renderable = new ImageDownload();
             lock (RenderReady)
@@ -209,7 +209,7 @@ namespace PrimWorkshop
         /// Remove no longer necessary texture from dictionary
         /// </summary>
         /// <param name="textureID"></param>
-        public void RemoveFromPipeline(LLUUID textureID)
+        public void RemoveFromPipeline(UUID textureID)
         {
             lock (RenderReady)
             {
@@ -243,7 +243,7 @@ namespace PrimWorkshop
 
                     if (reqNbr != -1)
                     {
-                        LLUUID requestID;
+                        UUID requestID;
                         lock (RequestQueue)
                             requestID = RequestQueue.Dequeue();
 
@@ -332,7 +332,7 @@ namespace PrimWorkshop
             }
         }
 
-        private void Assets_OnImageReceiveProgress(LLUUID image, int recieved, int total)
+        private void Assets_OnImageReceiveProgress(UUID image, int recieved, int total)
         {
             if (OnDownloadProgress != null)
             {

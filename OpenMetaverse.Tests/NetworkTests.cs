@@ -45,7 +45,7 @@ namespace OpenMetaverse.Tests
         ulong HooperRegionHandle = 1106108697797888;
         bool DetectedObject = false;
 
-        LLUUID LookupKey1 = new LLUUID("25472683cb324516904a6cd0ecabf128");
+        UUID LookupKey1 = new UUID("25472683cb324516904a6cd0ecabf128");
         //string LookupName1 = "Bot Ringo";
 
         public NetworkTests()
@@ -115,7 +115,7 @@ namespace OpenMetaverse.Tests
             // test in-sim teleports
             Assert.IsTrue(CapsQueueRunning(), "CAPS Event queue is not running in " + Client.Network.CurrentSim.Name);
             string localSimName = Client.Network.CurrentSim.Name;
-            Assert.IsTrue(Client.Self.Teleport(Client.Network.CurrentSim.Handle, new LLVector3(121, 13, 41)),
+            Assert.IsTrue(Client.Self.Teleport(Client.Network.CurrentSim.Handle, new Vector3(121, 13, 41)),
                 "Teleport In-Sim Failed " + Client.Network.CurrentSim.Name);
 
             //// Assert that we really did make it to our scheduled destination
@@ -124,7 +124,7 @@ namespace OpenMetaverse.Tests
                 ". Possibly region full or offline?");
 
             Assert.IsTrue(CapsQueueRunning(), "CAPS Event queue is not running in " + Client.Network.CurrentSim.Name);
-            Assert.IsTrue(Client.Self.Teleport(DoreRegionHandle, new LLVector3(128, 128, 32)),
+            Assert.IsTrue(Client.Self.Teleport(DoreRegionHandle, new Vector3(128, 128, 32)),
                 "Teleport to Dore failed");
 
             // Assert that we really did make it to our scheduled destination
@@ -133,7 +133,7 @@ namespace OpenMetaverse.Tests
                 ". Possibly region full or offline?");
 
             Assert.IsTrue(CapsQueueRunning(), "CAPS Event queue is not running in " + Client.Network.CurrentSim.Name);
-            Assert.IsTrue(Client.Self.Teleport(HooperRegionHandle, new LLVector3(179, 18, 32)),
+            Assert.IsTrue(Client.Self.Teleport(HooperRegionHandle, new Vector3(179, 18, 32)),
                 "Teleport to Hooper failed");
 
             // Assert that we really did make it to our scheduled destination

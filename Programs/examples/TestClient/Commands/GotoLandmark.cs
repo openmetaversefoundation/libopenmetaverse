@@ -14,15 +14,15 @@ namespace OpenMetaverse.TestClient
             Description = "Teleports to a Landmark. Usage: goto_landmark [UUID]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
             {
                 return "Usage: goto_landmark [UUID]";
             }
 
-			LLUUID landmark = new LLUUID();
-			if ( ! LLUUID.TryParse(args[0], out landmark) ) {
+			UUID landmark = new UUID();
+			if ( ! UUID.TryParse(args[0], out landmark) ) {
 				return "Invalid LLUID";
 			} else {
 				Console.WriteLine("Teleporting to " + landmark.ToString());

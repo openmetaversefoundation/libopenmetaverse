@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Shows the amount of L$.";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
             System.Threading.AutoResetEvent waitBalance = new System.Threading.AutoResetEvent(false);
             AgentManager.BalanceCallback del = delegate(int balance) { waitBalance.Set(); };

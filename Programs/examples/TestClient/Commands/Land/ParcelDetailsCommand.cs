@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Displays parcel details from the ParcelTracker dictionary. Usage: parceldetails parcelID";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: parceldetails parcelID (use parcelinfo to get ID)";

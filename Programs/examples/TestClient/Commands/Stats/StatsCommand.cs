@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Provide connection figures and statistics";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             StringBuilder output = new StringBuilder();
 

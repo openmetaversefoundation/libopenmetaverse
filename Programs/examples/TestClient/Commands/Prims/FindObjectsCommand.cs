@@ -9,7 +9,7 @@ namespace OpenMetaverse.TestClient
 {
     public class FindObjectsCommand : Command
     {
-        Dictionary<LLUUID, Primitive> PrimsWaiting = new Dictionary<LLUUID, Primitive>();
+        Dictionary<UUID, Primitive> PrimsWaiting = new Dictionary<UUID, Primitive>();
         AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
 
         public FindObjectsCommand(TestClient testClient)
@@ -21,7 +21,7 @@ namespace OpenMetaverse.TestClient
                 "Usage: findobjects [radius] <search-string>";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             // *** parse arguments ***
             if ((args.Length < 1) || (args.Length > 2))
@@ -30,13 +30,13 @@ namespace OpenMetaverse.TestClient
             string searchString = (args.Length > 1)? args[1] : "";
 
             // *** get current location ***
-            LLVector3 location = Client.Self.SimPosition;
+            Vector3 location = Client.Self.SimPosition;
 
             // *** find all objects in radius ***
             List<Primitive> prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
                 delegate(Primitive prim) {
-                    LLVector3 pos = prim.Position;
-                    return ((prim.ParentID == 0) && (pos != LLVector3.Zero) && (LLVector3.Dist(pos, location) < radius));
+                    Vector3 pos = prim.Position;
+                    return ((prim.ParentID == 0) && (pos != Vector3.Zero) && (Vector3.Dist(pos, location) < radius));
                 }
             );
 
@@ -51,7 +51,7 @@ namespace OpenMetaverse.TestClient
 
             if (!complete) {
                 Console.WriteLine("Warning: Unable to retrieve full properties for:");
-                foreach (LLUUID uuid in PrimsWaiting.Keys)
+                foreach (UUID uuid in PrimsWaiting.Keys)
                     Console.WriteLine(uuid);
             }
 

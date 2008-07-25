@@ -10,7 +10,7 @@ namespace OpenMetaverse.TestClient
     public class LeaveGroupCommand : Command
     {
         ManualResetEvent GroupsEvent = new ManualResetEvent(false);
-        Dictionary<LLUUID, Group> groups = new Dictionary<LLUUID, Group>();
+        Dictionary<UUID, Group> groups = new Dictionary<UUID, Group>();
         private bool leftGroup;
 
         public LeaveGroupCommand(TestClient testClient)
@@ -18,7 +18,7 @@ namespace OpenMetaverse.TestClient
             Name = "leavegroup";
             Description = "Leave a group. Usage: leavegroup GroupName";
         }
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return Description;
@@ -72,13 +72,13 @@ namespace OpenMetaverse.TestClient
             return Client.ToString() + " doesn't seem member of any group";
         }
 
-        void Groups_OnCurrentGroups(Dictionary<LLUUID, Group> cGroups)
+        void Groups_OnCurrentGroups(Dictionary<UUID, Group> cGroups)
         {
             groups = cGroups;
             GroupsEvent.Set();
         }
 
-        void Groups_OnGroupLeft(LLUUID groupID, bool success)
+        void Groups_OnGroupLeft(UUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " has left group " : " failed to left group ") + groupID.ToString());
 

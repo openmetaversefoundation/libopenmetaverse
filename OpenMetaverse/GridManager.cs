@@ -82,7 +82,7 @@ namespace OpenMetaverse
         /// <summary></summary>
 		public byte Agents;
         /// <summary>UUID of the World Map image</summary>
-		public LLUUID MapImageID;
+		public UUID MapImageID;
         /// <summary>Unique identifier for this region, a combination of the X 
         /// and Y position</summary>
 		public ulong RegionHandle;
@@ -144,7 +144,7 @@ namespace OpenMetaverse
         public int Left;
         public int Top;
         public int Right;
-        public LLUUID ImageID;
+        public UUID ImageID;
 
         public bool ContainsRegion(int x, int y)
         {
@@ -213,9 +213,9 @@ namespace OpenMetaverse
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
 		/// <summary>Current direction of the sun</summary>
-        public LLVector3 SunDirection { get { return sunDirection; } }
+        public Vector3 SunDirection { get { return sunDirection; } }
         /// <summary>Current angular velocity of the sun</summary>
-        public LLVector3 SunAngVelocity { get { return sunAngVelocity; } }
+        public Vector3 SunAngVelocity { get { return sunAngVelocity; } }
 
         /// <summary>A dictionary of all the regions, indexed by region name</summary>
         internal Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
@@ -224,8 +224,8 @@ namespace OpenMetaverse
 
 		private GridClient Client;
         private float sunPhase;
-        private LLVector3 sunDirection;
-        private LLVector3 sunAngVelocity;
+        private Vector3 sunDirection;
+        private Vector3 sunAngVelocity;
 
         /// <summary>
         /// Constructor
@@ -590,7 +590,7 @@ namespace OpenMetaverse
                     {
                         simulator.positionIndexPrey = i;
                     }
-                    simulator.avatarPositions.Add(new LLVector3(coarse.Location[i].X, coarse.Location[i].Y,
+                    simulator.avatarPositions.Add(new Vector3(coarse.Location[i].X, coarse.Location[i].Y,
                         coarse.Location[i].Z));
                 }
 

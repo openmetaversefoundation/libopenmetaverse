@@ -100,17 +100,17 @@ namespace OpenMetaverse
 
     public struct LoginResponseData
     {
-        public LLUUID AgentID;
-        public LLUUID SessionID;
-        public LLUUID SecureSessionID;
+        public UUID AgentID;
+        public UUID SessionID;
+        public UUID SecureSessionID;
         public string FirstName;
         public string LastName;
         public string StartLocation;
         public string AgentAccess;
-        public LLVector3 LookAt;
+        public Vector3 LookAt;
         public ulong HomeRegion;
-        public LLVector3 HomePosition;
-        public LLVector3 HomeLookAt;
+        public Vector3 HomePosition;
+        public Vector3 HomeLookAt;
         public uint CircuitCode;
         public uint RegionX;
         public uint RegionY;
@@ -119,11 +119,11 @@ namespace OpenMetaverse
         public string SeedCapability;
         public FriendInfo[] BuddyList;
         public DateTime SecondsSinceEpoch;
-        public LLUUID InventoryRoot;
-        public LLUUID LibraryRoot;
+        public UUID InventoryRoot;
+        public UUID LibraryRoot;
         public InventoryFolder[] InventorySkeleton;
         public InventoryFolder[] LibrarySkeleton;
-        public LLUUID LibraryOwner;
+        public UUID LibraryOwner;
 
         public void Parse(LLSDMap reply)
         {
@@ -169,8 +169,8 @@ namespace OpenMetaverse
             else
             {
                 HomeRegion = 0;
-                HomePosition = LLVector3.Zero;
-                HomeLookAt = LLVector3.Zero;
+                HomePosition = Vector3.Zero;
+                HomeLookAt = Vector3.Zero;
             }
 
             CircuitCode = ParseUInt("circuit_code", reply);
@@ -220,13 +220,13 @@ namespace OpenMetaverse
                 return 0;
         }
 
-        public static LLUUID ParseUUID(string key, LLSDMap reply)
+        public static UUID ParseUUID(string key, LLSDMap reply)
         {
             LLSD llsd;
             if (reply.TryGetValue(key, out llsd))
                 return llsd.AsUUID();
             else
-                return LLUUID.Zero;
+                return UUID.Zero;
         }
 
         public static string ParseString(string key, LLSDMap reply)
@@ -238,30 +238,30 @@ namespace OpenMetaverse
                 return String.Empty;
         }
 
-        public static LLVector3 ParseLLVector3(string key, LLSDMap reply)
+        public static Vector3 ParseLLVector3(string key, LLSDMap reply)
         {
             LLSD llsd;
             if (reply.TryGetValue(key, out llsd))
             {
                 if (llsd.Type == LLSDType.Array)
                 {
-                    LLVector3 vec = new LLVector3();
+                    Vector3 vec = new Vector3();
                     vec.FromLLSD(llsd);
                     return vec;
                 }
                 else if (llsd.Type == LLSDType.String)
                 {
                     LLSDArray array = (LLSDArray)LLSDParser.DeserializeNotation(llsd.AsString());
-                    LLVector3 vec = new LLVector3();
+                    Vector3 vec = new Vector3();
                     vec.FromLLSD(array);
                     return vec;
                 }
             }
 
-            return LLVector3.Zero;
+            return Vector3.Zero;
         }
 
-        public static LLUUID ParseMappedUUID(string key, string key2, LLSDMap reply)
+        public static UUID ParseMappedUUID(string key, string key2, LLSDMap reply)
         {
             LLSD folderLLSD;
             if (reply.TryGetValue(key, out folderLLSD) && folderLLSD.Type == LLSDType.Array)
@@ -276,10 +276,10 @@ namespace OpenMetaverse
                 }
             }
 
-            return LLUUID.Zero;
+            return UUID.Zero;
         }
 
-        public static InventoryFolder[] ParseInventoryFolders(string key, LLUUID owner, LLSDMap reply)
+        public static InventoryFolder[] ParseInventoryFolders(string key, UUID owner, LLSDMap reply)
         {
             List<InventoryFolder> folders = new List<InventoryFolder>();
 

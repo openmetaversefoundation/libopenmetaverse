@@ -14,14 +14,14 @@ namespace OpenMetaverse.TestClient
             Description = "Attempt to sit on a particular prim, with specified UUID";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: siton UUID";
 
-            LLUUID target;
+            UUID target;
 
-            if (LLUUID.TryParse(args[0], out target))
+            if (UUID.TryParse(args[0], out target))
             {
                 Primitive targetPrim = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim)
@@ -32,7 +32,7 @@ namespace OpenMetaverse.TestClient
 
                 if (targetPrim != null)
                 {
-                    Client.Self.RequestSit(targetPrim.ID, LLVector3.Zero);
+                    Client.Self.RequestSit(targetPrim.ID, Vector3.Zero);
                     Client.Self.Sit();
                     return "Requested to sit on prim " + targetPrim.ID.ToString() +
                         " (" + targetPrim.LocalID + ")";

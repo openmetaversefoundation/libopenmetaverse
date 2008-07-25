@@ -10,7 +10,7 @@ namespace OpenMetaverse.TestClient
     {
         string ToAvatarName = String.Empty;
         ManualResetEvent NameSearchEvent = new ManualResetEvent(false);
-        Dictionary<string, LLUUID> Name2Key = new Dictionary<string, LLUUID>();
+        Dictionary<string, UUID> Name2Key = new Dictionary<string, UUID>();
 
         public ImCommand(TestClient testClient)
         {
@@ -20,7 +20,7 @@ namespace OpenMetaverse.TestClient
             Description = "Instant message someone. Usage: im [firstname] [lastname] [message]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 3)
                 return "Usage: im [firstname] [lastname] [message]";
@@ -37,14 +37,14 @@ namespace OpenMetaverse.TestClient
             if (!Name2Key.ContainsKey(ToAvatarName.ToLower()))
             {
                 // Send the Query
-                Client.Avatars.RequestAvatarNameSearch(ToAvatarName, LLUUID.Random());
+                Client.Avatars.RequestAvatarNameSearch(ToAvatarName, UUID.Random());
 
                 NameSearchEvent.WaitOne(6000, false);
             }
 
             if (Name2Key.ContainsKey(ToAvatarName.ToLower()))
             {
-                LLUUID id = Name2Key[ToAvatarName.ToLower()];
+                UUID id = Name2Key[ToAvatarName.ToLower()];
 
                 Client.Self.InstantMessage(id, message);
                 return "Instant Messaged " + id.ToString() + " with message: " + message;
@@ -55,9 +55,9 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarNameSearch(LLUUID queryID, Dictionary<LLUUID, string> avatars)
+        void Avatars_OnAvatarNameSearch(UUID queryID, Dictionary<UUID, string> avatars)
         {
-            foreach (KeyValuePair<LLUUID, string> kvp in avatars)
+            foreach (KeyValuePair<UUID, string> kvp in avatars)
             {
                 if (kvp.Value.ToLower() == ToAvatarName.ToLower())
                 {

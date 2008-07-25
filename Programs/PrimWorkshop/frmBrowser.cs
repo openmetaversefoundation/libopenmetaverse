@@ -28,7 +28,7 @@ namespace PrimWorkshop
         Camera Camera;
         Dictionary<uint, Primitive> RenderFoliageList = new Dictionary<uint, Primitive>();
         Dictionary<uint, RenderablePrim> RenderPrimList = new Dictionary<uint, RenderablePrim>();
-        Dictionary<LLUUID, GlacialComponents.Controls.GLItem> DownloadList = new Dictionary<LLUUID, GlacialComponents.Controls.GLItem>();
+        Dictionary<UUID, GlacialComponents.Controls.GLItem> DownloadList = new Dictionary<UUID, GlacialComponents.Controls.GLItem>();
         EventHandler IdleEvent;
 
         System.Timers.Timer ProgressTimer;
@@ -36,7 +36,7 @@ namespace PrimWorkshop
 
         // Textures
         TexturePipeline TextureDownloader;
-        Dictionary<LLUUID, TextureInfo> Textures = new Dictionary<LLUUID, TextureInfo>();
+        Dictionary<UUID, TextureInfo> Textures = new Dictionary<UUID, TextureInfo>();
 
         // Terrain
         float MaxHeight = 0.1f;
@@ -50,7 +50,7 @@ namespace PrimWorkshop
         uint LastHit = 0;
 
         //
-        LLVector3 PivotPosition = LLVector3.Zero;
+        Vector3 PivotPosition = Vector3.Zero;
         bool Pivoting = false;
         Point LastPivot;
 
@@ -239,8 +239,8 @@ namespace PrimWorkshop
         private void InitCamera()
         {
             Camera = new Camera();
-            Camera.Position = new LLVector3(128f, -192f, 90f);
-            Camera.FocalPoint = new LLVector3(128f, 128f, 0f);
+            Camera.Position = new Vector3(128f, -192f, 90f);
+            Camera.FocalPoint = new Vector3(128f, 128f, 0f);
             Camera.Zoom = 1.0d;
             Camera.Far = 512.0d;
         }
@@ -331,7 +331,7 @@ namespace PrimWorkshop
 
         private bool ExportObjects(List<Primitive> primList, string fileName, out int prims, out int textures, out string error)
         {
-            List<LLUUID> textureList = new List<LLUUID>();
+            List<UUID> textureList = new List<UUID>();
             prims = 0;
             textures = 0;
             
@@ -353,7 +353,7 @@ namespace PrimWorkshop
                     for (int i = 0; i < prim.Textures.FaceTextures.Length; i++)
                     {
                         LLObject.TextureEntryFace face = prim.Textures.FaceTextures[i];
-                        if (face != null && face.TextureID != LLUUID.Zero && face.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                        if (face != null && face.TextureID != UUID.Zero && face.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
                         {
                             if (!textureList.Contains(face.TextureID))
                                 textureList.Add(face.TextureID);
@@ -362,7 +362,7 @@ namespace PrimWorkshop
                 }
 
                 // Copy all of relevant textures from the cache to the temp directory
-                foreach (LLUUID texture in textureList)
+                foreach (UUID texture in textureList)
                 {
                     string tempFileName = Client.Assets.Cache.ImageFileName(texture);
 
@@ -674,7 +674,7 @@ namespace PrimWorkshop
                     int y = (int)(LastHit - TERRAIN_START) / 16;
                     int x = (int)(LastHit - (TERRAIN_START + (y * 16)));
 
-                    LLVector3 targetPos = new LLVector3(x * 16 + 8, y * 16 + 8, 0f);
+                    Vector3 targetPos = new Vector3(x * 16 + 8, y * 16 + 8, 0f);
 
                     Console.WriteLine("Starting local teleport to " + targetPos.ToString());
                     Client.Self.RequestTeleport(Client.Network.CurrentSim.Handle, targetPos);
@@ -964,7 +964,7 @@ namespace PrimWorkshop
                 }
 
                 // Texture for this face
-                if (teFace.TextureID != LLUUID.Zero &&
+                if (teFace.TextureID != UUID.Zero &&
                     teFace.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
                 { 
                     lock (Textures)
@@ -1124,38 +1124,38 @@ namespace PrimWorkshop
             }
         }
 
-        static readonly LLVector3[] SkyboxVerts = new LLVector3[]
+        static readonly Vector3[] SkyboxVerts = new Vector3[]
         {
 	        // Right side
-	        new LLVector3(	 10.0f,		10.0f,		-10.0f	), //Top left
-	        new LLVector3(	 10.0f,		10.0f,		10.0f	), //Top right
-	        new LLVector3(	 10.0f,		-10.0f,		10.0f	), //Bottom right
-	        new LLVector3(	 10.0f,		-10.0f,		-10.0f	), //Bottom left
+	        new Vector3(	 10.0f,		10.0f,		-10.0f	), //Top left
+	        new Vector3(	 10.0f,		10.0f,		10.0f	), //Top right
+	        new Vector3(	 10.0f,		-10.0f,		10.0f	), //Bottom right
+	        new Vector3(	 10.0f,		-10.0f,		-10.0f	), //Bottom left
 	        // Left side
-	        new LLVector3(	-10.0f,		10.0f,		10.0f	), //Top left
-	        new LLVector3(	-10.0f,		10.0f,		-10.0f	), //Top right
-	        new LLVector3(	-10.0f,		-10.0f,		-10.0f	), //Bottom right
-	        new LLVector3(	-10.0f,		-10.0f,		10.0f	), //Bottom left
+	        new Vector3(	-10.0f,		10.0f,		10.0f	), //Top left
+	        new Vector3(	-10.0f,		10.0f,		-10.0f	), //Top right
+	        new Vector3(	-10.0f,		-10.0f,		-10.0f	), //Bottom right
+	        new Vector3(	-10.0f,		-10.0f,		10.0f	), //Bottom left
 	        // Top side
-	        new LLVector3(	-10.0f,		10.0f,		10.0f	), //Top left
-	        new LLVector3(	 10.0f,		10.0f,		10.0f	), //Top right
-	        new LLVector3(	 10.0f,		10.0f,		-10.0f	), //Bottom right
-	        new LLVector3(	-10.0f,		10.0f,		-10.0f	), //Bottom left
+	        new Vector3(	-10.0f,		10.0f,		10.0f	), //Top left
+	        new Vector3(	 10.0f,		10.0f,		10.0f	), //Top right
+	        new Vector3(	 10.0f,		10.0f,		-10.0f	), //Bottom right
+	        new Vector3(	-10.0f,		10.0f,		-10.0f	), //Bottom left
 	        // Bottom side
-	        new LLVector3(	-10.0f,		-10.0f,		-10.0f	), //Top left
-	        new LLVector3(	 10.0f,		-10.0f,		-10.0f	), //Top right
-	        new LLVector3(	 10.0f,		-10.0f,		10.0f	), //Bottom right
-	        new LLVector3(	-10.0f,		-10.0f,		10.0f	), //Bottom left
+	        new Vector3(	-10.0f,		-10.0f,		-10.0f	), //Top left
+	        new Vector3(	 10.0f,		-10.0f,		-10.0f	), //Top right
+	        new Vector3(	 10.0f,		-10.0f,		10.0f	), //Bottom right
+	        new Vector3(	-10.0f,		-10.0f,		10.0f	), //Bottom left
 	        // Front side
-	        new LLVector3(	-10.0f,		10.0f,		-10.0f	), //Top left
-	        new LLVector3(	 10.0f,		10.0f,		-10.0f	), //Top right
-	        new LLVector3(	 10.0f,		-10.0f,		-10.0f	), //Bottom right
-	        new LLVector3(	-10.0f,		-10.0f,		-10.0f	), //Bottom left
+	        new Vector3(	-10.0f,		10.0f,		-10.0f	), //Top left
+	        new Vector3(	 10.0f,		10.0f,		-10.0f	), //Top right
+	        new Vector3(	 10.0f,		-10.0f,		-10.0f	), //Bottom right
+	        new Vector3(	-10.0f,		-10.0f,		-10.0f	), //Bottom left
 	        // Back side
-	        new LLVector3(	10.0f,		10.0f,		10.0f	), //Top left
-	        new LLVector3(	-10.0f,		10.0f,		10.0f	), //Top right
-	        new LLVector3(	-10.0f,		-10.0f,		10.0f	), //Bottom right
-	        new LLVector3(	 10.0f,		-10.0f,		10.0f	), //Bottom left
+	        new Vector3(	10.0f,		10.0f,		10.0f	), //Top left
+	        new Vector3(	-10.0f,		10.0f,		10.0f	), //Top right
+	        new Vector3(	-10.0f,		-10.0f,		10.0f	), //Bottom right
+	        new Vector3(	 10.0f,		-10.0f,		10.0f	), //Bottom left
         };
 
         private void RenderSkybox()
@@ -1299,7 +1299,7 @@ StartRender:
                         {
                             Face face = render.Mesh.Faces[j];
                             FaceData data = (FaceData)face.UserData;
-                            LLColor color = face.TextureFace.RGBA;
+                            Color4 color = face.TextureFace.RGBA;
                             bool alpha = false;
                             int textureID = 0;
 
@@ -1322,7 +1322,7 @@ StartRender:
                             else
                             {
                                 if (face.TextureFace.TextureID == LLObject.TextureEntry.WHITE_TEXTURE ||
-                                    face.TextureFace.TextureID == LLUUID.Zero)
+                                    face.TextureFace.TextureID == UUID.Zero)
                                 {
                                     Gl.glPolygonMode(Gl.GL_FRONT, Gl.GL_FILL);
                                 }
@@ -1401,7 +1401,7 @@ StartRender:
 
         #region Texture Downloading
 
-        private void TextureDownloader_OnDownloadFinished(LLUUID id, bool success)
+        private void TextureDownloader_OnDownloadFinished(UUID id, bool success)
         {
             bool alpha = false;
             ManagedImage imgData = null;
@@ -1490,7 +1490,7 @@ StartRender:
             }
         }
 
-        private void TextureDownloader_OnDownloadProgress(LLUUID image, int recieved, int total)
+        private void TextureDownloader_OnDownloadProgress(UUID image, int recieved, int total)
         {
             lock (DownloadList)
             {
@@ -1677,7 +1677,7 @@ StartRender:
                 int deltaY = (int)((mouse.Y - LastPivot.Y) * -0.5d);
 
                 // Translate so the focal point is the origin
-                LLVector3 altered = Camera.Position - Camera.FocalPoint;
+                Vector3 altered = Camera.Position - Camera.FocalPoint;
 
                 // Rotate the translated point by deltaX
                 a = (float)deltaX * DEG_TO_RAD;
@@ -1721,11 +1721,11 @@ StartRender:
                 // Calculate the distance to move to/away
                 float dist = (float)(e.Delta / 120) * 10.0f;
 
-                if (LLVector3.Dist(Camera.Position, Camera.FocalPoint) > dist)
+                if (Vector3.Dist(Camera.Position, Camera.FocalPoint) > dist)
                 {
                     // Move closer or further away from the focal point
-                    LLVector3 toFocal = Camera.FocalPoint - Camera.Position;
-                    toFocal = LLVector3.Norm(toFocal);
+                    Vector3 toFocal = Camera.FocalPoint - Camera.Position;
+                    toFocal = Vector3.Norm(toFocal);
 
                     toFocal = toFocal * dist;
 
@@ -1770,7 +1770,7 @@ StartRender:
                 }
 
                 string simName = txtSim.Text.Trim().ToLower();
-                LLVector3 position = new LLVector3(x, y, z);
+                Vector3 position = new Vector3(x, y, z);
 
                 if (Client != null && Client.Network.CurrentSim != null)
                 {
@@ -1850,8 +1850,8 @@ StartRender:
 
     public struct Camera
     {
-        public LLVector3 Position;
-        public LLVector3 FocalPoint;
+        public Vector3 Position;
+        public Vector3 FocalPoint;
         public double Zoom;
         public double Far;
     }
@@ -1882,7 +1882,7 @@ StartRender:
         // |  2  6 10 14 |
         // |  3  7 11 15 |
 
-        public static float[] CreateTranslationMatrix(LLVector3 v)
+        public static float[] CreateTranslationMatrix(Vector3 v)
         {
             float[] mat = new float[16];
 
@@ -1894,7 +1894,7 @@ StartRender:
             return mat;
         }
 
-        public static float[] CreateRotationMatrix(LLQuaternion q)
+        public static float[] CreateRotationMatrix(Quaternion q)
         {
             float[] mat = new float[16];
 
@@ -1939,7 +1939,7 @@ StartRender:
             return mat;
         }
 
-        public static float[] CreateScaleMatrix(LLVector3 v)
+        public static float[] CreateScaleMatrix(Vector3 v)
         {
             float[] mat = new float[16];
 

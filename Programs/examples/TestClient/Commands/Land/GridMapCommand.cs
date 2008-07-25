@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Downloads all visible information about the grid map";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             //if (args.Length < 1)
             //    return "";

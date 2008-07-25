@@ -61,7 +61,7 @@ namespace OpenMetaverse.GUITestClient
                 goto error_handler;
             }
 
-            if (Client.Self.Teleport(sim, new LLVector3(x, y, z)))
+            if (Client.Self.Teleport(sim, new Vector3(x, y, z)))
                 MessageBox.Show("Teleported to " + Client.Network.CurrentSim, "Teleport");
             else
                 MessageBox.Show("Teleport failed: " + Client.Self.TeleportMessage, "Teleport");

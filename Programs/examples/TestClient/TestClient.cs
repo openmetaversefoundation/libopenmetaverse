@@ -10,23 +10,23 @@ namespace OpenMetaverse.TestClient
 {
     public class TestClient : GridClient
     {
-        public LLUUID GroupID = LLUUID.Zero;
-        public Dictionary<LLUUID, GroupMember> GroupMembers;
-		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
+        public UUID GroupID = UUID.Zero;
+        public Dictionary<UUID, GroupMember> GroupMembers;
+		public Dictionary<UUID, AvatarAppearancePacket> Appearances = new Dictionary<UUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
 		public bool Running = true;
         public bool GroupCommands = false;
         public string MasterName = String.Empty;
-        public LLUUID MasterKey = LLUUID.Zero;
+        public UUID MasterKey = UUID.Zero;
 		public ClientManager ClientManager;
         public VoiceManager VoiceManager;
         // Shell-like inventory commands need to be aware of the 'current' inventory folder.
         public InventoryFolder CurrentDirectory = null;
 
-        private LLQuaternion bodyRotation = LLQuaternion.Identity;
-        private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
-        private LLVector3 left = new LLVector3(0.9999f, 0, 0);
-        private LLVector3 up = new LLVector3(0, 0, 0.9999f);
+        private Quaternion bodyRotation = Quaternion.Identity;
+        private Vector3 forward = new Vector3(0, 0.9999f, 0);
+        private Vector3 left = new Vector3(0.9999f, 0, 0);
+        private Vector3 up = new Vector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace OpenMetaverse.TestClient
         }
 
         //breaks up large responses to deal with the max IM size
-        private void SendResponseIM(GridClient client, LLUUID fromAgentID, string data)
+        private void SendResponseIM(GridClient client, UUID fromAgentID, string data)
         {
             for ( int i = 0 ; i < data.Length ; i += 1024 ) {
                 int y;
@@ -124,7 +124,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-		public void DoCommand(string cmd, LLUUID fromAgentID)
+		public void DoCommand(string cmd, UUID fromAgentID)
         {
 			string[] tokens;
 
@@ -162,7 +162,7 @@ namespace OpenMetaverse.TestClient
                 {
                     Console.WriteLine(response);
 
-                    if (fromAgentID != LLUUID.Zero && Network.Connected)
+                    if (fromAgentID != UUID.Zero && Network.Connected)
                     {
                         // IMs don't like \r\n line endings, clean them up first
                         response = response.Replace("\r", String.Empty);
@@ -191,7 +191,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        private void GroupMembersHandler(Dictionary<LLUUID, GroupMember> members)
+        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
         {
             Console.WriteLine("Got " + members.Count + " group members.");
             GroupMembers = members;
@@ -245,9 +245,9 @@ namespace OpenMetaverse.TestClient
         }
 
         private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
-            LLUUID objectID, bool fromTask)
+            UUID objectID, bool fromTask)
         {
-            if (MasterKey != LLUUID.Zero)
+            if (MasterKey != UUID.Zero)
             {
                 if (offer.FromAgentID != MasterKey)
                     return false;

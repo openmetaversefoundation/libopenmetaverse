@@ -29,20 +29,20 @@ namespace mapgenerator
                 case FieldType.U32:
                     type = "uint";
                     break;
-                case FieldType.LLQuaternion:
-                    type = "LLQuaternion";
+                case FieldType.Quaternion:
+                    type = "Quaternion";
                     break;
-                case FieldType.LLUUID:
-                    type = "LLUUID";
+                case FieldType.UUID:
+                    type = "UUID";
                     break;
-                case FieldType.LLVector3:
-                    type = "LLVector3";
+                case FieldType.Vector3:
+                    type = "Vector3";
                     break;
-                case FieldType.LLVector3d:
-                    type = "LLVector3d";
+                case FieldType.Vector3d:
+                    type = "Vector3d";
                     break;
-                case FieldType.LLVector4:
-                    type = "LLVector4";
+                case FieldType.Vector4:
+                    type = "Vector4";
                     break;
                 case FieldType.S16:
                     type = "short";
@@ -126,19 +126,19 @@ namespace mapgenerator
                     writer.WriteLine("                    " + field.Name + 
                         " = (ushort)(bytes[i++] + (bytes[i++] << 8));");
                     break;
-                case FieldType.LLQuaternion:
+                case FieldType.Quaternion:
                     writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i, true); i += 12;");
                     break;
-                case FieldType.LLUUID:
+                case FieldType.UUID:
                     writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 16;");
                     break;
-                case FieldType.LLVector3:
+                case FieldType.Vector3:
                     writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 12;");
                     break;
-                case FieldType.LLVector3d:
+                case FieldType.Vector3d:
                     writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 24;");
                     break;
-                case FieldType.LLVector4:
+                case FieldType.Vector4:
                     writer.WriteLine("                    " + field.Name + ".FromBytes(bytes, i); i += 16;");
                     break;
                 case FieldType.S16:
@@ -216,17 +216,17 @@ namespace mapgenerator
                     writer.WriteLine("bytes[i++] = (byte)(" + field.Name + " % 256);");
                     writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 8) % 256);");
                     break;
-                case FieldType.LLUUID:
+                case FieldType.UUID:
                     writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
                     break;
-                case FieldType.LLVector4:
+                case FieldType.Vector4:
                     writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
                     break;
-                case FieldType.LLQuaternion:
-                case FieldType.LLVector3:
+                case FieldType.Quaternion:
+                case FieldType.Vector3:
                     writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 12); i += 12;");
                     break;
-                case FieldType.LLVector3d:
+                case FieldType.Vector3d:
                     writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 24); i += 24;");
                     break;
                 case FieldType.U8:
@@ -295,14 +295,13 @@ namespace mapgenerator
                 case FieldType.U64:
                 case FieldType.F64:
                     return 8;
-                case FieldType.LLVector3:
-                case FieldType.LLQuaternion:
+                case FieldType.Vector3:
+                case FieldType.Quaternion:
                     return 12;
-                case FieldType.LLUUID:
-                case FieldType.LLVector4:
-                //case FieldType.LLQuaternion:
+                case FieldType.UUID:
+                case FieldType.Vector4:
                     return 16;
-                case FieldType.LLVector3d:
+                case FieldType.Vector3d:
                     return 24;
                 case FieldType.Fixed:
                     return field.Count;

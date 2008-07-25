@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
     public class UploadImageCommand : Command
     {
         AutoResetEvent UploadCompleteEvent = new AutoResetEvent(false);
-        LLUUID TextureID = LLUUID.Zero;
+        UUID TextureID = UUID.Zero;
         DateTime start;
 
         public UploadImageCommand(TestClient testClient)
@@ -21,7 +21,7 @@ namespace OpenMetaverse.TestClient
             Description = "Upload an image to your inventory. Usage: uploadimage [inventoryname] [timeout] [filename]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             string inventoryName;
             uint timeout;
@@ -30,7 +30,7 @@ namespace OpenMetaverse.TestClient
             if (args.Length != 3)
                 return "Usage: uploadimage [inventoryname] [timeout] [filename]";
 
-            TextureID = LLUUID.Zero;
+            TextureID = UUID.Zero;
             inventoryName = args[0];
             fileName = args[2];
             if (!UInt32.TryParse(args[1], out timeout))
@@ -46,7 +46,7 @@ namespace OpenMetaverse.TestClient
 
             if (UploadCompleteEvent.WaitOne((int)timeout, false))
             {
-                return String.Format("Texture upload {0}: {1}", (TextureID != LLUUID.Zero) ? "succeeded" : "failed",
+                return String.Format("Texture upload {0}: {1}", (TextureID != UUID.Zero) ? "succeeded" : "failed",
                     TextureID);
             }
             else
@@ -70,7 +70,7 @@ namespace OpenMetaverse.TestClient
                             Console.WriteLine(String.Format("Texture upload: {0} / {1}", bytesSent, totalBytesToSend));
                     },
 
-                    delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
+                    delegate(bool success, string status, UUID itemID, UUID assetID)
                     {
                         Console.WriteLine(String.Format(
                             "RequestCreateItemFromAsset() returned: Success={0}, Status={1}, ItemID={2}, AssetID={3}",

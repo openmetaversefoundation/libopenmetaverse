@@ -137,27 +137,27 @@ namespace OpenMetaverse
             }
         }
 
-        public LLUUID Owner {
+        public UUID Owner {
             get { return _Owner; }
         }
 
-        private LLUUID _Owner;
+        private UUID _Owner;
 
         private GridClient Client;
         private InventoryManager Manager;
-        private Dictionary<LLUUID, InventoryNode> Items = new Dictionary<LLUUID, InventoryNode>();
+        private Dictionary<UUID, InventoryNode> Items = new Dictionary<UUID, InventoryNode>();
 
         public Inventory(GridClient client, InventoryManager manager)
             : this(client, manager, client.Self.AgentID) { }
 
-        public Inventory(GridClient client, InventoryManager manager, LLUUID owner)
+        public Inventory(GridClient client, InventoryManager manager, UUID owner)
         {
             Client = client;
             Manager = manager;
             _Owner = owner;
-            if (owner == LLUUID.Zero)
+            if (owner == UUID.Zero)
                 Logger.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning, Client);
-            Items = new Dictionary<LLUUID, InventoryNode>();
+            Items = new Dictionary<UUID, InventoryNode>();
         }
 
         public List<InventoryBase> GetContents(InventoryFolder folder)
@@ -171,7 +171,7 @@ namespace OpenMetaverse
         /// <param name="folder">A folder's UUID</param>
         /// <returns>The contents of the folder corresponding to <code>folder</code></returns>
         /// <exception cref="InventoryException">When <code>folder</code> does not exist in the inventory</exception>
-        public List<InventoryBase> GetContents(LLUUID folder)
+        public List<InventoryBase> GetContents(UUID folder)
         {
             InventoryNode folderNode;
             if (!Items.TryGetValue(folder, out folderNode))
@@ -202,7 +202,7 @@ namespace OpenMetaverse
             lock (Items)
             {
                 InventoryNode itemParent = null;
-                if (item.ParentUUID != LLUUID.Zero && !Items.TryGetValue(item.ParentUUID, out itemParent))
+                if (item.ParentUUID != UUID.Zero && !Items.TryGetValue(item.ParentUUID, out itemParent))
                 {
                     // OK, we have no data on the parent, let's create a fake one.
                     InventoryFolder fakeParent = new InventoryFolder(item.ParentUUID);
@@ -218,7 +218,7 @@ namespace OpenMetaverse
                     if (Client.Settings.FETCH_MISSING_INVENTORY)
                     {
                         // Fetch the parent
-                        List<LLUUID> fetchreq = new List<LLUUID>(1);
+                        List<UUID> fetchreq = new List<UUID>(1);
                         fetchreq.Add(item.ParentUUID);
                         //Manager.FetchInventory(fetchreq); // we cant fetch folder data! :-O
                     }
@@ -259,7 +259,7 @@ namespace OpenMetaverse
             }
         }
 
-        public InventoryNode GetNodeFor(LLUUID uuid)
+        public InventoryNode GetNodeFor(UUID uuid)
         {
             return Items[uuid];
         }
@@ -298,7 +298,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="uuid">The LLUUID to check.</param>
         /// <returns>true if inventory contains uuid, false otherwise</returns>
-        public bool Contains(LLUUID uuid)
+        public bool Contains(UUID uuid)
         {
             return Items.ContainsKey(uuid);
         }
@@ -319,7 +319,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="uuid">The UUID of the InventoryObject to get or set, ignored if set to non-null value.</param>
         /// <returns>The InventoryObject corresponding to <code>uuid</code>.</returns>
-        public InventoryBase this[LLUUID uuid]
+        public InventoryBase this[UUID uuid]
         {
             get
             {

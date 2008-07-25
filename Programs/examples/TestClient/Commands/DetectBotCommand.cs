@@ -14,12 +14,12 @@ namespace OpenMetaverse.TestClient
             testClient.Avatars.OnAvatarAppearance += new AvatarManager.AvatarAppearanceCallback(Avatars_OnAvatarAppearance);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             return "This command is always running";
         }
 
-        void Avatars_OnAvatarAppearance(LLUUID avatarID, bool isTrial, LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] faceTextures, System.Collections.Generic.List<byte> visualParams)
+        void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] faceTextures, System.Collections.Generic.List<byte> visualParams)
         {
             if (IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.EyesBaked]) &&
                 IsNullOrZero(faceTextures[(int)AppearanceManager.TextureIndex.HeadBaked]) &&
@@ -33,7 +33,7 @@ namespace OpenMetaverse.TestClient
 
         private bool IsNullOrZero(LLObject.TextureEntryFace face)
         {
-            return (face == null || face.TextureID == LLUUID.Zero);
+            return (face == null || face.TextureID == UUID.Zero);
         }
     }
 }

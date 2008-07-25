@@ -10,8 +10,8 @@ namespace OpenMetaverse.TestClient
     public class JoinGroupCommand : Command
     {
         ManualResetEvent GetGroupsSearchEvent = new ManualResetEvent(false);
-        private LLUUID queryID = LLUUID.Zero;
-        private LLUUID resolvedGroupID;
+        private UUID queryID = UUID.Zero;
+        private UUID resolvedGroupID;
         private string groupName;
         private string resolvedGroupName;
         private bool joinedGroup;
@@ -22,13 +22,13 @@ namespace OpenMetaverse.TestClient
             Description = "join a group. Usage: joingroup GroupName | joingroup UUID GroupId";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return Description;
 
             groupName = String.Empty;
-            resolvedGroupID = LLUUID.Zero;
+            resolvedGroupID = UUID.Zero;
             resolvedGroupName = String.Empty;
 
             if (args[0].ToLower() == "uuid")
@@ -36,7 +36,7 @@ namespace OpenMetaverse.TestClient
                 if (args.Length < 2)
                     return Description;
 
-                if (!LLUUID.TryParse((resolvedGroupName = groupName = args[1]), out resolvedGroupID))
+                if (!UUID.TryParse((resolvedGroupName = groupName = args[1]), out resolvedGroupID))
                     return resolvedGroupName + " doesn't seem a valid UUID";
             }
             else
@@ -54,7 +54,7 @@ namespace OpenMetaverse.TestClient
                 GetGroupsSearchEvent.Reset();
             }
 
-            if (resolvedGroupID == LLUUID.Zero)
+            if (resolvedGroupID == UUID.Zero)
             {
                 if (string.IsNullOrEmpty(resolvedGroupName))
                     return "Unable to obtain UUID for group " + groupName;
@@ -80,7 +80,7 @@ namespace OpenMetaverse.TestClient
             return "Unable to join the group " + resolvedGroupName;
         }
 
-        void Groups_OnGroupJoined(LLUUID groupID, bool success)
+        void Groups_OnGroupJoined(UUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") + groupID.ToString());
 
@@ -102,11 +102,11 @@ namespace OpenMetaverse.TestClient
             GetGroupsSearchEvent.Set();
         }
 
-        void Directory_OnDirGroupsReply(LLUUID queryid, List<DirectoryManager.GroupSearchData> matchedGroups)
+        void Directory_OnDirGroupsReply(UUID queryid, List<DirectoryManager.GroupSearchData> matchedGroups)
         {
             if (queryID == queryid)
             {
-                queryID = LLUUID.Zero;
+                queryID = UUID.Zero;
                 if (matchedGroups.Count < 1)
                 {
                     Console.WriteLine("ERROR: Got an empty reply");

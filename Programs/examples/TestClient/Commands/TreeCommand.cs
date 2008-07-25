@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Rez a tree.";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
 		    if (args.Length == 1)
 		    {
@@ -23,11 +23,11 @@ namespace OpenMetaverse.TestClient
 		            string treeName = args[0].Trim(new char[] { ' ' });
 		            Tree tree = (Tree)Enum.Parse(typeof(Tree), treeName);
 
-		            LLVector3 treePosition = Client.Self.SimPosition;
+		            Vector3 treePosition = Client.Self.SimPosition;
 		            treePosition.Z += 3.0f;
 
-		            Client.Objects.AddTree(Client.Network.CurrentSim, new LLVector3(0.5f, 0.5f, 0.5f),
-		                LLQuaternion.Identity, treePosition, tree, Client.GroupID, false);
+		            Client.Objects.AddTree(Client.Network.CurrentSim, new Vector3(0.5f, 0.5f, 0.5f),
+		                Quaternion.Identity, treePosition, tree, Client.GroupID, false);
 
 		            return "Attempted to rez a " + treeName + " tree";
 		        }

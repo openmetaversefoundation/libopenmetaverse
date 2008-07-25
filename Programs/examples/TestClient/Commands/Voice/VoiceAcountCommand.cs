@@ -35,7 +35,7 @@ namespace OpenMetaverse.TestClient
             return true;
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (!IsVoiceManagerRunning())
                 return String.Format("VoiceManager not running for {0}", Client.Self.Name);

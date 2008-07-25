@@ -261,7 +261,7 @@ namespace OpenMetaverse
         #region Misc
 
         /// <summary>Default color used for viewer particle effects</summary>
-        public LLColor DEFAULT_EFFECT_COLOR = new LLColor(255, 0, 0, 255);
+        public Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

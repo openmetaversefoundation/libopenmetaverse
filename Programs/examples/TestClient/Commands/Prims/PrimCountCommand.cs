@@ -11,7 +11,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Shows the number of objects currently being tracked.";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
             int count = 0;
 

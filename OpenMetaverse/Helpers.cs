@@ -827,9 +827,9 @@ namespace OpenMetaverse
         /// <param name="b"></param>
         /// <param name="u"></param>
         /// <returns></returns>
-        public static LLVector3 Lerp(LLVector3 a, LLVector3 b, float u)
+        public static Vector3 Lerp(Vector3 a, Vector3 b, float u)
         {
-            return new LLVector3(
+            return new Vector3(
                 a.X + (b.X - a.X) * u,
                 a.Y + (b.Y - a.Y) * u,
                 a.Z + (b.Z - a.Z) * u);
@@ -1017,8 +1017,8 @@ namespace OpenMetaverse
         /// <param name="ownerMask">Owner mask (permisions)</param>
         /// <returns>The calculated CRC</returns>
         public static uint InventoryCRC(int creationDate, byte saleType, sbyte invType, sbyte type,
-            LLUUID assetID, LLUUID groupID, int salePrice, LLUUID ownerID, LLUUID creatorID,
-            LLUUID itemID, LLUUID folderID, uint everyoneMask, uint flags, uint nextOwnerMask,
+            UUID assetID, UUID groupID, int salePrice, UUID ownerID, UUID creatorID,
+            UUID itemID, UUID folderID, uint everyoneMask, uint flags, uint nextOwnerMask,
             uint groupMask, uint ownerMask)
         {
             uint CRC = 0;
@@ -1266,14 +1266,14 @@ namespace OpenMetaverse
 #endif
         }
 
-        public static bool TryParse(string s, out LLUUID result)
+        public static bool TryParse(string s, out UUID result)
         {
-            return LLUUID.TryParse(s, out result);
+            return UUID.TryParse(s, out result);
         }
 
-        public static bool TryParse(string s, out LLVector3 result)
+        public static bool TryParse(string s, out Vector3 result)
         {
-            return LLVector3.TryParse(s, out result);
+            return Vector3.TryParse(s, out result);
         }
 
         public static bool TryParseHex(string s, out uint result)

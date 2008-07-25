@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
             Description = "Shows the login name, login time and length of time logged on.";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             string name = Client.ToString();
             return "I am " + name + ", Up Since: " + Created + " (" + (DateTime.Now - Created) + ")";

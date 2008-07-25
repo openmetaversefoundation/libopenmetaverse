@@ -34,10 +34,10 @@ namespace OpenMetaverse
     {
         public readonly GridClient Client;
 
-        public delegate void AttachSoundCallback(LLUUID soundID, LLUUID ownerID, LLUUID objectID, float gain, byte flags);
-        public delegate void AttachedSoundGainChangeCallback(LLUUID objectID, float gain);
-        public delegate void SoundTriggerCallback(LLUUID soundID, LLUUID ownerID, LLUUID objectID, LLUUID parentID, float gain, ulong regionHandle, LLVector3 position);
-        public delegate void PreloadSoundCallback(LLUUID soundID, LLUUID ownerID, LLUUID objectID);
+        public delegate void AttachSoundCallback(UUID soundID, UUID ownerID, UUID objectID, float gain, byte flags);
+        public delegate void AttachedSoundGainChangeCallback(UUID objectID, float gain);
+        public delegate void SoundTriggerCallback(UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, Vector3 position);
+        public delegate void PreloadSoundCallback(UUID soundID, UUID ownerID, UUID objectID);
 
         public event AttachSoundCallback OnAttachSound;
         public event AttachedSoundGainChangeCallback OnAttachSoundGainChange;
@@ -60,7 +60,7 @@ namespace OpenMetaverse
         /// Plays a sound in the current region at full volume from avatar position
         /// </summary>
         /// <param name="soundID">UUID of the sound to be played</param>
-        public void SoundTrigger(LLUUID soundID)
+        public void SoundTrigger(UUID soundID)
         {
             SoundTrigger(soundID, Client.Self.SimPosition, 1.0f);
         }
@@ -70,7 +70,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="soundID">UUID of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
-        public void SoundTrigger(LLUUID soundID, LLVector3 position)
+        public void SoundTrigger(UUID soundID, Vector3 position)
         {
             SoundTrigger(soundID, Client.Self.SimPosition, 1.0f);
         }
@@ -81,7 +81,7 @@ namespace OpenMetaverse
         /// <param name="soundID">UUID of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SoundTrigger(LLUUID soundID, LLVector3 position, float gain)
+        public void SoundTrigger(UUID soundID, Vector3 position, float gain)
         {
             SoundTrigger(soundID, Client.Network.CurrentSim.Handle, position, 1.0f);
         }
@@ -92,7 +92,7 @@ namespace OpenMetaverse
         /// <param name="sim">UUID of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SoundTrigger(LLUUID soundID, Simulator sim, LLVector3 position, float gain)
+        public void SoundTrigger(UUID soundID, Simulator sim, Vector3 position, float gain)
         {
             SoundTrigger(soundID, sim.Handle, position, 1.0f);
         }
@@ -104,14 +104,14 @@ namespace OpenMetaverse
         /// <param name="handle">handle id for the sim to be played in.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SoundTrigger(LLUUID soundID, ulong handle, LLVector3 position, float gain)
+        public void SoundTrigger(UUID soundID, ulong handle, Vector3 position, float gain)
         {
             SoundTriggerPacket soundtrigger = new SoundTriggerPacket();
             soundtrigger.SoundData = new SoundTriggerPacket.SoundDataBlock();
             soundtrigger.SoundData.SoundID = soundID;
-            soundtrigger.SoundData.ObjectID = LLUUID.Zero;
-            soundtrigger.SoundData.OwnerID = LLUUID.Zero;
-            soundtrigger.SoundData.ParentID = LLUUID.Zero;
+            soundtrigger.SoundData.ObjectID = UUID.Zero;
+            soundtrigger.SoundData.OwnerID = UUID.Zero;
+            soundtrigger.SoundData.ParentID = UUID.Zero;
             soundtrigger.SoundData.Handle = handle;
             soundtrigger.SoundData.Position = position;
             soundtrigger.SoundData.Gain = gain;

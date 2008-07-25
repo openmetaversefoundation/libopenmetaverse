@@ -9,7 +9,7 @@ namespace OpenMetaverse.TestClient
 {
     public class DumpOutfitCommand : Command
     {
-        List<LLUUID> OutfitAssets = new List<LLUUID>();
+        List<UUID> OutfitAssets = new List<UUID>();
         AssetManager.ImageReceivedCallback ImageReceivedHandler;
 
         public DumpOutfitCommand(TestClient testClient)
@@ -19,14 +19,14 @@ namespace OpenMetaverse.TestClient
             ImageReceivedHandler = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: dumpoutfit [avatar-uuid]";
 
-            LLUUID target;
+            UUID target;
 
-            if (!LLUUID.TryParse(args[0], out target))
+            if (!UUID.TryParse(args[0], out target))
                 return "Usage: dumpoutfit [avatar-uuid]";
 
             lock (Client.Network.Simulators)

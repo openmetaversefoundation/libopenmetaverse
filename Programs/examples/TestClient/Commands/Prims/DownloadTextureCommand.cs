@@ -7,7 +7,7 @@ namespace OpenMetaverse.TestClient
 {
     public class DownloadTextureCommand : Command
     {
-        LLUUID TextureID;
+        UUID TextureID;
         AutoResetEvent DownloadHandle = new AutoResetEvent(false);
         ImageDownload Image;
         AssetTexture Asset;
@@ -22,17 +22,17 @@ namespace OpenMetaverse.TestClient
             testClient.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: downloadtexture [texture-uuid]";
 
-            TextureID = LLUUID.Zero;
+            TextureID = UUID.Zero;
             DownloadHandle.Reset();
             Image = null;
             Asset = null;
 
-            if (LLUUID.TryParse(args[0], out TextureID))
+            if (UUID.TryParse(args[0], out TextureID))
             {
                 Client.Assets.RequestImage(TextureID, ImageType.Normal);
                 if (DownloadHandle.WaitOne(120 * 1000, false))
@@ -79,7 +79,7 @@ namespace OpenMetaverse.TestClient
             DownloadHandle.Set();
         }
 
-        private void Assets_OnImageReceiveProgress(LLUUID image, int recieved, int total)
+        private void Assets_OnImageReceiveProgress(UUID image, int recieved, int total)
         {
             Console.WriteLine(String.Format("Texture {0}: Received {1} / {2}", image, recieved, total));
         }

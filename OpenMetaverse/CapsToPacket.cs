@@ -218,25 +218,25 @@ namespace OpenMetaverse.Packets
                     {
                         field.SetValue(block, blockData[field.Name].AsInteger());
                     }
-                    else if (fieldType == typeof(LLUUID))
+                    else if (fieldType == typeof(UUID))
                     {
                         field.SetValue(block, blockData[field.Name].AsUUID());
                     }
-                    else if (fieldType == typeof(LLVector3))
+                    else if (fieldType == typeof(Vector3))
                     {
-                        LLVector3 vec = (LLVector3)field.GetValue(block);
+                        Vector3 vec = (Vector3)field.GetValue(block);
                         vec.FromLLSD(blockData[field.Name]);
                         field.SetValue(block, vec);
                     }
-                    else if (fieldType == typeof(LLVector4))
+                    else if (fieldType == typeof(Vector4))
                     {
-                        LLVector4 vec = (LLVector4)field.GetValue(block);
+                        Vector4 vec = (Vector4)field.GetValue(block);
                         vec.FromLLSD(blockData[field.Name]);
                         field.SetValue(block, vec);
                     }
-                    else if (fieldType == typeof(LLQuaternion))
+                    else if (fieldType == typeof(Quaternion))
                     {
-                        LLQuaternion quat = (LLQuaternion)field.GetValue(block);
+                        Quaternion quat = (Quaternion)field.GetValue(block);
                         quat.FromLLSD(blockData[field.Name]);
                         field.SetValue(block, quat);
                     }

@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient
                 "Usage: primregex [text predicat] (eg findprim .away.)";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: primregex [text predicat]";

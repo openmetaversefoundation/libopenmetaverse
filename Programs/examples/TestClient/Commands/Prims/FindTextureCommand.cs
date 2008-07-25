@@ -12,16 +12,16 @@ namespace OpenMetaverse.TestClient
                 "Usage: findtexture [face-index] [texture-uuid]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             int faceIndex;
-            LLUUID textureID;
+            UUID textureID;
 
             if (args.Length != 2)
                 return "Usage: findtexture [face-index] [texture-uuid]";
 
             if (Int32.TryParse(args[0], out faceIndex) &&
-                LLUUID.TryParse(args[1], out textureID))
+                UUID.TryParse(args[1], out textureID))
             {
                 Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                     delegate(Primitive prim)

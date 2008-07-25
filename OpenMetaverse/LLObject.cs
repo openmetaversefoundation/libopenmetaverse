@@ -256,11 +256,11 @@ namespace OpenMetaverse
             }
 
             /// <summary></summary>
-            public LLVector2 PathBeginScale
+            public Vector2 PathBeginScale
             {
                 get
                 {
-                    LLVector2 begin = new LLVector2(1f, 1f);
+                    Vector2 begin = new Vector2(1f, 1f);
                     if (PathScaleX > 1f)
                         begin.X = 2f - PathScaleX;
                     if (PathScaleY > 1f)
@@ -270,11 +270,11 @@ namespace OpenMetaverse
             }
 
             /// <summary></summary>
-            public LLVector2 PathEndScale
+            public Vector2 PathEndScale
             {
                 get
                 {
-                    LLVector2 end = new LLVector2(1f, 1f);
+                    Vector2 end = new Vector2(1f, 1f);
                     if (PathScaleX < 1f)
                         end.X = PathScaleX;
                     if (PathScaleY < 1f)
@@ -334,14 +334,14 @@ namespace OpenMetaverse
         public struct ObjectProperties
         {
             /// <summary></summary>
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             /// <summary></summary>
-            public LLUUID CreatorID;
+            public UUID CreatorID;
             /// <summary>This is a protocol hack, it will only be set if the
             /// object has a non-null sound so you can mute the owner</summary>
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             /// <summary></summary>
-            public LLUUID GroupID;
+            public UUID GroupID;
             /// <summary></summary>
             public ulong CreationDate;
             /// <summary></summary>
@@ -363,13 +363,13 @@ namespace OpenMetaverse
             /// <summary></summary>
             public short InventorySerial;
             /// <summary></summary>
-            public LLUUID ItemID;
+            public UUID ItemID;
             /// <summary></summary>
-            public LLUUID FolderID;
+            public UUID FolderID;
             /// <summary></summary>
-            public LLUUID FromTaskID;
+            public UUID FromTaskID;
             /// <summary></summary>
-            public LLUUID LastOwnerID;
+            public UUID LastOwnerID;
             /// <summary></summary>
             public string Name;
             /// <summary></summary>
@@ -379,7 +379,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public string SitName;
             /// <summary></summary>
-            public LLUUID[] TextureIDs;
+            public UUID[] TextureIDs;
         }
 
         /// <summary>
@@ -403,11 +403,11 @@ namespace OpenMetaverse
             /// <summary></summary>
             public RequestFlagsType RequestFlags;
             /// <summary></summary>
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             /// <summary></summary>
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             /// <summary></summary>
-            public LLUUID GroupID;
+            public UUID GroupID;
             /// <summary></summary>
             public Permissions Permissions;
             /// <summary></summary>
@@ -419,7 +419,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public uint Category;
             /// <summary></summary>
-            public LLUUID LastOwnerID;
+            public UUID LastOwnerID;
             /// <summary></summary>
             public string Name;
             /// <summary></summary>
@@ -446,9 +446,9 @@ namespace OpenMetaverse
         #region Public Members
 
         /// <summary></summary>
-        public LLUUID ID;
+        public UUID ID;
         /// <summary></summary>
-        public LLUUID GroupID;
+        public UUID GroupID;
         /// <summary></summary>
         public uint LocalID;
         /// <summary></summary>
@@ -460,19 +460,19 @@ namespace OpenMetaverse
         /// <summary>Unknown</summary>
         public byte[] GenericData;
         /// <summary></summary>
-        public LLVector3 Position;
+        public Vector3 Position;
         /// <summary></summary>
-        public LLVector3 Scale;
+        public Vector3 Scale;
         /// <summary></summary>
-        public LLQuaternion Rotation;
+        public Quaternion Rotation;
         /// <summary></summary>
-        public LLVector3 Velocity;
+        public Vector3 Velocity;
         /// <summary></summary>
-        public LLVector3 AngularVelocity;
+        public Vector3 AngularVelocity;
         /// <summary></summary>
-        public LLVector3 Acceleration;
+        public Vector3 Acceleration;
         /// <summary></summary>
-        public LLVector4 CollisionPlane;
+        public Vector4 CollisionPlane;
         /// <summary></summary>
         public TextureEntry Textures;
         /// <summary></summary>

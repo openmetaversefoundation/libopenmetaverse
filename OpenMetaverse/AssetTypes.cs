@@ -100,8 +100,8 @@ namespace OpenMetaverse
     {
         public byte[] AssetData;
 
-        private LLUUID _AssetID;
-        public LLUUID AssetID
+        private UUID _AssetID;
+        public UUID AssetID
         {
             get { return _AssetID; }
             internal set { _AssetID = value; }
@@ -284,14 +284,14 @@ namespace OpenMetaverse
         public WearableType WearableType = WearableType.Shape;
         public SaleType ForSale;
         public int SalePrice;
-        public LLUUID Creator;
-        public LLUUID Owner;
-        public LLUUID LastOwner;
-        public LLUUID Group;
+        public UUID Creator;
+        public UUID Owner;
+        public UUID LastOwner;
+        public UUID Group;
         public bool GroupOwned;
         public Permissions Permissions;
         public Dictionary<int, float> Params = new Dictionary<int, float>();
-        public Dictionary<AppearanceManager.TextureIndex, LLUUID> Textures = new Dictionary<AppearanceManager.TextureIndex, LLUUID>();
+        public Dictionary<AppearanceManager.TextureIndex, UUID> Textures = new Dictionary<AppearanceManager.TextureIndex, UUID>();
 
         public AssetWearable() { }
 
@@ -365,7 +365,7 @@ namespace OpenMetaverse
                                 fields = line.Split(' ');
 
                                 AppearanceManager.TextureIndex id = (AppearanceManager.TextureIndex)Int32.Parse(fields[0]);
-                                LLUUID texture = new LLUUID(fields[1]);
+                                UUID texture = new UUID(fields[1]);
 
                                 Textures[id] = texture;
                             }
@@ -400,16 +400,16 @@ namespace OpenMetaverse
                                 Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
                                 break;
                             case "creator_id":
-                                Creator = new LLUUID(fields[1]);
+                                Creator = new UUID(fields[1]);
                                 break;
                             case "owner_id":
-                                Owner = new LLUUID(fields[1]);
+                                Owner = new UUID(fields[1]);
                                 break;
                             case "last_owner_id":
-                                LastOwner = new LLUUID(fields[1]);
+                                LastOwner = new UUID(fields[1]);
                                 break;
                             case "group_id":
-                                Group = new LLUUID(fields[1]);
+                                Group = new UUID(fields[1]);
                                 break;
                             case "group_owned":
                                 GroupOwned = (Int32.Parse(fields[1]) != 0);
@@ -465,7 +465,7 @@ namespace OpenMetaverse
             }
 
             data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
-            foreach (KeyValuePair<AppearanceManager.TextureIndex, LLUUID> texture in Textures)
+            foreach (KeyValuePair<AppearanceManager.TextureIndex, UUID> texture in Textures)
             {
                 data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
             }

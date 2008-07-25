@@ -65,7 +65,7 @@ namespace PrimWorkshop
                         mtl.AppendLine("Tr " + tex.RGBA.A);
                         mtl.AppendLine("Ns " + shiny);
                         mtl.AppendLine("illum 1");
-                        if (tex.TextureID != LLUUID.Zero && tex.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                        if (tex.TextureID != UUID.Zero && tex.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
                             mtl.AppendLine("map_Kd ./" + texName);
                         mtl.AppendLine();
                         
@@ -76,7 +76,7 @@ namespace PrimWorkshop
 
                             #region Vertex
 
-                            LLVector3 pos = vertex.Position;
+                            Vector3 pos = vertex.Position;
 
                             // Apply scaling
                             pos *= mesh.Prim.Scale;

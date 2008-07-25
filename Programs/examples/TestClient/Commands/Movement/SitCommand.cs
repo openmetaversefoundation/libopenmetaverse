@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Attempt to sit on the closest prim";
 		}
 			
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
             Primitive closest = null;
 		    double closestDistance = Double.MaxValue;
@@ -22,7 +22,7 @@ namespace OpenMetaverse.TestClient
             Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                 delegate(Primitive prim)
                 {
-                    float distance = LLVector3.Dist(Client.Self.SimPosition, prim.Position);
+                    float distance = Vector3.Dist(Client.Self.SimPosition, prim.Position);
 
                     if (closest == null || distance < closestDistance)
                     {
@@ -34,7 +34,7 @@ namespace OpenMetaverse.TestClient
 
             if (closest != null)
             {
-                Client.Self.RequestSit(closest.ID, LLVector3.Zero);
+                Client.Self.RequestSit(closest.ID, Vector3.Zero);
                 Client.Self.Sit();
 
                 return "Sat on " + closest.ID + " (" + closest.LocalID + "). Distance: " + closestDistance;

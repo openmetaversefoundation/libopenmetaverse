@@ -224,11 +224,11 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void SerializeUUID()
         {
-            LLSD llsdAUUID = LLSD.FromUUID(new LLUUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
+            LLSD llsdAUUID = LLSD.FromUUID(new UUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
             byte[] binaryAUUIDSerialized = LLSDParser.SerializeBinary(llsdAUUID);
             Assert.AreEqual(binaryAUUID, binaryAUUIDSerialized);
 
-            LLSD llsdZeroUUID = LLSD.FromUUID(new LLUUID("00000000-0000-0000-0000-000000000000"));
+            LLSD llsdZeroUUID = LLSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
             byte[] binaryZeroUUIDSerialized = LLSDParser.SerializeBinary(llsdZeroUUID);
             Assert.AreEqual(binaryZeroUUID, binaryZeroUUIDSerialized);
         }

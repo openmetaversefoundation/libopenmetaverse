@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Show the location.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+		public override string Execute(string[] args, UUID fromAgentID)
 		{
             return "CurrentSim: '" + Client.Network.CurrentSim.ToString() + "' Position: " + 
                 Client.Self.SimPosition.ToString();

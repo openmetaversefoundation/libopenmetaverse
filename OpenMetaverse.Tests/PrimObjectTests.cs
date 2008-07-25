@@ -132,7 +132,7 @@ namespace OpenMetaverse.Tests
         [Test]
         public void TextureEntry()
         {
-            LLObject.TextureEntry te = new LLObject.TextureEntry(LLUUID.Random());
+            LLObject.TextureEntry te = new LLObject.TextureEntry(UUID.Random());
             LLObject.TextureEntryFace face = te.CreateFace(0);
             face.Bump = Bumpiness.Concrete;
             face.Fullbright = true;
@@ -141,11 +141,11 @@ namespace OpenMetaverse.Tests
             face.OffsetV = -0.5f;
             face.RepeatU = 3.0f;
             face.RepeatV = 4.0f;
-            face.RGBA = new LLColor(0f, 0.25f, 0.75f, 1f);
+            face.RGBA = new Color4(0f, 0.25f, 0.75f, 1f);
             face.Rotation = 1.5f;
             face.Shiny = Shininess.Medium;
             face.TexMapType = MappingType.Planar;
-            face.TextureID = LLUUID.Random();
+            face.TextureID = UUID.Random();
 
             byte[] teBytes = te.ToBytes();
 

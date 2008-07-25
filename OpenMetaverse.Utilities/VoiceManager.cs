@@ -216,13 +216,13 @@ namespace OpenMetaverse.Utilities
             return new List<string>(_RenderDevices);
         }
 
-        public string VoiceAccountFromUUID(LLUUID id)
+        public string VoiceAccountFromUUID(UUID id)
         {
             string result = "x" + Convert.ToBase64String(id.GetBytes());
             return result.Replace('+', '-').Replace('/', '_');
         }
 
-        public LLUUID UUIDFromVoiceAccount(string accountName)
+        public UUID UUIDFromVoiceAccount(string accountName)
         {
             if (accountName.Length == 25 && accountName[0] == 'x' && accountName[23] == '=' && accountName[24] == '=')
             {
@@ -230,13 +230,13 @@ namespace OpenMetaverse.Utilities
                 byte[] idBytes = Convert.FromBase64String(accountName);
 
                 if (idBytes.Length == 16)
-                    return new LLUUID(idBytes, 0);
+                    return new UUID(idBytes, 0);
                 else
-                    return LLUUID.Zero;
+                    return UUID.Zero;
             }
             else
             {
-                return LLUUID.Zero;
+                return UUID.Zero;
             }
         }
 

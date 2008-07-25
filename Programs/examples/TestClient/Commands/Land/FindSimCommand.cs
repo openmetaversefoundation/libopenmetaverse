@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Searches for a simulator and returns information about it. Usage: findsim [Simulator Name]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: findsim [Simulator Name]";

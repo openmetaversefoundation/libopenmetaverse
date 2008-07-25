@@ -159,9 +159,9 @@ namespace OpenMetaverse.Rendering
             // Run along the path
             for (int s = 0; s < sizeS; ++s)
             {
-                LLVector2 scale = path.Points[s].Scale;
-                LLQuaternion rot = path.Points[s].Rotation;
-                LLVector3 pos = path.Points[s].Position;
+                Vector2 scale = path.Points[s].Scale;
+                Quaternion rot = path.Points[s].Rotation;
+                Vector3 pos = path.Points[s].Position;
 
                 // Run along the profile
                 for (int t = 0; t < sizeT; ++t)
@@ -503,7 +503,7 @@ namespace OpenMetaverse.Rendering
                         for (i = 0; i < profile.Positions.Count; i++)
                         {
                             // Scale by 4 to generate proper tex coords
-                            LLVector3 point = profile.Positions[i];
+                            Vector3 point = profile.Positions[i];
                             point.Z *= 4f;
                             profile.Positions[i] = point;
                         }
@@ -556,7 +556,7 @@ namespace OpenMetaverse.Rendering
                         for (i = 0; i < profile.Positions.Count; i++)
                         {
                             // Scale by 3 to generate proper tex coords
-                            LLVector3 point = profile.Positions[i];
+                            Vector3 point = profile.Positions[i];
                             point.Z *= 3f;
                             profile.Positions[i] = point;
                         }
@@ -694,7 +694,7 @@ namespace OpenMetaverse.Rendering
                         else if (hollow == 0f)
                         {
                             profile.Open = false;
-                            LLVector3 first = profile.Positions[0];
+                            Vector3 first = profile.Positions[0];
                             profile.Positions.Add(first);
                         }
                     }
@@ -735,7 +735,7 @@ namespace OpenMetaverse.Rendering
             // Apply the hollow scale modifier
             for (int i = 0; i < hole.Positions.Count; i++)
             {
-                LLVector3 point = hole.Positions[i];
+                Vector3 point = hole.Positions[i];
                 point *= boxHollow;
                 hole.Positions[i] = point;
             }
@@ -770,15 +770,15 @@ namespace OpenMetaverse.Rendering
 
                         step = 1f / (np - 1);
 
-                        LLVector2 startScale = prim.PathBeginScale;
-                        LLVector2 endScale = prim.PathEndScale;
+                        Vector2 startScale = prim.PathBeginScale;
+                        Vector2 endScale = prim.PathEndScale;
 
                         for (int i = 0; i < np; i++)
                         {
                             PathPoint point = new PathPoint();
 
                             float t = Helpers.Lerp(prim.PathBegin, prim.PathEnd, (float)i * step);
-                            point.Position = new LLVector3(
+                            point.Position = new Vector3(
                                 Helpers.Lerp(0, prim.PathShearX, t),
                                 Helpers.Lerp(0, prim.PathShearY, t),
                                 t - 0.5f);
@@ -846,12 +846,12 @@ namespace OpenMetaverse.Rendering
         {
             // Create a polygon by starting at (1, 0) and proceeding counterclockwise generating vectors
             Profile profile = new Profile();
-            profile.Positions = new List<LLVector3>();
+            profile.Positions = new List<Vector3>();
             profile.Faces = new List<ProfileFace>();
 
             float scale = 0.5f;
             float t, tStep, tFirst, tFraction, ang, angStep;
-            LLVector3 pt1, pt2;
+            Vector3 pt1, pt2;
 
             float begin = prim.ProfileBegin;
             float end = prim.ProfileEnd;
@@ -871,20 +871,20 @@ namespace OpenMetaverse.Rendering
             // Starting t and ang values for the first face
             t = tFirst;
             ang = 2f * F_PI * (t * angScale + offset);
-            pt1 = new LLVector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
+            pt1 = new Vector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
 
             // Increment to the next point.
             // pt2 is the end point on the fractional face
             t += tStep;
             ang += angStep;
-            pt2 = new LLVector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
+            pt2 = new Vector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
 
             tFraction = (begin - tFirst) * sides;
 
             // Only use if it's not almost exactly on an edge
             if (tFraction < 0.9999f)
             {
-                LLVector3 newPt = Helpers.Lerp(pt1, pt2, tFraction);
+                Vector3 newPt = Helpers.Lerp(pt1, pt2, tFraction);
                 float ptX = newPt.X;
 
                 if (ptX < profile.MinX)
@@ -899,7 +899,7 @@ namespace OpenMetaverse.Rendering
             while (t < end)
             {
                 // Iterate through all the integer steps of t.
-                pt1 = new LLVector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
+                pt1 = new Vector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
 
                 float ptX = pt1.X;
                 if (ptX < profile.MinX)
@@ -915,13 +915,13 @@ namespace OpenMetaverse.Rendering
 
             // pt1 is the first point on the fractional face
             // pt2 is the end point on the fractional face
-            pt2 = new LLVector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
+            pt2 = new Vector3((float)Math.Cos(ang) * scale, (float)Math.Sin(ang) * scale, t);
 
             // Find the fraction that we need to add to the end point
             tFraction = (end - (t - tStep)) * sides;
             if (tFraction > 0.0001f)
             {
-                LLVector3 newPt = Helpers.Lerp(pt1, pt2, tFraction);
+                Vector3 newPt = Helpers.Lerp(pt1, pt2, tFraction);
 
                 float ptX = newPt.X;
                 if (ptX < profile.MinX)
@@ -944,7 +944,7 @@ namespace OpenMetaverse.Rendering
 
                 // Put center point if not hollow
                 if (prim.ProfileHollow == 0f)
-                    profile.Positions.Add(LLVector3.Zero);
+                    profile.Positions.Add(Vector3.Zero);
             }
             else
             {
@@ -1018,10 +1018,10 @@ namespace OpenMetaverse.Rendering
                 (Math.Abs(radiusEnd - radiusStart) > 0.001d));
 
             float ang, c, s;
-            LLQuaternion twist = LLQuaternion.Identity;
-            LLQuaternion qang = LLQuaternion.Identity;
+            Quaternion twist = Quaternion.Identity;
+            Quaternion qang = Quaternion.Identity;
             PathPoint point;
-            LLVector3 pathAxis = new LLVector3(1f, 0f, 0f);
+            Vector3 pathAxis = new Vector3(1f, 0f, 0f);
             float twistBegin = prim.PathTwistBegin * twistScale;
             float twistEnd = prim.PathTwist * twistScale;
 
@@ -1034,7 +1034,7 @@ namespace OpenMetaverse.Rendering
             c = (float)Math.Cos(ang) * Helpers.Lerp(radiusStart, radiusEnd, t);
 
             point = new PathPoint();
-            point.Position = new LLVector3(
+            point.Position = new Vector3(
                 0 + Helpers.Lerp(0, prim.PathShearX, s) +
                 0 + Helpers.Lerp(-skew, skew, t) * 0.5f,
                 c + Helpers.Lerp(0, prim.PathShearY, s),
@@ -1064,7 +1064,7 @@ namespace OpenMetaverse.Rendering
                 c = (float)Math.Cos(ang) * Helpers.Lerp(radiusStart, radiusEnd, t);
                 s = (float)Math.Sin(ang) * Helpers.Lerp(radiusStart, radiusEnd, t);
 
-                point.Position = new LLVector3(
+                point.Position = new Vector3(
                     0 + Helpers.Lerp(0, prim.PathShearX, s) +
                     0 + Helpers.Lerp(-skew, skew, t) * 0.5f,
                     c + Helpers.Lerp(0, prim.PathShearY, s),
@@ -1091,7 +1091,7 @@ namespace OpenMetaverse.Rendering
             c = (float)Math.Cos(ang) * Helpers.Lerp(radiusStart, radiusEnd, t);
             s = (float)Math.Sin(ang) * Helpers.Lerp(radiusStart, radiusEnd, t);
 
-            point.Position = new LLVector3(
+            point.Position = new Vector3(
                 Helpers.Lerp(0, prim.PathShearX, s) + Helpers.Lerp(-skew, skew, t) * 0.5f,
                 c + Helpers.Lerp(0, prim.PathShearY, s),
                 s);
@@ -1138,10 +1138,10 @@ namespace OpenMetaverse.Rendering
         {
             // Use the profile points instead of the mesh, since you want
             // the un-transformed profile distances
-            LLVector3 p1 = profilePoints.Positions[pt1];
-            LLVector3 p2 = profilePoints.Positions[pt2];
-            LLVector3 pa = profilePoints.Positions[pt1 + 1];
-            LLVector3 pb = profilePoints.Positions[pt2 - 1];
+            Vector3 p1 = profilePoints.Positions[pt1];
+            Vector3 p2 = profilePoints.Positions[pt2];
+            Vector3 pa = profilePoints.Positions[pt1 + 1];
+            Vector3 pb = profilePoints.Positions[pt2 - 1];
 
             p1.Z = 0f;
             p2.Z = 0f;
@@ -1194,10 +1194,10 @@ namespace OpenMetaverse.Rendering
             }
             else
             {
-                LLVector3 d1 = p1 - pa;
-                LLVector3 d2 = p2 - pb;
+                Vector3 d1 = p1 - pa;
+                Vector3 d2 = p2 - pb;
 
-                if (LLVector3.MagSquared(d1) < LLVector3.MagSquared(d2))
+                if (Vector3.MagSquared(d1) < Vector3.MagSquared(d2))
                     use_tri_1a2 = true;
                 else
                     use_tri_1a2 = false;

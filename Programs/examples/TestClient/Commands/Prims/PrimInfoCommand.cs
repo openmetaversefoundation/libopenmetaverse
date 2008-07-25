@@ -11,14 +11,14 @@ namespace OpenMetaverse.TestClient
             Description = "Dumps information about a specified prim. " + "Usage: priminfo [prim-uuid]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
-            LLUUID primID;
+            UUID primID;
 
             if (args.Length != 1)
                 return "Usage: priminfo [prim-uuid]";
 
-            if (LLUUID.TryParse(args[0], out primID))
+            if (UUID.TryParse(args[0], out primID))
             {
                 Primitive target = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim) { return prim.ID == primID; }

@@ -18,7 +18,7 @@ namespace OpenMetaverse.TestClient
             testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             StringBuilder sb = new StringBuilder();
             string result;

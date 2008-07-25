@@ -247,7 +247,7 @@ using System.Text;
                     llsd = LLSD.FromReal( dbl );
                     break;
                 case uuidBinaryMarker:
-                    llsd = LLSD.FromUUID( new LLUUID( ConsumeBytes( stream, 16 ), 0));
+                    llsd = LLSD.FromUUID( new UUID( ConsumeBytes( stream, 16 ), 0));
                     break;                
                 case binaryBinaryMarker:
                     int binaryLength = NetworkToHostInt( ConsumeBytes( stream, int32Length )); 

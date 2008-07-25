@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 		Description = "Stand";
 	}
 	
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 	    {
             Client.Self.Stand();
 		    return "Standing up.";  

@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Say something.  (usage: say (optional channel) whatever)";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
             int channel = 0;
             int startIndex = 0;

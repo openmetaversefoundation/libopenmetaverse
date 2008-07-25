@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
             testClient.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
 			string target = String.Empty;
 			for (int ct = 0; ct < args.Length; ct++)
@@ -68,7 +68,7 @@ namespace OpenMetaverse.TestClient
             return false;
         }
 
-        bool Follow(LLUUID id)
+        bool Follow(UUID id)
         {
             lock (Client.Network.Simulators)
             {
@@ -109,7 +109,7 @@ namespace OpenMetaverse.TestClient
 
                         if (Client.Network.Simulators[i] == Client.Network.CurrentSim)
                         {
-                            distance = LLVector3.Dist(targetAv.Position, Client.Self.SimPosition);
+                            distance = Vector3.Dist(targetAv.Position, Client.Self.SimPosition);
                         }
                         else
                         {

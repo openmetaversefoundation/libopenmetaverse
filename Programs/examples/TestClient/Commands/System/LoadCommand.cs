@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Loads commands from a dll. (Usage: load AssemblyNameWithoutExtension)";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+		public override string Execute(string[] args, UUID fromAgentID)
 		{
 			if (args.Length < 1)
 				return "Usage: load AssemblyNameWithoutExtension";

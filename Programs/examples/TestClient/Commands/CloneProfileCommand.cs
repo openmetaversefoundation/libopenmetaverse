@@ -10,7 +10,7 @@ namespace OpenMetaverse.TestClient
     {
         Avatar.AvatarProperties Properties;
         Avatar.Interests Interests;
-        List<LLUUID> Groups = new List<LLUUID>();
+        List<UUID> Groups = new List<UUID>();
         bool ReceivedProperties = false;
         bool ReceivedInterests = false;
         bool ReceivedGroups = false;
@@ -28,19 +28,19 @@ namespace OpenMetaverse.TestClient
                 "destroy your existing profile! Usage: cloneprofile [targetuuid]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 1)
                 return Description;
 
-            LLUUID targetID;
+            UUID targetID;
             ReceivedProperties = false;
             ReceivedInterests = false;
             ReceivedGroups = false;
 
             try
             {
-                targetID = new LLUUID(args[0]);
+                targetID = new UUID(args[0]);
             }
             catch (Exception)
             {
@@ -66,7 +66,7 @@ namespace OpenMetaverse.TestClient
             // break TestClient connectivity that might be relying on group authentication
 
             // Attempt to join all the groups
-            foreach (LLUUID groupID in Groups)
+            foreach (UUID groupID in Groups)
             {
                 Client.Groups.RequestJoinGroup(groupID);
             }
@@ -74,7 +74,7 @@ namespace OpenMetaverse.TestClient
             return "Synchronized our profile to the profile of " + targetID.ToString();
         }
 
-        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.AvatarProperties properties)
+        void Avatars_OnAvatarProperties(UUID avatarID, Avatar.AvatarProperties properties)
         {
             lock (ReceivedProfileEvent)
             {
@@ -86,7 +86,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarInterests(LLUUID avatarID, Avatar.Interests interests)
+        void Avatars_OnAvatarInterests(UUID avatarID, Avatar.Interests interests)
         {
             lock (ReceivedProfileEvent)
             {
@@ -98,7 +98,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarGroups(LLUUID avatarID, List<AvatarGroup> groups)
+        void Avatars_OnAvatarGroups(UUID avatarID, List<AvatarGroup> groups)
         {
             lock (ReceivedProfileEvent)
             {
@@ -114,7 +114,7 @@ namespace OpenMetaverse.TestClient
             }
         }
         
-        void Groups_OnGroupJoined(LLUUID groupID, bool success)
+        void Groups_OnGroupJoined(UUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
                 groupID.ToString());

@@ -211,8 +211,8 @@ namespace OpenMetaverse.StructuredData
                     char[] uuidBuf = new char[36];
                     if (reader.Read(uuidBuf, 0, 36) < 36)
                         throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in UUID.");
-                    LLUUID lluuid;
-                    if (!LLUUID.TryParse(new String(uuidBuf), out lluuid))
+                    UUID lluuid;
+                    if (!UUID.TryParse(new String(uuidBuf), out lluuid))
                         throw new LLSDException("Notation LLSD parsing: Invalid UUID discovered.");
                     llsd = LLSD.FromUUID(lluuid);
                     break;

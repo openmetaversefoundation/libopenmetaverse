@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Log this avatar out";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             string name = Client.ToString();
 			Client.ClientManager.Logout(Client);

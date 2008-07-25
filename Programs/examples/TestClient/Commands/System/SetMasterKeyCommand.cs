@@ -16,9 +16,9 @@ namespace OpenMetaverse.TestClient
             Description = "Sets the key of the master user.  The master user can IM to run commands.";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
-            Client.MasterKey = LLUUID.Parse(args[0]);
+            Client.MasterKey = UUID.Parse(args[0]);
 
             lock (Client.Network.Simulators)
             {

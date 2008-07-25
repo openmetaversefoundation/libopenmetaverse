@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Name = "cd";
             Description = "Changes the current working inventory folder.";
         }
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             Manager = Client.Inventory;
             Inventory = Client.Inventory.Store;

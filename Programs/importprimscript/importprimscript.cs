@@ -13,11 +13,11 @@ namespace importprimscript
     {
         public string Name;
         public string TextureFile;
-        public LLUUID TextureID;
+        public UUID TextureID;
         public string SculptFile;
-        public LLUUID SculptID;
-        public LLVector3 Scale;
-        public LLVector3 Offset;
+        public UUID SculptID;
+        public Vector3 Scale;
+        public Vector3 Offset;
     }
 
     class importprimscript
@@ -25,9 +25,9 @@ namespace importprimscript
         static GridClient Client = new GridClient();
         static Sculpt CurrentSculpt = null;
         static AutoResetEvent RezzedEvent = new AutoResetEvent(false);
-        static LLVector3 RootPosition = LLVector3.Zero;
+        static Vector3 RootPosition = Vector3.Zero;
         static List<uint> RezzedPrims = new List<uint>();
-        static LLUUID UploadFolderID = LLUUID.Zero;
+        static UUID UploadFolderID = UUID.Zero;
 
         static void Main(string[] args)
         {
@@ -141,12 +141,12 @@ namespace importprimscript
                 sculpties[i].TextureID = UploadImage(sculpties[i].TextureFile, false);
 
                 // Check for failed uploads
-                if (sculpties[i].SculptID == LLUUID.Zero)
+                if (sculpties[i].SculptID == UUID.Zero)
                 {
                     Console.WriteLine("Sculpt map " + sculpties[i].SculptFile + " failed to upload, skipping " + sculpties[i].Name);
                     continue;
                 }
-                else if (sculpties[i].TextureID == LLUUID.Zero)
+                else if (sculpties[i].TextureID == UUID.Zero)
                 {
                     Console.WriteLine("Texture " + sculpties[i].TextureFile + " failed to upload, skipping " + sculpties[i].Name);
                     continue;
@@ -163,8 +163,8 @@ namespace importprimscript
 
                 // Rez this prim
                 CurrentSculpt = sculpties[i];
-                Client.Objects.AddPrim(Client.Network.CurrentSim, volume, LLUUID.Zero, 
-                    RootPosition + CurrentSculpt.Offset, CurrentSculpt.Scale, LLQuaternion.Identity);
+                Client.Objects.AddPrim(Client.Network.CurrentSim, volume, UUID.Zero, 
+                    RootPosition + CurrentSculpt.Offset, CurrentSculpt.Scale, Quaternion.Identity);
 
                 // Wait for the prim to rez and the properties be set for it
                 if (!RezzedEvent.WaitOne(1000 * 10, false))
@@ -197,9 +197,9 @@ namespace importprimscript
                 Console.WriteLine(level + ": " + message);
         }
 
-        static LLUUID UploadImage(string filename, bool lossless)
+        static UUID UploadImage(string filename, bool lossless)
         {
-            LLUUID newAssetID = LLUUID.Zero;
+            UUID newAssetID = UUID.Zero;
             byte[] jp2data = null;
 
             try
@@ -210,7 +210,7 @@ namespace importprimscript
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to encode image file " + filename + ": " + ex.ToString());
-                return LLUUID.Zero;
+                return UUID.Zero;
             }
 
             AutoResetEvent uploadEvent = new AutoResetEvent(false);
@@ -222,7 +222,7 @@ namespace importprimscript
                     // FIXME: Do something with progress?
                 },
 
-                delegate(bool success, string status, LLUUID itemID, LLUUID assetID)
+                delegate(bool success, string status, UUID itemID, UUID assetID)
                 {
                     if (success)
                     {
@@ -308,7 +308,7 @@ namespace importprimscript
                             switch (words[0])
                             {
                                 case "newPrim":
-                                    if (current.Scale != LLVector3.Zero &&
+                                    if (current.Scale != Vector3.Zero &&
                                         !String.IsNullOrEmpty(current.SculptFile) &&
                                         !String.IsNullOrEmpty(current.TextureFile))
                                     {
@@ -343,12 +343,12 @@ namespace importprimscript
                                         x = Single.Parse(words[2]);
                                         y = Single.Parse(words[3]);
                                         z = Single.Parse(words[4]);
-                                        current.Scale = new LLVector3(x, y, z);
+                                        current.Scale = new Vector3(x, y, z);
 
                                         x = Single.Parse(words[6]);
                                         y = Single.Parse(words[7]);
                                         z = Single.Parse(words[8]);
-                                        current.Offset = new LLVector3(x, y, z);
+                                        current.Offset = new Vector3(x, y, z);
                                     }
                                     break;
                             }
@@ -362,7 +362,7 @@ namespace importprimscript
                 }
 
                 // Add the final prim
-                if (current != null && current.Scale != LLVector3.Zero &&
+                if (current != null && current.Scale != Vector3.Zero &&
                     !String.IsNullOrEmpty(current.SculptFile) &&
                     !String.IsNullOrEmpty(current.TextureFile))
                 {

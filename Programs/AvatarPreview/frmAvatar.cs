@@ -196,7 +196,7 @@ namespace AvatarPreview
 
             Glu.gluPerspective(50.0d, 1.0d, 0.001d, 50d);
 
-            LLVector3 center = LLVector3.Zero;
+            Vector3 center = Vector3.Zero;
             GLMesh head, lowerBody;
             if (_meshes.TryGetValue("headMesh", out head) && _meshes.TryGetValue("lowerBodyMesh", out lowerBody))
                 center = (head.RenderData.Center + lowerBody.RenderData.Center) / 2f;

@@ -285,13 +285,13 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void SerializeUUID()
         {
-            LLSD llsdOne = LLSD.FromUUID(new LLUUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
+            LLSD llsdOne = LLSD.FromUUID(new UUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
             string sOne = LLSDParser.SerializeNotation(llsdOne);
             LLSD llsdOneDS = LLSDParser.DeserializeNotation(sOne);
             Assert.AreEqual(LLSDType.UUID, llsdOneDS.Type);
             Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdOneDS.AsString());
 
-            LLSD llsdTwo = LLSD.FromUUID(new LLUUID("00000000-0000-0000-0000-000000000000"));
+            LLSD llsdTwo = LLSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
             string sTwo = LLSDParser.SerializeNotation(llsdTwo);
             LLSD llsdTwoDS = LLSDParser.DeserializeNotation(sTwo);
             Assert.AreEqual(LLSDType.UUID, llsdTwoDS.Type);

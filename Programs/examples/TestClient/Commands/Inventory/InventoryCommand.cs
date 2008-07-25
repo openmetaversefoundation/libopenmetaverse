@@ -21,7 +21,7 @@ namespace OpenMetaverse.TestClient
             Description = "Prints out inventory.";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             Manager = Client.Inventory;
             Inventory = Manager.Store;

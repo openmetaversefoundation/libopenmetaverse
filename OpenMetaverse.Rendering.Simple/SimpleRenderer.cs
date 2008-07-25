@@ -61,7 +61,7 @@ namespace OpenMetaverse.Rendering
             return mesh;
         }
 
-        public void TransformTexCoords(List<Vertex> vertices, LLVector3 center, LLObject.TextureEntryFace teFace)
+        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, LLObject.TextureEntryFace teFace)
         {
             // Lalala...
         }
@@ -77,7 +77,7 @@ namespace OpenMetaverse.Rendering
         {
             Profile profile = new Profile();
             profile.Faces = new List<ProfileFace>();
-            profile.Positions = new List<LLVector3>();
+            profile.Positions = new List<Vector3>();
             return profile;
         }
 
@@ -88,25 +88,25 @@ namespace OpenMetaverse.Rendering
             Vertex v = new Vertex();
 
             // FIXME: Implement these
-            v.Binormal = LLVector3.Zero;
-            v.Normal = LLVector3.Zero;
-            v.TexCoord = LLVector2.Zero;
+            v.Binormal = Vector3.Zero;
+            v.Normal = Vector3.Zero;
+            v.TexCoord = Vector2.Zero;
 
-            v.Position = new LLVector3(0.5f, 0.5f, -0.5f);
+            v.Position = new Vector3(0.5f, 0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(0.5f, -0.5f, -0.5f);
+            v.Position = new Vector3(0.5f, -0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(-0.5f, -0.5f, -0.5f);
+            v.Position = new Vector3(-0.5f, -0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(-0.5f, 0.5f, -0.5f);
+            v.Position = new Vector3(-0.5f, 0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(0.5f, 0.5f, 0.5f);
+            v.Position = new Vector3(0.5f, 0.5f, 0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(0.5f, -0.5f, 0.5f);
+            v.Position = new Vector3(0.5f, -0.5f, 0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(-0.5f, -0.5f, 0.5f);
+            v.Position = new Vector3(-0.5f, -0.5f, 0.5f);
             vertices.Add(v);
-            v.Position = new LLVector3(-0.5f, 0.5f, 0.5f);
+            v.Position = new Vector3(-0.5f, 0.5f, 0.5f);
             vertices.Add(v);
 
             return vertices;

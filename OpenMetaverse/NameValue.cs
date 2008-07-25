@@ -239,7 +239,7 @@ namespace OpenMetaverse
                 }
                 case ValueType.VEC3:
                 {
-                    LLVector3 temp;
+                    Vector3 temp;
                     Helpers.TryParse(value, out temp);
                     Value = temp;
                     break;

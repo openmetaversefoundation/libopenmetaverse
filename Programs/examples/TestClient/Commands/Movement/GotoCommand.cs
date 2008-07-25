@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Teleport to a location (e.g. \"goto Hooper/100/100/30\")";
 		}
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
 		{
 			if (args.Length < 1)
                 return "Usage: goto sim/x/y/z";
@@ -41,7 +41,7 @@ namespace OpenMetaverse.TestClient
                 return "Usage: goto sim/x/y/z";
             }
 
-            if (Client.Self.Teleport(sim, new LLVector3(x, y, z)))
+            if (Client.Self.Teleport(sim, new Vector3(x, y, z)))
                 return "Teleported to " + Client.Network.CurrentSim;
             else
                 return "Teleport failed: " + Client.Self.TeleportMessage;

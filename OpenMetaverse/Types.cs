@@ -35,10 +35,10 @@ namespace OpenMetaverse
     /// Life networking protocol
     /// </summary>
     [Serializable]
-    public struct LLUUID : IComparable
+    public struct UUID : IComparable
     {
         /// <summary>The System.Guid object this struct wraps around</summary>
-        public Guid UUID;
+        public Guid Guid;
 
         #region Constructors
 
@@ -48,12 +48,12 @@ namespace OpenMetaverse
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
-        public LLUUID(string val)
+        public UUID(string val)
         {
             if (String.IsNullOrEmpty(val))
-                UUID = new Guid();
+                Guid = new Guid();
             else
-                UUID = new Guid(val);
+                Guid = new Guid(val);
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="val">A Guid object that contains the unique identifier
         /// to be represented by this LLUUID</param>
-        public LLUUID(Guid val)
+        public UUID(Guid val)
         {
-            UUID = val;
+            Guid = val;
         }
 
         /// <summary>
@@ -71,9 +71,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="source">Byte array containing a 16 byte UUID</param>
         /// <param name="pos">Beginning offset in the array</param>
-        public LLUUID(byte[] source, int pos)
+        public UUID(byte[] source, int pos)
         {
-            UUID = LLUUID.Zero.UUID;
+            Guid = UUID.Zero.Guid;
             FromBytes(source, pos);
         }
 
@@ -82,18 +82,18 @@ namespace OpenMetaverse
         /// convert to a UUID
         /// </summary>
         /// <param name="val">64-bit unsigned integer to convert to a UUID</param>
-        public LLUUID(ulong val)
+        public UUID(ulong val)
         {
-            UUID = new Guid(0, 0, 0, BitConverter.GetBytes(val));
+            Guid = new Guid(0, 0, 0, BitConverter.GetBytes(val));
         }
 
         /// <summary>
         /// Copy constructor
         /// </summary>
         /// <param name="val">UUID to copy</param>
-        public LLUUID(LLUUID val)
+        public UUID(UUID val)
         {
-            UUID = val.UUID;
+            Guid = val.Guid;
         }
 
         #endregion Constructors
@@ -105,10 +105,10 @@ namespace OpenMetaverse
         /// </summary>
         public int CompareTo(object obj)
         {
-            if (obj is LLUUID)
+            if (obj is UUID)
             {
-                LLUUID ID = (LLUUID)obj;
-                return this.UUID.CompareTo(ID.UUID);
+                UUID ID = (UUID)obj;
+                return this.Guid.CompareTo(ID.Guid);
             }
 
             throw new ArgumentException("object is not a LLUUID");
@@ -121,7 +121,7 @@ namespace OpenMetaverse
         /// <param name="pos"></param>
         public void FromBytes(byte[] source, int pos)
         {
-            UUID = new Guid(
+            Guid = new Guid(
                 (source[pos + 0] << 24) | (source[pos + 1] << 16) | (source[pos + 2] << 8) | source[pos + 3],
                 (short)((source[pos + 4] << 8) | source[pos + 5]),
                 (short)((source[pos + 6] << 8) | source[pos + 7]),
@@ -135,7 +135,7 @@ namespace OpenMetaverse
         /// <returns>A 16 byte array containing this UUID</returns>
         public byte[] GetBytes()
         {
-            byte[] bytes = UUID.ToByteArray();
+            byte[] bytes = Guid.ToByteArray();
             byte[] output = new byte[16];
             output[0] = bytes[3];
             output[1] = bytes[2];
@@ -173,7 +173,7 @@ namespace OpenMetaverse
         /// <returns>An integer created from the first eight bytes of this UUID</returns>
         public ulong GetULong()
         {
-            return Helpers.BytesToUInt64(UUID.ToByteArray());
+            return Helpers.BytesToUInt64(Guid.ToByteArray());
         }
 
         #endregion Public Methods
@@ -186,9 +186,9 @@ namespace OpenMetaverse
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
         /// <example>LLUUID.Parse("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
-        public static LLUUID Parse(string val)
+        public static UUID Parse(string val)
         {
-            return new LLUUID(val);
+            return new UUID(val);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace OpenMetaverse
         /// otherwise null</param>
         /// <returns>True if the string was successfully parse, otherwise false</returns>
         /// <example>LLUUID.TryParse("11f8aa9c-b071-4242-836b-13b7abe0d489", result)</example>
-        public static bool TryParse(string val, out LLUUID result)
+        public static bool TryParse(string val, out UUID result)
         {
             try
             {
@@ -209,7 +209,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = LLUUID.Zero;
+                result = UUID.Zero;
                 return false;
             }
         }
@@ -221,23 +221,23 @@ namespace OpenMetaverse
         /// <param name="first">First LLUUID to combine</param>
         /// <param name="second">Second LLUUID to combine</param>
         /// <returns>The UUID product of the combination</returns>
-        public static LLUUID Combine(LLUUID first, LLUUID second)
+        public static UUID Combine(UUID first, UUID second)
         {
             // Construct the buffer that MD5ed
             byte[] input = new byte[32];
             Buffer.BlockCopy(first.GetBytes(), 0, input, 0, 16);
             Buffer.BlockCopy(second.GetBytes(), 0, input, 16, 16);
 
-            return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
+            return new UUID(Helpers.MD5Builder.ComputeHash(input), 0);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-		public static LLUUID Random()
+		public static UUID Random()
 		{
-			return new LLUUID(Guid.NewGuid());
+			return new UUID(Guid.NewGuid());
         }
 
         #endregion Static Methods
@@ -250,7 +250,7 @@ namespace OpenMetaverse
         /// <returns>An integer composed of all the UUID bytes XORed together</returns>
 		public override int GetHashCode()
 		{
-            return UUID.GetHashCode();
+            return Guid.GetHashCode();
 		}
 
         /// <summary>
@@ -261,10 +261,10 @@ namespace OpenMetaverse
         /// byte for byte identical to this</returns>
 		public override bool Equals(object o)
 		{
-			if (!(o is LLUUID)) return false;
+			if (!(o is UUID)) return false;
 
-			LLUUID uuid = (LLUUID)o;
-            return UUID == uuid.UUID;
+			UUID uuid = (UUID)o;
+            return Guid == uuid.Guid;
         }
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace OpenMetaverse
         /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
         public override string ToString()
         {
-            return UUID.ToString();
+            return Guid.ToString();
         }
 
         #endregion Overrides
@@ -288,9 +288,9 @@ namespace OpenMetaverse
         /// <param name="lhs">First LLUUID for comparison</param>
         /// <param name="rhs">Second LLUUID for comparison</param>
         /// <returns>True if the UUIDs are byte for byte equal, otherwise false</returns>
-		public static bool operator==(LLUUID lhs, LLUUID rhs)
+		public static bool operator==(UUID lhs, UUID rhs)
 		{
-            return lhs.UUID == rhs.UUID;
+            return lhs.Guid == rhs.Guid;
 		}
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace OpenMetaverse
         /// <param name="lhs">First LLUUID for comparison</param>
         /// <param name="rhs">Second LLUUID for comparison</param>
         /// <returns>True if the UUIDs are not equal, otherwise true</returns>
-		public static bool operator!=(LLUUID lhs, LLUUID rhs)
+		public static bool operator!=(UUID lhs, UUID rhs)
 		{
 			return !(lhs == rhs);
 		}
@@ -310,7 +310,7 @@ namespace OpenMetaverse
         /// <param name="lhs">First LLUUID</param>
         /// <param name="rhs">Second LLUUID</param>
         /// <returns>A UUID that is a XOR combination of the two input UUIDs</returns>
-        public static LLUUID operator ^(LLUUID lhs, LLUUID rhs)
+        public static UUID operator ^(UUID lhs, UUID rhs)
         {
             byte[] lhsbytes = lhs.GetBytes();
             byte[] rhsbytes = rhs.GetBytes();
@@ -321,7 +321,7 @@ namespace OpenMetaverse
                 output[i] = (byte)(lhsbytes[i] ^ rhsbytes[i]);
             }
 
-            return new LLUUID(output, 0);
+            return new UUID(output, 0);
         }
 
         /// <summary>
@@ -330,22 +330,22 @@ namespace OpenMetaverse
         /// <param name="val">A UUID in string form. Case insensitive, 
         /// hyphenated or non-hyphenated</param>
         /// <returns>A UUID built from the string representation</returns>
-        public static implicit operator LLUUID(string val)
+        public static implicit operator UUID(string val)
 		{
-			return new LLUUID(val);
+			return new UUID(val);
         }
 
         #endregion Operators
 
         /// <summary>An LLUUID with a value of all zeroes</summary>
-        public static readonly LLUUID Zero = new LLUUID();
+        public static readonly UUID Zero = new UUID();
 	}
 
     /// <summary>
     /// A two-dimensional vector with floating-point values
     /// </summary>
     [Serializable]
-    public struct LLVector2
+    public struct Vector2
     {
         /// <summary>X value</summary>
         public float X;
@@ -415,7 +415,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="x">X value</param>
         /// <param name="y">Y value</param>
-		public LLVector2(float x, float y)
+		public Vector2(float x, float y)
 		{
             conversionBuffer = null;
 			X = x;
@@ -426,7 +426,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="vector">Vector to copy</param>
-        public LLVector2(LLVector2 vector)
+        public Vector2(Vector2 vector)
         {
             conversionBuffer = null;
             X = vector.X;
@@ -453,9 +453,9 @@ namespace OpenMetaverse
         /// <returns></returns>
         public override bool Equals(object o)
         {
-            if (!(o is LLVector2)) return false;
+            if (!(o is Vector2)) return false;
 
-            LLVector2 vector = (LLVector2)o;
+            Vector2 vector = (Vector2)o;
 
             return (X == vector.X && Y == vector.Y);
         }
@@ -473,67 +473,67 @@ namespace OpenMetaverse
 
         #region Operators
 
-        public static bool operator ==(LLVector2 lhs, LLVector2 rhs)
+        public static bool operator ==(Vector2 lhs, Vector2 rhs)
         {
             return (lhs.X == rhs.X && lhs.Y == rhs.Y);
         }
 
-        public static bool operator !=(LLVector2 lhs, LLVector2 rhs)
+        public static bool operator !=(Vector2 lhs, Vector2 rhs)
         {
             return !(lhs == rhs);
         }
 
-        public static LLVector2 operator +(LLVector2 lhs, LLVector2 rhs)
+        public static Vector2 operator +(Vector2 lhs, Vector2 rhs)
         {
-            return new LLVector2(lhs.X + rhs.X, lhs.Y + rhs.Y);
+            return new Vector2(lhs.X + rhs.X, lhs.Y + rhs.Y);
         }
 
-        public static LLVector2 operator -(LLVector2 vec)
+        public static Vector2 operator -(Vector2 vec)
         {
-            return new LLVector2(-vec.X, -vec.Y);
+            return new Vector2(-vec.X, -vec.Y);
         }
 
-        public static LLVector2 operator -(LLVector2 lhs, LLVector2 rhs)
+        public static Vector2 operator -(Vector2 lhs, Vector2 rhs)
         {
-            return new LLVector2(lhs.X - rhs.X, lhs.Y - rhs.Y);
+            return new Vector2(lhs.X - rhs.X, lhs.Y - rhs.Y);
         }
 
-        public static LLVector2 operator *(LLVector2 vec, float val)
+        public static Vector2 operator *(Vector2 vec, float val)
         {
-            return new LLVector2(vec.X * val, vec.Y * val);
+            return new Vector2(vec.X * val, vec.Y * val);
         }
 
-        public static LLVector2 operator *(float val, LLVector2 vec)
+        public static Vector2 operator *(float val, Vector2 vec)
         {
-            return new LLVector2(vec.X * val, vec.Y * val);
+            return new Vector2(vec.X * val, vec.Y * val);
         }
 
-        public static LLVector2 operator *(LLVector2 lhs, LLVector2 rhs)
+        public static Vector2 operator *(Vector2 lhs, Vector2 rhs)
         {
-            return new LLVector2(lhs.X * rhs.X, lhs.Y * rhs.Y);
+            return new Vector2(lhs.X * rhs.X, lhs.Y * rhs.Y);
         }
 
-        public static LLVector2 operator /(LLVector2 lhs, LLVector2 rhs)
+        public static Vector2 operator /(Vector2 lhs, Vector2 rhs)
         {
-            return new LLVector2(lhs.X / rhs.X, lhs.Y / rhs.Y);
+            return new Vector2(lhs.X / rhs.X, lhs.Y / rhs.Y);
         }
 
-        public static LLVector2 operator /(LLVector2 vec, float val)
+        public static Vector2 operator /(Vector2 vec, float val)
         {
-            return new LLVector2(vec.X / val, vec.Y / val);
+            return new Vector2(vec.X / val, vec.Y / val);
         }
 
         #endregion Operators
 
         /// <summary>An LLVector2 with a value of 0,0,0</summary>
-        public readonly static LLVector2 Zero = new LLVector2();
+        public readonly static Vector2 Zero = new Vector2();
     }
 
     /// <summary>
     /// A three-dimensional vector with floating-point values
     /// </summary>
     [Serializable]
-	public struct LLVector3
+	public struct Vector3
 	{
         /// <summary>X value</summary>
         public float X;
@@ -552,7 +552,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="byteArray">Byte array containing three four-byte floats</param>
         /// <param name="pos">Beginning position in the byte array</param>
-		public LLVector3(byte[] byteArray, int pos)
+		public Vector3(byte[] byteArray, int pos)
 		{
             conversionBuffer = null;
             X = Y = Z = 0;
@@ -565,7 +565,7 @@ namespace OpenMetaverse
         /// <param name="x">X value</param>
         /// <param name="y">Y value</param>
         /// <param name="z">Z value</param>
-		public LLVector3(float x, float y, float z)
+		public Vector3(float x, float y, float z)
 		{
             conversionBuffer = null;
 			X = x;
@@ -577,7 +577,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="vector">Vector to copy</param>
-        public LLVector3(LLVector3 vector)
+        public Vector3(Vector3 vector)
         {
             conversionBuffer = null;
             X = (float)vector.X;
@@ -678,7 +678,7 @@ namespace OpenMetaverse
                 }
             }
 
-            this = LLVector3.Zero;
+            this = Vector3.Zero;
         }
 
         //FIXME: Need comprehensive testing for this
@@ -705,7 +705,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Calculate the magnitude of the supplied vector
         /// </summary>
-        public static float Mag(LLVector3 v)
+        public static float Mag(Vector3 v)
         {
             return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
         }
@@ -715,7 +715,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static float MagSquared(LLVector3 v)
+        public static float MagSquared(Vector3 v)
         {
             return v.X * v.X + v.Y * v.Y + v.Z * v.Z;
         }
@@ -725,10 +725,10 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="vector">The vector to normalize</param>
         /// <returns>A normalized version of the vector</returns>
-        public static LLVector3 Norm(LLVector3 vector)
+        public static Vector3 Norm(Vector3 vector)
         {
             float mag = Mag(vector);
-            return new LLVector3(vector.X / mag, vector.Y / mag, vector.Z / mag);
+            return new Vector3(vector.X / mag, vector.Y / mag, vector.Z / mag);
         }
 
         /// <summary>
@@ -737,9 +737,9 @@ namespace OpenMetaverse
         /// <param name="v1">First vector</param>
         /// <param name="v2">Second vector</param>
         /// <returns>Cross product of first and second vector</returns>
-        public static LLVector3 Cross(LLVector3 v1, LLVector3 v2)
+        public static Vector3 Cross(Vector3 v1, Vector3 v2)
         {
-            return new LLVector3
+            return new Vector3
             (
                 v1.Y * v2.Z - v1.Z * v2.Y,
                 v1.Z * v2.X - v1.X * v2.Z,
@@ -750,7 +750,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Returns the dot product of two vectors
         /// </summary>
-        public static float Dot(LLVector3 v1, LLVector3 v2)
+        public static float Dot(Vector3 v1, Vector3 v2)
         {
             return (v1.X * v2.X) + (v1.Y * v2.Y) + (v1.Z * v2.Z);
         }
@@ -758,7 +758,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Calculates the distance between two vectors
         /// </summary>
-        public static float Dist(LLVector3 pointA, LLVector3 pointB)
+        public static float Dist(Vector3 pointA, Vector3 pointB)
         {
             float xd = pointB.X - pointA.X;
             float yd = pointB.Y - pointA.Y;
@@ -766,12 +766,12 @@ namespace OpenMetaverse
             return (float)Math.Sqrt(xd * xd + yd * yd + zd * zd);
         }
 
-        public static LLVector3 Rot(LLVector3 vector, LLQuaternion rotation)
+        public static Vector3 Rot(Vector3 vector, Quaternion rotation)
         {
             return vector * rotation;
         }
 
-        public static LLVector3 Rot(LLVector3 vector, LLMatrix3 rotation)
+        public static Vector3 Rot(Vector3 vector, Matrix3 rotation)
         {
             return vector * rotation;
         }
@@ -781,28 +781,28 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="a">Directional vector, such as 1,0,0 for the forward face</param>
         /// <param name="b">Target vector - normalize first with VecNorm</param>
-        public static LLQuaternion RotBetween(LLVector3 a, LLVector3 b)
+        public static Quaternion RotBetween(Vector3 a, Vector3 b)
         {
             //A and B should both be normalized
 
             float dotProduct = Dot(a, b);
-            LLVector3 crossProduct = Cross(a, b);
+            Vector3 crossProduct = Cross(a, b);
             float magProduct = Mag(a) * Mag(b);
             double angle = Math.Acos(dotProduct / magProduct);
-            LLVector3 axis = Norm(crossProduct);
+            Vector3 axis = Norm(crossProduct);
             float s = (float)Math.Sin(angle / 2);
 
-            return new LLQuaternion(
+            return new Quaternion(
                 axis.X * s,
                 axis.Y * s,
                 axis.Z * s,
                 (float)Math.Cos(angle / 2));
         }
 
-        public static LLVector3 Transform(LLVector3 vector, LLMatrix3 matrix)
+        public static Vector3 Transform(Vector3 vector, Matrix3 matrix)
         {
             // Operates "from the right" on row vector
-            return new LLVector3(
+            return new Vector3(
                 vector.X * matrix.M11 + vector.Y * matrix.M21 + vector.Z * matrix.M31,
                 vector.X * matrix.M12 + vector.Y * matrix.M22 + vector.Z * matrix.M32,
                 vector.X * matrix.M13 + vector.Y * matrix.M23 + vector.Z * matrix.M33
@@ -814,17 +814,17 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="val">A string representation of a 3D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
-        public static LLVector3 Parse(string val)
+        public static Vector3 Parse(string val)
         {
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new LLVector3(
+            return new Vector3(
                 float.Parse(split[0].Trim(), Helpers.EnUsCulture),
                 float.Parse(split[1].Trim(), Helpers.EnUsCulture),
                 float.Parse(split[2].Trim(), Helpers.EnUsCulture));
         }
 
-        public static bool TryParse(string val, out LLVector3 result)
+        public static bool TryParse(string val, out Vector3 result)
         {
             try
             {
@@ -833,7 +833,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = new LLVector3();
+                result = new Vector3();
                 return false;
             }
         }
@@ -858,9 +858,9 @@ namespace OpenMetaverse
         /// <returns></returns>
 		public override bool Equals(object o)
 		{
-			if (!(o is LLVector3)) return false;
+			if (!(o is Vector3)) return false;
 
-			LLVector3 vector = (LLVector3)o;
+			Vector3 vector = (Vector3)o;
 
 			return (X == vector.X && Y == vector.Y && Z == vector.Z);
         }
@@ -878,47 +878,47 @@ namespace OpenMetaverse
 
         #region Operators
 
-		public static bool operator==(LLVector3 lhs, LLVector3 rhs)
+		public static bool operator==(Vector3 lhs, Vector3 rhs)
 		{
 			return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
 
-		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)
+		public static bool operator!=(Vector3 lhs, Vector3 rhs)
 		{
             return !(lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
 
-        public static LLVector3 operator +(LLVector3 lhs, LLVector3 rhs)
+        public static Vector3 operator +(Vector3 lhs, Vector3 rhs)
         {
-            return new LLVector3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+            return new Vector3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
         }
 
-        public static LLVector3 operator -(LLVector3 vec)
+        public static Vector3 operator -(Vector3 vec)
         {
-            return new LLVector3(-vec.X, -vec.Y, -vec.Z);
+            return new Vector3(-vec.X, -vec.Y, -vec.Z);
         }
 
-        public static LLVector3 operator -(LLVector3 lhs, LLVector3 rhs)
+        public static Vector3 operator -(Vector3 lhs, Vector3 rhs)
         {
-            return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+            return new Vector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
         }
 
-        public static LLVector3 operator *(LLVector3 vec, float val)
+        public static Vector3 operator *(Vector3 vec, float val)
         {
-            return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
+            return new Vector3(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
-        public static LLVector3 operator *(float val, LLVector3 vec)
+        public static Vector3 operator *(float val, Vector3 vec)
         {
-            return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
+            return new Vector3(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
-        public static LLVector3 operator *(LLVector3 lhs, LLVector3 rhs)
+        public static Vector3 operator *(Vector3 lhs, Vector3 rhs)
         {
-            return new LLVector3(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
+            return new Vector3(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
         }
 
-        public static LLVector3 operator *(LLVector3 vec, LLQuaternion rot)
+        public static Vector3 operator *(Vector3 vec, Quaternion rot)
         {
             float rw = -rot.X * vec.X - rot.Y * vec.Y - rot.Z * vec.Z;
             float rx =  rot.W * vec.X + rot.Y * vec.Z - rot.Z * vec.Y;
@@ -929,27 +929,27 @@ namespace OpenMetaverse
             float ny = -rw * rot.Y + ry * rot.W - rz * rot.X + rx * rot.Z;
             float nz = -rw * rot.Z + rz * rot.W - rx * rot.Y + ry * rot.X;
 
-            return new LLVector3(nx, ny, nz);
+            return new Vector3(nx, ny, nz);
         }
 
-        public static LLVector3 operator *(LLVector3 vector, LLMatrix3 matrix)
+        public static Vector3 operator *(Vector3 vector, Matrix3 matrix)
         {
-            return LLVector3.Transform(vector, matrix);
+            return Vector3.Transform(vector, matrix);
         }
 
-        public static LLVector3 operator /(LLVector3 lhs, LLVector3 rhs)
+        public static Vector3 operator /(Vector3 lhs, Vector3 rhs)
         {
-            return new LLVector3(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
+            return new Vector3(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
         }
 
-        public static LLVector3 operator /(LLVector3 vec, float val)
+        public static Vector3 operator /(Vector3 vec, float val)
         {
-            return new LLVector3(vec.X / val, vec.Y / val, vec.Z / val);
+            return new Vector3(vec.X / val, vec.Y / val, vec.Z / val);
         }
 
-        public static LLVector3 operator %(LLVector3 lhs, LLVector3 rhs)
+        public static Vector3 operator %(Vector3 lhs, Vector3 rhs)
         {
-            return new LLVector3(
+            return new Vector3(
                 lhs.Y * rhs.Z - rhs.Y * lhs.Z,
                 lhs.Z * rhs.X - rhs.Z * lhs.X,
                 lhs.X * rhs.Y - rhs.X * lhs.Y);
@@ -958,20 +958,20 @@ namespace OpenMetaverse
         #endregion Operators
 
         /// <summary>An LLVector3 with a value of 0,0,0</summary>
-        public readonly static LLVector3 Zero = new LLVector3();
+        public readonly static Vector3 Zero = new Vector3();
         /// <summary>A unit vector facing up (Z axis)</summary>
-        public readonly static LLVector3 Up = new LLVector3(0f, 0f, 1f);
+        public readonly static Vector3 Up = new Vector3(0f, 0f, 1f);
         /// <summary>A unit vector facing forward (X axis)</summary>
-        public readonly static LLVector3 Fwd = new LLVector3(1f, 0f, 0f);
+        public readonly static Vector3 Fwd = new Vector3(1f, 0f, 0f);
         /// <summary>A unit vector facing left (Y axis)</summary>
-        public readonly static LLVector3 Left = new LLVector3(0f, 1f, 0f);
+        public readonly static Vector3 Left = new Vector3(0f, 1f, 0f);
 	}
 
     /// <summary>
     /// A double-precision three-dimensional vector
     /// </summary>
 	[Serializable]
-    public struct LLVector3d
+    public struct Vector3d
 	{
         /// <summary>X value</summary>
         public double X;
@@ -991,7 +991,7 @@ namespace OpenMetaverse
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-		public LLVector3d(double x, double y, double z)
+		public Vector3d(double x, double y, double z)
 		{
             conversionBuffer = null;
 			X = x;
@@ -1003,7 +1003,7 @@ namespace OpenMetaverse
         /// Create a double precision vector from a float vector
         /// </summary>
         /// <param name="llv3"></param>
-        public LLVector3d(LLVector3 llv3)
+        public Vector3d(Vector3 llv3)
         {
             conversionBuffer = null;
             X = llv3.X;
@@ -1016,7 +1016,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="byteArray"></param>
         /// <param name="pos"></param>
-		public LLVector3d(byte[] byteArray, int pos)
+		public Vector3d(byte[] byteArray, int pos)
 		{
             conversionBuffer = null;
             X = Y = Z = 0;
@@ -1027,7 +1027,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="vector">Vector to copy</param>
-        public LLVector3d(LLVector3d vector)
+        public Vector3d(Vector3d vector)
         {
             conversionBuffer = null;
             X = vector.X;
@@ -1118,7 +1118,7 @@ namespace OpenMetaverse
                 }
             }
 
-            this = LLVector3d.Zero;
+            this = Vector3d.Zero;
         }
 
         #endregion Public Methods
@@ -1128,7 +1128,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Calculates the distance between two vectors
         /// </summary>
-        public static double Dist(LLVector3d pointA, LLVector3d pointB)
+        public static double Dist(Vector3d pointA, Vector3d pointB)
         {
             double xd = pointB.X - pointA.X;
             double yd = pointB.Y - pointA.Y;
@@ -1141,17 +1141,17 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="val">A string representation of a 3D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
-        public static LLVector3d Parse(string val)
+        public static Vector3d Parse(string val)
         {
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new LLVector3d(
+            return new Vector3d(
                 double.Parse(split[0].Trim(), Helpers.EnUsCulture),
                 double.Parse(split[1].Trim(), Helpers.EnUsCulture),
                 double.Parse(split[2].Trim(), Helpers.EnUsCulture));
         }
 
-        public static bool TryParse(string val, out LLVector3d result)
+        public static bool TryParse(string val, out Vector3d result)
         {
             try
             {
@@ -1160,7 +1160,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = new LLVector3d();
+                result = new Vector3d();
                 return false;
             }
         }
@@ -1185,9 +1185,9 @@ namespace OpenMetaverse
         /// <returns></returns>
         public override bool Equals(object o)
         {
-            if (!(o is LLVector3d)) return false;
+            if (!(o is Vector3d)) return false;
 
-            LLVector3d vector = (LLVector3d)o;
+            Vector3d vector = (Vector3d)o;
 
             return (X == vector.X && Y == vector.Y && Z == vector.Z);
         }
@@ -1205,59 +1205,59 @@ namespace OpenMetaverse
 
         #region Operators
 
-        public static bool operator ==(LLVector3d lhs, LLVector3d rhs)
+        public static bool operator ==(Vector3d lhs, Vector3d rhs)
         {
             return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
         }
 
-        public static bool operator !=(LLVector3d lhs, LLVector3d rhs)
+        public static bool operator !=(Vector3d lhs, Vector3d rhs)
         {
             return !(lhs == rhs);
         }
 
-        public static LLVector3d operator +(LLVector3d lhs, LLVector3d rhs)
+        public static Vector3d operator +(Vector3d lhs, Vector3d rhs)
         {
-            return new LLVector3d(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+            return new Vector3d(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
         }
 
-        public static LLVector3d operator -(LLVector3d vec)
+        public static Vector3d operator -(Vector3d vec)
         {
-            return new LLVector3d(-vec.X, -vec.Y, -vec.Z);
+            return new Vector3d(-vec.X, -vec.Y, -vec.Z);
         }
 
-        public static LLVector3d operator -(LLVector3d lhs, LLVector3d rhs)
+        public static Vector3d operator -(Vector3d lhs, Vector3d rhs)
         {
-            return new LLVector3d(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+            return new Vector3d(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
         }
 
-        public static LLVector3d operator *(LLVector3d vec, float val)
+        public static Vector3d operator *(Vector3d vec, float val)
         {
-            return new LLVector3d(vec.X * val, vec.Y * val, vec.Z * val);
+            return new Vector3d(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
-        public static LLVector3d operator *(double val, LLVector3d vec)
+        public static Vector3d operator *(double val, Vector3d vec)
         {
-            return new LLVector3d(vec.X * val, vec.Y * val, vec.Z * val);
+            return new Vector3d(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
-        public static LLVector3d operator *(LLVector3d lhs, LLVector3d rhs)
+        public static Vector3d operator *(Vector3d lhs, Vector3d rhs)
         {
-            return new LLVector3d(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
+            return new Vector3d(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
         }
 
-        public static LLVector3d operator /(LLVector3d lhs, LLVector3d rhs)
+        public static Vector3d operator /(Vector3d lhs, Vector3d rhs)
         {
-            return new LLVector3d(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
+            return new Vector3d(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
         }
 
-        public static LLVector3d operator /(LLVector3d vec, double val)
+        public static Vector3d operator /(Vector3d vec, double val)
         {
-            return new LLVector3d(vec.X / val, vec.Y / val, vec.Z / val);
+            return new Vector3d(vec.X / val, vec.Y / val, vec.Z / val);
         }
 
-        public static LLVector3d operator %(LLVector3d lhs, LLVector3d rhs)
+        public static Vector3d operator %(Vector3d lhs, Vector3d rhs)
         {
-            return new LLVector3d(
+            return new Vector3d(
                 lhs.Y * rhs.Z - rhs.Y * lhs.Z,
                 lhs.Z * rhs.X - rhs.Z * lhs.X,
                 lhs.X * rhs.Y - rhs.X * lhs.Y);
@@ -1266,14 +1266,14 @@ namespace OpenMetaverse
         #endregion Operators
 
         /// <summary>An LLVector3d with a value of 0,0,0</summary>
-        public static readonly LLVector3d Zero = new LLVector3d();
+        public static readonly Vector3d Zero = new Vector3d();
 	}
 
     /// <summary>
     /// A four-dimensional vector
     /// </summary>
 	[Serializable]
-    public struct LLVector4
+    public struct Vector4
 	{
         /// <summary></summary>
         public float X;
@@ -1296,7 +1296,7 @@ namespace OpenMetaverse
         /// <param name="y">Y value</param>
         /// <param name="z">Z value</param>
         /// <param name="s">S value</param>
-        public LLVector4(float x, float y, float z, float s)
+        public Vector4(float x, float y, float z, float s)
         {
             conversionBuffer = null;
             X = x;
@@ -1310,7 +1310,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="byteArray"></param>
         /// <param name="pos"></param>
-		public LLVector4(byte[] byteArray, int pos)
+		public Vector4(byte[] byteArray, int pos)
 		{
             conversionBuffer = null;
             X = Y = Z = S = 0;
@@ -1321,7 +1321,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="vector">Vector to copy</param>
-        public LLVector4(LLVector4 vector)
+        public Vector4(Vector4 vector)
         {
             conversionBuffer = null;
             X = vector.X;
@@ -1420,25 +1420,25 @@ namespace OpenMetaverse
                 }
             }
 
-            this = LLVector4.Zero;
+            this = Vector4.Zero;
         }
 
         #endregion Public Methods
 
         #region Static Methods
 
-        public static LLVector4 Parse(string val)
+        public static Vector4 Parse(string val)
         {
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new LLVector4(
+            return new Vector4(
                 float.Parse(split[0].Trim(), Helpers.EnUsCulture),
                 float.Parse(split[1].Trim(), Helpers.EnUsCulture),
                 float.Parse(split[2].Trim(), Helpers.EnUsCulture),
                 float.Parse(split[3].Trim(), Helpers.EnUsCulture));
         }
 
-        public static bool TryParse(string val, out LLVector4 result)
+        public static bool TryParse(string val, out Vector4 result)
         {
             try
             {
@@ -1447,7 +1447,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = new LLVector4();
+                result = new Vector4();
                 return false;
             }
         }
@@ -1471,9 +1471,9 @@ namespace OpenMetaverse
          /// <returns></returns>
         public override bool Equals(object o)
         {
-            if (!(o is LLVector4)) return false;
+            if (!(o is Vector4)) return false;
 
-            LLVector4 vector = (LLVector4)o;
+            Vector4 vector = (Vector4)o;
             return (X == vector.X && Y == vector.Y && Z == vector.Z && S == vector.S);
         }
         /// <summary>        
@@ -1489,67 +1489,67 @@ namespace OpenMetaverse
 
         #region Operators
 
-        public static bool operator ==(LLVector4 lhs, LLVector4 rhs)
+        public static bool operator ==(Vector4 lhs, Vector4 rhs)
         {
             return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.S == rhs.S);
         }
 
-        public static bool operator !=(LLVector4 lhs, LLVector4 rhs)
+        public static bool operator !=(Vector4 lhs, Vector4 rhs)
         {
             return !(lhs == rhs);
         }
 
-        public static LLVector4 operator +(LLVector4 lhs, LLVector4 rhs)
+        public static Vector4 operator +(Vector4 lhs, Vector4 rhs)
         {
-            return new LLVector4(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.S + rhs.S);
+            return new Vector4(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.S + rhs.S);
         }
 
-        public static LLVector4 operator -(LLVector4 vec)
+        public static Vector4 operator -(Vector4 vec)
         {
-            return new LLVector4(-vec.X, -vec.Y, -vec.Z, -vec.S);
+            return new Vector4(-vec.X, -vec.Y, -vec.Z, -vec.S);
         }
 
-        public static LLVector4 operator -(LLVector4 lhs, LLVector4 rhs)
+        public static Vector4 operator -(Vector4 lhs, Vector4 rhs)
         {
-            return new LLVector4(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z, lhs.S - rhs.S);
+            return new Vector4(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z, lhs.S - rhs.S);
         }
 
-        public static LLVector4 operator *(LLVector4 vec, float val)
+        public static Vector4 operator *(Vector4 vec, float val)
         {
-            return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
+            return new Vector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
         }
 
-        public static LLVector4 operator *(float val, LLVector4 vec)
+        public static Vector4 operator *(float val, Vector4 vec)
         {
-            return new LLVector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
+            return new Vector4(vec.X * val, vec.Y * val, vec.Z * val, vec.S * val);
         }
 
-        public static LLVector4 operator *(LLVector4 lhs, LLVector4 rhs)
+        public static Vector4 operator *(Vector4 lhs, Vector4 rhs)
         {
-            return new LLVector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
+            return new Vector4(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z, lhs.S * rhs.S);
         }
 
-        public static LLVector4 operator /(LLVector4 lhs, LLVector4 rhs)
+        public static Vector4 operator /(Vector4 lhs, Vector4 rhs)
         {
-            return new LLVector4(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z, lhs.S / rhs.S);
+            return new Vector4(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z, lhs.S / rhs.S);
         }
 
-        public static LLVector4 operator /(LLVector4 vec, float val)
+        public static Vector4 operator /(Vector4 vec, float val)
         {
-            return new LLVector4(vec.X / val, vec.Y / val, vec.Z / val, vec.S / val);
+            return new Vector4(vec.X / val, vec.Y / val, vec.Z / val, vec.S / val);
         }
 
         #endregion Operators
 
         /// <summary>An LLVector4 with a value of 0,0,0,0</summary>
-        public readonly static LLVector4 Zero = new LLVector4();
+        public readonly static Vector4 Zero = new Vector4();
 	}
 
     /// <summary>
     /// An 8-bit color structure including an alpha channel
     /// </summary>
     [Serializable]
-    public struct LLColor
+    public struct Color4
     {
         /// <summary>Red</summary>
         public float R;
@@ -1569,7 +1569,7 @@ namespace OpenMetaverse
         /// <param name="g"></param>
         /// <param name="b"></param>
         /// <param name="a"></param>
-        public LLColor(byte r, byte g, byte b, byte a)
+        public Color4(byte r, byte g, byte b, byte a)
         {
             const float quanta = 1.0f / 255.0f;
 
@@ -1579,7 +1579,7 @@ namespace OpenMetaverse
             A = (float)a * quanta;
         }
 
-        public LLColor(float r, float g, float b, float a)
+        public Color4(float r, float g, float b, float a)
         {
             if (r > 1f || g > 1f || b > 1f || a > 1f)
                 Logger.Log(
@@ -1593,13 +1593,13 @@ namespace OpenMetaverse
             A = Helpers.Clamp(a, 0f, 1f);
         }
 
-        public LLColor(byte[] byteArray, int pos, bool inverted)
+        public Color4(byte[] byteArray, int pos, bool inverted)
         {
             R = G = B = A = 0f;
             FromBytes(byteArray, pos, inverted);
         }
 
-        public LLColor(byte[] byteArray, int pos, bool inverted, bool alphaInverted)
+        public Color4(byte[] byteArray, int pos, bool inverted, bool alphaInverted)
         {
             R = G = B = A = 0f;
             FromBytes(byteArray, pos, inverted, alphaInverted);
@@ -1609,7 +1609,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="color">Color to copy</param>
-        public LLColor(LLColor color)
+        public Color4(Color4 color)
         {
             R = color.R;
             G = color.G;
@@ -1719,7 +1719,7 @@ namespace OpenMetaverse
                 }
             }
 
-            this = LLColor.Black;
+            this = Color4.Black;
         }
 
         /// <summary>
@@ -1755,9 +1755,9 @@ namespace OpenMetaverse
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            if (obj is LLColor)
+            if (obj is Color4)
             {
-                LLColor c = (LLColor)obj;
+                Color4 c = (Color4)obj;
                 return (R == c.R) && (G == c.G) && (B == c.B) && (A == c.A);
             }
             return false;
@@ -1782,7 +1782,7 @@ namespace OpenMetaverse
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
         /// <returns></returns>
-        public static bool operator ==(LLColor lhs, LLColor rhs)
+        public static bool operator ==(Color4 lhs, Color4 rhs)
         {
             // Return true if the fields match:
             return lhs.R == rhs.R && lhs.G == rhs.G && lhs.B == rhs.B && lhs.A == rhs.A;
@@ -1794,7 +1794,7 @@ namespace OpenMetaverse
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
         /// <returns></returns>
-        public static bool operator !=(LLColor lhs, LLColor rhs)
+        public static bool operator !=(Color4 lhs, Color4 rhs)
         {
             return !(lhs == rhs);
         }
@@ -1802,14 +1802,14 @@ namespace OpenMetaverse
         #endregion Operators
 
         /// <summary>An LLColor with zero RGB values and full alpha</summary>
-        public readonly static LLColor Black = new LLColor(0f, 0f, 0f, 1f);
+        public readonly static Color4 Black = new Color4(0f, 0f, 0f, 1f);
     }
 
     /// <summary>
     /// A quaternion, used for rotations
     /// </summary>
 	[Serializable]
-    public struct LLQuaternion
+    public struct Quaternion
 	{
         /// <summary>X value</summary>
         public float X;
@@ -1828,11 +1828,11 @@ namespace OpenMetaverse
         /// <summary>
         /// Returns the conjugate (spatial inverse) of this quaternion
         /// </summary>
-        public LLQuaternion Conjugate
+        public Quaternion Conjugate
         {
             get
             {
-                return new LLQuaternion(-this.X, -this.Y, -this.Z, this.W);
+                return new Quaternion(-this.X, -this.Y, -this.Z, this.W);
             }
         }
 
@@ -1848,7 +1848,7 @@ namespace OpenMetaverse
         /// <param name="normalized">Whether the source data is normalized or
         /// not. If this is true 12 bytes will be read, otherwise 16 bytes will
         /// be read.</param>
-        public LLQuaternion(byte[] byteArray, int pos, bool normalized)
+        public Quaternion(byte[] byteArray, int pos, bool normalized)
         {
             conversionBuffer = null;
             X = Y = Z = W = 0;
@@ -1861,7 +1861,7 @@ namespace OpenMetaverse
         /// <param name="x">X value from -1.0 to 1.0</param>
         /// <param name="y">Y value from -1.0 to 1.0</param>
         /// <param name="z">Z value from -1.0 to 1.0</param>
-        public LLQuaternion(float x, float y, float z)
+        public Quaternion(float x, float y, float z)
         {
             conversionBuffer = null;
             X = x;
@@ -1879,7 +1879,7 @@ namespace OpenMetaverse
         /// <param name="y">Y value</param>
         /// <param name="z">Z value</param>
         /// <param name="w">W value</param>
-        public LLQuaternion(float x, float y, float z, float w)
+        public Quaternion(float x, float y, float z, float w)
         {
             conversionBuffer = null;
             X = x;
@@ -1893,7 +1893,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="angle">Angle value</param>
         /// <param name="vec">Vector value</param>
-        public LLQuaternion(float angle, LLVector3 vec)
+        public Quaternion(float angle, Vector3 vec)
         {
             conversionBuffer = null;
             X = Y = Z = W = 0f;
@@ -1904,7 +1904,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="quaternion">Quaternion to copy</param>
-        public LLQuaternion(LLQuaternion quaternion)
+        public Quaternion(Quaternion quaternion)
         {
             conversionBuffer = null;
             X = quaternion.X;
@@ -2056,7 +2056,7 @@ namespace OpenMetaverse
                 }
             }
 
-            this = LLQuaternion.Identity;
+            this = Quaternion.Identity;
         }
 
         //FIXME: Need comprehensive testing for this
@@ -2073,9 +2073,9 @@ namespace OpenMetaverse
         /// matrix if the quaternion is inverse
         /// </summary>
         /// <returns>A matrix representation of this quaternion</returns>
-        public LLMatrix3 ToMatrix()
+        public Matrix3 ToMatrix()
         {
-            LLMatrix3 m;
+            Matrix3 m;
             float xx, xy, xz, xw, yy, yz, yw, zz, zw;
 
             xx = X * X;
@@ -2107,13 +2107,13 @@ namespace OpenMetaverse
 
         public void SetQuaternion(float angle, float x, float y, float z)
         {
-            LLVector3 vec = new LLVector3(x, y, z);
+            Vector3 vec = new Vector3(x, y, z);
             SetQuaternion(angle, vec);
         }
 
-        public void SetQuaternion(float angle, LLVector3 vec)
+        public void SetQuaternion(float angle, Vector3 vec)
         {
-            vec = LLVector3.Norm(vec);
+            vec = Vector3.Norm(vec);
 
             angle *= 0.5f;
             float c = (float)Math.Cos(angle);
@@ -2124,7 +2124,7 @@ namespace OpenMetaverse
             Z = vec.Z * s;
             W = c;
 
-            this = LLQuaternion.Norm(this);
+            this = Quaternion.Norm(this);
         }
 
         #endregion Public Methods
@@ -2136,7 +2136,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="euler">Vector representation of the euler angle</param>
         /// <returns>Quaternion representation of Euler angle</returns>
-        public static LLQuaternion FromEuler(LLVector3 euler)
+        public static Quaternion FromEuler(Vector3 euler)
         {
             double atCos = Math.Cos(euler.X / 2);
             double atSin = Math.Sin(euler.X / 2);
@@ -2146,7 +2146,7 @@ namespace OpenMetaverse
             double upSin = Math.Sin(euler.Z / 2);
             double atLeftCos = atCos * leftCos;
             double atLeftSin = atSin * leftSin;
-            return new LLQuaternion(
+            return new Quaternion(
                 (float)(atSin * leftCos * upCos + atCos * leftSin * upSin),
                 (float)(atCos * leftSin * upCos - atSin * leftCos * upSin),
                 (float)(atLeftCos * upSin + atLeftSin * upCos),
@@ -2157,7 +2157,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Calculate the magnitude of the supplied quaternion
         /// </summary>
-        public static float Mag(LLQuaternion q)
+        public static float Mag(Quaternion q)
         {
             return (float)Math.Sqrt(q.W * q.W + q.X * q.X + q.Y * q.Y + q.Z * q.Z);
         }
@@ -2167,7 +2167,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="q">The quaternion to normalize</param>
         /// <returns>A normalized version of the quaternion</returns>
-        public static LLQuaternion Norm(LLQuaternion q)
+        public static Quaternion Norm(Quaternion q)
         {
             const float MAG_THRESHOLD = 0.0000001f;
             float mag = (float)Math.Sqrt(q.X * q.X + q.Y * q.Y + q.Z * q.Z + q.W * q.W);
@@ -2191,20 +2191,20 @@ namespace OpenMetaverse
             return q;
         }
 
-        public static LLQuaternion Parse(string val)
+        public static Quaternion Parse(string val)
         {
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
             if (split.Length == 3)
             {
-                return new LLQuaternion(
+                return new Quaternion(
                     float.Parse(split[0].Trim(), Helpers.EnUsCulture),
                     float.Parse(split[1].Trim(), Helpers.EnUsCulture),
                     float.Parse(split[2].Trim(), Helpers.EnUsCulture));
             }
             else
             {
-                return new LLQuaternion(
+                return new Quaternion(
                     float.Parse(split[0].Trim(), Helpers.EnUsCulture),
                     float.Parse(split[1].Trim(), Helpers.EnUsCulture),
                     float.Parse(split[2].Trim(), Helpers.EnUsCulture),
@@ -2212,7 +2212,7 @@ namespace OpenMetaverse
             }
         }
 
-        public static bool TryParse(string val, out LLQuaternion result)
+        public static bool TryParse(string val, out Quaternion result)
         {
             try
             {
@@ -2221,7 +2221,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = new LLQuaternion();
+                result = new Quaternion();
                 return false;
             }
         }
@@ -2246,9 +2246,9 @@ namespace OpenMetaverse
         /// <returns></returns>
         public override bool Equals(object o)
         {
-            if (!(o is LLQuaternion)) return false;
+            if (!(o is Quaternion)) return false;
 
-            LLQuaternion quaternion = (LLQuaternion)o;
+            Quaternion quaternion = (Quaternion)o;
 
             return X == quaternion.X && Y == quaternion.Y && Z == quaternion.Z && W == quaternion.W;
         }
@@ -2266,13 +2266,13 @@ namespace OpenMetaverse
 
         #region Operators
 
-        public static bool operator ==(LLQuaternion lhs, LLQuaternion rhs)
+        public static bool operator ==(Quaternion lhs, Quaternion rhs)
         {
             // Return true if the fields match:
             return lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.W == rhs.W;
         }
 
-        public static bool operator !=(LLQuaternion lhs, LLQuaternion rhs)
+        public static bool operator !=(Quaternion lhs, Quaternion rhs)
         {
             return !(lhs == rhs);
         }
@@ -2283,9 +2283,9 @@ namespace OpenMetaverse
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
         /// <returns></returns>
-        public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
+        public static Quaternion operator *(Quaternion lhs, Quaternion rhs)
         {
-            LLQuaternion ret = new LLQuaternion(
+            Quaternion ret = new Quaternion(
                 (lhs.W * rhs.X) + (lhs.X * rhs.W) + (lhs.Y * rhs.Z) - (lhs.Z * rhs.Y),
                 (lhs.W * rhs.Y) - (lhs.X * rhs.Z) + (lhs.Y * rhs.W) + (lhs.Z * rhs.X),
                 (lhs.W * rhs.Z) + (lhs.X * rhs.Y) - (lhs.Y * rhs.X) + (lhs.Z * rhs.W),
@@ -2301,7 +2301,7 @@ namespace OpenMetaverse
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
         /// <returns></returns>
-        public static LLQuaternion operator /(LLQuaternion lhs, LLQuaternion rhs)
+        public static Quaternion operator /(Quaternion lhs, Quaternion rhs)
         {
             return lhs * rhs.Conjugate;
         }
@@ -2309,14 +2309,14 @@ namespace OpenMetaverse
         #endregion Operators
 
         /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
-        public readonly static LLQuaternion Identity = new LLQuaternion(0f, 0f, 0f, 1f);
+        public readonly static Quaternion Identity = new Quaternion(0f, 0f, 0f, 1f);
 	}
 
     /// <summary>
     /// A 3x3 matrix
     /// </summary>
     [Serializable]
-    public struct LLMatrix3
+    public struct Matrix3
     {
         public float M11, M12, M13;
         public float M21, M22, M23;
@@ -2345,7 +2345,7 @@ namespace OpenMetaverse
 
         #region Constructors
 
-        public LLMatrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33)
+        public Matrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33)
         {
             M11 = m11;
             M12 = m12;
@@ -2358,7 +2358,7 @@ namespace OpenMetaverse
             M33 = m33;
         }
 
-        public LLMatrix3(LLQuaternion q)
+        public Matrix3(Quaternion q)
         {
             this = q.ToMatrix();
         }
@@ -2374,7 +2374,7 @@ namespace OpenMetaverse
         /// Copy constructor
         /// </summary>
         /// <param name="m">Matrix to copy</param>
-        public LLMatrix3(LLMatrix3 m)
+        public Matrix3(Matrix3 m)
         {
             M11 = m.M11;
             M12 = m.M12;
@@ -2458,9 +2458,9 @@ namespace OpenMetaverse
             yaw = (float)angleZ;
         }
 
-        public LLQuaternion ToQuaternion()
+        public Quaternion ToQuaternion()
         {
-            LLQuaternion quat = new LLQuaternion();
+            Quaternion quat = new Quaternion();
             float tr, s;
             float[] q = new float[4];
             int i, j, k;
@@ -2514,45 +2514,45 @@ namespace OpenMetaverse
 
         #region Static Methods
 
-        public static LLMatrix3 Add(LLMatrix3 left, LLMatrix3 right)
+        public static Matrix3 Add(Matrix3 left, Matrix3 right)
         {
-            return new LLMatrix3(
+            return new Matrix3(
                 left.M11 + right.M11, left.M12 + right.M12, left.M13 + right.M13,
                 left.M21 + right.M21, left.M22 + right.M22, left.M23 + right.M23,
                 left.M31 + right.M31, left.M32 + right.M32, left.M33 + right.M33
             );
         }
 
-        public static LLMatrix3 Add(LLMatrix3 matrix, float scalar)
+        public static Matrix3 Add(Matrix3 matrix, float scalar)
         {
-            return new LLMatrix3(
+            return new Matrix3(
                 matrix.M11 + scalar, matrix.M12 + scalar, matrix.M13 + scalar,
                 matrix.M21 + scalar, matrix.M22 + scalar, matrix.M23 + scalar,
                 matrix.M31 + scalar, matrix.M32 + scalar, matrix.M33 + scalar
             );
         }
 
-        public static LLMatrix3 Subtract(LLMatrix3 left, LLMatrix3 right)
+        public static Matrix3 Subtract(Matrix3 left, Matrix3 right)
         {
-            return new LLMatrix3(
+            return new Matrix3(
                 left.M11 - right.M11, left.M12 - right.M12, left.M13 - right.M13,
                 left.M21 - right.M21, left.M22 - right.M22, left.M23 - right.M23,
                 left.M31 - right.M31, left.M32 - right.M32, left.M33 - right.M33
                 );
         }
 
-        public static LLMatrix3 Subtract(LLMatrix3 matrix, float scalar)
+        public static Matrix3 Subtract(Matrix3 matrix, float scalar)
         {
-            return new LLMatrix3(
+            return new Matrix3(
                 matrix.M11 - scalar, matrix.M12 - scalar, matrix.M13 - scalar,
                 matrix.M21 - scalar, matrix.M22 - scalar, matrix.M23 - scalar,
                 matrix.M31 - scalar, matrix.M32 - scalar, matrix.M33 - scalar
                 );
         }
 
-        public static LLMatrix3 Multiply(LLMatrix3 left, LLMatrix3 right)
+        public static Matrix3 Multiply(Matrix3 left, Matrix3 right)
         {
-            return new LLMatrix3(
+            return new Matrix3(
                 left.M11 * right.M11 + left.M12 * right.M21 + left.M13 * right.M31,
                 left.M11 * right.M12 + left.M12 * right.M22 + left.M13 * right.M32,
                 left.M11 * right.M13 + left.M12 * right.M23 + left.M13 * right.M33,
@@ -2572,7 +2572,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="m">Matrix to transpose</param>
         /// <returns>Transposed matrix</returns>
-        public static LLMatrix3 Transpose(LLMatrix3 m)
+        public static Matrix3 Transpose(Matrix3 m)
         {
             Helpers.Swap<float>(ref m.M12, ref m.M21);
             Helpers.Swap<float>(ref m.M13, ref m.M31);
@@ -2581,16 +2581,16 @@ namespace OpenMetaverse
             return m;
         }
 
-        public static LLMatrix3 Orthogonalize(LLMatrix3 m)
+        public static Matrix3 Orthogonalize(Matrix3 m)
         {
-            LLVector3 xAxis = m[0];
-            LLVector3 yAxis = m[1];
-            LLVector3 zAxis = m[2];
+            Vector3 xAxis = m[0];
+            Vector3 yAxis = m[1];
+            Vector3 zAxis = m[2];
 
-            xAxis = LLVector3.Norm(xAxis);
+            xAxis = Vector3.Norm(xAxis);
             yAxis -= xAxis * (xAxis * yAxis);
-            yAxis = LLVector3.Norm(yAxis);
-            zAxis = LLVector3.Cross(xAxis, yAxis);
+            yAxis = Vector3.Norm(yAxis);
+            zAxis = Vector3.Cross(xAxis, yAxis);
 
             m[0] = xAxis;
             m[1] = yAxis;
@@ -2613,9 +2613,9 @@ namespace OpenMetaverse
 
         public override bool Equals(object obj)
         {
-            if (obj is LLMatrix3)
+            if (obj is Matrix3)
             {
-                LLMatrix3 m = (LLMatrix3)obj;
+                Matrix3 m = (Matrix3)obj;
                 return
                     (M11 == m.M11) && (M12 == m.M12) && (M13 == m.M13) &&
                     (M21 == m.M21) && (M22 == m.M22) && (M23 == m.M23) &&
@@ -2634,58 +2634,58 @@ namespace OpenMetaverse
 
         #region Operators
 
-        public static bool operator ==(LLMatrix3 left, LLMatrix3 right)
+        public static bool operator ==(Matrix3 left, Matrix3 right)
         {
             return ValueType.Equals(left, right);
         }
 
-        public static bool operator !=(LLMatrix3 left, LLMatrix3 right)
+        public static bool operator !=(Matrix3 left, Matrix3 right)
         {
             return !ValueType.Equals(left, right);
         }
 
-        public static LLMatrix3 operator +(LLMatrix3 left, LLMatrix3 right)
+        public static Matrix3 operator +(Matrix3 left, Matrix3 right)
         {
-            return LLMatrix3.Add(left, right);
+            return Matrix3.Add(left, right);
         }
 
-        public static LLMatrix3 operator +(LLMatrix3 matrix, float scalar)
+        public static Matrix3 operator +(Matrix3 matrix, float scalar)
         {
-            return LLMatrix3.Add(matrix, scalar);
+            return Matrix3.Add(matrix, scalar);
         }
 
-        public static LLMatrix3 operator +(float scalar, LLMatrix3 matrix)
+        public static Matrix3 operator +(float scalar, Matrix3 matrix)
         {
-            return LLMatrix3.Add(matrix, scalar);
+            return Matrix3.Add(matrix, scalar);
         }
 
-        public static LLMatrix3 operator -(LLMatrix3 left, LLMatrix3 right)
+        public static Matrix3 operator -(Matrix3 left, Matrix3 right)
         {
-            return LLMatrix3.Subtract(left, right); ;
+            return Matrix3.Subtract(left, right); ;
         }
 
-        public static LLMatrix3 operator -(LLMatrix3 matrix, float scalar)
+        public static Matrix3 operator -(Matrix3 matrix, float scalar)
         {
-            return LLMatrix3.Subtract(matrix, scalar);
+            return Matrix3.Subtract(matrix, scalar);
         }
 
-        public static LLMatrix3 operator *(LLMatrix3 left, LLMatrix3 right)
+        public static Matrix3 operator *(Matrix3 left, Matrix3 right)
         {
-            return LLMatrix3.Multiply(left, right); ;
+            return Matrix3.Multiply(left, right); ;
         }
 
-        public LLVector3 this[int row]
+        public Vector3 this[int row]
         {
             get
             {
                 switch (row)
                 {
                     case 0:
-                        return new LLVector3(M11, M12, M13);
+                        return new Vector3(M11, M12, M13);
                     case 1:
-                        return new LLVector3(M21, M22, M23);
+                        return new Vector3(M21, M22, M23);
                     case 2:
-                        return new LLVector3(M31, M32, M33);
+                        return new Vector3(M31, M32, M33);
                     default:
                         throw new IndexOutOfRangeException("LLMatrix3 row index must be from 0-2");
                 }
@@ -2771,9 +2771,9 @@ namespace OpenMetaverse
         #endregion Operators
 
         /// <summary>A 3x3 matrix set to all zeroes</summary>
-        public static readonly LLMatrix3 Zero = new LLMatrix3();
+        public static readonly Matrix3 Zero = new Matrix3();
         /// <summary>A 3x3 identity matrix</summary>
-        public static readonly LLMatrix3 Identity = new LLMatrix3(
+        public static readonly Matrix3 Identity = new Matrix3(
             1f, 0f, 0f,
             0f, 1f, 0f,
             0f, 0f, 1f

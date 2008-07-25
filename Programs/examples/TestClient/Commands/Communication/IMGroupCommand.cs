@@ -8,7 +8,7 @@ namespace OpenMetaverse.TestClient
 {
     public class ImGroupCommand : Command
     {
-        LLUUID ToGroupID = LLUUID.Zero;
+        UUID ToGroupID = UUID.Zero;
         ManualResetEvent WaitForSessionStart = new ManualResetEvent(false);
         public ImGroupCommand(TestClient testClient)
         {
@@ -17,14 +17,14 @@ namespace OpenMetaverse.TestClient
             Description = "Send an instant message to a group. Usage: imgroup [group_uuid] [message]";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 2)
                 return "Usage: imgroup [group_uuid] [message]";
 
 
 
-            if (LLUUID.TryParse(args[0], out ToGroupID))
+            if (UUID.TryParse(args[0], out ToGroupID))
             {
                 string message = String.Empty;
                 for (int ct = 1; ct < args.Length; ct++)
@@ -61,7 +61,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Self_OnGroupChatJoin(LLUUID groupChatSessionID, LLUUID tmpSessionID, bool success)
+        void Self_OnGroupChatJoin(UUID groupChatSessionID, UUID tmpSessionID, bool success)
         {
             if (success)
             {

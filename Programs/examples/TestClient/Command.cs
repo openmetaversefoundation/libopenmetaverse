@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
 		public string Description;
 		public TestClient Client;
 
-		public abstract string Execute(string[] args, LLUUID fromAgentID);
+		public abstract string Execute(string[] args, UUID fromAgentID);
 
 		/// <summary>
 		/// When set to true, think will be called.

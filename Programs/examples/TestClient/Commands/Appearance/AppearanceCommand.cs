@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
             Description = "Set your current appearance to your last saved appearance";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             bool success = false;
 

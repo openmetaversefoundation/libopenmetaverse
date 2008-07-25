@@ -38,7 +38,7 @@ namespace OpenMetaverse
     public struct GroupMember
     {
         /// <summary>Key of Group Member</summary>
-        public LLUUID ID;
+        public UUID ID;
         /// <summary>Total land contribution</summary>
         public int Contribution;
         /// <summary>Online status information</summary>
@@ -57,7 +57,7 @@ namespace OpenMetaverse
     public struct GroupRole
     {
         /// <summary>Key of Role</summary>
-        public LLUUID ID;
+        public UUID ID;
         /// <summary>Name of Role</summary>
         public string Name;
         /// <summary>Group Title associated with Role</summary>
@@ -93,13 +93,13 @@ namespace OpenMetaverse
     public struct Group
     {
         /// <summary>Key of Group</summary>
-        public LLUUID ID;
+        public UUID ID;
         /// <summary>Key of Group Insignia</summary>
-        public LLUUID InsigniaID;
+        public UUID InsigniaID;
         /// <summary>Key of Group Founder</summary>
-        public LLUUID FounderID;
+        public UUID FounderID;
         /// <summary>Key of Group Role for Owners</summary>
-        public LLUUID OwnerRole;
+        public UUID OwnerRole;
         /// <summary>Name of Group</summary>
         public string Name;
         /// <summary>Text of Group Charter</summary>
@@ -145,13 +145,13 @@ namespace OpenMetaverse
     public struct GroupProfile
     {
         /// <summary></summary>
-        public LLUUID ID;
+        public UUID ID;
         /// <summary>Key of Group Insignia</summary>
-        public LLUUID InsigniaID;
+        public UUID InsigniaID;
         /// <summary>Key of Group Founder</summary>
-        public LLUUID FounderID;
+        public UUID FounderID;
         /// <summary>Key of Group Role for Owners</summary>
-        public LLUUID OwnerRole;
+        public UUID OwnerRole;
         /// <summary>Name of Group</summary>
         public string Name;
         /// <summary>Text of Group Charter</summary>
@@ -188,7 +188,7 @@ namespace OpenMetaverse
     public struct Vote
     {
         /// <summary>Key of Avatar who created Vote</summary>
-        public LLUUID Candidate;
+        public UUID Candidate;
         /// <summary>Text of the Vote proposal</summary>
         public string VoteString;
         /// <summary>Total number of votes</summary>
@@ -310,9 +310,9 @@ namespace OpenMetaverse
         /// <summary></summary>
         public string Message;
         /// <summary></summary>
-        public LLUUID AttachmentID;
+        public UUID AttachmentID;
         /// <summary></summary>
-        public LLUUID OwnerID;
+        public UUID OwnerID;
 
         /// <summary>
         /// 
@@ -320,7 +320,7 @@ namespace OpenMetaverse
         /// <returns></returns>
         public byte[] SerializeAttachment()
         {
-            if (OwnerID == LLUUID.Zero || AttachmentID == LLUUID.Zero)
+            if (OwnerID == UUID.Zero || AttachmentID == UUID.Zero)
                 return new byte[0];
             //I guess this is how this works, no gaurentees
             string lsd = "<llsd><item_id>" + AttachmentID.ToString() + "</item_id><owner_id>"
@@ -460,12 +460,12 @@ namespace OpenMetaverse
         /// Callback for the list of groups the avatar is currently a member of
         /// </summary>
         /// <param name="groups"></param>
-        public delegate void CurrentGroupsCallback(Dictionary<LLUUID, Group> groups);
+        public delegate void CurrentGroupsCallback(Dictionary<UUID, Group> groups);
         /// <summary>
         /// Callback for a list of group names
         /// </summary>
         /// <param name="names"></param>
-        public delegate void GroupNamesCallback(Dictionary<LLUUID, string> groupNames);
+        public delegate void GroupNamesCallback(Dictionary<UUID, string> groupNames);
         /// <summary>
         /// Callback for the profile of a group
         /// </summary>
@@ -475,22 +475,22 @@ namespace OpenMetaverse
         /// Callback for the member list of a group
         /// </summary>
         /// <param name="members"></param>
-        public delegate void GroupMembersCallback(Dictionary<LLUUID, GroupMember> members);
+        public delegate void GroupMembersCallback(Dictionary<UUID, GroupMember> members);
         /// <summary>
         /// Callback for the role list of a group
         /// </summary>
         /// <param name="roles"></param>
-        public delegate void GroupRolesCallback(Dictionary<LLUUID, GroupRole> roles);
+        public delegate void GroupRolesCallback(Dictionary<UUID, GroupRole> roles);
         /// <summary>
         /// Callback for a pairing of roles to members
         /// </summary>
         /// <param name="rolesMembers"></param>
-        public delegate void GroupRolesMembersCallback(List<KeyValuePair<LLUUID, LLUUID>> rolesMembers);
+        public delegate void GroupRolesMembersCallback(List<KeyValuePair<UUID, UUID>> rolesMembers);
         /// <summary>
         /// Callback for the title list of a group
         /// </summary>
         /// <param name="titles"></param>
-        public delegate void GroupTitlesCallback(Dictionary<LLUUID, GroupTitle> titles);
+        public delegate void GroupTitlesCallback(Dictionary<UUID, GroupTitle> titles);
         /// <summary>
         /// 
         /// </summary>
@@ -512,24 +512,24 @@ namespace OpenMetaverse
         /// <param name="groupID"></param>
         /// <param name="success"></param>
         /// <param name="message"></param>
-        public delegate void GroupCreatedCallback(LLUUID groupID, bool success, string message);
+        public delegate void GroupCreatedCallback(UUID groupID, bool success, string message);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="groupID"></param>
         /// <param name="success"></param>
-        public delegate void GroupJoinedCallback(LLUUID groupID, bool success);
+        public delegate void GroupJoinedCallback(UUID groupID, bool success);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="groupID"></param>
         /// <param name="success"></param>
-        public delegate void GroupLeftCallback(LLUUID groupID, bool success);
+        public delegate void GroupLeftCallback(UUID groupID, bool success);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="groupID"></param>
-        public delegate void GroupDroppedCallback(LLUUID groupID);
+        public delegate void GroupDroppedCallback(UUID groupID);
 
         /// <summary>
         /// 
@@ -537,7 +537,7 @@ namespace OpenMetaverse
         /// <param name="groupID"></param>
         /// <param name="memberID"></param>
         /// <param name="success"></param>
-        public delegate void GroupMemberEjectedCallback(LLUUID groupID, LLUUID memberID, bool success);
+        public delegate void GroupMemberEjectedCallback(UUID groupID, UUID memberID, bool success);
 
         #endregion Delegates
 
@@ -577,13 +577,13 @@ namespace OpenMetaverse
 
         private GridClient Client;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
-        private Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>> GroupMembersCaches;
+        private Dictionary<UUID, Dictionary<UUID, GroupMember>> GroupMembersCaches;
         /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
-        private Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>> GroupRolesCaches;
+        private Dictionary<UUID, Dictionary<UUID, GroupRole>> GroupRolesCaches;
         /// <summary>A list of all the role to member mappings</summary>
-        private Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>> GroupRolesMembersCaches;
+        private Dictionary<UUID, List<KeyValuePair<UUID, UUID>>> GroupRolesMembersCaches;
         /// <summary>Caches group name lookups</summary>
-        public InternalDictionary<LLUUID, string> GroupName2KeyCache;
+        public InternalDictionary<UUID, string> GroupName2KeyCache;
         /// <summary>
         /// 
         /// </summary>
@@ -592,10 +592,10 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            GroupMembersCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>>();
-            GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();
-            GroupRolesMembersCaches = new Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>>();
-            GroupName2KeyCache  = new InternalDictionary<LLUUID, string>();
+            GroupMembersCaches = new Dictionary<UUID, Dictionary<UUID, GroupMember>>();
+            GroupRolesCaches = new Dictionary<UUID, Dictionary<UUID, GroupRole>>();
+            GroupRolesMembersCaches = new Dictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
+            GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
             Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(GroupDataHandler));
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
@@ -635,12 +635,12 @@ namespace OpenMetaverse
         /// Lookup name of group based on groupID
         /// </summary>
         /// <param name="groupID">groupID of group to lookup name for.</param>
-        public void RequestGroupName(LLUUID groupID)
+        public void RequestGroupName(UUID groupID)
         {
             // if we already have this in the cache, return from cache instead of making a request
                 if (GroupName2KeyCache.ContainsKey(groupID))
                 {
-                    Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
+                    Dictionary<UUID, string> groupNames = new Dictionary<UUID, string>();
                     lock(GroupName2KeyCache.Dictionary)
                     groupNames.Add(groupID, GroupName2KeyCache.Dictionary[groupID]);
                     if (OnGroupNames != null)
@@ -666,12 +666,12 @@ namespace OpenMetaverse
         /// Request lookup of multiple group names
         /// </summary>
         /// <param name="groupIDs">List of group IDs to request.</param>
-        public void RequestGroupNames(List<LLUUID> groupIDs)
+        public void RequestGroupNames(List<UUID> groupIDs)
         {
-            Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
+            Dictionary<UUID, string> groupNames = new Dictionary<UUID, string>();
             lock (GroupName2KeyCache.Dictionary)
             {
-                foreach (LLUUID groupID in groupIDs)
+                foreach (UUID groupID in groupIDs)
                 {
                     if (GroupName2KeyCache.ContainsKey(groupID))
                         groupNames[groupID] = GroupName2KeyCache.Dictionary[groupID];
@@ -702,7 +702,7 @@ namespace OpenMetaverse
         /// <summary>Lookup group profile data such as name, enrollment, founder, logo, etc</summary>
         /// <remarks>Subscribe to <code>OnGroupProfile</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupProfile(LLUUID group)
+        public void RequestGroupProfile(UUID group)
         {
             GroupProfileRequestPacket request = new GroupProfileRequestPacket();
 
@@ -716,10 +716,10 @@ namespace OpenMetaverse
         /// <summary>Request a list of group members.</summary>
         /// <remarks>Subscribe to <code>OnGroupMembers</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupMembers(LLUUID group)
+        public void RequestGroupMembers(UUID group)
         {
-            LLUUID requestID = LLUUID.Random();
-            lock (GroupMembersCaches) GroupMembersCaches[requestID] = new Dictionary<LLUUID, GroupMember>();
+            UUID requestID = UUID.Random();
+            lock (GroupMembersCaches) GroupMembersCaches[requestID] = new Dictionary<UUID, GroupMember>();
 
             GroupMembersRequestPacket request = new GroupMembersRequestPacket();
 
@@ -734,10 +734,10 @@ namespace OpenMetaverse
         /// <summary>Request group roles</summary>
         /// <remarks>Subscribe to <code>OnGroupRoles</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupRoles(LLUUID group)
+        public void RequestGroupRoles(UUID group)
         {
-            LLUUID requestID = LLUUID.Random();
-            lock (GroupRolesCaches) GroupRolesCaches[requestID] = new Dictionary<LLUUID, GroupRole>();
+            UUID requestID = UUID.Random();
+            lock (GroupRolesCaches) GroupRolesCaches[requestID] = new Dictionary<UUID, GroupRole>();
 
             GroupRoleDataRequestPacket request = new GroupRoleDataRequestPacket();
 
@@ -752,12 +752,12 @@ namespace OpenMetaverse
         /// <summary>Request members (members,role) role mapping for a group.</summary>
         /// <remarks>Subscribe to <code>OnGroupRolesMembers</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupRoleMembers(LLUUID group)
+        public void RequestGroupRoleMembers(UUID group)
         {
-            LLUUID requestID = LLUUID.Random();
+            UUID requestID = UUID.Random();
             lock (GroupRolesMembersCaches)
             {
-                GroupRolesMembersCaches[requestID] = new List<KeyValuePair<LLUUID, LLUUID>>();
+                GroupRolesMembersCaches[requestID] = new List<KeyValuePair<UUID, UUID>>();
             }
 
             GroupRoleMembersRequestPacket request = new GroupRoleMembersRequestPacket();
@@ -771,9 +771,9 @@ namespace OpenMetaverse
         /// <summary>Request a groups Titles</summary>
         /// <remarks>Subscribe to <code>OnGroupTitles</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupTitles(LLUUID group)
+        public void RequestGroupTitles(UUID group)
         {
-            LLUUID requestID = LLUUID.Random();
+            UUID requestID = UUID.Random();
 
             GroupTitlesRequestPacket request = new GroupTitlesRequestPacket();
 
@@ -790,13 +790,13 @@ namespace OpenMetaverse
         /// <param name="group">group ID (UUID)</param>
         /// <param name="intervalDays">How long of an interval</param>
         /// <param name="currentInterval">Which interval (0 for current, 1 for last)</param>
-        public void RequestGroupAccountSummary(LLUUID group, int intervalDays, int currentInterval)
+        public void RequestGroupAccountSummary(UUID group, int intervalDays, int currentInterval)
         {
             GroupAccountSummaryRequestPacket p = new GroupAccountSummaryRequestPacket();
             p.AgentData.AgentID = Client.Self.AgentID;
             p.AgentData.SessionID = Client.Self.SessionID;
             p.AgentData.GroupID = group;
-            p.MoneyData.RequestID = LLUUID.Random();
+            p.MoneyData.RequestID = UUID.Random();
             p.MoneyData.CurrentInterval = currentInterval;
             p.MoneyData.IntervalDays = intervalDays;
             Client.Network.SendPacket(p);
@@ -806,7 +806,7 @@ namespace OpenMetaverse
         /// <param name="group">The group to invite to</param>
         /// <param name="roles">A list of roles to invite a person to</param>
         /// <param name="personkey">Key of person to invite</param>
-        public void Invite(LLUUID group, List<LLUUID> roles, LLUUID personkey)
+        public void Invite(UUID group, List<UUID> roles, UUID personkey)
         {
             InviteGroupRequestPacket igp = new InviteGroupRequestPacket();
 
@@ -831,7 +831,7 @@ namespace OpenMetaverse
 
         /// <summary>Set a group as the current active group</summary>
         /// <param name="id">group ID (UUID)</param>
-        public void ActivateGroup(LLUUID id)
+        public void ActivateGroup(UUID id)
         {
             ActivateGroupPacket activate = new ActivateGroupPacket();
             activate.AgentData.AgentID = Client.Self.AgentID;
@@ -844,7 +844,7 @@ namespace OpenMetaverse
         /// <summary>Change the role that determines your active title</summary>
         /// <param name="group">Group ID to use</param>
         /// <param name="role">Role ID to change to</param>
-        public void ActivateTitle(LLUUID group, LLUUID role)
+        public void ActivateTitle(UUID group, UUID role)
         {
             GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
             gtu.AgentData.AgentID = Client.Self.AgentID;
@@ -858,7 +858,7 @@ namespace OpenMetaverse
         /// <summary>Set this avatar's tier contribution</summary>
         /// <param name="group">Group ID to change tier in</param>
         /// <param name="contribution">amount of tier to donate</param>
-        public void SetGroupContribution(LLUUID group, int contribution)
+        public void SetGroupContribution(UUID group, int contribution)
         {
             SetGroupContributionPacket sgp = new SetGroupContributionPacket();
             sgp.AgentData.AgentID = Client.Self.AgentID;
@@ -872,7 +872,7 @@ namespace OpenMetaverse
         /// <summary>Request to join a group</summary>
         /// <remarks>Subscribe to <code>OnGroupJoined</code> event for confirmation.</remarks>
         /// <param name="id">group ID (UUID) to join.</param>
-        public void RequestJoinGroup(LLUUID id)
+        public void RequestJoinGroup(UUID id)
         {
             JoinGroupRequestPacket join = new JoinGroupRequestPacket();
             join.AgentData.AgentID = Client.Self.AgentID;
@@ -913,7 +913,7 @@ namespace OpenMetaverse
         /// <summary>Update a group's profile and other information</summary>
         /// <param name="id">Groups ID (UUID) to update.</param>
         /// <param name="group">Group struct to update.</param>
-        public void UpdateGroup(LLUUID id, Group group)
+        public void UpdateGroup(UUID id, Group group)
         {
             OpenMetaverse.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
             //Fill in agent data
@@ -937,7 +937,7 @@ namespace OpenMetaverse
         /// <summary>Eject a user from a group</summary>
         /// <param name="group">Group ID to eject the user from</param>
         /// <param name="member">Avatar's key to eject</param>
-        public void EjectUser(LLUUID group, LLUUID member)
+        public void EjectUser(UUID group, UUID member)
         {
             OpenMetaverse.Packets.EjectGroupMemberRequestPacket eject = new EjectGroupMemberRequestPacket();
             eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
@@ -957,7 +957,7 @@ namespace OpenMetaverse
         /// <summary>Update role information</summary>
         /// <param name="group">Group to update</param>
         /// <param name="role">Role to update</param>
-        public void UpdateRole(LLUUID group, GroupRole role)
+        public void UpdateRole(UUID group, GroupRole role)
         {
             OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
             gru.AgentData.AgentID = Client.Self.AgentID;
@@ -975,7 +975,7 @@ namespace OpenMetaverse
         /// <summary>Create a new group role</summary>
         /// <param name="group">Group ID to update</param>
         /// <param name="role">Role to create</param>
-        public void CreateRole(LLUUID group, GroupRole role)
+        public void CreateRole(UUID group, GroupRole role)
         {
             OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
             gru.AgentData.AgentID = Client.Self.AgentID;
@@ -994,7 +994,7 @@ namespace OpenMetaverse
         /// <param name="group">Group ID to update</param>
         /// <param name="role">Role ID to be removed from</param>
         /// <param name="member">Avatar's Key to remove</param>
-        public void RemoveFromRole(LLUUID group, LLUUID role, LLUUID member)
+        public void RemoveFromRole(UUID group, UUID role, UUID member)
         {
             OpenMetaverse.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
             grc.AgentData.AgentID = Client.Self.AgentID;
@@ -1014,7 +1014,7 @@ namespace OpenMetaverse
         /// <param name="group">Group ID to update</param>
         /// <param name="role">Role ID to assign to</param>
         /// <param name="member">Avatar's ID to assign to role</param>
-        public void AddToRole(LLUUID group, LLUUID role, LLUUID member)
+        public void AddToRole(UUID group, UUID role, UUID member)
         {
             OpenMetaverse.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
             grc.AgentData.AgentID = Client.Self.AgentID;
@@ -1033,17 +1033,17 @@ namespace OpenMetaverse
         /// <summary>Send out a group notice</summary>
         /// <param name="group">Group ID to update</param>
         /// <param name="notice"><code>GroupNotice</code> structure containing notice data</param>
-        public void SendGroupNotice(LLUUID group, GroupNotice notice)
+        public void SendGroupNotice(UUID group, GroupNotice notice)
         {
             Client.Self.InstantMessage(Client.Self.Name, group, notice.Subject + "|" + notice.Message,
-                LLUUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online, 
-                LLVector3.Zero, LLUUID.Zero, notice.SerializeAttachment());
+                UUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online, 
+                Vector3.Zero, UUID.Zero, notice.SerializeAttachment());
         }
 
         /// <summary>Start a group proposal (vote)</summary>
         /// <param name="group">The Group ID to send proposal to</param>
         /// <param name="prop"><code>GroupProposal</code> structure containing the proposal</param>
-        public void StartProposal(LLUUID group, GroupProposal prop)
+        public void StartProposal(UUID group, GroupProposal prop)
         {
             StartGroupProposalPacket p = new StartGroupProposalPacket();
             p.AgentData.AgentID = Client.Self.AgentID;
@@ -1059,7 +1059,7 @@ namespace OpenMetaverse
         /// <summary>Request to leave a group</summary>
         /// <remarks>Subscribe to <code>OnGroupLeft</code> event to receive confirmation</remarks>
         /// <param name="groupID">The group to leave</param>
-        public void LeaveGroup(LLUUID groupID)
+        public void LeaveGroup(UUID groupID)
         {
             LeaveGroupRequestPacket p = new LeaveGroupRequestPacket();
             p.AgentData.AgentID = Client.Self.AgentID;
@@ -1076,7 +1076,7 @@ namespace OpenMetaverse
             {
                 AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
 
-                Dictionary<LLUUID, Group> currentGroups = new Dictionary<LLUUID, Group>();
+                Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
 
                 foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
                 {
@@ -1143,7 +1143,7 @@ namespace OpenMetaverse
             if (OnGroupTitles != null)
             {
                 GroupTitlesReplyPacket titles = (GroupTitlesReplyPacket)packet;
-                Dictionary<LLUUID, GroupTitle> groupTitleCache = new Dictionary<LLUUID, GroupTitle>();
+                Dictionary<UUID, GroupTitle> groupTitleCache = new Dictionary<UUID, GroupTitle>();
 
                 foreach (GroupTitlesReplyPacket.GroupDataBlock block in titles.GroupData)
                 {
@@ -1163,7 +1163,7 @@ namespace OpenMetaverse
         private void GroupMembersHandler(Packet packet, Simulator simulator)
         {
             GroupMembersReplyPacket members = (GroupMembersReplyPacket)packet;
-            Dictionary<LLUUID, GroupMember> groupMemberCache = null;
+            Dictionary<UUID, GroupMember> groupMemberCache = null;
 
             lock (GroupMembersCaches)
             {
@@ -1199,7 +1199,7 @@ namespace OpenMetaverse
         private void GroupRoleDataHandler(Packet packet, Simulator simulator)
         {
             GroupRoleDataReplyPacket roles = (GroupRoleDataReplyPacket)packet;
-            Dictionary<LLUUID, GroupRole> groupRoleCache = null;
+            Dictionary<UUID, GroupRole> groupRoleCache = null;
 
             lock (GroupRolesCaches)
             {
@@ -1234,7 +1234,7 @@ namespace OpenMetaverse
         private void GroupRoleMembersHandler(Packet packet, Simulator simulator)
         {
             GroupRoleMembersReplyPacket members = (GroupRoleMembersReplyPacket)packet;
-            List<KeyValuePair<LLUUID, LLUUID>> groupRoleMemberCache = null;
+            List<KeyValuePair<UUID, UUID>> groupRoleMemberCache = null;
 
             try
             {
@@ -1247,8 +1247,8 @@ namespace OpenMetaverse
 
                         foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
                         {
-                            KeyValuePair<LLUUID, LLUUID> rolemember =
-                                new KeyValuePair<LLUUID, LLUUID>(block.RoleID, block.MemberID);
+                            KeyValuePair<UUID, UUID> rolemember =
+                                new KeyValuePair<UUID, UUID>(block.RoleID, block.MemberID);
 
                             groupRoleMemberCache.Add(rolemember);
                         }
@@ -1390,7 +1390,7 @@ namespace OpenMetaverse
             UUIDGroupNameReplyPacket reply = (UUIDGroupNameReplyPacket)packet;
             UUIDGroupNameReplyPacket.UUIDNameBlockBlock[] blocks = reply.UUIDNameBlock;
             
-            Dictionary<LLUUID, string> groupNames = new Dictionary<LLUUID, string>();
+            Dictionary<UUID, string> groupNames = new Dictionary<UUID, string>();
 
             foreach (UUIDGroupNameReplyPacket.UUIDNameBlockBlock block in blocks) 
             {

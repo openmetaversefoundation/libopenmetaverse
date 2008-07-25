@@ -14,9 +14,9 @@ namespace OpenMetaverse.TestClient
             Description = "Exports an avatars outfit to an xml file. Usage: exportoutfit [avataruuid] outputfile.xml";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
-            LLUUID id;
+            UUID id;
             string path;
 
             if (args.Length == 1)
@@ -26,7 +26,7 @@ namespace OpenMetaverse.TestClient
             }
             else if (args.Length == 2)
             {
-                if (!LLUUID.TryParse(args[0], out id))
+                if (!UUID.TryParse(args[0], out id))
                     return "Usage: exportoutfit [avataruuid] outputfile.xml";
                 path = args[1];
             }

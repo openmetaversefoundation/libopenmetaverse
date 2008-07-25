@@ -61,7 +61,7 @@ namespace OpenMetaverse.GUITestClient
 
                 // Draw all avatars
                 Client.Network.CurrentSim.AvatarPositions.ForEach(
-                    delegate(LLVector3 pos)
+                    delegate(Vector3 pos)
                     {
                         Rectangle rect = new Rectangle((int)Math.Round(pos.X, 0) - 2, 255 - ((int)Math.Round(pos.Y, 0) - 2), 4, 4);
                         g.FillEllipse(mAvBrush, rect);

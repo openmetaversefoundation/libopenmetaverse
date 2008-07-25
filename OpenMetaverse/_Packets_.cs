@@ -2241,8 +2241,8 @@ namespace OpenMetaverse.Packets
         public class CircuitCodeBlock
         {
             public uint Code;
-            public LLUUID SessionID;
-            public LLUUID ID;
+            public UUID SessionID;
+            public UUID ID;
 
             public int Length
             {
@@ -2368,7 +2368,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TelehubBlockBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             private byte[] _objectname;
             public byte[] ObjectName
             {
@@ -2380,8 +2380,8 @@ namespace OpenMetaverse.Packets
                     else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
-            public LLVector3 TelehubPos;
-            public LLQuaternion TelehubRot;
+            public Vector3 TelehubPos;
+            public Quaternion TelehubRot;
 
             public int Length
             {
@@ -2443,7 +2443,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SpawnPointBlockBlock
         {
-            public LLVector3 SpawnPointPos;
+            public Vector3 SpawnPointPos;
 
             public int Length
             {
@@ -2883,9 +2883,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID QueryID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -3076,8 +3076,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID QueryID;
+            public UUID AgentID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -3125,7 +3125,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID AvatarID;
+            public UUID AvatarID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -3307,9 +3307,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID QueryID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -3360,7 +3360,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -3582,8 +3582,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID QueryID;
+            public UUID AgentID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -3631,7 +3631,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -3676,7 +3676,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -3716,7 +3716,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLUUID SnapshotID;
+            public UUID SnapshotID;
             public float Dwell;
             public int Price;
 
@@ -3943,8 +3943,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -3992,7 +3992,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -4151,8 +4151,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -4200,7 +4200,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -4383,7 +4383,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -4428,7 +4428,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -4473,7 +4473,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -4676,7 +4676,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -4721,7 +4721,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -4766,7 +4766,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -4986,7 +4986,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -5031,7 +5031,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -5076,7 +5076,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -5286,7 +5286,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -5331,7 +5331,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -5376,7 +5376,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -5560,8 +5560,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -5609,7 +5609,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -5775,7 +5775,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -5820,7 +5820,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -5865,7 +5865,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID ClassifiedID;
+            public UUID ClassifiedID;
             private byte[] _name;
             public byte[] Name
             {
@@ -6059,8 +6059,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID TargetID;
+            public UUID AgentID;
+            public UUID TargetID;
 
             public int Length
             {
@@ -6108,7 +6108,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ClassifiedID;
+            public UUID ClassifiedID;
             private byte[] _name;
             public byte[] Name
             {
@@ -6270,8 +6270,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -6319,7 +6319,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ClassifiedID;
+            public UUID ClassifiedID;
 
             public int Length
             {
@@ -6442,7 +6442,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -6487,8 +6487,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ClassifiedID;
-            public LLUUID CreatorID;
+            public UUID ClassifiedID;
+            public UUID CreatorID;
             public uint CreationDate;
             public uint ExpirationDate;
             public uint Category;
@@ -6514,9 +6514,9 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             public uint ParentEstate;
-            public LLUUID SnapshotID;
+            public UUID SnapshotID;
             private byte[] _simname;
             public byte[] SimName
             {
@@ -6528,7 +6528,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLVector3d PosGlobal;
+            public Vector3d PosGlobal;
             private byte[] _parcelname;
             public byte[] ParcelName
             {
@@ -6748,8 +6748,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -6797,7 +6797,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ClassifiedID;
+            public UUID ClassifiedID;
             public uint Category;
             private byte[] _name;
             public byte[] Name
@@ -6821,10 +6821,10 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             public uint ParentEstate;
-            public LLUUID SnapshotID;
-            public LLVector3d PosGlobal;
+            public UUID SnapshotID;
+            public Vector3d PosGlobal;
             public byte ClassifiedFlags;
             public int PriceForListing;
 
@@ -7000,8 +7000,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -7049,7 +7049,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ClassifiedID;
+            public UUID ClassifiedID;
 
             public int Length
             {
@@ -7172,8 +7172,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -7221,8 +7221,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ClassifiedID;
-            public LLUUID QueryID;
+            public UUID ClassifiedID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -7348,8 +7348,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -7397,7 +7397,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
             public uint QueryFlags;
             public uint SearchType;
             public int Price;
@@ -7555,7 +7555,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -7600,7 +7600,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -7645,7 +7645,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -7836,8 +7836,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -7885,7 +7885,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
             public uint QueryFlags;
 
             public int Length
@@ -8015,7 +8015,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -8060,7 +8060,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -8105,7 +8105,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock
         {
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -8282,8 +8282,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -8331,7 +8331,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ParcelID;
+            public UUID ParcelID;
 
             public int Length
             {
@@ -8454,7 +8454,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -8499,8 +8499,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ParcelID;
-            public LLUUID OwnerID;
+            public UUID ParcelID;
+            public UUID OwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -8540,7 +8540,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLUUID SnapshotID;
+            public UUID SnapshotID;
             public float Dwell;
             public int SalePrice;
             public int AuctionID;
@@ -8753,8 +8753,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -8928,7 +8928,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             public bool IsGroupOwned;
             public int Count;
             public bool OnlineStatus;
@@ -9078,8 +9078,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -9127,7 +9127,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -9250,8 +9250,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -9299,7 +9299,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID NoticeID;
+            public UUID NoticeID;
             public uint Timestamp;
             private byte[] _fromname;
             public byte[] FromName
@@ -9499,8 +9499,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -9548,7 +9548,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupNoticeID;
+            public UUID GroupNoticeID;
 
             public int Length
             {
@@ -9671,8 +9671,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -9720,9 +9720,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID RegionID;
-            public LLVector3 Position;
-            public LLVector3 LookAt;
+            public UUID RegionID;
+            public Vector3 Position;
+            public Vector3 LookAt;
 
             public int Length
             {
@@ -9851,8 +9851,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -9901,8 +9901,8 @@ namespace OpenMetaverse.Packets
         public class InfoBlock
         {
             public ulong RegionHandle;
-            public LLVector3 Position;
-            public LLVector3 LookAt;
+            public Vector3 Position;
+            public Vector3 LookAt;
 
             public int Length
             {
@@ -10038,10 +10038,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public uint LocationID;
-            public LLVector3 Position;
-            public LLVector3 LookAt;
+            public Vector3 Position;
+            public Vector3 LookAt;
             public uint TeleportFlags;
 
             public int Length
@@ -10177,9 +10177,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID LandmarkID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID LandmarkID;
 
             public int Length
             {
@@ -10302,7 +10302,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -10494,7 +10494,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public uint LocationID;
             public uint SimIP;
             public ushort SimPort;
@@ -10675,8 +10675,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -10790,7 +10790,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TargetDataBlock
         {
-            public LLUUID TargetID;
+            public UUID TargetID;
 
             public int Length
             {
@@ -10937,9 +10937,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID LureID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID LureID;
             public uint TeleportFlags;
 
             public int Length
@@ -11069,8 +11069,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -11310,7 +11310,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             private byte[] _reason;
             public byte[] Reason
             {
@@ -11448,9 +11448,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -11501,7 +11501,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -11642,9 +11642,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -11695,7 +11695,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -11836,8 +11836,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -11957,8 +11957,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint SerialNum;
 
             public int Length
@@ -12085,8 +12085,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint SerialNum;
 
             public int Length
@@ -12213,8 +12213,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -12415,8 +12415,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint CircuitCode;
 
             public int Length
@@ -12618,8 +12618,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint CircuitCode;
 
             public int Length
@@ -12808,8 +12808,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint CircuitCode;
 
             public int Length
@@ -13000,10 +13000,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint SerialNum;
-            public LLVector3 Size;
+            public Vector3 Size;
 
             public int Length
             {
@@ -13060,7 +13060,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock
         {
-            public LLUUID CacheID;
+            public UUID CacheID;
             public byte TextureIndex;
 
             public int Length
@@ -13343,8 +13343,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -13518,7 +13518,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageIDBlock
         {
-            public LLUUID ID;
+            public UUID ID;
 
             public int Length
             {
@@ -13635,7 +13635,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TextureDataBlock
         {
-            public LLUUID TextureID;
+            public UUID TextureID;
 
             public int Length
             {
@@ -13752,8 +13752,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public bool AlwaysRun;
 
             public int Length
@@ -13877,8 +13877,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public bool Force;
 
             public int Length
@@ -14074,9 +14074,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -14127,7 +14127,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SharedDataBlock
         {
-            public LLVector3 Offset;
+            public Vector3 Offset;
             public uint DuplicateFlags;
 
             public int Length
@@ -14329,16 +14329,16 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
-            public LLVector3 RayStart;
-            public LLVector3 RayEnd;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
+            public Vector3 RayStart;
+            public Vector3 RayEnd;
             public bool BypassRaycast;
             public bool RayEndIsIntersection;
             public bool CopyCenters;
             public bool CopyRotates;
-            public LLUUID RayTargetID;
+            public UUID RayTargetID;
             public uint DuplicateFlags;
 
             public int Length
@@ -14561,8 +14561,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -14611,7 +14611,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
-            public LLVector3 Scale;
+            public Vector3 Scale;
 
             public int Length
             {
@@ -14758,8 +14758,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -14808,7 +14808,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
-            public LLQuaternion Rotation;
+            public Quaternion Rotation;
 
             public int Length
             {
@@ -14955,8 +14955,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint ObjectLocalID;
             public bool UsePhysics;
             public bool IsTemporary;
@@ -15099,8 +15099,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -15296,8 +15296,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -15531,8 +15531,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -15728,8 +15728,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -15998,8 +15998,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -16228,8 +16228,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -16278,8 +16278,8 @@ namespace OpenMetaverse.Packets
         public class HeaderDataBlock
         {
             public bool Override;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID OwnerID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -16480,9 +16480,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -16677,10 +16677,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
-            public LLUUID CategoryID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
+            public UUID CategoryID;
 
             public int Length
             {
@@ -16889,8 +16889,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -16938,9 +16938,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID ItemID;
-            public LLUUID FolderID;
+            public UUID ObjectID;
+            public UUID ItemID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -17069,7 +17069,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             public bool Delete;
 
             public int Length
@@ -17190,8 +17190,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -17449,8 +17449,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -17653,8 +17653,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -17867,8 +17867,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -18081,8 +18081,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -18281,8 +18281,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -18474,8 +18474,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -18667,8 +18667,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public byte AttachmentPoint;
 
             public int Length
@@ -18721,7 +18721,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
-            public LLQuaternion Rotation;
+            public Quaternion Rotation;
 
             public int Length
             {
@@ -18868,8 +18868,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -19061,8 +19061,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -19254,8 +19254,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -19447,8 +19447,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -19640,8 +19640,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -19690,7 +19690,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint LocalID;
-            public LLVector3 GrabOffset;
+            public Vector3 GrabOffset;
 
             public int Length
             {
@@ -19819,8 +19819,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -19868,9 +19868,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
-            public LLVector3 GrabOffsetInitial;
-            public LLVector3 GrabPosition;
+            public UUID ObjectID;
+            public Vector3 GrabOffsetInitial;
+            public Vector3 GrabPosition;
             public uint TimeSinceLast;
 
             public int Length
@@ -20006,8 +20006,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -20181,8 +20181,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -20230,7 +20230,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -20353,8 +20353,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -20402,8 +20402,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
-            public LLQuaternion Rotation;
+            public UUID ObjectID;
+            public Quaternion Rotation;
 
             public int Length
             {
@@ -20529,8 +20529,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -20578,7 +20578,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -20701,8 +20701,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID RequestID;
+            public UUID AgentID;
+            public UUID RequestID;
             public short VolumeDetail;
 
             public int Length
@@ -20755,7 +20755,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -20896,8 +20896,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -21188,8 +21188,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -21309,8 +21309,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -21430,8 +21430,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -21746,8 +21746,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -21795,7 +21795,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock
         {
-            public LLUUID TargetID;
+            public UUID TargetID;
             public uint Flags;
 
             public int Length
@@ -21925,8 +21925,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -21974,7 +21974,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TargetDataBlock
         {
-            public LLUUID PreyID;
+            public UUID PreyID;
 
             public int Length
             {
@@ -22097,8 +22097,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint IP;
             public uint StartTime;
             public float RunTime;
@@ -22673,8 +22673,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -22722,8 +22722,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID TaskID;
-            public LLUUID ItemID;
+            public UUID TaskID;
+            public UUID ItemID;
             public int Questions;
 
             public int Length
@@ -22856,8 +22856,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -22907,11 +22907,11 @@ namespace OpenMetaverse.Packets
         {
             public byte ReportType;
             public byte Category;
-            public LLVector3 Position;
+            public Vector3 Position;
             public byte CheckFlags;
-            public LLUUID ScreenshotID;
-            public LLUUID ObjectID;
-            public LLUUID AbuserID;
+            public UUID ScreenshotID;
+            public UUID ObjectID;
+            public UUID AbuserID;
             private byte[] _abuseregionname;
             public byte[] AbuseRegionName
             {
@@ -22923,7 +22923,7 @@ namespace OpenMetaverse.Packets
                     else { _abuseregionname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abuseregionname, 0, value.Length); }
                 }
             }
-            public LLUUID AbuseRegionID;
+            public UUID AbuseRegionID;
             private byte[] _summary;
             public byte[] Summary
             {
@@ -23272,7 +23272,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -23461,8 +23461,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MeanCollisionBlock
         {
-            public LLUUID Victim;
-            public LLUUID Perp;
+            public UUID Victim;
+            public UUID Perp;
             public uint Time;
             public float Mag;
             public byte Type;
@@ -23868,12 +23868,12 @@ namespace OpenMetaverse.Packets
                     else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
                 }
             }
-            public LLUUID SourceID;
-            public LLUUID OwnerID;
+            public UUID SourceID;
+            public UUID OwnerID;
             public byte SourceType;
             public byte ChatType;
             public byte Audible;
-            public LLVector3 Position;
+            public Vector3 Position;
             private byte[] _message;
             public byte[] Message
             {
@@ -24311,8 +24311,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -24432,8 +24432,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -24719,8 +24719,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -25096,19 +25096,19 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLUUID SimOwner;
+            public UUID SimOwner;
             public bool IsEstateManager;
             public float WaterHeight;
             public float BillableFactor;
-            public LLUUID CacheID;
-            public LLUUID TerrainBase0;
-            public LLUUID TerrainBase1;
-            public LLUUID TerrainBase2;
-            public LLUUID TerrainBase3;
-            public LLUUID TerrainDetail0;
-            public LLUUID TerrainDetail1;
-            public LLUUID TerrainDetail2;
-            public LLUUID TerrainDetail3;
+            public UUID CacheID;
+            public UUID TerrainBase0;
+            public UUID TerrainBase1;
+            public UUID TerrainBase2;
+            public UUID TerrainBase3;
+            public UUID TerrainDetail0;
+            public UUID TerrainDetail1;
+            public UUID TerrainDetail2;
+            public UUID TerrainDetail3;
             public float TerrainStartHeight00;
             public float TerrainStartHeight01;
             public float TerrainStartHeight10;
@@ -25272,7 +25272,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RegionInfo2Block
         {
-            public LLUUID RegionID;
+            public UUID RegionID;
 
             public int Length
             {
@@ -25395,8 +25395,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -25573,9 +25573,9 @@ namespace OpenMetaverse.Packets
             public ulong UsecSinceStart;
             public uint SecPerDay;
             public uint SecPerYear;
-            public LLVector3 SunDirection;
+            public Vector3 SunDirection;
             public float SunPhase;
-            public LLVector3 SunAngVelocity;
+            public Vector3 SunAngVelocity;
 
             public int Length
             {
@@ -25926,7 +25926,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferInfoBlock
         {
-            public LLUUID TransferID;
+            public UUID TransferID;
             public int ChannelType;
             public int SourceType;
             public float Priority;
@@ -26087,7 +26087,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferInfoBlock
         {
-            public LLUUID TransferID;
+            public UUID TransferID;
             public int ChannelType;
             public int TargetType;
             public int Status;
@@ -26254,7 +26254,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferInfoBlock
         {
-            public LLUUID TransferID;
+            public UUID TransferID;
             public int ChannelType;
 
             public int Length
@@ -26393,7 +26393,7 @@ namespace OpenMetaverse.Packets
             public byte FilePath;
             public bool DeleteOnCompletion;
             public bool UseBigPackets;
-            public LLUUID VFileID;
+            public UUID VFileID;
             public short VFileType;
 
             public int Length
@@ -26676,7 +26676,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SenderBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             public bool IsTrial;
 
             public int Length
@@ -26935,7 +26935,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -27132,7 +27132,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -27249,7 +27249,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -27366,7 +27366,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             public int DefaultPayPrice;
 
             public int Length
@@ -27615,8 +27615,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UserInfoBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             private byte[] _reason;
             public byte[] Reason
             {
@@ -27764,7 +27764,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UserInfoBlock
         {
-            public LLUUID SessionID;
+            public UUID SessionID;
             public uint Flags;
 
             public int Length
@@ -27888,9 +27888,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UserInfoBlock
         {
-            public LLUUID GodID;
-            public LLUUID GodSessionID;
-            public LLUUID AgentID;
+            public UUID GodID;
+            public UUID GodSessionID;
+            public UUID AgentID;
             public uint KickFlags;
             private byte[] _reason;
             public byte[] Reason
@@ -28042,8 +28042,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -28091,7 +28091,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID TargetID;
+            public UUID TargetID;
             public uint Flags;
 
             public int Length
@@ -28221,8 +28221,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -28270,7 +28270,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID TargetID;
+            public UUID TargetID;
             public uint Flags;
 
             public int Length
@@ -28400,9 +28400,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID AvatarID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID AvatarID;
 
             public int Length
             {
@@ -28525,8 +28525,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID AvatarID;
+            public UUID AgentID;
+            public UUID AvatarID;
 
             public int Length
             {
@@ -28574,9 +28574,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class PropertiesDataBlock
         {
-            public LLUUID ImageID;
-            public LLUUID FLImageID;
-            public LLUUID PartnerID;
+            public UUID ImageID;
+            public UUID FLImageID;
+            public UUID PartnerID;
             private byte[] _abouttext;
             public byte[] AboutText
             {
@@ -28815,8 +28815,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID AvatarID;
+            public UUID AgentID;
+            public UUID AvatarID;
 
             public int Length
             {
@@ -29058,8 +29058,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID AvatarID;
+            public UUID AgentID;
+            public UUID AvatarID;
 
             public int Length
             {
@@ -29120,7 +29120,7 @@ namespace OpenMetaverse.Packets
                     else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
-            public LLUUID GroupID;
+            public UUID GroupID;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -29132,7 +29132,7 @@ namespace OpenMetaverse.Packets
                     else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
-            public LLUUID GroupInsigniaID;
+            public UUID GroupInsigniaID;
 
             public int Length
             {
@@ -29360,8 +29360,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -29409,8 +29409,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class PropertiesDataBlock
         {
-            public LLUUID ImageID;
-            public LLUUID FLImageID;
+            public UUID ImageID;
+            public UUID FLImageID;
             private byte[] _abouttext;
             public byte[] AboutText
             {
@@ -29606,8 +29606,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -29849,7 +29849,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -29894,7 +29894,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID TargetID;
+            public UUID TargetID;
             private byte[] _notes;
             public byte[] Notes
             {
@@ -30039,8 +30039,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -30088,7 +30088,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID TargetID;
+            public UUID TargetID;
             private byte[] _notes;
             public byte[] Notes
             {
@@ -30233,8 +30233,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID TargetID;
+            public UUID AgentID;
+            public UUID TargetID;
 
             public int Length
             {
@@ -30282,7 +30282,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID PickID;
+            public UUID PickID;
             private byte[] _pickname;
             public byte[] PickName
             {
@@ -30444,8 +30444,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -30619,7 +30619,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -30735,7 +30735,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLVector3d GlobalPos;
+            public Vector3d GlobalPos;
             public uint EventFlags;
 
             public int Length
@@ -30952,8 +30952,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -31127,8 +31127,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -31302,8 +31302,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -31399,7 +31399,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
+            public UUID QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -31564,7 +31564,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -31609,10 +31609,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID PickID;
-            public LLUUID CreatorID;
+            public UUID PickID;
+            public UUID CreatorID;
             public bool TopPick;
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -31635,7 +31635,7 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public LLUUID SnapshotID;
+            public UUID SnapshotID;
             private byte[] _user;
             public byte[] User
             {
@@ -31669,7 +31669,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLVector3d PosGlobal;
+            public Vector3d PosGlobal;
             public int SortOrder;
             public bool Enabled;
 
@@ -31866,8 +31866,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -31915,10 +31915,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID PickID;
-            public LLUUID CreatorID;
+            public UUID PickID;
+            public UUID CreatorID;
             public bool TopPick;
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -31941,8 +31941,8 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public LLUUID SnapshotID;
-            public LLVector3d PosGlobal;
+            public UUID SnapshotID;
+            public Vector3d PosGlobal;
             public int SortOrder;
             public bool Enabled;
 
@@ -32112,8 +32112,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -32161,7 +32161,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID PickID;
+            public UUID PickID;
 
             public int Length
             {
@@ -32284,8 +32284,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -32333,8 +32333,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID PickID;
-            public LLUUID QueryID;
+            public UUID PickID;
+            public UUID QueryID;
 
             public int Length
             {
@@ -32460,8 +32460,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID TaskID;
-            public LLUUID ItemID;
+            public UUID TaskID;
+            public UUID ItemID;
             private byte[] _objectname;
             public byte[] ObjectName
             {
@@ -32776,7 +32776,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -32822,7 +32822,7 @@ namespace OpenMetaverse.Packets
                 }
             }
             public int ChatChannel;
-            public LLUUID ImageID;
+            public UUID ImageID;
 
             public int Length
             {
@@ -33073,8 +33073,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -33122,7 +33122,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             public int ChatChannel;
             public int ButtonIndex;
             private byte[] _buttonlabel;
@@ -33280,8 +33280,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -33401,8 +33401,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -33450,7 +33450,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             public uint ObjectPermissions;
 
             public int Length
@@ -33591,8 +33591,8 @@ namespace OpenMetaverse.Packets
                     else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
-            public LLUUID ObjectID;
-            public LLUUID OwnerID;
+            public UUID ObjectID;
+            public UUID OwnerID;
             public bool OwnerIsGroup;
             private byte[] _message;
             public byte[] Message
@@ -33788,8 +33788,8 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public LLVector3 SimPosition;
-            public LLVector3 LookAt;
+            public Vector3 SimPosition;
+            public Vector3 LookAt;
 
             public int Length
             {
@@ -34071,8 +34071,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -34253,8 +34253,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -34350,16 +34350,16 @@ namespace OpenMetaverse.Packets
                     else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
-            public LLUUID MediaID;
+            public UUID MediaID;
             public byte MediaAutoScale;
-            public LLUUID GroupID;
+            public UUID GroupID;
             public int PassPrice;
             public float PassHours;
             public byte Category;
-            public LLUUID AuthBuyerID;
-            public LLUUID SnapshotID;
-            public LLVector3 UserLocation;
-            public LLVector3 UserLookAt;
+            public UUID AuthBuyerID;
+            public UUID SnapshotID;
+            public Vector3 UserLocation;
+            public Vector3 UserLookAt;
             public byte LandingType;
 
             public int Length
@@ -34582,8 +34582,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -34686,7 +34686,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TaskIDsBlock
         {
-            public LLUUID TaskID;
+            public UUID TaskID;
 
             public int Length
             {
@@ -34731,7 +34731,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class OwnerIDsBlock
         {
-            public LLUUID OwnerID;
+            public UUID OwnerID;
 
             public int Length
             {
@@ -34902,8 +34902,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -35084,8 +35084,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -35188,7 +35188,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TaskIDsBlock
         {
-            public LLUUID TaskID;
+            public UUID TaskID;
 
             public int Length
             {
@@ -35233,7 +35233,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class OwnerIDsBlock
         {
-            public LLUUID OwnerID;
+            public UUID OwnerID;
 
             public int Length
             {
@@ -35404,8 +35404,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -35508,7 +35508,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReturnIDsBlock
         {
-            public LLUUID ReturnID;
+            public UUID ReturnID;
 
             public int Length
             {
@@ -35655,8 +35655,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -35776,7 +35776,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID CovenantID;
+            public UUID CovenantID;
             public uint CovenantTimestamp;
             private byte[] _estatename;
             public byte[] EstateName
@@ -35789,7 +35789,7 @@ namespace OpenMetaverse.Packets
                     else { _estatename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _estatename, 0, value.Length); }
                 }
             }
-            public LLUUID EstateOwnerID;
+            public UUID EstateOwnerID;
 
             public int Length
             {
@@ -36115,8 +36115,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -36290,8 +36290,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -36339,7 +36339,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public int LocalID;
 
             public int Length
@@ -36469,8 +36469,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -36644,8 +36644,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -36693,7 +36693,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public bool IsGroupOwned;
             public bool Final;
 
@@ -36918,8 +36918,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -37115,8 +37115,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -37312,8 +37312,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -37487,8 +37487,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -37536,7 +37536,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public bool IsGroupOwned;
             public bool RemoveContribution;
             public int LocalID;
@@ -37739,8 +37739,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -37788,7 +37788,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             public int LocalID;
 
             public int Length
@@ -37918,8 +37918,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -38107,7 +38107,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public int SequenceID;
             public uint Flags;
             public int LocalID;
@@ -38173,7 +38173,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ListBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             public int Time;
             public uint Flags;
 
@@ -38328,8 +38328,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -38379,7 +38379,7 @@ namespace OpenMetaverse.Packets
         {
             public uint Flags;
             public int LocalID;
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public int SequenceID;
             public int Sections;
 
@@ -38450,7 +38450,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ListBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             public int Time;
             public uint Flags;
 
@@ -38611,8 +38611,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -38661,7 +38661,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock
         {
             public int LocalID;
-            public LLUUID ParcelID;
+            public UUID ParcelID;
 
             public int Length
             {
@@ -38790,7 +38790,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -38836,7 +38836,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock
         {
             public int LocalID;
-            public LLUUID ParcelID;
+            public UUID ParcelID;
             public float Dwell;
 
             public int Length
@@ -38973,8 +38973,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -39148,8 +39148,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -39198,7 +39198,7 @@ namespace OpenMetaverse.Packets
         public class ParcelDataBlock
         {
             public int LocalID;
-            public LLUUID SnapshotID;
+            public UUID SnapshotID;
 
             public int Length
             {
@@ -39327,7 +39327,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock
         {
-            public LLUUID ID;
+            public UUID ID;
 
             public int Length
             {
@@ -39462,7 +39462,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -39638,7 +39638,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock
         {
-            public LLUUID ID;
+            public UUID ID;
 
             public int Length
             {
@@ -39773,7 +39773,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -39929,8 +39929,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -40050,8 +40050,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -40171,8 +40171,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID ItemID;
+            public UUID ObjectID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -40292,8 +40292,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID ItemID;
+            public UUID ObjectID;
+            public UUID ItemID;
             public bool Running;
 
             public int Length
@@ -40417,8 +40417,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -40466,8 +40466,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID ItemID;
+            public UUID ObjectID;
+            public UUID ItemID;
             public bool Running;
 
             public int Length
@@ -40597,8 +40597,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -40646,8 +40646,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID ItemID;
+            public UUID ObjectID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -40773,11 +40773,11 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequesterBlock
         {
-            public LLUUID SourceID;
-            public LLUUID RequestID;
-            public LLUUID SearchID;
-            public LLVector3 SearchPos;
-            public LLQuaternion SearchDir;
+            public UUID SourceID;
+            public UUID RequestID;
+            public UUID SearchID;
+            public Vector3 SearchPos;
+            public Quaternion SearchDir;
             private byte[] _searchname;
             public byte[] SearchName
             {
@@ -40965,7 +40965,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequesterBlock
         {
-            public LLUUID SourceID;
+            public UUID SourceID;
 
             public int Length
             {
@@ -41010,12 +41010,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SensedDataBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
-            public LLVector3 Position;
-            public LLVector3 Velocity;
-            public LLQuaternion Rotation;
+            public UUID ObjectID;
+            public UUID OwnerID;
+            public UUID GroupID;
+            public Vector3 Position;
+            public Vector3 Velocity;
+            public Quaternion Rotation;
             private byte[] _name;
             public byte[] Name
             {
@@ -41208,8 +41208,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint CircuitCode;
 
             public int Length
@@ -41336,8 +41336,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -41385,8 +41385,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLVector3 Position;
-            public LLVector3 LookAt;
+            public Vector3 Position;
+            public Vector3 LookAt;
             public ulong RegionHandle;
             public uint Timestamp;
 
@@ -41599,8 +41599,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -41720,8 +41720,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -41769,7 +41769,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -41910,8 +41910,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -41960,13 +41960,13 @@ namespace OpenMetaverse.Packets
         public class MessageBlockBlock
         {
             public bool FromGroup;
-            public LLUUID ToAgentID;
+            public UUID ToAgentID;
             public uint ParentEstateID;
-            public LLUUID RegionID;
-            public LLVector3 Position;
+            public UUID RegionID;
+            public Vector3 Position;
             public byte Offline;
             public byte Dialog;
-            public LLUUID ID;
+            public UUID ID;
             public uint Timestamp;
             private byte[] _fromagentname;
             public byte[] FromAgentName
@@ -42183,8 +42183,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -42304,8 +42304,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock
         {
-            public LLUUID Hunter;
-            public LLUUID Prey;
+            public UUID Hunter;
+            public UUID Prey;
             public uint SpaceIP;
 
             public int Length
@@ -42512,8 +42512,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -42562,7 +42562,7 @@ namespace OpenMetaverse.Packets
         public class RequestBlockBlock
         {
             public bool Godlike;
-            public LLUUID Token;
+            public UUID Token;
 
             public int Length
             {
@@ -42688,8 +42688,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -42738,7 +42738,7 @@ namespace OpenMetaverse.Packets
         public class GrantDataBlock
         {
             public byte GodLevel;
-            public LLUUID Token;
+            public UUID Token;
 
             public int Length
             {
@@ -42864,9 +42864,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -42928,7 +42928,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public LLUUID Invoice;
+            public UUID Invoice;
 
             public int Length
             {
@@ -43148,9 +43148,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -43212,7 +43212,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public LLUUID Invoice;
+            public UUID Invoice;
 
             public int Length
             {
@@ -43432,9 +43432,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -43496,7 +43496,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public LLUUID Invoice;
+            public UUID Invoice;
 
             public int Length
             {
@@ -43716,8 +43716,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -43891,8 +43891,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -43940,7 +43940,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MuteDataBlock
         {
-            public LLUUID MuteID;
+            public UUID MuteID;
             private byte[] _mutename;
             public byte[] MuteName
             {
@@ -44099,8 +44099,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -44148,7 +44148,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MuteDataBlock
         {
-            public LLUUID MuteID;
+            public UUID MuteID;
             private byte[] _mutename;
             public byte[] MuteName
             {
@@ -44292,8 +44292,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -44341,8 +44341,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class NotecardDataBlock
         {
-            public LLUUID NotecardItemID;
-            public LLUUID ObjectID;
+            public UUID NotecardItemID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -44390,8 +44390,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
+            public UUID ItemID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -44541,9 +44541,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -44594,19 +44594,19 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
+            public UUID ItemID;
+            public UUID FolderID;
             public uint CallbackID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -44883,9 +44883,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public bool SimApproved;
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -44936,19 +44936,19 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
+            public UUID ItemID;
+            public UUID FolderID;
             public uint CallbackID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID AssetID;
+            public UUID AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -45225,8 +45225,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public bool Stamp;
 
             public int Length
@@ -45278,8 +45278,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
+            public UUID ItemID;
+            public UUID FolderID;
             private byte[] _newname;
             public byte[] NewName
             {
@@ -45444,8 +45444,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -45494,9 +45494,9 @@ namespace OpenMetaverse.Packets
         public class InventoryDataBlock
         {
             public uint CallbackID;
-            public LLUUID OldAgentID;
-            public LLUUID OldItemID;
-            public LLUUID NewFolderID;
+            public UUID OldAgentID;
+            public UUID OldItemID;
+            public UUID NewFolderID;
             private byte[] _newname;
             public byte[] NewName
             {
@@ -45670,8 +45670,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -45719,7 +45719,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -45860,8 +45860,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -45909,7 +45909,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
             public uint Flags;
 
             public int Length
@@ -46057,7 +46057,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -46102,8 +46102,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID NewAssetID;
+            public UUID ItemID;
+            public UUID NewAssetID;
 
             public int Length
             {
@@ -46229,8 +46229,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -46278,8 +46278,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
-            public LLUUID ParentID;
+            public UUID FolderID;
+            public UUID ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -46430,8 +46430,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -46479,8 +46479,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
-            public LLUUID ParentID;
+            public UUID FolderID;
+            public UUID ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -46649,8 +46649,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public bool Stamp;
 
             public int Length
@@ -46702,8 +46702,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID FolderID;
-            public LLUUID ParentID;
+            public UUID FolderID;
+            public UUID ParentID;
 
             public int Length
             {
@@ -46847,8 +46847,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -46896,7 +46896,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -47037,8 +47037,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -47086,8 +47086,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID FolderID;
-            public LLUUID OwnerID;
+            public UUID FolderID;
+            public UUID OwnerID;
             public int SortOrder;
             public bool FetchFolders;
             public bool FetchItems;
@@ -47228,9 +47228,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID FolderID;
-            public LLUUID OwnerID;
+            public UUID AgentID;
+            public UUID FolderID;
+            public UUID OwnerID;
             public int Version;
             public int Descendents;
 
@@ -47295,8 +47295,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
-            public LLUUID ParentID;
+            public UUID FolderID;
+            public UUID ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -47369,18 +47369,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ItemDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ItemID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID AssetID;
+            public UUID AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -47675,8 +47675,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -47724,8 +47724,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID OwnerID;
-            public LLUUID ItemID;
+            public UUID OwnerID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -47869,7 +47869,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -47914,18 +47914,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ItemID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID AssetID;
+            public UUID AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -48196,8 +48196,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -48245,8 +48245,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
-            public LLUUID ParentID;
+            public UUID FolderID;
+            public UUID ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -48319,19 +48319,19 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ItemDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
             public uint CallbackID;
-            public LLUUID FolderID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID AssetID;
+            public UUID AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -48632,10 +48632,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
-            public LLUUID AgentID;
-            public LLUUID OwnerID;
-            public LLUUID ItemID;
+            public UUID QueryID;
+            public UUID AgentID;
+            public UUID OwnerID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -48761,8 +48761,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock
         {
-            public LLUUID QueryID;
-            public LLUUID AssetID;
+            public UUID QueryID;
+            public UUID AssetID;
             public bool IsReadable;
 
             public int Length
@@ -48886,8 +48886,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -48935,7 +48935,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -48980,7 +48980,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ItemDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -49145,8 +49145,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -49194,7 +49194,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID FolderID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -49317,8 +49317,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -49418,18 +49418,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ItemID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -49688,8 +49688,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -49738,7 +49738,7 @@ namespace OpenMetaverse.Packets
         public class InventoryDataBlock
         {
             public uint LocalID;
-            public LLUUID ItemID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -49867,9 +49867,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID FolderID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -49921,7 +49921,7 @@ namespace OpenMetaverse.Packets
         public class InventoryDataBlock
         {
             public uint LocalID;
-            public LLUUID ItemID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -50050,8 +50050,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -50225,7 +50225,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID TaskID;
+            public UUID TaskID;
             public short Serial;
             private byte[] _filename;
             public byte[] Filename
@@ -50368,8 +50368,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -50417,10 +50417,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public byte Destination;
-            public LLUUID DestinationID;
-            public LLUUID TransactionID;
+            public UUID DestinationID;
+            public UUID TransactionID;
             public byte PacketCount;
             public byte PacketNumber;
 
@@ -50632,7 +50632,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public bool Success;
 
             public int Length
@@ -50753,9 +50753,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -50806,11 +50806,11 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RezDataBlock
         {
-            public LLUUID FromTaskID;
+            public UUID FromTaskID;
             public byte BypassRaycast;
-            public LLVector3 RayStart;
-            public LLVector3 RayEnd;
-            public LLUUID RayTargetID;
+            public Vector3 RayStart;
+            public Vector3 RayEnd;
+            public UUID RayTargetID;
             public bool RayEndIsIntersection;
             public bool RezSelected;
             public bool RemoveItem;
@@ -50907,18 +50907,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ItemID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -51177,9 +51177,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -51230,11 +51230,11 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RezDataBlock
         {
-            public LLUUID FromTaskID;
+            public UUID FromTaskID;
             public byte BypassRaycast;
-            public LLVector3 RayStart;
-            public LLVector3 RayEnd;
-            public LLUUID RayTargetID;
+            public Vector3 RayStart;
+            public Vector3 RayEnd;
+            public UUID RayTargetID;
             public bool RayEndIsIntersection;
             public bool RezSelected;
             public bool RemoveItem;
@@ -51331,8 +51331,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class NotecardDataBlock
         {
-            public LLUUID NotecardItemID;
-            public LLUUID ObjectID;
+            public UUID NotecardItemID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -51380,7 +51380,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -51533,8 +51533,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -51582,7 +51582,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -51627,7 +51627,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -51774,8 +51774,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -51823,7 +51823,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -51946,8 +51946,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock
         {
-            public LLUUID SourceID;
-            public LLUUID DestID;
+            public UUID SourceID;
+            public UUID DestID;
 
             public int Length
             {
@@ -52067,8 +52067,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -52116,7 +52116,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ExBlockBlock
         {
-            public LLUUID OtherID;
+            public UUID OtherID;
 
             public int Length
             {
@@ -52239,8 +52239,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -52288,8 +52288,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock
         {
-            public LLUUID DestID;
-            public LLUUID TransactionID;
+            public UUID DestID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -52415,8 +52415,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -52464,7 +52464,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -52509,7 +52509,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock
         {
-            public LLUUID FolderID;
+            public UUID FolderID;
 
             public int Length
             {
@@ -52656,8 +52656,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -52705,7 +52705,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -52828,9 +52828,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -52933,18 +52933,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryBlockBlock
         {
-            public LLUUID ItemID;
-            public LLUUID FolderID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ItemID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -53203,8 +53203,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -53253,8 +53253,8 @@ namespace OpenMetaverse.Packets
         public class InventoryBlockBlock
         {
             public uint CallbackID;
-            public LLUUID FolderID;
-            public LLUUID TransactionID;
+            public UUID FolderID;
+            public UUID TransactionID;
             public uint NextOwnerMask;
             public sbyte Type;
             public sbyte InvType;
@@ -53446,8 +53446,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -53543,7 +53543,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryBlockBlock
         {
-            public LLUUID FolderID;
+            public UUID FolderID;
             private byte[] _name;
             public byte[] Name
             {
@@ -53693,7 +53693,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequestBlockBlock
         {
-            public LLUUID RegionID;
+            public UUID RegionID;
 
             public int Length
             {
@@ -53810,7 +53810,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReplyBlockBlock
         {
-            public LLUUID RegionID;
+            public UUID RegionID;
             public ulong RegionHandle;
 
             public int Length
@@ -53938,8 +53938,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -53987,8 +53987,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID SourceID;
-            public LLUUID DestID;
+            public UUID SourceID;
+            public UUID DestID;
             public byte Flags;
             public int Amount;
             public byte AggregatePermNextOwner;
@@ -54161,8 +54161,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -54210,7 +54210,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -54333,8 +54333,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID TransactionID;
             public bool TransactionSuccess;
             public int MoneyBalance;
             public int SquareMetersCredit;
@@ -54553,8 +54553,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID TransactionID;
+            public UUID AgentID;
+            public UUID TransactionID;
             public bool TransactionSuccess;
             public int MoneyBalance;
             public int SquareMetersCredit;
@@ -54726,8 +54726,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint Flags;
 
             public int Length
@@ -54782,8 +54782,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID AssetID;
+            public UUID ItemID;
+            public UUID AssetID;
             public uint GestureFlags;
 
             public int Length
@@ -54934,8 +54934,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint Flags;
 
             public int Length
@@ -54990,7 +54990,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
             public uint GestureFlags;
 
             public int Length
@@ -55138,7 +55138,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MuteDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             private byte[] _filename;
             public byte[] Filename
             {
@@ -55276,7 +55276,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -55393,8 +55393,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -55442,7 +55442,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RightsBlock
         {
-            public LLUUID AgentRelated;
+            public UUID AgentRelated;
             public int RelatedRights;
 
             public int Length
@@ -55590,7 +55590,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -55635,7 +55635,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RightsBlock
         {
-            public LLUUID AgentRelated;
+            public UUID AgentRelated;
             public int RelatedRights;
 
             public int Length
@@ -55783,7 +55783,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -55918,7 +55918,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -56053,8 +56053,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -56114,8 +56114,8 @@ namespace OpenMetaverse.Packets
                 }
             }
             public uint LocationID;
-            public LLVector3 LocationPos;
-            public LLVector3 LocationLookAt;
+            public Vector3 LocationPos;
+            public Vector3 LocationLookAt;
 
             public int Length
             {
@@ -56258,7 +56258,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AssetBlockBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public sbyte Type;
             public bool Tempfile;
             public bool StoreLocal;
@@ -56409,7 +56409,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AssetBlockBlock
         {
-            public LLUUID UUID;
+            public UUID UUID;
             public sbyte Type;
             public bool Success;
 
@@ -56534,8 +56534,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -56606,7 +56606,7 @@ namespace OpenMetaverse.Packets
                 }
             }
             public bool ShowInList;
-            public LLUUID InsigniaID;
+            public UUID InsigniaID;
             public int MembershipFee;
             public bool OpenEnrollment;
             public bool AllowPublish;
@@ -56772,7 +56772,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -56817,7 +56817,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReplyDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public bool Success;
             private byte[] _message;
             public byte[] Message
@@ -56965,8 +56965,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -57014,7 +57014,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             private byte[] _charter;
             public byte[] Charter
             {
@@ -57027,7 +57027,7 @@ namespace OpenMetaverse.Packets
                 }
             }
             public bool ShowInList;
-            public LLUUID InsigniaID;
+            public UUID InsigniaID;
             public int MembershipFee;
             public bool OpenEnrollment;
             public bool AllowPublish;
@@ -57187,9 +57187,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -57240,8 +57240,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RoleChangeBlock
         {
-            public LLUUID RoleID;
-            public LLUUID MemberID;
+            public UUID RoleID;
+            public UUID MemberID;
             public uint Change;
 
             public int Length
@@ -57392,8 +57392,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -57441,7 +57441,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -57564,7 +57564,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -57609,7 +57609,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public bool Success;
 
             public int Length
@@ -57736,8 +57736,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -57785,7 +57785,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -57830,7 +57830,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class EjectDataBlock
         {
-            public LLUUID EjecteeID;
+            public UUID EjecteeID;
 
             public int Length
             {
@@ -57977,7 +57977,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -58022,7 +58022,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -58196,8 +58196,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -58245,7 +58245,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -58368,7 +58368,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -58413,7 +58413,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public bool Success;
 
             public int Length
@@ -58540,8 +58540,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -58589,7 +58589,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -58634,8 +58634,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InviteDataBlock
         {
-            public LLUUID InviteeID;
-            public LLUUID RoleID;
+            public UUID InviteeID;
+            public UUID RoleID;
 
             public int Length
             {
@@ -58785,8 +58785,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -58834,7 +58834,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -58957,7 +58957,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -59002,7 +59002,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             private byte[] _name;
             public byte[] Name
             {
@@ -59038,8 +59038,8 @@ namespace OpenMetaverse.Packets
                 }
             }
             public ulong PowersMask;
-            public LLUUID InsigniaID;
-            public LLUUID FounderID;
+            public UUID InsigniaID;
+            public UUID FounderID;
             public int MembershipFee;
             public bool OpenEnrollment;
             public int Money;
@@ -59047,7 +59047,7 @@ namespace OpenMetaverse.Packets
             public int GroupRolesCount;
             public bool AllowPublish;
             public bool MaturePublish;
-            public LLUUID OwnerRole;
+            public UUID OwnerRole;
 
             public int Length
             {
@@ -59255,9 +59255,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -59308,7 +59308,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID RequestID;
+            public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
@@ -59445,8 +59445,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -59494,7 +59494,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID RequestID;
+            public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
             private byte[] _startdate;
@@ -59790,9 +59790,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -59843,7 +59843,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID RequestID;
+            public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
@@ -59980,8 +59980,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -60029,7 +60029,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID RequestID;
+            public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
             private byte[] _startdate;
@@ -60281,9 +60281,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -60334,7 +60334,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID RequestID;
+            public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
@@ -60471,8 +60471,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -60520,7 +60520,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock
         {
-            public LLUUID RequestID;
+            public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
             private byte[] _startdate;
@@ -60819,8 +60819,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -60868,7 +60868,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -60913,7 +60913,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -61042,8 +61042,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -61091,7 +61091,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public uint TotalNumItems;
 
             public int Length
@@ -61143,8 +61143,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ProposalDataBlock
         {
-            public LLUUID VoteID;
-            public LLUUID VoteInitiator;
+            public UUID VoteID;
+            public UUID VoteInitiator;
             private byte[] _tersedateid;
             public byte[] TerseDateID
             {
@@ -61414,8 +61414,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -61463,7 +61463,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -61508,7 +61508,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
 
             public int Length
             {
@@ -61637,8 +61637,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -61686,7 +61686,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock
         {
-            public LLUUID TransactionID;
+            public UUID TransactionID;
             public uint TotalNumItems;
 
             public int Length
@@ -61738,7 +61738,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HistoryItemDataBlock
         {
-            public LLUUID VoteID;
+            public UUID VoteID;
             private byte[] _tersedateid;
             public byte[] TerseDateID
             {
@@ -61772,7 +61772,7 @@ namespace OpenMetaverse.Packets
                     else { _enddatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _enddatetime, 0, value.Length); }
                 }
             }
-            public LLUUID VoteInitiator;
+            public UUID VoteInitiator;
             private byte[] _votetype;
             public byte[] VoteType
             {
@@ -61924,7 +61924,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class VoteItemBlock
         {
-            public LLUUID CandidateID;
+            public UUID CandidateID;
             private byte[] _votecast;
             public byte[] VoteCast
             {
@@ -62106,8 +62106,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -62155,7 +62155,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ProposalDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public int Quorum;
             public float Majority;
             public int Duration;
@@ -62321,8 +62321,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -62370,8 +62370,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ProposalDataBlock
         {
-            public LLUUID ProposalID;
-            public LLUUID GroupID;
+            public UUID ProposalID;
+            public UUID GroupID;
             private byte[] _votecast;
             public byte[] VoteCast
             {
@@ -62518,8 +62518,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -62567,8 +62567,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID GroupID;
+            public UUID RequestID;
 
             public int Length
             {
@@ -62694,7 +62694,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -62739,8 +62739,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID GroupID;
+            public UUID RequestID;
             public int MemberCount;
 
             public int Length
@@ -62795,7 +62795,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MemberDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public int Contribution;
             private byte[] _onlinestatus;
             public byte[] OnlineStatus
@@ -63006,9 +63006,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -63131,8 +63131,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -63180,7 +63180,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public int Contribution;
 
             public int Length
@@ -63310,8 +63310,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -63359,7 +63359,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public bool AcceptNotices;
 
             public int Length
@@ -63537,8 +63537,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -63586,8 +63586,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID GroupID;
+            public UUID RequestID;
 
             public int Length
             {
@@ -63713,7 +63713,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -63758,8 +63758,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID GroupID;
+            public UUID RequestID;
             public int RoleCount;
 
             public int Length
@@ -63814,7 +63814,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RoleDataBlock
         {
-            public LLUUID RoleID;
+            public UUID RoleID;
             private byte[] _name;
             public byte[] Name
             {
@@ -64041,8 +64041,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -64090,8 +64090,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID GroupID;
+            public UUID RequestID;
 
             public int Length
             {
@@ -64217,9 +64217,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID AgentID;
+            public UUID GroupID;
+            public UUID RequestID;
             public uint TotalPairs;
 
             public int Length
@@ -64277,8 +64277,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MemberDataBlock
         {
-            public LLUUID RoleID;
-            public LLUUID MemberID;
+            public UUID RoleID;
+            public UUID MemberID;
 
             public int Length
             {
@@ -64422,10 +64422,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
+            public UUID RequestID;
 
             public int Length
             {
@@ -64551,9 +64551,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
-            public LLUUID RequestID;
+            public UUID AgentID;
+            public UUID GroupID;
+            public UUID RequestID;
 
             public int Length
             {
@@ -64615,7 +64615,7 @@ namespace OpenMetaverse.Packets
                     else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
                 }
             }
-            public LLUUID RoleID;
+            public UUID RoleID;
             public bool Selected;
 
             public int Length
@@ -64771,10 +64771,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
-            public LLUUID TitleRoleID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
+            public UUID TitleRoleID;
 
             public int Length
             {
@@ -64900,9 +64900,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -64953,7 +64953,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RoleDataBlock
         {
-            public LLUUID RoleID;
+            public UUID RoleID;
             private byte[] _name;
             public byte[] Name
             {
@@ -65171,8 +65171,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequestDataBlock
         {
-            public LLUUID RequestID;
-            public LLUUID AgentID;
+            public UUID RequestID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -65292,8 +65292,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReplyDataBlock
         {
-            public LLUUID RequestID;
-            public LLUUID GroupID;
+            public UUID RequestID;
+            public UUID GroupID;
             private byte[] _selection;
             public byte[] Selection
             {
@@ -65434,8 +65434,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -65555,8 +65555,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint SerialNum;
 
             public int Length
@@ -65611,8 +65611,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID AssetID;
+            public UUID ItemID;
+            public UUID AssetID;
             public byte WearableType;
 
             public int Length
@@ -65760,8 +65760,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -65809,7 +65809,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock
         {
-            public LLUUID ItemID;
+            public UUID ItemID;
             public byte WearableType;
 
             public int Length
@@ -65954,8 +65954,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public int SerialNum;
 
             public int Length
@@ -66010,7 +66010,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             public byte TextureIndex;
 
             public int Length
@@ -66155,8 +66155,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public int SerialNum;
 
             public int Length
@@ -66211,7 +66211,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock
         {
-            public LLUUID TextureID;
+            public UUID TextureID;
             public byte TextureIndex;
             private byte[] _hostname;
             public byte[] HostName
@@ -66377,8 +66377,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -66498,7 +66498,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -66532,7 +66532,7 @@ namespace OpenMetaverse.Packets
                     else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
-            public LLUUID ActiveGroupID;
+            public UUID ActiveGroupID;
             public ulong GroupPowers;
             private byte[] _groupname;
             public byte[] GroupName
@@ -66711,8 +66711,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentGroupDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
             public ulong AgentPowers;
             private byte[] _grouptitle;
             public byte[] GroupTitle
@@ -66882,7 +66882,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -66927,10 +66927,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public ulong GroupPowers;
             public bool AcceptNotices;
-            public LLUUID GroupInsigniaID;
+            public UUID GroupInsigniaID;
             public int Contribution;
             private byte[] _groupname;
             public byte[] GroupName
@@ -67115,8 +67115,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -67236,7 +67236,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock
         {
-            public LLUUID EndPointID;
+            public UUID EndPointID;
             public byte[] Digest;
 
             public int Length
@@ -67358,7 +67358,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock
         {
-            public LLUUID EndPointID;
+            public UUID EndPointID;
 
             public int Length
             {
@@ -67541,8 +67541,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -67590,8 +67590,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID OwnerID;
+            public UUID ItemID;
+            public UUID OwnerID;
             public byte AttachmentPt;
             public uint ItemFlags;
             public uint GroupMask;
@@ -67790,8 +67790,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -67839,7 +67839,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HeaderDataBlock
         {
-            public LLUUID CompoundMsgID;
+            public UUID CompoundMsgID;
             public byte TotalObjects;
             public bool FirstDetachAll;
 
@@ -67892,8 +67892,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ItemID;
-            public LLUUID OwnerID;
+            public UUID ItemID;
+            public UUID OwnerID;
             public byte AttachmentPt;
             public uint ItemFlags;
             public uint GroupMask;
@@ -68116,8 +68116,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID ItemID;
+            public UUID AgentID;
+            public UUID ItemID;
 
             public int Length
             {
@@ -68237,8 +68237,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -68286,7 +68286,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HeaderDataBlock
         {
-            public LLUUID NewFolderID;
+            public UUID NewFolderID;
 
             public int Length
             {
@@ -68331,8 +68331,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID OldItemID;
-            public LLUUID OldFolderID;
+            public UUID OldItemID;
+            public UUID OldFolderID;
 
             public int Length
             {
@@ -68482,8 +68482,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -68603,7 +68603,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -68813,8 +68813,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -69006,7 +69006,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -69222,7 +69222,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public LLUUID Invoice;
+            public UUID Invoice;
             public byte[] Digest;
 
             public int Length
@@ -69441,8 +69441,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -69580,7 +69580,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public uint Flags;
 
             public int Length
@@ -69636,7 +69636,7 @@ namespace OpenMetaverse.Packets
             public uint Right;
             public uint Top;
             public uint Bottom;
-            public LLUUID ImageID;
+            public UUID ImageID;
 
             public int Length
             {
@@ -69801,8 +69801,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -70007,8 +70007,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -70214,7 +70214,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public uint Flags;
 
             public int Length
@@ -70283,7 +70283,7 @@ namespace OpenMetaverse.Packets
             public uint RegionFlags;
             public byte WaterHeight;
             public byte Agents;
-            public LLUUID MapImageID;
+            public UUID MapImageID;
 
             public int Length
             {
@@ -70458,8 +70458,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -70662,7 +70662,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
             public uint Flags;
 
             public int Length
@@ -70764,7 +70764,7 @@ namespace OpenMetaverse.Packets
         {
             public uint X;
             public uint Y;
-            public LLUUID ID;
+            public UUID ID;
             public int Extra;
             public int Extra2;
             private byte[] _name;
@@ -70958,10 +70958,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID AssetID;
-            public LLVector3d PosGlobal;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID AssetID;
+            public Vector3d PosGlobal;
             private byte[] _to;
             public byte[] To
             {
@@ -71344,7 +71344,7 @@ namespace OpenMetaverse.Packets
                     else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
-            public LLUUID MediaID;
+            public UUID MediaID;
             public byte MediaAutoScale;
 
             public int Length
@@ -71583,8 +71583,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -71857,7 +71857,7 @@ namespace OpenMetaverse.Packets
         public class ReportDataBlock
         {
             public uint TaskLocalID;
-            public LLUUID TaskID;
+            public UUID TaskID;
             public float LocationX;
             public float LocationY;
             public float LocationZ;
@@ -72074,7 +72074,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -72131,7 +72131,7 @@ namespace OpenMetaverse.Packets
                     else { _token = new byte[value.Length]; Buffer.BlockCopy(value, 0, _token, 0, value.Length); }
                 }
             }
-            public LLUUID ID;
+            public UUID ID;
             private byte[] _system;
             public byte[] System
             {
@@ -72332,8 +72332,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -72858,9 +72858,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLUUID GroupID;
+            public UUID AgentID;
+            public UUID SessionID;
+            public UUID GroupID;
 
             public int Length
             {
@@ -72933,12 +72933,12 @@ namespace OpenMetaverse.Packets
             public ushort ProfileEnd;
             public ushort ProfileHollow;
             public byte BypassRaycast;
-            public LLVector3 RayStart;
-            public LLVector3 RayEnd;
-            public LLUUID RayTargetID;
+            public Vector3 RayStart;
+            public Vector3 RayEnd;
+            public UUID RayTargetID;
             public byte RayEndIsIntersection;
-            public LLVector3 Scale;
-            public LLQuaternion Rotation;
+            public Vector3 Scale;
+            public Quaternion Rotation;
             public byte State;
 
             public int Length
@@ -73154,8 +73154,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -73372,8 +73372,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -73569,8 +73569,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -73619,7 +73619,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
-            public LLVector3 Position;
+            public Vector3 Position;
 
             public int Length
             {
@@ -73766,8 +73766,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -73816,7 +73816,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint RequestFlags;
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -74049,7 +74049,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
+            public UUID AgentID;
 
             public int Length
             {
@@ -74214,8 +74214,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -74349,8 +74349,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock
         {
-            public LLVector3 Position;
-            public LLVector3 LookAt;
+            public Vector3 Position;
+            public Vector3 LookAt;
 
             public int Length
             {
@@ -74482,8 +74482,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -74603,10 +74603,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID CreatorID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ObjectID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public ulong CreationDate;
             public uint BaseMask;
             public uint OwnerMask;
@@ -74621,10 +74621,10 @@ namespace OpenMetaverse.Packets
             public byte AggregatePermTexturesOwner;
             public uint Category;
             public short InventorySerial;
-            public LLUUID ItemID;
-            public LLUUID FolderID;
-            public LLUUID FromTaskID;
-            public LLUUID LastOwnerID;
+            public UUID ItemID;
+            public UUID FolderID;
+            public UUID FromTaskID;
+            public UUID LastOwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -74956,9 +74956,9 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock
         {
             public uint RequestFlags;
-            public LLUUID ObjectID;
-            public LLUUID OwnerID;
-            public LLUUID GroupID;
+            public UUID ObjectID;
+            public UUID OwnerID;
+            public UUID GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
@@ -74968,7 +74968,7 @@ namespace OpenMetaverse.Packets
             public byte SaleType;
             public int SalePrice;
             public uint Category;
-            public LLUUID LastOwnerID;
+            public UUID LastOwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -75192,8 +75192,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -75400,9 +75400,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock
         {
-            public LLUUID SoundID;
-            public LLUUID ObjectID;
-            public LLUUID OwnerID;
+            public UUID SoundID;
+            public UUID ObjectID;
+            public UUID OwnerID;
             public float Gain;
             public byte Flags;
 
@@ -75537,7 +75537,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
             public float Gain;
 
             public int Length
@@ -75662,9 +75662,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock
         {
-            public LLUUID ObjectID;
-            public LLUUID OwnerID;
-            public LLUUID SoundID;
+            public UUID ObjectID;
+            public UUID OwnerID;
+            public UUID SoundID;
 
             public int Length
             {
@@ -75805,8 +75805,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -75854,8 +75854,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class EffectBlock
         {
-            public LLUUID ID;
-            public LLUUID AgentID;
+            public UUID ID;
+            public UUID AgentID;
             public byte Type;
             public float Duration;
             public byte[] Color;
@@ -76279,15 +76279,15 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLQuaternion BodyRotation;
-            public LLQuaternion HeadRotation;
+            public UUID AgentID;
+            public UUID SessionID;
+            public Quaternion BodyRotation;
+            public Quaternion HeadRotation;
             public byte State;
-            public LLVector3 CameraCenter;
-            public LLVector3 CameraAtAxis;
-            public LLVector3 CameraLeftAxis;
-            public LLVector3 CameraUpAxis;
+            public Vector3 CameraCenter;
+            public Vector3 CameraAtAxis;
+            public Vector3 CameraLeftAxis;
+            public Vector3 CameraUpAxis;
             public float Far;
             public uint ControlFlags;
             public byte Flags;
@@ -76447,8 +76447,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -76496,7 +76496,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationListBlock
         {
-            public LLUUID AnimID;
+            public UUID AnimID;
             public bool StartAnim;
 
             public int Length
@@ -76727,8 +76727,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -76776,8 +76776,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TargetObjectBlock
         {
-            public LLUUID TargetID;
-            public LLVector3 Offset;
+            public UUID TargetID;
+            public Vector3 Offset;
 
             public int Length
             {
@@ -76903,8 +76903,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -77024,8 +77024,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock
         {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -77073,7 +77073,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequestImageBlock
         {
-            public LLUUID Image;
+            public UUID Image;
             public sbyte DiscardLevel;
             public float DownloadPriority;
             public uint Packet;
@@ -77237,7 +77237,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageIDBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             public byte Codec;
             public uint Size;
             public ushort Packets;
@@ -77439,7 +77439,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageIDBlock
         {
-            public LLUUID ID;
+            public UUID ID;
             public ushort Packet;
 
             public int Length
@@ -77875,12 +77875,12 @@ namespace OpenMetaverse.Packets
         {
             public uint ID;
             public byte State;
-            public LLUUID FullID;
+            public UUID FullID;
             public uint CRC;
             public byte PCode;
             public byte Material;
             public byte ClickAction;
-            public LLVector3 Scale;
+            public Vector3 Scale;
             private byte[] _objectdata;
             public byte[] ObjectData
             {
@@ -78001,14 +78001,14 @@ namespace OpenMetaverse.Packets
                     else { _extraparams = new byte[value.Length]; Buffer.BlockCopy(value, 0, _extraparams, 0, value.Length); }
                 }
             }
-            public LLUUID Sound;
-            public LLUUID OwnerID;
+            public UUID Sound;
+            public UUID OwnerID;
             public float Gain;
             public byte Flags;
             public float Radius;
             public byte JointType;
-            public LLVector3 JointPivot;
-            public LLVector3 JointAxisOrAnchor;
+            public Vector3 JointPivot;
+            public Vector3 JointAxisOrAnchor;
 
             public int Length
             {
@@ -79181,7 +79181,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferDataBlock
         {
-            public LLUUID TransferID;
+            public UUID TransferID;
             public int ChannelType;
             public int Packet;
             public int Status;
@@ -79672,7 +79672,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SenderBlock
         {
-            public LLUUID ID;
+            public UUID ID;
 
             public int Length
             {
@@ -79717,7 +79717,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationListBlock
         {
-            public LLUUID AnimID;
+            public UUID AnimID;
             public int AnimSequenceID;
 
             public int Length
@@ -79769,7 +79769,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationSourceListBlock
         {
-            public LLUUID ObjectID;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -80020,7 +80020,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SitObjectBlock
         {
-            public LLUUID ID;
+            public UUID ID;
 
             public int Length
             {
@@ -80066,10 +80066,10 @@ namespace OpenMetaverse.Packets
         public class SitTransformBlock
         {
             public bool AutoPilot;
-            public LLVector3 SitPosition;
-            public LLQuaternion SitRotation;
-            public LLVector3 CameraEyeOffset;
-            public LLVector3 CameraAtOffset;
+            public Vector3 SitPosition;
+            public Quaternion SitRotation;
+            public Vector3 CameraEyeOffset;
+            public Vector3 CameraAtOffset;
             public bool ForceMouselook;
 
             public int Length
@@ -80208,7 +80208,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class CameraCollidePlaneBlock
         {
-            public LLVector4 Plane;
+            public Vector4 Plane;
 
             public int Length
             {
@@ -80332,14 +80332,14 @@ namespace OpenMetaverse.Packets
             public int OtherCount;
             public int PublicCount;
             public int LocalID;
-            public LLUUID OwnerID;
+            public UUID OwnerID;
             public bool IsGroupOwned;
             public uint AuctionID;
             public int ClaimDate;
             public int ClaimPrice;
             public int RentPrice;
-            public LLVector3 AABBMin;
-            public LLVector3 AABBMax;
+            public Vector3 AABBMin;
+            public Vector3 AABBMax;
             private byte[] _bitmap;
             public byte[] Bitmap
             {
@@ -80409,16 +80409,16 @@ namespace OpenMetaverse.Packets
                     else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
-            public LLUUID MediaID;
+            public UUID MediaID;
             public byte MediaAutoScale;
-            public LLUUID GroupID;
+            public UUID GroupID;
             public int PassPrice;
             public float PassHours;
             public byte Category;
-            public LLUUID AuthBuyerID;
-            public LLUUID SnapshotID;
-            public LLVector3 UserLocation;
-            public LLVector3 UserLookAt;
+            public UUID AuthBuyerID;
+            public UUID SnapshotID;
+            public Vector3 UserLocation;
+            public Vector3 UserLookAt;
             public byte LandingType;
             public bool RegionPushOverride;
             public bool RegionDenyAnonymous;
@@ -80846,15 +80846,15 @@ namespace OpenMetaverse.Packets
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLVector3 AgentPos;
-            public LLVector3 AgentVel;
-            public LLVector3 Center;
-            public LLVector3 Size;
-            public LLVector3 AtAxis;
-            public LLVector3 LeftAxis;
-            public LLVector3 UpAxis;
+            public UUID AgentID;
+            public UUID SessionID;
+            public Vector3 AgentPos;
+            public Vector3 AgentVel;
+            public Vector3 Center;
+            public Vector3 Size;
+            public Vector3 AtAxis;
+            public Vector3 LeftAxis;
+            public Vector3 UpAxis;
             public bool ChangedGrid;
             public float Far;
             public float Aspect;
@@ -80870,13 +80870,13 @@ namespace OpenMetaverse.Packets
                 }
             }
             public uint LocomotionState;
-            public LLQuaternion HeadRotation;
-            public LLQuaternion BodyRotation;
+            public Quaternion HeadRotation;
+            public Quaternion BodyRotation;
             public uint ControlFlags;
             public float EnergyLevel;
             public byte GodLevel;
             public bool AlwaysRun;
-            public LLUUID PreyAgent;
+            public UUID PreyAgent;
             public byte AgentAccess;
             private byte[] _agenttextures;
             public byte[] AgentTextures
@@ -80889,7 +80889,7 @@ namespace OpenMetaverse.Packets
                     else { _agenttextures = new byte[value.Length]; Buffer.BlockCopy(value, 0, _agenttextures, 0, value.Length); }
                 }
             }
-            public LLUUID ActiveGroupID;
+            public UUID ActiveGroupID;
 
             public int Length
             {
@@ -81050,7 +81050,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock
         {
-            public LLUUID GroupID;
+            public UUID GroupID;
             public ulong GroupPowers;
             public bool AcceptNotices;
 
@@ -81110,8 +81110,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationDataBlock
         {
-            public LLUUID Animation;
-            public LLUUID ObjectID;
+            public UUID Animation;
+            public UUID ObjectID;
 
             public int Length
             {
@@ -81159,7 +81159,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GranterBlockBlock
         {
-            public LLUUID GranterID;
+            public UUID GranterID;
 
             public int Length
             {
@@ -81506,8 +81506,8 @@ namespace OpenMetaverse.Packets
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
-            public LLUUID AgentID;
-            public LLUUID SessionID;
+            public UUID AgentID;
+            public UUID SessionID;
 
             public int Length
             {
@@ -81645,15 +81645,15 @@ namespace OpenMetaverse.Packets
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-            public LLVector3 AgentPos;
-            public LLVector3 AgentVel;
-            public LLVector3 Center;
-            public LLVector3 Size;
-            public LLVector3 AtAxis;
-            public LLVector3 LeftAxis;
-            public LLVector3 UpAxis;
+            public UUID AgentID;
+            public UUID SessionID;
+            public Vector3 AgentPos;
+            public Vector3 AgentVel;
+            public Vector3 Center;
+            public Vector3 Size;
+            public Vector3 AtAxis;
+            public Vector3 LeftAxis;
+            public Vector3 UpAxis;
             public bool ChangedGrid;
 
             public int Length
@@ -81814,12 +81814,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SoundDataBlock
         {
-            public LLUUID SoundID;
-            public LLUUID OwnerID;
-            public LLUUID ObjectID;
-            public LLUUID ParentID;
+            public UUID SoundID;
+            public UUID OwnerID;
+            public UUID ObjectID;
+            public UUID ParentID;
             public ulong Handle;
-            public LLVector3 Position;
+            public Vector3 Position;
             public float Gain;
 
             public int Length

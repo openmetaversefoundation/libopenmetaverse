@@ -32,7 +32,7 @@ namespace OpenMetaverse.TestClient
         /// <param name="fromAgentID">The <seealso cref="OpenMetaverse.LLUUID"/> 
         /// of the agent making the request</param>
         /// <returns></returns>
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             // initialize a StringBuilder object used to return the results
             StringBuilder sb = new StringBuilder();

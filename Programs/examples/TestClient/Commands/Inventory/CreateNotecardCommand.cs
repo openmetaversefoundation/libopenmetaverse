@@ -13,13 +13,13 @@ namespace OpenMetaverse.TestClient
             Description = "Creates a notecard from a local text file.";
         }
 
-        void OnNoteUpdate(bool success, string status, LLUUID itemID, LLUUID assetID)
+        void OnNoteUpdate(bool success, string status, UUID itemID, UUID assetID)
         {
             if (success) 
             Console.WriteLine("Notecard successfully uploaded, ItemID {0} AssetID {1}", itemID, assetID);
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if(args.Length < 1)
                 return "Usage: createnotecard filename.txt";
@@ -43,7 +43,7 @@ namespace OpenMetaverse.TestClient
                 // create the asset
 
                 Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
-                    file, desc, AssetType.Notecard, LLUUID.Random(), InventoryType.Notecard, PermissionMask.All,
+                    file, desc, AssetType.Notecard, UUID.Random(), InventoryType.Notecard, PermissionMask.All,
                     delegate(bool success, InventoryItem item) { 
                     if(success) // upload the asset
                         Client.Inventory.RequestUploadNotecardAsset(CreateNotecardAsset(body), item.UUID, new InventoryManager.NotecardUploadedAssetCallback(OnNoteUpdate));

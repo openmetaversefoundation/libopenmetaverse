@@ -87,7 +87,7 @@ namespace OpenMetaverse.Rendering
             baseVert.Normal =
                 ((corners[1].Position - corners[0].Position) %
                 (corners[2].Position - corners[1].Position));
-            baseVert.Normal = LLVector3.Norm(baseVert.Normal);
+            baseVert.Normal = Vector3.Norm(baseVert.Normal);
 
             if ((face.Mask & FaceMask.Top) != 0)
             {
@@ -96,7 +96,7 @@ namespace OpenMetaverse.Rendering
             else
             {
                 // Swap the UVs on the U(X) axis for top face
-                LLVector2 swap;
+                Vector2 swap;
 
                 swap = corners[0].TexCoord;
                 corners[0].TexCoord = corners[3].TexCoord;
@@ -173,7 +173,7 @@ namespace OpenMetaverse.Rendering
             int maxS = profile.Positions.Count;
             int maxT = path.Points.Count;
 
-            face.Center = LLVector3.Zero;
+            face.Center = Vector3.Zero;
 
             int offset = 0;
             if ((face.Mask & FaceMask.Top) != 0)
@@ -183,9 +183,9 @@ namespace OpenMetaverse.Rendering
 
             // Figure out the normal, assume all caps are flat faces.
             // Cross product to get normals
-            LLVector2 cuv;
-            LLVector2 minUV = LLVector2.Zero;
-            LLVector2 maxUV = LLVector2.Zero;
+            Vector2 cuv;
+            Vector2 minUV = Vector2.Zero;
+            Vector2 maxUV = Vector2.Zero;
 
             // Copy the vertices into the array
             for (i = 0; i < numVertices; i++)
@@ -223,16 +223,16 @@ namespace OpenMetaverse.Rendering
             face.Center = (face.MinExtent + face.MaxExtent) * 0.5f;
             cuv = (minUV + maxUV) * 0.5f;
 
-            LLVector3 binormal = CalcBinormalFromTriangle(
+            Vector3 binormal = CalcBinormalFromTriangle(
                 face.Center, cuv,
                 face.Vertices[0].Position, face.Vertices[0].TexCoord,
                 face.Vertices[1].Position, face.Vertices[1].TexCoord);
-            binormal = LLVector3.Norm(binormal);
+            binormal = Vector3.Norm(binormal);
 
-            LLVector3 d0 = face.Center - face.Vertices[0].Position;
-            LLVector3 d1 = face.Center - face.Vertices[1].Position;
-            LLVector3 normal = ((face.Mask & FaceMask.Top) != 0) ? (d0 % d1) : (d1 % d0);
-            normal = LLVector3.Norm(normal);
+            Vector3 d0 = face.Center - face.Vertices[0].Position;
+            Vector3 d1 = face.Center - face.Vertices[1].Position;
+            Vector3 normal = ((face.Mask & FaceMask.Top) != 0) ? (d0 % d1) : (d1 % d0);
+            normal = Vector3.Norm(normal);
 
             // If not hollow and not open create a center point in the cap
             if ((face.Mask & FaceMask.Hollow) == 0 && (face.Mask & FaceMask.Open) == 0)
@@ -339,7 +339,7 @@ namespace OpenMetaverse.Rendering
             int numVertices = face.NumS * face.NumT;
             int numIndices = (face.NumS - 1) * (face.NumT - 1) * 6;
 
-            face.Center = LLVector3.Zero;
+            face.Center = Vector3.Zero;
 
             int beginSTex = (int)Math.Floor(profile.Positions[face.BeginS].Z);
             int numS =
@@ -380,9 +380,9 @@ namespace OpenMetaverse.Rendering
 
                     Vertex vertex = new Vertex();
                     vertex.Position = primVertices[i].Position;
-                    vertex.TexCoord = new LLVector2(ss, tt);
-                    vertex.Normal = LLVector3.Zero;
-                    vertex.Binormal = LLVector3.Zero;
+                    vertex.TexCoord = new Vector2(ss, tt);
+                    vertex.Normal = Vector3.Zero;
+                    vertex.Binormal = Vector3.Zero;
 
                     if (curVertex == 0)
                         face.MinExtent = face.MaxExtent = primVertices[i].Position;
@@ -416,9 +416,9 @@ namespace OpenMetaverse.Rendering
 
                     Vertex vertex = new Vertex();
                     vertex.Position = primVertices[i].Position;
-                    vertex.TexCoord = new LLVector2(ss, tt);
-                    vertex.Normal = LLVector3.Zero;
-                    vertex.Binormal = LLVector3.Zero;
+                    vertex.TexCoord = new Vector2(ss, tt);
+                    vertex.Normal = Vector3.Zero;
+                    vertex.Binormal = Vector3.Zero;
 
                     UpdateMinMax(ref face, vertex.Position);
 
@@ -485,10 +485,10 @@ namespace OpenMetaverse.Rendering
                 Vertex v2 = face.Vertices[face.Indices[i * 3 + 2]];
 
                 // Calculate triangle normal
-                LLVector3 norm = (v0.Position - v1.Position) % (v0.Position - v2.Position);
+                Vector3 norm = (v0.Position - v1.Position) % (v0.Position - v2.Position);
 
                 // Calculate binormal
-                LLVector3 binorm = CalcBinormalFromTriangle(v0.Position, v0.TexCoord, v1.Position, v1.TexCoord,
+                Vector3 binorm = CalcBinormalFromTriangle(v0.Position, v0.TexCoord, v1.Position, v1.TexCoord,
                     v2.Position, v2.TexCoord);
 
                 // Add triangle normal to vertices
@@ -519,12 +519,12 @@ namespace OpenMetaverse.Rendering
 
             // Adjust normals based on wrapping and stitching
             bool sBottomConverges = (
-                LLVector3.MagSquared(
+                Vector3.MagSquared(
                     face.Vertices[0].Position -
                     face.Vertices[face.NumS * (face.NumT - 2)].Position
                 ) < 0.000001f);
             bool sTopConverges = (
-                LLVector3.MagSquared(
+                Vector3.MagSquared(
                     face.Vertices[face.NumS - 1].Position -
                     face.Vertices[face.NumS * (face.NumT - 2) +
                     face.NumS - 1].Position
@@ -538,7 +538,7 @@ namespace OpenMetaverse.Rendering
                     // Wrap normals on T
                     for (i = 0; i < face.NumS; i++)
                     {
-                        LLVector3 norm = face.Vertices[i].Normal + face.Vertices[face.NumS * (face.NumT - 1) + i].Normal;
+                        Vector3 norm = face.Vertices[i].Normal + face.Vertices[face.NumS * (face.NumT - 1) + i].Normal;
 
                         Vertex vertex = face.Vertices[i];
                         vertex.Normal = norm;
@@ -555,7 +555,7 @@ namespace OpenMetaverse.Rendering
                     // Wrap normals on S
                     for (i = 0; i < face.NumT; i++)
                     {
-                        LLVector3 norm = face.Vertices[face.NumS * i].Normal + face.Vertices[face.NumS * i + face.NumS - 1].Normal;
+                        Vector3 norm = face.Vertices[face.NumS * i].Normal + face.Vertices[face.NumS * i + face.NumS - 1].Normal;
 
                         Vertex vertex = face.Vertices[face.NumS * i];
                         vertex.Normal = norm;
@@ -573,7 +573,7 @@ namespace OpenMetaverse.Rendering
                     if (sBottomConverges)
                     {
                         // All lower S have same normal
-                        LLVector3 unitX = new LLVector3(1f, 0f, 0f);
+                        Vector3 unitX = new Vector3(1f, 0f, 0f);
 
                         for (i = 0; i < face.NumT; i++)
                         {
@@ -586,7 +586,7 @@ namespace OpenMetaverse.Rendering
                     if (sTopConverges)
                     {
                         // All upper S have same normal
-                        LLVector3 negUnitX = new LLVector3(-1f, 0f, 0f);
+                        Vector3 negUnitX = new Vector3(-1f, 0f, 0f);
 
                         for (i = 0; i < face.NumT; i++)
                         {
@@ -606,8 +606,8 @@ namespace OpenMetaverse.Rendering
             for (i = 0; i < face.Vertices.Count; i++)
             {
                 Vertex vertex = face.Vertices[i];
-                vertex.Normal = LLVector3.Norm(vertex.Normal);
-                vertex.Binormal = LLVector3.Norm(vertex.Binormal);
+                vertex.Normal = Vector3.Norm(vertex.Normal);
+                vertex.Binormal = Vector3.Norm(vertex.Binormal);
                 face.Vertices[i] = vertex;
             }
         }
@@ -620,7 +620,7 @@ namespace OpenMetaverse.Rendering
             vout.Binormal = v0.Binormal;
         }
 
-        private static void UpdateMinMax(ref Face face, LLVector3 position)
+        private static void UpdateMinMax(ref Face face, Vector3 position)
         {
             if (face.MinExtent.X > position.X)
                 face.MinExtent.X = position.X;
@@ -637,7 +637,7 @@ namespace OpenMetaverse.Rendering
                 face.MaxExtent.Z = position.Z;
         }
 
-        private static void UpdateMinMax(ref LLVector2 min, ref LLVector2 max, LLVector2 current)
+        private static void UpdateMinMax(ref Vector2 min, ref Vector2 max, Vector2 current)
         {
             if (min.X > current.X)
                 min.X = current.X;
@@ -650,35 +650,35 @@ namespace OpenMetaverse.Rendering
                 max.Y = current.Y;
         }
 
-        private static LLVector3 CalcBinormalFromTriangle(LLVector3 pos0, LLVector2 tex0, LLVector3 pos1,
-            LLVector2 tex1, LLVector3 pos2, LLVector2 tex2)
+        private static Vector3 CalcBinormalFromTriangle(Vector3 pos0, Vector2 tex0, Vector3 pos1,
+            Vector2 tex1, Vector3 pos2, Vector2 tex2)
         {
-            LLVector3 rx0 = new LLVector3(pos0.X, tex0.X, tex0.Y);
-            LLVector3 rx1 = new LLVector3(pos1.X, tex1.X, tex1.Y);
-            LLVector3 rx2 = new LLVector3(pos2.X, tex2.X, tex2.Y);
+            Vector3 rx0 = new Vector3(pos0.X, tex0.X, tex0.Y);
+            Vector3 rx1 = new Vector3(pos1.X, tex1.X, tex1.Y);
+            Vector3 rx2 = new Vector3(pos2.X, tex2.X, tex2.Y);
 
-            LLVector3 ry0 = new LLVector3(pos0.Y, tex0.X, tex0.Y);
-            LLVector3 ry1 = new LLVector3(pos1.Y, tex1.X, tex1.Y);
-            LLVector3 ry2 = new LLVector3(pos2.Y, tex2.X, tex2.Y);
+            Vector3 ry0 = new Vector3(pos0.Y, tex0.X, tex0.Y);
+            Vector3 ry1 = new Vector3(pos1.Y, tex1.X, tex1.Y);
+            Vector3 ry2 = new Vector3(pos2.Y, tex2.X, tex2.Y);
 
-            LLVector3 rz0 = new LLVector3(pos0.Z, tex0.X, tex0.Y);
-            LLVector3 rz1 = new LLVector3(pos1.Z, tex1.X, tex1.Y);
-            LLVector3 rz2 = new LLVector3(pos2.Z, tex2.X, tex2.Y);
+            Vector3 rz0 = new Vector3(pos0.Z, tex0.X, tex0.Y);
+            Vector3 rz1 = new Vector3(pos1.Z, tex1.X, tex1.Y);
+            Vector3 rz2 = new Vector3(pos2.Z, tex2.X, tex2.Y);
 
-            LLVector3 r0 = (rx0 - rx1) % (rx0 - rx2);
-            LLVector3 r1 = (ry0 - ry1) % (ry0 - ry2);
-            LLVector3 r2 = (rz0 - rz1) % (rz0 - rz2);
+            Vector3 r0 = (rx0 - rx1) % (rx0 - rx2);
+            Vector3 r1 = (ry0 - ry1) % (ry0 - ry2);
+            Vector3 r2 = (rz0 - rz1) % (rz0 - rz2);
 
             if (r0.X != 0f && r1.X != 0f && r2.X != 0f)
             {
-                return new LLVector3(
+                return new Vector3(
                     -r0.Z / r0.X,
                     -r1.Z / r1.X,
                     -r2.Z / r2.X);
             }
             else
             {
-                return new LLVector3(0f, 1f, 0f);
+                return new Vector3(0f, 1f, 0f);
             }
         }
     }

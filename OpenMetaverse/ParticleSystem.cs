@@ -139,21 +139,21 @@ namespace OpenMetaverse
             /// <summary>A <see langword="byte"/> representing the maximum number of particles emitted per burst</summary>
             public byte BurstPartCount;
             /// <summary>A <see cref="T:LLVector3"/> which represents the velocity (speed) from the source which particles are emitted</summary>
-            public LLVector3 AngularVelocity;
+            public Vector3 AngularVelocity;
             /// <summary>A <see cref="T:LLVector3"/> which represents the Acceleration from the source which particles are emitted</summary>
-            public LLVector3 PartAcceleration;
+            public Vector3 PartAcceleration;
             /// <summary>The <see cref="T:LLUUID"/> Key of the texture displayed on the particle</summary>
-            public LLUUID Texture;
+            public UUID Texture;
             /// <summary>The <see cref="T:LLUUID"/> Key of the specified target object or avatar particles will follow</summary>
-            public LLUUID Target;
+            public UUID Target;
             /// <summary>Flags of particle from <seealso cref="T:ParticleDataFlags"/></summary>
             public ParticleDataFlags PartDataFlags;
             /// <summary>Max Age particle system will emit particles for</summary>
             public float PartMaxAge;
             /// <summary>The <see cref="T:LLColor"/> the particle has at the beginning of its lifecycle</summary>
-            public LLColor PartStartColor;
+            public Color4 PartStartColor;
             /// <summary>The <see cref="T:LLColor"/> the particle has at the ending of its lifecycle</summary>
-            public LLColor PartEndColor;
+            public Color4 PartEndColor;
             /// <summary>A <see langword="float"/> that represents the starting X size of the particle</summary>
             /// <remarks>Minimum value is 0, maximum value is 4</remarks>
             public float PartStartScaleX;
@@ -195,11 +195,11 @@ namespace OpenMetaverse
                     float x = pack.UnpackFixed(true, 8, 7);
                     float y = pack.UnpackFixed(true, 8, 7);
                     float z = pack.UnpackFixed(true, 8, 7);
-                    AngularVelocity = new LLVector3(x, y, z);
+                    AngularVelocity = new Vector3(x, y, z);
                     x = pack.UnpackFixed(true, 8, 7);
                     y = pack.UnpackFixed(true, 8, 7);
                     z = pack.UnpackFixed(true, 8, 7);
-                    PartAcceleration = new LLVector3(x, y, z);
+                    PartAcceleration = new Vector3(x, y, z);
                     Texture = pack.UnpackUUID();
                     Target = pack.UnpackUUID();
 
@@ -209,12 +209,12 @@ namespace OpenMetaverse
                     byte g = pack.UnpackByte();
                     byte b = pack.UnpackByte();
                     byte a = pack.UnpackByte();
-                    PartStartColor = new LLColor(r, g, b, a);
+                    PartStartColor = new Color4(r, g, b, a);
                     r = pack.UnpackByte();
                     g = pack.UnpackByte();
                     b = pack.UnpackByte();
                     a = pack.UnpackByte();
-                    PartEndColor = new LLColor(r, g, b, a);
+                    PartEndColor = new Color4(r, g, b, a);
                     PartStartScaleX = pack.UnpackFixed(false, 3, 5);
                     PartStartScaleY = pack.UnpackFixed(false, 3, 5);
                     PartEndScaleX = pack.UnpackFixed(false, 3, 5);
@@ -227,11 +227,11 @@ namespace OpenMetaverse
                     MaxAge = StartAge = InnerAngle = OuterAngle = BurstRate = BurstRadius = BurstSpeedMin =
                         BurstSpeedMax = 0.0f;
                     BurstPartCount = 0;
-                    AngularVelocity = PartAcceleration = LLVector3.Zero;
-                    Texture = Target = LLUUID.Zero;
+                    AngularVelocity = PartAcceleration = Vector3.Zero;
+                    Texture = Target = UUID.Zero;
                     PartDataFlags = ParticleDataFlags.None;
                     PartMaxAge = 0.0f;
-                    PartStartColor = PartEndColor = LLColor.Black;
+                    PartStartColor = PartEndColor = Color4.Black;
                     PartStartScaleX = PartStartScaleY = PartEndScaleX = PartEndScaleY = 0.0f;
                 }
             }

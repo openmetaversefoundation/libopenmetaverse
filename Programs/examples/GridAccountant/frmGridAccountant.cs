@@ -422,7 +422,7 @@ namespace GridAccountant
                 appearance.AgentData.AgentID = Client.Self.AgentID;
                 appearance.AgentData.SessionID = Client.Self.SessionID;
                 appearance.AgentData.SerialNum = 1;
-                appearance.AgentData.Size = new LLVector3(0.45F, 0.6F, 1.831094F);
+                appearance.AgentData.Size = new Vector3(0.45F, 0.6F, 1.831094F);
                 appearance.ObjectData.TextureEntry = new byte[0];
 
                 Client.Network.SendPacket(appearance);
@@ -483,7 +483,7 @@ namespace GridAccountant
             query.AgentData.AgentID = Client.Self.AgentID;
             query.AgentData.SessionID = Client.Self.SessionID;
             query.QueryData.QueryFlags = 1;
-            query.QueryData.QueryID = LLUUID.Random();
+            query.QueryData.QueryID = UUID.Random();
             query.QueryData.QueryStart = 0;
             query.QueryData.QueryText = Helpers.StringToField(txtFind.Text);
             query.Header.Reliable = true;
@@ -512,7 +512,7 @@ namespace GridAccountant
 				return;
 			}
 			
-			Client.Self.GiveAvatarMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
+			Client.Self.GiveAvatarMoney(new UUID(lstFind.SelectedItems[0].SubItems[2].Text),
 			    amount, "GridAccountant payment");
 		}
 	}

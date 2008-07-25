@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Description = "Logs in another avatar";
         }
 
-        public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 3 && args.Length != 4)
                 return "usage: login firstname lastname password [simname]";
