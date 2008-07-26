@@ -31,6 +31,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -48,7 +49,7 @@ public class Analyst : ProxyPlugin
     private Proxy proxy;
     private Hashtable loggedPackets = new Hashtable();
     private string logGrep = null;
-    private Hashtable modifiedPackets = new Hashtable();
+    private Dictionary<PacketType, Dictionary<BlockField, object>> modifiedPackets = new Dictionary<PacketType, Dictionary<BlockField, object>>();
     private Assembly openmvAssembly;
 
     public Analyst(ProxyFrame frame)
@@ -188,18 +189,18 @@ public class Analyst : ProxyPlugin
                 return;
             }
 
-            Hashtable fields;
-            if (modifiedPackets.Contains(pType))
-                fields = (Hashtable)modifiedPackets[pType];
+            Dictionary<BlockField, object> fields;
+            if (modifiedPackets.ContainsKey(pType))
+                fields = (Dictionary<BlockField, object>)modifiedPackets[pType];
             else
-                fields = new Hashtable();
+                fields = new Dictionary<BlockField, object>();
 
             fields[new BlockField(words[2], words[3])] = value;
             modifiedPackets[pType] = fields;
 
             proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
             proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
-
+            
             SayToUser("setting " + words[1] + "." + words[2] + "." + words[3] + " = " + valueString);
         }
     }
@@ -214,7 +215,7 @@ public class Analyst : ProxyPlugin
                 proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
                 proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
             }
-            modifiedPackets = new Hashtable();
+            modifiedPackets = new Dictionary<PacketType, Dictionary<BlockField, object>>();
 
             SayToUser("stopped setting all fields");
         }
@@ -232,9 +233,9 @@ public class Analyst : ProxyPlugin
             }
 
 
-            if (modifiedPackets.Contains(pType))
+            if (modifiedPackets.ContainsKey(pType))
             {
-                Hashtable fields = (Hashtable)modifiedPackets[pType];
+                Dictionary<BlockField, object> fields = modifiedPackets[pType];
                 fields.Remove(new BlockField(words[2], words[3]));
 
                 if (fields.Count == 0)
@@ -596,21 +597,33 @@ public class Analyst : ProxyPlugin
     // Modify: modify a packet
     private Packet Modify(Packet packet, IPEndPoint endPoint, Direction direction)
     {
-        if (modifiedPackets.Contains(packet.Type))
+        if (modifiedPackets.ContainsKey(packet.Type))
         {
             try
             {
-                Hashtable changes = (Hashtable)modifiedPackets[packet.Type];
+                Dictionary<BlockField, object> changes = modifiedPackets[packet.Type];
                 Type packetClass = packet.GetType();
 
-                foreach (BlockField bf in changes.Keys)
+                foreach (KeyValuePair<BlockField, object> change in changes)
                 {
-                    //FIXME: support variable blocks
-
+                    BlockField bf = change.Key;
                     FieldInfo blockField = packetClass.GetField(bf.block);
-                    //Type blockClass = blockField.FieldType;
-                    object blockObject = blockField.GetValue(packet);
-                    MagicSetField(blockObject, bf.field, changes[blockField]);
+                    if (blockField.FieldType.IsArray) // We're modifying a variable block.
+                    {
+                        // Modify each block in the variable block identically.
+                        // This is really simple, can probably be improved.
+                        object[] blockArray = (object[])blockField.GetValue(packet);
+                        foreach (object blockElement in blockArray)
+                        {
+                            MagicSetField(blockElement, bf.field, change.Value);
+                        }
+                    }
+                    else
+                    {
+                        //Type blockClass = blockField.FieldType;
+                        object blockObject = blockField.GetValue(packet);
+                        MagicSetField(blockObject, bf.field, change.Value);
+                    }
                 }
             }
             catch (Exception e)
