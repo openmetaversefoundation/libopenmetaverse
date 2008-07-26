@@ -444,10 +444,10 @@ namespace OpenMetaverse
 
         #region Events
 
-        /// <summary>Fired when a AgentGroupDataUpdate packet is received, contains a list of 
+        /// <summary>Fired when a <seealso cref="T:OpenMetaverse.Packets.AgentGroupDataUpdatePacket"/> is received, contains a list of 
         /// groups avatar is currently a member of</summary>
         public event CurrentGroupsCallback OnCurrentGroups;
-        /// <summary>Fired when a UUIDGroupNameReply packer is receiived, 
+        /// <summary>Fired when a UUIDGroupNameReply packet is receiived, 
         /// contains name of group requested</summary>
         public event GroupNamesCallback OnGroupNames;
         /// <summary>Fired when a GroupProfileReply packet is received,
@@ -459,8 +459,8 @@ namespace OpenMetaverse
         /// <summary>Fired when a GroupRoleDataReply packet is received,
         /// contains details on roles for requested group</summary>
         public event GroupRolesCallback OnGroupRoles;
-        /// <summary>Fired when a GroupRoleMembersReply packet is received,
-        /// Contails group member<>group role mappings</summary>
+        /// <summary>Fired when a <seealso cref="T:OpenMetaverse.Packets.GroupRoleMembersReplyPacket"/> is received,
+        /// Contains group member to group role mappings</summary>
         public event GroupRolesMembersCallback OnGroupRolesMembers;
         /// <summary>Fired when a GroupTitlesReply packet is received,
         /// sets the active role title for the current Agent</summary>

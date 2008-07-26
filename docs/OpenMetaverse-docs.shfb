@@ -23,6 +23,7 @@
         <namespaceSummaryItem name="OpenMetaverse.Capabilities" isDocumented="True">Capabilities is a method of transferring data between the client and Simulator, The Caps Client and EventQueue classes are contained within this namespace.</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Imaging" isDocumented="True">Classes for dealing with images (Textures), including encoding/decoding and our wrapper class for OpenJpeg</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Packets" isDocumented="True">Packet information classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Rendering" isDocumented="True">Prim Rendering</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.StructuredData" isDocumented="True">LLSD (Structured Data) classes</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.TestClient" isDocumented="False">TestClient for code examples and developer testing tools</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.TestClient.Commands.Inventory.Shell" isDocumented="True">TestClient commands to emulate a shell for managing inventory</namespaceSummaryItem>

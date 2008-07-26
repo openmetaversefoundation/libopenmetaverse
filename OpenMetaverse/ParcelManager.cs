@@ -42,7 +42,7 @@ namespace OpenMetaverse
     {
         /// <summary>Global Key of record</summary>
         public UUID ID;
-        /// <summary>Parcel Owners <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
+        /// <summary>Parcel Owners <seealso cref="UUID"/></summary>
         public UUID OwnerID;
         /// <summary>Name field of parcel, limited to 128 characters</summary>
         public string Name;
@@ -72,6 +72,29 @@ namespace OpenMetaverse
         public int AuctionID;
     }
 
+    /// <summary>
+    /// Parcel Media Information
+    /// </summary>
+    public struct ParcelMedia
+    {
+        /// <summary>A byte, if 0x1 viewer should auto scale media to fit object</summary>
+        public byte MediaAutoScale;
+        /// <summary>A boolean, if true the viewer should loop the media</summary>
+        public bool MediaLoop;
+        /// <summary>The Asset UUID of the Texture which when applied to a 
+        /// primitive will display the media</summary>
+        public UUID MediaID;
+        /// <summary>A URL which points to any Quicktime supported media type</summary>
+        public string MediaURL;
+        /// <summary>A description of the media</summary>
+        public string MediaDesc;
+        /// <summary>An Integer which represents the height of the media</summary>
+        public int MediaHeight;
+        /// <summary>An integer which represents the width of the media</summary>
+        public int MediaWidth;
+        /// <summary>A string which contains the mime type of the media</summary>
+        public string MediaType;
+    }
     #endregion Structs
 
     #region Parcel Class
@@ -221,7 +244,8 @@ namespace OpenMetaverse
         public int RequestResult;
         /// <summary></summary>
         public int SequenceID;
-        /// <summary></summary>
+        /// <summary>Used by the viewer in conjunction with the BitMap 
+        /// for highlighting the borders of a parcel</summary>
         public bool SnapSelection;
         /// <summary></summary>
         public int SelfCount;
@@ -241,7 +265,7 @@ namespace OpenMetaverse
         public DateTime ClaimDate;
         /// <summary>Appears to always be zero</summary>
         public int ClaimPrice;
-        /// <summary></summary>
+        /// <summary>This field is no longer used</summary>
         public int RentPrice;
         /// <summary>Minimum corner of the axis-aligned bounding box for this
         /// parcel</summary>
@@ -292,12 +316,6 @@ namespace OpenMetaverse
         public string Desc;
         /// <summary>URL For Music Stream</summary>
         public string MusicURL;
-        /// <summary>URL For other Media</summary>
-        public string MediaURL;
-        /// <summary>Key to Picture for Media Placeholder</summary>
-        public UUID MediaID;
-        /// <summary></summary>
-        public byte MediaAutoScale;
         /// <summary></summary>
         public UUID GroupID;
         /// <summary>Price for a temporary pass</summary>
@@ -329,20 +347,12 @@ namespace OpenMetaverse
         public List<ParcelManager.ParcelAccessEntry> AccessList;
         /// <summary>TRUE of region denies access to age unverified users</summary>
         public bool RegionDenyAgeUnverified;
-        /// <summary>String describing media</summary>
-        public string MediaDesc;
-        /// <summary>Integer representing the height of the media</summary>
-        public int MediaHeight;
-        /// <summary>true to loop media</summary>
-        public bool MediaLoop;
-        /// <summary>The mime type of the media. e.g.: image/jpeg, text/html, etc</summary>
-        public string MediaType;
-        /// <summary>Integer representing the width of the media</summary>
-        public int MediaWidth;
         /// <summary>true to obscure (hide) media url</summary>
         public bool ObscureMedia;
         /// <summary>true to obscure (hide) music url</summary>
         public bool ObscureMusic;
+        /// <summary>A struct containing media details</summary>
+        public ParcelMedia Media;
 
         /// <summary>
         /// Displays a parcel object in string format
@@ -368,7 +378,6 @@ namespace OpenMetaverse
         {
             Simulator = simulator;
             LocalID = localID;
-
             RequestResult = 0;
             SequenceID = 0;
             SnapSelection = false;
@@ -401,9 +410,6 @@ namespace OpenMetaverse
             Name = String.Empty;
             Desc = String.Empty;
             MusicURL = String.Empty;
-            MediaURL = String.Empty;
-            MediaID = UUID.Zero;
-            MediaAutoScale = 0x0;
             GroupID = UUID.Zero;
             PassPrice = 0;
             PassHours = 0;
@@ -418,11 +424,7 @@ namespace OpenMetaverse
             RegionPushOverride = false;
             AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
             RegionDenyAgeUnverified = false;
-            MediaDesc = string.Empty;
-            MediaHeight = 0;
-            MediaLoop = false;
-            MediaType = String.Empty;
-            MediaWidth = 0;
+            Media = new ParcelMedia();
             ObscureMedia = false;
             ObscureMusic = false;
         }
@@ -446,9 +448,10 @@ namespace OpenMetaverse
             request.ParcelData.Desc = Helpers.StringToField(this.Desc);
             request.ParcelData.GroupID = this.GroupID;
             request.ParcelData.LandingType = this.LandingType;
-            request.ParcelData.MediaAutoScale = this.MediaAutoScale;
-            request.ParcelData.MediaID = this.MediaID;
-            request.ParcelData.MediaURL = Helpers.StringToField(this.MediaURL);
+
+            request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
+            request.ParcelData.MediaID = this.Media.MediaID;
+            request.ParcelData.MediaURL = Helpers.StringToField(this.Media.MediaURL);
             request.ParcelData.MusicURL = Helpers.StringToField(this.MusicURL);
             request.ParcelData.Name = Helpers.StringToField(this.Name);
             if (wantReply) request.ParcelData.Flags = 1;
@@ -565,22 +568,38 @@ namespace OpenMetaverse
             Hovered_Over_Parcel = -50000
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum TerraformAction : byte
         {
+            /// <summary></summary>
             Level = 0,
+            /// <summary></summary>
             Raise = 1,
+            /// <summary></summary>
             Lower = 2,
+            /// <summary></summary>
             Smooth = 3,
+            /// <summary></summary>
             Noise = 4,
+            /// <summary></summary>
             Revert = 5
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum TerraformBrushSize : byte
         {
+            /// <summary></summary>
             Small = 1,
+            /// <summary></summary>
             Medium = 2,
+            /// <summary></summary>
             Large = 4
         }
+
         /// <summary>
         /// Reasons agent is denied access to a parcel on the simulator
         /// </summary>
@@ -630,6 +649,9 @@ namespace OpenMetaverse
             /// <summary>true of OwnerID is currently online and is not a group</summary>
             public bool OnlineStatus;
         }
+
+        
+
         #endregion Structs
 
         #region Delegates
@@ -658,6 +680,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="simulator">simulator parcel is in</param>
         /// <param name="sequenceID"></param>
         /// <param name="localID"></param>
         /// <param name="flags"></param>
@@ -668,8 +691,7 @@ namespace OpenMetaverse
         /// Responses to a request for prim owners on a parcel
         /// </summary>
         /// <param name="simulator">simulator parcel is in</param>
-        /// <param name="localID">LocalID of parcel</param>
-        /// <param name="primownersEntries">List containing details or prim ownership</param>
+        /// <param name="primowners">List containing details or prim ownership</param>
         public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator, List<ParcelPrimOwners> primOwners);
 
         /// <summary>
@@ -688,24 +710,43 @@ namespace OpenMetaverse
         /// <param name="resetList">If true, list is start of a new selection</param>
         public delegate void ForceSelectObjects(Simulator simulator, List<uint> objectIDs, bool resetList);
 
+        /// <summary>
+        /// Fired when a ParcelMediaUpdate packet is received, this occurs when the media on the parcel an avatar
+        /// is over changes
+        /// </summary>
+        /// <param name="simulator">A reference to the simulator object</param>
+        /// <param name="media">A struct containing updated media information</param>
+        public delegate void ParcelMediaUpdateReplyCallback(Simulator simulator, ParcelMedia media);
+
         #endregion Delegates
 
         #region Events
-
-        /// <summary></summary>
+        
+        /// <summary>Fired when a <seealso cref="Packets.ParcelDwellReplyPacket"/> is received,
+        /// in response to a <seealso cref="DwellRequest"/></summary>
         public event ParcelDwellCallback OnParcelDwell;
-        /// <summary></summary>
+        /// <summary>Fired when a <seealso cref="Packets.ParcelInfoReplyPacket"/> is received, 
+        /// in response to a <seealso cref="InfoRequest"/></summary>
         public event ParcelInfoCallback OnParcelInfo;
-        /// <summary></summary>
+        /// <summary>Fired when a ParcelProperties Packet is received over the <seealso cref="OpenMetaverse.Capabilities"/> subsystem,
+        /// in response to a <seealso cref="PropertiesRequest"/></summary>
         public event ParcelPropertiesCallback OnParcelProperties;
-        /// <summary></summary>
+        /// <summary>Fired when a <seealso cref="Packets.ParcelAccessListReplyPacket"/> is received,
+        /// in response to a <seealso cref="AccessListRequest"/></summary>
         public event ParcelAccessListReplyCallback OnAccessListReply;
-        /// <summary></summary>
+        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelObjectOwnersReplyPacket"/>,
+        /// in response to <seealso cref="ObjectOwnersRequest"/></summary>
         public event ParcelObjectOwnersListReplyCallback OnPrimOwnersListReply;
-        /// <summary></summary>
+        /// <summary>Fired when the simulator parcel dictionary is populated in response
+        /// to a <seealso cref="RequestAllSimParcels"/> request</summary>
         public event SimParcelsDownloaded OnSimParcelsDownloaded;
-        /// <summary></summary>
+        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelSelectObjectsPacket"/>,
+        /// in response to a <seealso cref="SelectObjects"/> request</summary>
         public event ForceSelectObjects OnParcelSelectedObjects;
+        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelMediaUpdatePacket"/> which
+        /// occurs when the parcel media information is changed for the current parcel the Agent is over</summary>
+        public event ParcelMediaUpdateReplyCallback OnParcelMediaUpdate;
+
         #endregion Events
 
         private GridClient Client;
@@ -729,6 +770,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelObjectOwnersReply, new NetworkManager.PacketCallback(ParcelObjectOwnersReplyHandler));
             Client.Network.RegisterCallback(PacketType.ForceObjectSelect, new NetworkManager.PacketCallback(SelectParcelObjectsReplyHandler));
+            Client.Network.RegisterCallback(PacketType.ParcelMediaUpdate, new NetworkManager.PacketCallback(ParcelMediaUpdateHandler));
         }
 
         /// <summary>
@@ -1348,9 +1390,9 @@ namespace OpenMetaverse
                 parcel.LandingType = (byte)parcelDataBlock["LandingType"].AsInteger();
                 parcel.LocalID = parcelDataBlock["LocalID"].AsInteger();
                 parcel.MaxPrims = parcelDataBlock["MaxPrims"].AsInteger();
-                parcel.MediaAutoScale = (byte)parcelDataBlock["MediaAutoScale"].AsInteger();
-                parcel.MediaID = parcelDataBlock["MediaID"].AsUUID();
-                parcel.MediaURL = parcelDataBlock["MediaURL"].AsString();
+                parcel.Media.MediaAutoScale = (byte)parcelDataBlock["MediaAutoScale"].AsInteger(); 
+                parcel.Media.MediaID = parcelDataBlock["MediaID"].AsUUID();
+                parcel.Media.MediaURL = parcelDataBlock["MediaURL"].AsString();
                 parcel.MusicURL = parcelDataBlock["MusicURL"].AsString();
                 parcel.Name = parcelDataBlock["Name"].AsString();
                 parcel.OtherCleanTime = parcelDataBlock["OtherCleanTime"].AsInteger();
@@ -1380,11 +1422,11 @@ namespace OpenMetaverse
                 parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
                 parcel.UserLocation.FromLLSD(parcelDataBlock["UserLocation"]);
                 parcel.UserLookAt.FromLLSD(parcelDataBlock["UserLookAt"]);
-                parcel.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
-                parcel.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
-                parcel.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
-                parcel.MediaLoop = mediaDataBlock["MediaLoop"].AsBoolean();
-                parcel.MediaType = mediaDataBlock["MediaType"].AsString();
+                parcel.Media.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
+                parcel.Media.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
+                parcel.Media.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
+                parcel.Media.MediaLoop = mediaDataBlock["MediaLoop"].AsBoolean();
+                parcel.Media.MediaType = mediaDataBlock["MediaType"].AsString();
                 parcel.ObscureMedia = mediaDataBlock["ObscureMedia"].AsBoolean();
                 parcel.ObscureMusic = mediaDataBlock["ObscureMusic"].AsBoolean();
 
@@ -1470,9 +1512,9 @@ namespace OpenMetaverse
                 parcel.IsGroupOwned = properties.ParcelData.IsGroupOwned;
                 parcel.LandingType = properties.ParcelData.LandingType;
                 parcel.MaxPrims = properties.ParcelData.MaxPrims;
-                parcel.MediaAutoScale = properties.ParcelData.MediaAutoScale;
-                parcel.MediaID = properties.ParcelData.MediaID;
-                parcel.MediaURL = Helpers.FieldToUTF8String(properties.ParcelData.MediaURL);
+                parcel.Media.MediaAutoScale = properties.ParcelData.MediaAutoScale;
+                parcel.Media.MediaID = properties.ParcelData.MediaID;
+                parcel.Media.MediaURL = Helpers.FieldToUTF8String(properties.ParcelData.MediaURL);
                 parcel.MusicURL = Helpers.FieldToUTF8String(properties.ParcelData.MusicURL);
                 parcel.Name = Helpers.FieldToUTF8String(properties.ParcelData.Name);
                 parcel.OtherCleanTime = properties.ParcelData.OtherCleanTime;
@@ -1553,6 +1595,11 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         protected void ParcelAccessListReplyHandler(Packet packet, Simulator simulator)
         {
             if (OnAccessListReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
@@ -1628,6 +1675,27 @@ namespace OpenMetaverse
             if (OnParcelSelectedObjects != null)
             {
                 try { OnParcelSelectedObjects(simulator, objectIDs, reply._Header.ResetList); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        private void ParcelMediaUpdateHandler(Packet packet, Simulator simulator)
+        {
+            ParcelMediaUpdatePacket reply = (ParcelMediaUpdatePacket)packet;
+            ParcelMedia media = new ParcelMedia();
+
+            media.MediaAutoScale = reply.DataBlock.MediaAutoScale;
+            media.MediaID = reply.DataBlock.MediaID;
+            media.MediaDesc = Helpers.FieldToUTF8String(reply.DataBlockExtended.MediaDesc);
+            media.MediaHeight = reply.DataBlockExtended.MediaHeight;
+            media.MediaLoop = ((reply.DataBlockExtended.MediaLoop & 1) != 0) ? true : false;
+            media.MediaType = Helpers.FieldToUTF8String(reply.DataBlockExtended.MediaType);
+            media.MediaWidth = reply.DataBlockExtended.MediaWidth;
+            media.MediaURL = Helpers.FieldToUTF8String(reply.DataBlock.MediaURL);
+
+            if (OnParcelMediaUpdate != null)
+            {
+                try { OnParcelMediaUpdate(simulator, media); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
