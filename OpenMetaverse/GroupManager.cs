@@ -66,9 +66,7 @@ namespace OpenMetaverse
         public string Description;
         /// <summary>Abilities Associated with Role</summary>
         public GroupPowers Powers;
-        /// <summary>
-        /// Returns the role's title
-        /// </summary>
+        /// <summary>Returns the role's title</summary>
         /// <returns>The role's title</returns>
         public override string ToString()
         {
@@ -124,62 +122,17 @@ namespace OpenMetaverse
         public int Money;
         /// <summary></summary>
         public int Contribution;
-        /// <summary></summary>
+        /// <summary>The total number of current members this group has</summary>
         public int GroupMembershipCount;
-        /// <summary></summary>
+        /// <summary>The number of roles this group has configured</summary>
         public int GroupRolesCount;
 
-        /// <summary>
-        /// Returns the name of the group
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Returns the name of the group</summary>
+        /// <returns>A string containing the name of the group</returns>
         public override string ToString()
         {
             return Name;
         }
-    }
-
-    /// <summary>
-    /// Profile of a group
-    /// </summary>
-    public struct GroupProfile
-    {
-        /// <summary></summary>
-        public UUID ID;
-        /// <summary>Key of Group Insignia</summary>
-        public UUID InsigniaID;
-        /// <summary>Key of Group Founder</summary>
-        public UUID FounderID;
-        /// <summary>Key of Group Role for Owners</summary>
-        public UUID OwnerRole;
-        /// <summary>Name of Group</summary>
-        public string Name;
-        /// <summary>Text of Group Charter</summary>
-        public string Charter;
-        /// <summary></summary>
-        public string MemberTitle;
-        /// <summary></summary>
-        public bool OpenEnrollment;
-        /// <summary></summary>
-        public bool ShowInList;
-        /// <summary></summary>
-        public GroupPowers Powers;
-        /// <summary></summary>
-        public bool AcceptNotices;
-        /// <summary></summary>
-        public bool AllowPublish;
-        /// <summary></summary>
-        public bool MaturePublish;
-        /// <summary></summary>
-        public int MembershipFee;
-        /// <summary></summary>
-        public int Money;
-        /// <summary></summary>
-        public int Contribution;
-        /// <summary></summary>
-        public int GroupMembershipCount;
-        /// <summary></summary>
-        public int GroupRolesCount;
     }
 
     /// <summary>
@@ -195,15 +148,20 @@ namespace OpenMetaverse
         public int NumVotes;
     }
 
+    /// <summary>
+    /// A group proposal
+    /// </summary>
     public struct GroupProposal
     {
-
+        /// <summary>The Text of the proposal</summary>
         public string VoteText;
-
+        /// <summary>The minimum number of members that must vote before proposal passes or failes</summary>
         public int Quorum;
-
+        /// <summary>The required ration of yes/no votes required for vote to pass</summary>
+        /// <remarks>The three options are Simple Majority, 2/3 Majority, and Unanimous</remarks>
+        /// TODO: this should be an enum
         public float Majority;
-
+        /// <summary>The duration in days votes are accepted</summary>
         public int Duration;
     }
 
@@ -250,54 +208,6 @@ namespace OpenMetaverse
         public string LastTaxDate;
         /// <summary></summary>
         public string TaxDate;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public struct GroupAccountDetails
-    {
-        /// <summary></summary>
-        public int IntervalDays;
-        /// <summary></summary>
-        public int CurrentInterval;
-        /// <summary></summary>
-        public string StartDate;
-        /// <summary>A list of description/amount pairs making up the account 
-        /// history</summary>
-        public List<KeyValuePair<string, int>> HistoryItems;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public struct GroupAccountTransactions
-    {
-        /// <summary></summary>
-        public int IntervalDays;
-        /// <summary></summary>
-        public int CurrentInterval;
-        /// <summary></summary>
-        public string StartDate;
-        /// <summary>List of all the transactions for this group</summary>
-        public List<Transaction> Transactions;
-    }
-
-    /// <summary>
-    /// A single transaction made by a group
-    /// </summary>
-    public struct Transaction
-    {
-        /// <summary></summary>
-        public string Time;
-        /// <summary></summary>
-        public string User;
-        /// <summary></summary>
-        public int Type;
-        /// <summary></summary>
-        public string Item;
-        /// <summary></summary>
-        public int Amount;
     }
 
     /// <summary>
@@ -470,7 +380,7 @@ namespace OpenMetaverse
         /// Callback for the profile of a group
         /// </summary>
         /// <param name="group"></param>
-        public delegate void GroupProfileCallback(GroupProfile group);
+        public delegate void GroupProfileCallback(Group group);
         /// <summary>
         /// Callback for the member list of a group
         /// </summary>
@@ -499,16 +409,6 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="details"></param>
-        public delegate void GroupAccountDetailsCallback(GroupAccountDetails details);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="transactions"></param>
-        public delegate void GroupAccountTransactionsCallback(GroupAccountTransactions transactions);
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="groupID"></param>
         /// <param name="success"></param>
         /// <param name="message"></param>
@@ -532,49 +432,63 @@ namespace OpenMetaverse
         public delegate void GroupDroppedCallback(UUID groupID);
 
         /// <summary>
-        /// Fired when a member of a group is ejected
+        /// Fired when a member of a group is ejected, 
+        /// Does not provide member information, only 
+        /// group ID and whether it was successful or not
         /// </summary>
         /// <param name="groupID">The Group UUID the member was ejected from</param>
-        /// <param name="memberID">the Avatars UUID that was ejected</param>
         /// <param name="success">true of member was successfully ejected</param>
-        public delegate void GroupMemberEjectedCallback(UUID groupID, UUID memberID, bool success);
+        public delegate void GroupMemberEjectedCallback(UUID groupID, bool success);
 
         #endregion Delegates
 
         #region Events
 
-        /// <summary></summary>
+        /// <summary>Fired when a AgentGroupDataUpdate packet is received, contains a list of 
+        /// groups avatar is currently a member of</summary>
         public event CurrentGroupsCallback OnCurrentGroups;
-        /// <summary></summary>
+        /// <summary>Fired when a UUIDGroupNameReply packer is receiived, 
+        /// contains name of group requested</summary>
         public event GroupNamesCallback OnGroupNames;
-        /// <summary></summary>
+        /// <summary>Fired when a GroupProfileReply packet is received,
+        /// contains group profile information for requested group.</summary>
         public event GroupProfileCallback OnGroupProfile;
-        /// <summary></summary>
+        /// <summary>Fired when a GroupMembersReply packet is received,
+        /// contains a list of group members for requested group</summary>
         public event GroupMembersCallback OnGroupMembers;
-        /// <summary></summary>
+        /// <summary>Fired when a GroupRoleDataReply packet is received,
+        /// contains details on roles for requested group</summary>
         public event GroupRolesCallback OnGroupRoles;
-        /// <summary></summary>
+        /// <summary>Fired when a GroupRoleMembersReply packet is received,
+        /// Contails group member<>group role mappings</summary>
         public event GroupRolesMembersCallback OnGroupRolesMembers;
-        /// <summary></summary>
+        /// <summary>Fired when a GroupTitlesReply packet is received,
+        /// sets the active role title for the current Agent</summary>
         public event GroupTitlesCallback OnGroupTitles;
-        /// <summary></summary>
+        /// <summary>Fired when a GroupAccountSummaryReply packet is received,
+        /// Contains a summary of group financial information</summary>
         public event GroupAccountSummaryCallback OnGroupAccountSummary;
-        /// <summary></summary>
-        public event GroupAccountDetailsCallback OnGroupAccountDetails;
-        /// <summary></summary>
+        /// <summary>Fired when a CreateGroupReply packet is received, indicates
+        /// the successful creation of a new group</summary>
         public event GroupCreatedCallback OnGroupCreated;
-        /// <summary></summary>
+        /// <summary>Fired when a JoinGroupReply packet is received, indicates
+        /// the Avatar has successfully joined a new group either by <seealso cref="RequestJoinGroup"/>
+        /// or by accepting a group join invitation with <seealso cref="AgentManager.GroupInviteRespond"/></summary>
         public event GroupJoinedCallback OnGroupJoined;
-        /// <summary></summary>
+        /// <summary>Fired when a LeaveGroupReply packet is received, indicates
+        /// the Avatar has successfully left a group</summary>
+        /// <seealso cref="LeaveGroup"/>
         public event GroupLeftCallback OnGroupLeft;
-        /// <summary></summary>
+        /// <summary>Fired when a AgentDropGroup packet is received, contains
+        /// the <seealso cref="Group.ID"/> of the group dropped</summary>
         public event GroupDroppedCallback OnGroupDropped;
-        /// <summary>Fired when a member of a group is ejected</summary>
+        /// <summary>Fired when a GroupMemberEjected packet is received,
+        /// indicates a member of a group has been ejected</summary>
         public event GroupMemberEjectedCallback OnGroupMemberEjected;
 
         #endregion Events
 
-
+        /// <summary>A reference to the current <seealso cref="GridClient"/> instance</summary>
         private GridClient Client;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
         private Dictionary<UUID, Dictionary<UUID, GroupMember>> GroupMembersCaches;
@@ -584,10 +498,11 @@ namespace OpenMetaverse
         private Dictionary<UUID, List<KeyValuePair<UUID, UUID>>> GroupRolesMembersCaches;
         /// <summary>Caches group name lookups</summary>
         public InternalDictionary<UUID, string> GroupName2KeyCache;
+
         /// <summary>
-        /// 
+        /// Group Management Routines, Methods and Packet Handlers
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">A reference to the current <seealso cref="GridClient"/> instance</param>
         public GroupManager(GridClient client)
         {
             Client = client;
@@ -607,8 +522,6 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new NetworkManager.PacketCallback(GroupActiveProposalItemHandler));
             Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new NetworkManager.PacketCallback(GroupVoteHistoryItemHandler));
             Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountDetailsReply, new NetworkManager.PacketCallback(GroupAccountDetailsHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountTransactionsReply, new NetworkManager.PacketCallback(GroupAccountTransactionsHandler));
             Client.Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
@@ -1114,7 +1027,7 @@ namespace OpenMetaverse
             if (OnGroupProfile != null)
             {
                 GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
-                GroupProfile group = new GroupProfile();
+                Group group = new Group();
 
                 group.ID = profile.GroupData.GroupID;
                 group.AllowPublish = profile.GroupData.AllowPublish;
@@ -1316,40 +1229,6 @@ namespace OpenMetaverse
             }
         }
 
-        private void GroupAccountDetailsHandler(Packet packet, Simulator simulator)
-        {
-            if (OnGroupAccountDetails != null)
-            {
-                GroupAccountDetailsReplyPacket details = (GroupAccountDetailsReplyPacket)packet;
-                GroupAccountDetails account = new GroupAccountDetails();
-
-                account.CurrentInterval = details.MoneyData.CurrentInterval;
-                account.IntervalDays = details.MoneyData.IntervalDays;
-                account.StartDate = Helpers.FieldToUTF8String(details.MoneyData.StartDate);
-
-                account.HistoryItems = new List<KeyValuePair<string, int>>();
-
-                foreach (GroupAccountDetailsReplyPacket.HistoryDataBlock block in details.HistoryData)
-                {
-                    KeyValuePair<string, int> item =
-                        new KeyValuePair<string, int>(Helpers.FieldToUTF8String(block.Description), block.Amount);
-
-                    account.HistoryItems.Add(item);
-                }
-
-                try { OnGroupAccountDetails(account); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        private void GroupAccountTransactionsHandler(Packet packet, Simulator simulator)
-        {
-            GroupAccountTransactionsReplyPacket reply = (GroupAccountTransactionsReplyPacket)packet;
-
-            Logger.Log("Got a GroupAccountTransactionsReply packet, implement this callback!\n" +
-                reply.ToString(), Helpers.LogLevel.Error, Client);
-        }
-
         private void CreateGroupReplyHandler(Packet packet, Simulator simulator)
         {
             if (OnGroupCreated != null)
@@ -1412,15 +1291,16 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">The EjectGroupMemberReply packet</param>
         /// <param name="simulator">The simulator where the message originated</param>
+        /// <remarks>This is a silly packet, it doesn't provide you with the ejectees UUID</remarks>
         private void EjectGroupMemberReplyHandler(Packet packet, Simulator simulator)
         {
             EjectGroupMemberReplyPacket reply = (EjectGroupMemberReplyPacket)packet;
 
             // TODO: On Success remove the member from the cache(s)
-
+            
             if(OnGroupMemberEjected != null)
             {
-                try { OnGroupMemberEjected(reply.GroupData.GroupID, reply.AgentData.AgentID, reply.EjectData.Success); }
+                try { OnGroupMemberEjected(reply.GroupData.GroupID, reply.EjectData.Success); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

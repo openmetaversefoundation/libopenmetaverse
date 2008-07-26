@@ -15,7 +15,7 @@ namespace groupmanager
     {
         Group Group;
         GridClient Client;
-        GroupProfile Profile = new GroupProfile();
+        Group Profile = new Group();
         Dictionary<UUID, GroupMember> Members = new Dictionary<UUID,GroupMember>();
         Dictionary<UUID, GroupTitle> Titles = new Dictionary<UUID,GroupTitle>();
         Dictionary<UUID, GroupMemberData> MemberData = new Dictionary<UUID, GroupMemberData>();
@@ -68,7 +68,7 @@ namespace groupmanager
             Client.Avatars.OnAvatarNames -= AvatarNamesCallback;
         }
 
-        private void GroupProfileHandler(GroupProfile profile)
+        private void GroupProfileHandler(Group profile)
         {
             Profile = profile;
 

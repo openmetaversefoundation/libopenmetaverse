@@ -542,7 +542,7 @@ namespace OpenMetaverse
 			Type imType = this.GetType();
 			FieldInfo[] fields = imType.GetFields(); 
 			foreach (FieldInfo field in fields){
-				result += (field.Name + " = " + field.GetValue(this) ); 
+				result += (field.Name + " = " + field.GetValue(this) + " "); 
 			}
 			return result;
 
