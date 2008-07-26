@@ -675,6 +675,29 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Deselect multiple objects.
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
+        public void DeselectObjects(Simulator simulator, uint[] localIDs)
+        {
+            ObjectDeselectPacket deselect = new ObjectDeselectPacket();
+
+            deselect.AgentData.AgentID = Client.Self.AgentID;
+            deselect.AgentData.SessionID = Client.Self.SessionID;
+
+            deselect.ObjectData = new ObjectDeselectPacket.ObjectDataBlock[localIDs.Length];
+
+            for (int i = 0; i < localIDs.Length; i++)
+            {
+                deselect.ObjectData[i] = new ObjectDeselectPacket.ObjectDataBlock();
+                deselect.ObjectData[i].ObjectLocalID = localIDs[i];
+            }
+
+            Client.Network.SendPacket(deselect, simulator);
+        }
+
+        /// <summary>
         /// Perform a click action on an object
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>

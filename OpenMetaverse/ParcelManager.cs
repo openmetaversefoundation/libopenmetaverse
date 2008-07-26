@@ -691,7 +691,7 @@ namespace OpenMetaverse
         /// Responses to a request for prim owners on a parcel
         /// </summary>
         /// <param name="simulator">simulator parcel is in</param>
-        /// <param name="primowners">List containing details or prim ownership</param>
+        /// <param name="primOwners">List containing details or prim ownership</param>
         public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator, List<ParcelPrimOwners> primOwners);
 
         /// <summary>
