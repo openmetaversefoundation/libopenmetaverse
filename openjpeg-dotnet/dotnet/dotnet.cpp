@@ -209,7 +209,7 @@ bool DotNetEncode(MarshalledImage* image, bool lossless)
 	}
 }
 
-bool LibslDecode(MarshalledImage* image)
+bool DotNetDecode(MarshalledImage* image)
 {
 	opj_dparameters dparameters;
 	
