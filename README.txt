@@ -5,7 +5,7 @@ Finding Help
 ------------
 
 If you need any help we have a couple of resources, the primary one being 
-the #libsl IRC channel on EFNet. There is also the libsl-dev mailing list 
+the #openmv IRC channel on EFNet. There is also the libsl-dev mailing list 
 at http://openmetaverse.org/cgi-bin/mailman/listinfo/libsl-dev and lastly 
 you can use the e-mail contact@libsecondlife.org for any general inquiries 
 (although we prefer developer-related questions to go to IRC or the mailing 
