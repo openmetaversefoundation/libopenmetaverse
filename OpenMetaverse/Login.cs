@@ -136,7 +136,7 @@ namespace OpenMetaverse
                 LastName = ParseString("last_name", reply).Trim('"');
                 StartLocation = ParseString("start_location", reply);
                 AgentAccess = ParseString("agent_access", reply);
-                LookAt = ParseLLVector3("look_at", reply); 
+                LookAt = ParseVector3("look_at", reply); 
             }
             catch (LLSDException e)
             {
@@ -163,8 +163,8 @@ namespace OpenMetaverse
                         HomeRegion = 0;
                 }
 
-                HomePosition = ParseLLVector3("position", home);
-                HomeLookAt = ParseLLVector3("look_at", home);
+                HomePosition = ParseVector3("position", home);
+                HomeLookAt = ParseVector3("look_at", home);
             }
             else
             {
@@ -238,7 +238,7 @@ namespace OpenMetaverse
                 return String.Empty;
         }
 
-        public static Vector3 ParseLLVector3(string key, LLSDMap reply)
+        public static Vector3 ParseVector3(string key, LLSDMap reply)
         {
             LLSD llsd;
             if (reply.TryGetValue(key, out llsd))

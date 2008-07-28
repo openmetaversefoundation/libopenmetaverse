@@ -229,7 +229,7 @@ namespace OpenMetaverse
         /// Returns the assetID for a given WearableType 
         /// </summary>
         /// <param name="type">the <seealso cref="OpenMetaverse.WearableType"/> of the asset</param>
-        /// <returns>The <seealso cref="OpenMetaverse.LLUUID"/> of the WearableType</returns>
+        /// <returns>The <seealso cref="OpenMetaverse.UUID"/> of the WearableType</returns>
         public UUID GetWearableAsset(WearableType type)
         {
             WearableData wearable;
@@ -538,8 +538,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Attach an item to an avatar specifying attachment details
         /// </summary>
-        /// <param name="itemID">The <seealso cref="OpenMetaverse.LLUUID"/> of the item to attach</param>
-        /// <param name="ownerID">The <seealso cref="OpenMetaverse.LLUUID"/> attachments owner</param>
+        /// <param name="itemID">The <seealso cref="OpenMetaverse.UUID"/> of the item to attach</param>
+        /// <param name="ownerID">The <seealso cref="OpenMetaverse.UUID"/> attachments owner</param>
         /// <param name="name">The name of the attachment</param>
         /// <param name="description">The description of the attahment</param>
         /// <param name="perms">The <seealso cref="OpenMetaverse.Permissions"/> to apply when attached</param>
@@ -580,7 +580,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Detach an Item from avatar by items <seealso cref="OpenMetaverse.LLUUID"/>
+        /// Detach an Item from avatar by items <seealso cref="OpenMetaverse.UUID"/>
         /// </summary>
         /// <param name="itemID">The items ID to detach</param>
         public void Detach(UUID itemID)
@@ -650,7 +650,7 @@ namespace OpenMetaverse
 
                                 if (face == null)
                                 {
-                                    // If the texture is LLUUID.Zero the face should be null
+                                    // If the texture is UUID.Zero the face should be null
                                     if (AgentTextures[i] != UUID.Zero)
                                     {
                                         match = false;

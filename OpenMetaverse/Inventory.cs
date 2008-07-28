@@ -296,7 +296,7 @@ namespace OpenMetaverse
         /// Used to find out if Inventory contains the InventoryObject
         /// specified by <code>uuid</code>.
         /// </summary>
-        /// <param name="uuid">The LLUUID to check.</param>
+        /// <param name="uuid">The UUID to check.</param>
         /// <returns>true if inventory contains uuid, false otherwise</returns>
         public bool Contains(UUID uuid)
         {

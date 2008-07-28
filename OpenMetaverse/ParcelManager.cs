@@ -62,7 +62,7 @@ namespace OpenMetaverse
         public float GlobalZ;
         /// <summary>Name of simulator parcel is located in</summary>
         public string SimName;
-        /// <summary>Texture <seealso cref="T:OpenMetaverse.LLUUID"/> of parcels display picture</summary>
+        /// <summary>Texture <seealso cref="T:OpenMetaverse.UUID"/> of parcels display picture</summary>
         public UUID SnapshotID;
         /// <summary>Float representing calculated traffic based on time spent on parcel by avatars</summary>
         public float Dwell;
@@ -627,7 +627,7 @@ namespace OpenMetaverse
         /// </summary>
         public struct ParcelAccessEntry
         {
-            /// <summary>Agents <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
+            /// <summary>Agents <seealso cref="T:OpenMetaverse.UUID"/></summary>
             public UUID AgentID;
             /// <summary></summary>
             public DateTime Time;
@@ -640,7 +640,7 @@ namespace OpenMetaverse
         /// </summary>
         public struct ParcelPrimOwners
         {
-            /// <summary>Prim Owners <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
+            /// <summary>Prim Owners <seealso cref="T:OpenMetaverse.UUID"/></summary>
             public UUID OwnerID;
             /// <summary>True of owner is group</summary>
             public bool IsGroupOwned;
@@ -868,7 +868,7 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
         public void RequestAllSimParcels(Simulator simulator)
         {
-            RequestAllSimParcels(simulator, false);
+            RequestAllSimParcels(simulator, false, 200);
         }
 
         /// <summary>
@@ -877,7 +877,8 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
         /// <param name="refresh">If TRUE, will force a full refresh</param>
-        public void RequestAllSimParcels(Simulator simulator, bool refresh)
+        /// <param name="msDelay">Number of milliseconds to pause in between each request</param>
+        public void RequestAllSimParcels(Simulator simulator, bool refresh, int msDelay)
         {
             if (refresh)
             {
@@ -899,8 +900,8 @@ namespace OpenMetaverse
                             Client.Parcels.PropertiesRequest(simulator,
                                                              (y + 1) * 4.0f, (x + 1) * 4.0f,
                                                              y * 4.0f, x * 4.0f, 0, false);
-                            // Pause for 50 ms after every request to avoid flooding the sim
-                            System.Threading.Thread.Sleep(200);
+                            // Pause after every request to avoid flooding the sim
+                            System.Threading.Thread.Sleep(msDelay);
                         }
                     }
                 }
@@ -931,7 +932,7 @@ namespace OpenMetaverse
         /// <param name="simulator">The Simulator the parcel is located in</param>
         /// <param name="localID">The parcels region specific local ID</param>
         /// <param name="forGroup">true if this parcel is being purchased by a group</param>
-        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.LLUUID"/></param>
+        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.UUID"/></param>
         /// <param name="removeContribution">true to remove tier contribution if purchase is successful</param>
         /// <param name="parcelArea">The parcels size</param>
         /// <param name="parcelPrice">The purchase price of the parcel</param>
@@ -977,7 +978,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">The simulator the parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
-        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.LLUUID"/></param>
+        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.UUID"/></param>
         public void DeedToGroup(Simulator simulator, int localID, UUID groupID)
         {
             ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
@@ -1012,7 +1013,7 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
         /// <param name="type">the type of objects to return, <seealso cref="T:OpenMetaverse.ObjectReturnType"/></param>
-        /// <param name="ownerIDs">A list containing object owners <seealso cref="OpenMetaverse.LLUUID"/>s to return</param>
+        /// <param name="ownerIDs">A list containing object owners <seealso cref="OpenMetaverse.UUID"/>s to return</param>
         public void ReturnObjects(Simulator simulator, int localID, ObjectReturnType type, List<UUID> ownerIDs)
         {
             ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();

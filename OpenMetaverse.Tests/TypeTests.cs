@@ -38,7 +38,7 @@ namespace OpenMetaverse.Tests
     public class TypeTests : Assert
     {
         [Test]
-        public void LLUUIDs()
+        public void UUIDs()
         {
             // Creation
             UUID a = new UUID();
@@ -52,7 +52,7 @@ namespace OpenMetaverse.Tests
             UUID b = new UUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
                 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }, 0);
 
-            Assert.IsTrue(a == b, "LLUUID comparison operator failed, " + a.ToString() + " should equal " + 
+            Assert.IsTrue(a == b, "UUID comparison operator failed, " + a.ToString() + " should equal " + 
                 b.ToString());
 
             // From string
@@ -61,7 +61,7 @@ namespace OpenMetaverse.Tests
             string zeroonetwo = "00010203-0405-0607-0809-0a0b0c0d0e0f";
             b = new UUID(zeroonetwo);
 
-            Assert.IsTrue(a == b, "LLUUID hyphenated string constructor failed, should have " + a.ToString() + 
+            Assert.IsTrue(a == b, "UUID hyphenated string constructor failed, should have " + a.ToString() + 
                 " but we got " + b.ToString());
 
             // ToString()
@@ -82,7 +82,7 @@ namespace OpenMetaverse.Tests
             Quaternion a = new Quaternion(1, 0, 0, 0);
             Quaternion b = new Quaternion(1, 0, 0, 0);
 
-            Assert.IsTrue(a == b, "LLQuaternion comparison operator failed");
+            Assert.IsTrue(a == b, "Quaternion comparison operator failed");
 
             Quaternion expected = new Quaternion(0, 0, 0, -1);
             Quaternion result = a * b;
@@ -111,9 +111,9 @@ namespace OpenMetaverse.Tests
         //public void VectorQuaternionMath()
         //{
         //    // Convert a vector to a quaternion and back
-        //    LLVector3 a = new LLVector3(1f, 0.5f, 0.75f);
-        //    LLQuaternion b = a.ToQuaternion();
-        //    LLVector3 c;
+        //    Vector3 a = new Vector3(1f, 0.5f, 0.75f);
+        //    Quaternion b = a.ToQuaternion();
+        //    Vector3 c;
         //    b.GetEulerAngles(out c.X, out c.Y, out c.Z);
 
         //    Assert.IsTrue(a == c, c.ToString() + " does not equal " + a.ToString());

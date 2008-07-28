@@ -682,9 +682,10 @@ namespace OpenMetaverse
             Scripted = 8,
         }
 
-        #endregion
+        #endregion Enums
 
         #region Callbacks
+
         /// <summary>
         /// Triggered on incoming chat messages
         /// </summary>
@@ -854,7 +855,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Fired when camera tries to view beyond its view limits
         /// </summary>
-        /// <param name="collidePlane">Vector4 representing plane where constraints were hit</param>
+        /// <param name="collidePlane"><seealso cref="Vector4"/> representing plane where constraints were hit</param>
         public delegate void CameraConstraintCallback(Vector4 collidePlane);
 
         /// <summary>
@@ -871,8 +872,9 @@ namespace OpenMetaverse
         /// <param name="type">Objects Type</param>
         /// <param name="velocity"><seealso cref="Vector3"/> representing the velocity of object</param>
         /// TODO: this should probably be a struct, and there should be an enum added for type
-        public delegate void ScriptSensorReplyCallback(UUID requestorID, UUID groupID, string name, UUID objectID,
-            UUID ownerID, Vector3 position, float range, Quaternion rotation, ScriptSensorTypeFlags type, Vector3 velocity);
+        public delegate void ScriptSensorReplyCallback(UUID requestorID, UUID groupID, string name,
+            UUID objectID, UUID ownerID, Vector3 position, float range, Quaternion rotation,
+            ScriptSensorTypeFlags type, Vector3 velocity);
 
         /// <summary>
         /// Fired in response to a RequestSit()
@@ -884,8 +886,8 @@ namespace OpenMetaverse
         /// <param name="forceMouselook">true of sitting on this object will force mouselook</param>
         /// <param name="sitPosition">position avatar will be in when seated</param>
         /// <param name="sitRotation">rotation avatar will be in when seated</param>
-        public delegate void AvatarSitResponseCallback(UUID objectID, bool autoPilot, Vector3 cameraAtOffset, Vector3 cameraEyeOffset,
-            bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation);
+        public delegate void AvatarSitResponseCallback(UUID objectID, bool autoPilot, Vector3 cameraAtOffset,
+            Vector3 cameraEyeOffset, bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation);
 
         /// <summary>
         /// 
@@ -894,8 +896,10 @@ namespace OpenMetaverse
         /// <param name="regionHandle"></param>
         /// <param name="agentLookAt"></param>
         /// <param name="simVersion"></param>
-        public delegate void AgentMovementCallback(Vector3 agentPosition, ulong regionHandle, Vector3 agentLookAt, string simVersion);
-        #endregion
+        public delegate void AgentMovementCallback(Vector3 agentPosition, ulong regionHandle,
+            Vector3 agentLookAt, string simVersion);
+
+        #endregion Callbacks
 
         #region Events
 
@@ -946,7 +950,8 @@ namespace OpenMetaverse
         public event ScriptSensorReplyCallback OnScriptSensorReply;
         /// <summary>Fired in response to a sit request</summary>
         public event AvatarSitResponseCallback OnAvatarSitResponse;
-        #endregion
+
+        #endregion Events
 
         /// <summary>Reference to the GridClient object</summary>
         public readonly GridClient Client;

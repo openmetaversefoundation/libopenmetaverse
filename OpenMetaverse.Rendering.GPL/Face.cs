@@ -395,9 +395,9 @@ namespace OpenMetaverse.Rendering
                     if (((face.Mask & FaceMask.Inner) != 0) && ((face.Mask & FaceMask.Flat) != 0) && face.NumS > 2 && s > 0)
                     {
                         vertex.Position = primVertices[i].Position;
-                        //vertex.TexCoord = new LLVector2(ss, tt);
-                        //vertex.Normal = LLVector3.Zero;
-                        //vertex.Binormal = LLVector3.Zero;
+                        //vertex.TexCoord = new Vector2(ss, tt);
+                        //vertex.Normal = Vector3.Zero;
+                        //vertex.Binormal = Vector3.Zero;
 
                         face.Vertices.Add(vertex);
                         ++curVertex;

@@ -588,7 +588,7 @@ namespace OpenMetaverse
         /// <example>
         /// <code>
         /// BuyObject(Client.Network.CurrentSim, 500, SaleType.Copy, 
-        /// 100, LLUUID.Zero, Client.Self.InventoryRootFolderUUID);
+        /// 100, UUID.Zero, Client.Self.InventoryRootFolderUUID);
         /// </code> 
         ///</example>
         public void BuyObject(Simulator simulator, uint localID, SaleType saleType, int price, UUID groupID, 
@@ -728,7 +728,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
         /// <param name="prim">Data describing the prim object to rez</param>
-        /// <param name="groupID">Group ID that this prim will be set to, or LLUUID.Zero if you
+        /// <param name="groupID">Group ID that this prim will be set to, or UUID.Zero if you
         /// do not want the object to be associated with a specific group</param>
         /// <param name="position">An approximation of the position at which to rez the prim</param>
         /// <param name="scale">Scale vector to size this prim</param>
@@ -793,8 +793,8 @@ namespace OpenMetaverse
         /// <param name="rotation">The rotation of the tree</param>
         /// <param name="position">The position of the tree</param>
         /// <param name="treeType">The Type of tree</param>
-        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to set the tree to, 
-        /// or LLUUID.Zero if no group is to be set</param>
+        /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
+        /// or UUID.Zero if no group is to be set</param>
         /// <param name="newTree">true to use the "new" Linden trees, false to use the old</param>
         public void AddTree(Simulator simulator, Vector3 scale, Quaternion rotation, Vector3 position, 
             Tree treeType, UUID groupOwner, bool newTree)
@@ -826,8 +826,8 @@ namespace OpenMetaverse
         /// <param name="rotation">The rotation of the grass</param>
         /// <param name="position">The position of the grass</param>
         /// <param name="grassType">The type of grass from the <seealso cref="Grass"/> enum</param>
-        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to set the tree to, 
-        /// or LLUUID.Zero if no group is to be set</param>
+        /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
+        /// or UUID.Zero if no group is to be set</param>
         public void AddGrass(Simulator simulator, Vector3 scale, Quaternion rotation, Vector3 position,
             Grass grassType, UUID groupOwner)
         {
@@ -1271,7 +1271,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
-        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to deed the object to</param>
+        /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to deed the object to</param>
         public void DeedObject(Simulator simulator, uint localID, UUID groupOwner)
         {
             ObjectOwnerPacket objDeedPacket = new ObjectOwnerPacket();
@@ -1297,7 +1297,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to deed</param>
-        /// <param name="groupOwner">The <seealso cref="LLUUID"/> of the group to deed the object to</param>
+        /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to deed the object to</param>
         public void DeedObjects(Simulator simulator, List<uint> localIDs, UUID groupOwner)
         {
             ObjectOwnerPacket packet = new ObjectOwnerPacket();
@@ -1755,32 +1755,32 @@ namespace OpenMetaverse
             // TODO: Handle ParticleSystem ObjectUpdate blocks
 
             // float bounce_b
-            // LLVector4 scale_range
-            // LLVector4 alpha_range
-            // LLVector3 vel_offset
+            // Vector4 scale_range
+            // Vector4 alpha_range
+            // Vector3 vel_offset
             // float dist_begin_fadeout
             // float dist_end_fadeout
-            // LLUUID image_uuid
+            // UUID image_uuid
             // long flags
             // byte createme
-            // LLVector3 diff_eq_alpha
-            // LLVector3 diff_eq_scale
+            // Vector3 diff_eq_alpha
+            // Vector3 diff_eq_scale
             // byte max_particles
             // byte initial_particles
             // float kill_plane_z
-            // LLVector3 kill_plane_normal
+            // Vector3 kill_plane_normal
             // float bounce_plane_z
-            // LLVector3 bounce_plane_normal
+            // Vector3 bounce_plane_normal
             // float spawn_range
             // float spawn_frequency
             // float spawn_frequency_range
-            // LLVector3 spawn_direction
+            // Vector3 spawn_direction
             // float spawn_direction_range
             // float spawn_velocity
             // float spawn_velocity_range
             // float speed_limit
             // float wind_weight
-            // LLVector3 current_gravity
+            // Vector3 current_gravity
             // float gravity_weight
             // float global_lifetime
             // float individual_lifetime
@@ -1789,7 +1789,7 @@ namespace OpenMetaverse
             // float scale_decay
             // float distance_death
             // float damp_motion_factor
-            // LLVector3 wind_diffusion_factor
+            // Vector3 wind_diffusion_factor
         }
 
         /// <summary>

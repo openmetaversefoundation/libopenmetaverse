@@ -67,17 +67,17 @@ namespace OpenMetaverse
         /// <summary></summary>
 		F64,
         /// <summary></summary>
-		LLUUID,
+		UUID,
         /// <summary></summary>
 		BOOL,
         /// <summary></summary>
-		LLVector3,
+		Vector3,
         /// <summary></summary>
-		LLVector3d,
+		Vector3d,
         /// <summary></summary>
-		LLVector4,
+		Vector4,
         /// <summary></summary>
-		LLQuaternion,
+		Quaternion,
         /// <summary></summary>
 		IPADDR,
         /// <summary></summary>
@@ -236,12 +236,12 @@ namespace OpenMetaverse
 			TypeSizes.Add(FieldType.S32, 4);
 			TypeSizes.Add(FieldType.F32, 4);
 			TypeSizes.Add(FieldType.F64, 8);
-			TypeSizes.Add(FieldType.LLUUID, 16);
+			TypeSizes.Add(FieldType.UUID, 16);
 			TypeSizes.Add(FieldType.BOOL, 1);
-			TypeSizes.Add(FieldType.LLVector3, 12);
-			TypeSizes.Add(FieldType.LLVector3d, 24);
-			TypeSizes.Add(FieldType.LLVector4, 16);
-			TypeSizes.Add(FieldType.LLQuaternion, 16);
+			TypeSizes.Add(FieldType.Vector3, 12);
+			TypeSizes.Add(FieldType.Vector3d, 24);
+			TypeSizes.Add(FieldType.Vector4, 16);
+			TypeSizes.Add(FieldType.Quaternion, 16);
 			TypeSizes.Add(FieldType.IPADDR, 4);
 			TypeSizes.Add(FieldType.IPPORT, 2);
 			TypeSizes.Add(FieldType.Variable, -1);

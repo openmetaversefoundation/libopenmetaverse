@@ -40,7 +40,7 @@ namespace OpenMetaverse.TestClient
             //    // HACK: Weak hack to calculate size
             //    float AV_Height_Range = 2.025506f - 1.50856f;
             //    float AV_Height = 1.50856f + (((float)appearance.VisualParam[25].ParamValue / 255.0f) * AV_Height_Range);
-            //    set.AgentData.Size = new LLVector3(0.45f, 0.6f, AV_Height);
+            //    set.AgentData.Size = new Vector3(0.45f, 0.6f, AV_Height);
 
             //    set.ObjectData.TextureEntry = appearance.ObjectData.TextureEntry;
             //    set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[appearance.VisualParam.Length];

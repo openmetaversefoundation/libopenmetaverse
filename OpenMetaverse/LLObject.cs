@@ -427,7 +427,7 @@ namespace OpenMetaverse
 
             //public bool IsOwnedBy(GridClient client)
             //{
-            //    if (GroupID != LLUUID.Zero)
+            //    if (GroupID != UUID.Zero)
             //    {
             //        // Group owned, iterate through all of this clients groups
             //        // and see if it is a member

@@ -2035,8 +2035,11 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An Color4 with zero RGB values and full alpha</summary>
+        /// <summary>A Color4 with zero RGB values and full alpha (1.0)</summary>
         public readonly static Color4 Black = new Color4(0f, 0f, 0f, 1f);
+
+        /// <summary>A Color4 with full RGB values (1.0) and full alpha (1.0)</summary>
+        public readonly static Color4 White = new Color4(1f, 1f, 1f, 1f);
     }
 
     /// <summary>

@@ -210,7 +210,7 @@ namespace OpenMetaverse
             public string FirstName;
             /// <summary>Agents last name</summary>
             public string LastName;
-            /// <summary>Agents <seealso cref="T:OpenMetaverse.LLUUID"/></summary>
+            /// <summary>Agents <seealso cref="T:OpenMetaverse.UUID"/></summary>
             public UUID AgentID;
         }
         /// <summary>
@@ -607,7 +607,7 @@ namespace OpenMetaverse
         /// For example "0" = Today, "1" = tomorrow, "2" = following day, "-1" = yesterday, etc.</param>
         /// <param name="queryStart">Page # to show, 0 for First Page</param>
         /// <param name="category">EventCategory event is listed under.</param>
-        /// <param name="queryID">a LLUUID that can be used to track queries with results.</param>
+        /// <param name="queryID">a UUID that can be used to track queries with results.</param>
         /// <returns>UUID of query to correlate results in callback.</returns>
         public UUID StartEventsSearch(string searchText, bool showMature, string eventDay, uint queryStart, EventCategories category, UUID queryID)
         {

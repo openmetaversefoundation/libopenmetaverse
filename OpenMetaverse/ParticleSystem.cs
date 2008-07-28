@@ -138,21 +138,21 @@ namespace OpenMetaverse
             public float BurstSpeedMax;
             /// <summary>A <see langword="byte"/> representing the maximum number of particles emitted per burst</summary>
             public byte BurstPartCount;
-            /// <summary>A <see cref="T:LLVector3"/> which represents the velocity (speed) from the source which particles are emitted</summary>
+            /// <summary>A <see cref="T:Vector3"/> which represents the velocity (speed) from the source which particles are emitted</summary>
             public Vector3 AngularVelocity;
-            /// <summary>A <see cref="T:LLVector3"/> which represents the Acceleration from the source which particles are emitted</summary>
+            /// <summary>A <see cref="T:Vector3"/> which represents the Acceleration from the source which particles are emitted</summary>
             public Vector3 PartAcceleration;
-            /// <summary>The <see cref="T:LLUUID"/> Key of the texture displayed on the particle</summary>
+            /// <summary>The <see cref="T:UUID"/> Key of the texture displayed on the particle</summary>
             public UUID Texture;
-            /// <summary>The <see cref="T:LLUUID"/> Key of the specified target object or avatar particles will follow</summary>
+            /// <summary>The <see cref="T:UUID"/> Key of the specified target object or avatar particles will follow</summary>
             public UUID Target;
             /// <summary>Flags of particle from <seealso cref="T:ParticleDataFlags"/></summary>
             public ParticleDataFlags PartDataFlags;
             /// <summary>Max Age particle system will emit particles for</summary>
             public float PartMaxAge;
-            /// <summary>The <see cref="T:LLColor"/> the particle has at the beginning of its lifecycle</summary>
+            /// <summary>The <see cref="T:Color4"/> the particle has at the beginning of its lifecycle</summary>
             public Color4 PartStartColor;
-            /// <summary>The <see cref="T:LLColor"/> the particle has at the ending of its lifecycle</summary>
+            /// <summary>The <see cref="T:Color4"/> the particle has at the ending of its lifecycle</summary>
             public Color4 PartEndColor;
             /// <summary>A <see langword="float"/> that represents the starting X size of the particle</summary>
             /// <remarks>Minimum value is 0, maximum value is 4</remarks>

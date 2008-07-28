@@ -82,6 +82,11 @@ namespace OpenMetaverse.Rendering
         public Vector3 Normal;
         public Vector3 Binormal;
         public Vector2 TexCoord;
+
+        public override string ToString()
+        {
+            return String.Format("P: {0} N: {1} B: {2} T: {3}", Position, Normal, Binormal, TexCoord);
+        }
     }
 
     public struct ProfileFace

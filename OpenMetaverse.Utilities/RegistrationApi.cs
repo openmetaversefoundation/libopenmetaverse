@@ -328,7 +328,7 @@ namespace OpenMetaverse
             {
                 // everything is okay
                 // FIXME:
-                //return new LLUUID(((Dictionary<string, object>)response)["agent_id"].ToString());
+                //return new UUID(((Dictionary<string, object>)response)["agent_id"].ToString());
             }
             else
             {

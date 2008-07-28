@@ -510,16 +510,16 @@ namespace OpenMetaverse
             {
                 EffectType type = (EffectType)block.Type;
 
-                //LLColor color;
+                //Color4 color;
                 //if (block.Color.Length == 4)
                 //{
-                //    color = new LLColor(block.Color, 0);
+                //    color = new Color4(block.Color, 0);
                 //}
                 //else
                 //{
                 //    Client.Log("Received a ViewerEffect.EffectBlock.Color array with " + block.Color.Length + 
                 //        " bytes", Helpers.LogLevel.Warning);
-                //    color = LLColor.Black;
+                //    color = Color4.Black;
                 //}
 
                 // Each ViewerEffect type uses it's own custom binary format for additional data. Fun eh?

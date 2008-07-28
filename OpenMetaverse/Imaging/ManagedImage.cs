@@ -284,46 +284,67 @@ namespace OpenMetaverse.Imaging
             Bump = bump;
         }
 
+        /// <summary>
+        /// Create a byte array containing 32-bit RGBA data with a bottom-left
+        /// origin, suitable for feeding directly into OpenGL
+        /// </summary>
+        /// <returns>A byte array containing raw texture data</returns>
         public byte[] ExportRaw()
         {
-            int n = Width * Height;
-            int di = 0;
-            byte[] raw = new byte[n * 4];
+            byte[] raw = new byte[Width * Height * 4];
 
             if ((Channels & ImageChannels.Alpha) != 0)
             {
                 if ((Channels & ImageChannels.Color) != 0)
                 {
                     // RGBA
-                    for (int i = 0; i < n; i++)
+                    for (int h = 0; h < Height; h++)
                     {
-                        raw[di++] = Red[i];
-                        raw[di++] = Green[i];
-                        raw[di++] = Blue[i];
-                        raw[di++] = Alpha[i];
+                        for (int w = 0; w < Width; w++)
+                        {
+                            int pos = (Height - 1 - h) * Width + w;
+                            int srcPos = h * Width + w;
+
+                            raw[pos * 4 + 0] = Red[srcPos];
+                            raw[pos * 4 + 1] = Green[srcPos];
+                            raw[pos * 4 + 2] = Blue[srcPos];
+                            raw[pos * 4 + 3] = Alpha[srcPos];
+                        }
                     }
                 }
                 else
                 {
                     // Alpha only
-                    for (int i = 0; i < n; i++)
+                    for (int h = 0; h < Height; h++)
                     {
-                        raw[di++] = Alpha[i];
-                        raw[di++] = Alpha[i];
-                        raw[di++] = Alpha[i];
-                        raw[di++] = Byte.MaxValue;
+                        for (int w = 0; w < Width; w++)
+                        {
+                            int pos = (Height - 1 - h) * Width + w;
+                            int srcPos = h * Width + w;
+
+                            raw[pos * 4 + 0] = Alpha[srcPos];
+                            raw[pos * 4 + 1] = Alpha[srcPos];
+                            raw[pos * 4 + 2] = Alpha[srcPos];
+                            raw[pos * 4 + 3] = Byte.MaxValue;
+                        }
                     }
                 }
             }
             else
             {
                 // RGB
-                for (int i = 0; i < n; i++)
+                for (int h = 0; h < Height; h++)
                 {
-                    raw[di++] = Red[i];
-                    raw[di++] = Green[i];
-                    raw[di++] = Blue[i];
-                    raw[di++] = Byte.MaxValue;
+                    for (int w = 0; w < Width; w++)
+                    {
+                        int pos = (Height - 1 - h) * Width + w;
+                        int srcPos = h * Width + w;
+
+                        raw[pos * 4 + 0] = Red[srcPos];
+                        raw[pos * 4 + 1] = Green[srcPos];
+                        raw[pos * 4 + 2] = Blue[srcPos];
+                        raw[pos * 4 + 3] = Byte.MaxValue;
+                    }
                 }
             }
 

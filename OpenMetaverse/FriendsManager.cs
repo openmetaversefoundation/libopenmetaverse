@@ -298,7 +298,7 @@ namespace OpenMetaverse
         /// <summary>
         /// A dictionary of key/value pairs containing known friends of this avatar. 
         /// 
-        /// The Key is the <seealso cref="LLUUID"/> of the friend, the value is a <seealso cref="FriendInfo"/>
+        /// The Key is the <seealso cref="UUID"/> of the friend, the value is a <seealso cref="FriendInfo"/>
         /// object that contains detailed information including permissions you have and have given to the friend
         /// </summary>
         public InternalDictionary<UUID, FriendInfo> FriendList = new InternalDictionary<UUID, FriendInfo>();
@@ -306,8 +306,8 @@ namespace OpenMetaverse
         /// <summary>
         /// A Dictionary of key/value pairs containing current pending frienship offers.
         /// 
-        /// The key is the <seealso cref="LLUUID"/> of the avatar making the request, 
-        /// the value is the <seealso cref="LLUUID"/> of the request which is used to accept
+        /// The key is the <seealso cref="UUID"/> of the avatar making the request, 
+        /// the value is the <seealso cref="UUID"/> of the request which is used to accept
         /// or decline the friendship offer
         /// </summary>
         public InternalDictionary<UUID, UUID> FriendRequests = new InternalDictionary<UUID, UUID>();
@@ -449,7 +449,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Change the rights of a friend avatar.
         /// </summary>
-        /// <param name="friendID">the <seealso cref="LLUUID"/> of the friend</param>
+        /// <param name="friendID">the <seealso cref="UUID"/> of the friend</param>
         /// <param name="rights">the new rights to give the friend</param>
         /// <remarks>This method will implicitly set the rights to those passed in the rights parameter.</remarks>
         public void GrantRights(UUID friendID, FriendRights rights)

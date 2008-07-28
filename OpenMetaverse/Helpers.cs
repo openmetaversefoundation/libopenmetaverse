@@ -1033,7 +1033,7 @@ namespace OpenMetaverse
             CRC += ownerID.CRC(); // OwnerID
             CRC += groupID.CRC(); // GroupID
 
-            // CRC += another 4 words which always seem to be zero -- unclear if this is a LLUUID or what
+            // CRC += another 4 words which always seem to be zero -- unclear if this is a UUID or what
             CRC += ownerMask;
             CRC += nextOwnerMask;
             CRC += everyoneMask;

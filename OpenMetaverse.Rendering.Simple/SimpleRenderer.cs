@@ -30,7 +30,7 @@ using System.Collections.Generic;
 namespace OpenMetaverse.Rendering
 {
     [RendererName("Simple Cube Renderer")]
-    public partial class SimpleRenderer : IRendering
+    public class SimpleRenderer : IRendering
     {
         public SimpleMesh GenerateSimpleMesh(Primitive prim, DetailLevel lod)
         {

@@ -75,12 +75,12 @@ namespace OpenMetaverse
         /// // populates with copied values from example KeyNameCache Dictionary.
         /// 
         /// // create source dictionary
-        /// Dictionary&lt;LLUUID, string&gt; KeyNameCache = new Dictionary&lt;LLUUID, string&gt;();
+        /// Dictionary&lt;UUID, string&gt; KeyNameCache = new Dictionary&lt;UUID, string&gt;();
         /// KeyNameCache.Add("8300f94a-7970-7810-cf2c-fc9aa6cdda24", "Jack Avatar");
         /// KeyNameCache.Add("27ba1e40-13f7-0708-3e98-5819d780bd62", "Jill Avatar");
         /// 
         /// // Initialize new dictionary.
-        /// public InternalDictionary&lt;LLUUID, string&gt; testAvName = new InternalDictionary&lt;LLUUID, string&gt;(KeyNameCache);
+        /// public InternalDictionary&lt;UUID, string&gt; testAvName = new InternalDictionary&lt;UUID, string&gt;(KeyNameCache);
         /// </code>
         /// </example>
         public InternalDictionary(IDictionary<TKey, TValue> dictionary)
@@ -161,8 +161,8 @@ namespace OpenMetaverse
         /// int radius = 20;
         /// List&lt;Primitive&gt; prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
         ///         delegate(Primitive prim) {
-        ///             LLVector3 pos = prim.Position;
-        ///             return ((prim.ParentID == 0) &amp;&amp; (pos != LLVector3.Zero) &amp;&amp; (LLVector3.Dist(pos, location) &lt; radius));
+        ///             Vector3 pos = prim.Position;
+        ///             return ((prim.ParentID == 0) &amp;&amp; (pos != Vector3.Zero) &amp;&amp; (Vector3.Dist(pos, location) &lt; radius));
         ///         }
         ///    ); 
         ///</code>

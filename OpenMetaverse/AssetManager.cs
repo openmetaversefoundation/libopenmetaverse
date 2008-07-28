@@ -451,7 +451,7 @@ namespace OpenMetaverse
 
             XferDownload transfer = new XferDownload();
             transfer.XferID = id;
-            transfer.ID = new UUID(id); // Our dictionary tracks transfers with LLUUIDs, so convert the ulong back
+            transfer.ID = new UUID(id); // Our dictionary tracks transfers with UUIDs, so convert the ulong back
             transfer.Filename = filename;
             transfer.VFileID = vFileID;
             transfer.AssetType = vFileType;
@@ -477,10 +477,10 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="assetID">Use LLUUID.Zero if you do not have the 
+        /// <param name="assetID">Use UUID.Zero if you do not have the 
         /// asset ID but have all the necessary permissions</param>
         /// <param name="itemID">The item ID of this asset in the inventory</param>
-        /// <param name="taskID">Use LLUUID.Zero if you are not requesting an 
+        /// <param name="taskID">Use UUID.Zero if you are not requesting an 
         /// asset from an object inventory</param>
         /// <param name="ownerID">The owner of this asset</param>
         /// <param name="type">Asset type</param>
@@ -1146,7 +1146,7 @@ namespace OpenMetaverse
         {
             SendXferPacketPacket xfer = (SendXferPacketPacket)packet;
 
-            // Lame ulong to LLUUID conversion, please go away Xfer system
+            // Lame ulong to UUID conversion, please go away Xfer system
             UUID transferID = new UUID(xfer.XferID.ID);
             Transfer transfer;
             XferDownload download = null;
@@ -1447,7 +1447,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Return bytes read from the local image cache, null if it does not exist
         /// </summary>
-        /// <param name="imageID">LLUUID of the image we want to get</param>
+        /// <param name="imageID">UUID of the image we want to get</param>
         /// <returns>Raw bytes of the image, or null on failure</returns>
         public byte[] GetCachedImageBytes(UUID imageID)
         {
@@ -1468,7 +1468,7 @@ namespace OpenMetaverse
         /// Returns ImageDownload object of the
         /// image from the local image cache, null if it does not exist
         /// </summary>
-        /// <param name="imageID">LLUUID of the image we want to get</param>
+        /// <param name="imageID">UUID of the image we want to get</param>
         /// <returns>ImageDownload object containing the image, or null on failure</returns>
         public ImageDownload GetCachedImage(UUID imageID)
         {
@@ -1492,7 +1492,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Constructs a file name of the cached image
         /// </summary>
-        /// <param name="imageID">LLUUID of the image</param>
+        /// <param name="imageID">UUID of the image</param>
         /// <returns>String with the file name of the cahced image</returns>
         private string FileName(UUID imageID)
         {
@@ -1502,7 +1502,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Saves an image to the local cache
         /// </summary>
-        /// <param name="imageID">LLUUID of the image</param>
+        /// <param name="imageID">UUID of the image</param>
         /// <param name="imageData">Raw bytes the image consists of</param>
         /// <returns>Weather the operation was successfull</returns>
         public bool SaveImageToCache(UUID imageID, byte[] imageData)
@@ -1530,7 +1530,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Get the file name of the asset stored with gived UUID
         /// </summary>
-        /// <param name="imageID">LLUUID of the image</param>
+        /// <param name="imageID">UUID of the image</param>
         /// <returns>Null if we don't have that UUID cached on disk, file name if found in the cache folder</returns>
         public string ImageFileName(UUID imageID)
         {
@@ -1550,7 +1550,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Checks if the image exists in the local cache
         /// </summary>
-        /// <param name="imageID">LLUUID of the image</param>
+        /// <param name="imageID">UUID of the image</param>
         /// <returns>True is the image is stored in the cache, otherwise false</returns>
         public bool HasImage(UUID imageID)
         {
