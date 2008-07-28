@@ -35,7 +35,7 @@ namespace OpenMetaverse
     /// Life networking protocol
     /// </summary>
     [Serializable]
-    public struct UUID : IComparable
+    public struct UUID : IComparable<UUID>
     {
         /// <summary>The System.Guid object this struct wraps around</summary>
         public Guid Guid;
@@ -47,7 +47,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
-        /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
+        /// <example>UUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
         public UUID(string val)
         {
             if (String.IsNullOrEmpty(val))
@@ -60,7 +60,7 @@ namespace OpenMetaverse
         /// Constructor that takes a System.Guid object
         /// </summary>
         /// <param name="val">A Guid object that contains the unique identifier
-        /// to be represented by this LLUUID</param>
+        /// to be represented by this UUID</param>
         public UUID(Guid val)
         {
             Guid = val;
@@ -101,17 +101,11 @@ namespace OpenMetaverse
         #region Public Methods
 
         /// <summary>
-        /// IComparable.CompareTo implementation.
+        /// IComparable.CompareTo implementation
         /// </summary>
-        public int CompareTo(object obj)
+        public int CompareTo(UUID id)
         {
-            if (obj is UUID)
-            {
-                UUID ID = (UUID)obj;
-                return this.Guid.CompareTo(ID.Guid);
-            }
-
-            throw new ArgumentException("object is not a LLUUID");
+            return Guid.CompareTo(id.Guid);
         }
 
         /// <summary>
@@ -151,9 +145,9 @@ namespace OpenMetaverse
         }
 
 		/// <summary>
-		/// Calculate an LLCRC (cyclic redundancy check) for this LLUUID
+		/// Calculate an LLCRC (cyclic redundancy check) for this UUID
 		/// </summary>
-		/// <returns>The CRC checksum for this LLUUID</returns>
+		/// <returns>The CRC checksum for this UUID</returns>
 		public uint CRC() 
 		{
 			uint retval = 0;
@@ -181,25 +175,25 @@ namespace OpenMetaverse
         #region Static Methods
 
         /// <summary>
-        /// Generate a LLUUID from a string
+        /// Generate a UUID from a string
         /// </summary>
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
-        /// <example>LLUUID.Parse("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
+        /// <example>UUID.Parse("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
         public static UUID Parse(string val)
         {
             return new UUID(val);
         }
 
         /// <summary>
-        /// Generate a LLUUID from a string
+        /// Generate a UUID from a string
         /// </summary>
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
         /// <param name="result">Will contain the parsed UUID if successful,
         /// otherwise null</param>
         /// <returns>True if the string was successfully parse, otherwise false</returns>
-        /// <example>LLUUID.TryParse("11f8aa9c-b071-4242-836b-13b7abe0d489", result)</example>
+        /// <example>UUID.TryParse("11f8aa9c-b071-4242-836b-13b7abe0d489", result)</example>
         public static bool TryParse(string val, out UUID result)
         {
             try
@@ -218,8 +212,8 @@ namespace OpenMetaverse
         /// Combine two UUIDs together by taking the MD5 hash of a byte array
         /// containing both UUIDs
         /// </summary>
-        /// <param name="first">First LLUUID to combine</param>
-        /// <param name="second">Second LLUUID to combine</param>
+        /// <param name="first">First UUID to combine</param>
+        /// <param name="second">Second UUID to combine</param>
         /// <returns>The UUID product of the combination</returns>
         public static UUID Combine(UUID first, UUID second)
         {
@@ -257,7 +251,7 @@ namespace OpenMetaverse
         /// Comparison function
         /// </summary>
         /// <param name="o">An object to compare to this UUID</param>
-        /// <returns>False if the object is not an LLUUID, true if it is and
+        /// <returns>False if the object is not an UUID, true if it is and
         /// byte for byte identical to this</returns>
 		public override bool Equals(object o)
 		{
@@ -285,8 +279,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Equals operator
         /// </summary>
-        /// <param name="lhs">First LLUUID for comparison</param>
-        /// <param name="rhs">Second LLUUID for comparison</param>
+        /// <param name="lhs">First UUID for comparison</param>
+        /// <param name="rhs">Second UUID for comparison</param>
         /// <returns>True if the UUIDs are byte for byte equal, otherwise false</returns>
 		public static bool operator==(UUID lhs, UUID rhs)
 		{
@@ -296,8 +290,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Not equals operator
         /// </summary>
-        /// <param name="lhs">First LLUUID for comparison</param>
-        /// <param name="rhs">Second LLUUID for comparison</param>
+        /// <param name="lhs">First UUID for comparison</param>
+        /// <param name="rhs">Second UUID for comparison</param>
         /// <returns>True if the UUIDs are not equal, otherwise true</returns>
 		public static bool operator!=(UUID lhs, UUID rhs)
 		{
@@ -307,8 +301,8 @@ namespace OpenMetaverse
         /// <summary>
         /// XOR operator
         /// </summary>
-        /// <param name="lhs">First LLUUID</param>
-        /// <param name="rhs">Second LLUUID</param>
+        /// <param name="lhs">First UUID</param>
+        /// <param name="rhs">Second UUID</param>
         /// <returns>A UUID that is a XOR combination of the two input UUIDs</returns>
         public static UUID operator ^(UUID lhs, UUID rhs)
         {
@@ -337,7 +331,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLUUID with a value of all zeroes</summary>
+        /// <summary>An UUID with a value of all zeroes</summary>
         public static readonly UUID Zero = new UUID();
 	}
 
@@ -345,7 +339,7 @@ namespace OpenMetaverse
     /// A two-dimensional vector with floating-point values
     /// </summary>
     [Serializable]
-    public struct Vector2
+    public struct Vector2 : IComparable<Vector2>
     {
         /// <summary>X value</summary>
         public float X;
@@ -355,7 +349,61 @@ namespace OpenMetaverse
         // Used for little to big endian conversion on big endian architectures
         private byte[] conversionBuffer;
 
+        #region Constructors
+
+        /// <summary>
+        /// Constructor, builds a vector for individual float values
+        /// </summary>
+        /// <param name="x">X value</param>
+        /// <param name="y">Y value</param>
+        public Vector2(float x, float y)
+        {
+            conversionBuffer = null;
+            X = x;
+            Y = y;
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="vector">Vector to copy</param>
+        public Vector2(Vector2 vector)
+        {
+            conversionBuffer = null;
+            X = vector.X;
+            Y = vector.Y;
+        }
+
+        #endregion Constructors
+
         #region Public Methods
+
+        /// <summary>
+        /// Test if this vector is equal to another vector, within a given
+        /// tolerance range
+        /// </summary>
+        /// <param name="vec">Vector to test against</param>
+        /// <param name="tolerance">The acceptable magnitude of difference
+        /// between the two vectors</param>
+        /// <returns>True if the magnitude of difference between the two vectors
+        /// is less than the given tolerance, otherwise false</returns>
+        public bool ApproxEquals(Vector2 vec, float tolerance)
+        {
+            Vector2 diff = this - vec;
+            float d = Vector2.Mag(diff);
+            return (d <= tolerance);
+        }
+
+        /// <summary>
+        /// IComparable.CompareTo implementation
+        /// </summary>
+        public int CompareTo(Vector2 vector)
+        {
+            float thisMag = X * X + Y * Y;
+            float thatMag = vector.X * vector.X + vector.Y * vector.Y;
+
+            return thisMag.CompareTo(thatMag);
+        }
 
         /// <summary>
         /// Builds a vector from a byte array
@@ -408,32 +456,27 @@ namespace OpenMetaverse
 
         #endregion Public Methods
 
-        #region Constructors
+        #region Static Methods
 
         /// <summary>
-        /// Constructor, builds a vector for individual float values
+        /// Calculate the magnitude of the supplied vector
         /// </summary>
-        /// <param name="x">X value</param>
-        /// <param name="y">Y value</param>
-		public Vector2(float x, float y)
-		{
-            conversionBuffer = null;
-			X = x;
-			Y = y;
-        }
-
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="vector">Vector to copy</param>
-        public Vector2(Vector2 vector)
+        public static float Mag(Vector2 v)
         {
-            conversionBuffer = null;
-            X = vector.X;
-            Y = vector.Y;
+            return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y);
         }
 
-        #endregion Constructors
+        /// <summary>
+        /// Calculate the squared magnitude of the supplied vector
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static float MagSquared(Vector2 v)
+        {
+            return v.X * v.X + v.Y * v.Y;
+        }
+
+        #endregion Static Methods
 
         #region Overrides
 
@@ -525,7 +568,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLVector2 with a value of 0,0,0</summary>
+        /// <summary>An Vector2 with a value of 0,0,0</summary>
         public readonly static Vector2 Zero = new Vector2();
     }
 
@@ -533,7 +576,7 @@ namespace OpenMetaverse
     /// A three-dimensional vector with floating-point values
     /// </summary>
     [Serializable]
-	public struct Vector3
+	public struct Vector3 : IComparable<Vector3>
 	{
         /// <summary>X value</summary>
         public float X;
@@ -588,6 +631,33 @@ namespace OpenMetaverse
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// Test if this vector is equal to another vector, within a given
+        /// tolerance range
+        /// </summary>
+        /// <param name="vec">Vector to test against</param>
+        /// <param name="tolerance">The acceptable magnitude of difference
+        /// between the two vectors</param>
+        /// <returns>True if the magnitude of difference between the two vectors
+        /// is less than the given tolerance, otherwise false</returns>
+        public bool ApproxEquals(Vector3 vec, float tolerance)
+        {
+            Vector3 diff = this - vec;
+            float d = Vector3.Mag(diff);
+            return (d <= tolerance);
+        }
+
+        /// <summary>
+        /// IComparable.CompareTo implementation
+        /// </summary>
+        public int CompareTo(Vector3 vector)
+        {
+            float thisMag = X * X + Y * Y + Z * Z;
+            float thatMag = vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z;
+
+            return thisMag.CompareTo(thatMag);
+        }
 
         /// <summary>
         /// Test if this vector is composed of all finite numbers
@@ -687,13 +757,13 @@ namespace OpenMetaverse
         // Z axis and creates a quaternion representation of the rotations
         // </summary>
         // <returns>A quaternion representation of the euler rotations</returns>
-        //public LLQuaternion ToQuaternion()
+        //public Quaternion ToQuaternion()
         //{
         //    LLMatrix3 rotMat = new LLMatrix3(X, Y, Z);
         //    rotMat = LLMatrix3.Orthogonalize(rotMat);
 
-        //    LLQuaternion quat = rotMat.ToQuaternion();
-        //    quat = LLQuaternion.Norm(quat);
+        //    Quaternion quat = rotMat.ToQuaternion();
+        //    quat = Quaternion.Norm(quat);
 
         //    return quat;
         //}
@@ -810,7 +880,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Generate an LLVector3 from a string
+        /// Generate an Vector3 from a string
         /// </summary>
         /// <param name="val">A string representation of a 3D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
@@ -957,7 +1027,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLVector3 with a value of 0,0,0</summary>
+        /// <summary>An Vector3 with a value of 0,0,0</summary>
         public readonly static Vector3 Zero = new Vector3();
         /// <summary>A unit vector facing up (Z axis)</summary>
         public readonly static Vector3 Up = new Vector3(0f, 0f, 1f);
@@ -971,7 +1041,7 @@ namespace OpenMetaverse
     /// A double-precision three-dimensional vector
     /// </summary>
 	[Serializable]
-    public struct Vector3d
+    public struct Vector3d : IComparable<Vector3d>
 	{
         /// <summary>X value</summary>
         public double X;
@@ -1038,6 +1108,33 @@ namespace OpenMetaverse
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// Test if this vector is equal to another vector, within a given
+        /// tolerance range
+        /// </summary>
+        /// <param name="vec">Vector to test against</param>
+        /// <param name="tolerance">The acceptable magnitude of difference
+        /// between the two vectors</param>
+        /// <returns>True if the magnitude of difference between the two vectors
+        /// is less than the given tolerance, otherwise false</returns>
+        public bool ApproxEquals(Vector3d vec, double tolerance)
+        {
+            Vector3d diff = this - vec;
+            double d = Vector3d.Mag(diff);
+            return (d <= tolerance);
+        }
+
+        /// <summary>
+        /// IComparable.CompareTo implementation
+        /// </summary>
+        public int CompareTo(Vector3d vector)
+        {
+            double thisMag = X * X + Y * Y + Z * Z;
+            double thatMag = vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z;
+
+            return thisMag.CompareTo(thatMag);
+        }
 
         /// <summary>
         /// 
@@ -1126,6 +1223,24 @@ namespace OpenMetaverse
         #region Static Methods
 
         /// <summary>
+        /// Calculate the magnitude of the supplied vector
+        /// </summary>
+        public static double Mag(Vector3d v)
+        {
+            return Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
+        }
+
+        /// <summary>
+        /// Calculate the squared magnitude of the supplied vector
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double MagSquared(Vector3d v)
+        {
+            return v.X * v.X + v.Y * v.Y + v.Z * v.Z;
+        }
+
+        /// <summary>
         /// Calculates the distance between two vectors
         /// </summary>
         public static double Dist(Vector3d pointA, Vector3d pointB)
@@ -1137,7 +1252,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Generate an LLVector3d from a string
+        /// Generate an Vector3d from a string
         /// </summary>
         /// <param name="val">A string representation of a 3D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
@@ -1265,7 +1380,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLVector3d with a value of 0,0,0</summary>
+        /// <summary>An Vector3d with a value of 0,0,0</summary>
         public static readonly Vector3d Zero = new Vector3d();
 	}
 
@@ -1273,7 +1388,7 @@ namespace OpenMetaverse
     /// A four-dimensional vector
     /// </summary>
 	[Serializable]
-    public struct Vector4
+    public struct Vector4 : IComparable<Vector4>
 	{
         /// <summary></summary>
         public float X;
@@ -1333,6 +1448,33 @@ namespace OpenMetaverse
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// Test if this vector is equal to another vector, within a given
+        /// tolerance range
+        /// </summary>
+        /// <param name="vec">Vector to test against</param>
+        /// <param name="tolerance">The acceptable magnitude of difference
+        /// between the two vectors</param>
+        /// <returns>True if the magnitude of difference between the two vectors
+        /// is less than the given tolerance, otherwise false</returns>
+        public bool ApproxEquals(Vector4 vec, float tolerance)
+        {
+            Vector4 diff = this - vec;
+            float d = Vector4.Mag(diff);
+            return (d <= tolerance);
+        }
+
+        /// <summary>
+        /// IComparable.CompareTo implementation
+        /// </summary>
+        public int CompareTo(Vector4 vector)
+        {
+            float thisMag = X * X + Y * Y + Z * Z + S * S;
+            float thatMag = vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z + vector.S * vector.S;
+
+            return thisMag.CompareTo(thatMag);
+        }
 
         /// <summary>
         /// 
@@ -1426,6 +1568,24 @@ namespace OpenMetaverse
         #endregion Public Methods
 
         #region Static Methods
+
+        /// <summary>
+        /// Calculate the magnitude of the supplied vector
+        /// </summary>
+        public static float Mag(Vector4 v)
+        {
+            return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z + v.S * v.S);
+        }
+
+        /// <summary>
+        /// Calculate the squared magnitude of the supplied vector
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static float MagSquared(Vector4 v)
+        {
+            return v.X * v.X + v.Y * v.Y + v.Z * v.Z + v.S * v.S;
+        }
 
         public static Vector4 Parse(string val)
         {
@@ -1541,7 +1701,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLVector4 with a value of 0,0,0,0</summary>
+        /// <summary>An Vector4 with a value of 0,0,0,0</summary>
         public readonly static Vector4 Zero = new Vector4();
 	}
 
@@ -1549,7 +1709,7 @@ namespace OpenMetaverse
     /// An 8-bit color structure including an alpha channel
     /// </summary>
     [Serializable]
-    public struct Color4
+    public struct Color4 : IComparable<Color4>
     {
         /// <summary>Red</summary>
         public float R;
@@ -1583,7 +1743,7 @@ namespace OpenMetaverse
         {
             if (r > 1f || g > 1f || b > 1f || a > 1f)
                 Logger.Log(
-                    String.Format("Attempting to initialize LLColor with out of range values <{0},{1},{2},{3}>",
+                    String.Format("Attempting to initialize Color4 with out of range values <{0},{1},{2},{3}>",
                     r, g, b, a), Helpers.LogLevel.Warning);
 
             // Valid range is from 0.0 to 1.0
@@ -1620,6 +1780,45 @@ namespace OpenMetaverse
         #endregion Constructors
 
         #region Public Methods
+
+        /// <summary>
+        /// IComparable.CompareTo implementation
+        /// </summary>
+        /// <remarks>Sorting ends up like this: |--Greyscale--||--Color--|.
+        /// Alpha is only used when the colors are otherwise equivalent</remarks>
+        public int CompareTo(Color4 color)
+        {
+            float thisHue = GetHue();
+            float thatHue = color.GetHue();
+
+            if (thisHue < 0f && thatHue < 0f)
+            {
+                // Both monochromatic
+                if (R == color.R)
+                {
+                    // Monochromatic and equal, compare alpha
+                    return A.CompareTo(color.A);
+                }
+                else
+                {
+                    // Compare lightness
+                    return R.CompareTo(R);
+                }
+            }
+            else
+            {
+                if (thisHue == thatHue)
+                {
+                    // RGB is equal, compare alpha
+                    return A.CompareTo(color.A);
+                }
+                else
+                {
+                    // Compare hues
+                    return thisHue.CompareTo(thatHue);
+                }
+            }
+        }
 
         public void FromBytes(byte[] byteArray, int pos, bool inverted)
         {
@@ -1686,6 +1885,41 @@ namespace OpenMetaverse
             Buffer.BlockCopy(BitConverter.GetBytes(B), 0, bytes, 8, 4);
             Buffer.BlockCopy(BitConverter.GetBytes(A), 0, bytes, 12, 4);
             return bytes;
+        }
+
+        public float GetHue()
+        {
+            const float HUE_MAX = 360f;
+
+            float max = Math.Max(Math.Max(R, G), B);
+            float min = Math.Min(Math.Min(R, B), B);
+
+            if (max == min)
+            {
+                // Achromatic, hue is undefined
+                return -1f;
+            }
+            else
+            {
+                if (R == max)
+                {
+                    float bDelta = (((max - B) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                    float gDelta = (((max - G) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                    return bDelta - gDelta;
+                }
+                else if (G == max)
+                {
+                    float rDelta = (((max - R) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                    float bDelta = (((max - B) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                    return (HUE_MAX / 3f) + rDelta - bDelta;
+                }
+                else // B == max
+                {
+                    float gDelta = (((max - G) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                    float rDelta = (((max - R) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                    return ((2f * HUE_MAX) / 3f) + gDelta - rDelta;
+                }
+            }
         }
 
         /// <summary>
@@ -1801,7 +2035,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLColor with zero RGB values and full alpha</summary>
+        /// <summary>An Color4 with zero RGB values and full alpha</summary>
         public readonly static Color4 Black = new Color4(0f, 0f, 0f, 1f);
     }
 
@@ -2308,7 +2542,7 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
+        /// <summary>An Quaternion with a value of 0,0,0,1</summary>
         public readonly static Quaternion Identity = new Quaternion(0f, 0f, 0f, 1f);
 	}
 
