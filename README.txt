@@ -79,7 +79,7 @@ Compiling
 
 1. Change to the directory you extracted the source distribution to
 2. run the prebuild file: % sh runprebuild.sh nant - This will generate the required nant build files and run
-   nant with the correct buildfile parameter to build nant
+   nant with the correct buildfile parameter to build the library, examples and tools
 
 
 The library, example applications and tools will be in the bin directory
