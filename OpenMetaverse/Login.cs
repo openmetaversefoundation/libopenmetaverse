@@ -660,20 +660,41 @@ namespace OpenMetaverse
                         bool redirect = (llsd.AsString() == "indeterminate");
                         LoginResponseData data = new LoginResponseData();
 
-                        // Parse successful login replies into LoginResponseData structs
-                        if (loginSuccess && !redirect)
-                            data.Parse(map);
-
-                        // Fire the login callback
-                        if (OnLoginResponse != null)
+                        if (redirect)
                         {
-                            try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
-                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-                        }
+                            // Login redirected
 
-                        if (loginSuccess && !redirect)
+                            // Make the next login URL jump
+                            UpdateLoginStatus(LoginStatus.Redirecting, message);
+
+                            LoginParams loginParams = CurrentContext.Value;
+                            loginParams.URI = LoginResponseData.ParseString("next_url", map);
+                            //CurrentContext.Params.MethodName = LoginResponseData.ParseString("next_method", map);
+
+                            // Sleep for some amount of time while the servers work
+                            int seconds = (int)LoginResponseData.ParseUInt("next_duration", map);
+                            Logger.Log("Sleeping for " + seconds + " seconds during a login redirect",
+                                Helpers.LogLevel.Info);
+                            Thread.Sleep(seconds * 1000);
+
+                            // Ignore next_options for now
+                            CurrentContext = loginParams;
+
+                            BeginLogin();
+                        }
+                        else if (loginSuccess)
                         {
                             // Login succeeded
+
+                            // Parse successful login replies into LoginResponseData structs
+                            data.Parse(map);
+
+                            // Fire the login callback
+                            if (OnLoginResponse != null)
+                            {
+                                try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
+                                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                            }
 
                             // These parameters are stored in NetworkManager, so instead of registering
                             // another callback for them we just set the values here
@@ -713,28 +734,6 @@ namespace OpenMetaverse
                                 UpdateLoginStatus(LoginStatus.Failed,
                                     "Login server did not return a simulator address");
                             }
-                        }
-                        else if (redirect)
-                        {
-                            // Login redirected
-
-                            // Make the next login URL jump
-                            UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
-
-                            LoginParams loginParams = CurrentContext.Value;
-                            loginParams.URI = LoginResponseData.ParseString("next_url", map);
-                            //CurrentContext.Params.MethodName = LoginResponseData.ParseString("next_method", map);
-
-                            // Sleep for some amount of time while the servers work
-                            int seconds = (int)LoginResponseData.ParseUInt("next_duration", map);
-                            Logger.Log("Sleeping for " + seconds + " seconds during a login redirect",
-                                Helpers.LogLevel.Info);
-                            Thread.Sleep(seconds * 1000);
-
-                            // Ignore next_options for now
-                            CurrentContext = loginParams;
-
-                            BeginLogin();
                         }
                         else
                         {
