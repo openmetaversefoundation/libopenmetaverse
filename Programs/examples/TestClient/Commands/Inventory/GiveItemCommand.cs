@@ -26,29 +26,26 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                 return "First argument expected agent UUID.";
             }
             Manager = Client.Inventory;
-            Inventory = Manager.Store;
+            Inventory = Client.InventoryStore;
             string ret = "";
             string nl = "\n";
             for (int i = 1; i < args.Length; ++i)
             {
                 string inventoryName = args[i];
-                // WARNING: Uses local copy of inventory contents, need to download them first.
-                List<InventoryBase> contents = Inventory.GetContents(Client.CurrentDirectory);
+
+                if (Client.CurrentDirectory.IsStale)
+                {
+                    Client.CurrentDirectory.DownloadContents(TimeSpan.FromSeconds(30));
+                }
+
                 bool found = false;
-                foreach (InventoryBase b in contents) {
-                    if (inventoryName == b.Name || inventoryName == b.UUID.ToString())
+                foreach (InventoryBase b in Client.CurrentDirectory) {
+                    string name = b.Name;
+                    if (inventoryName == name || inventoryName == b.UUID.ToString())
                     {
                         found = true;
-                        if (b is InventoryItem)
-                        {
-                            InventoryItem item = b as InventoryItem;
-                            Manager.GiveItem(item.UUID, item.Name, item.AssetType, dest, true);
-                            ret += "Gave " + item.Name + nl;
-                        }
-                        else
-                        {
-                            ret += "Unable to give folder " + b.Name + nl;
-                        }
+                        b.Give(dest, true);
+                        ret += "Gave " + name + nl;
                     }
                 }
                 if (!found)

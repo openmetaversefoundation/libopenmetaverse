@@ -19,7 +19,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         public override string Execute(string[] args, UUID fromAgentID)
         {
             Manager = Client.Inventory;
-            Inventory = Client.Inventory.Store;
+            Inventory = Client.InventoryStore;
 
             if (args.Length > 1)
                 return "Usage: cd [path-to-folder]";
@@ -52,17 +52,19 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                 if (nextName == ".." && currentFolder != Inventory.RootFolder)
                 {
                     // If we encounter .., move to the parent folder.
-                    currentFolder = Inventory[currentFolder.ParentUUID] as InventoryFolder;
+                    currentFolder = currentFolder.Parent;
                 }
                 else
                 {
-                    List<InventoryBase> currentContents = Inventory.GetContents(currentFolder);
+                    if (currentFolder.IsStale)
+                        currentFolder.DownloadContents(TimeSpan.FromSeconds(30));
                     // Try and find an InventoryBase with the corresponding name.
                     bool found = false;
-                    foreach (InventoryBase item in currentContents)
+                    foreach (InventoryBase item in currentFolder)
                     {
+                        string name = item.Name;
                         // Allow lookup by UUID as well as name:
-                        if (item.Name == nextName || item.UUID.ToString() == nextName)
+                        if (name == nextName || item.UUID.ToString() == nextName)
                         {
                             found = true;
                             if (item is InventoryFolder)
@@ -71,16 +73,16 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                             }
                             else
                             {
-                                return item.Name + " is not a folder.";
+                                return name + " is not a folder.";
                             }
                         }
                     }
                     if (!found)
-                        return nextName + " not found in " + currentFolder.Name;
+                        return nextName + " not found in " + currentFolder.Data.Name;
                 }
             }
             Client.CurrentDirectory = currentFolder;
-            return "Current folder: " + currentFolder.Name;
+            return "Current folder: " + currentFolder.Data.Name;
         }
     }
 }

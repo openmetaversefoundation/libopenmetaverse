@@ -312,12 +312,11 @@ namespace GridImageUpload
                             UpdateAssetID();
 
                             // Fix the permissions on the new upload since they are fscked by default
-                            InventoryItem item = Client.Inventory.FetchItem(itemID, Client.Self.AgentID, 1000 * 15);
 
                             Transferred = UploadData.Length;
                             BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
-
-                            if (item != null)
+                            ItemData item;
+                            if (Client.Inventory.FetchItem(itemID, Client.Self.AgentID, TimeSpan.FromSeconds(15), out item))
                             {
                                 item.Permissions.EveryoneMask = PermissionMask.All;
                                 item.Permissions.NextOwnerMask = PermissionMask.All;

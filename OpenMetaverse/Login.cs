@@ -121,8 +121,8 @@ namespace OpenMetaverse
         public DateTime SecondsSinceEpoch;
         public UUID InventoryRoot;
         public UUID LibraryRoot;
-        public InventoryFolder[] InventorySkeleton;
-        public InventoryFolder[] LibrarySkeleton;
+        public FolderData[] InventoryFolders;
+        public FolderData[] LibraryFolders;
         public UUID LibraryOwner;
 
         public void Parse(LLSDMap reply)
@@ -203,10 +203,10 @@ namespace OpenMetaverse
 
             SecondsSinceEpoch = Helpers.UnixTimeToDateTime(ParseUInt("seconds_since_epoch", reply));
             InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
-            InventorySkeleton = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
+            InventoryFolders = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
             LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
-            LibrarySkeleton = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
+            LibraryFolders = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
         }
 
         #region Parsing Helpers
@@ -279,9 +279,9 @@ namespace OpenMetaverse
             return UUID.Zero;
         }
 
-        public static InventoryFolder[] ParseInventoryFolders(string key, UUID owner, LLSDMap reply)
+        public static FolderData[] ParseInventoryFolders(string key, UUID owner, LLSDMap reply)
         {
-            List<InventoryFolder> folders = new List<InventoryFolder>();
+            List<FolderData> folders = new List<FolderData>();
 
             LLSD skeleton;
             if (reply.TryGetValue(key, out skeleton) && skeleton.Type == LLSDType.Array)
@@ -293,7 +293,7 @@ namespace OpenMetaverse
                     if (array[i].Type == LLSDType.Map)
                     {
                         LLSDMap map = (LLSDMap)array[i];
-                        InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
+                        FolderData folder = new FolderData(map["folder_id"].AsUUID());
                         folder.PreferredType = (AssetType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
                         folder.OwnerID = owner;
@@ -303,11 +303,9 @@ namespace OpenMetaverse
                         folders.Add(folder);
                     }
                 }
-
-                return folders.ToArray();
             }
 
-            return new InventoryFolder[0];
+            return folders.ToArray();
         }
 
         #endregion Parsing Helpers

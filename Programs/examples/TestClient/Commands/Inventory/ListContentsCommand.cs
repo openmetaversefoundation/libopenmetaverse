@@ -24,13 +24,15 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                 longDisplay = true;
 
             Manager = Client.Inventory;
-            Inventory = Manager.Store;
-            // WARNING: Uses local copy of inventory contents, need to download them first.
-            List<InventoryBase> contents = Inventory.GetContents(Client.CurrentDirectory);
+            Inventory = Client.InventoryStore;
+
+            if (Client.CurrentDirectory.IsStale)
+                Client.CurrentDirectory.DownloadContents(TimeSpan.FromSeconds(30));
+
             string displayString = "";
             string nl = "\n"; // New line character
             // Pretty simple, just print out the contents.
-            foreach (InventoryBase b in contents)
+            foreach (InventoryBase b in Client.CurrentDirectory)
             {
                 if (longDisplay)
                 {
@@ -51,16 +53,17 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                     {
                         InventoryItem item = b as InventoryItem;
                         displayString += "-";
-                        displayString += PermMaskString(item.Permissions.OwnerMask);
-                        displayString += PermMaskString(item.Permissions.GroupMask);
-                        displayString += PermMaskString(item.Permissions.EveryoneMask);
+                        displayString += PermMaskString(item.Data.Permissions.OwnerMask);
+                        displayString += PermMaskString(item.Data.Permissions.GroupMask);
+                        displayString += PermMaskString(item.Data.Permissions.EveryoneMask);
                         displayString += " " + item.UUID;
                         displayString += " " + item.Name;
                     }
                 }
                 else
                 {
-                    displayString += b.Name;
+                    string name = b.Name;
+                    displayString += name;
                 }
                 displayString += nl;
             }

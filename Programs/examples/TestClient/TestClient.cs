@@ -28,6 +28,8 @@ namespace OpenMetaverse.TestClient
         private Vector3 left = new Vector3(0.9999f, 0, 0);
         private Vector3 up = new Vector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
+        public Inventory InventoryStore;
+        public Inventory LibraryStore;
 
         /// <summary>
         /// 
@@ -59,7 +61,6 @@ namespace OpenMetaverse.TestClient
             Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
 
             VoiceManager = new VoiceManager(this);
-
             updateTimer.Start();
         }
 
@@ -72,8 +73,12 @@ namespace OpenMetaverse.TestClient
         {
             if (login == LoginStatus.Success)
             {
-                // Start in the inventory root folder.
-                CurrentDirectory = Inventory.Store.RootFolder;
+                // Create the stores:
+                InventoryStore = new Inventory(Inventory, Inventory.InventorySkeleton);
+                LibraryStore = new Inventory(Inventory, Inventory.LibrarySkeleton);
+
+                // Start in the inventory root folder:
+                CurrentDirectory = InventoryStore.RootFolder;
             }
         }
 
@@ -244,20 +249,20 @@ namespace OpenMetaverse.TestClient
 
         }
 
-        private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
+        private UUID Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
             UUID objectID, bool fromTask)
         {
             if (MasterKey != UUID.Zero)
             {
                 if (offer.FromAgentID != MasterKey)
-                    return false;
+                    return UUID.Zero;
             }
             else if (GroupMembers != null && !GroupMembers.ContainsKey(offer.FromAgentID))
             {
-                return false;
+                return UUID.Zero;
             }
 
-            return true;
+            return Inventory.FindFolderForType(type);
         }
 	}
 }

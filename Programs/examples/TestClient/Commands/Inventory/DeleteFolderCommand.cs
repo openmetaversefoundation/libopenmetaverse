@@ -34,12 +34,20 @@ namespace OpenMetaverse.TestClient
             try
             {
                 // find the folder
-                found = Client.Inventory.LocalFind(Client.Inventory.Store.RootFolder.UUID, target.Split('/'), 0, true);
-                if (found.Count.Equals(1))
+                found = Client.InventoryStore.InventoryFromPath(target.Split('/'), Client.InventoryStore.RootFolder);
+                if (found.Count > 0)
                 {
-                    // move the folder to the trash folder
-                    Client.Inventory.MoveFolder(found[0].UUID, Client.Inventory.FindFolderForType(AssetType.TrashFolder));
-                    return String.Format("Moved folder {0} to Trash", found[0].Name);
+                    InventoryBase item = found[0];
+                    InventoryFolder trash = Client.InventoryStore[Client.Inventory.FindFolderForType(AssetType.TrashFolder)] as InventoryFolder;
+                    if (trash != null)
+                    {
+                        item.Move(trash);
+                        return String.Format("Moved folder {0} ({1}) to Trash", item.Name, item.UUID);
+                    }
+                }
+                else
+                {
+                    return String.Format("Unable to locate {0}", target);
                 }
             }
             catch (InvalidOutfitException ex)

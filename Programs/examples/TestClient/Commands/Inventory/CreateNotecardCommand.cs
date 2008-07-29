@@ -45,7 +45,7 @@ namespace OpenMetaverse.TestClient
 
                 Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
                     file, desc, AssetType.Notecard, UUID.Random(), InventoryType.Notecard, PermissionMask.All,
-                    delegate(bool success, InventoryItem item) { 
+                    delegate(bool success, ItemData item) { 
                     if(success) // upload the asset
                         Client.Inventory.RequestUploadNotecardAsset(CreateNotecardAsset(body), item.UUID, new InventoryManager.NotecardUploadedAssetCallback(OnNoteUpdate));
                     }

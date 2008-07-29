@@ -93,7 +93,7 @@ namespace OpenMetaverse.Packets
             get { return (Data[0] & Helpers.MSG_APPENDED_ACKS) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_APPENDED_ACKS; } else { byte mask = (byte)Helpers.MSG_APPENDED_ACKS ^ 0xFF; Data[0] &= mask; } }
         }
-        /// <summary>Packet sequence number, three bytes long</summary>
+        /// <summary>Packet sequence number</summary>
         public uint Sequence
         {
             get { return (uint)((Data[1] << 24) + (Data[2] << 16) + (Data[3] << 8) + Data[4]); }

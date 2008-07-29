@@ -88,8 +88,13 @@ namespace OpenMetaverse
 
         public class WearableData
         {
-            public InventoryWearable Item;
+            public ItemData Item;
             public AssetWearable Asset;
+            public WearableType WearableType
+            {
+                get { return (WearableType)Item.Flags; }
+                set { Item.Flags = (uint)value; }
+            }
         }
 
         /// <summary>
@@ -278,7 +283,7 @@ namespace OpenMetaverse
         /// Replace the current outfit with a list of wearables and set appearance
         /// </summary>
         /// <param name="ibs">List of wearables that define the new outfit</param>
-        public void WearOutfit(List<InventoryBase> ibs)
+        public void WearOutfit(List<ItemData> ibs)
         {
             WearOutfit(ibs, true);
         }
@@ -288,7 +293,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="ibs">List of wearables that define the new outfit</param>
         /// <param name="bake">Whether to bake textures for the avatar or not</param>
-        public void WearOutfit(List<InventoryBase> ibs, bool bake)
+        public void WearOutfit(List<ItemData> ibs, bool bake)
         {
             _wearParams = new WearParams(ibs, bake);
             Thread appearanceThread = new Thread(new ThreadStart(StartWearOutfit));
@@ -298,15 +303,15 @@ namespace OpenMetaverse
         private WearParams _wearParams;
         private void StartWearOutfit()
         {
-            List<InventoryBase> ibs = (List<InventoryBase>)_wearParams.Param;
-            List<InventoryWearable> wearables = new List<InventoryWearable>();
-            List<InventoryBase> attachments = new List<InventoryBase>();
+            List<ItemData> ibs = (List<ItemData>)_wearParams.Param;
+            List<ItemData> wearables = new List<ItemData>();
+            List<ItemData> attachments = new List<ItemData>();
 
-            foreach (InventoryBase ib in ibs)
+            foreach (ItemData ib in ibs)
             {
-                if (ib is InventoryWearable)
-                    wearables.Add((InventoryWearable)ib);
-                else if (ib is InventoryAttachment || ib is InventoryObject)
+                if (ib.InventoryType == InventoryType.Wearable)
+                    wearables.Add(ib);
+                else if (ib.InventoryType == InventoryType.Attachment || ib.InventoryType == InventoryType.Object)
                     attachments.Add(ib);
             }
 
@@ -362,8 +367,8 @@ namespace OpenMetaverse
         private void StartWearOutfitFolder()
         {
             SendAgentWearablesRequest(); // request current wearables async
-            List<InventoryWearable> wearables;
-            List<InventoryBase> attachments;
+            List<ItemData> wearables;
+            List<ItemData> attachments;
 
             if (!GetFolderWearables(_wearOutfitParams.Param, out wearables, out attachments)) // get wearables in outfit folder
                 return; // TODO: this error condition should be passed back to the client somehow
@@ -374,7 +379,7 @@ namespace OpenMetaverse
             AddAttachments(attachments, true);
         }
 
-        private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryBase> attachments)
+        private bool GetFolderWearables(object _folder, out List<ItemData> wearables, out List<ItemData> attachments)
         {
             UUID folder;
             wearables = null;
@@ -385,7 +390,7 @@ namespace OpenMetaverse
                 string[] path = (string[])_folder;
 
                 folder = Client.Inventory.FindObjectByPath(
-                    Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, String.Join("/", path), 1000 * 20);
+                    Client.Inventory.InventorySkeleton.RootUUID, Client.Self.AgentID, String.Join("/", path), TimeSpan.FromMilliseconds(1000 * 20));
 
                 if (folder == UUID.Zero)
                 {
@@ -396,26 +401,29 @@ namespace OpenMetaverse
             else
                 folder = (UUID)_folder;
 
-            wearables = new List<InventoryWearable>();
-            attachments = new List<InventoryBase>();
-            List<InventoryBase> objects = Client.Inventory.FolderContents(folder, Client.Self.AgentID, 
-                false, true, InventorySortOrder.ByName, 1000 * 20);
+            wearables = new List<ItemData>();
+            attachments = new List<ItemData>();
 
-            if (objects != null)
+            List<FolderData> folders;
+            List<ItemData> items;
+            Client.Inventory.FolderContents(folder, Client.Self.AgentID, 
+                false, true, InventorySortOrder.ByName, TimeSpan.FromMilliseconds(1000 * 20), out items, out folders);
+
+            if (items != null)
             {
-                foreach (InventoryBase ib in objects)
+                foreach (ItemData ib in items)
                 {
-                    if (ib is InventoryWearable)
+                    if (ib.InventoryType == InventoryType.Wearable)
                     {
                         Logger.DebugLog("Adding wearable " + ib.Name, Client);
-                        wearables.Add((InventoryWearable)ib);
+                        wearables.Add(ib);
                     }
-                    else if (ib is InventoryAttachment)
+                    else if (ib.InventoryType == InventoryType.Attachment)
                     {
                         Logger.DebugLog("Adding attachment (attachment) " + ib.Name, Client);
                         attachments.Add(ib);
                     }
-                    else if (ib is InventoryObject)
+                    else if (ib.InventoryType == InventoryType.Object)
                     {
                         Logger.DebugLog("Adding attachment (object) " + ib.Name, Client);
                         attachments.Add(ib);
@@ -437,7 +445,7 @@ namespace OpenMetaverse
         }
 
         // this method will download the assets for all inventory items in iws
-        private void ReplaceOutfitWearables(List<InventoryWearable> iws)
+        private void ReplaceOutfitWearables(List<ItemData> iws)
         {
             lock (Wearables.Dictionary)
             {
@@ -451,11 +459,11 @@ namespace OpenMetaverse
 
                 Wearables.Dictionary = preserve;
             
-                foreach (InventoryWearable iw in iws)
+                foreach (ItemData iw in iws)
                 {
                     WearableData wd = new WearableData();
                     wd.Item = iw; 
-                    Wearables.Dictionary[wd.Item.WearableType] = wd;
+                    Wearables.Dictionary[wd.WearableType] = wd;
                 }
             }
         }
@@ -466,7 +474,7 @@ namespace OpenMetaverse
         /// <param name="attachments">A List containing the attachments to add</param>
         /// <param name="removeExistingFirst">If true, tells simulator to remove existing attachment
         /// first</param>
-        public void AddAttachments(List<InventoryBase> attachments, bool removeExistingFirst)
+        public void AddAttachments(List<ItemData> attachments, bool removeExistingFirst)
         {
             // FIXME: Obey this
             const int OBJECTS_PER_PACKET = 4;
@@ -483,10 +491,9 @@ namespace OpenMetaverse
             attachmentsPacket.ObjectData = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock[attachments.Count];
             for (int i = 0; i < attachments.Count; i++)
             {
-                if (attachments[i] is InventoryAttachment)
+                if (attachments[i].InventoryType == InventoryType.Attachment)
                 {
-                    InventoryAttachment attachment = (InventoryAttachment)attachments[i];
-
+                    ItemData attachment = attachments[i];
                     attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
                     attachmentsPacket.ObjectData[i].AttachmentPt = 0;
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
@@ -498,10 +505,9 @@ namespace OpenMetaverse
                     attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
                     attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
                 }
-                else if (attachments[i] is InventoryObject)
+                else if (attachments[i].InventoryType == InventoryType.Object)
                 {
-                    InventoryObject attachment = (InventoryObject)attachments[i];
-
+                    ItemData attachment = attachments[i];
                     attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
                     attachmentsPacket.ObjectData[i].AttachmentPt = 0;
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
@@ -529,7 +535,7 @@ namespace OpenMetaverse
         /// <param name="item">A <seealso cref="OpenMetaverse.InventoryItem"/> to attach</param>
         /// <param name="attachPoint">the <seealso cref="OpenMetaverse.AttachmentPoint"/> on the avatar 
         /// to attach the item to</param>
-        public void Attach(InventoryItem item, AttachmentPoint attachPoint)
+        public void Attach(ItemData item, AttachmentPoint attachPoint)
         {
             Attach(item.UUID, item.OwnerID, item.Name, item.Description, item.Permissions, item.Flags, 
                 attachPoint);
@@ -574,7 +580,7 @@ namespace OpenMetaverse
         /// Detach an item from avatar using an <seealso cref="OpenMetaverse.InventoryItem"/> object
         /// </summary>
         /// <param name="item">An <seealso cref="OpenMetaverse.InventoryItem"/> object</param>
-        public void Detach(InventoryItem item)
+        public void Detach(ItemData item)
         {
             Detach(item.UUID); 
         }
@@ -796,10 +802,11 @@ namespace OpenMetaverse
                     {
                         WearableType type = (WearableType)update.WearableData[i].WearableType;
                         WearableData data = new WearableData();
-                        data.Item = new InventoryWearable(update.WearableData[i].ItemID);
-                        data.Item.WearableType = type;
-                        data.Item.AssetType = WearableTypeToAssetType(type);
-                        data.Item.AssetUUID = update.WearableData[i].AssetID;
+                        ItemData itemData = new ItemData(update.WearableData[i].ItemID, InventoryType.Wearable);
+                        itemData.AssetType = WearableTypeToAssetType(type);
+                        itemData.AssetUUID = update.WearableData[i].AssetID;
+                        data.Item = itemData;
+                        data.WearableType = type;
 
                         // Add this wearable to our collection
                         lock (Wearables.Dictionary) Wearables.Dictionary[type] = data;
@@ -1012,7 +1019,7 @@ namespace OpenMetaverse
         {
             foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables.Dictionary)
             {
-                Logger.DebugLog("Requesting asset for wearable item " + kvp.Value.Item.WearableType + " (" + kvp.Value.Item.AssetUUID + ")", Client);
+                Logger.DebugLog("Requesting asset for wearable item " + kvp.Value.WearableType + " (" + kvp.Value.Item.AssetUUID + ")", Client);
                 AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
             }
 

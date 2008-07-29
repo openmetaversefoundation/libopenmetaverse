@@ -182,7 +182,7 @@ public class ClientAO : ProxyPlugin
     // Number of directory descendents received
     int nbdescendantsreceived;
     //List of items in the current folder
-    Dictionary<string,InventoryItem> currentFolderItems;
+    Dictionary<string,ItemData> currentFolderItems;
     //Asset download request ID
     UUID assetdownloadID;
     //Downloaded bytes so far
@@ -295,7 +295,7 @@ public class ClientAO : ProxyPlugin
         InventorySortOrder order)
     {
         //empty the dictionnary containing current folder items by name
-        currentFolderItems = new Dictionary<string, InventoryItem>();
+        currentFolderItems = new Dictionary<string, ItemData>();
         //reset the number of descendants received
         nbdescendantsreceived = 0;
         //build a packet to request the content
@@ -388,7 +388,7 @@ public class ClientAO : ProxyPlugin
                     //configuration notecard
                     if (reply.ItemData[i].ItemID != UUID.Zero)
                     {
-                        InventoryItem item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType, reply.ItemData[i].ItemID);
+                        ItemData item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType, reply.ItemData[i].ItemID);
                         item.ParentUUID = reply.ItemData[i].FolderID;
                         item.CreatorID = reply.ItemData[i].CreatorID;
                         item.AssetType = (AssetType)reply.ItemData[i].Type;
@@ -465,29 +465,13 @@ public class ClientAO : ProxyPlugin
         }
     }
 
-    public static InventoryItem CreateInventoryItem(InventoryType type, UUID id)
+    public static ItemData CreateInventoryItem(InventoryType type, UUID id)
     {
-        switch (type)
-        {
-            case InventoryType.Texture: return new InventoryTexture(id);
-            case InventoryType.Sound: return new InventorySound(id);
-            case InventoryType.CallingCard: return new InventoryCallingCard(id);
-            case InventoryType.Landmark: return new InventoryLandmark(id);
-            case InventoryType.Object: return new InventoryObject(id);
-            case InventoryType.Notecard: return new InventoryNotecard(id);
-            case InventoryType.Category: return new InventoryCategory(id);
-            case InventoryType.LSL: return new InventoryLSL(id);
-            case InventoryType.Snapshot: return new InventorySnapshot(id);
-            case InventoryType.Attachment: return new InventoryAttachment(id);
-            case InventoryType.Wearable: return new InventoryWearable(id);
-            case InventoryType.Animation: return new InventoryAnimation(id);
-            case InventoryType.Gesture: return new InventoryGesture(id);
-            default: return new InventoryItem(type, id);
-        }
+        return new ItemData(id, type);
     }
 
     //Ask for download of an item
-    public UUID RequestInventoryAsset(InventoryItem item)
+    public UUID RequestInventoryAsset(ItemData item)
     {
         // Build the request packet and send it
         TransferRequestPacket request = new TransferRequestPacket();
