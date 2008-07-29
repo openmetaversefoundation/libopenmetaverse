@@ -150,6 +150,7 @@ namespace OpenMetaverse.Capabilities
         public bool IsBusy { get { return isBusy; } }
         public WebHeaderCollection ResponseHeaders { get { return responseHeaders; } }
 
+        protected HttpWebRequest uploadDataRequest;
         protected WebHeaderCollection responseHeaders;
         protected Uri location;
         protected bool isBusy;
@@ -300,9 +301,10 @@ namespace OpenMetaverse.Capabilities
             if (asyncThread == null)
                 return;
 
+            uploadDataRequest.Abort();
+
             Thread t = asyncThread;
             CompleteAsync();
-            t.Interrupt();
         }
 
         protected void CompleteAsync()
@@ -442,15 +444,15 @@ namespace OpenMetaverse.Capabilities
 
         protected byte[] UploadDataCore(Uri address, string method, byte[] data, object userToken)
         {
-            HttpWebRequest request = (HttpWebRequest)SetupRequest(address);
+            uploadDataRequest = (HttpWebRequest)SetupRequest(address);
 
             try
             {
                 // Content-Length
                 int contentLength = data.Length;
-                request.ContentLength = contentLength;
+                uploadDataRequest.ContentLength = contentLength;
 
-                using (Stream stream = request.GetRequestStream())
+                using (Stream stream = uploadDataRequest.GetRequestStream())
                 {
                     // Most uploads are very small chunks of data, use an optimized path for these
                     if (contentLength < 4096)
@@ -460,7 +462,7 @@ namespace OpenMetaverse.Capabilities
                     else
                     {
                         // Upload chunks directly instead of buffering to memory
-                        request.AllowWriteStreamBuffering = false;
+                        uploadDataRequest.AllowWriteStreamBuffering = false;
 
                         MemoryStream ms = new MemoryStream(data);
 
@@ -481,27 +483,34 @@ namespace OpenMetaverse.Capabilities
                     }
                 }
 
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                Stream st = ProcessResponse(response);
+                HttpWebResponse response = null;
+                Exception responseException = null;
 
-                contentLength = 0;
-                try { contentLength = (int)response.ContentLength; }
-                catch (Exception)
-                {
-                    System.Text.StringBuilder headers = new System.Text.StringBuilder();
-                    foreach (string header in response.Headers.AllKeys)
-                        headers.AppendFormat("{0}: {1}\n", header, response.Headers[header]);
-                    Logger.Log(String.Format("Content-Length is not set. Response: {0} {1}, Headers: {2}",
-                        response.StatusCode, response.StatusDescription, headers.ToString()), Helpers.LogLevel.Warning);
-                    return new byte[0];
-                }
+                IAsyncResult result = uploadDataRequest.BeginGetResponse(
+                    delegate(IAsyncResult asyncResult)
+                    {
+                        try { response = (HttpWebResponse)uploadDataRequest.EndGetResponse(asyncResult); }
+                        catch (Exception ex) { responseException = ex; }
+                    }, null);
+
+                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle,
+                    delegate(object state, bool timedOut)
+                    {
+                        responseException = new TimeoutException("Timed out waiting for a server response");
+                    }, null, 1000 * 100, true);
+
+                if (responseException != null)
+                    throw responseException;
+
+                Stream st = ProcessResponse(response);
+                contentLength = (int)response.ContentLength;
 
                 return ReadAll(st, contentLength, userToken, true);
             }
             catch (ThreadInterruptedException)
             {
-                if (request != null)
-                    request.Abort();
+                if (uploadDataRequest != null)
+                    uploadDataRequest.Abort();
                 throw;
             }
         }
