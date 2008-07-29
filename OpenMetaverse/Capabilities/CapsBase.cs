@@ -501,19 +501,30 @@ namespace OpenMetaverse.Capabilities
                         catch (Exception ex) { responseException = ex; }
                     }, null);
 
-                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle,
-                    delegate(object state, bool timedOut)
-                    {
-                        responseException = new TimeoutException("Timed out waiting for a server response");
-                    }, null, 1000 * 100, true);
+                // Not sure if one of these is better than the other, but
+                // ThreadPool.RegisterWaitForSingleObject fails to wait on Mono 1.9.1 in this case
+                result.AsyncWaitHandle.WaitOne(1000 * 100, false);
+                //ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle,
+                //    delegate(object state, bool timedOut) { }, null, 1000 * 100, true);
 
                 if (responseException != null)
+                {
+                    // Exception occurred
                     throw responseException;
+                }
+                else if (response == null)
+                {
+                    // No exception, but no response
+                    throw new WebException("No response from the CAPS server", WebExceptionStatus.ReceiveFailure);
+                }
+                else
+                {
+                    // Server responded
+                    Stream st = ProcessResponse(response);
+                    contentLength = (int)response.ContentLength;
 
-                Stream st = ProcessResponse(response);
-                contentLength = (int)response.ContentLength;
-
-                return ReadAll(st, contentLength, userToken, true);
+                    return ReadAll(st, contentLength, userToken, true);
+                }
             }
             catch (ThreadInterruptedException)
             {
