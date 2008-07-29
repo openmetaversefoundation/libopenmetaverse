@@ -2853,14 +2853,14 @@ namespace OpenMetaverse
             ItemCreatedFromAssetCallback callback = (ItemCreatedFromAssetCallback)args[1];
             byte[] itemData = (byte[])args[2];
 
-            LLSDMap contents = (LLSDMap)result;
-
             if (result == null)
             {
                 try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 return;
             }
+
+            LLSDMap contents = (LLSDMap)result;
 
             string status = contents["state"].AsString().ToLower();
 

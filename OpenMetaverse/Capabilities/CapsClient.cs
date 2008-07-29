@@ -86,13 +86,14 @@ namespace OpenMetaverse.Capabilities
             {
                 Logger.DebugLog("New CAPS request to " + _Client.Location + " initiated");
             }
-            
+
+            _Client.Headers.Clear();
+
             // Proxy
             if (Proxy != null)
                 _Client.Proxy = Proxy;
 
             // Content-Type
-            _Client.Headers.Clear();
             if (!String.IsNullOrEmpty(contentType))
                 _Client.Headers.Add(HttpRequestHeader.ContentType, contentType);
             else

@@ -257,9 +257,9 @@ namespace OpenMetaverse.Capabilities
             asyncThread.Start(cbArgs);
         }
 
-        public void DownloadStringAsync (Uri address)
+        public void DownloadStringAsync(Uri address)
 		{
-			DownloadStringAsync (address, null);
+			DownloadStringAsync(address, null);
 		}
 
         public void DownloadStringAsync(Uri address, object userToken)
@@ -443,11 +443,10 @@ namespace OpenMetaverse.Capabilities
         protected byte[] UploadDataCore(Uri address, string method, byte[] data, object userToken)
         {
             HttpWebRequest request = (HttpWebRequest)SetupRequest(address);
-            // Re-enable Keep-Alive
-            //request.KeepAlive = true;
 
             try
             {
+                // Content-Length
                 int contentLength = data.Length;
                 request.ContentLength = contentLength;
 
@@ -482,10 +481,22 @@ namespace OpenMetaverse.Capabilities
                     }
                 }
 
-                WebResponse response = request.GetResponse();
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 Stream st = ProcessResponse(response);
 
-                return ReadAll(st, (int)response.ContentLength, userToken, true);
+                contentLength = 0;
+                try { contentLength = (int)response.ContentLength; }
+                catch (Exception)
+                {
+                    System.Text.StringBuilder headers = new System.Text.StringBuilder();
+                    foreach (string header in response.Headers.AllKeys)
+                        headers.AppendFormat("{0}: {1}\n", header, response.Headers[header]);
+                    Logger.Log(String.Format("Content-Length is not set. Response: {0} {1}, Headers: {2}",
+                        response.StatusCode, response.StatusDescription, headers.ToString()), Helpers.LogLevel.Warning);
+                    return new byte[0];
+                }
+
+                return ReadAll(st, contentLength, userToken, true);
             }
             catch (ThreadInterruptedException)
             {
