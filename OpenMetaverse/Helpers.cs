@@ -34,10 +34,10 @@ namespace OpenMetaverse
     /// <summary>
     /// Static helper functions and global variables
     /// </summary>
-    public class Helpers
+    public static class Helpers
     {
         /// <summary>
-        /// Operating system enumeration
+        /// Operating system
         /// </summary>
         public enum Platform
         {
@@ -51,6 +51,17 @@ namespace OpenMetaverse
             Linux,
             /// <summary>Apple OSX</summary>
             OSX
+        }
+
+        /// <summary>
+        /// Runtime platform
+        /// </summary>
+        public enum Runtime
+        {
+            /// <summary>.NET runtime</summary>
+            Windows,
+            /// <summary>Mono runtime: http://www.mono-project.com/</summary>
+            Mono
         }
 
         /// <summary>This header flag signals that ACKs are appended to the packet</summary>
@@ -1148,6 +1159,19 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Get the current running runtime
+        /// </summary>
+        /// <returns>Enumeration of the current runtime we are running on</returns>
+        public static Runtime GetRunningRuntime()
+        {
+            Type t = Type.GetType("Mono.Runtime");
+            if (t != null)
+                return Runtime.Mono;
+            else
+                return Runtime.Windows;
+        }
+
+        /// <summary>
         /// Converts a list of primitives to an object that can be serialized
         /// with the LLSD system
         /// </summary>
@@ -1311,6 +1335,30 @@ namespace OpenMetaverse
                 after = String.Empty;
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Collapses a string[] into a single string, with <code>between</code>
+        /// between each element.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="between"></param>
+        /// <returns></returns>
+        public static string Implode(string[] array, string between)
+        {
+            StringBuilder b = new StringBuilder(array.Length * (array[array.Length / 2].Length + between.Length));
+            if (array.Length == 0)
+                return String.Empty;
+            b.Append(array[0]);
+            if (between != null)
+                b.Append(between);
+            for (int i = 1; i < array.Length; ++i)
+            {
+                if (between != null)
+                    b.Append(between);
+                b.Append(array[i]); 
+            }
+            return b.ToString();
         }
 
         #endregion Platform Helper Functions

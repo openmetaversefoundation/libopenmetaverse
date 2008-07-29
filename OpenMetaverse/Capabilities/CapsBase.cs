@@ -446,6 +446,14 @@ namespace OpenMetaverse.Capabilities
         {
             uploadDataRequest = (HttpWebRequest)SetupRequest(address);
 
+            // Mono insists that if you have Content-Length set, Keep-Alive must be true.
+            // Otherwise the unhelpful exception of "Content-Length not set" will be thrown.
+            // The Linden Lab event queue server breaks HTTP 1.1 by always replying with a
+            // Connection: Close header, which will confuse the Windows .NET runtime and throw
+            // a "Connection unexpectedly closed" exception. This is our cross-platform hack
+            if (Helpers.GetRunningRuntime() == Helpers.Runtime.Mono)
+                uploadDataRequest.KeepAlive = true;
+
             try
             {
                 // Content-Length
