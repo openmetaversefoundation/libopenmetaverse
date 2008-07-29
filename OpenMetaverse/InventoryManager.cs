@@ -785,6 +785,8 @@ namespace OpenMetaverse
         #region Events
         public event AssetUpdate OnAssetUpdate;
 
+        public event ItemCreatedCallback OnItemCreated;
+
         /// <summary>
         /// Fired when a BulkUpdateInventory packet is received containing item data.
         /// </summary>
@@ -2832,6 +2834,21 @@ namespace OpenMetaverse
                 {
                     try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+
+                    // Notify everyone of the creation.
+                    // TODO: Is there a way to avoid fetching the whole thing?
+                    FetchItemsCallback fetchCallback =
+                        delegate(List<ItemData> items)
+                        {
+                            if (items.Count > 0)
+                            {
+                                ItemData item = items[0];
+                                item.AssetUUID = contents["new_asset"].AsUUID();
+                                try { OnItemCreated(true, item); }
+                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                            }
+                        };
+                    RequestFetchItems(new UUID[] { contents["new_inventory_item"].AsUUID() }, _Agents.AgentID, fetchCallback);
                 }
                 else
                 {
@@ -3016,12 +3033,20 @@ namespace OpenMetaverse
                 item.SaleType = (SaleType)dataBlock.SaleType;
 
                 // Look for an "item created" callback
+                // Let the requester know that its item was created.
                 ItemCreatedCallback createdCallback;
                 if (_ItemCreatedCallbacks.TryGetValue(dataBlock.CallbackID, out createdCallback))
                 {
                     _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { createdCallback(true, item); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                }
+
+                // Let everyone know that the item was created
+                if (OnItemCreated != null)
+                {
+                    try { OnItemCreated(true, item); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
 

@@ -140,6 +140,13 @@ namespace OpenMetaverse
             _Manager.OnFolderUpdate += new InventoryManager.FolderUpdate(manager_OnFolderUpdate);
             _Manager.OnItemUpdate += new InventoryManager.ItemUpdate(manager_OnItemUpdate);
             _Manager.OnAssetUpdate += new InventoryManager.AssetUpdate(manager_OnAssetUpdate);
+            _Manager.OnItemCreated += new InventoryManager.ItemCreatedCallback(_Manager_OnItemCreated);
+        }
+
+        void _Manager_OnItemCreated(bool success, ItemData itemData)
+        {
+            if (Items.ContainsKey(itemData.ParentUUID))
+                Manage(itemData);
         }
 
         /// <summary>
