@@ -1056,8 +1056,7 @@ namespace PrimWorkshop
         private void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
             Console.WriteLine("CurrentSim set to " + Client.Network.CurrentSim + ", downloading parcel information");
-            Client.Parcels.RequestAllSimParcels(Client.Network.CurrentSim);
-
+            
             BeginInvoke((MethodInvoker)delegate() { txtSim.Text = Client.Network.CurrentSim.Name; });
 
             InitHeightmap();
@@ -1072,6 +1071,9 @@ namespace PrimWorkshop
         {
             if (simulator == Client.Network.CurrentSim)
                 BeginInvoke((MethodInvoker)delegate() { cmdTeleport.Enabled = true; });
+
+            // Now seems like a good time to start requesting parcel information
+            Client.Parcels.RequestAllSimParcels(Client.Network.CurrentSim, false, 100);
         }
 
         private void RenderScene()

@@ -895,6 +895,9 @@ namespace OpenMetaverse
                 {
                     for (x = 0; x < 64; x++)
                     {
+                        if (!Client.Network.Connected)
+                            return;
+
                         if (simulator.ParcelMap[y, x] == 0)
                         {
                             Client.Parcels.PropertiesRequest(simulator,

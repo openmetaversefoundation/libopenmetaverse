@@ -306,14 +306,10 @@ namespace OpenMetaverse
 
         public InternalDictionary<uint, Primitive> ObjectsPrimitives = new InternalDictionary<uint, Primitive>();
 
-        /// <summary>Used to obtain a lock on the sequence number for packets
-        /// sent to this simulator. Only useful for applications manipulating
-        /// sequence numbers</summary>
-        public object SequenceLock = new object();
         /// <summary>The current sequence number for packets sent to this
-        /// simulator. Must be locked with SequenceLock before modifying. Only
+        /// simulator. Must be Interlocked before modifying. Only
         /// useful for applications manipulating sequence numbers</summary>
-        public volatile uint Sequence;
+        public int Sequence;
 
         /// <summary>
         /// Provides access to an internal thread-safe dictionary containing parcel
@@ -564,7 +560,7 @@ namespace OpenMetaverse
                 {
                     // Try to send the CloseCircuit notice
                     CloseCircuitPacket close = new CloseCircuitPacket();
-                    UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
+                    UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false, false);
                     buf.Data = close.ToBytes();
                     buf.DataLength = buf.Data.Length;
 
@@ -595,28 +591,17 @@ namespace OpenMetaverse
 
             if (incrementSequence)
             {
-                // Set the sequence number
-                lock (SequenceLock)
-                {
-                    if (Sequence > Settings.MAX_SEQUENCE)
-                        Sequence = 1;
-                    else
-                        Sequence++;
-
-                    packet.Header.Sequence = Sequence;
-                }
+                // Reset to zero if we've hit the upper sequence number limit
+                Interlocked.CompareExchange(ref Sequence, 0, Settings.MAX_SEQUENCE);
+                // Increment and fetch the current sequence number
+                packet.Header.Sequence = (uint)Interlocked.Increment(ref Sequence);
 
                 if (packet.Header.Reliable)
                 {
                     // Add this packet to the list of ACK responses we are waiting on from the server
                     lock (NeedAck)
                     {
-                        if (!NeedAck.ContainsKey(packet.Header.Sequence))
-                            NeedAck.Add(packet.Header.Sequence, packet);
-                        else
-                            Logger.Log("Attempted to add a duplicate sequence number (" +
-                                packet.Header.Sequence + ") to the NeedAck dictionary for packet type " +
-                                packet.Type.ToString(), Helpers.LogLevel.Warning, Client);
+                        NeedAck[packet.Header.Sequence] = packet;
                     }
 
                     if (packet.Header.Resent)
@@ -679,7 +664,7 @@ namespace OpenMetaverse
             buffer = packet.ToBytes();
             bytes = buffer.Length;
             Stats.SentBytes += (ulong)bytes;
-            Stats.SentPackets++;
+            ++Stats.SentPackets;
 
             UDPPacketBuffer buf;
 
@@ -702,7 +687,6 @@ namespace OpenMetaverse
             AsyncBeginSend(buf);
         }
 
-
         /// <summary>
         /// Send a raw byte array payload as a packet
         /// </summary>
@@ -715,19 +699,17 @@ namespace OpenMetaverse
             {
                 if (setSequence && payload.Length > 3)
                 {
-                    lock (SequenceLock)
-                    {
-                        payload[1] = (byte)(Sequence >> 16);
-                        payload[2] = (byte)(Sequence >> 8);
-                        payload[3] = (byte)(Sequence % 256);
-                        Sequence++;
-                    }
+                    uint sequence = (uint)Interlocked.Increment(ref Sequence);
+
+                    payload[1] = (byte)(sequence >> 16);
+                    payload[2] = (byte)(sequence >> 8);
+                    payload[3] = (byte)(sequence % 256);
                 }
 
                 Stats.SentBytes += (ulong)payload.Length;
-                Stats.SentPackets++;
+                ++Stats.SentPackets;
 
-                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
+                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false, false);
                 buf.Data = payload;
                 buf.DataLength = payload.Length;
 
@@ -948,13 +930,15 @@ namespace OpenMetaverse
                             try
                             {
                                 if (Client.Settings.LOG_RESENDS)
+                                {
                                     Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
                                         packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
+                                }
 
                                 packet.Header.Resent = true;
-                                packet.TickCount = now;
                                 ++Stats.ResentPackets;
                                 ++packet.ResendCount;
+                                packet.TickCount = now;
 
                                 SendPacket(packet, false);
                             }
@@ -966,16 +950,20 @@ namespace OpenMetaverse
                         else
                         {
                             if (Client.Settings.LOG_RESENDS)
-                                Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts", packet.Header.Sequence, packet.GetType(), packet.ResendCount));
+                            {
+                                Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
+                                    packet.Header.Sequence, packet.GetType(), packet.ResendCount));
+                            }
 
                             dropAck.Add(packet.Header.Sequence);
                         }
                     }
                 }
 
-                foreach (uint seq in dropAck)
+                if (dropAck.Count != 0)
                 {
-                    NeedAck.Remove(seq);
+                    foreach (uint seq in dropAck)
+                        NeedAck.Remove(seq);
                 }
             }
         }
