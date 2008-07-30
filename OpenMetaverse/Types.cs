@@ -2296,22 +2296,59 @@ namespace OpenMetaverse
             this = Quaternion.Identity;
         }
 
-        //FIXME: Need comprehensive testing for this
-        //public void GetEulerAngles(out float roll, out float pitch, out float yaw)
-        //{
-        //    LLMatrix3 rotMat = new LLMatrix3(this);
-        //    rotMat = LLMatrix3.Orthogonalize(rotMat);
-        //    rotMat.GetEulerAngles(out roll, out pitch, out yaw);
-        //}
-
-        //FIXME: Need comprehensive testing for this
         /// <summary>
-        /// Returns the inverse matrix from a quaternion, or the correct
-        /// matrix if the quaternion is inverse
+        /// Convert this quaternion to euler angles
+        /// </summary>
+        /// <param name="roll">X euler angle</param>
+        /// <param name="pitch">Y euler angle</param>
+        /// <param name="yaw">Z euler angle</param>
+        public void GetEulerAngles(out float roll, out float pitch, out float yaw)
+        {
+            // From http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+
+            // bank = roll
+            // heading = yaw
+            // attitude = pitch
+
+            float sqx = X * X;
+            float sqy = Y * Y;
+            float sqz = Z * Z;
+            float sqw = W * W;
+
+            // Unit will be a correction factor if the quaternion is not normalized
+            float unit = sqx + sqy + sqz + sqw;
+            double test = X * Y + Z * W;
+
+            if (test > 0.499f * unit)
+            {
+                // Singularity at north pole
+                yaw = 2f * (float)Math.Atan2(X, W);
+                pitch = (float)Math.PI / 2f;
+                roll = 0f;
+            }
+            else if (test < -0.499f * unit)
+            {
+                // Singularity at south pole
+                yaw = -2f * (float)Math.Atan2(X, W);
+                pitch = -(float)Math.PI / 2f;
+                roll = 0f;
+            }
+            else
+            {
+                yaw = (float)Math.Atan2(2f * Y * W - 2f * X * Z, sqx - sqy - sqz + sqw);
+	            pitch = (float)Math.Asin(2f * test / unit);
+                roll = (float)Math.Atan2(2f * X * W - 2f * Y * Z, -sqx + sqy - sqz + sqw);
+            }
+        }
+
+        /// <summary>
+        /// Converts this quaternion to a 3x3 row-major matrix
         /// </summary>
         /// <returns>A matrix representation of this quaternion</returns>
         public Matrix3 ToMatrix()
         {
+            // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
+
             Matrix3 m;
             float xx, xy, xz, xw, yy, yz, yw, zz, zw;
 
@@ -2550,7 +2587,7 @@ namespace OpenMetaverse
 	}
 
     /// <summary>
-    /// A 3x3 matrix
+    /// A 3x3 row-major matrix
     /// </summary>
     [Serializable]
     public struct Matrix3
@@ -2587,9 +2624,11 @@ namespace OpenMetaverse
             M11 = m11;
             M12 = m12;
             M13 = m13;
+
             M21 = m21;
             M22 = m22;
             M23 = m23;
+
             M31 = m31;
             M32 = m32;
             M33 = m33;
@@ -2600,12 +2639,11 @@ namespace OpenMetaverse
             this = q.ToMatrix();
         }
 
-        //FIXME:
-        //public LLMatrix3(float roll, float pitch, float yaw)
-        //{
-        //    M11 = M12 = M13 = M21 = M22 = M23 = M31 = M32 = M33 = 0f;
-        //    FromEulers(roll, pitch, yaw);
-        //}
+        public Matrix3(float roll, float pitch, float yaw)
+        {
+            M11 = M12 = M13 = M21 = M22 = M23 = M31 = M32 = M33 = 0f;
+            FromEulers(roll, pitch, yaw);
+        }
 
         /// <summary>
         /// Copy constructor
@@ -2616,9 +2654,11 @@ namespace OpenMetaverse
             M11 = m.M11;
             M12 = m.M12;
             M13 = m.M13;
+
             M21 = m.M21;
             M22 = m.M22;
             M23 = m.M23;
+
             M31 = m.M31;
             M32 = m.M32;
             M33 = m.M33;
@@ -2628,33 +2668,48 @@ namespace OpenMetaverse
 
         #region Public Methods
 
-        // FIXME: Need comprehensive testing for this
-        //public void FromEulers(float roll, float pitch, float yaw)
-        //{
-        //    float cx, sx, cy, sy, cz, sz;
-        //    float cxsy, sxsy;
+        /// <summary>
+        /// Construct this matrix from euler rotation values
+        /// </summary>
+        /// <param name="roll">X euler angle</param>
+        /// <param name="pitch">Y euler angle</param>
+        /// <param name="yaw">Z euler angle</param>
+        public void FromEulers(float roll, float pitch, float yaw)
+        {
+            // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
 
-        //    cx = (float)Math.Cos(roll);
-        //    sx = (float)Math.Sin(roll);
-        //    cy = (float)Math.Cos(pitch);
-        //    sy = (float)Math.Sin(pitch);
-        //    cz = (float)Math.Cos(yaw);
-        //    sz = (float)Math.Sin(yaw);
+            float a, b, c, d, e, f;
+            float ad, bd;
 
-        //    cxsy = cx * sy;
-        //    sxsy = sx * sy;
+            a = (float)Math.Cos(roll);
+            b = (float)Math.Sin(roll);
+            c = (float)Math.Cos(pitch);
+            d = (float)Math.Sin(pitch);
+            e = (float)Math.Cos(yaw);
+            f = (float)Math.Sin(yaw);
 
-        //    M11 = cy * cz;
-        //    M21 = -cy * sz;
-        //    M31 = sy;
-        //    M12 = sxsy * cz + cx * sz;
-        //    M22 = -sxsy * sz + cx * cz;
-        //    M32 = -sx * cy;
-        //    M13 = -cxsy * cz + sx * sz;
-        //    M23 = cxsy * sz + sx * cz;
-        //    M33 = cx * cy;
-        //}
+            ad = a * d;
+            bd = b * d;
 
+            M11 = c * e;
+            M12 = -c * f;
+            M13 = d;
+
+            M21 = bd * e + a * f;
+            M22 = -bd * f + a * e;
+            M23 = -b * c;
+
+            M31 = -ad * e + b * f;
+            M32 = ad * f + b * e;
+            M33 = a * c;
+        }
+
+        /// <summary>
+        /// Convert this matrix to euler rotations
+        /// </summary>
+        /// <param name="roll">X euler angle</param>
+        /// <param name="pitch">Y euler angle</param>
+        /// <param name="yaw">Z euler angle</param>
         public void GetEulerAngles(out float roll, out float pitch, out float yaw)
         {
             // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
@@ -2663,19 +2718,19 @@ namespace OpenMetaverse
             double cx, cy, cz; // cosines
             double sx, sz; // sines
 
-            angleY = Math.Asin(Helpers.Clamp(M31, -1f, 1f));
+            angleY = Math.Asin(Helpers.Clamp(M13, -1f, 1f));
             cy = Math.Cos(angleY);
 
             if (Math.Abs(cy) > 0.005f)
             {
                 // No gimbal lock
                 cx = M33 / cy;
-                sx = (-M32) / cy;
+                sx = (-M23) / cy;
 
                 angleX = (float)Math.Atan2(sx, cx);
 
                 cz = M11 / cy;
-                sz = (-M21) / cy;
+                sz = (-M12) / cy;
 
                 angleZ = (float)Math.Atan2(sz, cz);
             }
@@ -2685,63 +2740,70 @@ namespace OpenMetaverse
                 angleX = 0;
                 
                 cz = M22;
-                sz = M12;
+                sz = M21;
 
                 angleZ = Math.Atan2(sz, cz);
             }
+
+            // Return only positive angles in [0,360]
+            if (angleX < 0) angleX += 360d;
+            if (angleY < 0) angleY += 360d;
+            if (angleZ < 0) angleZ += 360d;
 
             roll = (float)angleX;
             pitch = (float)angleY;
             yaw = (float)angleZ;
         }
 
+        /// <summary>
+        /// Conver this matrix to a quaternion rotation
+        /// </summary>
+        /// <returns>A quaternion representation of this rotation matrix</returns>
         public Quaternion ToQuaternion()
         {
+            // From http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+
             Quaternion quat = new Quaternion();
-            float tr, s;
-            float[] q = new float[4];
-            int i, j, k;
-            int[] nxt = new int[] { 1, 2, 0 };
+            float trace = Trace + 1f;
 
-            tr = this[0, 0] + this[1, 1] + this[2, 2];
-
-            // Check the diagonal
-            if (tr > 0f)
+            if (trace > Single.Epsilon)
             {
-                s = (float)Math.Sqrt(tr + 1f);
-                quat.W = s / 2f;
-                
-                s = 0.5f / s;
-                quat.X = (this[1, 2] - this[2, 1]) * s;
-                quat.Y = (this[2, 0] - this[0, 2]) * s;
-                quat.Z = (this[0, 1] - this[1, 0]) * s;
+                float s = 0.5f / (float)Math.Sqrt(trace);
+
+                quat.X = (M32 - M23) * s;
+                quat.Y = (M13 - M31) * s;
+                quat.Z = (M21 - M12) * s;
+                quat.W = 0.25f / s;
             }
             else
             {
-                // Diagonal is negative
-                i = 0;
-                if (this[1, 1] > this[0, 0])
-                    i = 1;
-                if (this[2, 2] > this[i, i])
-                    i = 2;
+                if (M11 > M22 && M11 > M33)
+                {
+                    float s = 2.0f * (float)Math.Sqrt(1.0f + M11 - M22 - M33);
+                    
+                    quat.X = 0.25f * s;
+                    quat.Y = (M12 + M21) / s;
+                    quat.Z = (M13 + M31) / s;
+                    quat.W = (M23 - M32) / s;
+                }
+                else if (M22 > M33)
+                {
+                    float s = 2.0f * (float)Math.Sqrt(1.0f + M22 - M11 - M33);
 
-                j = nxt[i];
-                k = nxt[j];
+                    quat.X = (M12 + M21) / s;
+                    quat.Y = 0.25f * s;
+                    quat.Z = (M23 + M32) / s;
+                    quat.W = (M13 - M31) / s;
+                }
+                else
+                {
+                    float s = 2.0f * (float)Math.Sqrt(1.0f + M33 - M11 - M22);
 
-                s = (float)Math.Sqrt((this[i, i] - (this[j, j] + this[k, k])) + 1f);
-                q[i] = s * 0.5f;
-
-                if (s != 0f)
-                    s = 0.5f / s;
-
-                q[3] = (this[j, k] - this[k, j]) * s;
-                q[j] = (this[i, j] + this[j, i]) * s;
-                q[k] = (this[i, k] + this[k, i]) * s;
-
-                quat.X = q[0];
-                quat.Y = q[1];
-                quat.Z = q[2];
-                quat.W = q[3];
+                    quat.X = (M13 + M31) / s;
+                    quat.Y = (M23 + M32) / s;
+                    quat.Z = 0.25f * s;
+                    quat.W = (M12 - M21) / s;
+                }
             }
 
             return quat;
@@ -2814,24 +2876,6 @@ namespace OpenMetaverse
             Helpers.Swap<float>(ref m.M12, ref m.M21);
             Helpers.Swap<float>(ref m.M13, ref m.M31);
             Helpers.Swap<float>(ref m.M23, ref m.M32);
-
-            return m;
-        }
-
-        public static Matrix3 Orthogonalize(Matrix3 m)
-        {
-            Vector3 xAxis = m[0];
-            Vector3 yAxis = m[1];
-            Vector3 zAxis = m[2];
-
-            xAxis = Vector3.Norm(xAxis);
-            yAxis -= xAxis * (xAxis * yAxis);
-            yAxis = Vector3.Norm(yAxis);
-            zAxis = Vector3.Cross(xAxis, yAxis);
-
-            m[0] = xAxis;
-            m[1] = yAxis;
-            m[2] = zAxis;
 
             return m;
         }
@@ -3015,5 +3059,138 @@ namespace OpenMetaverse
             0f, 1f, 0f,
             0f, 0f, 1f
         );
+    }
+
+    /// <summary>
+    /// A 4x4 row-major matrix
+    /// </summary>
+    [Serializable]
+    public struct Matrix4
+    {
+        public float M11, M12, M13, M14;
+        public float M21, M22, M23, M24;
+        public float M31, M32, M33, M34;
+        public float M41, M42, M43, M44;
+
+        #region Properties
+
+        public float Trace
+        {
+            get
+            {
+                return M11 + M22 + M33 + M44;
+            }
+        }
+
+        #endregion Properties
+
+        #region Constructors
+
+        public Matrix4(
+            float m11, float m12, float m13, float m14,
+            float m21, float m22, float m23, float m24,
+            float m31, float m32, float m33, float m34,
+            float m41, float m42, float m43, float m44)
+        {
+            M11 = m11;
+            M12 = m12;
+            M13 = m13;
+            M14 = m14;
+
+            M21 = m21;
+            M22 = m22;
+            M23 = m23;
+            M24 = m24;
+
+            M31 = m31;
+            M32 = m32;
+            M33 = m33;
+            M34 = m34;
+
+            M41 = m41;
+            M42 = m42;
+            M43 = m43;
+            M44 = m44;
+        }
+
+        //public Matrix4(Quaternion q)
+        //{
+        //    this = q.ToMatrix4();
+        //}
+
+        public Matrix4(Matrix3 m)
+        {
+            M11 = m.M11;
+            M12 = m.M12;
+            M13 = m.M13;
+            M14 = 0f;
+
+            M21 = m.M21;
+            M22 = m.M22;
+            M23 = m.M23;
+            M24 = 0f;
+
+            M31 = m.M31;
+            M32 = m.M32;
+            M33 = m.M33;
+            M34 = 0f;
+
+            M41 = 0f;
+            M42 = 0f;
+            M43 = 0f;
+            M44 = 1f;
+        }
+
+        public Matrix4(Matrix3 m, Vector3 translation)
+        {
+            M11 = m.M11;
+            M12 = m.M12;
+            M13 = m.M13;
+            M14 = 0f;
+
+            M21 = m.M21;
+            M22 = m.M22;
+            M23 = m.M23;
+            M24 = 0f;
+
+            M31 = m.M31;
+            M32 = m.M32;
+            M33 = m.M33;
+            M34 = 0f;
+
+            M41 = translation.X;
+            M42 = translation.Y;
+            M43 = translation.Z;
+            M44 = 1f;
+        }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="m">Matrix to copy</param>
+        public Matrix4(Matrix4 m)
+        {
+            M11 = m.M11;
+            M12 = m.M12;
+            M13 = m.M13;
+            M14 = m.M14;
+
+            M21 = m.M21;
+            M22 = m.M22;
+            M23 = m.M23;
+            M24 = m.M24;
+
+            M31 = m.M31;
+            M32 = m.M32;
+            M33 = m.M33;
+            M34 = m.M34;
+
+            M41 = m.M41;
+            M42 = m.M42;
+            M43 = m.M43;
+            M44 = m.M44;
+        }
+
+        #endregion Constructors
     }
 }
