@@ -38,7 +38,7 @@ if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 if(.%2)==(.docs) echo 7za.exe a -tzip docs\documentation.zip docs\trunk >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
-if(.%2)==(.runtests) echo "c:\Program Files\NUnit 2.4.7\bin\nunit-console.exe" /nologo /nodots bin\OpenMetaverse.Tests.dll >> compile.bat
+if(.%2)==(.runtests) echo "nunit-console.exe" /nologo /nodots bin\OpenMetaverse.Tests.dll >> compile.bat
 if(.%2)==(.runtests) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 :: nsis compiler needs to be in path
