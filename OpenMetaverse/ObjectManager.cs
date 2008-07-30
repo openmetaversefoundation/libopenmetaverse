@@ -392,7 +392,9 @@ namespace OpenMetaverse
         /// Called whenever the client avatar sits down or stands up
         /// </summary>
         /// <param name="simulator">Simulator the packet was received from</param>
+        /// <param name="avatar"></param>
         /// <param name="sittingOn">The local ID of the object that is being sat
+        /// <param name="oldSeat"></param>
         /// on. If this is zero the avatar is not sitting on an object</param>
         public delegate void AvatarSitChanged(Simulator simulator, Avatar avatar, uint sittingOn, uint oldSeat);
 		

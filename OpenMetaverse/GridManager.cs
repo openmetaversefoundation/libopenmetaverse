@@ -180,9 +180,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="location"></param>
-        /// <param name="indexYou"></param>
-        /// <param name="indexPrey"></param>
+        /// <param name="sim"></param>
         public delegate void CoarseLocationUpdateCallback(Simulator sim);
         /// <summary>
         /// 

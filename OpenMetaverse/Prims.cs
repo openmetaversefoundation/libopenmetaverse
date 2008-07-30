@@ -85,7 +85,7 @@ namespace OpenMetaverse
             Hinge = 1,
             /// <summary></summary>
             Point = 2,
-            /// <summary></summary>
+            // <summary></summary>
             //[Obsolete]
             //LPoint = 3,
             //[Obsolete]

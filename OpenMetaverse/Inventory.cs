@@ -122,6 +122,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="manager">Manager for remote updates.</param>
         /// <param name="owner">Owner of this inventory.</param>
+        /// <param name="root"></param>
         public Inventory(InventoryManager manager, UUID owner, UUID root)
         {
             _Manager = manager;

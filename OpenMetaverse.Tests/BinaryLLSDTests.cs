@@ -59,44 +59,44 @@ namespace OpenMetaverse.Tests
             MemoryStream stream = new MemoryStream(sBinary);
 
             byte[] sFirstFind = Encoding.ASCII.GetBytes("this");
-            stream.Position = 0l;
+            stream.Position = 0L;
             bool result = LLSDParser.FindByteArray(stream, sFirstFind);
             Assert.AreEqual(true, result);
-            Assert.AreEqual(4l, stream.Position);
+            Assert.AreEqual(4L, stream.Position);
 
-            stream.Position = 10l;
+            stream.Position = 10L;
             byte[] sSecondFind = Encoding.ASCII.GetBytes("teststring");
             result = LLSDParser.FindByteArray(stream, sSecondFind);
             Assert.AreEqual(true, result);
-            Assert.AreEqual(20l, stream.Position);
+            Assert.AreEqual(20L, stream.Position);
 
-            stream.Position = 25l;
+            stream.Position = 25L;
             byte[] sThirdNotFind = Encoding.ASCII.GetBytes("notfound");
             result = LLSDParser.FindByteArray(stream, sThirdNotFind);
             Assert.AreEqual(false, result);
-            Assert.AreEqual(25l, stream.Position);
+            Assert.AreEqual(25L, stream.Position);
 
-            stream.Position = 60l;
+            stream.Position = 60L;
             byte[] sFourthNotFound = Encoding.ASCII.GetBytes("beginningAndMore");
             result = LLSDParser.FindByteArray(stream, sFourthNotFound);
             Assert.AreEqual(false, result);
-            Assert.AreEqual(60l, stream.Position);
+            Assert.AreEqual(60L, stream.Position);
 
             byte[] sFrontWhiteSpace = Encoding.ASCII.GetBytes("   \t\t\n\rtest");
             MemoryStream streamTwo = new MemoryStream(sFrontWhiteSpace);
             LLSDParser.SkipWhiteSpace(streamTwo);
-            Assert.AreEqual(7l, streamTwo.Position);
+            Assert.AreEqual(7L, streamTwo.Position);
 
             byte[] sMiddleWhiteSpace = Encoding.ASCII.GetBytes("test \t\t\n\rtest");
             MemoryStream streamThree = new MemoryStream(sMiddleWhiteSpace);
-            streamThree.Position = 4l;
+            streamThree.Position = 4L;
             LLSDParser.SkipWhiteSpace(streamThree);
-            Assert.AreEqual(9l, streamThree.Position);
+            Assert.AreEqual(9L, streamThree.Position);
 
             byte[] sNoWhiteSpace = Encoding.ASCII.GetBytes("testtesttest");
             MemoryStream streamFour = new MemoryStream(sNoWhiteSpace);
             LLSDParser.SkipWhiteSpace(streamFour);
-            Assert.AreEqual(0l, streamFour.Position);
+            Assert.AreEqual(0L, streamFour.Position);
 
         }
 

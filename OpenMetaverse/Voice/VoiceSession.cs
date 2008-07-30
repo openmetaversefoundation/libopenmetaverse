@@ -16,7 +16,7 @@ namespace OpenMetaverse.Voice
         /// session automatically connects to the audio media, there is no need to call
         /// Session.Connect at this time, this is reserved for future use.
         /// </summary>
-        /// <param name="ConnectorHandle">Handle returned from successful Connector ‘create’ request</param>
+        /// <param name="AccountHandle">Handle returned from successful Connector ‘create’ request</param>
         /// <param name="URI">This is the URI of the terminating point of the session (ie who/what is being called)</param>
         /// <param name="Name">This is the display name of the entity being called (user or channel)</param>
         /// <param name="Password">Only needs to be supplied when the target URI is password protected</param>
@@ -24,8 +24,11 @@ namespace OpenMetaverse.Voice
         /// “ClearText” or “SHA1UserName”. If this element does not exist, it is assumed to be “ClearText”. If it is
         /// “SHA1UserName”, the password as passed in is the SHA1 hash of the password and username concatenated together,
         /// then base64 encoded, with the final “=” character stripped off.</param>
+        /// <param name="JoinAudio"></param>
+        /// <param name="JoinText"></param>
         /// <returns></returns>
-        public int SessionCreate(string AccountHandle, string URI, string Name, string Password, bool JoinAudio, bool JoinText, string PasswordHashAlgorithm)
+        public int SessionCreate(string AccountHandle, string URI, string Name, string Password, 
+            bool JoinAudio, bool JoinText, string PasswordHashAlgorithm)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(VoiceGateway.MakeXML("AccountHandle", AccountHandle));

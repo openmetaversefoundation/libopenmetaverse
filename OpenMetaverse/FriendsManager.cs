@@ -255,7 +255,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="agentID">System ID of the agent offering friendship</param>
         /// <param name="agentName">full name of the agent offereing friendship</param>
-        /// <param name="IMSessionID">session ID need when accepting/declining the offer</param>
+        /// <param name="imSessionID">session ID need when accepting/declining the offer</param>
         /// <returns>Return true to accept the friendship, false to deny it</returns>
         public delegate void FriendshipOfferedEvent(UUID agentID, string agentName, UUID imSessionID);
         /// <summary>
@@ -368,6 +368,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Decline a friendship request
         /// </summary>
+        /// <param name="fromAgentID"><seealso cref="UUID"/> of friend</param>
         /// <param name="imSessionID">imSessionID of the friendship request message</param>
         public void DeclineFriendship(UUID fromAgentID, UUID imSessionID)
         {

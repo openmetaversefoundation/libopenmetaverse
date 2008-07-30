@@ -15,6 +15,8 @@ namespace OpenMetaverse.Voice
         /// <param name="ClientName">A string value indicting the Application name</param>
         /// <param name="AccountManagementServer">URL for the management server</param>
         /// <param name="Logging">LoggingSettings</param>
+        /// <param name="MaximumPort"></param>
+        /// <param name="MinimumPort"></param>
         public int ConnectorCreate(string ClientName, string AccountManagementServer, ushort MinimumPort,
             ushort MaximumPort, VoiceLoggingSettings Logging)
         {

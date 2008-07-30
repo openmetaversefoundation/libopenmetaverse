@@ -54,6 +54,7 @@ namespace OpenMetaverse.Utilities
         /// Aims at the specified position, enters mouselook, presses and
         /// releases the left mouse button, and leaves mouselook
         /// </summary>
+        /// <param name="client"></param>
         /// <param name="target">Target to shoot at</param>
         /// <returns></returns>
         public static bool Shoot(GridClient client, Vector3 target)
@@ -277,6 +278,7 @@ namespace OpenMetaverse.Utilities
         /// </summary>
         /// <param name="simulator">Simulator where the parcels are located</param>
         /// <param name="Parcels">Mapping of parcel LocalIDs to Parcel objects</param>
+        /// <param name="map"></param>
         public delegate void ParcelsDownloadedCallback(Simulator simulator, Dictionary<int, Parcel> Parcels, int[,] map);
 
 

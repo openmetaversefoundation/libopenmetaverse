@@ -86,7 +86,9 @@ namespace OpenMetaverse
         /// Triggered when AvatarAppearance is received
         /// </summary>
         /// <param name="defaultTexture"></param>
-        /// <param name="textureEntries"></param>
+        /// <param name="faceTextures"></param>
+        /// <param name="avatarID"></param>
+        /// <param name="isTrial"></param>
         /// <param name="visualParams"></param>
         public delegate void AvatarAppearanceCallback(UUID avatarID, bool isTrial, LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] faceTextures, List<byte> visualParams);
         /// <summary>

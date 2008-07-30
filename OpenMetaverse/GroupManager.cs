@@ -374,7 +374,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Callback for a list of group names
         /// </summary>
-        /// <param name="names"></param>
+        /// <param name="groupNames"></param>
         public delegate void GroupNamesCallback(Dictionary<UUID, string> groupNames);
         /// <summary>
         /// Callback for the profile of a group

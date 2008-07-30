@@ -700,7 +700,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="items"></param>
+        /// <param name="itemData"></param>
         public delegate void ItemCopiedCallback(ItemData itemData);
 
         /// <summary>
@@ -746,10 +746,11 @@ namespace OpenMetaverse
         /// the ItemID, as in ObjectOfferedCallback it is null when received
         /// from a task.
         /// </summary>
-        /// <param name="ItemID"></param>
-        /// <param name="FolderID"></param>
-        /// <param name="CreatorID"></param>
-        /// <param name="AssetID"></param>
+        /// <param name="itemID"></param>
+        /// <param name="folderID"></param>
+        /// <param name="creatorID"></param>
+        /// <param name="assetID"></param>
+        /// <param name="type"></param>
         public delegate void TaskItemReceivedCallback(UUID itemID, UUID folderID, UUID creatorID,
             UUID assetID, InventoryType type);
 
@@ -999,7 +1000,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Fetch an inventory item from the dataserver
         /// </summary>
-        /// <param name="itemID">The items <seealso cref="UUID"/></param>
+        /// <param name="itemIDs">The items <seealso cref="UUID"/></param>
         /// <param name="ownerID">The item Owners <seealso cref="OpenMetaverse.UUID"/></param>
         /// <param name="timeout">a TimeSpan representing the amount of time to wait for results</param>
         /// <returns>An <seealso cref="InventoryItem"/> object on success, or null if no item was found</returns>
@@ -1024,7 +1025,8 @@ namespace OpenMetaverse
         /// Request inventory items
         /// </summary>
         /// <param name="itemIDs">Inventory items to request</param>
-        /// <param name="ownerIDs">Owners of the inventory items</param>
+        /// <param name="ownerID">Owners of the inventory items</param>
+        /// <param name="callback"></param>
         /// <seealso cref="InventoryManager.OnItemReceived"/>
         public void RequestFetchItems(ICollection<UUID> itemIDs, UUID ownerID, FetchItemsCallback callback)
         {
@@ -1221,6 +1223,9 @@ namespace OpenMetaverse
         /// We need to put it in its own method because the callback will need to create another callback for
         /// recursing into child folders.
         /// <param name="path">Used for display purposes only.</param>
+        /// <param name="pathArray"></param>
+        /// <param name="level"></param>
+        /// <param name="callback"></param>
         /// </summary>
         private FolderContentsCallback ConstructFindContentsHandler(string path, string[] pathArray, int level, FindObjectByPathCallback callback)
         {
@@ -1335,7 +1340,7 @@ namespace OpenMetaverse
         /// Rename an inventory item
         /// </summary>
         /// <param name="itemID">The <seealso cref="UUID"/> of the source item to move</param>
-        /// <param name="folderID">The <seealso cref="UUID"/> of the item's parent.</param>
+        /// <param name="parentID">The <seealso cref="UUID"/> of the item's parent.</param>
         /// <param name="newName">The name to change the folder to</param>
         public void RenameItem(UUID itemID, UUID parentID, string newName)
         {
@@ -1545,6 +1550,13 @@ namespace OpenMetaverse
         /// of the uploaded asset if the upload completed successfully.
         /// This is the method that the Second Life Client (as of v1.9) uses to create gestures.
         /// </summary>
+        /// <param name="parentFolder"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="type"></param>
+        /// <param name="nextOwnerMask"></param>
+        /// <param name="callback"></param>
+        /// <param name="invType"></param>
         /// <param name="assetTransactionID">Proper use is to upload the inventory's asset first, then provide the Asset's TransactionID here.</param>
         public void RequestCreateItem(UUID parentFolder, string name, string description, AssetType type, UUID assetTransactionID,
             InventoryType invType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
@@ -1558,6 +1570,14 @@ namespace OpenMetaverse
         /// Creates a wearable inventory item referencing an asset upload. 
         /// Second Life v1.9 uses this method to create wearable inventory items.
         /// </summary>
+        /// <param name="parentFolder"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="type"></param>
+        /// <param name="wearableType"></param>
+        /// <param name="invType"></param>
+        /// <param name="nextOwnerMask"></param>
+        /// <param name="callback"></param>
         /// <param name="assetTransactionID">Proper use is to upload the inventory's asset first, then provide the Asset's TransactionID here.</param>
         public void RequestCreateItem(UUID parentFolder, string name, string description, AssetType type, UUID assetTransactionID,
             InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
@@ -1796,7 +1816,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="parameters"></param>
         public void RequestUpdateItem(ItemData parameters)
         {
             RequestUpdateItems(new ItemData[] { parameters }, UUID.Random());
@@ -2173,6 +2193,8 @@ namespace OpenMetaverse
         /// <param name="objectID">The tasks <seealso cref="UUID"/></param>
         /// <param name="objectLocalID">The tasks simulator local ID</param>
         /// <param name="timeout">Time to wait for reply from simulator</param>
+        /// <param name="items"></param>
+        /// <param name="folders"></param>
         /// <returns>A List containing the inventory items inside the task</returns>
         public void GetTaskInventory(UUID objectID, uint objectLocalID, TimeSpan timeout, out List<ItemData> items, out List<FolderData> folders)
         {
@@ -2498,7 +2520,10 @@ namespace OpenMetaverse
         /// <summary>
         /// Parse the results of a RequestTaskInventory() response
         /// </summary>
+        /// <param name="manager"></param>
         /// <param name="taskData">A string which contains the data from the task reply</param>
+        /// <param name="items"></param>
+        /// <param name="folders"></param>
         /// <returns>A List containing the items contained within the tasks inventory</returns>
         public static void ParseTaskInventory(InventoryManager manager, string taskData, out List<ItemData> items, out List<FolderData> folders)
         {

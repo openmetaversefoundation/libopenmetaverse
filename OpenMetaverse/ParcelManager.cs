@@ -163,10 +163,10 @@ namespace OpenMetaverse
             RestrictPushObject = 1 << 21,
             /// <summary>Ban all non identified/transacted avatars</summary>
             DenyAnonymous = 1 << 22,
-            /// <summary>Ban all identified avatars [OBSOLETE]</summary>
+            // <summary>Ban all identified avatars [OBSOLETE]</summary>
             //[Obsolete]
             //DenyIdentified = 1 << 23,
-            /// <summary>Ban all transacted avatars [OBSOLETE]</summary>
+            // <summary>Ban all transacted avatars [OBSOLETE]</summary>
             //[Obsolete]
             //DenyTransacted = 1 << 24,
             /// <summary>Allow group-owned scripts to run</summary>
@@ -1228,7 +1228,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="localID">Simulator local ID of parcel</param>
         /// <param name="selectType">Owners, Others, Etc</param>
-        /// <param name="ownerIDs">List containing keys of avatars objects to select; 
+        /// <param name="ownerID">List containing keys of avatars objects to select; 
         /// if List is null will return Objects of type <c>selectType</c></param>
         /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
         public void SelectObjects(int localID, ObjectReturnType selectType, UUID ownerID)

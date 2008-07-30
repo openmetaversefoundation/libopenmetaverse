@@ -33,6 +33,35 @@ namespace OpenMetaverse
     /// classes needed for sending and receiving data are accessible through 
     /// this class.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// // Example minimum code required to instantiate class and 
+    /// // connect to a simulator.
+    /// using System;
+    /// using System.Collections.Generic;
+    /// using System.Text;
+    /// using OpenMetaverse;
+    /// 
+    /// namespace FirstBot
+    /// {
+    ///     class Bot
+    ///     {
+    ///         public static GridClient Client;
+    ///         static void Main(string[] args)
+    ///         {
+    ///             Client = new GridClient(); // instantiates the GridClient class
+    ///                                        // to the global Client object
+    ///             // Login to Simulator
+    ///             Client.Network.Login("FirstName", "LastName", "Password", "FirstBot", "1.0");
+    ///             // Wait for a Keypress
+    ///             Console.ReadLine();
+    ///             // Logout of simulator
+    ///             Client.Network.Logout();
+    ///         }
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
     public class GridClient
     {
         /// <summary>Networking subsystem</summary>

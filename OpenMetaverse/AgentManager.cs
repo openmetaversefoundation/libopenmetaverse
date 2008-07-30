@@ -84,8 +84,8 @@ namespace OpenMetaverse
 		MessageFromAgent = 0,
 		/// <summary>Simple notification box with an OK button</summary>
 		MessageBox = 1,
-		/// <summary>Used to show a countdown notification with an OK
-		/// button, deprecated now</summary>
+		// <summary>Used to show a countdown notification with an OK
+		// button, deprecated now</summary>
         //[Obsolete]
         //MessageBoxCountdown = 2,
 		/// <summary>You've been invited to join a group.</summary>
@@ -98,8 +98,8 @@ namespace OpenMetaverse
 		InventoryDeclined = 6,
 		/// <summary>Group vote</summary>
 		GroupVote = 7,
-		/// <summary>A message to everyone in the agent's group, no longer
-		/// used</summary>
+		// <summary>A message to everyone in the agent's group, no longer
+		// used</summary>
         //[Obsolete]
         //DeprecatedGroupMessage = 8,
 		/// <summary>An object is offering its inventory</summary>
@@ -139,8 +139,8 @@ namespace OpenMetaverse
 		/// <summary>A placeholder type for future expansion, currently not
 		/// used</summary>
 		CurrentlyUnused = 26,
-		/// <summary>Notification of a new group election, this is 
-		/// deprecated</summary>
+		// <summary>Notification of a new group election, this is 
+		// deprecated</summary>
         //[Obsolete]
         //DeprecatedGroupElection = 27,
 		/// <summary>IM to tell the user to go to an URL</summary>
@@ -200,8 +200,8 @@ namespace OpenMetaverse
 		Normal = 1,
 		/// <summary>Shouting! (100m radius)</summary>
 		Shout = 2,
-		/// <summary>Say chat (10/20m radius) - The official viewer will 
-		/// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
+		// <summary>Say chat (10/20m radius) - The official viewer will 
+		// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
         //[Obsolete]
         //Say = 3,
 		/// <summary>Event message when an Avatar has begun to type</summary>

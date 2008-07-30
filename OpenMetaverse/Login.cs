@@ -345,6 +345,8 @@ namespace OpenMetaverse
         /// <param name="loginSuccess"></param>
         /// <param name="redirect"></param>
         /// <param name="replyData"></param>
+        /// <param name="message"></param>
+        /// <param name="reason"></param>
         public delegate void LoginResponseCallback(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData);
 
         #endregion Delegates

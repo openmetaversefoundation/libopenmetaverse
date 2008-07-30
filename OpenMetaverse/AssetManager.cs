@@ -50,7 +50,7 @@ namespace OpenMetaverse
         CallingCard = 2,
         /// <summary>Link to a location in world</summary>
         Landmark = 3,
-        /// <summary>Legacy script asset, you should never see one of these</summary>
+        // <summary>Legacy script asset, you should never see one of these</summary>
         //[Obsolete]
         //Script = 4,
         /// <summary>Collection of textures and parameters that can be 
@@ -177,7 +177,7 @@ namespace OpenMetaverse
     {
         /// <summary></summary>
         Unknown = 0,
-        /// <summary>Arbitrary system files off the server</summary>
+        // <summary>Arbitrary system files off the server</summary>
         //[Obsolete]
         //File = 1,
         /// <summary>Asset from the asset server</summary>

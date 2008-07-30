@@ -79,7 +79,7 @@ namespace OpenMetaverse
         public delegate void EstateCovenantReply(UUID covenantID, long timestamp, string estateName, UUID estateOwnerID);
 
 
-        /// <summary>Callback for LandStatReply packets</summary>
+        // <summary>Callback for LandStatReply packets</summary>
         //public event LandStatReply OnLandStatReply;
         /// <summary>Triggered upon a successful .GetTopColliders()</summary>
         public event GetTopCollidersReply OnGetTopColliders;

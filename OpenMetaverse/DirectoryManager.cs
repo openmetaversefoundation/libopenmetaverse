@@ -89,7 +89,7 @@ namespace OpenMetaverse
             People = 1 << 0,
             /// <summary></summary>
             Online = 1 << 1,
-            /// <summary></summary>
+            // <summary></summary>
             //[Obsolete]
             //Places = 1 << 2,
             /// <summary></summary>
@@ -104,7 +104,7 @@ namespace OpenMetaverse
             ForSale = 1 << 7,
             /// <summary></summary>
             GroupOwned = 1 << 8,
-            /// <summary></summary>
+            // <summary></summary>
             //[Obsolete]
             //Auction = 1 << 9,
             /// <summary></summary>
@@ -143,7 +143,7 @@ namespace OpenMetaverse
             None = 0,
             /// <summary>Land which is currently up for auction</summary>
             Auction = 1 << 1,
-            /// <summary>Land available to new landowners (formerly the FirstLand program)</summary>
+            // <summary>Land available to new landowners (formerly the FirstLand program)</summary>
             //[Obsolete]
             //Newbie = 1 << 2,
             /// <summary>Parcels which are on the mainland (Linden owned) continents</summary>

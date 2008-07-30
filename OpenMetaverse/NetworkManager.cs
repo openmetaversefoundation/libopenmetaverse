@@ -503,6 +503,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="sim"></param>
+        /// <param name="sendCloseCircuit"></param>
         public void DisconnectSim(Simulator sim, bool sendCloseCircuit)
         {
             if (sim != null)
