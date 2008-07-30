@@ -329,7 +329,7 @@ namespace OpenMetaverse
         }
     }
 
-    public partial class NetworkManager
+    public partial class NetworkManager : INetworkManager
     {
         #region Delegates
 

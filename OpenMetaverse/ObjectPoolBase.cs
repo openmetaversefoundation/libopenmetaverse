@@ -226,6 +226,8 @@ namespace OpenMetaverse
             if (_disposed)
                 throw new ObjectDisposedException("ObjectPoolBase");
 
+            if (allowSegmentToBeCleanedUp)
+                Logger.Log("Creating new object pool segment", Helpers.LogLevel.Info);
 
             // This method is called inside a lock, so no interlocked stuff required.
             int segmentToAdd = _activeSegment;

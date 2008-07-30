@@ -48,19 +48,9 @@ namespace OpenMetaverse
     /// outgoing traffic and deserializes incoming traffic, and provides
     /// instances of delegates for network-related events.
     /// </summary>
-    public partial class NetworkManager
+    public partial class NetworkManager : INetworkManager
     {
-        /// <summary>
-        /// Holds a simulator reference and a packet, these structs are put in
-        /// the packet inbox for decoding
-        /// </summary>
-        public struct IncomingPacket
-        {
-            /// <summary>Reference to the simulator that this packet came from</summary>
-            public Simulator Simulator;
-            /// <summary>The packet that needs to be processed</summary>
-            public Packet Packet;
-        }
+        #region Enums
 
         /// <summary>
         /// Explains why a simulator or the grid disconnected from us
@@ -76,6 +66,26 @@ namespace OpenMetaverse
             /// <summary>The last active simulator shut down</summary>
             SimShutdown
         }
+
+        #endregion Enums
+
+        #region Structs
+
+        /// <summary>
+        /// Holds a simulator reference and a packet, these structs are put in
+        /// the packet inbox for decoding
+        /// </summary>
+        public struct IncomingPacket
+        {
+            /// <summary>Reference to the simulator that this packet came from</summary>
+            public Simulator Simulator;
+            /// <summary>The packet that needs to be processed</summary>
+            public Packet Packet;
+        }
+
+        #endregion Structs
+
+        #region Delegates
 
         /// <summary>
         /// Coupled with RegisterCallback(), this is triggered whenever a packet
@@ -135,6 +145,10 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator this event queue is tied to</param>
         public delegate void EventQueueRunningCallback(Simulator simulator);
 
+        #endregion Delegates
+
+        #region Events
+
         /// <summary>
         /// Event raised when the client was able to connected successfully.
         /// </summary>
@@ -175,20 +189,34 @@ namespace OpenMetaverse
         /// </summary>
         public event EventQueueRunningCallback OnEventQueueRunning;
 
-        /// <summary>Uniquely identifier associated with our connections to
+        #endregion Events
+
+        #region Properties
+
+        /// <summary>Unique identifier associated with our connections to
         /// simulators</summary>
-        public uint CircuitCode;
+        public uint CircuitCode
+        {
+            get { return _CircuitCode; }
+            set { _CircuitCode = value; }
+        }
         /// <summary>The simulator that the logged in avatar is currently 
         /// occupying</summary>
-        public Simulator CurrentSim = null;
+        public Simulator CurrentSim
+        {
+            get { return _CurrentSim; }
+            set { _CurrentSim = value; }
+        }
+        /// <summary>Shows whether the network layer is logged in to the
+        /// grid or not</summary>
+        public bool Connected { get { return connected; } }
+        /// <summary>Number of packets in the incoming queue</summary>
+        public int InboxCount { get { return PacketInbox.Count; } }
+
+        #endregion Properties
+
         /// <summary>All of the simulators we are currently connected to</summary>
         public List<Simulator> Simulators = new List<Simulator>();
-
-        /// <summary>
-        /// Shows whether the network layer is logged in to the grid or not
-        /// </summary>
-        public bool Connected { get { return connected; } }
-        public int InboxCount { get { return PacketInbox.Count; } }
 
         /// <summary>Handlers for incoming capability events</summary>
         internal CapsEventDictionary CapsEvents;
@@ -199,6 +227,8 @@ namespace OpenMetaverse
 
         private GridClient Client;
         private Timer DisconnectTimer;
+        private uint _CircuitCode;
+        private Simulator _CurrentSim = null;
         private bool connected = false;
 
         /// <summary>
@@ -211,7 +241,7 @@ namespace OpenMetaverse
 
             PacketEvents = new PacketEventDictionary(client);
             CapsEvents = new CapsEventDictionary(client);
-            
+
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
             RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));

@@ -32,90 +32,6 @@ using System.Threading;
 
 namespace OpenMetaverse
 {
-    // this class encapsulates a single packet that
-    // is either sent or received by a UDP socket
-    public class UDPPacketBuffer
-    {
-        // size of the buffer
-        public const int BUFFER_SIZE = 2048;
-        /// <summary>Size of the temporary buffer for zerodecoding and 
-        /// zeroencoding this packet</summary>
-        public const int ZERO_BUFFER_SIZE = 4096;
-        // the buffer itself
-        public byte[] Data;
-        /// <summary>Temporary buffer used for zerodecoding and zeroencoding
-        /// this packet</summary>
-        public byte[] ZeroData;
-        // length of data to transmit
-        public int DataLength;
-        // the (IP)Endpoint of the remote host
-        // this will be filled in by the call to udpSocket.BeginReceiveFrom
-        public EndPoint RemoteEndPoint;
-
-        /// <summary>
-        /// Create an allocated UDP packet buffer for receiving a packet
-        /// </summary>
-        public UDPPacketBuffer()
-        {
-            Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
-            ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
-            // Will be modified later by BeginReceiveFrom()
-            RemoteEndPoint = (EndPoint)new IPEndPoint(Settings.BIND_ADDR, 0);
-        }
-
-        public UDPPacketBuffer(IPEndPoint endPoint, bool allocate)
-        {
-            if (allocate) Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
-            ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
-            RemoteEndPoint = (EndPoint)endPoint;
-        }
-
-        public UDPPacketBuffer(EndPoint endPoint, bool allocate, bool allocateZero)
-        {
-            if (allocate) Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
-            if (allocateZero) ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
-            RemoteEndPoint = endPoint;
-        }
-    }
-
-    public class PacketBufferPool : ObjectPoolBase<UDPPacketBuffer>
-    {
-        private IPEndPoint EndPoint;
-
-        /// <summary>
-        /// Initialize the object pool in client mode
-        /// </summary>
-        /// <param name="endPoint">Server to connect to</param>
-        /// <param name="itemsPerSegment"></param>
-        /// <param name="minSegments"></param>
-        public PacketBufferPool(IPEndPoint endPoint, int itemsPerSegment, int minSegments)
-            : base()
-        {
-            EndPoint = endPoint;
-            Initialize(itemsPerSegment, minSegments, true, 1000 * 60 * 5);
-        }
-
-        /// <summary>
-        /// Initialize the object pool in server mode
-        /// </summary>
-        /// <param name="itemsPerSegment"></param>
-        /// <param name="minSegments"></param>
-        public PacketBufferPool(int itemsPerSegment, int minSegments)
-            : base()
-        {
-            EndPoint = null;
-            Initialize(itemsPerSegment, minSegments, true, 1000 * 60 * 5);
-        }
-
-        protected override UDPPacketBuffer GetObjectInstance()
-        {
-            if (EndPoint != null)
-                return new UDPPacketBuffer(EndPoint, true);
-            else
-                return new UDPPacketBuffer();
-        }
-    }
-
     /// <summary>
     /// 
     /// </summary>
@@ -131,8 +47,6 @@ namespace OpenMetaverse
 
         // the UDP socket
         private Socket udpSocket;
-
-        private PacketBufferPool _bufferPool;
 
         // the ReaderWriterLock is used solely for the purposes of shutdown (Stop()).
         // since there are potentially many "reader" threads in the internal .NET IOCP
@@ -152,7 +66,7 @@ namespace OpenMetaverse
         // which we use to ensure that the threads exit cleanly. Note that
         // we need this because the threads will potentially still need to process
         // data even after the socket is closed.
-        private volatile int rwOperationCount = 0;
+        private int rwOperationCount = 0;
 
         // the all important shutdownFlag.  This is synchronized through the ReaderWriterLock.
         private volatile bool shutdownFlag = true;
@@ -168,7 +82,6 @@ namespace OpenMetaverse
         public UDPBase(int port)
         {
             udpPort = port;
-            _bufferPool = new PacketBufferPool(new IPEndPoint(Settings.BIND_ADDR, udpPort), 64, 1);
         }
 
         /// <summary>
@@ -179,7 +92,6 @@ namespace OpenMetaverse
         {
             remoteEndPoint = endPoint;
             udpPort = 0;
-            _bufferPool = new PacketBufferPool(endPoint, 64, 1);
         }
 
         /// <summary>
@@ -278,21 +190,21 @@ namespace OpenMetaverse
                 Interlocked.Increment(ref rwOperationCount);
 
                 // allocate a packet buffer
-                WrappedObject<UDPPacketBuffer> buf = _bufferPool.CheckOut();
+                WrappedObject<UDPPacketBuffer> wrappedBuffer = Pool.CheckOut();
                 //UDPPacketBuffer buf = new UDPPacketBuffer();
 
                 try
                 {
                     // kick off an async read
                     udpSocket.BeginReceiveFrom(
-                        buf.Instance.Data,
+                        wrappedBuffer.Instance.Data,
                         //buf.Data,
                         0,
                         UDPPacketBuffer.BUFFER_SIZE,
                         SocketFlags.None,
-                        ref buf.Instance.RemoteEndPoint,
+                        ref wrappedBuffer.Instance.RemoteEndPoint,
                         new AsyncCallback(AsyncEndReceive),
-                        buf);
+                        wrappedBuffer);
                 }
                 catch (SocketException)
                 {

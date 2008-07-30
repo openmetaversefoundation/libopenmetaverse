@@ -2345,7 +2345,7 @@ namespace OpenMetaverse
         /// Converts this quaternion to a 3x3 row-major matrix
         /// </summary>
         /// <returns>A matrix representation of this quaternion</returns>
-        public Matrix3 ToMatrix()
+        public Matrix3 ToMatrix3()
         {
             // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
 
@@ -2379,12 +2379,68 @@ namespace OpenMetaverse
             return m;
         }
 
+        /// <summary>
+        /// Converts this quaternion to a 4x4 row-major matrix
+        /// </summary>
+        /// <returns>A matrix representation of this quaternion</returns>
+        public Matrix4 ToMatrix4()
+        {
+            // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
+
+            Matrix4 m;
+            float xx, xy, xz, xw, yy, yz, yw, zz, zw;
+
+            xx = X * X;
+            xy = X * Y;
+            xz = X * Z;
+            xw = X * W;
+
+            yy = Y * Y;
+            yz = Y * Z;
+            yw = Y * W;
+
+            zz = Z * Z;
+            zw = Z * W;
+
+            m.M11 = 1f - 2f * (yy + zz);
+            m.M12 = 2f * (xy + zw);
+            m.M13 = 2f * (xz - yw);
+            m.M14 = 0f;
+
+            m.M21 = 2f * (xy - zw);
+            m.M22 = 1f - 2f * (xx + zz);
+            m.M23 = 2f * (yz + xw);
+            m.M24 = 0f;
+
+            m.M31 = 2f * (xz + yw);
+            m.M32 = 2f * (yz - xw);
+            m.M33 = 1f - 2f * (xx + yy);
+            m.M34 = 0f;
+
+            m.M41 = m.M42 = m.M43 = 0f;
+            m.M44 = 1f;
+
+            return m;
+        }
+
+        /// <summary>
+        /// Construct this quaternion from an axis angle
+        /// </summary>
+        /// <param name="angle">Angle</param>
+        /// <param name="x">X component of axis</param>
+        /// <param name="y">Y component of axis</param>
+        /// <param name="z">Z component of axis</param>
         public void SetQuaternion(float angle, float x, float y, float z)
         {
             Vector3 vec = new Vector3(x, y, z);
             SetQuaternion(angle, vec);
         }
 
+        /// <summary>
+        /// Construct this quaternion from an axis angle
+        /// </summary>
+        /// <param name="angle">Angle</param>
+        /// <param name="vec">Axis</param>
         public void SetQuaternion(float angle, Vector3 vec)
         {
             vec = Vector3.Norm(vec);
@@ -2636,7 +2692,7 @@ namespace OpenMetaverse
 
         public Matrix3(Quaternion q)
         {
-            this = q.ToMatrix();
+            this = q.ToMatrix3();
         }
 
         public Matrix3(float roll, float pitch, float yaw)
@@ -3113,10 +3169,16 @@ namespace OpenMetaverse
             M44 = m44;
         }
 
-        //public Matrix4(Quaternion q)
-        //{
-        //    this = q.ToMatrix4();
-        //}
+        public Matrix4(Quaternion q)
+        {
+            this = q.ToMatrix4();
+        }
+
+        public Matrix4(float roll, float pitch, float yaw)
+        {
+            M11 = M12 = M13 = M14 = M21 = M22 = M23 = M24 = M31 = M32 = M33 = M34 = M41 = M42 = M43 = M44 = 0f;
+            FromEulers(roll, pitch, yaw);
+        }
 
         public Matrix4(Matrix3 m)
         {
@@ -3192,5 +3254,51 @@ namespace OpenMetaverse
         }
 
         #endregion Constructors
+
+        #region Public Methods
+
+        /// <summary>
+        /// Construct this matrix from euler rotation values
+        /// </summary>
+        /// <param name="roll">X euler angle</param>
+        /// <param name="pitch">Y euler angle</param>
+        /// <param name="yaw">Z euler angle</param>
+        public void FromEulers(float roll, float pitch, float yaw)
+        {
+            // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
+
+            float a, b, c, d, e, f;
+            float ad, bd;
+
+            a = (float)Math.Cos(roll);
+            b = (float)Math.Sin(roll);
+            c = (float)Math.Cos(pitch);
+            d = (float)Math.Sin(pitch);
+            e = (float)Math.Cos(yaw);
+            f = (float)Math.Sin(yaw);
+
+            ad = a * d;
+            bd = b * d;
+
+            M11 = c * e;
+            M12 = -c * f;
+            M13 = d;
+            M14 = 0f;
+
+            M21 = bd * e + a * f;
+            M22 = -bd * f + a * e;
+            M23 = -b * c;
+            M24 = 0f;
+
+            M31 = -ad * e + b * f;
+            M32 = ad * f + b * e;
+            M33 = a * c;
+            M34 = 0f;
+
+            M41 = M42 = M43 = 0f;
+            M44 = 1f;
+        }
+
+        #endregion Public Methods
     }
 }
