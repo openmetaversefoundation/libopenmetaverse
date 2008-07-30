@@ -433,7 +433,7 @@ namespace OpenMetaverse.Tests
             string sDateOne = "d\"2007-12-31T20:49:10Z\"";
             LLSD llsdOne = LLSDParser.DeserializeNotation(sDateOne);
             Assert.AreEqual(LLSDType.Date, llsdOne.Type);
-            DateTime dt = new DateTime(2007-2008, 12, 31, 20, 49, 10, 0, DateTimeKind.Utc);
+            DateTime dt = new DateTime(2007, 12, 31, 20, 49, 10, 0, DateTimeKind.Utc);
             DateTime dtDS = llsdOne.AsDate();
             Assert.AreEqual(dt, dtDS.ToUniversalTime());
         }
