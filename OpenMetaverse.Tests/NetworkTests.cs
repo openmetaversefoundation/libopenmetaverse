@@ -39,8 +39,8 @@ namespace OpenMetaverse.Tests
         GridClient Client;
 
         ulong CurrentRegionHandle = 0;
-        ulong AhernRegionHandle = 1096213093149184;
-        ulong MorrisRegionHandle = 1096213093149183;
+      //  ulong AhernRegionHandle = 1096213093149184;
+      //  ulong MorrisRegionHandle = 1096213093149183;
         ulong DoreRegionHandle = 1095113581521408;
         ulong HooperRegionHandle = 1106108697797888;
         bool DetectedObject = false;
@@ -103,8 +103,8 @@ namespace OpenMetaverse.Tests
                 }
             }
 
-            Assert.IsTrue(CurrentRegionHandle == HooperRegionHandle, "Current region is " +
-                CurrentRegionHandle + " when we were expecting " + HooperRegionHandle + ", possible endian issue");
+            Assert.IsTrue(CurrentRegionHandle == DoreRegionHandle, "Current region is " +
+                CurrentRegionHandle + " (" + Client.Network.CurrentSim.Name + ")" + " when we were expecting " + DoreRegionHandle + " (Dore), possible endian issue");
         }
 
  
@@ -118,7 +118,7 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(Client.Self.Teleport(Client.Network.CurrentSim.Handle, new Vector3(121, 13, 41)),
                 "Teleport In-Sim Failed " + Client.Network.CurrentSim.Name);
 
-            //// Assert that we really did make it to our scheduled destination
+            // Assert that we really did make it to our scheduled destination
             Assert.AreEqual(localSimName, Client.Network.CurrentSim.Name,
                 "Expected to teleport to " + localSimName + ", ended up in " + Client.Network.CurrentSim.Name +
                 ". Possibly region full or offline?");
