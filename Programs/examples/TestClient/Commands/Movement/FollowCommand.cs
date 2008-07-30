@@ -33,10 +33,24 @@ namespace OpenMetaverse.TestClient
             }
             else
             {
-                if (Follow(Client.MasterKey))
-                    return "Following " + Client.MasterKey;
+                if (Client.MasterKey != UUID.Zero)
+                {
+                    if (Follow(Client.MasterKey))
+                        return "Following UUID " + Client.MasterKey;
+                    else
+                        return "Unable to follow UUID " + Client.MasterKey;
+                }
+                else if (Client.MasterName != String.Empty)
+                {
+                    if (Follow(Client.MasterName))
+                        return "Following " + Client.MasterName;
+                    else
+                        return "Unable to follow " + Client.MasterName;
+                }
                 else
-                    return "No target specified and no master not found. usage: follow [FirstName LastName])";
+                {
+                    return "No master specified. Usage: follow <target>";
+                }
             }
 		}
 

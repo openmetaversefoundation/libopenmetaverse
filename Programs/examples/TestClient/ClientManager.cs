@@ -94,6 +94,7 @@ namespace OpenMetaverse.TestClient
             client.GroupCommands = account.GroupCommands;
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
+            client.AllowObjectMaster = client.MasterKey != UUID.Zero; // Require UUID for object master.
 
             LoginParams loginParams = client.Network.DefaultLoginParams(
                     account.FirstName, account.LastName, account.Password, "TestClient", version);
@@ -106,96 +107,22 @@ namespace OpenMetaverse.TestClient
             
             if (client.Network.Login(loginParams))
             {
-                if (account.MasterKey == UUID.Zero && !String.IsNullOrEmpty(account.MasterName))
-                {
-                    // To prevent security issues, we must resolve the specified master name to a key.
-                    ManualResetEvent keyResolution = new ManualResetEvent(false);
-                    List<DirectoryManager.AgentSearchData> masterMatches = new List<DirectoryManager.AgentSearchData>();
-                    
-                    // Set up the callback that handles the search results:
-                    DirectoryManager.DirPeopleReplyCallback callback = 
-                        delegate (UUID queryID, List<DirectoryManager.AgentSearchData> matches) {
-                            // This may be called several times with additional search results.
-                            if (matches.Count > 0)
-                            {
-                                lock (masterMatches)
-                                {
-                                    masterMatches.AddRange(matches);
-                                }
-                            }
-                            else
-                            {
-                                // No results to show.
-                                keyResolution.Set();
-                            }
-                        };
-                    // Find master's key from name
-                    Console.WriteLine("Resolving {0}'s UUID", account.MasterName);
-                    client.Directory.OnDirPeopleReply += callback;
-                    client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, account.MasterName, 0);
-                    keyResolution.WaitOne(TimeSpan.FromSeconds(30), false);
-                    client.Directory.OnDirPeopleReply -= callback;
-
-                    UUID masterKey = UUID.Zero;
-                    string masterName = account.MasterName;
-                    lock (masterMatches) {
-                        if (masterMatches.Count == 1) {
-                            masterKey = masterMatches[0].AgentID;
-                            masterName = masterMatches[0].FirstName + " " + masterMatches[0].LastName;
-                        } else if (masterMatches.Count > 0) {
-                            // Print out numbered list of masters:
-                            Console.WriteLine("Possible masters:");
-                            for (int i = 0; i < masterMatches.Count; ++i)
-                            {
-                                Console.WriteLine("{0}: {1}", i, masterMatches[i].FirstName + " " + masterMatches[i].LastName);
-                            }
-                            Console.Write("Ambiguous master, choose one: ");
-                            // Read number from the console:
-                            string read = null;
-                            do
-                            {
-                                read = Console.ReadLine();
-                                int choice = 0;
-                                if (int.TryParse(read, out choice))
-                                {
-                                    if (choice == -1)
-                                    {
-                                        break;
-                                    } 
-                                    else if (choice < masterMatches.Count)
-                                    {
-                                        masterKey = masterMatches[choice].AgentID;
-                                        masterName = masterMatches[choice].FirstName + " " + masterMatches[choice].LastName;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Please type a number from the above list, -1 to cancel.");
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("You didn't type a number.");
-                                    Console.WriteLine("Please type a number from the above list, -1 to cancel.");
-                                }
-                            } while (read != null); // Do it until the user selects a master.
-                        }
-                    }
-                    if (masterKey != UUID.Zero)
-                    {
-                        Console.WriteLine("\"{0}\" resolved to {1} ({2})", account.MasterName, masterName, masterKey);
-                        account.MasterName = masterName;
-                        account.MasterKey = masterKey;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Unable to obtain UUID for \"{0}\". No master will be used. Try specifying a key with --masterkey.", account.MasterName);
-                    }
-                }
-
-                client.MasterKey = account.MasterKey;
                 Clients[client.Self.AgentID] = client;
-
+                if (client.MasterKey == UUID.Zero)
+                {
+                    UUID query = UUID.Random();
+                    client.Directory.OnDirPeopleReply +=
+                        delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                        {
+                            if (queryID != query)
+                                return;
+                            if (matchedPeople.Count != 1)
+                                Console.WriteLine("Unable to resolve master key.");
+                            else
+                                client.MasterKey = matchedPeople[0].AgentID;
+                        };
+                    client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, client.MasterName, 0, query);
+                }
                 Console.WriteLine("Logged in " + client.ToString());
             }
             else

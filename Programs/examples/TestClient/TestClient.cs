@@ -18,6 +18,7 @@ namespace OpenMetaverse.TestClient
         public bool GroupCommands = false;
         public string MasterName = String.Empty;
         public UUID MasterKey = UUID.Zero;
+        public bool AllowObjectMaster = false;
 		public ClientManager ClientManager;
         public VoiceManager VoiceManager;
         // Shell-like inventory commands need to be aware of the 'current' inventory folder.
@@ -221,7 +222,10 @@ namespace OpenMetaverse.TestClient
 
             bool groupIM = im.GroupIM && GroupMembers != null && GroupMembers.ContainsKey(im.FromAgentID) ? true : false;
 
-            if (im.FromAgentID == MasterKey || (GroupCommands && groupIM))
+            if ((im.Dialog == InstantMessageDialog.MessageFromObject) && !AllowObjectMaster)
+                return;
+
+            if (im.FromAgentID == MasterKey || im.FromAgentName == MasterName || (GroupCommands && groupIM))
             {
                 // Received an IM from someone that is authenticated
                 Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
@@ -246,7 +250,6 @@ namespace OpenMetaverse.TestClient
                     im.RegionID, im.Position);
                 return;
             }
-
         }
 
         private UUID Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
@@ -258,6 +261,15 @@ namespace OpenMetaverse.TestClient
                     return UUID.Zero;
             }
             else if (GroupMembers != null && !GroupMembers.ContainsKey(offer.FromAgentID))
+            {
+                return UUID.Zero;
+            }
+            else if (MasterName != String.Empty)
+            {
+                if (offer.FromAgentName != MasterName)
+                    return UUID.Zero;
+            }
+            else if (fromTask && !AllowObjectMaster)
             {
                 return UUID.Zero;
             }

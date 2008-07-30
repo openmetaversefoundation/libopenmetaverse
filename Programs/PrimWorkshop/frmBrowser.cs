@@ -1590,8 +1590,10 @@ StartRender:
                 // Start the login
                 LoginParams loginParams = Client.Network.DefaultLoginParams(txtFirst.Text, txtLast.Text,
                     txtPass.Text, "Prim Preview", "0.0.1");
-                if (!String.IsNullOrEmpty((string)cboServer.Items[cboServer.SelectedIndex]))
-                    loginParams.URI = (string)cboServer.Items[cboServer.SelectedIndex];
+
+                if (!String.IsNullOrEmpty(cboServer.Text))
+                    loginParams.URI = cboServer.Text;
+
                 Client.Network.BeginLogin(loginParams);
             }
             else
