@@ -393,9 +393,8 @@ namespace Prebuild.Core.Targets
 
                 ss.WriteLine("        </csc>");
                 ss.WriteLine("    </target>");
-
                 ss.WriteLine("    <target name=\"clean\">");
-                ss.WriteLine("        <delete dir=\"${bin.dir}\" failonerror=\"false\" />");
+                ss.WriteLine("        <delete dir=\"${bin.dir}\"/>");
                 ss.WriteLine("        <delete dir=\"${obj.dir}\" failonerror=\"false\" />");
                 ss.WriteLine("    </target>");
 
@@ -545,7 +544,30 @@ namespace Prebuild.Core.Targets
                 ss.WriteLine("    <target name=\"clean\" description=\"\">");
                 ss.WriteLine("        <echo message=\"Deleting all builds from all configurations\" />");
                 //ss.WriteLine("        <delete dir=\"${dist.dir}\" failonerror=\"false\" />");
-                ss.WriteLine("        <delete dir=\"${bin.dir}\" failonerror=\"false\" />");
+                //ss.WriteLine("        <delete dir=\"${bin.dir}\" failonerror=\"false\" />");
+                // This is really bad, hard coding names of files we don't want nant clobbering
+                // Hack until prebuild supports some sort of exclusion property - Anonymous
+                ss.WriteLine("        <delete failonerror=\"false\">");
+                ss.WriteLine("            <fileset basedir=\"${bin.dir}\">");
+                ss.WriteLine("                <include name=\"*\" />");
+                ss.WriteLine("                <exclude name=\"Tao.OpenGl.dll\"> /");
+                ss.WriteLine("                <exclude name=\"GlacialList.dll\"> /");
+                ss.WriteLine("                <exclude name=\"libopenjpeg-dotnet-2.1.3.0-x86_64.so\"> /");
+                ss.WriteLine("                <exclude name=\"nunit.framework.dll\"> /");
+                ss.WriteLine("                <exclude name=\"ICSharpCode.SharpZipLib.dll\"> /");
+                ss.WriteLine("                <exclude name=\"Tao.OpenGl.dll.config\"> /");
+                ss.WriteLine("                <exclude name=\"openjpeg-libsl.dll\"> /");
+                ss.WriteLine("                <exclude name=\"Prebuild.exe\"> /");
+                ss.WriteLine("                <exclude name=\"libopenjpeg-dotnet-2.1.3.0.so\"> /");
+                ss.WriteLine("                <exclude name=\"log4net.dll\"> /");
+                ss.WriteLine("                <exclude name=\"libopenjpeg-dotnet-2.1.3.0.dylib\"> /");
+                ss.WriteLine("                <exclude name=\"Tao.Platform.Windows.dll\"> /");
+                ss.WriteLine("                <exclude name=\"SLImageUpload.exe.config\"> /");
+                ss.WriteLine("                <exclude name=\"OpenMetaverse.dll.config\"> /");
+                ss.WriteLine("                <exclude name=\"openjpeg-dotnet.dll\"> /");
+                ss.WriteLine("                <exclude name=\".svn\"> /");
+                ss.WriteLine("            </fileset>");
+                ss.WriteLine("        </delete>");
                 ss.WriteLine("        <delete dir=\"${obj.dir}\" failonerror=\"false\" />");
                 foreach (ProjectNode project in solution.Projects)
                 {
