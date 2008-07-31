@@ -599,14 +599,6 @@ namespace OpenMetaverse
                         else
                             output.Append("   ");
                     }
-
-                    for (int j = 0; j < 16 && (i + j) < bytes.Length; j++)
-                    {
-                        if (bytes[i + j] >= 0x20 && bytes[i + j] < 0x7E)
-                            output.Append((char)bytes[i + j]);
-                        else
-                            output.Append(".");
-                    }
                 }
             }
         }
@@ -615,20 +607,21 @@ namespace OpenMetaverse
         /// Converts a byte array to a string containing hexadecimal characters
         /// </summary>
         /// <param name="bytes">The byte array to convert to a string</param>
+        /// <param name="length">Number of bytes in the array to parse</param>
         /// <param name="fieldName">The name of the field to prepend to each
         /// line of the string</param>
         /// <returns>A string containing hexadecimal characters on multiple
         /// lines. Each line is prepended with the field name</returns>
-        public static string FieldToHexString(byte[] bytes, string fieldName)
+        public static string FieldToHexString(byte[] bytes, int length, string fieldName)
         {
             StringBuilder output = new StringBuilder();
 
-            for (int i = 0; i < bytes.Length; i += 16)
+            for (int i = 0; i < length; i += 16)
             {
                 if (i != 0)
                     output.Append('\n');
 
-                if (fieldName.Length > 0)
+                if (!String.IsNullOrEmpty(fieldName))
                 {
                     output.Append(fieldName);
                     output.Append(": ");
@@ -636,18 +629,10 @@ namespace OpenMetaverse
 
                 for (int j = 0; j < 16; j++)
                 {
-                    if ((i + j) < bytes.Length)
+                    if ((i + j) < length)
                         output.Append(String.Format("{0:X2} ", bytes[i + j]));
                     else
                         output.Append("   ");
-                }
-
-                for (int j = 0; j < 16 && (i + j) < bytes.Length; j++)
-                {
-                    if (bytes[i + j] >= 0x20 && bytes[i + j] < 0x7E)
-                        output.Append(bytes[i + j]);
-                    else
-                        output.Append(".");
                 }
             }
 
@@ -900,10 +885,8 @@ namespace OpenMetaverse
             }
             catch (Exception e)
             {
-                Console.WriteLine("Zerodecoding error: " + Helpers.NewLine +
-                    "i=" + i + "srclen=" + srclen + ", bodylen=" + bodylen + ", zerolen=" + zerolen + Helpers.NewLine +
-                    FieldToHexString(src, "src") + Helpers.NewLine + 
-                    e.ToString());
+                Logger.Log(String.Format("Zerodecoding error: i={0}, srclen={1}, bodylen={2}, zerolen={3}\n{4}",
+                    i, srclen, bodylen, zerolen, FieldToHexString(src, srclen, null)), LogLevel.Error);
             }
 
             return 0;

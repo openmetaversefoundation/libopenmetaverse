@@ -827,7 +827,16 @@ namespace OpenMetaverse
             #region Packet Decoding
 
             int packetEnd = buffer.DataLength - 1;
-            packet = Packet.BuildPacket(buffer.Data, ref packetEnd, buffer.ZeroData);
+
+            try
+            {
+                packet = Packet.BuildPacket(buffer.Data, ref packetEnd, buffer.ZeroData);
+            }
+            catch (MalformedDataException ex)
+            {
+                Logger.Log(String.Format("Malformed data, cannot parse packet:\n{0}",
+                    Helpers.FieldToHexString(buffer.Data, buffer.DataLength, null)), Helpers.LogLevel.Error);
+            }
 
             // Fail-safe check
             if (packet == null)

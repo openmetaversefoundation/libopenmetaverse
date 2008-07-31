@@ -30,6 +30,18 @@ using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
+    ///////////////////////////////////////////////////////////////////////////
+    // 
+    // The 3D math makes several assumptions to maintain consistency across
+    // types. The math system is right-handed and the matrices are row-order.
+    // Z axis is up.
+    //
+    // X = At   = Roll  = Bank
+    // Y = Left = Pitch = Attitude
+    // Z = Up   = Yaw   = Heading
+    //
+    ///////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// A 128-bit Universally Unique Identifier, used throughout the Second
     /// Life networking protocol
@@ -750,23 +762,6 @@ namespace OpenMetaverse
 
             this = Vector3.Zero;
         }
-
-        //FIXME: Need comprehensive testing for this
-        // <summary>
-        // Assumes this vector represents euler rotations along the X, Y, and
-        // Z axis and creates a quaternion representation of the rotations
-        // </summary>
-        // <returns>A quaternion representation of the euler rotations</returns>
-        //public Quaternion ToQuaternion()
-        //{
-        //    LLMatrix3 rotMat = new LLMatrix3(X, Y, Z);
-        //    rotMat = LLMatrix3.Orthogonalize(rotMat);
-
-        //    Quaternion quat = rotMat.ToQuaternion();
-        //    quat = Quaternion.Norm(quat);
-
-        //    return quat;
-        //}
 
         #endregion Public Methods
 
@@ -2306,10 +2301,6 @@ namespace OpenMetaverse
         {
             // From http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
 
-            // bank = roll
-            // heading = yaw
-            // attitude = pitch
-
             float sqx = X * X;
             float sqy = Y * Y;
             float sqz = Z * Z;
@@ -2462,18 +2453,36 @@ namespace OpenMetaverse
         #region Static Methods
 
         /// <summary>
-        /// Creates a quaternion from a euler vector
+        /// Creates a quaternion from a vector containing roll, pitch, and yaw
+        /// in radians
         /// </summary>
-        /// <param name="euler">Vector representation of the euler angle</param>
-        /// <returns>Quaternion representation of Euler angle</returns>
-        public static Quaternion FromEuler(Vector3 euler)
+        /// <param name="euler">Vector representation of the euler angles in
+        /// radians</param>
+        /// <returns>Quaternion representation of the euler angles</returns>
+        public static Quaternion FromEulers(Vector3 euler)
         {
-            double atCos = Math.Cos(euler.X / 2);
-            double atSin = Math.Sin(euler.X / 2);
-            double leftCos = Math.Cos(euler.Y / 2);
-            double leftSin = Math.Sin(euler.Y / 2);
-            double upCos = Math.Cos(euler.Z / 2);
-            double upSin = Math.Sin(euler.Z / 2);
+            return FromEulers(euler.X, euler.Y, euler.Z);
+        }
+
+        /// <summary>
+        /// Creates a quaternion from roll, pitch, and yaw euler angles in
+        /// radians
+        /// </summary>
+        /// <param name="roll">X angle in radians</param>
+        /// <param name="pitch">Y angle in radians</param>
+        /// <param name="yaw">Z angle in radians</param>
+        /// <returns>Quaternion representation of the euler angles</returns>
+        public static Quaternion FromEulers(float roll, float pitch, float yaw)
+        {
+            if (roll > Helpers.TWO_PI || pitch > Helpers.TWO_PI || yaw > Helpers.TWO_PI)
+                throw new ArgumentException("Euler angles must be in radians");
+
+            double atCos = Math.Cos(roll / 2);
+            double atSin = Math.Sin(roll / 2);
+            double leftCos = Math.Cos(pitch / 2);
+            double leftSin = Math.Sin(pitch / 2);
+            double upCos = Math.Cos(yaw / 2);
+            double upSin = Math.Sin(yaw / 2);
             double atLeftCos = atCos * leftCos;
             double atLeftSin = atSin * leftSin;
             return new Quaternion(
@@ -2926,14 +2935,11 @@ namespace OpenMetaverse
         /// Transposes a matrix
         /// </summary>
         /// <param name="m">Matrix to transpose</param>
-        /// <returns>Transposed matrix</returns>
-        public static Matrix3 Transpose(Matrix3 m)
+        public static void Transpose(Matrix3 m)
         {
             Helpers.Swap<float>(ref m.M12, ref m.M21);
             Helpers.Swap<float>(ref m.M13, ref m.M31);
             Helpers.Swap<float>(ref m.M23, ref m.M32);
-
-            return m;
         }
 
         #endregion Static Methods
@@ -2961,9 +2967,17 @@ namespace OpenMetaverse
             return false;
         }
 
+        public bool Equals(Matrix3 m)
+        {
+            return
+                (M11 == m.M11) && (M12 == m.M12) && (M13 == m.M13) &&
+                (M21 == m.M21) && (M22 == m.M22) && (M23 == m.M23) &&
+                (M31 == m.M31) && (M32 == m.M32) && (M33 == m.M33);
+        }
+
         public override string ToString()
         {
-            return string.Format("[{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}]",
+            return string.Format("|{0}, {1}, {2}|\n|{3}, {4}, {5}|\n|{6}, {7}, {8}|",
                 M11, M12, M13, M21, M22, M23, M31, M32, M33);
         }
 
@@ -2973,12 +2987,12 @@ namespace OpenMetaverse
 
         public static bool operator ==(Matrix3 left, Matrix3 right)
         {
-            return ValueType.Equals(left, right);
+            return left.Equals(right);
         }
 
         public static bool operator !=(Matrix3 left, Matrix3 right)
         {
-            return !ValueType.Equals(left, right);
+            return !left.Equals(right);
         }
 
         public static Matrix3 operator +(Matrix3 left, Matrix3 right)
@@ -2987,11 +3001,6 @@ namespace OpenMetaverse
         }
 
         public static Matrix3 operator +(Matrix3 matrix, float scalar)
-        {
-            return Matrix3.Add(matrix, scalar);
-        }
-
-        public static Matrix3 operator +(float scalar, Matrix3 matrix)
         {
             return Matrix3.Add(matrix, scalar);
         }
@@ -3024,7 +3033,7 @@ namespace OpenMetaverse
                     case 2:
                         return new Vector3(M31, M32, M33);
                     default:
-                        throw new IndexOutOfRangeException("LLMatrix3 row index must be from 0-2");
+                        throw new IndexOutOfRangeException("Matrix3 row index must be from 0-2");
                 }
             }
             set
@@ -3047,7 +3056,7 @@ namespace OpenMetaverse
                         M33 = value.Z;
                         break;
                     default:
-                        throw new IndexOutOfRangeException("LLMatrix3 row index must be from 0-2");
+                        throw new IndexOutOfRangeException("Matrix3 row index must be from 0-2");
                 }
             }
         }
@@ -3068,7 +3077,7 @@ namespace OpenMetaverse
                             case 2:
                                 return M13;
                             default:
-                                throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                                throw new IndexOutOfRangeException("Matrix3 row and column values must be from 0-2");
                         }
                     case 1:
                         switch (column)
@@ -3080,7 +3089,7 @@ namespace OpenMetaverse
                             case 2:
                                 return M23;
                             default:
-                                throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                                throw new IndexOutOfRangeException("Matrix3 row and column values must be from 0-2");
                         }
                     case 2:
                         switch (column)
@@ -3092,16 +3101,11 @@ namespace OpenMetaverse
                             case 2:
                                 return M33;
                             default:
-                                throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                                throw new IndexOutOfRangeException("Matrix3 row and column values must be from 0-2");
                         }
                     default:
-                        throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                        throw new IndexOutOfRangeException("Matrix3 row and column values must be from 0-2");
                 }
-            }
-            set
-            {
-                //FIXME:
-                throw new NotImplementedException();
             }
         }
 
@@ -3135,6 +3139,20 @@ namespace OpenMetaverse
             get
             {
                 return M11 + M22 + M33 + M44;
+            }
+        }
+
+        public float Determinant
+        {
+            get
+            {
+                return
+                    M14 * M23 * M32 * M41 - M13 * M24 * M32 * M41 - M14 * M22 * M33 * M41 + M12 * M24 * M33 * M41 +
+                    M13 * M22 * M34 * M41 - M12 * M23 * M34 * M41 - M14 * M23 * M31 * M42 + M13 * M24 * M31 * M42 +
+                    M14 * M21 * M33 * M42 - M11 * M24 * M33 * M42 - M13 * M21 * M34 * M42 + M11 * M23 * M34 * M42 +
+                    M14 * M22 * M31 * M43 - M12 * M24 * M31 * M43 - M14 * M21 * M32 * M43 + M11 * M24 * M32 * M43 +
+                    M12 * M21 * M34 * M43 - M11 * M22 * M34 * M43 - M13 * M22 * M31 * M44 + M12 * M23 * M31 * M44 +
+                    M13 * M21 * M32 * M44 - M11 * M23 * M32 * M44 - M12 * M21 * M33 * M44 + M11 * M22 * M33 * M44;
             }
         }
 
@@ -3299,6 +3317,406 @@ namespace OpenMetaverse
             M44 = 1f;
         }
 
+        /// <summary>
+        /// Convert this matrix to euler rotations
+        /// </summary>
+        /// <param name="roll">X euler angle</param>
+        /// <param name="pitch">Y euler angle</param>
+        /// <param name="yaw">Z euler angle</param>
+        public void GetEulerAngles(out float roll, out float pitch, out float yaw)
+        {
+            // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
+
+            double angleX, angleY, angleZ;
+            double cx, cy, cz; // cosines
+            double sx, sz; // sines
+
+            angleY = Math.Asin(Helpers.Clamp(M13, -1f, 1f));
+            cy = Math.Cos(angleY);
+
+            if (Math.Abs(cy) > 0.005f)
+            {
+                // No gimbal lock
+                cx = M33 / cy;
+                sx = (-M23) / cy;
+
+                angleX = (float)Math.Atan2(sx, cx);
+
+                cz = M11 / cy;
+                sz = (-M12) / cy;
+
+                angleZ = (float)Math.Atan2(sz, cz);
+            }
+            else
+            {
+                // Gimbal lock
+                angleX = 0;
+
+                cz = M22;
+                sz = M21;
+
+                angleZ = Math.Atan2(sz, cz);
+            }
+
+            // Return only positive angles in [0,360]
+            if (angleX < 0) angleX += 360d;
+            if (angleY < 0) angleY += 360d;
+            if (angleZ < 0) angleZ += 360d;
+
+            roll = (float)angleX;
+            pitch = (float)angleY;
+            yaw = (float)angleZ;
+        }
+
+        /// <summary>
+        /// Conver this matrix to a quaternion rotation
+        /// </summary>
+        /// <returns>A quaternion representation of this rotation matrix</returns>
+        public Quaternion ToQuaternion()
+        {
+            // From http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+
+            Quaternion quat = new Quaternion();
+            float trace = Trace + 1f;
+
+            if (trace > Single.Epsilon)
+            {
+                float s = 0.5f / (float)Math.Sqrt(trace);
+
+                quat.X = (M32 - M23) * s;
+                quat.Y = (M13 - M31) * s;
+                quat.Z = (M21 - M12) * s;
+                quat.W = 0.25f / s;
+            }
+            else
+            {
+                if (M11 > M22 && M11 > M33)
+                {
+                    float s = 2.0f * (float)Math.Sqrt(1.0f + M11 - M22 - M33);
+
+                    quat.X = 0.25f * s;
+                    quat.Y = (M12 + M21) / s;
+                    quat.Z = (M13 + M31) / s;
+                    quat.W = (M23 - M32) / s;
+                }
+                else if (M22 > M33)
+                {
+                    float s = 2.0f * (float)Math.Sqrt(1.0f + M22 - M11 - M33);
+
+                    quat.X = (M12 + M21) / s;
+                    quat.Y = 0.25f * s;
+                    quat.Z = (M23 + M32) / s;
+                    quat.W = (M13 - M31) / s;
+                }
+                else
+                {
+                    float s = 2.0f * (float)Math.Sqrt(1.0f + M33 - M11 - M22);
+
+                    quat.X = (M13 + M31) / s;
+                    quat.Y = (M23 + M32) / s;
+                    quat.Z = 0.25f * s;
+                    quat.W = (M12 - M21) / s;
+                }
+            }
+
+            return quat;
+        }
+
         #endregion Public Methods
+
+        #region Static Methods
+
+        public static Matrix4 Add(Matrix4 left, Matrix4 right)
+        {
+            return new Matrix4(
+                left.M11 + right.M11, left.M12 + right.M12, left.M13 + right.M13, left.M14 + right.M14,
+                left.M21 + right.M21, left.M22 + right.M22, left.M23 + right.M23, left.M24 + right.M24,
+                left.M31 + right.M31, left.M32 + right.M32, left.M33 + right.M33, left.M34 + right.M34,
+                left.M41 + right.M41, left.M42 + right.M42, left.M43 + right.M43, left.M44 + right.M44
+            );
+        }
+
+        public static Matrix4 Add(Matrix4 matrix, float scalar)
+        {
+            return new Matrix4(
+                matrix.M11 + scalar, matrix.M12 + scalar, matrix.M13 + scalar, matrix.M14 + scalar,
+                matrix.M21 + scalar, matrix.M22 + scalar, matrix.M23 + scalar, matrix.M24 + scalar,
+                matrix.M31 + scalar, matrix.M32 + scalar, matrix.M33 + scalar, matrix.M34 + scalar,
+                matrix.M41 + scalar, matrix.M42 + scalar, matrix.M43 + scalar, matrix.M44 + scalar
+            );
+        }
+
+        public static Matrix4 Subtract(Matrix4 left, Matrix4 right)
+        {
+            return new Matrix4(
+                left.M11 - right.M11, left.M12 - right.M12, left.M13 - right.M13, left.M14 - right.M14,
+                left.M21 - right.M21, left.M22 - right.M22, left.M23 - right.M23, left.M24 - right.M24,
+                left.M31 - right.M31, left.M32 - right.M32, left.M33 - right.M33, left.M34 - right.M34,
+                left.M41 - right.M41, left.M42 - right.M42, left.M43 - right.M43, left.M44 - right.M44
+            );
+        }
+
+        public static Matrix4 Subtract(Matrix4 matrix, float scalar)
+        {
+            return new Matrix4(
+                matrix.M11 - scalar, matrix.M12 - scalar, matrix.M13 - scalar, matrix.M14 - scalar,
+                matrix.M21 - scalar, matrix.M22 - scalar, matrix.M23 - scalar, matrix.M24 - scalar,
+                matrix.M31 - scalar, matrix.M32 - scalar, matrix.M33 - scalar, matrix.M34 - scalar,
+                matrix.M41 - scalar, matrix.M42 - scalar, matrix.M43 - scalar, matrix.M44 - scalar
+            );
+        }
+
+        public static Matrix4 Multiply(Matrix4 left, Matrix4 right)
+        {
+            return new Matrix4(
+                left.M11*right.M11 + left.M12*right.M21 + left.M13*right.M31 + left.M14*right.M41,
+                left.M11*right.M12 + left.M12*right.M22 + left.M13*right.M32 + left.M14*right.M42,
+                left.M11*right.M13 + left.M12*right.M23 + left.M13*right.M33 + left.M14*right.M43,
+                left.M11*right.M14 + left.M12*right.M24 + left.M13*right.M34 + left.M14*right.M44,
+
+                left.M21*right.M11 + left.M22*right.M21 + left.M23*right.M31 + left.M24*right.M41,
+                left.M21*right.M12 + left.M22*right.M22 + left.M23*right.M32 + left.M24*right.M42,
+                left.M21*right.M13 + left.M22*right.M23 + left.M23*right.M33 + left.M24*right.M43,
+                left.M21*right.M14 + left.M22*right.M24 + left.M23*right.M34 + left.M24*right.M44,
+
+                left.M31*right.M11 + left.M32*right.M21 + left.M33*right.M31 + left.M34*right.M41,
+                left.M31*right.M12 + left.M32*right.M22 + left.M33*right.M32 + left.M34*right.M42,
+                left.M31*right.M13 + left.M32*right.M23 + left.M33*right.M33 + left.M34*right.M43,
+                left.M31*right.M14 + left.M32*right.M24 + left.M33*right.M34 + left.M34*right.M44,
+
+                left.M41*right.M11 + left.M42*right.M21 + left.M43*right.M31 + left.M44*right.M41,
+                left.M41*right.M12 + left.M42*right.M22 + left.M43*right.M32 + left.M44*right.M42,
+                left.M41*right.M13 + left.M42*right.M23 + left.M43*right.M33 + left.M44*right.M43,
+                left.M41*right.M14 + left.M42*right.M24 + left.M43*right.M34 + left.M44*right.M44
+            );
+        }
+
+        /// <summary>
+        /// Transposes a matrix
+        /// </summary>
+        /// <param name="m">Matrix to transpose</param>
+        public static void Transpose(Matrix4 m)
+        {
+            Helpers.Swap<float>(ref m.M12, ref m.M21);
+            Helpers.Swap<float>(ref m.M13, ref m.M31);
+            Helpers.Swap<float>(ref m.M14, ref m.M41);
+            Helpers.Swap<float>(ref m.M23, ref m.M32);
+            Helpers.Swap<float>(ref m.M24, ref m.M42);
+            Helpers.Swap<float>(ref m.M34, ref m.M43);
+        }
+
+        #endregion Static Methods
+
+        #region Overrides
+
+        public override int GetHashCode()
+        {
+            return
+                M11.GetHashCode() ^ M12.GetHashCode() ^ M13.GetHashCode() ^ M14.GetHashCode() ^
+                M21.GetHashCode() ^ M22.GetHashCode() ^ M23.GetHashCode() ^ M24.GetHashCode() ^
+                M31.GetHashCode() ^ M32.GetHashCode() ^ M33.GetHashCode() ^ M34.GetHashCode() ^
+                M41.GetHashCode() ^ M42.GetHashCode() ^ M43.GetHashCode() ^ M44.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Matrix4)
+            {
+                Matrix4 m = (Matrix4)obj;
+                return
+                    (M11 == m.M11) && (M12 == m.M12) && (M13 == m.M13) && (M14 == m.M14) &&
+                    (M21 == m.M21) && (M22 == m.M22) && (M23 == m.M23) && (M24 == m.M24) &&
+                    (M31 == m.M31) && (M32 == m.M32) && (M33 == m.M33) && (M34 == m.M34) &&
+                    (M41 == m.M41) && (M42 == m.M42) && (M43 == m.M43) && (M44 == m.M44);
+            }
+            return false;
+        }
+
+        public bool Equals(Matrix4 m)
+        {
+            return
+                (M11 == m.M11) && (M12 == m.M12) && (M13 == m.M13) && (M14 == m.M14) &&
+                (M21 == m.M21) && (M22 == m.M22) && (M23 == m.M23) && (M24 == m.M24) &&
+                (M31 == m.M31) && (M32 == m.M32) && (M33 == m.M33) && (M34 == m.M34) &&
+                (M41 == m.M41) && (M42 == m.M42) && (M43 == m.M43) && (M44 == m.M44);
+        }
+
+        public override string ToString()
+        {
+            return string.Format(
+                "|{0}, {1}, {2}, {3}|\n|{4}, {5}, {6}, {7}|\n|{8}, {9}, {10}, {11}|\n|{12}, {13}, {14}, {15}|",
+                M11, M12, M13, M14, M21, M22, M23, M24, M31, M32, M33, M34, M41, M42, M43, M44);
+        }
+
+        #endregion Overrides
+
+        #region Operators
+
+        public static bool operator ==(Matrix4 left, Matrix4 right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Matrix4 left, Matrix4 right)
+        {
+            return !left.Equals(right);
+        }
+
+        public static Matrix4 operator +(Matrix4 left, Matrix4 right)
+        {
+            return Matrix4.Add(left, right);
+        }
+
+        public static Matrix4 operator +(Matrix4 matrix, float scalar)
+        {
+            return Matrix4.Add(matrix, scalar);
+        }
+
+        public static Matrix4 operator -(Matrix4 left, Matrix4 right)
+        {
+            return Matrix4.Subtract(left, right); ;
+        }
+
+        public static Matrix4 operator -(Matrix4 matrix, float scalar)
+        {
+            return Matrix4.Subtract(matrix, scalar);
+        }
+
+        public static Matrix4 operator *(Matrix4 left, Matrix4 right)
+        {
+            return Matrix4.Multiply(left, right); ;
+        }
+
+        public Vector4 this[int row]
+        {
+            get
+            {
+                switch (row)
+                {
+                    case 0:
+                        return new Vector4(M11, M12, M13, M14);
+                    case 1:
+                        return new Vector4(M21, M22, M23, M24);
+                    case 2:
+                        return new Vector4(M31, M32, M33, M34);
+                    case 3:
+                        return new Vector4(M41, M42, M43, M44);
+                    default:
+                        throw new IndexOutOfRangeException("Matrix4 row index must be from 0-3");
+                }
+            }
+            set
+            {
+                switch (row)
+                {
+                    case 0:
+                        M11 = value.X;
+                        M12 = value.Y;
+                        M13 = value.Z;
+                        M14 = value.S;
+                        break;
+                    case 1:
+                        M21 = value.X;
+                        M22 = value.Y;
+                        M23 = value.Z;
+                        M24 = value.S;
+                        break;
+                    case 2:
+                        M31 = value.X;
+                        M32 = value.Y;
+                        M33 = value.Z;
+                        M34 = value.S;
+                        break;
+                    case 3:
+                        M41 = value.X;
+                        M42 = value.Y;
+                        M43 = value.Z;
+                        M44 = value.S;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException("Matrix4 row index must be from 0-3");
+                }
+            }
+        }
+
+        public float this[int row, int column]
+        {
+            get
+            {
+                switch (row)
+                {
+                    case 0:
+                        switch (column)
+                        {
+                            case 0:
+                                return M11;
+                            case 1:
+                                return M12;
+                            case 2:
+                                return M13;
+                            case 3:
+                                return M14;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    case 1:
+                        switch (column)
+                        {
+                            case 0:
+                                return M21;
+                            case 1:
+                                return M22;
+                            case 2:
+                                return M23;
+                            case 3:
+                                return M24;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    case 2:
+                        switch (column)
+                        {
+                            case 0:
+                                return M31;
+                            case 1:
+                                return M32;
+                            case 2:
+                                return M33;
+                            case 3:
+                                return M34;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    case 3:
+                        switch (column)
+                        {
+                            case 0:
+                                return M41;
+                            case 1:
+                                return M42;
+                            case 2:
+                                return M43;
+                            case 3:
+                                return M44;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    default:
+                        throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                }
+            }
+        }
+
+        #endregion Operators
+
+        /// <summary>A 4x4 matrix set to all zeroes</summary>
+        public static readonly Matrix4 Zero = new Matrix4();
+        /// <summary>A 4x4 identity matrix</summary>
+        public static readonly Matrix4 Identity = new Matrix4(
+            1f, 0f, 0f, 0f,
+            0f, 1f, 0f, 0f,
+            0f, 0f, 1f, 0f,
+            0f, 0f, 0f, 1f
+        );
     }
 }
