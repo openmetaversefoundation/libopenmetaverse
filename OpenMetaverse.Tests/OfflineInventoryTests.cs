@@ -30,40 +30,41 @@ namespace OpenMetaverse.Tests
     }
 
     [TestFixture]
-    public class OfflineInventoryTests
+    public class LocalInventoryTests
     {
-        public MockNetworkManager Network;
+        public NetworkManager Network;
         public InventorySkeleton Skeleton;
         public InventoryManager Manager;
         public ExposedInventory Inventory;
 
-        public UUID RootUUID = UUID.Random();
-        public UUID OwnerUUID = UUID.Random();
+        public UUID RootUUID;
+        public UUID OwnerUUID;
+        public GridClient Client;
+
+        public LocalInventoryTests()
+        {
+            Client = new GridClient();
+            Console.WriteLine("Logging in...");
+            //string startLoc = NetworkManager.StartLocation("Hooper", 179, 18, 32);
+            Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", "last",
+                "contact@libsecondlife.org");
+        }
+
+        ~LocalInventoryTests()
+        {
+            if (Client.Network.Connected)
+                Client.Network.Logout();
+        }
 
         [SetUp]
         public void Init()
         {
-            Skeleton = new InventorySkeleton(RootUUID, OwnerUUID);
-            FolderData[] folders = new FolderData[5];
-            folders[0] = new FolderData(RootUUID);
-            folders[0].OwnerID = OwnerUUID;
-            for (int i = 1; i < folders.Length; ++i)
-            {
-                folders[i] = new FolderData(UUID.Random());
-                folders[i].ParentUUID = RootUUID;
-                folders[i].OwnerID = OwnerUUID;
-            }
-            Skeleton.Folders = folders;
-
-            Network = new MockNetworkManager();
-            Network.OnPacketSent += delegate(Packet packet, Simulator sim)
-            {
-                // Print out all the packets that are sent.
-                Console.WriteLine(packet.ToString());
-            };
-            //Manager = new InventoryManager(Network);
+            Network = Client.Network;
+            Manager = Client.Inventory;
+            Skeleton = Manager.InventorySkeleton;
             Inventory = new ExposedInventory(Manager, Skeleton);
-
+            OwnerUUID = Client.Self.AgentID;
+            RootUUID = Skeleton.RootUUID;
             Assert.IsNotNull(Inventory.RootFolder, "Root folder is not managed.");
             Assert.AreEqual(Skeleton.Folders.Length, Inventory.GetItems().Count, "Inventory skeleton partially managed.");
             Assert.AreEqual(Skeleton.RootUUID, Inventory.RootFolder.UUID, "Skeleton root does not match inventory root.");
