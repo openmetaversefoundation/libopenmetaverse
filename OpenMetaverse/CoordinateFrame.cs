@@ -130,7 +130,7 @@ namespace OpenMetaverse
 
         public CoordinateFrame(Vector3 origin, Quaternion rotation)
         {
-            Matrix3 m = new Matrix3(rotation);
+            Matrix3 m = rotation.ToMatrix3();
 
             this.origin = origin;
             xAxis = m[0];
@@ -160,7 +160,7 @@ namespace OpenMetaverse
 
         public void Rotate(Quaternion q)
         {
-            Matrix3 m = new Matrix3(q);
+            Matrix3 m = q.ToMatrix3();
             Rotate(m);
         }
 
@@ -178,7 +178,7 @@ namespace OpenMetaverse
         public void Roll(float angle)
         {
             Quaternion q = new Quaternion(angle, xAxis);
-            Matrix3 m = new Matrix3(q);
+            Matrix3 m = q.ToMatrix3();
             Rotate(m);
 
             if (!yAxis.IsFinite() || !zAxis.IsFinite())
@@ -188,7 +188,7 @@ namespace OpenMetaverse
         public void Pitch(float angle)
         {
             Quaternion q = new Quaternion(angle, yAxis);
-            Matrix3 m = new Matrix3(q);
+            Matrix3 m = q.ToMatrix3();
             Rotate(m);
 
             if (!xAxis.IsFinite() || !zAxis.IsFinite())
@@ -198,7 +198,7 @@ namespace OpenMetaverse
         public void Yaw(float angle)
         {
             Quaternion q = new Quaternion(angle, zAxis);
-            Matrix3 m = new Matrix3(q);
+            Matrix3 m = q.ToMatrix3();
             Rotate(m);
 
             if (!xAxis.IsFinite() || !yAxis.IsFinite())

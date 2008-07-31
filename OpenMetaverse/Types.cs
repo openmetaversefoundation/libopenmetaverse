@@ -2340,7 +2340,7 @@ namespace OpenMetaverse
         {
             // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
 
-            Matrix3 m;
+            Matrix3 m = new Matrix3();
             float xx, xy, xz, xw, yy, yz, yw, zz, zw;
 
             xx = X * X;
@@ -2378,7 +2378,7 @@ namespace OpenMetaverse
         {
             // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
 
-            Matrix4 m;
+            Matrix4 m = new Matrix4();
             float xx, xy, xz, xw, yy, yz, yw, zz, zw;
 
             xx = X * X;
@@ -2655,7 +2655,7 @@ namespace OpenMetaverse
     /// A 3x3 row-major matrix
     /// </summary>
     [Serializable]
-    public struct Matrix3
+    public sealed class Matrix3
     {
         public float M11, M12, M13;
         public float M21, M22, M23;
@@ -2684,6 +2684,10 @@ namespace OpenMetaverse
 
         #region Constructors
 
+        public Matrix3()
+        {
+        }
+
         public Matrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33)
         {
             M11 = m11;
@@ -2697,11 +2701,6 @@ namespace OpenMetaverse
             M31 = m31;
             M32 = m32;
             M33 = m33;
-        }
-
-        public Matrix3(Quaternion q)
-        {
-            this = q.ToMatrix3();
         }
 
         public Matrix3(float roll, float pitch, float yaw)
@@ -3125,7 +3124,7 @@ namespace OpenMetaverse
     /// A 4x4 row-major matrix
     /// </summary>
     [Serializable]
-    public struct Matrix4
+    public sealed class Matrix4
     {
         public float M11, M12, M13, M14;
         public float M21, M22, M23, M24;
@@ -3160,6 +3159,10 @@ namespace OpenMetaverse
 
         #region Constructors
 
+        public Matrix4()
+        {
+        }
+
         public Matrix4(
             float m11, float m12, float m13, float m14,
             float m21, float m22, float m23, float m24,
@@ -3185,11 +3188,6 @@ namespace OpenMetaverse
             M42 = m42;
             M43 = m43;
             M44 = m44;
-        }
-
-        public Matrix4(Quaternion q)
-        {
-            this = q.ToMatrix4();
         }
 
         public Matrix4(float roll, float pitch, float yaw)
