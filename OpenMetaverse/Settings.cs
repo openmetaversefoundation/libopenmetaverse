@@ -39,7 +39,7 @@ namespace OpenMetaverse
     /// happen at login or dynamically</remarks>
     public class Settings
     {
-       #region Login/Networking Settings
+        #region Login/Networking Settings
 
         /// <summary>Main grid login server</summary>
         public const string AGNI_LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
@@ -56,6 +56,18 @@ namespace OpenMetaverse
         /// <summary>IP Address the client will bind to</summary>
         public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
 
+        #endregion
+        #region Inventory
+        /// <summary>
+        /// InventoryManager requests inventory information on login,
+        /// GridClient initializes an Inventory store for main inventory.
+        /// </summary>
+        public const bool ENABLE_INVENTORY_STORE = true;
+        /// <summary>
+        /// InventoryManager requests library information on login,
+        /// GridClient initializes an Inventory store for the library.
+        /// </summary>
+        public const bool ENABLE_LIBRARY_STORE = true;
         #endregion
         #region Timeouts and Intervals
 
@@ -133,7 +145,7 @@ namespace OpenMetaverse
                     throw new ArgumentOutOfRangeException("Too many ACKs to fit in a single packet");
                 else if (value < 1)
                     throw new ArgumentOutOfRangeException("Cannot send a non-positive number of ACKs");
-                
+
                 max_pending_acks = value;
             }
         }
@@ -194,8 +206,8 @@ namespace OpenMetaverse
         /// servers for simulators</summary>
         public bool ENABLE_CAPS = true;
 
-	    /// <summary>Whether to decode sim stats</summary>
-	    public bool ENABLE_SIMSTATS = true;
+        /// <summary>Whether to decode sim stats</summary>
+        public bool ENABLE_SIMSTATS = true;
 
         /// <summary>The capabilities servers are currently designed to
         /// periodically return a 502 error which signals for the client to

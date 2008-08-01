@@ -680,6 +680,11 @@ namespace OpenMetaverse
         #region Delegates
 
         /// <summary>
+        /// Delegate for <seealso cref="OnSkeletonsReceived"/>
+        /// </summary>
+        public delegate void SkeletonsReceived(InventoryManager manager);
+
+        /// <summary>
         /// Callback for inventory item creation finishing
         /// </summary>
         /// <param name="success">Whether the request to create an inventory
@@ -784,6 +789,11 @@ namespace OpenMetaverse
         #endregion Delegates
 
         #region Events
+        /// <summary>
+        /// Raised when the inventory and library skeletons are received.
+        /// <seealso cref="InventorySkeleton"/> and <seealso cref="LibrarySkeleton"/>
+        /// </summary>
+        public event SkeletonsReceived OnSkeletonsReceived;
         public event AssetUpdate OnAssetUpdate;
 
         public event ItemCreatedCallback OnItemCreated;
@@ -965,11 +975,22 @@ namespace OpenMetaverse
             _Agents.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
 
             // Register extra parameters with login and parse the inventory data that comes back
+            List<string> options = new List<string>(5);
+            if (Settings.ENABLE_INVENTORY_STORE)
+            {
+                options.Add("inventory_root");
+                options.Add("inventory-skeleton");
+            }
+            if (Settings.ENABLE_LIBRARY_STORE)
+            {
+                options.Add("inventory-lib-root");
+                options.Add("inventory-lib-owner");
+                options.Add("inventory-skel-lib");
+            }
+            // Register extra parameters with login and parse the inventory data that comes back
             _Network.RegisterLoginResponseCallback(
                 new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
-                new string[] {
-                    "inventory-root", "inventory-skeleton", "inventory-lib-root",
-                    "inventory-lib-owner", "inventory-skel-lib"});
+                options.ToArray());
         }
 
         #region Fetch
@@ -3352,10 +3373,22 @@ namespace OpenMetaverse
         {
             if (loginSuccess)
             {
-                InventorySkeleton = new InventorySkeleton(replyData.InventoryRoot, replyData.AgentID);
-                InventorySkeleton.Folders = replyData.InventoryFolders;
-                LibrarySkeleton = new InventorySkeleton(replyData.LibraryRoot, replyData.LibraryOwner);
-                LibrarySkeleton.Folders = replyData.LibraryFolders;
+                if (Settings.ENABLE_INVENTORY_STORE)
+                {
+                    InventorySkeleton = new InventorySkeleton(replyData.InventoryRoot, replyData.AgentID);
+                    InventorySkeleton.Folders = replyData.InventoryFolders;
+                }
+                if (Settings.ENABLE_LIBRARY_STORE)
+                {
+                    LibrarySkeleton = new InventorySkeleton(replyData.LibraryRoot, replyData.LibraryOwner);
+                    LibrarySkeleton.Folders = replyData.LibraryFolders;
+                }
+                if (OnSkeletonsReceived != null)
+                {
+                    try { OnSkeletonsReceived(this); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+
+                }
             }
         }
 

@@ -99,6 +99,8 @@ namespace OpenMetaverse
         /// <summary>Throttling total bandwidth usage, or allocating bandwidth
         /// for specific data stream types</summary>
         public AgentThrottle Throttle;
+        public Inventory InventoryStore;
+        public Inventory LibraryStore;
 
         /// <summary>
         /// Default constructor
@@ -122,6 +124,22 @@ namespace OpenMetaverse
             Terrain = new TerrainManager(this);
             Sound = new SoundManager(this);
             Throttle = new AgentThrottle(this);
+
+            if (Settings.ENABLE_INVENTORY_STORE || Settings.ENABLE_LIBRARY_STORE)
+            {
+                Inventory.OnSkeletonsReceived +=
+                    delegate(InventoryManager manager)
+                    {
+                        if (Settings.ENABLE_INVENTORY_STORE)
+                        {
+                            InventoryStore = new Inventory(Inventory, Inventory.InventorySkeleton);
+                        }
+                        if (Settings.ENABLE_LIBRARY_STORE)
+                        {
+                            LibraryStore = new Inventory(Inventory, Inventory.LibrarySkeleton);
+                        }
+                    };
+            }
         }
 
         /// <summary>
