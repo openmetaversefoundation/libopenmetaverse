@@ -86,7 +86,7 @@ namespace OpenMetaverse.Rendering
             Vector3 vec)
         {
             Vector3 binormal;
-            float d = Vector3.Dot(vertex.Normal, Vector3.Fwd);
+            float d = Vector3.Dot(vertex.Normal, Vector3.UnitX);
             if (d >= 0.5f || d <= -0.5f)
             {
                 binormal = new Vector3(0f, 1f, 0f);

@@ -37,7 +37,7 @@ namespace OpenMetaverse.TestClient
             List<Primitive> prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
                 delegate(Primitive prim) {
                     Vector3 pos = prim.Position;
-                    return ((prim.ParentID == 0) && (pos != Vector3.Zero) && (Vector3.Dist(pos, location) < radius));
+                    return ((prim.ParentID == 0) && (pos != Vector3.Zero) && (Vector3.Distance(pos, location) < radius));
                 }
             );
 

@@ -285,7 +285,7 @@ namespace OpenMetaverse
             /// 
             /// </summary>
             /// <returns></returns>
-            public LLSD ToLLSD()
+            public LLSD GetLLSD()
             {
                 LLSDMap map = new LLSDMap();
 
@@ -294,7 +294,7 @@ namespace OpenMetaverse
                 map["air_friction"] = LLSD.FromReal(Drag);
                 map["wind_sensitivity"] = LLSD.FromReal(Wind);
                 map["tension"] = LLSD.FromReal(Tension);
-                map["user_force"] = Force.ToLLSD();
+                map["user_force"] = Force.GetLLSD();
 
                 return map;
             }
@@ -382,11 +382,11 @@ namespace OpenMetaverse
                 return data;
             }
 
-            public LLSD ToLLSD()
+            public LLSD GetLLSD()
             {
                 LLSDMap map = new LLSDMap();
 
-                map["color"] = Color.ToLLSD();
+                map["color"] = Color.GetLLSD();
                 map["intensity"] = LLSD.FromReal(Intensity);
                 map["radius"] = LLSD.FromReal(Radius);
                 map["cutoff"] = LLSD.FromReal(Cutoff);
@@ -456,7 +456,7 @@ namespace OpenMetaverse
                 return data;
             }
 
-            public LLSD ToLLSD()
+            public LLSD GetLLSD()
             {
                 LLSDMap map = new LLSDMap();
 
@@ -537,7 +537,7 @@ namespace OpenMetaverse
                 Data.PCode, Data.Material);
         }
 
-        public LLSD ToLLSD()
+        public LLSD GetLLSD()
         {
             LLSDMap path = new LLSDMap(14);
             path["begin"] = LLSD.FromReal(Data.PathBegin);
@@ -571,19 +571,19 @@ namespace OpenMetaverse
             prim["description"] = LLSD.FromString(Properties.Description);
             prim["phantom"] = LLSD.FromBoolean(((Flags & ObjectFlags.Phantom) != 0));
             prim["physical"] = LLSD.FromBoolean(((Flags & ObjectFlags.Physics) != 0));
-            prim["position"] = Position.ToLLSD();
-            prim["rotation"] = Rotation.ToLLSD();
-            prim["scale"] = Scale.ToLLSD();
+            prim["position"] = Position.GetLLSD();
+            prim["rotation"] = Rotation.GetLLSD();
+            prim["scale"] = Scale.GetLLSD();
             prim["material"] = LLSD.FromInteger((int)Data.Material);
             prim["shadows"] = LLSD.FromBoolean(((Flags & ObjectFlags.CastShadows) != 0));
-            prim["textures"] = Textures.ToLLSD();
+            prim["textures"] = Textures.GetLLSD();
             prim["volume"] = volume;
             if (ParentID != 0)
                 prim["parentid"] = LLSD.FromInteger(ParentID);
 
-            prim["light"] = Light.ToLLSD();
-            prim["flex"] = Flexible.ToLLSD();
-            prim["sculpt"] = Sculpt.ToLLSD();
+            prim["light"] = Light.GetLLSD();
+            prim["flex"] = Flexible.GetLLSD();
+            prim["sculpt"] = Sculpt.GetLLSD();
 
             return prim;
         }

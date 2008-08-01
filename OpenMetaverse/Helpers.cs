@@ -133,7 +133,7 @@ namespace OpenMetaverse
         /// <returns></returns>
         public static short TEOffsetShort(float offset)
         {
-            offset = Clamp(offset, -1.0f, 1.0f);
+            offset = MathHelper.Clamp(offset, -1.0f, 1.0f);
             offset *= 32767.0f;
             return (short)Math.Round(offset);
         }
@@ -408,7 +408,7 @@ namespace OpenMetaverse
         /// <returns>A single byte representing the original float value</returns>
         public static byte FloatToByte(float val, float lower, float upper)
         {
-            val = Clamp(val, lower, upper);
+            val = MathHelper.Clamp(val, lower, upper);
             // Normalize the value
             val -= lower;
             val /= (upper - lower);
@@ -501,18 +501,6 @@ namespace OpenMetaverse
         {
             byte[] bytes = address.GetAddressBytes();
             return (uint)((bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]);
-        }
-
-        /// <summary>
-        /// Clamp a given value between a range
-        /// </summary>
-        /// <param name="val">Value to clamp</param>
-        /// <param name="lower">Minimum allowable value</param>
-        /// <param name="upper">Maximum allowable value</param>
-        /// <returns>A value inclusively between lower and upper</returns>
-        public static float Clamp(float val, float lower, float upper)
-        {
-            return Math.Min(Math.Max(val, lower), upper);
         }
 
         /// <summary>
@@ -787,51 +775,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Test if a single precision float is a finite number
-        /// </summary>
-        public static bool IsFinite(float value)
-        {
-            return !(Single.IsNaN(value) || Single.IsInfinity(value));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        public static int Round(float val)
-        {
-            return (int)Math.Floor(val + 0.5f);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <param name="u"></param>
-        /// <returns></returns>
-        public static float Lerp(float a, float b, float u)
-        {
-            return a + ((b - a) * u);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <param name="u"></param>
-        /// <returns></returns>
-        public static Vector3 Lerp(Vector3 a, Vector3 b, float u)
-        {
-            return new Vector3(
-                a.X + (b.X - a.X) * u,
-                a.Y + (b.Y - a.Y) * u,
-                a.Z + (b.Z - a.Z) * u);
-        }
-
-        /// <summary>
         /// Decode a zerocoded byte array, used to decompress packets marked
         /// with the zerocoded flag
         /// </summary>
@@ -883,7 +826,7 @@ namespace OpenMetaverse
 
                 return (int)zerolen;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Logger.Log(String.Format("Zerodecoding error: i={0}, srclen={1}, bodylen={2}, zerolen={3}\n{4}",
                     i, srclen, bodylen, zerolen, FieldToHexString(src, srclen, null)), LogLevel.Error);
@@ -1165,7 +1108,7 @@ namespace OpenMetaverse
             StructuredData.LLSDMap map = new OpenMetaverse.StructuredData.LLSDMap(prims.Count);
 
             for (int i = 0; i < prims.Count; i++)
-                map.Add(prims[i].LocalID.ToString(), prims[i].ToLLSD());
+                map.Add(prims[i].LocalID.ToString(), prims[i].GetLLSD());
 
             return map;
         }

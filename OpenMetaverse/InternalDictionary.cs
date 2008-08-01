@@ -162,7 +162,7 @@ namespace OpenMetaverse
         /// List&lt;Primitive&gt; prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
         ///         delegate(Primitive prim) {
         ///             Vector3 pos = prim.Position;
-        ///             return ((prim.ParentID == 0) &amp;&amp; (pos != Vector3.Zero) &amp;&amp; (Vector3.Dist(pos, location) &lt; radius));
+        ///             return ((prim.ParentID == 0) &amp;&amp; (pos != Vector3.Zero) &amp;&amp; (Vector3.Distance(pos, location) &lt; radius));
         ///         }
         ///    ); 
         ///</code>

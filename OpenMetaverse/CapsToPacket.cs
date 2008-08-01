@@ -38,10 +38,10 @@ namespace OpenMetaverse.Packets
 
         public static string ToXmlString(Packet packet)
         {
-            return LLSDParser.SerializeXmlString(ToLLSD(packet));
+            return LLSDParser.SerializeXmlString(GetLLSD(packet));
         }
 
-        public static LLSD ToLLSD(Packet packet)
+        public static LLSD GetLLSD(Packet packet)
         {
             LLSDMap body = new LLSDMap();
             Type type = packet.GetType();
@@ -80,7 +80,7 @@ namespace OpenMetaverse.Packets
 
         public static byte[] ToBinary(Packet packet)
         {
-            return LLSDParser.SerializeBinary(ToLLSD(packet));
+            return LLSDParser.SerializeBinary(GetLLSD(packet));
         }
 
         public static Packet FromXmlString(string xml)

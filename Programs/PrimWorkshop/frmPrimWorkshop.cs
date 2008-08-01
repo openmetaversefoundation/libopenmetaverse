@@ -146,7 +146,7 @@ namespace PrimWorkshop
                         // Using euler angles because I have no clue what I'm doing
                         float roll, pitch, yaw;
 
-                        Matrix3 rotation = prim.Rotation.ToMatrix3();
+                        Matrix4 rotation = Matrix4.CreateFromQuaternion(prim.Rotation);
                         rotation.GetEulerAngles(out roll, out pitch, out yaw);
 
                         Gl.glRotatef(roll * 57.2957795f, 1f, 0f, 0f);

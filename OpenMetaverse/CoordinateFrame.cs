@@ -117,12 +117,12 @@ namespace OpenMetaverse
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
-        public CoordinateFrame(Vector3 origin, Matrix3 rotation)
+        public CoordinateFrame(Vector3 origin, Matrix4 rotation)
         {
             this.origin = origin;
-            xAxis = rotation[0];
-            yAxis = rotation[1];
-            zAxis = rotation[2];
+            xAxis = rotation.AtAxis;
+            yAxis = rotation.LeftAxis;
+            zAxis = rotation.UpAxis;
 
             if (!IsFinite())
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
@@ -130,12 +130,12 @@ namespace OpenMetaverse
 
         public CoordinateFrame(Vector3 origin, Quaternion rotation)
         {
-            Matrix3 m = rotation.ToMatrix3();
+            Matrix4 m = Matrix4.CreateFromQuaternion(rotation);
 
             this.origin = origin;
-            xAxis = m[0];
-            yAxis = m[1];
-            zAxis = m[2];
+            xAxis = m.AtAxis;
+            yAxis = m.LeftAxis;
+            zAxis = m.UpAxis;
 
             if (!IsFinite())
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
@@ -154,20 +154,20 @@ namespace OpenMetaverse
 
         public void Rotate(float angle, Vector3 rotationAxis)
         {
-            Quaternion q = new Quaternion(angle, rotationAxis);
+            Quaternion q = Quaternion.CreateFromAxisAngle(rotationAxis, angle);
             Rotate(q);
         }
 
         public void Rotate(Quaternion q)
         {
-            Matrix3 m = q.ToMatrix3();
+            Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
         }
 
-        public void Rotate(Matrix3 m)
+        public void Rotate(Matrix4 m)
         {
-            xAxis = Vector3.Rot(xAxis, m);
-            yAxis = Vector3.Rot(yAxis, m);
+            xAxis = Vector3.Transform(xAxis, m);
+            yAxis = Vector3.Transform(yAxis, m);
 
             Orthonormalize();
 
@@ -177,8 +177,8 @@ namespace OpenMetaverse
 
         public void Roll(float angle)
         {
-            Quaternion q = new Quaternion(angle, xAxis);
-            Matrix3 m = q.ToMatrix3();
+            Quaternion q = Quaternion.CreateFromAxisAngle(xAxis, angle);
+            Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
 
             if (!yAxis.IsFinite() || !zAxis.IsFinite())
@@ -187,8 +187,8 @@ namespace OpenMetaverse
 
         public void Pitch(float angle)
         {
-            Quaternion q = new Quaternion(angle, yAxis);
-            Matrix3 m = q.ToMatrix3();
+            Quaternion q = Quaternion.CreateFromAxisAngle(yAxis, angle);
+            Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
 
             if (!xAxis.IsFinite() || !zAxis.IsFinite())
@@ -197,8 +197,8 @@ namespace OpenMetaverse
 
         public void Yaw(float angle)
         {
-            Quaternion q = new Quaternion(angle, zAxis);
-            Matrix3 m = q.ToMatrix3();
+            Quaternion q = Quaternion.CreateFromAxisAngle(zAxis, angle);
+            Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
 
             if (!xAxis.IsFinite() || !yAxis.IsFinite())
@@ -223,10 +223,10 @@ namespace OpenMetaverse
             {
                 // Prevent left from being zero
                 at.X += 0.01f;
-                at = Vector3.Norm(at);
+                at.Normalize();
                 left = Vector3.Cross(upDirection, at);
             }
-            left = Vector3.Norm(left);
+            left.Normalize();
 
             xAxis = at;
             yAxis = left;
@@ -256,7 +256,7 @@ namespace OpenMetaverse
         {
             this.origin = origin;
             Vector3 at = new Vector3(target - origin);
-            at = Vector3.Norm(at);
+            at.Normalize();
 
             LookDirection(at, upDirection);
         }
@@ -274,9 +274,9 @@ namespace OpenMetaverse
         protected void Orthonormalize()
         {
             // Make sure the axis are orthagonal and normalized
-            xAxis = Vector3.Norm(xAxis);
+            xAxis.Normalize();
             yAxis -= xAxis * (xAxis * yAxis);
-            yAxis = Vector3.Norm(yAxis);
+            yAxis.Normalize();
             zAxis = Vector3.Cross(xAxis, yAxis);
         }
     }

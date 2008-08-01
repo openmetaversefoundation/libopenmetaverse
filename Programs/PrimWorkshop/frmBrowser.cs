@@ -1725,11 +1725,11 @@ StartRender:
                 // Calculate the distance to move to/away
                 float dist = (float)(e.Delta / 120) * 10.0f;
 
-                if (Vector3.Dist(Camera.Position, Camera.FocalPoint) > dist)
+                if (Vector3.Distance(Camera.Position, Camera.FocalPoint) > dist)
                 {
                     // Move closer or further away from the focal point
                     Vector3 toFocal = Camera.FocalPoint - Camera.Position;
-                    toFocal = Vector3.Norm(toFocal);
+                    toFocal.Normalize();
 
                     toFocal = toFocal * dist;
 

@@ -87,7 +87,7 @@ namespace OpenMetaverse.Rendering
             baseVert.Normal =
                 ((corners[1].Position - corners[0].Position) %
                 (corners[2].Position - corners[1].Position));
-            baseVert.Normal = Vector3.Norm(baseVert.Normal);
+            baseVert.Normal = Vector3.Normalize(baseVert.Normal);
 
             if ((face.Mask & FaceMask.Top) != 0)
             {
@@ -227,12 +227,12 @@ namespace OpenMetaverse.Rendering
                 face.Center, cuv,
                 face.Vertices[0].Position, face.Vertices[0].TexCoord,
                 face.Vertices[1].Position, face.Vertices[1].TexCoord);
-            binormal = Vector3.Norm(binormal);
+            binormal.Normalize();
 
             Vector3 d0 = face.Center - face.Vertices[0].Position;
             Vector3 d1 = face.Center - face.Vertices[1].Position;
             Vector3 normal = ((face.Mask & FaceMask.Top) != 0) ? (d0 % d1) : (d1 % d0);
-            normal = Vector3.Norm(normal);
+            normal.Normalize();
 
             // If not hollow and not open create a center point in the cap
             if ((face.Mask & FaceMask.Hollow) == 0 && (face.Mask & FaceMask.Open) == 0)
@@ -518,18 +518,20 @@ namespace OpenMetaverse.Rendering
             }
 
             // Adjust normals based on wrapping and stitching
-            bool sBottomConverges = (
-                Vector3.MagSquared(
-                    face.Vertices[0].Position -
-                    face.Vertices[face.NumS * (face.NumT - 2)].Position
-                ) < 0.000001f);
-            bool sTopConverges = (
-                Vector3.MagSquared(
-                    face.Vertices[face.NumS - 1].Position -
-                    face.Vertices[face.NumS * (face.NumT - 2) +
-                    face.NumS - 1].Position
-                ) < 0.000001f);
-            Primitive.SculptType sculptType = Primitive.SculptType.None; // TODO: Sculpt support
+            Vector3 test1 =
+                face.Vertices[0].Position -
+                face.Vertices[face.NumS * (face.NumT - 2)].Position;
+
+            Vector3 test2 =
+                face.Vertices[face.NumS - 1].Position -
+                face.Vertices[face.NumS * (face.NumT - 2) +
+                face.NumS - 1].Position;
+
+            bool sBottomConverges = (test1.LengthSquared() < 0.000001f);
+            bool sTopConverges = (test2.LengthSquared() < 0.000001f);
+
+            // TODO: Sculpt support
+            Primitive.SculptType sculptType = Primitive.SculptType.None;
 
             if (sculptType == Primitive.SculptType.None)
             {
@@ -606,8 +608,8 @@ namespace OpenMetaverse.Rendering
             for (i = 0; i < face.Vertices.Count; i++)
             {
                 Vertex vertex = face.Vertices[i];
-                vertex.Normal = Vector3.Norm(vertex.Normal);
-                vertex.Binormal = Vector3.Norm(vertex.Binormal);
+                vertex.Normal.Normalize();
+                vertex.Binormal.Normalize();
                 face.Vertices[i] = vertex;
             }
         }

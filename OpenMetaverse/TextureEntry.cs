@@ -431,11 +431,11 @@ namespace OpenMetaverse
                     hasAttribute = TextureAttributes.None;
             }
 
-            public LLSD ToLLSD(int faceNumber)
+            public LLSD GetLLSD(int faceNumber)
             {
                 LLSDMap tex = new LLSDMap(10);
                 if (faceNumber >= 0) tex["face_number"] = LLSD.FromInteger(faceNumber);
-                tex["colors"] = RGBA.ToLLSD();
+                tex["colors"] = RGBA.GetLLSD();
                 tex["scales"] = LLSD.FromReal(RepeatU);
                 tex["scalet"] = LLSD.FromReal(RepeatV);
                 tex["offsets"] = LLSD.FromReal(OffsetU);
@@ -596,17 +596,17 @@ namespace OpenMetaverse
             /// 
             /// </summary>
             /// <returns></returns>
-            public LLSD ToLLSD()
+            public LLSD GetLLSD()
             {
                 LLSDArray array = new LLSDArray();
 
                 // Always add default texture
-                array.Add(DefaultTexture.ToLLSD(-1));
+                array.Add(DefaultTexture.GetLLSD(-1));
 
                 for (int i = 0; i < MAX_FACES; i++)
                 {
                     if (FaceTextures[i] != null)
-                        array.Add(FaceTextures[i].ToLLSD(i));
+                        array.Add(FaceTextures[i].GetLLSD(i));
                 }
 
                 return array;

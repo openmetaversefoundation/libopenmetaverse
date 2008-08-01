@@ -124,7 +124,7 @@ namespace OpenMetaverse.TestClient
 
                         if (Client.Network.Simulators[i] == Client.Network.CurrentSim)
                         {
-                            distance = Vector3.Dist(targetAv.Position, Client.Self.SimPosition);
+                            distance = Vector3.Distance(targetAv.Position, Client.Self.SimPosition);
                         }
                         else
                         {

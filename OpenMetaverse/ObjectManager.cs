@@ -2690,8 +2690,8 @@ namespace OpenMetaverse
                                 // no acceleration
                                 if (avatar.Acceleration != Vector3.Zero && avatar.Velocity == Vector3.Zero)
                                 {
-                                    avatar.Position += (avatar.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
-                                        avatar.Acceleration) * adjSeconds;
+                                    avatar.Position += (avatar.Velocity + avatar.Acceleration *
+                                        (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;
                                     avatar.Velocity += avatar.Acceleration * adjSeconds;
                                 }
                                 #endregion Linear Motion
@@ -2706,14 +2706,14 @@ namespace OpenMetaverse
                                 {
                                     #region Angular Velocity
                                     Vector3 angVel = prim.AngularVelocity;
-                                    float omega = Vector3.MagSquared(angVel);
+                                    float omega = angVel.LengthSquared();
 
                                     if (omega > 0.00001f)
                                     {
                                         omega = (float)Math.Sqrt(omega);
                                         float angle = omega * adjSeconds;
                                         angVel *= 1.0f / omega;
-                                        Quaternion dQ = new Quaternion(angle, angVel);
+                                        Quaternion dQ = Quaternion.CreateFromAxisAngle(angVel, angle);
 
                                         prim.Rotation *= dQ;
                                     }
@@ -2724,8 +2724,8 @@ namespace OpenMetaverse
                                     // no acceleration
                                     if (prim.Acceleration != Vector3.Zero && prim.Velocity == Vector3.Zero)
                                     {
-                                        prim.Position += (prim.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
-                                            prim.Acceleration) * adjSeconds;
+                                        prim.Position += (prim.Velocity + prim.Acceleration *
+                                            (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;
                                         prim.Velocity += prim.Acceleration * adjSeconds;
                                     }
                                     #endregion Linear Motion

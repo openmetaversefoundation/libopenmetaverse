@@ -504,9 +504,8 @@ namespace OpenMetaverse
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
                     Vector3 myPos = Client.Self.SimPosition;
-                    Vector3 forward = new Vector3(1, 0, 0);
-                    Vector3 offset = Vector3.Norm(target - myPos);
-                    Quaternion newRot = Vector3.RotBetween(forward, offset);
+                    Vector3 offset = Vector3.Normalize(target - myPos);
+                    Quaternion newRot = Vector3.RotationBetween(Vector3.UnitX, offset);
 
                     BodyRotation = newRot;
                     HeadRotation = newRot;

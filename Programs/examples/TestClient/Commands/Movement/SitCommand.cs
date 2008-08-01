@@ -23,7 +23,7 @@ namespace OpenMetaverse.TestClient
             Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                 delegate(Primitive prim)
                 {
-                    float distance = Vector3.Dist(Client.Self.SimPosition, prim.Position);
+                    float distance = Vector3.Distance(Client.Self.SimPosition, prim.Position);
 
                     if (closest == null || distance < closestDistance)
                     {

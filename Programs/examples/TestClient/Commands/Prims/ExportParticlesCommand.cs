@@ -88,8 +88,8 @@ namespace OpenMetaverse.TestClient
 
                             lsl.Append("         PSYS_PART_START_ALPHA, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartStartColor.A) + "," + Environment.NewLine);
                             lsl.Append("         PSYS_PART_END_ALPHA, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartEndColor.A) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_START_COLOR, " + exportPrim.ParticleSys.PartStartColor.ToStringRGB() + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_END_COLOR, " + exportPrim.ParticleSys.PartEndColor.ToStringRGB() + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_START_COLOR, " + exportPrim.ParticleSys.PartStartColor.ToRGBString() + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_END_COLOR, " + exportPrim.ParticleSys.PartEndColor.ToRGBString() + "," + Environment.NewLine);
                             lsl.Append("         PSYS_PART_START_SCALE, <" + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartStartScaleX) + ", " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartStartScaleY) + ", 0>, " + Environment.NewLine);
                             lsl.Append("         PSYS_PART_END_SCALE, <" + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartEndScaleX) + ", " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartEndScaleY) + ", 0>, " + Environment.NewLine);
                             lsl.Append("         PSYS_PART_MAX_AGE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartMaxAge) + "," + Environment.NewLine);

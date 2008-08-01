@@ -557,7 +557,9 @@ namespace OpenMetaverse
             // Override SSL authentication mechanisms. DO NOT convert this to the 
             // .NET 2.0 preferred method, the equivalent function in Mono has a 
             // different name and it will break compatibility!
+#pragma warning disable 0618
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+#pragma warning restore 0618
             // TODO: At some point, maybe we should check the cert?
 
             // Create the CAPS login structure

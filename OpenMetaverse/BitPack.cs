@@ -134,7 +134,7 @@ namespace OpenMetaverse
 
             max = 1 << intBits;
 
-            float fixedVal = Helpers.Clamp(data, (float)min, (float)max);
+            float fixedVal = MathHelper.Clamp(data, (float)min, (float)max);
             if (isSigned) fixedVal += max;
             fixedVal *= 1 << fracBits;
 
