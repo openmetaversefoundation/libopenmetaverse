@@ -978,7 +978,7 @@ namespace OpenMetaverse
             List<string> options = new List<string>(5);
             if (Settings.ENABLE_INVENTORY_STORE)
             {
-                options.Add("inventory_root");
+                options.Add("inventory-root");
                 options.Add("inventory-skeleton");
             }
             if (Settings.ENABLE_LIBRARY_STORE)
@@ -987,10 +987,13 @@ namespace OpenMetaverse
                 options.Add("inventory-lib-owner");
                 options.Add("inventory-skel-lib");
             }
-            // Register extra parameters with login and parse the inventory data that comes back
-            _Network.RegisterLoginResponseCallback(
-                new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
-                options.ToArray());
+            if (Settings.ENABLE_INVENTORY_STORE || Settings.ENABLE_LIBRARY_STORE)
+            {
+                // Register extra parameters with login and parse the inventory data that comes back
+                _Network.RegisterLoginResponseCallback(
+                    new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
+                    options.ToArray());
+            }
         }
 
         #region Fetch
