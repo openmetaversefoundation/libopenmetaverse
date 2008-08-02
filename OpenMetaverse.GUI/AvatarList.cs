@@ -79,10 +79,9 @@ namespace OpenMetaverse.GUI
         /// TreeView control for the specified client's nearby avatar list
         /// </summary>
         /// <param name="client"></param>
-        public AvatarList(GridClient client)
+        public AvatarList(GridClient client) : this ()
         {
             InitializeClient(client);
-            new InventoryTree();
         }
 
         /// <summary>
@@ -132,14 +131,14 @@ namespace OpenMetaverse.GUI
                     if (_Avatars.Contains(avatar.LocalID))
                     {
                         item = this.Items[avatar.LocalID.ToString()];
-                        item.SubItems[1].Text = (int)Vector3.Dist(_Client.Self.SimPosition, avatar.Position) + "m";
+                        item.SubItems[1].Text = (int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m";
                     }
                     else
                     {
                         _Avatars.Add(avatar.LocalID);
                         string key = avatar.LocalID.ToString();
                         item = this.Items.Add(key, avatar.Name, null);
-                        item.SubItems.Add((int)Vector3.Dist(_Client.Self.SimPosition, avatar.Position) + "m");
+                        item.SubItems.Add((int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m");
                     }
                     item.Tag = avatar;
                 }

@@ -69,7 +69,7 @@ namespace OpenMetaverse.GUI
         /// <summary>
         /// Panel control for the specified client's local chat interaction
         /// </summary>
-        public LocalChat(GridClient client)
+        public LocalChat(GridClient client) : this ()
         {
             _Client = client;
         }
