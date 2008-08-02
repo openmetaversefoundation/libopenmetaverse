@@ -25,13 +25,14 @@
  */
 
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
 {
 
     /// <summary>
-    /// TreeView control for browsing a client's inventory
+    /// TreeView GUI component for browsing a client's inventory
     /// </summary>
     public class InventoryTree : TreeView
     {
@@ -122,17 +123,25 @@ namespace OpenMetaverse.GUI
                 else children = this.Nodes;
 
                 children.Clear();
+
                 List<InventoryBase> contents = Client.Inventory.Store.GetContents(folderID);
-                foreach (InventoryBase inv in contents)
+                if (contents.Count == 0)
                 {
-                    string key = inv.UUID.ToString();
-                    children.Add(key, inv.Name);
-                    children[key].Tag = inv;
-                    if (inv is InventoryFolder) children[key].Nodes.Add(null, "Loading...");
+                    TreeNode add = children.Add(null, "(empty)");
+                    add.ForeColor = Color.FromKnownColor(KnownColor.GrayText);
+                }
+                else
+                {
+                    foreach (InventoryBase inv in contents)
+                    {
+                        string key = inv.UUID.ToString();
+                        children.Add(key, inv.Name);
+                        children[key].Tag = inv;
+                        if (inv is InventoryFolder) children[key].Nodes.Add(null, "Loading...");
+                    }
                 }
 
                 if (node != null) ExpandNode(node);
-
             }
         }
 

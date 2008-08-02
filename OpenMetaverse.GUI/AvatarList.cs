@@ -29,8 +29,17 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
+using System.Drawing;
+using System.Collections;
+using System.ComponentModel;
+using System.Data;
+using System.IO;
+
 namespace OpenMetaverse.GUI
 {
+    /// <summary>
+    /// ListView GUI component for viewing a client's nearby avatars list
+    /// </summary>
     public class AvatarList : ListView
     {
         private GridClient _Client;
@@ -59,8 +68,11 @@ namespace OpenMetaverse.GUI
             ColumnHeader header2 = this.Columns.Add(" ");
             header2.Width = 40;
 
+            this.DoubleBuffered = true;
+            this.Sorting = SortOrder.Ascending;
             this.View = View.Details;
             this.DoubleClick += new EventHandler(AvatarList_DoubleClick);
+
         }
 
         /// <summary>
@@ -91,15 +103,20 @@ namespace OpenMetaverse.GUI
             _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
         }
 
-        void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
+        private void RemoveAvatar(uint localID)
         {
-            lock(_Avatars)
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(localID); });
+            else
             {
-                if (_Avatars.Contains(update.LocalID))
+                lock (_Avatars)
                 {
-                    Avatar av;
-                    if (simulator.ObjectsAvatars.TryGetValue(update.LocalID, out av))
-                        UpdateAvatar(av);
+                    if (_Avatars.Contains(localID))
+                    {
+                        _Avatars.Remove(localID);
+                        string key = localID.ToString();
+                        int index = this.Items.IndexOfKey(key);
+                        if (index > -1) this.Items.RemoveAt(index);
+                    }
                 }
             }
         }
@@ -125,24 +142,6 @@ namespace OpenMetaverse.GUI
                         item.SubItems.Add((int)Vector3.Dist(_Client.Self.SimPosition, avatar.Position) + "m");
                     }
                     item.Tag = avatar;
-                }
-            }
-        }
-
-        private void RemoveAvatar(uint localID)
-        {
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(localID); });
-            else
-            {
-                lock (_Avatars)
-                {
-                    if (_Avatars.Contains(localID))
-                    {
-                        _Avatars.Remove(localID);
-                        string key = localID.ToString();
-                        int index = this.Items.IndexOfKey(key);
-                        if (index > -1) this.Items.RemoveAt(index);
-                    }
                 }
             }
         }
@@ -183,6 +182,19 @@ namespace OpenMetaverse.GUI
             lock (_Avatars)
             {
                 if (_Avatars.Contains(objectID)) RemoveAvatar(objectID);
+            }
+        }
+
+        private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
+        {
+            lock (_Avatars)
+            {
+                if (_Avatars.Contains(update.LocalID))
+                {
+                    Avatar av;
+                    if (simulator.ObjectsAvatars.TryGetValue(update.LocalID, out av))
+                        UpdateAvatar(av);
+                }
             }
         }
 

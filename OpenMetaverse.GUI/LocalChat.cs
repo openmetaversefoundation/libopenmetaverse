@@ -31,6 +31,9 @@ using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
 {
+    /// <summary>
+    /// Panel GUI component for interfacing with local chat
+    /// </summary>
     public class LocalChat : Panel
     {
         private GridClient _Client;
