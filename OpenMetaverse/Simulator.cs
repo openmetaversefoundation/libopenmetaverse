@@ -572,16 +572,35 @@ namespace OpenMetaverse
             }
         }
 
-
-
         /// <summary>
         /// Sends a packet
         /// </summary>
         /// <param name="packet">Packet to be sent</param>
-        /// <param name="incrementSequence">Increment sequence number?</param>
-        /// 
+        /// <param name="setSequence">True to set the sequence number, false to
+        /// leave it as is</param>
+        public void SendPacket(Packet packet, bool setSequence)
+        {
+            // Send ACK and logout packets directly, everything else goes through the queue
+            if (packet.Type == PacketType.PacketAck ||
+                packet.Header.AppendedAcks ||
+                packet.Type == PacketType.LogoutRequest)
+            {
+                SendPacketUnqueued(packet, setSequence);
+            }
+            else
+            {
+                Network.PacketOutbox.Enqueue(new NetworkManager.OutgoingPacket(this, packet, setSequence));
+            }
+            
+        }
 
-        public void SendPacket(Packet packet, bool incrementSequence)
+        /// <summary>
+        /// Sends a packet directly to the simulator without queuing
+        /// </summary>
+        /// <param name="packet">Packet to be sent</param>
+        /// <param name="setSequence">True to set the sequence number, false to
+        /// leave it as is</param>
+        public void SendPacketUnqueued(Packet packet, bool setSequence)
         {
             byte[] buffer;
             int bytes;
@@ -589,7 +608,7 @@ namespace OpenMetaverse
             // Keep track of when this packet was sent out
             packet.TickCount = Environment.TickCount;
 
-            if (incrementSequence)
+            if (setSequence)
             {
                 // Reset to zero if we've hit the upper sequence number limit
                 Interlocked.CompareExchange(ref Sequence, 0, Settings.MAX_SEQUENCE);
@@ -693,7 +712,7 @@ namespace OpenMetaverse
         /// <param name="payload">The packet payload</param>
         /// <param name="setSequence">Whether the second, third, and fourth bytes
         /// should be modified to the current stream sequence number</param>
-        public void SendPacket(byte[] payload, bool setSequence)
+        public void SendPacketUnqueued(byte[] payload, bool setSequence)
         {
             try
             {
@@ -728,16 +747,6 @@ namespace OpenMetaverse
             {
                 Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
-        }
-
-        /// <summary>
-        /// Send a prepared <code>UDPPacketBuffer</code> object as a packet
-        /// </summary>
-        /// <param name="buffer">The prepared packet structure to be sent out</param>
-        public void SendPacket(UDPPacketBuffer buffer)
-        {
-            try { AsyncBeginSend(buffer); }
-            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
         }
 
         /// <summary>
@@ -921,7 +930,6 @@ namespace OpenMetaverse
         /// <summary>
         /// Resend unacknowledged packets
         /// </summary>
-        /// 
         private void ResendUnacked()
         {
             lock (NeedAck)
@@ -932,7 +940,7 @@ namespace OpenMetaverse
                 // Resend packets
                 foreach (Packet packet in NeedAck.Values)
                 {
-                    if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
+                    if (packet.TickCount != 0 && now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
                         if (packet.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                         {
@@ -944,10 +952,10 @@ namespace OpenMetaverse
                                         packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
                                 }
 
+                                packet.TickCount = 0;
                                 packet.Header.Resent = true;
                                 ++Stats.ResentPackets;
                                 ++packet.ResendCount;
-                                packet.TickCount = now;
 
                                 SendPacket(packet, false);
                             }

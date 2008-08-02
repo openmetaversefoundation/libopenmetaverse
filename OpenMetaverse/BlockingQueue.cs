@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse;
 
@@ -34,28 +35,19 @@ namespace System.Collections
     /// Same as Queue except Dequeue function blocks until there is an object to return.
     /// Note: This class does not need to be synchronized
     /// </summary>
-    public class BlockingQueue : Queue
+    public class BlockingQueue<T> : Queue<T>
     {
+        private object SyncRoot;
         private bool open;
 
         /// <summary>
         /// Create new BlockingQueue.
         /// </summary>
         /// <param name="col">The System.Collections.ICollection to copy elements from</param>
-        public BlockingQueue(ICollection col)
+        public BlockingQueue(IEnumerable<T> col)
             : base(col)
         {
-            open = true;
-        }
-
-        /// <summary>
-        /// Create new BlockingQueue.
-        /// </summary>
-        /// <param name="capacity">The initial number of elements that the queue can contain</param>
-        /// <param name="growFactor">The factor by which the capacity of the queue is expanded</param>
-        public BlockingQueue(int capacity, float growFactor)
-            : base(capacity, growFactor)
-        {
+            SyncRoot = new object();
             open = true;
         }
 
@@ -66,6 +58,7 @@ namespace System.Collections
         public BlockingQueue(int capacity)
             : base(capacity)
         {
+            SyncRoot = new object();
             open = true;
         }
 
@@ -75,6 +68,7 @@ namespace System.Collections
         public BlockingQueue()
             : base()
         {
+            SyncRoot = new object();
             open = true;
         }
 
@@ -89,9 +83,9 @@ namespace System.Collections
         /// <summary>
         /// Remove all objects from the Queue.
         /// </summary>
-        public override void Clear()
+        public new void Clear()
         {
-            lock (base.SyncRoot)
+            lock (SyncRoot)
             {
                 base.Clear();
             }
@@ -102,11 +96,11 @@ namespace System.Collections
         /// </summary>
         public void Close()
         {
-            lock (base.SyncRoot)
+            lock (SyncRoot)
             {
                 open = false;
                 base.Clear();
-                Monitor.PulseAll(base.SyncRoot); // resume any waiting threads
+                Monitor.PulseAll(SyncRoot); // resume any waiting threads
             }
         }
 
@@ -114,7 +108,7 @@ namespace System.Collections
         /// Removes and returns the object at the beginning of the Queue.
         /// </summary>
         /// <returns>Object in queue.</returns>
-        public override object Dequeue()
+        public new T Dequeue()
         {
             return Dequeue(Timeout.Infinite);
         }
@@ -124,7 +118,7 @@ namespace System.Collections
         /// </summary>
         /// <param name="timeout">time to wait before returning</param>
         /// <returns>Object in queue.</returns>
-        public NetworkManager.IncomingPacket Dequeue(TimeSpan timeout)
+        public T Dequeue(TimeSpan timeout)
         {
             return Dequeue(timeout.Milliseconds);
         }
@@ -134,51 +128,54 @@ namespace System.Collections
         /// </summary>
         /// <param name="timeout">time to wait before returning (in milliseconds)</param>
         /// <returns>Object in queue.</returns>
-        public NetworkManager.IncomingPacket Dequeue(int timeout)
+        public T Dequeue(int timeout)
         {
-            lock (base.SyncRoot)
+            lock (SyncRoot)
             {
                 while (open && (base.Count == 0))
                 {
-                    if (!Monitor.Wait(base.SyncRoot, timeout))
+                    if (!Monitor.Wait(SyncRoot, timeout))
                         throw new InvalidOperationException("Timeout");
                 }
                 if (open)
-                    return (NetworkManager.IncomingPacket)base.Dequeue();
+                    return base.Dequeue();
                 else
                     throw new InvalidOperationException("Queue Closed");
             }
         }
 
-        public bool Dequeue(int timeout, ref NetworkManager.IncomingPacket packet)
+        public bool Dequeue(int timeout, ref T obj)
         {
-            lock (base.SyncRoot)
+            lock (SyncRoot)
             {
                 while (open && (base.Count == 0))
                 {
-                    if (!Monitor.Wait(base.SyncRoot, timeout))
+                    if (!Monitor.Wait(SyncRoot, timeout))
                         return false;
                 }
                 if (open)
                 {
-                    packet = (NetworkManager.IncomingPacket)base.Dequeue();
+                    obj = base.Dequeue();
                     return true;
                 }
                 else
+                {
+                    obj = default(T);
                     return false;
+                }
             }
         }
 
         /// <summary>
-        /// Adds an object to the end of the Queue.
+        /// Adds an object to the end of the Queue
         /// </summary>
         /// <param name="obj">Object to put in queue</param>
-        public override void Enqueue(object obj)
+        public new void Enqueue(T obj)
         {
-            lock (base.SyncRoot)
+            lock (SyncRoot)
             {
                 base.Enqueue(obj);
-                Monitor.Pulse(base.SyncRoot);
+                Monitor.Pulse(SyncRoot);
             }
         }
 
@@ -187,7 +184,7 @@ namespace System.Collections
         /// </summary>
         public void Open()
         {
-            lock (base.SyncRoot)
+            lock (SyncRoot)
             {
                 open = true;
             }

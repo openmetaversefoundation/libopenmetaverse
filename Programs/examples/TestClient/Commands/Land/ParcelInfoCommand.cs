@@ -36,7 +36,7 @@ namespace OpenMetaverse.TestClient
             if (Client.Network.CurrentSim.IsParcelMapFull())
                 ParcelsDownloaded.Set();
 
-            if (ParcelsDownloaded.WaitOne(20000, false) && Client.Network.Connected)
+            if (ParcelsDownloaded.WaitOne(30000, false) && Client.Network.Connected)
             {
                 sb.AppendFormat("Downloaded {0} Parcels in {1} " + System.Environment.NewLine, 
                     Client.Network.CurrentSim.Parcels.Count, Client.Network.CurrentSim.Name);

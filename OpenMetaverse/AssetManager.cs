@@ -422,8 +422,6 @@ namespace OpenMetaverse
 
                         if (download.TimeSinceLastPacket > 5000)
                         {
-                            Logger.DebugLog("Image download refresh timer is re-requesting texture " + download.ID.ToString());
-
                             // FIXME: This will probably break on baked textures and doesn't preserve the originally requested discardlevel
                             download.TimeSinceLastPacket = 0;
                             RequestImage(download.ID, ImageType.Normal, 1013010.0f, 0);
@@ -652,8 +650,8 @@ namespace OpenMetaverse
                     if (Single.IsNaN(percentComplete))
                         percentComplete = 0f;
 
-                    Logger.DebugLog(String.Format("Updating priority on image transfer {0}, ({1:#.#}% complete",
-                        imageID, percentComplete));
+                    Logger.DebugLog(String.Format("Updating priority on image transfer {0}, {1}% complete",
+                        imageID, Math.Round(percentComplete, 2)));
                 }
 
                 // Build and send the request packet

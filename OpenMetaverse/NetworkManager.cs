@@ -72,15 +72,42 @@ namespace OpenMetaverse
         #region Structs
 
         /// <summary>
-        /// Holds a simulator reference and a packet, these structs are put in
-        /// the packet inbox for decoding
+        /// Holds a simulator reference and a decoded packet, these structs are put in
+        /// the packet inbox for event handling
         /// </summary>
         public struct IncomingPacket
         {
             /// <summary>Reference to the simulator that this packet came from</summary>
             public Simulator Simulator;
-            /// <summary>The packet that needs to be processed</summary>
+            /// <summary>Packet that needs to be processed</summary>
             public Packet Packet;
+
+            public IncomingPacket(Simulator simulator, Packet packet)
+            {
+                Simulator = simulator;
+                Packet = packet;
+            }
+        }
+
+        /// <summary>
+        /// Holds a simulator reference and an encoded packet, these structs are put in
+        /// the packet outbox for sending
+        /// </summary>
+        public struct OutgoingPacket
+        {
+            /// <summary>Reference to the simulator this packet is destined for</summary>
+            public Simulator Simulator;
+            /// <summary>Packet that needs to be processed</summary>
+            public Packet Packet;
+            /// <summary>True if the sequence number needs to be set, otherwise false</summary>
+            public bool SetSequence;
+
+            public OutgoingPacket(Simulator simulator, Packet packet, bool setSequence)
+            {
+                Simulator = simulator;
+                Packet = packet;
+                SetSequence = setSequence;
+            }
         }
 
         #endregion Structs
@@ -212,6 +239,8 @@ namespace OpenMetaverse
         public bool Connected { get { return connected; } }
         /// <summary>Number of packets in the incoming queue</summary>
         public int InboxCount { get { return PacketInbox.Count; } }
+        /// <summary>Number of packets in the outgoing queue</summary>
+        public int OutboxCount { get { return PacketOutbox.Count; } }
 
         #endregion Properties
 
@@ -223,7 +252,9 @@ namespace OpenMetaverse
         /// <summary>Handlers for incoming packets</summary>
         internal PacketEventDictionary PacketEvents;
         /// <summary>Incoming packets that are awaiting handling</summary>
-        internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
+        internal BlockingQueue<IncomingPacket> PacketInbox = new BlockingQueue<IncomingPacket>(Settings.PACKET_INBOX_SIZE);
+        /// <summary>Outgoing packets that are awaiting handling</summary>
+        internal BlockingQueue<OutgoingPacket> PacketOutbox = new BlockingQueue<OutgoingPacket>(Settings.PACKET_INBOX_SIZE);
 
         private GridClient Client;
         private Timer DisconnectTimer;
@@ -329,31 +360,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Send a raw byte array as a packet to the current simulator
-        /// </summary>
-        /// <param name="payload">Byte array containing a packet</param>
-        /// <param name="setSequence">Whether to set the second, third, and fourth
-        /// bytes of the payload to the current sequence number</param>
-        public void SendPacket(byte[] payload, bool setSequence)
-        {
-            if (CurrentSim != null)
-                CurrentSim.SendPacket(payload, setSequence);
-        }
-
-        /// <summary>
-        /// Send a raw byte array as a packet to the specified simulator
-        /// </summary>
-        /// <param name="payload">Byte array containing a packet</param>
-        /// <param name="simulator">Simulator to send the packet to</param>
-        /// <param name="setSequence">Whether to set the second, third, and fourth
-        /// bytes of the payload to the current sequence number</param>
-        public void SendPacket(byte[] payload, Simulator simulator, bool setSequence)
-        {
-            if (simulator != null)
-                simulator.SendPacket(payload, setSequence);
-        }
-
-        /// <summary>
         /// Connect to a simulator
         /// </summary>
         /// <param name="ip">IP address to connect to</param>
@@ -403,12 +409,17 @@ namespace OpenMetaverse
                     // Mark that we are connecting/connected to the grid
                     connected = true;
 
-                    // restart the blocking queue in case of re-connect
+                    // Open the queues in case this is a reconnect and they were shut down
                     PacketInbox.Open();
+                    PacketOutbox.Open();
 
                     // Start the packet decoding thread
-                    Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
+                    Thread decodeThread = new Thread(new ThreadStart(IncomingPacketHandler));
                     decodeThread.Start();
+
+                    // Start the packet sending thread
+                    Thread sendThread = new Thread(new ThreadStart(OutgoingPacketHandler));
+                    sendThread.Start();
                 }
 
                 // Fire the OnSimConnecting event
@@ -605,6 +616,7 @@ namespace OpenMetaverse
 
             // Clear out all of the packets that never had time to process
             PacketInbox.Close();
+            PacketOutbox.Close();
 
             connected = false;
 
@@ -649,7 +661,38 @@ namespace OpenMetaverse
             }
         }
 
-        private void PacketHandler()
+        private void OutgoingPacketHandler()
+        {
+            OutgoingPacket outgoingPacket = new OutgoingPacket();
+            Simulator simulator = null;
+            Packet packet = null;
+            int now;
+            int lastPacketTime = Environment.TickCount;
+
+            while (connected)
+            {
+                if (PacketOutbox.Dequeue(100, ref outgoingPacket))
+                {
+                    simulator = outgoingPacket.Simulator;
+                    packet = outgoingPacket.Packet;
+
+                    // Very primitive rate limiting, keeps a fixed buffer of time between each packet
+                    now = Environment.TickCount;
+                    int ms = now - lastPacketTime;
+
+                    if (ms < 75)
+                    {
+                        Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
+                        Thread.Sleep(75 - ms);
+                    }
+
+                    lastPacketTime = now;
+                    simulator.SendPacketUnqueued(packet, outgoingPacket.SetSequence);
+                }
+            }
+        }
+
+        private void IncomingPacketHandler()
         {
             IncomingPacket incomingPacket = new IncomingPacket();
             Packet packet = null;
@@ -660,7 +703,7 @@ namespace OpenMetaverse
                 // Reset packet to null for the check below
                 packet = null;
 
-                if (PacketInbox.Dequeue(200, ref incomingPacket))
+                if (PacketInbox.Dequeue(100, ref incomingPacket))
                 {
                     packet = incomingPacket.Packet;
                     simulator = incomingPacket.Simulator;
