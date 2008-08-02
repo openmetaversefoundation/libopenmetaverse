@@ -88,6 +88,20 @@ namespace OpenMetaverse.GUI
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             _Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
+            _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
+        }
+
+        void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
+        {
+            lock(_Avatars)
+            {
+                if (_Avatars.Contains(update.LocalID))
+                {
+                    Avatar av;
+                    if (simulator.ObjectsAvatars.TryGetValue(update.LocalID, out av))
+                        UpdateAvatar(av);
+                }
+            }
         }
 
         private void UpdateAvatar(Avatar avatar)
@@ -101,7 +115,7 @@ namespace OpenMetaverse.GUI
                     if (_Avatars.Contains(avatar.LocalID))
                     {
                         item = this.Items[avatar.LocalID.ToString()];
-                        item.SubItems[0].Text = (int)Vector3.Dist(_Client.Self.SimPosition, avatar.Position) + "m";
+                        item.SubItems[1].Text = (int)Vector3.Dist(_Client.Self.SimPosition, avatar.Position) + "m";
                     }
                     else
                     {
