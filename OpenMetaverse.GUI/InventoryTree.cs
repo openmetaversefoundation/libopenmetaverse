@@ -24,7 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenMetaverse;
 using System.Collections.Generic;
 using System.Windows.Forms;
 

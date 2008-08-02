@@ -82,6 +82,14 @@ namespace OpenMetaverse.GUI
             else this.Items.Clear();
         }
 
+        private void InitializeClient(GridClient client)
+        {
+            _Client = client;
+            _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
+            _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
+            _Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
+        }
+
         private void UpdateAvatar(Avatar avatar)
         {
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateAvatar(avatar); });
@@ -123,14 +131,6 @@ namespace OpenMetaverse.GUI
                     }
                 }
             }
-        }
-
-        private void InitializeClient(GridClient client)
-        {
-            _Client = client;
-            _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
-            _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            _Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
         }
 
         private void AvatarList_DoubleClick(object sender, EventArgs e)
