@@ -171,6 +171,7 @@ namespace OpenMetaverse.GUI
                 if (_Avatars.Contains(objectID)) RemoveAvatar(objectID);
             }
         }
+
     }
 
 }

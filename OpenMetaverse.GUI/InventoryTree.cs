@@ -52,7 +52,7 @@ namespace OpenMetaverse.GUI
         /// </summary>
         public InventoryTree()
         {
-            this.BeforeExpand += new TreeViewCancelEventHandler(this_BeforeExpand);
+            this.BeforeExpand += new TreeViewCancelEventHandler(InventoryTree_BeforeExpand);
         }
 
         /// <summary>
@@ -144,22 +144,23 @@ namespace OpenMetaverse.GUI
             _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
         }
 
-        private void this_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        private void Inventory_OnFolderUpdated(UUID folderID)
+        {
+            UpdateFolder(folderID);
+        }
+
+        private void InventoryTree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             UUID folderID;
             if (e.Node.Name != null && UUID.TryParse(e.Node.Name, out folderID))
                 _Client.Inventory.RequestFolderContents(folderID, _Client.Self.AgentID, true, true, InventorySortOrder.FoldersByName);
         }
 
-        private void Inventory_OnFolderUpdated(UUID folderID)
-        {
-            UpdateFolder(folderID);
-        }
-
         private void Network_OnLogin(LoginStatus login, string message)
         {
             if (login == LoginStatus.Success) Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, true, true, InventorySortOrder.FoldersByName);
         }
+
     }
 
 }
