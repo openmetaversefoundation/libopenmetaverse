@@ -112,7 +112,11 @@ namespace groupmanager
         {
             if (login == LoginStatus.Success)
             {
-                groupBox.Enabled = true;
+                BeginInvoke(
+                    (MethodInvoker)delegate()
+                    {
+                        groupBox.Enabled = true;
+                    });
             }
             else if (login == LoginStatus.Failed)
             {
