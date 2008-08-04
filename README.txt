@@ -7,14 +7,14 @@ Finding Help
 If you need any help we have a couple of resources, the primary one being 
 the #openmv IRC channel on EFNet. There is also the libsl-dev mailing list 
 at http://openmetaverse.org/cgi-bin/mailman/listinfo/libsl-dev and lastly 
-you can use the e-mail contact@libsecondlife.org for any general inquiries 
+you can use the e-mail contact@openmv.org for any general inquiries 
 (although we prefer developer-related questions to go to IRC or the mailing 
 list). You can find us in-world via the open invitation libsecondlife group 
 or at our HQ and testing area in Hooper(SLURL: http://xrl.us/bi233).
 
 Source Code:
-   To checkout a copy of libsecondlife trunk
-   svn co svn://openmetaverse.org/libsl/trunk libopenmv
+   To checkout a copy of libopenmv trunk
+   svn co http://openmv.org/svn/libsl/trunk libopenmv
 
 For more details see: 
    http://www.libsecondlife.org/wiki/SVN
@@ -53,10 +53,6 @@ For Visual Studio 2008/Visual C# Express 2008
 4. From the Build Menu choose Build Solution (or press the F6 Key)
 
 The library, example applications and tools will be in the bin directory
-
-When compiling It will complain about a missing dependency if you didn't install 
-the nUnit framework, you can either install it now or remove libsecondlife.Tests 
-from the solution file.
 
 For more details http://www.libsecondlife.org/wiki/Getting_Started
 
