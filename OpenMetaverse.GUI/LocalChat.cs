@@ -55,8 +55,10 @@ namespace OpenMetaverse.GUI
         public LocalChat()
         {
             _rtfOutput.Anchor = AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _rtfOutput.BackColor = Color.FromKnownColor(KnownColor.Window);
             _rtfOutput.Width = this.Width;
             _rtfOutput.Height = this.Height - _txtInput.Height;
+            _rtfOutput.ReadOnly = true;
             _rtfOutput.Top = 0;
             _rtfOutput.Left = 0;           
 
@@ -96,6 +98,7 @@ namespace OpenMetaverse.GUI
                 else if (type == ChatType.Whisper) volume = " whispers";
                 else volume = string.Empty;
                 _rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}{4}: {5}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), name, volume, text);
+                _rtfOutput.ScrollToCaret();
             }
         }
 

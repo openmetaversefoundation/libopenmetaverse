@@ -44,8 +44,13 @@ namespace OpenMetaverse.GUI
     {
         private GridClient _Client;
         private List<uint> _Avatars = new List<uint>();
+        private ColumnSorter _ColumnSorter = new ColumnSorter();
 
         public delegate void AvatarDoubleClickCallback(Avatar avatar);
+
+        /// <summary>
+        /// Triggered when the user double clicks on an avatar in the list
+        /// </summary>
         public event AvatarDoubleClickCallback OnAvatarDoubleClick;
 
         /// <summary>
@@ -68,11 +73,13 @@ namespace OpenMetaverse.GUI
             ColumnHeader header2 = this.Columns.Add(" ");
             header2.Width = 40;
 
-            this.DoubleBuffered = true;
-            this.Sorting = SortOrder.Ascending;
-            this.View = View.Details;
-            this.DoubleClick += new EventHandler(AvatarList_DoubleClick);
+            _ColumnSorter.SortColumn = 0;
 
+            this.DoubleBuffered = true;
+            this.ListViewItemSorter = _ColumnSorter;
+            this.View = View.Details;
+            this.ColumnClick += new ColumnClickEventHandler(AvatarList_ColumnClick);
+            this.DoubleClick += new EventHandler(AvatarList_DoubleClick);
         }
 
         /// <summary>
@@ -145,6 +152,14 @@ namespace OpenMetaverse.GUI
             }
         }
 
+        private void AvatarList_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            _ColumnSorter.SortColumn = e.Column;
+            if ((_ColumnSorter.Ascending = (this.Sorting == SortOrder.Ascending))) this.Sorting = SortOrder.Descending;
+            else this.Sorting = SortOrder.Ascending;
+            this.ListViewItemSorter = _ColumnSorter;
+        }
+
         private void AvatarList_DoubleClick(object sender, EventArgs e)
         {
             ListView list = (ListView)sender;
@@ -193,6 +208,39 @@ namespace OpenMetaverse.GUI
                     Avatar av;
                     if (simulator.ObjectsAvatars.TryGetValue(update.LocalID, out av))
                         UpdateAvatar(av);
+                }
+            }
+        }
+
+        private class ColumnSorter : IComparer
+        {
+            public bool Ascending = true;
+            public int SortColumn = 0;
+
+            public int Compare(object a, object b)
+            {
+                ListViewItem itemA = (ListViewItem)a;
+                ListViewItem itemB = (ListViewItem)b;
+
+                if (SortColumn == 1)
+                {
+                    int valueA = itemB.SubItems.Count > 1 ? int.Parse(itemA.SubItems[1].Text.Replace("m", "")) : 0;
+                    int valueB = itemB.SubItems.Count > 1 ? int.Parse(itemB.SubItems[1].Text.Replace("m", "")) : 0;
+                    if (Ascending)
+                    {
+                        if (valueA == valueB) return 0;
+                        return valueA < valueB ? -1 : 1;
+                    }
+                    else
+                    {
+                        if (valueA == valueB) return 0;
+                        return valueA < valueB ? 1 : -1;
+                    }
+                }
+                else
+                {
+                    if (Ascending) return string.Compare(itemA.Text, itemB.Text);
+                    else return -string.Compare(itemA.Text, itemB.Text);
                 }
             }
         }
