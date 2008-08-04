@@ -46,12 +46,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OpenMetaverse\OpenMetaverse.csproj">
-      <Project>{02F19508-E831-45BB-965E-A37E1E1C973C}</Project>
-      <Name>OpenMetaverse</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
