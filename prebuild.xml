@@ -290,6 +290,32 @@
       </Files>
     </Project>
 
+    <Project name="Dashboard" path="Programs/examples/Dashboard" type="WinExe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverse.GUI"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.resx" buildAction="EmbeddedResource" recurse="true"/>
+      </Files>
+    </Project>
+
+
     <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="WinExe">
       <Configuration name="Debug">
         <Options>
