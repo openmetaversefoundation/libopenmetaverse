@@ -34,9 +34,9 @@ namespace OpenMetaverse.GUI
 {
 
     /// <summary>
-    /// ListView GUI component for viewing a client's friends list
+    /// ListView GUI component for viewing a client's friend list
     /// </summary>
-    public class FriendsList : ListView
+    public class FriendList : ListView
     {
         private GridClient _Client;
         private ColumnSorter _ColumnSorter = new ColumnSorter();
@@ -58,11 +58,11 @@ namespace OpenMetaverse.GUI
         }
 
         /// <summary>
-        /// TreeView control for an unspecified client's friends list
+        /// TreeView control for an unspecified client's friend list
         /// </summary>
-        public FriendsList()
+        public FriendList()
         {
-            ColumnHeader header1 = this.Columns.Add("Name");
+            ColumnHeader header1 = this.Columns.Add("Friend");
             header1.Width = this.Width - 20;
 
             ColumnHeader header2 = this.Columns.Add(" ");
@@ -74,14 +74,14 @@ namespace OpenMetaverse.GUI
             this.ListViewItemSorter = _ColumnSorter;
             this.View = View.Details;
 
-            this.ColumnClick += new ColumnClickEventHandler(FriendsList_ColumnClick);
-            this.DoubleClick += new System.EventHandler(FriendsList_DoubleClick);
+            this.ColumnClick += new ColumnClickEventHandler(FriendList_ColumnClick);
+            this.DoubleClick += new System.EventHandler(FriendList_DoubleClick);
         }
 
         /// <summary>
-        /// TreeView control for the specified client's friends list
+        /// TreeView control for the specified client's friend list
         /// </summary>
-        public FriendsList(GridClient client) : this ()
+        public FriendList(GridClient client) : this ()
         {
             InitializeClient(client);
         }
@@ -156,7 +156,7 @@ namespace OpenMetaverse.GUI
             RefreshFriends();
         }
 
-        private void FriendsList_ColumnClick(object sender, ColumnClickEventArgs e)
+        private void FriendList_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             _ColumnSorter.SortColumn = e.Column;
             if ((_ColumnSorter.Ascending = (this.Sorting == SortOrder.Ascending))) this.Sorting = SortOrder.Descending;
@@ -164,7 +164,7 @@ namespace OpenMetaverse.GUI
             this.ListViewItemSorter = _ColumnSorter;
         }
 
-        private void FriendsList_DoubleClick(object sender, System.EventArgs e)
+        private void FriendList_DoubleClick(object sender, System.EventArgs e)
         {
             if (OnFriendDoubleClick != null)
             {
