@@ -177,6 +177,7 @@
       <Configuration name="Release">
         <Options>
           <OutputPath>../bin/</OutputPath>
+	  <XmlDocFile>OpenMetaverse.GUI.XML</XmlDocFile>
         </Options>
       </Configuration>
 
