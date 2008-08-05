@@ -26,14 +26,9 @@
 
 using OpenMetaverse;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms;
-
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
 
 namespace OpenMetaverse.GUI
 {
@@ -162,17 +157,14 @@ namespace OpenMetaverse.GUI
 
         private void AvatarList_DoubleClick(object sender, EventArgs e)
         {
-            ListView list = (ListView)sender;
-            if (list.SelectedItems.Count > 0)
+            if (OnAvatarDoubleClick != null)
             {
-                if (list.SelectedItems[0].Tag is Avatar)
+                ListView list = (ListView)sender;
+                if (list.SelectedItems.Count > 0 && list.SelectedItems[0].Tag is Avatar)
                 {
                     Avatar av = (Avatar)list.SelectedItems[0].Tag;
-                    if (OnAvatarDoubleClick != null)
-                    {
-                        try { OnAvatarDoubleClick(av); }
-                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-                    }
+                    try { OnAvatarDoubleClick(av); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
             }
         }

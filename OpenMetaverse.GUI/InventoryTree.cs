@@ -138,7 +138,7 @@ namespace OpenMetaverse.GUI
                         children[key].Tag = inv;
                         if (inv is InventoryFolder)
                         {
-                            children[key].Nodes.Add(null, "Loading...").ForeColor = Color.FromKnownColor(KnownColor.GrayText);
+                            children[key].Nodes.Add(null, "(loading...)").ForeColor = Color.FromKnownColor(KnownColor.GrayText);
                             ((InventoryFolder)inv).OnContentsRetrieved += new InventoryFolder.ContentsRetrieved(InventoryFolder_OnContentsRetrieved);
                         }
                     }
