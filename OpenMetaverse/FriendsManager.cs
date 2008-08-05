@@ -251,6 +251,11 @@ namespace OpenMetaverse
         /// <param name="friend"> System ID of the avatar you changed the right of</param>
         public delegate void FriendRightsEvent(FriendInfo friend);
         /// <summary>
+        /// Triggered when names on the friend list are received after the initial request upon login
+        /// </summary>
+        /// <param name="names"></param>
+        public delegate void FriendNamesReceived(Dictionary<UUID, string> names);
+        /// <summary>
         /// Triggered when someone offers you friendship
         /// </summary>
         /// <param name="agentID">System ID of the agent offering friendship</param>
@@ -284,6 +289,7 @@ namespace OpenMetaverse
 
         #region Events
 
+        public event FriendNamesReceived OnFriendNamesReceived;
         public event FriendOnlineEvent OnFriendOnline;
         public event FriendOfflineEvent OnFriendOffline;
         public event FriendRightsEvent OnFriendRights;
@@ -530,10 +536,21 @@ namespace OpenMetaverse
         {
             lock (FriendList)
             {
+                Dictionary<UUID, string> newNames = new Dictionary<UUID, string>();
                 foreach (KeyValuePair<UUID, string> kvp in names)
                 {
                     if (FriendList.ContainsKey(kvp.Key))
+                    {
+                        if (FriendList[kvp.Key].Name == null)
+                            newNames.Add(kvp.Key, names[kvp.Key]);
+
                         FriendList[kvp.Key].Name = names[kvp.Key];
+                    }
+                }
+                if (newNames.Count > 0)
+                {
+                    try { OnFriendNamesReceived(newNames); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
