@@ -547,7 +547,7 @@ namespace OpenMetaverse
                         FriendList[kvp.Key].Name = names[kvp.Key];
                     }
                 }
-                if (newNames.Count > 0)
+                if (newNames.Count > 0 && OnFriendNamesReceived != null)
                 {
                     try { OnFriendNamesReceived(newNames); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
