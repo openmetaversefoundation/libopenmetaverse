@@ -68,7 +68,8 @@ namespace OpenMetaverse.GUI
             ColumnHeader header2 = this.Columns.Add(" ");
             header2.Width = 40;
 
-            _ColumnSorter.SortColumn = 0;
+            _ColumnSorter.SortColumn = 1;
+            _ColumnSorter.Ascending = false;
 
             this.DoubleBuffered = true;
             this.ListViewItemSorter = _ColumnSorter;
@@ -117,7 +118,7 @@ namespace OpenMetaverse.GUI
                     else
                     {
                         image = 0;
-                        onlineText = string.Empty;
+                        onlineText = " ";
                         color = Color.FromKnownColor(KnownColor.GrayText);
                     }
 
@@ -195,8 +196,10 @@ namespace OpenMetaverse.GUI
 
                 if (SortColumn == 1)
                 {
-                    if (Ascending) return string.Compare(itemA.SubItems[1].Text + itemA.Text, itemB.SubItems[1].Text + itemB.Text);
-                    else return -string.Compare(itemA.SubItems[1].Text + itemA.Text, itemB.SubItems[1].Text + itemB.Text);
+                    string onlineA = itemA.SubItems.Count < 2 ? string.Empty : itemA.SubItems[1].Text;
+                    string onlineB = itemB.SubItems.Count < 2 ? string.Empty : itemB.SubItems[1].Text;
+                    if (Ascending) return string.Compare(onlineA + itemA.Text, onlineB + itemB.Text);
+                    else return -string.Compare(onlineA + itemA.Text, onlineB + itemB.Text);
                 }
                 else
                 {
