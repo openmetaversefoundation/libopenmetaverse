@@ -29,8 +29,6 @@ namespace OpenMetaverse.TestClient
         private Vector3 left = new Vector3(0.9999f, 0, 0);
         private Vector3 up = new Vector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
-        public Inventory InventoryStore;
-        public Inventory LibraryStore;
 
         /// <summary>
         /// 

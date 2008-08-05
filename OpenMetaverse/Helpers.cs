@@ -595,6 +595,19 @@ namespace OpenMetaverse
         /// Converts a byte array to a string containing hexadecimal characters
         /// </summary>
         /// <param name="bytes">The byte array to convert to a string</param>
+        /// <param name="fieldName">The name of the field to prepend to each
+        /// line of the string</param>
+        /// <returns>A string containing hexadecimal characters on multiple
+        /// lines. Each line is prepended with the field name</returns>
+        public static string FieldToHexString(byte[] bytes, string fieldName)
+        {
+            return FieldToHexString(bytes, bytes.Length, fieldName);
+        }
+
+        /// <summary>
+        /// Converts a byte array to a string containing hexadecimal characters
+        /// </summary>
+        /// <param name="bytes">The byte array to convert to a string</param>
         /// <param name="length">Number of bytes in the array to parse</param>
         /// <param name="fieldName">The name of the field to prepend to each
         /// line of the string</param>

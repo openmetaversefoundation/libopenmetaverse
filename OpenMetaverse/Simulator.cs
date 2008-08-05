@@ -841,7 +841,7 @@ namespace OpenMetaverse
             {
                 packet = Packet.BuildPacket(buffer.Data, ref packetEnd, buffer.ZeroData);
             }
-            catch (MalformedDataException ex)
+            catch (MalformedDataException)
             {
                 Logger.Log(String.Format("Malformed data, cannot parse packet:\n{0}",
                     Helpers.FieldToHexString(buffer.Data, buffer.DataLength, null)), Helpers.LogLevel.Error);

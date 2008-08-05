@@ -823,9 +823,10 @@ namespace OpenMetaverse
 
                 if (x >= PATCHES_PER_EDGE || y >= PATCHES_PER_EDGE)
                 {
-                    Logger.Log("Invalid LayerData land packet, x = " + x + ", y = " + y + ", dc_offset = " +
-                        header.DCOffset + ", range = " + header.Range + ", quant_wbits = " + header.QuantWBits +
-                        ", patchids = " + header.PatchIDs + ", count = " + count, Helpers.LogLevel.Warning, Client);
+                    Logger.Log(String.Format(
+                        "Invalid LayerData land packet, x={0}, y={1}, dc_offset={2}, range={3}, quant_wbits={4}, patchids={5}, count={6}",
+                        x, y, header.DCOffset, header.Range, header.QuantWBits, header.PatchIDs, count),
+                        Helpers.LogLevel.Warning, Client);
                     return;
                 }
 

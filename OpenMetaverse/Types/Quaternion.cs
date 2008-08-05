@@ -114,12 +114,12 @@ namespace OpenMetaverse
 
         public float Length()
         {
-            return (float)Math.Sqrt(W * W + X * X + Y * Y + Z * Z);
+            return (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
         }
 
         public float LengthSquared()
         {
-            return (W * W + X * X + Y * Y + Z * Z);
+            return (X * X + Y * Y + Z * Z + W * W);
         }
 
         /// <summary>
@@ -312,6 +312,33 @@ namespace OpenMetaverse
                 yaw = (float)Math.Atan2(2f * Y * W - 2f * X * Z, sqx - sqy - sqz + sqw);
                 pitch = (float)Math.Asin(2f * test / unit);
                 roll = (float)Math.Atan2(2f * X * W - 2f * Y * Z, -sqx + sqy - sqz + sqw);
+            }
+        }
+
+        /// <summary>
+        /// Conver this quaternion to an angle around an axis
+        /// </summary>
+        /// <param name="axis">Unit vector describing the axis</param>
+        /// <param name="angle">Angle around the axis, in radians</param>
+        public void GetAxisAngle(out Vector3 axis, out float angle)
+        {
+            axis = new Vector3();
+            float scale = (float)Math.Sqrt(X * X + Y * Y + Z * Z);
+
+            if (scale < Single.Epsilon || W > 1.0f || W < -1.0f)
+            {
+                angle = 0.0f;
+                axis.X = 0.0f;
+                axis.Y = 1.0f;
+                axis.Z = 0.0f;
+            }
+            else
+            {
+                angle = 2.0f * (float)Math.Acos(W);
+                float ooscale = 1f / scale;
+                axis.X = X * ooscale;
+                axis.Y = Y * ooscale;
+                axis.Z = Z * ooscale;
             }
         }
 
