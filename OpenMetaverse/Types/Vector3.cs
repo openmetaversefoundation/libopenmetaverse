@@ -347,11 +347,21 @@ namespace OpenMetaverse
 
         public static Vector3 Normalize(Vector3 value)
         {
+            const float MAG_THRESHOLD = 0.0000001f;
             float factor = Distance(value, Zero);
-            factor = 1f / factor;
-            value.X *= factor;
-            value.Y *= factor;
-            value.Z *= factor;
+            if (factor > MAG_THRESHOLD)
+            {
+                factor = 1f / factor;
+                value.X *= factor;
+                value.Y *= factor;
+                value.Z *= factor;
+            }
+            else
+            {
+                value.X = 0f;
+                value.Y = 0f;
+                value.Z = 0f;
+            }
             return value;
         }
 

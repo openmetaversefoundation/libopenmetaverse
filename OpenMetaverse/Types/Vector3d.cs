@@ -340,10 +340,19 @@ namespace OpenMetaverse
         public static Vector3d Normalize(Vector3d value)
         {
             double factor = Distance(value, Zero);
-            factor = 1d / factor;
-            value.X *= factor;
-            value.Y *= factor;
-            value.Z *= factor;
+            if (factor > Double.Epsilon)
+            {
+                factor = 1d / factor;
+                value.X *= factor;
+                value.Y *= factor;
+                value.Z *= factor;
+            }
+            else
+            {
+                value.X = 0d;
+                value.Y = 0d;
+                value.Z = 0d;
+            }
             return value;
         }
 

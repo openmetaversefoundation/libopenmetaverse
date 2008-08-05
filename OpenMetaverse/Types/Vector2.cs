@@ -286,10 +286,19 @@ namespace OpenMetaverse
 
         public static Vector2 Normalize(Vector2 value)
         {
+            const float MAG_THRESHOLD = 0.0000001f;
             float factor = DistanceSquared(value, Zero);
-            factor = 1f / (float)Math.Sqrt(factor);
-            value.X *= factor;
-            value.Y *= factor;
+            if (factor > MAG_THRESHOLD)
+            {
+                factor = 1f / (float)Math.Sqrt(factor);
+                value.X *= factor;
+                value.Y *= factor;
+            }
+            else
+            {
+                value.X = 0f;
+                value.Y = 0f;
+            }
             return value;
         }
 

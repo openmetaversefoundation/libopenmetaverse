@@ -361,13 +361,23 @@ namespace OpenMetaverse
 
         public static Vector4 Normalize(Vector4 vector)
         {
+            const float MAG_THRESHOLD = 0.0000001f;
             float factor = DistanceSquared(vector, Zero);
-            factor = 1f / (float)Math.Sqrt(factor);
-
-            vector.W *= factor;
-            vector.X *= factor;
-            vector.Y *= factor;
-            vector.Z *= factor;
+            if (factor > MAG_THRESHOLD)
+            {
+                factor = 1f / (float)Math.Sqrt(factor);
+                vector.X *= factor;
+                vector.Y *= factor;
+                vector.Z *= factor;
+                vector.W *= factor;
+            }
+            else
+            {
+                vector.X = 0f;
+                vector.Y = 0f;
+                vector.Z = 0f;
+                vector.W = 0f;
+            }
             return vector;
         }
 
