@@ -11,11 +11,11 @@ using NUnit.Framework;
 namespace OpenMetaverse.Tests
 {
     [TestFixture]
-    public class OnlineInventoryTests
+    public class RemoteInventoryTests
     {
         public GridClient Client;
         public Inventory Inventory;
-        public OnlineInventoryTests()
+        public RemoteInventoryTests()
         {
             Client = new GridClient();
             Console.WriteLine("Logging in...");
@@ -34,7 +34,7 @@ namespace OpenMetaverse.Tests
             Assert.AreNotEqual(UUID.Zero, Inventory.RootUUID, "Root UUID is zero.");
         }
 
-        ~OnlineInventoryTests()
+        ~RemoteInventoryTests()
         {
             if (Client.Network.Connected)
                 Client.Network.Logout();
