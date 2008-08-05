@@ -100,6 +100,15 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Initializes an empty, rootless, ownerless inventory.
+        /// This is used so that we can have an Inventory instance before
+        /// the owner and root data is known.
+        /// </summary>
+        /// <param name="manager">Manager for remote updates.</param>
+        internal Inventory(InventoryManager manager)
+            : this(manager, UUID.Zero, UUID.Zero) { }
+
+        /// <summary>
         /// Creates a new Inventory. Remote updates are sent via the manager
         /// passed to this constructor. All folders contained within the InventorySkeleton
         /// are automatically managed. The inventory takes on the owner of the skeleton.
@@ -109,11 +118,7 @@ namespace OpenMetaverse
         public Inventory(InventoryManager manager, InventorySkeleton skeleton)
             : this (manager, skeleton.Owner, skeleton.RootUUID)
         {
-            Items = new Dictionary<UUID, InventoryBase>(skeleton.Folders.Length);
-            foreach (FolderData folder in skeleton.Folders)
-            {
-                Manage(folder);
-            }
+            ManageSkeleton(skeleton);
         }
 
         /// <summary>
@@ -131,6 +136,31 @@ namespace OpenMetaverse
             if (Items == null)
                 Items = new Dictionary<UUID, InventoryBase>();
             RegisterInventoryCallbacks();
+        }
+
+        protected internal void InitializeFromSkeleton(InventorySkeleton skeleton)
+        {
+            Owner = skeleton.Owner;
+            RootUUID = skeleton.RootUUID;
+            Items = new Dictionary<UUID, InventoryBase>(skeleton.Folders.Length);
+            ManageSkeleton(skeleton);
+        }
+
+        /// <summary>
+        /// Manages all the folders in the skeleton, if the skeleton is owned
+        /// by the same agent. 
+        /// </summary>
+        /// <param name="skeleton">The skeleton with folders to manage.</param>
+        /// <returns>true if Inventory's owner is skeleton's owner and management succeeded, false otherwise.</returns>
+        protected bool ManageSkeleton(InventorySkeleton skeleton)
+        {
+            if (skeleton.Owner != Owner)
+                return false;
+            foreach (FolderData folder in skeleton.Folders)
+            {
+                Manage(folder);
+            }
+            return true;
         }
 
         /// <summary>
@@ -952,15 +982,25 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Asynchronously requests the folder's contents from the remote inventory. 
-        /// The <code>InventoryFolder.OnContentsRetrieved</code> event 
-        /// is raised when he new contents are written to the 
-        /// <code>InventoryFolder.Contents</code> Dictionary.
-        /// The contents retrieved are automatically managed.
+        /// Override for RequestContents that retrieves results 
+        /// in order by name. 
         /// </summary>
         public void RequestContents()
         {
-            InventoryManager.FolderContentsCallback callback = 
+            RequestContents(InventorySortOrder.ByName);
+        }
+
+        /// <summary>
+        /// Asynchronously requests the folder's contents from the remote inventory. 
+        /// The <code>InventoryFolder.OnContentsRetrieved</code> event 
+        /// is raised when the new contents are written to the 
+        /// <code>InventoryFolder.Contents</code> Dictionary.
+        /// The contents retrieved are automatically managed.
+        /// </summary>
+        /// <param name="sortOrder">The order in which results are returned.</param>
+        public void RequestContents(InventorySortOrder sortOrder)
+        {
+            InventoryManager.FolderContentsCallback callback =
                 delegate(UUID folder, List<ItemData> items, List<FolderData> folders)
                 {
                     if (folder != UUID)
@@ -975,7 +1015,7 @@ namespace OpenMetaverse
                     }
                 };
 
-            Manager.RequestFolderContents(UUID, Data.OwnerID, true, true, InventorySortOrder.ByName, 
+            Manager.RequestFolderContents(UUID, Data.OwnerID, true, true, sortOrder,
                 callback);
         }
 
