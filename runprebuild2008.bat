@@ -15,7 +15,7 @@
 ::
 
 echo ##########################################
-echo creating prebuild files for: nant, vs2005
+echo creating prebuild files for: nant, vs2008
 echo Parameters: %1 %2
 echo ##########################################
 
