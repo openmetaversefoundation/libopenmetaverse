@@ -550,6 +550,7 @@ namespace OpenMetaverse
         public static Vector3 operator *(Vector3 vec, Quaternion rot)
         {
             Vector3 vec2;
+            vec2.conversionBuffer = null;
 
             vec2.X =
                      rot.W * rot.W * vec.X +
@@ -581,7 +582,7 @@ namespace OpenMetaverse
                      rot.X * rot.X * vec.Z +
                      rot.W * rot.W * vec.Z;
 
-            return vec;
+            return vec2;
         }
 
         public static Vector3 operator *(Vector3 vector, Matrix4 matrix)
