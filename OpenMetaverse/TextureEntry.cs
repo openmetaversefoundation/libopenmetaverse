@@ -421,6 +421,7 @@ namespace OpenMetaverse
             /// <param name="defaultTexture"></param>
             public TextureEntryFace(TextureEntryFace defaultTexture)
             {
+                rgba = Color4.White;
                 repeatU = 1.0f;
                 repeatV = 1.0f;
 
