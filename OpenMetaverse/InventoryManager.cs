@@ -1154,6 +1154,7 @@ namespace OpenMetaverse
         public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items, InventorySortOrder order, FolderContentsCallback callback, PartialContentsCallback partialCallback)
         {
             DescendentsRequest request = new DescendentsRequest(folder, callback);
+            request.PartialCallback = partialCallback;
             lock (_DescendentsRequests)
                 _DescendentsRequests.Add(request);
 
