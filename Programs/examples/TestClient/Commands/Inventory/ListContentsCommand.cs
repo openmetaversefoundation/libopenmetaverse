@@ -17,22 +17,49 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            if (args.Length > 1)
-                return "Usage: ls [-l]";
-            bool longDisplay = false;
-            if (args.Length > 0 && args[0] == "-l")
-                longDisplay = true;
-
             Manager = Client.Inventory;
             Inventory = Client.InventoryStore;
+            if (args.Length > 1)
+                return "Usage: ls [-l] [directory path]";
+            bool longDisplay = false;
+            InventoryFolder directory = Client.CurrentDirectory;
+            if (args.Length > 0)
+            {
+                int start = 0;
+                if (args[0] == "-l")
+                {
+                    longDisplay = true;
+                    start = 1;
+                }
+                if (start < args.Length)
+                {
+                    string path = args[start];
+                    for (int i = start + 1; i < args.Length; ++i)
+                    {
+                        path += " " + args[i];
+                    }
+                    bool found = false;
+                    List<InventoryBase> results = Inventory.InventoryFromPath(path, Client.CurrentDirectory, true);
+                    foreach (InventoryBase ib in results)
+                    {
+                        if (ib is InventoryFolder)
+                        {
+                            directory = ib as InventoryFolder;
+                            found = true;
+                        }
+                    }
+                    if (!found)
+                        return "Unable to find directory at path: " + path;
+                }
+            }
 
-            if (Client.CurrentDirectory.IsStale)
-                Client.CurrentDirectory.DownloadContents(TimeSpan.FromSeconds(30));
+            if (directory.IsStale)
+                directory.DownloadContents(TimeSpan.FromSeconds(30));
 
             string displayString = "";
             string nl = "\n"; // New line character
             // Pretty simple, just print out the contents.
-            foreach (InventoryBase b in Client.CurrentDirectory)
+            foreach (InventoryBase b in directory)
             {
                 if (longDisplay)
                 {

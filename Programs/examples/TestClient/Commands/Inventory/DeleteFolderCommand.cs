@@ -27,14 +27,14 @@ namespace OpenMetaverse.TestClient
             string target = String.Empty;
             for (int ct = 0; ct < args.Length; ct++)
                 target = target + args[ct] + " ";
-            target = target.TrimEnd();
 
             // initialize results list
             List<InventoryBase> found = new List<InventoryBase>();
             try
             {
                 // find the folder
-                found = Client.InventoryStore.InventoryFromPath(target.Split('/'), Client.InventoryStore.RootFolder);
+
+                found = Client.InventoryStore.InventoryFromPath(target, Client.CurrentDirectory, true);
                 if (found.Count > 0)
                 {
                     InventoryBase item = found[0];

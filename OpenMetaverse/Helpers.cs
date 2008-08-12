@@ -1276,30 +1276,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Collapses a string[] into a single string, with <code>between</code>
-        /// between each element.
-        /// </summary>
-        /// <param name="array"></param>
-        /// <param name="between"></param>
-        /// <returns></returns>
-        public static string Implode(string[] array, string between)
-        {
-            StringBuilder b = new StringBuilder(array.Length * (array[array.Length / 2].Length + between.Length));
-            if (array.Length == 0)
-                return String.Empty;
-            b.Append(array[0]);
-            if (between != null)
-                b.Append(between);
-            for (int i = 1; i < array.Length; ++i)
-            {
-                if (between != null)
-                    b.Append(between);
-                b.Append(array[i]); 
-            }
-            return b.ToString();
-        }
-
         #endregion Platform Helper Functions
     }
 }

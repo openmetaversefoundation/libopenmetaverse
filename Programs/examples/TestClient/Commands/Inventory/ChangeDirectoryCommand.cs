@@ -21,68 +21,32 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Manager = Client.Inventory;
             Inventory = Client.InventoryStore;
 
-            if (args.Length > 1)
-                return "Usage: cd [path-to-folder]";
-            string pathStr = "";
-            string[] path = null;
             if (args.Length == 0)
-            {
-                path = new string[] { "" };
-                // cd without any arguments doesn't do anything.
-            }
-            else if (args.Length == 1)
-            {
-                pathStr = args[0];
-                path = pathStr.Split(new char[] { '/' });
-                // Use '/' as a path seperator.
-            }
-            InventoryFolder currentFolder = Client.CurrentDirectory;
-            if (pathStr.StartsWith("/"))
-                currentFolder = Inventory.RootFolder;
+                return "Current folder: " + Client.CurrentDirectory.Name;
 
-            if (currentFolder == null) // We need this to be set to something. 
-                return "Error: Client not logged in.";
-
-            // Traverse the path, looking for the 
-            for (int i = 0; i < path.Length; ++i)
+            string path = args[0];
+            for(int i = 1; i < args.Length; ++i)
             {
-                string nextName = path[i];
-                if (string.IsNullOrEmpty(nextName) || nextName == ".")
-                    continue; // Ignore '.' and blanks, stay in the current directory.
-                if (nextName == ".." && currentFolder != Inventory.RootFolder)
+                path += " " + args[i];
+            }
+
+            List<InventoryBase> results = Inventory.InventoryFromPath(path, Client.CurrentDirectory, true);
+            if (results.Count == 0)
+                return "Can not find inventory at: " + path;
+            InventoryFolder destFolder = null;
+            foreach (InventoryBase ib in results)
+            {
+                if (ib is InventoryFolder) 
                 {
-                    // If we encounter .., move to the parent folder.
-                    currentFolder = currentFolder.Parent;
-                }
-                else
-                {
-                    if (currentFolder.IsStale)
-                        currentFolder.DownloadContents(TimeSpan.FromSeconds(30));
-                    // Try and find an InventoryBase with the corresponding name.
-                    bool found = false;
-                    foreach (InventoryBase item in currentFolder)
-                    {
-                        string name = item.Name;
-                        // Allow lookup by UUID as well as name:
-                        if (name == nextName || item.UUID.ToString() == nextName)
-                        {
-                            found = true;
-                            if (item is InventoryFolder)
-                            {
-                                currentFolder = item as InventoryFolder;
-                            }
-                            else
-                            {
-                                return name + " is not a folder.";
-                            }
-                        }
-                    }
-                    if (!found)
-                        return nextName + " not found in " + currentFolder.Data.Name;
+                    destFolder = ib as InventoryFolder;
+                    break;
                 }
             }
-            Client.CurrentDirectory = currentFolder;
-            return "Current folder: " + currentFolder.Data.Name;
+            if (destFolder == null)
+                return path + " is not a folder.";
+
+            Client.CurrentDirectory = destFolder;
+            return "Current folder: " + Client.CurrentDirectory.Name;
         }
     }
 }

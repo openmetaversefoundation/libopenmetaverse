@@ -31,25 +31,19 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             string nl = "\n";
             for (int i = 1; i < args.Length; ++i)
             {
-                string inventoryName = args[i];
+                string itemPath = args[i];
 
-                if (Client.CurrentDirectory.IsStale)
+                List<InventoryBase> results = Inventory.InventoryFromPath(itemPath, Client.CurrentDirectory, true);
+
+                if (results.Count == 0)
                 {
-                    Client.CurrentDirectory.DownloadContents(TimeSpan.FromSeconds(30));
+                    ret += "No inventory item at " + itemPath + " found." + nl;
                 }
-
-                bool found = false;
-                foreach (InventoryBase b in Client.CurrentDirectory) {
-                    string name = b.Name;
-                    if (inventoryName == name || inventoryName == b.UUID.ToString())
-                    {
-                        found = true;
-                        b.Give(dest, true);
-                        ret += "Gave " + name + nl;
-                    }
+                else
+                {
+                    results[0].Give(dest, true);
+                    ret += "Gave " + results[0].Name + nl;
                 }
-                if (!found)
-                    ret += "No inventory item named " + inventoryName + " found." + nl;
             }
             return ret;
         }

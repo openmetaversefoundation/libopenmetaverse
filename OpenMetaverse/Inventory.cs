@@ -76,8 +76,8 @@ namespace OpenMetaverse
 
         protected Dictionary<UUID, InventoryBase> Items;
         private InventoryManager _Manager;
-        private UUID _Owner;
 
+        private UUID _Owner;
         /// <summary>
         /// The owner of this inventory. Inventorys can only manage items
         /// owned by the same agent.
@@ -86,14 +86,21 @@ namespace OpenMetaverse
             get { return _Owner; }
             private set { _Owner = value; }
         }
-
+        
         private UUID _RootUUID;
+        /// <summary>
+        /// The UUID of the root folder.
+        /// </summary>
         public UUID RootUUID
         {
             get { return _RootUUID; }
             private set { _RootUUID = value; }
         }
 
+        /// <summary>
+        /// Reference to the InventoryFolder representing the 
+        /// inventory root folder, if it has been managed.
+        /// </summary>
         public InventoryFolder RootFolder
         {
             get { return this[RootUUID] as InventoryFolder; }
@@ -426,13 +433,60 @@ namespace OpenMetaverse
             }
         }
 
-        public List<InventoryBase> InventoryFromPath(string[] path)
+        /// <summary>
+        /// Fetches an inventory item or folder by path.
+        /// If the path starts with /, <paramref name="currentDirectory"/> is ignored
+        /// and the path is located from the root.
+        /// </summary>
+        /// <remarks>If <paramref name="fetchStale"/> is <code>true</code>, this method may take a while to return.</remarks>
+        /// <param name="path">A "/"-seperated path, UNIX style. Accepts UUIDs or folder names.</param>
+        /// <param name="currentDirectory">The directory to begin in if the path does not start at the root.</param>
+        /// <param name="fetchStale">Whether to fetch folder contents when they're needed.</param>
+        /// <returns>Multiple items if the path is ambiguous.</returns>
+        public List<InventoryBase> InventoryFromPath(string path, InventoryFolder currentDirectory, bool fetchStale)
         {
-            return InventoryFromPath(path, RootFolder);
+            path = path.Trim();
+            if (path.StartsWith("/"))
+            {
+                currentDirectory = RootFolder;
+                path = path.Remove(0, 1);
+            }
+            return InventoryFromPath(path.Split(new char[] { '/' }), currentDirectory, fetchStale);
         }
 
+        /// <summary>
+        /// Fetches an inventory item or folder by path, without fetching anything
+        /// from the remote inventory. 
+        /// </summary>
+        /// <remarks>If <paramref name="fetchStale"/> is <code>true</code>, this method may take a while to return.</remarks>
+        /// <param name="path">Array whose elements are names or UUIDs of folders, representing the path to the desired item or folder.</param>
+        /// <returns>Multiple items if the path is ambiguous.</returns>
+        public List<InventoryBase> InventoryFromPath(string[] path)
+        {
+            return InventoryFromPath(path, false);
+        }
 
-        public List<InventoryBase> InventoryFromPath(string[] path, InventoryFolder baseFolder)
+        /// <summary>
+        /// Fetches an inventory item or folder by path, starting at the inventory's root folder.
+        /// </summary>
+        /// <remarks>If <paramref name="fetchStale"/> is <code>true</code>, this method may take a while to return.</remarks>
+        /// <param name="path">Array whose elements are names or UUIDs of folders, representing the path to the desired item or folder.</param>
+        /// <param name="fetchStale">If a folder is stale, fetch its contents.</param>
+        /// <returns>Multiple items if the path is ambiguous.</returns>
+        public List<InventoryBase> InventoryFromPath(string[] path, bool fetchStale)
+        {
+            return InventoryFromPath(path, RootFolder, fetchStale);
+        }
+
+        /// <summary>
+        /// Fetches an inventory item or folder by path, starting at <paramref name="baseFolder"/>.
+        /// </summary>
+        /// <remarks>If <paramref name="fetchStale"/> is <code>true</code>, this method may take a while to return.</remarks>
+        /// <param name="path">Array whose elements are names or UUIDs of folders, representing the path to the desired item or folder.</param>
+        /// <param name="baseFolder">Folder to start the path from.</param>
+        /// <param name="fetchStale">Whether to fetch folder contents when they're needed.</param>
+        /// <returns>Multiple items if the path is ambiguous.</returns>
+        public List<InventoryBase> InventoryFromPath(string[] path, InventoryFolder baseFolder, bool fetchStale)
         {
             if (path == null || path.Length == 0)
             {
@@ -441,29 +495,61 @@ namespace OpenMetaverse
                 return one;
             }
 
-            Dictionary<InventoryBase, int> goal = new Dictionary<InventoryBase, int>();
+            // Agenda stores an object[] which contains an InventoryFolder and an int
+            // the int represents the level in the path that the children of the InventoryFolder
+            // should satasfy. 
             List<InventoryBase> results = new List<InventoryBase>();
-            Stack<InventoryBase> agenda = new Stack<InventoryBase>();
-            goal.Add(baseFolder, 0);
-            agenda.Push(baseFolder);
+            Stack<object[]> agenda = new Stack<object[]>();
+            agenda.Push(new object[] { baseFolder, 0 });
             while (agenda.Count > 0)
             {
-                InventoryFolder currentFolder = agenda.Pop() as InventoryFolder;
-                int currentLevel = goal[currentFolder];
-                foreach (InventoryBase child in currentFolder)
+                object[] currentData = agenda.Pop();
+                InventoryFolder currentFolder = currentData[0] as InventoryFolder;
+                int goalLevel = (int)currentData[1];
+
+                if (path[goalLevel] == "..")
                 {
-                    if (child.Name == path[currentLevel])
+                    // The unix behavior at root is that it's its own parent.
+                    InventoryFolder parent = currentFolder != RootFolder ? currentFolder.Parent : RootFolder;
+                    if (goalLevel == path.Length - 1) // End of the path.
                     {
-                        if (currentLevel == path.Length - 1)
+                        results.Add(parent);
+                    }
+                    else
+                    {
+                        agenda.Push(new object[] { parent, goalLevel + 1 });
+                    }
+                }
+                else if (path[goalLevel] == ".")
+                {
+                    if (goalLevel == path.Length - 1) // End of the path. 
+                    {
+                        results.Add(currentFolder);
+                    }
+                    else
+                    {
+                        agenda.Push(new object[] {currentFolder, goalLevel + 1});
+                    }
+                }
+                else // We need to look at the children
+                {
+                    if (fetchStale && currentFolder.IsStale)
+                        currentFolder.DownloadContents(TimeSpan.FromSeconds(10));
+
+                    foreach (InventoryBase child in currentFolder)
+                    {
+                        if (child.Name == path[goalLevel] || child.UUID.ToString() == path[goalLevel])
                         {
-                            results.Add(child);
-                        }
-                        else
-                        {
-                            if (child is InventoryFolder)
+                            if (goalLevel == path.Length - 1) // End of the path.
                             {
-                                agenda.Push(child);
-                                goal.Add(child, currentLevel + 1);
+                                results.Add(child);
+                            }
+                            else
+                            {
+                                if (child is InventoryFolder)
+                                {
+                                    agenda.Push(new object[] { child, goalLevel + 1 });
+                                }
                             }
                         }
                     }

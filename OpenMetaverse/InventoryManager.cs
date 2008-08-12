@@ -638,6 +638,7 @@ namespace OpenMetaverse
             public UUID Folder;
             public bool ReceivedResponse;
             public FolderContentsCallback Callback;
+            public PartialContentsCallback PartialCallback;
             public int Descendents;
             public List<FolderData> FolderContents;
             public List<ItemData> ItemContents;
@@ -649,6 +650,7 @@ namespace OpenMetaverse
                 Descendents = 0;
                 FolderContents = new List<FolderData>();
                 ItemContents = new List<ItemData>();
+                PartialCallback = null;
             }
         }
 
@@ -717,6 +719,15 @@ namespace OpenMetaverse
         /// <seealso cref="InventoryManager.RequestFolderContents"/>
         public delegate void FolderContentsCallback(UUID folder, List<ItemData> Items, List<FolderData> Folders);
 
+        /// <summary>
+        /// Use this delegate to create a callback for RequestFolderContents
+        /// </summary>
+        /// <param name="folder">The folder whose contents were received.</param>
+        /// <param name="items">The items in <paramref name="folder"/> that were just received.</param>
+        /// <param name="iolders">The folders in <paramref name="folder"/> that were just received.</param>
+        /// <param name="remaining">Number of item or folders that remain to be downloaded.</param>
+        public delegate void PartialContentsCallback(UUID folder, ItemData[] items, FolderData[] folders, int remaining);
+        
         /// <summary>
         /// Use this delegate to create a callback for RequestFetchItems.
         /// </summary>
@@ -1115,16 +1126,32 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Request the contents of an inventory folder
+        /// 
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="owner"></param>
+        /// <param name="folders"></param>
+        /// <param name="items"></param>
+        /// <param name="order"></param>
+        /// <param name="callback"></param>
+        public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items, InventorySortOrder order, FolderContentsCallback callback)
+        {
+            RequestFolderContents(folder, owner, folders, items, order, callback, null);
+        }
+
+        /// <summary>
+        /// Request the contents of an inventory folder, <paramref name="callback"/> is fired when all of the contents are retrieved.
+        /// <paramref name="partialCallback"/> is fired as the contents trickle in from the server. 
         /// </summary>
         /// <param name="folder">The folder to search</param>
         /// <param name="owner">The folder owners <seealso cref="UUID"/></param>
         /// <param name="folders">true to return <seealso cref="InventoryManager.InventoryFolder"/>s contained in folder</param>
         /// <param name="items">true to return <seealso cref="InventoryManager.InventoryItem"/>s containd in folder</param>
         /// <param name="order">the sort order to return items in</param>
-        /// <param name="callback">The callback to fire when the contents are received.</param>
+        /// <param name="callback">The callback to fire when all the contents are received.</param>
+        /// <param name="partialCallback">The callback to fire as the contents are received.</param>
         /// <seealso cref="InventoryManager.FolderContents"/>
-        public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items, InventorySortOrder order, FolderContentsCallback callback)
+        public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items, InventorySortOrder order, FolderContentsCallback callback, PartialContentsCallback partialCallback)
         {
             DescendentsRequest request = new DescendentsRequest(folder, callback);
             lock (_DescendentsRequests)
@@ -1237,7 +1264,7 @@ namespace OpenMetaverse
         public void RequestFindObjectByPath(UUID baseFolder, UUID inventoryOwner, string[] pathArray, FindObjectByPathCallback callback)
         {
             // Create the RequestFolderContents callback:
-            FolderContentsCallback contentsCallback = ConstructFindContentsHandler(Helpers.Implode(pathArray, "/"), pathArray, 0, callback);
+            FolderContentsCallback contentsCallback = ConstructFindContentsHandler(String.Join("/", pathArray), pathArray, 0, callback);
             // Start the search
             RequestFolderContents(baseFolder, inventoryOwner, true, true, InventorySortOrder.ByName, contentsCallback);
         }
@@ -3027,8 +3054,16 @@ namespace OpenMetaverse
 
                             _DescendentsRequests[i] = request;
 
+                            int contentsReceived = request.FolderContents.Count + request.ItemContents.Count;
+
+                            // Fire the partial callback, if we have one:
+                            if (request.PartialCallback != null)
+                            {
+                                request.PartialCallback(reply.AgentData.FolderID, items, folders, request.Descendents - contentsReceived);
+                            }
+
                             // Check if we're done:
-                            if (request.FolderContents.Count + request.ItemContents.Count >= request.Descendents)
+                            if (contentsReceived >= request.Descendents)
                             {
                                 // Fire the callback:
                                 request.Callback(reply.AgentData.FolderID, request.ItemContents, request.FolderContents);

@@ -364,6 +364,13 @@ namespace OpenMetaverse
             appearanceThread.Start();
         }
 
+        public void WearOutfit(InventoryFolder folder, bool bake)
+        {
+            _wearOutfitParams = new WearParams(folder, bake);
+            Thread appearanceThread = new Thread(new ThreadStart(StartWearOutfitFolder));
+            appearanceThread.Start();
+        }
+
         private void StartWearOutfitFolder()
         {
             SendAgentWearablesRequest(); // request current wearables async
@@ -385,18 +392,22 @@ namespace OpenMetaverse
             wearables = null;
             attachments = null;
 
-            if (_folder.GetType() == typeof(string[]))
+            if (_folder is string[])
             {
                 string[] path = (string[])_folder;
 
-                folder = Client.Inventory.FindObjectByPath(
-                    Client.Inventory.InventorySkeleton.RootUUID, Client.Self.AgentID, String.Join("/", path), TimeSpan.FromMilliseconds(1000 * 20));
+                List<InventoryBase> results = Client.InventoryStore.InventoryFromPath(path, true);
 
-                if (folder == UUID.Zero)
+                if (results.Count == 0)
                 {
                     Logger.Log("Outfit path " + path + " not found", Helpers.LogLevel.Error, Client);
                     return false;
                 }
+                folder = results[0].UUID;
+            }
+            else if (_folder is InventoryFolder)
+            {
+                folder = (_folder as InventoryFolder).UUID;
             }
             else
                 folder = (UUID)_folder;
@@ -404,39 +415,42 @@ namespace OpenMetaverse
             wearables = new List<ItemData>();
             attachments = new List<ItemData>();
 
-            List<FolderData> folders;
-            List<ItemData> items;
-            Client.Inventory.FolderContents(folder, Client.Self.AgentID, 
-                false, true, InventorySortOrder.ByName, TimeSpan.FromMilliseconds(1000 * 20), out items, out folders);
-
-            if (items != null)
+            InventoryFolder invFolder = Client.InventoryStore[folder] as InventoryFolder;
+            if (invFolder != null)
             {
-                foreach (ItemData ib in items)
+                if (invFolder.IsStale)
+                    invFolder.DownloadContents(TimeSpan.FromSeconds(20));
+
+                foreach (InventoryBase ibase in invFolder)
                 {
-                    if (ib.InventoryType == InventoryType.Wearable)
+                    if (ibase is InventoryItem)
                     {
-                        Logger.DebugLog("Adding wearable " + ib.Name, Client);
-                        wearables.Add(ib);
-                    }
-                    else if (ib.InventoryType == InventoryType.Attachment)
-                    {
-                        Logger.DebugLog("Adding attachment (attachment) " + ib.Name, Client);
-                        attachments.Add(ib);
-                    }
-                    else if (ib.InventoryType == InventoryType.Object)
-                    {
-                        Logger.DebugLog("Adding attachment (object) " + ib.Name, Client);
-                        attachments.Add(ib);
-                    }
-                    else
-                    {
-                        Logger.DebugLog("Ignoring inventory item " + ib.Name, Client);
+                        ItemData ib = (ibase as InventoryItem).Data;
+                        if (ib.InventoryType == InventoryType.Wearable)
+                        {
+                            Logger.DebugLog("Adding wearable " + ib.Name, Client);
+                            wearables.Add(ib);
+                        }
+                        else if (ib.InventoryType == InventoryType.Attachment)
+                        {
+                            Logger.DebugLog("Adding attachment (attachment) " + ib.Name, Client);
+                            attachments.Add(ib);
+                        }
+                        else if (ib.InventoryType == InventoryType.Object)
+                        {
+                            Logger.DebugLog("Adding attachment (object) " + ib.Name, Client);
+                            attachments.Add(ib);
+                        }
+                        else
+                        {
+                            Logger.DebugLog("Ignoring inventory item " + ib.Name, Client);
+                        }
                     }
                 }
             }
             else
             {
-                Logger.Log("Failed to download folder contents of + " + folder.ToString(), 
+                Logger.Log("Failed to download folder contents of + " + folder.ToString(),
                     Helpers.LogLevel.Error, Client);
                 return false;
             }
