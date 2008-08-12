@@ -90,9 +90,9 @@ namespace OpenMetaverse
         /// <summary>
         /// Clamp a given value between a range
         /// </summary>
-        /// <param name="val">Value to clamp</param>
-        /// <param name="lower">Minimum allowable value</param>
-        /// <param name="upper">Maximum allowable value</param>
+        /// <param name="value">Value to clamp</param>
+        /// <param name="min">Minimum allowable value</param>
+        /// <param name="max">Maximum allowable value</param>
         /// <returns>A value inclusively between lower and upper</returns>
         public static float Clamp(float value, float min, float max)
         {
@@ -109,9 +109,9 @@ namespace OpenMetaverse
         /// <summary>
         /// Clamp a given value between a range
         /// </summary>
-        /// <param name="val">Value to clamp</param>
-        /// <param name="lower">Minimum allowable value</param>
-        /// <param name="upper">Maximum allowable value</param>
+        /// <param name="value">Value to clamp</param>
+        /// <param name="min">Minimum allowable value</param>
+        /// <param name="max">Maximum allowable value</param>
         /// <returns>A value inclusively between lower and upper</returns>
         public static double Clamp(double value, double min, double max)
         {
