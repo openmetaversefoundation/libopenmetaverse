@@ -497,7 +497,7 @@ namespace OpenMetaverse
 
             RequestXferPacket request = new RequestXferPacket();
             request.XferID.ID = id;
-            request.XferID.Filename = Helpers.StringToField(filename);
+            request.XferID.Filename = Utils.StringToBytes(filename);
             request.XferID.FilePath = 4; // "Cache". This is a horrible thing that hardcodes a file path enumeration in to the
                                          // protocol. For asset downloads we should only ever need this value
             request.XferID.DeleteOnCompletion = deleteOnCompletion;

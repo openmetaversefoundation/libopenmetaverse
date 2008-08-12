@@ -1046,7 +1046,7 @@ namespace OpenMetaverse
             simulator.ID = handshake.RegionInfo.CacheID;
 
             simulator.IsEstateManager = handshake.RegionInfo.IsEstateManager;
-            simulator.Name = Helpers.FieldToUTF8String(handshake.RegionInfo.SimName);
+            simulator.Name = Utils.BytesToString(handshake.RegionInfo.SimName);
             simulator.SimOwner = handshake.RegionInfo.SimOwner;
             simulator.TerrainBase0 = handshake.RegionInfo.TerrainBase0;
             simulator.TerrainBase1 = handshake.RegionInfo.TerrainBase1;
@@ -1134,7 +1134,7 @@ namespace OpenMetaverse
 
         private void KickUserHandler(Packet packet, Simulator simulator)
         {
-            string message = Helpers.FieldToUTF8String(((KickUserPacket)packet).UserInfo.Reason);
+            string message = Utils.BytesToString(((KickUserPacket)packet).UserInfo.Reason);
 
             // Fire the callback to let client apps know we are shutting down
             if (OnDisconnected != null)

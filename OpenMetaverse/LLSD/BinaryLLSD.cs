@@ -274,7 +274,7 @@ using System.Text;
                     break;
                 case dateBinaryMarker:
                     double timestamp = NetworkToHostDouble( ConsumeBytes( stream, doubleLength ));
-                    DateTime dateTime = DateTime.SpecifyKind( Helpers.Epoch, DateTimeKind.Utc );
+                    DateTime dateTime = DateTime.SpecifyKind( Utils.Epoch, DateTimeKind.Utc );
                     dateTime = dateTime.AddSeconds(timestamp);
                     llsd = LLSD.FromDate( dateTime.ToLocalTime() );
                     break;

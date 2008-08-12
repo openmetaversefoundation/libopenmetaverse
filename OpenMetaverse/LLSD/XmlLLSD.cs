@@ -60,7 +60,7 @@ namespace OpenMetaverse.StructuredData
         /// <returns></returns>
         public static LLSD DeserializeXml(string xmlData)
         {
-            byte[] bytes = Helpers.StringToField(xmlData);
+            byte[] bytes = Utils.StringToBytes(xmlData);
             return DeserializeXml(new XmlTextReader(new MemoryStream(bytes, false)));
         }
 
@@ -294,7 +294,7 @@ namespace OpenMetaverse.StructuredData
                     if (reader.Read())
                     {
                         int value = 0;
-                        Helpers.TryParse(reader.ReadString().Trim(), out value);
+                        Int32.TryParse(reader.ReadString().Trim(), out value);
                         ret = LLSD.FromInteger(value);
                         break;
                     }
@@ -316,7 +316,7 @@ namespace OpenMetaverse.StructuredData
                         if (str == "nan")
                             value = Double.NaN;
                         else
-                            Helpers.TryParse(str, out value);
+                            Utils.TryParseDouble(str, out value);
 
                         ret = LLSD.FromReal(value);
                         break;
@@ -345,18 +345,18 @@ namespace OpenMetaverse.StructuredData
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromDate(Helpers.Epoch);
+                        return LLSD.FromDate(Utils.Epoch);
                     }
 
                     if (reader.Read())
                     {
-                        DateTime value = Helpers.Epoch;
-                        Helpers.TryParse(reader.ReadString().Trim(), out value);
+                        DateTime value = Utils.Epoch;
+                        DateTime.TryParse(reader.ReadString().Trim(), out value);
                         ret = LLSD.FromDate(value);
                         break;
                     }
 
-                    ret = LLSD.FromDate(Helpers.Epoch);
+                    ret = LLSD.FromDate(Utils.Epoch);
                     break;
                 case "string":
                     if (reader.IsEmptyElement)

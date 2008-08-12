@@ -26,7 +26,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -70,15 +69,15 @@ namespace OpenMetaverse
             // Quick check to see if someone is doing something obviously wrong
             // like using float values from 0.0 - 255.0
             if (r > 1f || g > 1f || b > 1f || a > 1f)
-                Logger.Log(
+                throw new ArgumentException(
                     String.Format("Attempting to initialize Color4 with out of range values <{0},{1},{2},{3}>",
-                    r, g, b, a), Helpers.LogLevel.Warning);
+                    r, g, b, a));
 
             // Valid range is from 0.0 to 1.0
-            R = MathHelper.Clamp(r, 0f, 1f);
-            G = MathHelper.Clamp(g, 0f, 1f);
-            B = MathHelper.Clamp(b, 0f, 1f);
-            A = MathHelper.Clamp(a, 0f, 1f);
+            R = Utils.Clamp(r, 0f, 1f);
+            G = Utils.Clamp(g, 0f, 1f);
+            B = Utils.Clamp(b, 0f, 1f);
+            A = Utils.Clamp(a, 0f, 1f);
         }
 
         /// <summary>
@@ -219,10 +218,10 @@ namespace OpenMetaverse
         {
             byte[] byteArray = new byte[4];
 
-            byteArray[0] = Helpers.FloatToByte(R, 0f, 1f);
-            byteArray[1] = Helpers.FloatToByte(G, 0f, 1f);
-            byteArray[2] = Helpers.FloatToByte(B, 0f, 1f);
-            byteArray[3] = Helpers.FloatToByte(A, 0f, 1f);
+            byteArray[0] = Utils.FloatToByte(R, 0f, 1f);
+            byteArray[1] = Utils.FloatToByte(G, 0f, 1f);
+            byteArray[2] = Utils.FloatToByte(B, 0f, 1f);
+            byteArray[3] = Utils.FloatToByte(A, 0f, 1f);
 
             if (inverted)
             {
@@ -280,36 +279,6 @@ namespace OpenMetaverse
             }
         }
 
-        public LLSD GetLLSD()
-        {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(R));
-            array.Add(LLSD.FromReal(G));
-            array.Add(LLSD.FromReal(B));
-            array.Add(LLSD.FromReal(A));
-            return array;
-        }
-
-        public void FromLLSD(LLSD llsd)
-        {
-            if (llsd.Type == LLSDType.Array)
-            {
-                LLSDArray array = (LLSDArray)llsd;
-
-                if (array.Count == 4)
-                {
-                    R = (float)array[0].AsReal();
-                    G = (float)array[1].AsReal();
-                    B = (float)array[2].AsReal();
-                    A = (float)array[3].AsReal();
-
-                    return;
-                }
-            }
-
-            this = Color4.Black;
-        }
-
         #endregion Public Methods
 
         #region Static Methods
@@ -320,12 +289,12 @@ namespace OpenMetaverse
 
         public override string ToString()
         {
-            return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}, {3}>", R, G, B, A);
+            return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}, {3}>", R, G, B, A);
         }
 
         public string ToRGBString()
         {
-            return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}>", R, G, B);
+            return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}>", R, G, B);
         }
 
         public override bool Equals(object obj)

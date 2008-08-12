@@ -27,7 +27,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
-using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -153,7 +152,7 @@ namespace OpenMetaverse
         /// </summary>
         public bool IsFinite()
         {
-            return (MathHelper.IsFinite(X) && MathHelper.IsFinite(Y) && MathHelper.IsFinite(Z) && MathHelper.IsFinite(W));
+            return (Utils.IsFinite(X) && Utils.IsFinite(Y) && Utils.IsFinite(Z) && Utils.IsFinite(W));
         }
 
         /// <summary>
@@ -215,36 +214,6 @@ namespace OpenMetaverse
             return byteArray;
         }
 
-        public LLSD GetLLSD()
-        {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(X));
-            array.Add(LLSD.FromReal(Y));
-            array.Add(LLSD.FromReal(Z));
-            array.Add(LLSD.FromReal(W));
-            return array;
-        }
-
-        public void FromLLSD(LLSD llsd)
-        {
-            if (llsd.Type == LLSDType.Array)
-            {
-                LLSDArray array = (LLSDArray)llsd;
-
-                if (array.Count == 4)
-                {
-                    X = (float)array[0].AsReal();
-                    Y = (float)array[1].AsReal();
-                    Z = (float)array[2].AsReal();
-                    W = (float)array[3].AsReal();
-
-                    return;
-                }
-            }
-
-            this = Vector4.Zero;
-        }
-
         #endregion Public Methods
 
         #region Static Methods
@@ -261,10 +230,10 @@ namespace OpenMetaverse
         public static Vector4 Clamp(Vector4 value1, Vector4 min, Vector4 max)
         {
             return new Vector4(
-                MathHelper.Clamp(value1.X, min.X, max.X),
-                MathHelper.Clamp(value1.Y, min.Y, max.Y),
-                MathHelper.Clamp(value1.Z, min.Z, max.Z),
-                MathHelper.Clamp(value1.W, min.W, max.W));
+                Utils.Clamp(value1.X, min.X, max.X),
+                Utils.Clamp(value1.Y, min.Y, max.Y),
+                Utils.Clamp(value1.Z, min.Z, max.Z),
+                Utils.Clamp(value1.W, min.W, max.W));
         }
 
         public static float Distance(Vector4 value1, Vector4 value2)
@@ -308,10 +277,10 @@ namespace OpenMetaverse
         public static Vector4 Lerp(Vector4 value1, Vector4 value2, float amount)
         {
             return new Vector4(
-                MathHelper.Lerp(value1.X, value2.X, amount),
-                MathHelper.Lerp(value1.Y, value2.Y, amount),
-                MathHelper.Lerp(value1.Z, value2.Z, amount),
-                MathHelper.Lerp(value1.W, value2.W, amount));
+                Utils.Lerp(value1.X, value2.X, amount),
+                Utils.Lerp(value1.Y, value2.Y, amount),
+                Utils.Lerp(value1.Z, value2.Z, amount),
+                Utils.Lerp(value1.W, value2.W, amount));
         }
 
         public static Vector4 Max(Vector4 value1, Vector4 value2)
@@ -384,10 +353,10 @@ namespace OpenMetaverse
         public static Vector4 SmoothStep(Vector4 value1, Vector4 value2, float amount)
         {
             return new Vector4(
-                MathHelper.SmoothStep(value1.X, value2.X, amount),
-                MathHelper.SmoothStep(value1.Y, value2.Y, amount),
-                MathHelper.SmoothStep(value1.Z, value2.Z, amount),
-                MathHelper.SmoothStep(value1.W, value2.W, amount));
+                Utils.SmoothStep(value1.X, value2.X, amount),
+                Utils.SmoothStep(value1.Y, value2.Y, amount),
+                Utils.SmoothStep(value1.Z, value2.Z, amount),
+                Utils.SmoothStep(value1.W, value2.W, amount));
         }
 
         public static Vector4 Subtract(Vector4 value1, Vector4 value2)
@@ -431,10 +400,10 @@ namespace OpenMetaverse
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
             return new Vector4(
-                float.Parse(split[0].Trim(), Helpers.EnUsCulture),
-                float.Parse(split[1].Trim(), Helpers.EnUsCulture),
-                float.Parse(split[2].Trim(), Helpers.EnUsCulture),
-                float.Parse(split[3].Trim(), Helpers.EnUsCulture));
+                float.Parse(split[0].Trim(), Utils.EnUsCulture),
+                float.Parse(split[1].Trim(), Utils.EnUsCulture),
+                float.Parse(split[2].Trim(), Utils.EnUsCulture),
+                float.Parse(split[3].Trim(), Utils.EnUsCulture));
         }
 
         public static bool TryParse(string val, out Vector4 result)
@@ -475,7 +444,7 @@ namespace OpenMetaverse
 
         public override string ToString()
         {
-            return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}, {3}>", X, Y, Z, W);
+            return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}, {3}>", X, Y, Z, W);
         }
 
         /// <summary>

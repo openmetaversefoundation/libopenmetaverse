@@ -412,14 +412,14 @@ public class Analyst : ProxyPlugin
     private void SayToUser(string message)
     {
         ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
-        packet.ChatData.FromName = Helpers.StringToField("Analyst");
+        packet.ChatData.FromName = Utils.StringToBytes("Analyst");
         packet.ChatData.SourceID = UUID.Random();
         packet.ChatData.OwnerID = frame.AgentID;
         packet.ChatData.SourceType = (byte)2;
         packet.ChatData.ChatType = (byte)1;
         packet.ChatData.Audible = (byte)1;
         packet.ChatData.Position = new Vector3(0, 0, 0);
-        packet.ChatData.Message = Helpers.StringToField(message);
+        packet.ChatData.Message = Utils.StringToBytes(message);
         proxy.InjectPacket(packet, Direction.Incoming);
     }
 
@@ -537,7 +537,7 @@ public class Analyst : ProxyPlugin
             }
             else if (fieldClass == typeof(byte[]))
             {
-                return Helpers.StringToField(value);
+                return Utils.StringToBytes(value);
             }
             else if (fieldClass == typeof(Vector3))
             {

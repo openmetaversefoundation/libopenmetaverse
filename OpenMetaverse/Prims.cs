@@ -294,7 +294,7 @@ namespace OpenMetaverse
                 map["air_friction"] = LLSD.FromReal(Drag);
                 map["wind_sensitivity"] = LLSD.FromReal(Wind);
                 map["tension"] = LLSD.FromReal(Tension);
-                map["user_force"] = Force.GetLLSD();
+                map["user_force"] = LLSD.FromVector3(Force);
 
                 return map;
             }
@@ -312,7 +312,7 @@ namespace OpenMetaverse
                     flex.Drag = (float)map["air_friction"].AsReal();
                     flex.Wind = (float)map["wind_sensitivity"].AsReal();
                     flex.Tension = (float)map["tension"].AsReal();
-                    flex.Force.FromLLSD(map["user_force"]);
+                    flex.Force = ((LLSDArray)map["user_force"]).AsVector3();
                 }
 
                 return flex;
@@ -386,7 +386,7 @@ namespace OpenMetaverse
             {
                 LLSDMap map = new LLSDMap();
 
-                map["color"] = Color.GetLLSD();
+                map["color"] = LLSD.FromColor4(Color);
                 map["intensity"] = LLSD.FromReal(Intensity);
                 map["radius"] = LLSD.FromReal(Radius);
                 map["cutoff"] = LLSD.FromReal(Cutoff);
@@ -403,7 +403,7 @@ namespace OpenMetaverse
                 {
                     LLSDMap map = (LLSDMap)llsd;
 
-                    light.Color.FromLLSD(map["color"]);
+                    light.Color = ((LLSDArray)map["color"]).AsColor4();
                     light.Intensity = (float)map["intensity"].AsReal();
                     light.Radius = (float)map["radius"].AsReal();
                     light.Cutoff = (float)map["cutoff"].AsReal();
@@ -571,9 +571,9 @@ namespace OpenMetaverse
             prim["description"] = LLSD.FromString(Properties.Description);
             prim["phantom"] = LLSD.FromBoolean(((Flags & ObjectFlags.Phantom) != 0));
             prim["physical"] = LLSD.FromBoolean(((Flags & ObjectFlags.Physics) != 0));
-            prim["position"] = Position.GetLLSD();
-            prim["rotation"] = Rotation.GetLLSD();
-            prim["scale"] = Scale.GetLLSD();
+            prim["position"] = LLSD.FromVector3(Position);
+            prim["rotation"] = LLSD.FromQuaternion(Rotation);
+            prim["scale"] = LLSD.FromVector3(Scale);
             prim["material"] = LLSD.FromInteger((int)Data.Material);
             prim["shadows"] = LLSD.FromBoolean(((Flags & ObjectFlags.CastShadows) != 0));
             prim["textures"] = Textures.GetLLSD();
@@ -635,9 +635,9 @@ namespace OpenMetaverse
                 prim.Flags |= ObjectFlags.CastShadows;
 
             prim.ParentID = (uint)map["parentid"].AsInteger();
-            prim.Position.FromLLSD(map["position"]);
-            prim.Rotation.FromLLSD(map["rotation"]);
-            prim.Scale.FromLLSD(map["scale"]);
+            prim.Position = ((LLSDArray)map["position"]).AsVector3();
+            prim.Rotation = ((LLSDArray)map["rotation"]).AsQuaternion();
+            prim.Scale = ((LLSDArray)map["scale"]).AsVector3();
             prim.Data.Material = (MaterialType)map["material"].AsInteger();
             prim.Flexible = FlexibleData.FromLLSD(map["flex"]);
             prim.Light = LightData.FromLLSD(map["light"]);

@@ -436,7 +436,7 @@ namespace OpenMetaverse
             {
                 LLSDMap tex = new LLSDMap(10);
                 if (faceNumber >= 0) tex["face_number"] = LLSD.FromInteger(faceNumber);
-                tex["colors"] = RGBA.GetLLSD();
+                tex["colors"] = LLSD.FromColor4(RGBA);
                 tex["scales"] = LLSD.FromReal(RepeatU);
                 tex["scalet"] = LLSD.FromReal(RepeatV);
                 tex["offsets"] = LLSD.FromReal(OffsetU);
@@ -464,7 +464,7 @@ namespace OpenMetaverse
                 TextureEntryFace face = new TextureEntryFace(defaultFace);
                 faceNumber = (map.ContainsKey("face_number")) ? map["face_number"].AsInteger() : -1;
                 Color4 rgba = face.RGBA;
-                rgba.FromLLSD(map["colors"]);
+                rgba = ((LLSDArray)map["colors"]).AsColor4();
                 face.RGBA = rgba;
                 face.RepeatU = (float)map["scales"].AsReal();
                 face.RepeatV = (float)map["scalet"].AsReal();

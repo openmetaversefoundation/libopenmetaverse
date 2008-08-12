@@ -212,35 +212,35 @@ namespace OpenMetaverse
                 case ValueType.F32:
                 {
                     float temp;
-                    Helpers.TryParse(value, out temp);
+                    Utils.TryParseSingle(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.S32:
                 {
                     int temp;
-                    Helpers.TryParse(value, out temp);
+                    Int32.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.U32:
                 {
                     uint temp;
-                    Helpers.TryParse(value, out temp);
+                    UInt32.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.U64:
                 {
                     ulong temp;
-                    Helpers.TryParse(value, out temp);
+                    UInt64.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
                 case ValueType.VEC3:
                 {
                     Vector3 temp;
-                    Helpers.TryParse(value, out temp);
+                    Vector3.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }

@@ -535,7 +535,7 @@ namespace GridProxy
             reader.Read(content, 0, contentLength);
 
 #if DEBUG_CAPS
-            if (contentLength < 8192) Console.WriteLine("[" + reqNo + "] request length = " + contentLength + ":\n" + Helpers.FieldToUTF8String(content) + "\n-------------");
+            if (contentLength < 8192) Console.WriteLine("[" + reqNo + "] request length = " + contentLength + ":\n" + Utils.BytesToString(content) + "\n-------------");
 #endif
 
             if (uri == "/")
@@ -1953,7 +1953,7 @@ namespace GridProxy
             TeleportFinishPacket tfp = (TeleportFinishPacket)packet;
             string simCaps = Encoding.UTF8.GetString(tfp.Info.SeedCapability).Replace("\0", "");
             GenericCheck(ref tfp.Info.SimIP, ref tfp.Info.SimPort, ref simCaps, true);
-            tfp.Info.SeedCapability = Helpers.StringToField(simCaps);
+            tfp.Info.SeedCapability = Utils.StringToBytes(simCaps);
             return (Packet)tfp;
         }
 
@@ -1972,7 +1972,7 @@ namespace GridProxy
             CrossedRegionPacket crp = (CrossedRegionPacket)packet;
             string simCaps = Encoding.UTF8.GetString(crp.RegionData.SeedCapability).Replace("\0", "");
             GenericCheck(ref crp.RegionData.SimIP, ref crp.RegionData.SimPort, ref simCaps, true);
-            crp.RegionData.SeedCapability = Helpers.StringToField(simCaps);
+            crp.RegionData.SeedCapability = Utils.StringToBytes(simCaps);
             return (Packet)crp;
         }
 

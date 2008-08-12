@@ -27,7 +27,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
-using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -149,7 +148,7 @@ namespace OpenMetaverse
         /// </summary>
         public bool IsFinite()
         {
-            return (MathHelper.IsFinite(X) && MathHelper.IsFinite(Y) && MathHelper.IsFinite(Z));
+            return (Utils.IsFinite(X) && Utils.IsFinite(Y) && Utils.IsFinite(Z));
         }
 
         /// <summary>
@@ -206,34 +205,6 @@ namespace OpenMetaverse
             return byteArray;
         }
 
-        public LLSD GetLLSD()
-        {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(X));
-            array.Add(LLSD.FromReal(Y));
-            array.Add(LLSD.FromReal(Z));
-            return array;
-        }
-
-        public void FromLLSD(LLSD llsd)
-        {
-            if (llsd.Type == LLSDType.Array)
-            {
-                LLSDArray array = (LLSDArray)llsd;
-
-                if (array.Count == 3)
-                {
-                    X = (float)array[0].AsReal();
-                    Y = (float)array[1].AsReal();
-                    Z = (float)array[2].AsReal();
-
-                    return;
-                }
-            }
-
-            this = Vector3.Zero;
-        }
-
         #endregion Public Methods
 
         #region Static Methods
@@ -249,9 +220,9 @@ namespace OpenMetaverse
         public static Vector3 Clamp(Vector3 value1, Vector3 min, Vector3 max)
         {
             return new Vector3(
-                MathHelper.Clamp(value1.X, min.X, max.X),
-                MathHelper.Clamp(value1.Y, min.Y, max.Y),
-                MathHelper.Clamp(value1.Z, min.Z, max.Z));
+                Utils.Clamp(value1.X, min.X, max.X),
+                Utils.Clamp(value1.Y, min.Y, max.Y),
+                Utils.Clamp(value1.Z, min.Z, max.Z));
         }
 
         public static Vector3 Cross(Vector3 value1, Vector3 value2)
@@ -300,9 +271,9 @@ namespace OpenMetaverse
         public static Vector3 Lerp(Vector3 value1, Vector3 value2, float amount)
         {
             return new Vector3(
-                MathHelper.Lerp(value1.X, value2.X, amount),
-                MathHelper.Lerp(value1.Y, value2.Y, amount),
-                MathHelper.Lerp(value1.Z, value2.Z, amount));
+                Utils.Lerp(value1.X, value2.X, amount),
+                Utils.Lerp(value1.Y, value2.Y, amount),
+                Utils.Lerp(value1.Z, value2.Z, amount));
         }
 
         public static Vector3 Max(Vector3 value1, Vector3 value2)
@@ -375,9 +346,9 @@ namespace OpenMetaverse
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
             return new Vector3(
-                Single.Parse(split[0].Trim(), Helpers.EnUsCulture),
-                Single.Parse(split[1].Trim(), Helpers.EnUsCulture),
-                Single.Parse(split[2].Trim(), Helpers.EnUsCulture));
+                Single.Parse(split[0].Trim(), Utils.EnUsCulture),
+                Single.Parse(split[1].Trim(), Utils.EnUsCulture),
+                Single.Parse(split[2].Trim(), Utils.EnUsCulture));
         }
 
         public static bool TryParse(string val, out Vector3 result)
@@ -421,9 +392,9 @@ namespace OpenMetaverse
         public static Vector3 SmoothStep(Vector3 value1, Vector3 value2, float amount)
         {
             return new Vector3(
-                MathHelper.SmoothStep(value1.X, value2.X, amount),
-                MathHelper.SmoothStep(value1.Y, value2.Y, amount),
-                MathHelper.SmoothStep(value1.Z, value2.Z, amount));
+                Utils.SmoothStep(value1.X, value2.X, amount),
+                Utils.SmoothStep(value1.Y, value2.Y, amount),
+                Utils.SmoothStep(value1.Z, value2.Z, amount));
         }
 
         public static Vector3 Subtract(Vector3 value1, Vector3 value2)
@@ -475,7 +446,7 @@ namespace OpenMetaverse
         /// <returns>A string representation of the vector</returns>
         public override string ToString()
         {
-            return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}>", X, Y, Z);
+            return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}>", X, Y, Z);
         }
 
         /// <summary>

@@ -27,7 +27,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
-using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -93,7 +92,7 @@ namespace OpenMetaverse
         /// </summary>
         public bool IsFinite()
         {
-            return MathHelper.IsFinite(X) && MathHelper.IsFinite(Y);
+            return Utils.IsFinite(X) && Utils.IsFinite(Y);
         }
 
         /// <summary>
@@ -168,32 +167,6 @@ namespace OpenMetaverse
             this = Normalize(this);
         }
 
-        public LLSD GetLLSD()
-        {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(X));
-            array.Add(LLSD.FromReal(Y));
-            return array;
-        }
-
-        public void FromLLSD(LLSD llsd)
-        {
-            if (llsd.Type == LLSDType.Array)
-            {
-                LLSDArray array = (LLSDArray)llsd;
-
-                if (array.Count == 2)
-                {
-                    X = (float)array[0].AsReal();
-                    Y = (float)array[1].AsReal();
-
-                    return;
-                }
-            }
-
-            this = Vector2.Zero;
-        }
-
         #endregion Public Methods
 
         #region Static Methods
@@ -208,8 +181,8 @@ namespace OpenMetaverse
         public static Vector2 Clamp(Vector2 value1, Vector2 min, Vector2 max)
         {
             return new Vector2(
-                MathHelper.Clamp(value1.X, min.X, max.X),
-                MathHelper.Clamp(value1.Y, min.Y, max.Y));
+                Utils.Clamp(value1.X, min.X, max.X),
+                Utils.Clamp(value1.Y, min.Y, max.Y));
         }
 
         public static float Distance(Vector2 value1, Vector2 value2)
@@ -245,8 +218,8 @@ namespace OpenMetaverse
         public static Vector2 Lerp(Vector2 value1, Vector2 value2, float amount)
         {
             return new Vector2(
-                MathHelper.Lerp(value1.X, value2.X, amount),
-                MathHelper.Lerp(value1.Y, value2.Y, amount));
+                Utils.Lerp(value1.X, value2.X, amount),
+                Utils.Lerp(value1.Y, value2.Y, amount));
         }
 
         public static Vector2 Max(Vector2 value1, Vector2 value2)
@@ -312,9 +285,9 @@ namespace OpenMetaverse
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
             return new Vector3(
-                float.Parse(split[0].Trim(), Helpers.EnUsCulture),
-                float.Parse(split[1].Trim(), Helpers.EnUsCulture),
-                float.Parse(split[2].Trim(), Helpers.EnUsCulture));
+                float.Parse(split[0].Trim(), Utils.EnUsCulture),
+                float.Parse(split[1].Trim(), Utils.EnUsCulture),
+                float.Parse(split[2].Trim(), Utils.EnUsCulture));
         }
 
         public static bool TryParse(string val, out Vector3 result)
@@ -337,8 +310,8 @@ namespace OpenMetaverse
         public static Vector2 SmoothStep(Vector2 value1, Vector2 value2, float amount)
         {
             return new Vector2(
-                MathHelper.SmoothStep(value1.X, value2.X, amount),
-                MathHelper.SmoothStep(value1.Y, value2.Y, amount));
+                Utils.SmoothStep(value1.X, value2.X, amount),
+                Utils.SmoothStep(value1.Y, value2.Y, amount));
         }
 
         public static Vector2 Subtract(Vector2 value1, Vector2 value2)
@@ -387,7 +360,7 @@ namespace OpenMetaverse
         /// <returns>A string representation of the vector</returns>
         public override string ToString()
         {
-            return String.Format(Helpers.EnUsCulture, "<{0}, {1}>", X, Y);
+            return String.Format(Utils.EnUsCulture, "<{0}, {1}>", X, Y);
         }
 
         /// <summary>

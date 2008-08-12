@@ -160,7 +160,7 @@ namespace OpenMetaverse.TestClient
         private void AlertMessageHandler(Packet packet, Simulator simulator)
         {
             AlertMessagePacket alert = (AlertMessagePacket)packet;
-            string message = Helpers.FieldToUTF8String(alert.AlertData.Message);
+            string message = Utils.BytesToString(alert.AlertData.Message);
 
             if (message.Contains("Autopilot cancel"))
             {

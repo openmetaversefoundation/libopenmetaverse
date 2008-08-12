@@ -212,7 +212,7 @@ namespace OpenMetaverse.TestClient
         {
             AlertMessagePacket message = (AlertMessagePacket)packet;
 
-            Logger.Log("[AlertMessage] " + Helpers.FieldToUTF8String(message.AlertData.Message), Helpers.LogLevel.Info, this);
+            Logger.Log("[AlertMessage] " + Utils.BytesToString(message.AlertData.Message), Helpers.LogLevel.Info, this);
         }
 
         private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)

@@ -361,7 +361,7 @@ namespace OpenMetaverse
 
             writer.WriteLine("\tname\t{0}|", Name);
             writer.WriteLine("\tdesc\t{0}|", Description);
-            writer.WriteLine("\tcreation_date\t{0}", Helpers.DateTimeToUnixTime(CreationDate));
+            writer.WriteLine("\tcreation_date\t{0}", Utils.DateTimeToUnixTime(CreationDate));
             writer.WriteLine('}');
         }
 
@@ -403,7 +403,7 @@ namespace OpenMetaverse
             item.Name = rawName.Substring(0, rawName.LastIndexOf('|'));
             string rawDesc = invItem.Nested["desc"].Value;
             item.Description = rawDesc.Substring(0, rawDesc.LastIndexOf('|'));
-            item.CreationDate = Helpers.UnixTimeToDateTime(uint.Parse(invItem.Nested["creation_date"].Value));
+            item.CreationDate = Utils.UnixTimeToDateTime(uint.Parse(invItem.Nested["creation_date"].Value));
 
             // Sale info:
             TextData saleInfo = invItem.Nested["sale_info"];
@@ -1344,7 +1344,7 @@ namespace OpenMetaverse
             move.FolderData[0] = new UpdateInventoryFolderPacket.FolderDataBlock();
             move.FolderData[0].FolderID = folderID;
             move.FolderData[0].ParentID = parentID;
-            move.FolderData[0].Name = Helpers.StringToField(newName);
+            move.FolderData[0].Name = Utils.StringToBytes(newName);
             move.FolderData[0].Type = -1;
 
             _Network.SendPacket(move);
@@ -1405,7 +1405,7 @@ namespace OpenMetaverse
             move.InventoryData[0] = new MoveInventoryItemPacket.InventoryDataBlock();
             move.InventoryData[0].ItemID = itemID;
             move.InventoryData[0].FolderID = parentID;
-            move.InventoryData[0].NewName = Helpers.StringToField(newName);
+            move.InventoryData[0].NewName = Utils.StringToBytes(newName);
 
             _Network.SendPacket(move);
         }
@@ -1645,8 +1645,8 @@ namespace OpenMetaverse
             create.InventoryBlock.Type = (sbyte)type;
             create.InventoryBlock.InvType = (sbyte)invType;
             create.InventoryBlock.WearableType = (byte)wearableType;
-            create.InventoryBlock.Name = Helpers.StringToField(name);
-            create.InventoryBlock.Description = Helpers.StringToField(description);
+            create.InventoryBlock.Name = Utils.StringToBytes(name);
+            create.InventoryBlock.Description = Utils.StringToBytes(description);
 
             _Network.SendPacket(create);
         }
@@ -1700,7 +1700,7 @@ namespace OpenMetaverse
             create.FolderData.FolderID = id;
             create.FolderData.ParentID = parentID;
             create.FolderData.Type = (sbyte)preferredType;
-            create.FolderData.Name = Helpers.StringToField(name);
+            create.FolderData.Name = Utils.StringToBytes(name);
 
             _Network.SendPacket(create);
 
@@ -1829,7 +1829,7 @@ namespace OpenMetaverse
                 copy.InventoryData[i].OldItemID = items[i];
 
                 if (newNames != null && !String.IsNullOrEmpty(newNames[i]))
-                    copy.InventoryData[i].NewName = Helpers.StringToField(newNames[i]);
+                    copy.InventoryData[i].NewName = Utils.StringToBytes(newNames[i]);
                 else
                     copy.InventoryData[i].NewName = new byte[0];
             }
@@ -1902,9 +1902,9 @@ namespace OpenMetaverse
                 UpdateInventoryItemPacket.InventoryDataBlock block = new UpdateInventoryItemPacket.InventoryDataBlock();
                 block.BaseMask = (uint)item.Permissions.BaseMask;
                 block.CRC = ItemCRC(item);
-                block.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+                block.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
                 block.CreatorID = item.CreatorID;
-                block.Description = Helpers.StringToField(item.Description);
+                block.Description = Utils.StringToBytes(item.Description);
                 block.EveryoneMask = (uint)item.Permissions.EveryoneMask;
                 block.Flags = (uint)item.Flags;
                 block.FolderID = item.ParentUUID;
@@ -1913,7 +1913,7 @@ namespace OpenMetaverse
                 block.GroupOwned = item.GroupOwned;
                 block.InvType = (sbyte)item.InventoryType;
                 block.ItemID = item.UUID;
-                block.Name = Helpers.StringToField(item.Name);
+                block.Name = Utils.StringToBytes(item.Name);
                 block.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
                 block.OwnerID = item.OwnerID;
                 block.OwnerMask = (uint)item.Permissions.OwnerMask;
@@ -2042,9 +2042,9 @@ namespace OpenMetaverse
             add.InventoryData.Flags = (uint)item.Flags;
             add.InventoryData.SaleType = (byte)item.SaleType;
             add.InventoryData.SalePrice = item.SalePrice;
-            add.InventoryData.Name = Helpers.StringToField(item.Name);
-            add.InventoryData.Description = Helpers.StringToField(item.Description);
-            add.InventoryData.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+            add.InventoryData.Name = Utils.StringToBytes(item.Name);
+            add.InventoryData.Description = Utils.StringToBytes(item.Description);
+            add.InventoryData.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
 
             _Network.SendPacket(add, simulator);
 
@@ -2229,9 +2229,9 @@ namespace OpenMetaverse
             update.InventoryData.Flags = (uint)item.Flags;
             update.InventoryData.SaleType = (byte)item.SaleType;
             update.InventoryData.SalePrice = item.SalePrice;
-            update.InventoryData.Name = Helpers.StringToField(item.Name);
-            update.InventoryData.Description = Helpers.StringToField(item.Description);
-            update.InventoryData.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+            update.InventoryData.Name = Utils.StringToBytes(item.Name);
+            update.InventoryData.Description = Utils.StringToBytes(item.Description);
+            update.InventoryData.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
             update.InventoryData.CRC = ItemCRC(item);
 
             _Network.SendPacket(update);
@@ -2296,7 +2296,7 @@ namespace OpenMetaverse
                     {
                         _Client.Assets.OnXferReceived -= xferCallback;
 
-                        string taskList = Helpers.FieldToUTF8String(assetData);
+                        string taskList = Utils.BytesToString(assetData);
                         ParseTaskInventory(this, taskList, out items, out folders);
                         return;
                     }
@@ -2527,7 +2527,7 @@ namespace OpenMetaverse
             CRC += (uint)iitem.Flags; // Flags
             CRC += (uint)iitem.InventoryType; // InvType
             CRC += (uint)iitem.AssetType; // Type 
-            CRC += (uint)Helpers.DateTimeToUnixTime(iitem.CreationDate); // CreationDate
+            CRC += (uint)Utils.DateTimeToUnixTime(iitem.CreationDate); // CreationDate
             CRC += (uint)iitem.SalePrice;    // SalePrice
             CRC += (uint)((uint)iitem.SaleType * 0x07073096); // SaleType
 
@@ -2666,7 +2666,7 @@ namespace OpenMetaverse
                         string desc = String.Empty;
                         AssetType assetType = AssetType.Unknown;
                         InventoryType inventoryType = InventoryType.Unknown;
-                        DateTime creationDate = Helpers.Epoch;
+                        DateTime creationDate = Utils.Epoch;
                         uint flags = 0;
                         Permissions perms = Permissions.NoPermissions;
                         SaleType saleType = SaleType.Not;
@@ -2712,59 +2712,59 @@ namespace OpenMetaverse
                                             {
                                                 // Deprecated
                                                 uint val;
-                                                if (Helpers.TryParseHex(value, out val))
+                                                if (Utils.TryParseHex(value, out val))
                                                     perms.BaseMask = (PermissionMask)val;
                                             }
                                             else if (key == "base_mask")
                                             {
                                                 uint val;
-                                                if (Helpers.TryParseHex(value, out val))
+                                                if (Utils.TryParseHex(value, out val))
                                                     perms.BaseMask = (PermissionMask)val;
                                             }
                                             else if (key == "owner_mask")
                                             {
                                                 uint val;
-                                                if (Helpers.TryParseHex(value, out val))
+                                                if (Utils.TryParseHex(value, out val))
                                                     perms.OwnerMask = (PermissionMask)val;
                                             }
                                             else if (key == "group_mask")
                                             {
                                                 uint val;
-                                                if (Helpers.TryParseHex(value, out val))
+                                                if (Utils.TryParseHex(value, out val))
                                                     perms.GroupMask = (PermissionMask)val;
                                             }
                                             else if (key == "everyone_mask")
                                             {
                                                 uint val;
-                                                if (Helpers.TryParseHex(value, out val))
+                                                if (Utils.TryParseHex(value, out val))
                                                     perms.EveryoneMask = (PermissionMask)val;
                                             }
                                             else if (key == "next_owner_mask")
                                             {
                                                 uint val;
-                                                if (Helpers.TryParseHex(value, out val))
+                                                if (Utils.TryParseHex(value, out val))
                                                     perms.NextOwnerMask = (PermissionMask)val;
                                             }
                                             else if (key == "creator_id")
                                             {
-                                                Helpers.TryParse(value, out creatorID);
+                                                UUID.TryParse(value, out creatorID);
                                             }
                                             else if (key == "owner_id")
                                             {
-                                                Helpers.TryParse(value, out ownerID);
+                                                UUID.TryParse(value, out ownerID);
                                             }
                                             else if (key == "last_owner_id")
                                             {
-                                                Helpers.TryParse(value, out lastOwnerID);
+                                                UUID.TryParse(value, out lastOwnerID);
                                             }
                                             else if (key == "group_id")
                                             {
-                                                Helpers.TryParse(value, out groupID);
+                                                UUID.TryParse(value, out groupID);
                                             }
                                             else if (key == "group_owned")
                                             {
                                                 uint val;
-                                                if (Helpers.TryParse(value, out val))
+                                                if (UInt32.TryParse(value, out val))
                                                     groupOwned = (val != 0);
                                             }
                                         }
@@ -2794,7 +2794,7 @@ namespace OpenMetaverse
                                             }
                                             else if (key == "sale_price")
                                             {
-                                                Helpers.TryParse(value, out salePrice);
+                                                Int32.TryParse(value, out salePrice);
                                             }
                                         }
                                     }
@@ -2819,7 +2819,7 @@ namespace OpenMetaverse
                                 }
                                 else if (key == "flags")
                                 {
-                                    Helpers.TryParse(value, out flags);
+                                    UInt32.TryParse(value, out flags);
                                 }
                                 else if (key == "name")
                                 {
@@ -2832,8 +2832,8 @@ namespace OpenMetaverse
                                 else if (key == "creation_date")
                                 {
                                     uint timestamp;
-                                    if (Helpers.TryParse(value, out timestamp))
-                                        creationDate = Helpers.UnixTimeToDateTime(timestamp);
+                                    if (UInt32.TryParse(value, out timestamp))
+                                        creationDate = Utils.UnixTimeToDateTime(timestamp);
                                     else
                                         Logger.Log("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
                                 }
@@ -2968,7 +2968,7 @@ namespace OpenMetaverse
                         UUID folderID = reply.FolderData[i].FolderID;
                         FolderData folder = new FolderData(folderID);
                         folder.ParentUUID = reply.FolderData[i].ParentID;
-                        folder.Name = Helpers.FieldToUTF8String(reply.FolderData[i].Name);
+                        folder.Name = Utils.BytesToString(reply.FolderData[i].Name);
                         folder.PreferredType = (AssetType)reply.FolderData[i].Type;
                         folder.OwnerID = reply.AgentData.OwnerID;
                         folders[i] = folder;
@@ -3008,10 +3008,10 @@ namespace OpenMetaverse
                             item.CreatorID = reply.ItemData[i].CreatorID;
                             item.AssetType = (AssetType)reply.ItemData[i].Type;
                             item.AssetUUID = reply.ItemData[i].AssetID;
-                            item.CreationDate = Helpers.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
-                            item.Description = Helpers.FieldToUTF8String(reply.ItemData[i].Description);
+                            item.CreationDate = Utils.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
+                            item.Description = Utils.BytesToString(reply.ItemData[i].Description);
                             item.Flags = reply.ItemData[i].Flags;
-                            item.Name = Helpers.FieldToUTF8String(reply.ItemData[i].Name);
+                            item.Name = Utils.BytesToString(reply.ItemData[i].Name);
                             item.GroupID = reply.ItemData[i].GroupID;
                             item.GroupOwned = reply.ItemData[i].GroupOwned;
                             item.Permissions = new Permissions(
@@ -3099,13 +3099,13 @@ namespace OpenMetaverse
                 ItemData item = new ItemData(dataBlock.ItemID, (InventoryType)dataBlock.InvType);
                 item.AssetType = (AssetType)dataBlock.Type;
                 item.AssetUUID = dataBlock.AssetID;
-                item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
+                item.CreationDate = Utils.UnixTimeToDateTime(dataBlock.CreationDate);
                 item.CreatorID = dataBlock.CreatorID;
-                item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
+                item.Description = Utils.BytesToString(dataBlock.Description);
                 item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
-                item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
+                item.Name = Utils.BytesToString(dataBlock.Name);
                 item.OwnerID = dataBlock.OwnerID;
                 item.ParentUUID = dataBlock.FolderID;
                 item.Permissions = new Permissions(
@@ -3159,7 +3159,7 @@ namespace OpenMetaverse
                     if (OnFolderUpdate != null)
                     {
                         FolderData folderParams = new FolderData();
-                        folderParams.Name = Helpers.FieldToUTF8String(dataBlock.Name);
+                        folderParams.Name = Utils.BytesToString(dataBlock.Name);
                         folderParams.OwnerID = update.AgentData.AgentID;
                         folderParams.ParentUUID = dataBlock.ParentID;
 
@@ -3178,13 +3178,13 @@ namespace OpenMetaverse
                     ItemData item = new ItemData(dataBlock.ItemID, (InventoryType)dataBlock.InvType);
                     item.AssetType = (AssetType)dataBlock.Type;
                     if (dataBlock.AssetID != UUID.Zero) item.AssetUUID = dataBlock.AssetID;
-                    item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
+                    item.CreationDate = Utils.UnixTimeToDateTime(dataBlock.CreationDate);
                     item.CreatorID = dataBlock.CreatorID;
-                    item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
+                    item.Description = Utils.BytesToString(dataBlock.Description);
                     item.Flags = dataBlock.Flags;
                     item.GroupID = dataBlock.GroupID;
                     item.GroupOwned = dataBlock.GroupOwned;
-                    item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
+                    item.Name = Utils.BytesToString(dataBlock.Name);
                     item.OwnerID = dataBlock.OwnerID;
                     item.ParentUUID = dataBlock.FolderID;
                     item.Permissions = new Permissions(
@@ -3243,13 +3243,13 @@ namespace OpenMetaverse
                     item.InventoryType = (InventoryType)dataBlock.InvType;
                     item.AssetType = (AssetType)dataBlock.Type;
                     item.AssetUUID = dataBlock.AssetID;
-                    item.CreationDate = Helpers.UnixTimeToDateTime(dataBlock.CreationDate);
+                    item.CreationDate = Utils.UnixTimeToDateTime(dataBlock.CreationDate);
                     item.CreatorID = dataBlock.CreatorID;
-                    item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
+                    item.Description = Utils.BytesToString(dataBlock.Description);
                     item.Flags = dataBlock.Flags;
                     item.GroupID = dataBlock.GroupID;
                     item.GroupOwned = dataBlock.GroupOwned;
-                    item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
+                    item.Name = Utils.BytesToString(dataBlock.Name);
                     item.OwnerID = dataBlock.OwnerID;
                     item.ParentUUID = dataBlock.FolderID;
                     item.Permissions = new Permissions(
@@ -3297,7 +3297,7 @@ namespace OpenMetaverse
                 try
                 {
                     OnTaskInventoryReply(reply.InventoryData.TaskID, reply.InventoryData.Serial,
-                        Helpers.FieldToUTF8String(reply.InventoryData.Filename));
+                        Utils.BytesToString(reply.InventoryData.Filename));
                 }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
@@ -3355,7 +3355,7 @@ namespace OpenMetaverse
                     imp.MessageBlock.Offline = 0;
                     imp.MessageBlock.ID = im.IMSessionID;
                     imp.MessageBlock.Timestamp = 0;
-                    imp.MessageBlock.FromAgentName = Helpers.StringToField(_Agents.Name);
+                    imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Agents.Name);
                     imp.MessageBlock.Message = new byte[0];
                     imp.MessageBlock.ParentEstateID = 0;
                     imp.MessageBlock.RegionID = UUID.Zero;

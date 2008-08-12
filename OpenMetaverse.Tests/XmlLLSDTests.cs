@@ -371,7 +371,7 @@ namespace OpenMetaverse.Tests
 
             Assert.AreEqual(LLSDType.Date, array[2].Type);
             tempDate = (LLSDDate)array[2];
-            Assert.AreEqual(Helpers.Epoch, tempDate.AsDate());
+            Assert.AreEqual(Utils.Epoch, tempDate.AsDate());
         }
 
         /// <summary>

@@ -292,7 +292,7 @@ namespace OpenMetaverse
             aprp.AgentData.AgentID = Client.Self.AgentID;
             aprp.AgentData.SessionID = Client.Self.SessionID;
             aprp.AgentData.QueryID = queryID;
-            aprp.Data.Name = Helpers.StringToField(name);
+            aprp.Data.Name = Utils.StringToBytes(name);
 
             Client.Network.SendPacket(aprp);
         }
@@ -309,11 +309,11 @@ namespace OpenMetaverse
             gmp.AgentData.SessionID = Client.Self.SessionID;
             gmp.AgentData.TransactionID = UUID.Zero;
 
-            gmp.MethodData.Method = Helpers.StringToField("avatarpicksrequest");
+            gmp.MethodData.Method = Utils.StringToBytes("avatarpicksrequest");
             gmp.MethodData.Invoice = UUID.Zero;
             gmp.ParamList = new GenericMessagePacket.ParamListBlock[1];
             gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            gmp.ParamList[0].Parameter = Helpers.StringToField(avatarid.ToString());
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
 
             Client.Network.SendPacket(gmp);
         }
@@ -331,13 +331,13 @@ namespace OpenMetaverse
             gmp.AgentData.SessionID = Client.Self.SessionID;
             gmp.AgentData.TransactionID = UUID.Zero;
 
-            gmp.MethodData.Method = Helpers.StringToField("pickinforequest");
+            gmp.MethodData.Method = Utils.StringToBytes("pickinforequest");
             gmp.MethodData.Invoice = UUID.Zero;
             gmp.ParamList = new GenericMessagePacket.ParamListBlock[2];
             gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            gmp.ParamList[0].Parameter = Helpers.StringToField(avatarid.ToString());
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
             gmp.ParamList[1] = new GenericMessagePacket.ParamListBlock();
-            gmp.ParamList[1].Parameter = Helpers.StringToField(pickid.ToString());
+            gmp.ParamList[1].Parameter = Utils.StringToBytes(pickid.ToString());
 
             Client.Network.SendPacket(gmp);
         }
@@ -358,8 +358,8 @@ namespace OpenMetaverse
 
                 foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
                 {
-                    names[block.ID] = Helpers.FieldToUTF8String(block.FirstName) +
-                        " " + Helpers.FieldToUTF8String(block.LastName);
+                    names[block.ID] = Utils.BytesToString(block.FirstName) +
+                        " " + Utils.BytesToString(block.LastName);
                 }
                 
                 OnAvatarNames(names);
@@ -414,10 +414,10 @@ namespace OpenMetaverse
                 properties.ProfileImage = reply.PropertiesData.ImageID;
                 properties.FirstLifeImage = reply.PropertiesData.FLImageID;
                 properties.Partner = reply.PropertiesData.PartnerID;
-                properties.AboutText = Helpers.FieldToUTF8String(reply.PropertiesData.AboutText);
-                properties.FirstLifeText = Helpers.FieldToUTF8String(reply.PropertiesData.FLAboutText);
-                properties.BornOn = Helpers.FieldToUTF8String(reply.PropertiesData.BornOn);
-                //properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
+                properties.AboutText = Utils.BytesToString(reply.PropertiesData.AboutText);
+                properties.FirstLifeText = Utils.BytesToString(reply.PropertiesData.FLAboutText);
+                properties.BornOn = Utils.BytesToString(reply.PropertiesData.BornOn);
+                //properties.CharterMember = Utils.BytesToString(reply.PropertiesData.CharterMember);
                 uint charter = Helpers.BytesToUInt(reply.PropertiesData.CharterMember);
                 if ( charter == 0 ) {
                     properties.CharterMember = "Resident";
@@ -426,10 +426,10 @@ namespace OpenMetaverse
                 } else if ( charter == 3 ) {
                     properties.CharterMember = "Linden";
                 } else {
-                    properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
+                    properties.CharterMember = Utils.BytesToString(reply.PropertiesData.CharterMember);
                 }
                 properties.Flags = (Avatar.ProfileFlags)reply.PropertiesData.Flags;
-                properties.ProfileURL = Helpers.FieldToUTF8String(reply.PropertiesData.ProfileURL);
+                properties.ProfileURL = Utils.BytesToString(reply.PropertiesData.ProfileURL);
 
                 OnAvatarProperties(reply.AgentData.AvatarID, properties);
             }
@@ -446,10 +446,10 @@ namespace OpenMetaverse
                 Avatar.Interests interests = new Avatar.Interests();
 
                 interests.WantToMask = airp.PropertiesData.WantToMask;
-                interests.WantToText = Helpers.FieldToUTF8String(airp.PropertiesData.WantToText);
+                interests.WantToText = Utils.BytesToString(airp.PropertiesData.WantToText);
                 interests.SkillsMask = airp.PropertiesData.SkillsMask;
-                interests.SkillsText = Helpers.FieldToUTF8String(airp.PropertiesData.SkillsText);
-                interests.LanguagesText = Helpers.FieldToUTF8String(airp.PropertiesData.LanguagesText);
+                interests.SkillsText = Utils.BytesToString(airp.PropertiesData.SkillsText);
+                interests.LanguagesText = Utils.BytesToString(airp.PropertiesData.LanguagesText);
 
                 OnAvatarInterests(airp.AgentData.AvatarID, interests);
             }
@@ -470,9 +470,9 @@ namespace OpenMetaverse
                     avatarGroup.AcceptNotices = groups.GroupData[i].AcceptNotices;
                     avatarGroup.GroupID = groups.GroupData[i].GroupID;
                     avatarGroup.GroupInsigniaID = groups.GroupData[i].GroupInsigniaID;
-                    avatarGroup.GroupName = Helpers.FieldToUTF8String(groups.GroupData[i].GroupName);
+                    avatarGroup.GroupName = Utils.BytesToString(groups.GroupData[i].GroupName);
                     avatarGroup.GroupPowers = (GroupPowers)groups.GroupData[i].GroupPowers;
-                    avatarGroup.GroupTitle = Helpers.FieldToUTF8String(groups.GroupData[i].GroupTitle);
+                    avatarGroup.GroupTitle = Utils.BytesToString(groups.GroupData[i].GroupTitle);
                     avatarGroup.ListInProfile = groups.NewGroupData.ListInProfile;
 
                     avatarGroups.Add(avatarGroup);
@@ -492,8 +492,8 @@ namespace OpenMetaverse
 
                 foreach (AvatarPickerReplyPacket.DataBlock block in reply.Data)
                 {
-                    avatars[block.AvatarID] = Helpers.FieldToUTF8String(block.FirstName) +
-                        " " + Helpers.FieldToUTF8String(block.LastName);
+                    avatars[block.AvatarID] = Utils.BytesToString(block.FirstName) +
+                        " " + Utils.BytesToString(block.LastName);
                 }
 
                 try { OnAvatarNameSearch(reply.AgentData.QueryID, avatars); }
@@ -645,7 +645,7 @@ namespace OpenMetaverse
             Dictionary<UUID, string> picks = new Dictionary<UUID,string>();
 
             foreach (AvatarPicksReplyPacket.DataBlock b in p.Data) {
-                picks.Add(b.PickID, Helpers.FieldToUTF8String(b.PickName));
+                picks.Add(b.PickID, Utils.BytesToString(b.PickName));
             }
 
             try {
@@ -667,18 +667,18 @@ namespace OpenMetaverse
             PickInfoReplyPacket p = (PickInfoReplyPacket)packet;
             ProfilePick ret = new ProfilePick();
             ret.CreatorID = p.Data.CreatorID;
-            ret.Desc = Helpers.FieldToUTF8String(p.Data.Desc);
+            ret.Desc = Utils.BytesToString(p.Data.Desc);
             ret.Enabled = p.Data.Enabled;
-            ret.Name = Helpers.FieldToUTF8String(p.Data.Name);
-            ret.OriginalName = Helpers.FieldToUTF8String(p.Data.OriginalName);
+            ret.Name = Utils.BytesToString(p.Data.Name);
+            ret.OriginalName = Utils.BytesToString(p.Data.OriginalName);
             ret.ParcelID = p.Data.ParcelID;
             ret.PickID = p.Data.PickID;
             ret.PosGlobal = p.Data.PosGlobal;
-            ret.SimName = Helpers.FieldToUTF8String(p.Data.SimName);
+            ret.SimName = Utils.BytesToString(p.Data.SimName);
             ret.SnapshotID = p.Data.SnapshotID;
             ret.SortOrder = p.Data.SortOrder;
             ret.TopPick = p.Data.TopPick;
-            ret.User = Helpers.FieldToUTF8String(p.Data.User);
+            ret.User = Utils.BytesToString(p.Data.User);
 
             try {
                 OnPickInfo(ret.PickID, ret);

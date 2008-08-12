@@ -387,7 +387,7 @@ namespace OpenMetaverse
             OwnerID = UUID.Zero;
             IsGroupOwned = false;
             AuctionID = 0;
-            ClaimDate = Helpers.Epoch;
+            ClaimDate = Utils.Epoch;
             ClaimPrice = 0;
             RentPrice = 0;
             AABBMin = Vector3.Zero;
@@ -445,15 +445,15 @@ namespace OpenMetaverse
 
             request.ParcelData.AuthBuyerID = this.AuthBuyerID;
             request.ParcelData.Category = (byte)this.Category;
-            request.ParcelData.Desc = Helpers.StringToField(this.Desc);
+            request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
             request.ParcelData.GroupID = this.GroupID;
             request.ParcelData.LandingType = this.LandingType;
 
             request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
             request.ParcelData.MediaID = this.Media.MediaID;
-            request.ParcelData.MediaURL = Helpers.StringToField(this.Media.MediaURL);
-            request.ParcelData.MusicURL = Helpers.StringToField(this.MusicURL);
-            request.ParcelData.Name = Helpers.StringToField(this.Name);
+            request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
+            request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
+            request.ParcelData.Name = Utils.StringToBytes(this.Name);
             if (wantReply) request.ParcelData.Flags = 1;
             request.ParcelData.ParcelFlags = (uint)this.Flags;
             request.ParcelData.PassHours = this.PassHours;
@@ -1348,17 +1348,17 @@ namespace OpenMetaverse
                 parcelInfo.ActualArea = info.Data.ActualArea;
                 parcelInfo.AuctionID = info.Data.AuctionID;
                 parcelInfo.BillableArea = info.Data.BillableArea;
-                parcelInfo.Description = Helpers.FieldToUTF8String(info.Data.Desc);
+                parcelInfo.Description = Utils.BytesToString(info.Data.Desc);
                 parcelInfo.Dwell = info.Data.Dwell;
                 parcelInfo.GlobalX = info.Data.GlobalX;
                 parcelInfo.GlobalY = info.Data.GlobalY;
                 parcelInfo.GlobalZ = info.Data.GlobalZ;
                 parcelInfo.ID = info.Data.ParcelID;
                 parcelInfo.Mature = ((info.Data.Flags & 1) != 0) ? true : false;
-                parcelInfo.Name = Helpers.FieldToUTF8String(info.Data.Name);
+                parcelInfo.Name = Utils.BytesToString(info.Data.Name);
                 parcelInfo.OwnerID = info.Data.OwnerID;
                 parcelInfo.SalePrice = info.Data.SalePrice;
-                parcelInfo.SimName = Helpers.FieldToUTF8String(info.Data.SimName);
+                parcelInfo.SimName = Utils.BytesToString(info.Data.SimName);
                 parcelInfo.SnapshotID = info.Data.SnapshotID;
 
                 try { OnParcelInfo(parcelInfo); }
@@ -1384,14 +1384,14 @@ namespace OpenMetaverse
 
                 Parcel parcel = new Parcel(simulator, parcelDataBlock["LocalID"].AsInteger());
 
-                parcel.AABBMax.FromLLSD(parcelDataBlock["AABBMax"]);
-                parcel.AABBMin.FromLLSD(parcelDataBlock["AABBMin"]);
+                parcel.AABBMax = ((LLSDArray)parcelDataBlock["AABBMax"]).AsVector3();
+                parcel.AABBMin = ((LLSDArray)parcelDataBlock["AABBMin"]).AsVector3();
                 parcel.Area = parcelDataBlock["Area"].AsInteger();
                 parcel.AuctionID = (uint)parcelDataBlock["AuctionID"].AsInteger();
                 parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
                 parcel.Bitmap = parcelDataBlock["Bitmap"].AsBinary();
                 parcel.Category = (Parcel.ParcelCategory)parcelDataBlock["Category"].AsInteger();
-                parcel.ClaimDate = Helpers.UnixTimeToDateTime((uint)parcelDataBlock["ClaimDate"].AsInteger());
+                parcel.ClaimDate = Utils.UnixTimeToDateTime((uint)parcelDataBlock["ClaimDate"].AsInteger());
                 parcel.ClaimPrice = parcelDataBlock["ClaimPrice"].AsInteger();
                 parcel.Desc = parcelDataBlock["Desc"].AsString();
                 
@@ -1436,8 +1436,8 @@ namespace OpenMetaverse
                 parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsUUID();
                 parcel.Status = (Parcel.ParcelStatus)parcelDataBlock["Status"].AsInteger();
                 parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
-                parcel.UserLocation.FromLLSD(parcelDataBlock["UserLocation"]);
-                parcel.UserLookAt.FromLLSD(parcelDataBlock["UserLookAt"]);
+                parcel.UserLocation = ((LLSDArray)parcelDataBlock["UserLocation"]).AsVector3();
+                parcel.UserLookAt = ((LLSDArray)parcelDataBlock["UserLookAt"]).AsVector3();
                 parcel.Media.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
                 parcel.Media.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
                 parcel.Media.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
@@ -1519,10 +1519,10 @@ namespace OpenMetaverse
                 parcel.AuthBuyerID = properties.ParcelData.AuthBuyerID;
                 parcel.Bitmap = properties.ParcelData.Bitmap;
                 parcel.Category = (Parcel.ParcelCategory)(sbyte)properties.ParcelData.Category;
-                parcel.ClaimDate = Helpers.UnixTimeToDateTime((uint)properties.ParcelData.ClaimDate);
+                parcel.ClaimDate = Utils.UnixTimeToDateTime((uint)properties.ParcelData.ClaimDate);
                 // ClaimPrice seems to always be zero?
                 parcel.ClaimPrice = properties.ParcelData.ClaimPrice;
-                parcel.Desc = Helpers.FieldToUTF8String(properties.ParcelData.Desc);
+                parcel.Desc = Utils.BytesToString(properties.ParcelData.Desc);
                 parcel.GroupID = properties.ParcelData.GroupID;
                 parcel.GroupPrims = properties.ParcelData.GroupPrims;
                 parcel.IsGroupOwned = properties.ParcelData.IsGroupOwned;
@@ -1530,9 +1530,9 @@ namespace OpenMetaverse
                 parcel.MaxPrims = properties.ParcelData.MaxPrims;
                 parcel.Media.MediaAutoScale = properties.ParcelData.MediaAutoScale;
                 parcel.Media.MediaID = properties.ParcelData.MediaID;
-                parcel.Media.MediaURL = Helpers.FieldToUTF8String(properties.ParcelData.MediaURL);
-                parcel.MusicURL = Helpers.FieldToUTF8String(properties.ParcelData.MusicURL);
-                parcel.Name = Helpers.FieldToUTF8String(properties.ParcelData.Name);
+                parcel.Media.MediaURL = Utils.BytesToString(properties.ParcelData.MediaURL);
+                parcel.MusicURL = Utils.BytesToString(properties.ParcelData.MusicURL);
+                parcel.Name = Utils.BytesToString(properties.ParcelData.Name);
                 parcel.OtherCleanTime = properties.ParcelData.OtherCleanTime;
                 parcel.OtherCount = properties.ParcelData.OtherCount;
                 parcel.OtherPrims = properties.ParcelData.OtherPrims;
@@ -1628,7 +1628,7 @@ namespace OpenMetaverse
                     ParcelAccessEntry pae = new ParcelAccessEntry();
                     pae.AgentID = reply.List[i].ID;
                     pae.Flags = (AccessList)reply.List[i].Flags;
-                    pae.Time = Helpers.UnixTimeToDateTime((uint)reply.List[i].Time);
+                    pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
 
                     accessList.Add(pae);
                 }
@@ -1702,12 +1702,12 @@ namespace OpenMetaverse
 
             media.MediaAutoScale = reply.DataBlock.MediaAutoScale;
             media.MediaID = reply.DataBlock.MediaID;
-            media.MediaDesc = Helpers.FieldToUTF8String(reply.DataBlockExtended.MediaDesc);
+            media.MediaDesc = Utils.BytesToString(reply.DataBlockExtended.MediaDesc);
             media.MediaHeight = reply.DataBlockExtended.MediaHeight;
             media.MediaLoop = ((reply.DataBlockExtended.MediaLoop & 1) != 0) ? true : false;
-            media.MediaType = Helpers.FieldToUTF8String(reply.DataBlockExtended.MediaType);
+            media.MediaType = Utils.BytesToString(reply.DataBlockExtended.MediaType);
             media.MediaWidth = reply.DataBlockExtended.MediaWidth;
-            media.MediaURL = Helpers.FieldToUTF8String(reply.DataBlock.MediaURL);
+            media.MediaURL = Utils.BytesToString(reply.DataBlock.MediaURL);
 
             if (OnParcelMediaUpdate != null)
             {

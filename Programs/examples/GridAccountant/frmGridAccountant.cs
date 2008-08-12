@@ -382,7 +382,7 @@ namespace GridAccountant
             foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
             {
                 ListViewItem listItem = new ListViewItem(new string[] { 
-                Helpers.FieldToUTF8String(block.FirstName) + " " + Helpers.FieldToUTF8String(block.LastName), 
+                Utils.BytesToString(block.FirstName) + " " + Utils.BytesToString(block.LastName), 
                 (block.Online ? "Yes" : "No"), block.AgentID.ToString() });
 
                 this.BeginInvoke(new ListViewItemParamInvoker(AddFindItem), new object[] { listItem });
@@ -485,7 +485,7 @@ namespace GridAccountant
             query.QueryData.QueryFlags = 1;
             query.QueryData.QueryID = UUID.Random();
             query.QueryData.QueryStart = 0;
-            query.QueryData.QueryText = Helpers.StringToField(txtFind.Text);
+            query.QueryData.QueryText = Utils.StringToBytes(txtFind.Text);
             query.Header.Reliable = true;
 
             Client.Network.SendPacket(query);

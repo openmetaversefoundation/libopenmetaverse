@@ -33,6 +33,26 @@
     </Configuration>
 
     <!-- Libraries -->
+    
+    <Project name="OpenMetaverseTypes" path="OpenMetaverse/Types" type="Library" rootNamespace="OpenMetaverse">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+          <XmlDocFile>OpenMetaverseTypes.XML</XmlDocFile>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
     <Project name="OpenMetaverse" path="OpenMetaverse" type="Library" rootNamespace="OpenMetaverse">
       <Configuration name="Debug">
@@ -53,8 +73,15 @@
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>
       <Reference name="log4net"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Files>
-        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.cs" recurse="false" />
+        <Match pattern="Capabilities/*.cs" recurse="true" />
+        <Match pattern="Imaging/*.cs" recurse="true" />
+        <Match pattern="Interfaces/*.cs" recurse="true" />
+        <Match pattern="LLSD/*.cs" recurse="true" />
+        <Match pattern="Rendering/*.cs" recurse="true" />
+        <Match pattern="Voice/*.cs" recurse="true" />
       </Files>
     </Project>
 
@@ -76,6 +103,7 @@
       <Reference name="System.Xml"/>
       <Reference name="System.Data"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -99,6 +127,7 @@
       <Reference name="System.Data"/>
       <Reference name="nunit.framework.dll"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -120,6 +149,7 @@
       <Reference name="System"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
       	<Match pattern="*.cs" recurse="true">
@@ -143,6 +173,7 @@
       <ReferencePath>../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -163,6 +194,7 @@
       <ReferencePath>../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -187,6 +219,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -215,7 +248,8 @@
       <Reference name="Tao.OpenGl"/>
       <Reference name="Tao.Platform.Windows"/>
       <Reference name="OpenMetaverse"/>
-
+      <Reference name="OpenMetaverseTypes"/>
+      
       <Files>
         <Match pattern="*.cs" recurse="true"/>
         <Match pattern="frm*.cs" subType="Form"/>
@@ -241,6 +275,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -264,6 +299,7 @@
       <Reference name="System"/>
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -308,6 +344,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.GUI"/>
 
       <Files>
@@ -340,6 +377,7 @@
       <Reference name="GlacialList"/>
       <Reference name="ICSharpCode.SharpZipLib"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -365,6 +403,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Reference name="GridProxy"/>
 
       <Files>
@@ -391,6 +430,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -414,6 +454,7 @@
       <Reference name="System"/>
       <Reference name="System.Xml"/>
       <Reference name="GridProxy"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="GridProxyMain.cs"/>
@@ -436,6 +477,7 @@
       <Reference name="System"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="VisualParamGenerator.cs"/>
@@ -457,6 +499,7 @@
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Utilities"/>
 
       <Files>
@@ -484,6 +527,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -509,6 +553,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -534,6 +579,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -559,6 +605,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -581,6 +628,7 @@
       <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -604,6 +652,7 @@
       <Reference name="System.Xml"/>
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Utilities"/>
 
       <Files>

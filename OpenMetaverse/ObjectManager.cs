@@ -880,7 +880,7 @@ namespace OpenMetaverse
             image.ObjectData[0] = new ObjectImagePacket.ObjectDataBlock();
             image.ObjectData[0].ObjectLocalID = localID;
             image.ObjectData[0].TextureEntry = textures.ToBytes();
-            image.ObjectData[0].MediaURL = Helpers.StringToField(mediaUrl);
+            image.ObjectData[0].MediaURL = Utils.StringToBytes(mediaUrl);
 
             Client.Network.SendPacket(image, simulator);
         }
@@ -1077,7 +1077,7 @@ namespace OpenMetaverse
             {
                 namePacket.ObjectData[i] = new ObjectNamePacket.ObjectDataBlock();
                 namePacket.ObjectData[i].LocalID = localIDs[i];
-                namePacket.ObjectData[i].Name = Helpers.StringToField(names[i]);
+                namePacket.ObjectData[i].Name = Utils.StringToBytes(names[i]);
             }
 
             Client.Network.SendPacket(namePacket, simulator);
@@ -1112,7 +1112,7 @@ namespace OpenMetaverse
             {
                 descPacket.ObjectData[i] = new ObjectDescriptionPacket.ObjectDataBlock();
                 descPacket.ObjectData[i].LocalID = localIDs[i];
-                descPacket.ObjectData[i].Description = Helpers.StringToField(descriptions[i]);
+                descPacket.ObjectData[i].Description = Utils.StringToBytes(descriptions[i]);
             }
 
             Client.Network.SendPacket(descPacket, simulator);
@@ -1442,7 +1442,7 @@ namespace OpenMetaverse
 
                 #region NameValue parsing
 
-                string nameValue = Helpers.FieldToUTF8String(block.NameValue);
+                string nameValue = Utils.BytesToString(block.NameValue);
                 if (nameValue.Length > 0)
                 {
                     string[] lines = nameValue.Split('\n');
@@ -1636,8 +1636,8 @@ namespace OpenMetaverse
                         prim.Scale = block.Scale;
                         prim.ClickAction = (ClickAction)block.ClickAction;
                         prim.OwnerID = block.OwnerID;
-                        prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
-                        prim.Text = Helpers.FieldToUTF8String(block.Text);
+                        prim.MediaURL = Utils.BytesToString(block.MediaURL);
+                        prim.Text = Utils.BytesToString(block.Text);
                         prim.TextColor = new Color4(block.TextColor, 0, false, true);
 
                         // Sound information
@@ -2332,21 +2332,21 @@ namespace OpenMetaverse
                 props.Category = objectData.Category;
                 props.CreationDate = objectData.CreationDate;
                 props.CreatorID = objectData.CreatorID;
-                props.Description = Helpers.FieldToUTF8String(objectData.Description);
+                props.Description = Utils.BytesToString(objectData.Description);
                 props.FolderID = objectData.FolderID;
                 props.FromTaskID = objectData.FromTaskID;
                 props.GroupID = objectData.GroupID;
                 props.InventorySerial = objectData.InventorySerial;
                 props.ItemID = objectData.ItemID;
                 props.LastOwnerID = objectData.LastOwnerID;
-                props.Name = Helpers.FieldToUTF8String(objectData.Name);
+                props.Name = Utils.BytesToString(objectData.Name);
                 props.ObjectID = objectData.ObjectID;
                 props.OwnerID = objectData.OwnerID;
                 props.OwnershipCost = objectData.OwnershipCost;
                 props.SalePrice = objectData.SalePrice;
                 props.SaleType = objectData.SaleType;
-                props.SitName = Helpers.FieldToUTF8String(objectData.SitName);
-                props.TouchName = Helpers.FieldToUTF8String(objectData.TouchName);
+                props.SitName = Utils.BytesToString(objectData.SitName);
+                props.TouchName = Utils.BytesToString(objectData.TouchName);
 
                 int numTextures = objectData.TextureID.Length / 16;
                 props.TextureIDs = new UUID[numTextures];
@@ -2379,10 +2379,10 @@ namespace OpenMetaverse
 
             props.RequestFlags = (LLObject.ObjectPropertiesFamily.RequestFlagsType)op.ObjectData.RequestFlags;
             props.Category = op.ObjectData.Category;
-            props.Description = Helpers.FieldToUTF8String(op.ObjectData.Description);
+            props.Description = Utils.BytesToString(op.ObjectData.Description);
             props.GroupID = op.ObjectData.GroupID;
             props.LastOwnerID = op.ObjectData.LastOwnerID;
-            props.Name = Helpers.FieldToUTF8String(op.ObjectData.Name);
+            props.Name = Utils.BytesToString(op.ObjectData.Name);
             props.ObjectID = op.ObjectData.ObjectID;
             props.OwnerID = op.ObjectData.OwnerID;
             props.OwnershipCost = op.ObjectData.OwnershipCost;

@@ -235,7 +235,7 @@ namespace OpenMetaverse
             //I guess this is how this works, no gaurentees
             string lsd = "<llsd><item_id>" + AttachmentID.ToString() + "</item_id><owner_id>"
                 + OwnerID.ToString() + "</owner_id></llsd>";
-            return Helpers.StringToField(lsd);
+            return Utils.StringToBytes(lsd);
         }
     }
 
@@ -812,11 +812,11 @@ namespace OpenMetaverse
             //Fill in group data
             cgrp.GroupData = new CreateGroupRequestPacket.GroupDataBlock();
             cgrp.GroupData.AllowPublish = group.AllowPublish;
-            cgrp.GroupData.Charter = Helpers.StringToField(group.Charter);
+            cgrp.GroupData.Charter = Utils.StringToBytes(group.Charter);
             cgrp.GroupData.InsigniaID = group.InsigniaID;
             cgrp.GroupData.MaturePublish = group.MaturePublish;
             cgrp.GroupData.MembershipFee = group.MembershipFee;
-            cgrp.GroupData.Name = Helpers.StringToField(group.Name);
+            cgrp.GroupData.Name = Utils.StringToBytes(group.Name);
             cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
             cgrp.GroupData.ShowInList = group.ShowInList;
             //Send it
@@ -837,7 +837,7 @@ namespace OpenMetaverse
             cgrp.GroupData = new UpdateGroupInfoPacket.GroupDataBlock();
             cgrp.GroupData.GroupID = id;
             cgrp.GroupData.AllowPublish = group.AllowPublish;
-            cgrp.GroupData.Charter = Helpers.StringToField(group.Charter);
+            cgrp.GroupData.Charter = Utils.StringToBytes(group.Charter);
             cgrp.GroupData.InsigniaID = group.InsigniaID;
             cgrp.GroupData.MaturePublish = group.MaturePublish;
             cgrp.GroupData.MembershipFee = group.MembershipFee;
@@ -877,10 +877,10 @@ namespace OpenMetaverse
             gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
-            gru.RoleData[0].Name = Helpers.StringToField(role.Name);
-            gru.RoleData[0].Description = Helpers.StringToField(role.Description);
+            gru.RoleData[0].Name = Utils.StringToBytes(role.Name);
+            gru.RoleData[0].Description = Utils.StringToBytes(role.Description);
             gru.RoleData[0].Powers = (ulong)role.Powers;
-            gru.RoleData[0].Title = Helpers.StringToField(role.Title);
+            gru.RoleData[0].Title = Utils.StringToBytes(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.UpdateAll;
             Client.Network.SendPacket(gru);
         }
@@ -895,10 +895,10 @@ namespace OpenMetaverse
             gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
-            gru.RoleData[0].Name = Helpers.StringToField(role.Name);
-            gru.RoleData[0].Description = Helpers.StringToField(role.Description);
+            gru.RoleData[0].Name = Utils.StringToBytes(role.Name);
+            gru.RoleData[0].Description = Utils.StringToBytes(role.Description);
             gru.RoleData[0].Powers = (ulong)role.Powers;
-            gru.RoleData[0].Title = Helpers.StringToField(role.Title);
+            gru.RoleData[0].Title = Utils.StringToBytes(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.Create;
             Client.Network.SendPacket(gru);
         }
@@ -962,7 +962,7 @@ namespace OpenMetaverse
             p.AgentData.AgentID = Client.Self.AgentID;
             p.AgentData.SessionID = Client.Self.SessionID;
             p.ProposalData.GroupID = group;
-            p.ProposalData.ProposalText = Helpers.StringToField(prop.VoteText);
+            p.ProposalData.ProposalText = Utils.StringToBytes(prop.VoteText);
             p.ProposalData.Quorum = prop.Quorum;
             p.ProposalData.Majority = prop.Majority;
             p.ProposalData.Duration = prop.Duration;
@@ -997,7 +997,7 @@ namespace OpenMetaverse
 
                     group.ID = block.GroupID;
                     group.InsigniaID = block.GroupInsigniaID;
-                    group.Name = Helpers.FieldToUTF8String(block.GroupName);
+                    group.Name = Utils.BytesToString(block.GroupName);
                     group.Powers = (GroupPowers)block.GroupPowers;
                     group.Contribution = block.Contribution;
                     group.AcceptNotices = block.AcceptNotices;
@@ -1005,7 +1005,7 @@ namespace OpenMetaverse
                     currentGroups[block.GroupID] = group;
 
                     if (!GroupName2KeyCache.ContainsKey(block.GroupID))
-                        GroupName2KeyCache.SafeAdd(block.GroupID, Helpers.FieldToUTF8String(block.GroupName));
+                        GroupName2KeyCache.SafeAdd(block.GroupID, Utils.BytesToString(block.GroupName));
                 }
 
                 try { OnCurrentGroups(currentGroups); }
@@ -1031,16 +1031,16 @@ namespace OpenMetaverse
 
                 group.ID = profile.GroupData.GroupID;
                 group.AllowPublish = profile.GroupData.AllowPublish;
-                group.Charter = Helpers.FieldToUTF8String(profile.GroupData.Charter);
+                group.Charter = Utils.BytesToString(profile.GroupData.Charter);
                 group.FounderID = profile.GroupData.FounderID;
                 group.GroupMembershipCount = profile.GroupData.GroupMembershipCount;
                 group.GroupRolesCount = profile.GroupData.GroupRolesCount;
                 group.InsigniaID = profile.GroupData.InsigniaID;
                 group.MaturePublish = profile.GroupData.MaturePublish;
                 group.MembershipFee = profile.GroupData.MembershipFee;
-                group.MemberTitle = Helpers.FieldToUTF8String(profile.GroupData.MemberTitle);
+                group.MemberTitle = Utils.BytesToString(profile.GroupData.MemberTitle);
                 group.Money = profile.GroupData.Money;
-                group.Name = Helpers.FieldToUTF8String(profile.GroupData.Name);
+                group.Name = Utils.BytesToString(profile.GroupData.Name);
                 group.OpenEnrollment = profile.GroupData.OpenEnrollment;
                 group.OwnerRole = profile.GroupData.OwnerRole;
                 group.Powers = (GroupPowers)profile.GroupData.PowersMask;
@@ -1062,7 +1062,7 @@ namespace OpenMetaverse
                 {
                     GroupTitle groupTitle = new GroupTitle();
 
-                    groupTitle.Title = Helpers.FieldToUTF8String(block.Title);
+                    groupTitle.Title = Utils.BytesToString(block.Title);
                     groupTitle.Selected = block.Selected;
 
                     groupTitleCache[block.RoleID] = groupTitle;
@@ -1092,9 +1092,9 @@ namespace OpenMetaverse
                         groupMember.ID = block.AgentID;
                         groupMember.Contribution = block.Contribution;
                         groupMember.IsOwner = block.IsOwner;
-                        groupMember.OnlineStatus = Helpers.FieldToUTF8String(block.OnlineStatus);
+                        groupMember.OnlineStatus = Utils.BytesToString(block.OnlineStatus);
                         groupMember.Powers = (GroupPowers)block.AgentPowers;
-                        groupMember.Title = Helpers.FieldToUTF8String(block.Title);
+                        groupMember.Title = Utils.BytesToString(block.Title);
 
                         groupMemberCache[block.AgentID] = groupMember;
                     }
@@ -1126,10 +1126,10 @@ namespace OpenMetaverse
                         GroupRole groupRole = new GroupRole();
 
                         groupRole.ID = block.RoleID;
-                        groupRole.Description = Helpers.FieldToUTF8String(block.Description);
-                        groupRole.Name = Helpers.FieldToUTF8String(block.Name);
+                        groupRole.Description = Utils.BytesToString(block.Description);
+                        groupRole.Name = Utils.BytesToString(block.Name);
                         groupRole.Powers = (GroupPowers)block.Powers;
-                        groupRole.Title = Helpers.FieldToUTF8String(block.Title);
+                        groupRole.Title = Utils.BytesToString(block.Title);
 
                         groupRoleCache[block.RoleID] = groupRole;
                     }
@@ -1211,7 +1211,7 @@ namespace OpenMetaverse
                 account.IntervalDays = summary.MoneyData.IntervalDays;
                 account.LandTaxCurrent = summary.MoneyData.LandTaxCurrent;
                 account.LandTaxEstimate = summary.MoneyData.LandTaxEstimate;
-                account.LastTaxDate = Helpers.FieldToUTF8String(summary.MoneyData.LastTaxDate);
+                account.LastTaxDate = Utils.BytesToString(summary.MoneyData.LastTaxDate);
                 account.LightTaxCurrent = summary.MoneyData.LightTaxCurrent;
                 account.LightTaxEstimate = summary.MoneyData.LightTaxEstimate;
                 account.NonExemptMembers = summary.MoneyData.NonExemptMembers;
@@ -1219,8 +1219,8 @@ namespace OpenMetaverse
                 account.ObjectTaxEstimate = summary.MoneyData.ObjectTaxEstimate;
                 account.ParcelDirFeeCurrent = summary.MoneyData.ParcelDirFeeCurrent;
                 account.ParcelDirFeeEstimate = summary.MoneyData.ParcelDirFeeEstimate;
-                account.StartDate = Helpers.FieldToUTF8String(summary.MoneyData.StartDate);
-                account.TaxDate = Helpers.FieldToUTF8String(summary.MoneyData.TaxDate);
+                account.StartDate = Utils.BytesToString(summary.MoneyData.StartDate);
+                account.TaxDate = Utils.BytesToString(summary.MoneyData.TaxDate);
                 account.TotalCredits = summary.MoneyData.TotalCredits;
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
@@ -1235,7 +1235,7 @@ namespace OpenMetaverse
             {
                 CreateGroupReplyPacket reply = (CreateGroupReplyPacket)packet;
 
-                string message = Helpers.FieldToUTF8String(reply.ReplyData.Message);
+                string message = Utils.BytesToString(reply.ReplyData.Message);
 
                 try { OnGroupCreated(reply.ReplyData.GroupID, reply.ReplyData.Success, message); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -1273,9 +1273,9 @@ namespace OpenMetaverse
 
             foreach (UUIDGroupNameReplyPacket.UUIDNameBlockBlock block in blocks) 
             {
-                groupNames.Add(block.ID, Helpers.FieldToUTF8String(block.GroupName));
+                groupNames.Add(block.ID, Utils.BytesToString(block.GroupName));
                     if (!GroupName2KeyCache.ContainsKey(block.ID))
-                        GroupName2KeyCache.SafeAdd(block.ID, Helpers.FieldToUTF8String(block.GroupName));
+                        GroupName2KeyCache.SafeAdd(block.ID, Utils.BytesToString(block.GroupName));
             }
 
             if (OnGroupNames != null)

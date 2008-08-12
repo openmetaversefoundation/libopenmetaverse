@@ -333,8 +333,8 @@ public class ClientAO : ProxyPlugin
                 //look at them
                 for (int i = 0; i < reply.FolderData.Length; i++)
                 {
-                    //SayToUser("Folder: " + Helpers.FieldToUTF8String(reply.FolderData[i].Name));
-                    if (searchPath[searchLevel] == Helpers.FieldToUTF8String(reply.FolderData[i].Name)) {
+                    //SayToUser("Folder: " + Utils.BytesToString(reply.FolderData[i].Name));
+                    if (searchPath[searchLevel] == Utils.BytesToString(reply.FolderData[i].Name)) {
                         //We found the next folder in the path                        
                         currentFolder = reply.FolderData[i].FolderID;                       
                         if (searchLevel < searchPath.Length - 1)                        
@@ -393,10 +393,10 @@ public class ClientAO : ProxyPlugin
                         item.CreatorID = reply.ItemData[i].CreatorID;
                         item.AssetType = (AssetType)reply.ItemData[i].Type;
                         item.AssetUUID = reply.ItemData[i].AssetID;
-                        item.CreationDate = Helpers.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
-                        item.Description = Helpers.FieldToUTF8String(reply.ItemData[i].Description);
+                        item.CreationDate = Utils.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
+                        item.Description = Utils.BytesToString(reply.ItemData[i].Description);
                         item.Flags = (uint)reply.ItemData[i].Flags;
-                        item.Name = Helpers.FieldToUTF8String(reply.ItemData[i].Name);
+                        item.Name = Utils.BytesToString(reply.ItemData[i].Name);
                         item.GroupID = reply.ItemData[i].GroupID;
                         item.GroupOwned = reply.ItemData[i].GroupOwned;
                         item.Permissions = new Permissions(
@@ -511,14 +511,14 @@ public class ClientAO : ProxyPlugin
     private void SayToUser(string message)
     {
         ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
-        packet.ChatData.FromName = Helpers.StringToField("ClientAO");
+        packet.ChatData.FromName = Utils.StringToBytes("ClientAO");
         packet.ChatData.SourceID = UUID.Random();
         packet.ChatData.OwnerID = frame.AgentID;
         packet.ChatData.SourceType = (byte)2;
         packet.ChatData.ChatType = (byte)1;
         packet.ChatData.Audible = (byte)1;
         packet.ChatData.Position = new Vector3(0, 0, 0);
-        packet.ChatData.Message = Helpers.StringToField(message);
+        packet.ChatData.Message = Utils.StringToBytes(message);
         proxy.InjectPacket(packet, Direction.Incoming);
     }
 
@@ -652,7 +652,7 @@ public class ClientAO : ProxyPlugin
         byte[] tmp = new byte[downloadedbytes];
         Buffer.BlockCopy(buffer, 0, tmp, 0, downloadedbytes);
         buffer = tmp;       
-        String notecardtext = getNotecardText(Helpers.FieldToUTF8String(buffer));        
+        String notecardtext = getNotecardText(Utils.BytesToString(buffer));        
 
         //Load config, wetikon format
         loadWetIkon(notecardtext);

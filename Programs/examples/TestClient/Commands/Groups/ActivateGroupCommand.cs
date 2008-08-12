@@ -85,7 +85,7 @@ namespace OpenMetaverse.TestClient
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
             if (p.AgentData.AgentID == Client.Self.AgentID)
             {
-                activeGroup = Helpers.FieldToUTF8String(p.AgentData.GroupName) + " ( " + Helpers.FieldToUTF8String(p.AgentData.GroupTitle) + " )";
+                activeGroup = Utils.BytesToString(p.AgentData.GroupName) + " ( " + Utils.BytesToString(p.AgentData.GroupTitle) + " )";
                 GroupsEvent.Set();
             }
         }

@@ -144,14 +144,31 @@ namespace OpenMetaverse.Capabilities
                 }
                 else
                 {
-                    if (Helpers.StringContains(e.Error.Message, "502"))
+                    // Some error occurred, try to figure out what happened
+                    HttpStatusCode code = HttpStatusCode.OK;
+                    if (e.Error is WebException)
+                        code = ((HttpWebResponse)((WebException)e.Error).Response).StatusCode;
+
+                    if (code == HttpStatusCode.BadGateway)
                     {
-                        // These are normal, retry the request automatically
-                        Logger.DebugLog("502 error from capability " + _Client.Location);
+                        // This is not good (server) protocol design, but it's normal.
+                        // The CAPS server is a proxy that connects to a Squid
+                        // cache which will time out periodically. The CAPS server
+                        // interprets this as a generic error and returns a 502 to us
+                        // that we ignore
                         StartRequest(_PostData, _ContentType);
+                    }
+                    else if (code != HttpStatusCode.OK)
+                    {
+                        // Status code was set to something unknown, this is a failure
+                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, code));
+
+                        try { OnComplete(this, null, e.Error); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                     }
                     else
                     {
+                        // Status code was not set, some other error occurred. This is a failure
                         Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, e.Error.Message));
 
                         try { OnComplete(this, null, e.Error); }
@@ -178,14 +195,33 @@ namespace OpenMetaverse.Capabilities
                 }
                 else
                 {
-                    if (Helpers.StringContains(e.Error.Message, "502"))
+                    // Some error occurred, try to figure out what happened
+                    HttpStatusCode code = HttpStatusCode.OK;
+                    if (e.Error is WebException)
+                        code = ((HttpWebResponse)((WebException)e.Error).Response).StatusCode;
+
+                    if (code == HttpStatusCode.BadGateway)
                     {
-                        // These are normal, retry the request automatically
-                        Logger.DebugLog("502 error from capability " + _Client.Location);
+                        // This is not good (server) protocol design, but it's normal.
+                        // The CAPS server is a proxy that connects to a Squid
+                        // cache which will time out periodically. The CAPS server
+                        // interprets this as a generic error and returns a 502 to us
+                        // that we ignore
                         StartRequest(_PostData, _ContentType);
+                    }
+                    else if (code != HttpStatusCode.OK)
+                    {
+                        // Status code was set to something unknown, this is a failure
+                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, code));
+
+                        try { OnComplete(this, null, e.Error); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                     }
                     else
                     {
+                        // Status code was not set, some other error occurred. This is a failure
+                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, e.Error.Message));
+
                         try { OnComplete(this, null, e.Error); }
                         catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                     }

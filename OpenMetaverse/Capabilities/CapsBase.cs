@@ -451,7 +451,7 @@ namespace OpenMetaverse.Capabilities
             // The Linden Lab event queue server breaks HTTP 1.1 by always replying with a
             // Connection: Close header, which will confuse the Windows .NET runtime and throw
             // a "Connection unexpectedly closed" exception. This is our cross-platform hack
-            if (Helpers.GetRunningRuntime() == Helpers.Runtime.Mono)
+            if (Utils.GetRunningRuntime() == Utils.Runtime.Mono)
                 uploadDataRequest.KeepAlive = true;
 
             try

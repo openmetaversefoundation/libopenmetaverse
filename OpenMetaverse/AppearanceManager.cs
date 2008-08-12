@@ -514,8 +514,8 @@ namespace OpenMetaverse
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
                     attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
                     attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
-                    attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
-                    attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
+                    attachmentsPacket.ObjectData[i].Name = Utils.StringToBytes(attachment.Name);
+                    attachmentsPacket.ObjectData[i].Description = Utils.StringToBytes(attachment.Description);
                     attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
                     attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
                 }
@@ -528,8 +528,8 @@ namespace OpenMetaverse
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
                     attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
                     attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
-                    attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
-                    attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
+                    attachmentsPacket.ObjectData[i].Name = Utils.StringToBytes(attachment.Name);
+                    attachmentsPacket.ObjectData[i].Description = Utils.StringToBytes(attachment.Description);
                     attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
                     attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
                 }
@@ -578,12 +578,12 @@ namespace OpenMetaverse
             attach.AgentData.SessionID = Client.Self.SessionID;
 
             attach.ObjectData.AttachmentPt = (byte)attachPoint;
-            attach.ObjectData.Description = Helpers.StringToField(description);
+            attach.ObjectData.Description = Utils.StringToBytes(description);
             attach.ObjectData.EveryoneMask = (uint)perms.EveryoneMask;
             attach.ObjectData.GroupMask = (uint)perms.GroupMask;
             attach.ObjectData.ItemFlags = itemFlags;
             attach.ObjectData.ItemID = itemID;
-            attach.ObjectData.Name = Helpers.StringToField(name);
+            attach.ObjectData.Name = Utils.StringToBytes(name);
             attach.ObjectData.NextOwnerMask = (uint)perms.NextOwnerMask;
             attach.ObjectData.OwnerID = ownerID;
 
@@ -1117,7 +1117,7 @@ namespace OpenMetaverse
                         block.TextureID.ToString(), Client);
 
                     // FIXME: Use this. Right now we treat baked images on other sims as if they were missing
-                    string host = Helpers.FieldToUTF8String(block.HostName);
+                    string host = Utils.BytesToString(block.HostName);
                     if (host.Length > 0) Logger.DebugLog("Cached bake exists on foreign host " + host, Client);
 
                     BakeType bakeType = (BakeType)block.TextureIndex;
@@ -1246,7 +1246,7 @@ namespace OpenMetaverse
                             if (!kvp.Value.Asset.Decode())
                             {
                                 Logger.Log("Failed to decode asset:" + Environment.NewLine +
-                                    Helpers.FieldToUTF8String(asset.AssetData), Helpers.LogLevel.Error, Client);
+                                    Utils.BytesToString(asset.AssetData), Helpers.LogLevel.Error, Client);
                             }
 
                             lock (AgentTextures)

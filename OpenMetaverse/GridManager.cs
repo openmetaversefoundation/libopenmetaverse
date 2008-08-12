@@ -281,7 +281,7 @@ namespace OpenMetaverse
             request.AgentData.Flags = (uint)layer;
             request.AgentData.EstateID = 0; // Filled in on the sim
             request.AgentData.Godlike = false; // Filled in on the sim
-            request.NameData.Name = Helpers.StringToField(regionName.ToLower());
+            request.NameData.Name = Utils.StringToBytes(regionName.ToLower());
 
             Client.Network.SendPacket(request);
         }
@@ -495,7 +495,7 @@ namespace OpenMetaverse
 
                     region.X = block.X;
                     region.Y = block.Y;
-                    region.Name = Helpers.FieldToUTF8String(block.Name);
+                    region.Name = Utils.BytesToString(block.Name);
                     // RegionFlags seems to always be zero here?
                     region.RegionFlags = (Simulator.RegionFlags)block.RegionFlags;
                     region.WaterHeight = block.WaterHeight;
@@ -529,7 +529,7 @@ namespace OpenMetaverse
 
                 for (int i = 0; i < reply.Data.Length; i++)
                 {
-                    string name = Helpers.FieldToUTF8String(reply.Data[i].Name);
+                    string name = Utils.BytesToString(reply.Data[i].Name);
 
                     switch (type)
                     {

@@ -777,14 +777,14 @@ namespace OpenMetaverse.Rendering
                         {
                             PathPoint point = new PathPoint();
 
-                            float t = MathHelper.Lerp(prim.PathBegin, prim.PathEnd, (float)i * step);
+                            float t = Utils.Lerp(prim.PathBegin, prim.PathEnd, (float)i * step);
                             point.Position = new Vector3(
-                                MathHelper.Lerp(0, prim.PathShearX, t),
-                                MathHelper.Lerp(0, prim.PathShearY, t),
+                                Utils.Lerp(0, prim.PathShearX, t),
+                                Utils.Lerp(0, prim.PathShearY, t),
                                 t - 0.5f);
-                            point.Rotation = Quaternion.CreateFromAxisAngle(MathHelper.Lerp(F_PI * prim.PathTwistBegin, F_PI * prim.PathTwist, t), 0f, 0f, 1f);
-                            point.Scale.X = MathHelper.Lerp(startScale.X, endScale.X, t);
-                            point.Scale.Y = MathHelper.Lerp(startScale.Y, endScale.Y, t);
+                            point.Rotation = Quaternion.CreateFromAxisAngle(Utils.Lerp(F_PI * prim.PathTwistBegin, F_PI * prim.PathTwist, t), 0f, 0f, 1f);
+                            point.Scale.X = Utils.Lerp(startScale.X, endScale.X, t);
+                            point.Scale.Y = Utils.Lerp(startScale.Y, endScale.Y, t);
                             point.TexT = t;
 
                             path.Points.Add(point);
@@ -860,7 +860,7 @@ namespace OpenMetaverse.Rendering
             angStep = 2f * F_PI * tStep * angScale;
 
             // Scale to have size "match" scale. Compensates to get object to generally fill bounding box
-            int totalSides = MathHelper.Round(sides / angScale);
+            int totalSides = Utils.Round(sides / angScale);
 
             if (totalSides < 8)
                 scale = TABLE_SCALE[totalSides];
@@ -1030,21 +1030,21 @@ namespace OpenMetaverse.Rendering
             float step = 1f / sides;
             float t = prim.PathBegin;
             ang = 2f * F_PI * revolutions * t;
-            s = (float)Math.Sin(ang) * MathHelper.Lerp(radiusStart, radiusEnd, t);
-            c = (float)Math.Cos(ang) * MathHelper.Lerp(radiusStart, radiusEnd, t);
+            s = (float)Math.Sin(ang) * Utils.Lerp(radiusStart, radiusEnd, t);
+            c = (float)Math.Cos(ang) * Utils.Lerp(radiusStart, radiusEnd, t);
 
             point = new PathPoint();
             point.Position = new Vector3(
-                0 + MathHelper.Lerp(0, prim.PathShearX, s) +
-                0 + MathHelper.Lerp(-skew, skew, t) * 0.5f,
-                c + MathHelper.Lerp(0, prim.PathShearY, s),
+                0 + Utils.Lerp(0, prim.PathShearX, s) +
+                0 + Utils.Lerp(-skew, skew, t) * 0.5f,
+                c + Utils.Lerp(0, prim.PathShearY, s),
                 s);
-            point.Scale.X = holeX * MathHelper.Lerp(taperXBegin, taperXEnd, t);
-            point.Scale.Y = holeY * MathHelper.Lerp(taperYBegin, taperYEnd, t);
+            point.Scale.X = holeX * Utils.Lerp(taperXBegin, taperXEnd, t);
+            point.Scale.Y = holeY * Utils.Lerp(taperYBegin, taperYEnd, t);
             point.TexT = t;
 
             // Twist rotates the path along the x,y plane
-            twist = Quaternion.CreateFromAxisAngle(MathHelper.Lerp(twistBegin, twistEnd, t) * 2f * F_PI - F_PI, 0f, 0f, 1f);
+            twist = Quaternion.CreateFromAxisAngle(Utils.Lerp(twistBegin, twistEnd, t) * 2f * F_PI - F_PI, 0f, 0f, 1f);
             // Rotate the point around the circle's center
             qang = Quaternion.CreateFromAxisAngle(pathAxis, ang);
             point.Rotation = twist * qang;
@@ -1061,21 +1061,21 @@ namespace OpenMetaverse.Rendering
             while (t < prim.PathEnd)
             {
                 ang = 2f * F_PI * revolutions * t;
-                c = (float)Math.Cos(ang) * MathHelper.Lerp(radiusStart, radiusEnd, t);
-                s = (float)Math.Sin(ang) * MathHelper.Lerp(radiusStart, radiusEnd, t);
+                c = (float)Math.Cos(ang) * Utils.Lerp(radiusStart, radiusEnd, t);
+                s = (float)Math.Sin(ang) * Utils.Lerp(radiusStart, radiusEnd, t);
 
                 point.Position = new Vector3(
-                    0 + MathHelper.Lerp(0, prim.PathShearX, s) +
-                    0 + MathHelper.Lerp(-skew, skew, t) * 0.5f,
-                    c + MathHelper.Lerp(0, prim.PathShearY, s),
+                    0 + Utils.Lerp(0, prim.PathShearX, s) +
+                    0 + Utils.Lerp(-skew, skew, t) * 0.5f,
+                    c + Utils.Lerp(0, prim.PathShearY, s),
                     s);
 
-                point.Scale.X = holeX * MathHelper.Lerp(taperXBegin, taperXEnd, t);
-                point.Scale.Y = holeY * MathHelper.Lerp(taperYBegin, taperYEnd, t);
+                point.Scale.X = holeX * Utils.Lerp(taperXBegin, taperXEnd, t);
+                point.Scale.Y = holeY * Utils.Lerp(taperYBegin, taperYEnd, t);
                 point.TexT = t;
 
                 // Twist rotates the path along the x,y plane
-                twist = Quaternion.CreateFromAxisAngle(MathHelper.Lerp(twistBegin, twistEnd, t) * 2f * F_PI - F_PI, 0f, 0f, 1f);
+                twist = Quaternion.CreateFromAxisAngle(Utils.Lerp(twistBegin, twistEnd, t) * 2f * F_PI - F_PI, 0f, 0f, 1f);
                 // Rotate the point around the circle's center
                 qang = Quaternion.CreateFromAxisAngle(pathAxis, ang);
                 point.Rotation = twist * qang;
@@ -1088,19 +1088,19 @@ namespace OpenMetaverse.Rendering
             t = prim.PathEnd;
             point = new PathPoint();
             ang = 2f * F_PI * revolutions * t;
-            c = (float)Math.Cos(ang) * MathHelper.Lerp(radiusStart, radiusEnd, t);
-            s = (float)Math.Sin(ang) * MathHelper.Lerp(radiusStart, radiusEnd, t);
+            c = (float)Math.Cos(ang) * Utils.Lerp(radiusStart, radiusEnd, t);
+            s = (float)Math.Sin(ang) * Utils.Lerp(radiusStart, radiusEnd, t);
 
             point.Position = new Vector3(
-                MathHelper.Lerp(0, prim.PathShearX, s) + MathHelper.Lerp(-skew, skew, t) * 0.5f,
-                c + MathHelper.Lerp(0, prim.PathShearY, s),
+                Utils.Lerp(0, prim.PathShearX, s) + Utils.Lerp(-skew, skew, t) * 0.5f,
+                c + Utils.Lerp(0, prim.PathShearY, s),
                 s);
-            point.Scale.X = holeX * MathHelper.Lerp(taperXBegin, taperXEnd, t);
-            point.Scale.Y = holeY * MathHelper.Lerp(taperYBegin, taperYEnd, t);
+            point.Scale.X = holeX * Utils.Lerp(taperXBegin, taperXEnd, t);
+            point.Scale.Y = holeY * Utils.Lerp(taperYBegin, taperYEnd, t);
             point.TexT = t;
 
             // Twist rotates the path along the x,y plane
-            twist = Quaternion.CreateFromAxisAngle(MathHelper.Lerp(twistBegin, twistEnd, t) * 2f * F_PI - F_PI, 0f, 0f, 1f);
+            twist = Quaternion.CreateFromAxisAngle(Utils.Lerp(twistBegin, twistEnd, t) * 2f * F_PI - F_PI, 0f, 0f, 1f);
             qang = Quaternion.CreateFromAxisAngle(pathAxis, ang);
             point.Rotation = twist * qang;
 

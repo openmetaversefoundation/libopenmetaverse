@@ -131,48 +131,33 @@ namespace OpenMetaverse.Capabilities
 
             if (e.Error != null)
             {
-                // Error occurred
-                string message = e.Error.Message.ToLower();
+                HttpStatusCode code = HttpStatusCode.OK;
+                if (e.Error is WebException)
+                    code = ((HttpWebResponse)((WebException)e.Error).Response).StatusCode;
 
-                // Check what kind of exception happened
-                if (Helpers.StringContains(message, "404") || Helpers.StringContains(message, "410"))
+                if (code == HttpStatusCode.NotFound || code == HttpStatusCode.Gone)
                 {
-                    Logger.Log("Closing event queue at " + _Client.Location  + " due to missing caps URI",
+                    Logger.Log(String.Format("Closing event queue at {0} due to missing caps URI", _Client.Location),
                         Helpers.LogLevel.Info);
 
                     _Running = false;
                     _Dead = true;
                 }
+                else if (code == HttpStatusCode.BadGateway)
+                {
+                    // This is not good (server) protocol design, but it's normal.
+                    // The EventQueue server is a proxy that connects to a Squid
+                    // cache which will time out periodically. The EventQueue server
+                    // interprets this as a generic error and returns a 502 to us
+                    // that we ignore
+                }
                 else if (!e.Cancelled)
                 {
-                    HttpWebResponse errResponse = null;
-
-                    if (e.Error is WebException)
+                    // Try to log a meaningful error message
+                    if (code != HttpStatusCode.OK)
                     {
-                        WebException err = (WebException)e.Error;
-                        errResponse = (HttpWebResponse)err.Response;
-                    }
-
-                    // Figure out what type of error was thrown so we can print a meaningful
-                    // error message
-                    if (errResponse != null)
-                    {
-                        switch (errResponse.StatusCode)
-                        {
-                            case HttpStatusCode.BadGateway:
-                                // This is not good (server) protocol design, but it's normal.
-                                // The EventQueue server is a proxy that connects to a Squid
-                                // cache which will time out periodically. The EventQueue server
-                                // interprets this as a generic error and returns a 502 to us
-                                // that we ignore
-                                break;
-                            default:
-                                Logger.Log(String.Format(
-                                    "Unrecognized caps connection problem from {0}: {1} (Server returned: {2})",
-                                    _Client.Location, errResponse.StatusCode, errResponse.StatusDescription),
-                                    Helpers.LogLevel.Warning);
-                                break;
-                        }
+                        Logger.Log(String.Format("Unrecognized caps connection problem from {0}: {1}",
+                            _Client.Location, code), Helpers.LogLevel.Warning);
                     }
                     else if (e.Error.InnerException != null)
                     {

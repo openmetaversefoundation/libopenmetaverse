@@ -27,7 +27,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
-using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -246,36 +245,6 @@ namespace OpenMetaverse
             return bytes;
         }
 
-        public LLSD GetLLSD()
-        {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(X));
-            array.Add(LLSD.FromReal(Y));
-            array.Add(LLSD.FromReal(Z));
-            array.Add(LLSD.FromReal(W));
-            return array;
-        }
-
-        public void FromLLSD(LLSD llsd)
-        {
-            if (llsd.Type == LLSDType.Array)
-            {
-                LLSDArray array = (LLSDArray)llsd;
-
-                if (array.Count == 4)
-                {
-                    X = (float)array[0].AsReal();
-                    Y = (float)array[1].AsReal();
-                    Z = (float)array[2].AsReal();
-                    W = (float)array[3].AsReal();
-
-                    return;
-                }
-            }
-
-            this = Quaternion.Identity;
-        }
-
         /// <summary>
         /// Convert this quaternion to euler angles
         /// </summary>
@@ -422,7 +391,7 @@ namespace OpenMetaverse
         /// <returns>Quaternion representation of the euler angles</returns>
         public static Quaternion CreateFromEulers(float roll, float pitch, float yaw)
         {
-            if (roll > Helpers.TWO_PI || pitch > Helpers.TWO_PI || yaw > Helpers.TWO_PI)
+            if (roll > Utils.TWO_PI || pitch > Utils.TWO_PI || yaw > Utils.TWO_PI)
                 throw new ArgumentException("Euler angles must be in radians");
 
             double atCos = Math.Cos(roll / 2f);
@@ -582,8 +551,8 @@ namespace OpenMetaverse
                 q2.Z = -q1.W;
                 q2.W = q1.Z;
 
-                scale = (float)Math.Sin(MathHelper.PI * (0.5f - amount));
-                invscale = (float)Math.Sin(MathHelper.PI * amount);
+                scale = (float)Math.Sin(Utils.PI * (0.5f - amount));
+                invscale = (float)Math.Sin(Utils.PI * amount);
             }
 
             return (q1 * scale) + (q2 * invscale);
@@ -658,17 +627,17 @@ namespace OpenMetaverse
             if (split.Length == 3)
             {
                 return new Quaternion(
-                    float.Parse(split[0].Trim(), Helpers.EnUsCulture),
-                    float.Parse(split[1].Trim(), Helpers.EnUsCulture),
-                    float.Parse(split[2].Trim(), Helpers.EnUsCulture));
+                    float.Parse(split[0].Trim(), Utils.EnUsCulture),
+                    float.Parse(split[1].Trim(), Utils.EnUsCulture),
+                    float.Parse(split[2].Trim(), Utils.EnUsCulture));
             }
             else
             {
                 return new Quaternion(
-                    float.Parse(split[0].Trim(), Helpers.EnUsCulture),
-                    float.Parse(split[1].Trim(), Helpers.EnUsCulture),
-                    float.Parse(split[2].Trim(), Helpers.EnUsCulture),
-                    float.Parse(split[3].Trim(), Helpers.EnUsCulture));
+                    float.Parse(split[0].Trim(), Utils.EnUsCulture),
+                    float.Parse(split[1].Trim(), Utils.EnUsCulture),
+                    float.Parse(split[2].Trim(), Utils.EnUsCulture),
+                    float.Parse(split[3].Trim(), Utils.EnUsCulture));
             }
         }
 
@@ -710,7 +679,7 @@ namespace OpenMetaverse
 
         public override string ToString()
         {
-            return String.Format(Helpers.EnUsCulture, "<{0}, {1}, {2}, {3}>", X, Y, Z, W);
+            return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}, {3}>", X, Y, Z, W);
         }
 
         /// <summary>

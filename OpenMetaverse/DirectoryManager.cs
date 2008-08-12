@@ -371,7 +371,7 @@ namespace OpenMetaverse
             query.QueryData.Category = (uint)categories;
             query.QueryData.QueryFlags = (uint)(mature ? 0 : 2);
             query.QueryData.QueryID = queryID;
-            query.QueryData.QueryText = Helpers.StringToField(searchText);
+            query.QueryData.QueryText = Utils.StringToBytes(searchText);
 
             Client.Network.SendPacket(query);
 
@@ -485,7 +485,7 @@ namespace OpenMetaverse
             find.AgentData.AgentID = Client.Self.AgentID;
             find.AgentData.SessionID = Client.Self.SessionID;
             find.QueryData.QueryFlags = (uint)findFlags;
-            find.QueryData.QueryText = Helpers.StringToField(searchText);
+            find.QueryData.QueryText = Utils.StringToBytes(searchText);
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryStart = queryStart;
             Client.Network.SendPacket(find);
@@ -503,7 +503,7 @@ namespace OpenMetaverse
             find.AgentData.AgentID = Client.Self.AgentID;
             find.AgentData.SessionID = Client.Self.SessionID;
             find.QueryData.QueryFlags = (uint)findFlags;
-            find.QueryData.QueryText = Helpers.StringToField(searchText);
+            find.QueryData.QueryText = Utils.StringToBytes(searchText);
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryStart = queryStart;
 
@@ -566,10 +566,10 @@ namespace OpenMetaverse
 
             find.TransactionData.TransactionID = transactionID;
 
-            find.QueryData.QueryText = Helpers.StringToField(searchText);
+            find.QueryData.QueryText = Utils.StringToBytes(searchText);
             find.QueryData.QueryFlags = (uint)findFlags;
             find.QueryData.Category = (sbyte)searchCategory;
-            find.QueryData.SimName = Helpers.StringToField(simulatorName);
+            find.QueryData.SimName = Utils.StringToBytes(simulatorName);
             
             Client.Network.SendPacket(find);
             return transactionID;
@@ -616,7 +616,7 @@ namespace OpenMetaverse
             find.AgentData.SessionID = Client.Self.SessionID;
             
             find.QueryData.QueryID = queryID;
-            find.QueryData.QueryText = Helpers.StringToField(eventDay + "|" + (int)category + "|" + searchText);
+            find.QueryData.QueryText = Utils.StringToBytes(eventDay + "|" + (int)category + "|" + searchText);
             find.QueryData.QueryFlags = showMature ? (uint)32 : (uint)8224;
             find.QueryData.QueryStart = (int)queryStart;
 
@@ -680,11 +680,11 @@ namespace OpenMetaverse
                 {
                     Classified classified = new Classified();
 
-                    classified.CreationDate = Helpers.UnixTimeToDateTime(block.CreationDate);
-                    classified.ExpirationDate = Helpers.UnixTimeToDateTime(block.ExpirationDate);
+                    classified.CreationDate = Utils.UnixTimeToDateTime(block.CreationDate);
+                    classified.ExpirationDate = Utils.UnixTimeToDateTime(block.ExpirationDate);
                     classified.Flags = block.ClassifiedFlags;
                     classified.ID = block.ClassifiedID;
-                    classified.Name = Helpers.FieldToUTF8String(block.Name);
+                    classified.Name = Utils.BytesToString(block.Name);
                     classified.Price = block.PriceForListing;
 
                     classifieds.Add(classified);
@@ -708,7 +708,7 @@ namespace OpenMetaverse
 
                     dirParcel.ActualArea = block.ActualArea;
                     dirParcel.ID = block.ParcelID;
-                    dirParcel.Name = Helpers.FieldToUTF8String(block.Name);
+                    dirParcel.Name = Utils.BytesToString(block.Name);
                     dirParcel.SalePrice = block.SalePrice;
                     dirParcel.Auction = block.Auction;
                     dirParcel.ForSale = block.ForSale;
@@ -730,8 +730,8 @@ namespace OpenMetaverse
                 foreach (DirPeopleReplyPacket.QueryRepliesBlock reply in peopleReply.QueryReplies) {
                     AgentSearchData searchData = new AgentSearchData();
                     searchData.Online = reply.Online;
-                    searchData.FirstName = Helpers.FieldToUTF8String(reply.FirstName);
-                    searchData.LastName = Helpers.FieldToUTF8String(reply.LastName);
+                    searchData.FirstName = Utils.BytesToString(reply.FirstName);
+                    searchData.LastName = Utils.BytesToString(reply.LastName);
                     searchData.AgentID = reply.AgentID;
                     matches.Add(searchData);
                 }
@@ -750,7 +750,7 @@ namespace OpenMetaverse
                 {
                     GroupSearchData groupsData = new GroupSearchData();
                     groupsData.GroupID = reply.GroupID;
-                    groupsData.GroupName = Helpers.FieldToUTF8String(reply.GroupName);
+                    groupsData.GroupName = Utils.BytesToString(reply.GroupName);
                     groupsData.Members = reply.Members;
                     matches.Add(groupsData);
                 }
@@ -770,15 +770,15 @@ namespace OpenMetaverse
                 {
                     PlacesSearchData place = new PlacesSearchData();
                     place.OwnerID = block.OwnerID;
-                    place.Name = Helpers.FieldToUTF8String(block.Name);
-                    place.Desc = Helpers.FieldToUTF8String(block.Desc);
+                    place.Name = Utils.BytesToString(block.Name);
+                    place.Desc = Utils.BytesToString(block.Desc);
                     place.ActualArea = block.ActualArea;
                     place.BillableArea = block.BillableArea;
                     place.Flags = block.Flags;
                     place.GlobalX = block.GlobalX;
                     place.GlobalY = block.GlobalY;
                     place.GlobalZ = block.GlobalZ;
-                    place.SimName = Helpers.FieldToUTF8String(block.SimName);
+                    place.SimName = Utils.BytesToString(block.SimName);
                     place.SnapshotID = block.SnapshotID;
                     place.Dwell = block.Dwell;
                     place.Price = block.Price;
@@ -801,9 +801,9 @@ namespace OpenMetaverse
                 {
                     EventsSearchData eventsData = new EventsSearchData();
                     eventsData.Owner = reply.OwnerID;
-                    eventsData.Name = Helpers.FieldToUTF8String(reply.Name);
+                    eventsData.Name = Utils.BytesToString(reply.Name);
                     eventsData.ID = reply.EventID;
-                    eventsData.Date = Helpers.FieldToUTF8String(reply.Date);
+                    eventsData.Date = Utils.BytesToString(reply.Date);
                     eventsData.Time = reply.UnixTime;
                     eventsData.Flags = (EventFlags)reply.EventFlags;
                     matches.Add(eventsData);
@@ -821,17 +821,17 @@ namespace OpenMetaverse
                 EventInfoReplyPacket eventReply = (EventInfoReplyPacket)packet;
                 EventInfo evinfo = new EventInfo();
                 evinfo.ID = eventReply.EventData.EventID;
-                evinfo.Name = Helpers.FieldToUTF8String(eventReply.EventData.Name);
-                evinfo.Desc = Helpers.FieldToUTF8String(eventReply.EventData.Desc);
+                evinfo.Name = Utils.BytesToString(eventReply.EventData.Name);
+                evinfo.Desc = Utils.BytesToString(eventReply.EventData.Desc);
                 evinfo.Amount = eventReply.EventData.Amount;
                 evinfo.Category = (EventCategories)Helpers.BytesToUInt(eventReply.EventData.Category);
                 evinfo.Cover = eventReply.EventData.Cover;
-                evinfo.Creator = (UUID)Helpers.FieldToUTF8String(eventReply.EventData.Creator);
-                evinfo.Date = Helpers.FieldToUTF8String(eventReply.EventData.Date);
+                evinfo.Creator = (UUID)Utils.BytesToString(eventReply.EventData.Creator);
+                evinfo.Date = Utils.BytesToString(eventReply.EventData.Date);
                 evinfo.DateUTC = eventReply.EventData.DateUTC;
                 evinfo.Duration = eventReply.EventData.Duration;
                 evinfo.Flags = (EventFlags)eventReply.EventData.EventFlags;
-                evinfo.SimName = Helpers.FieldToUTF8String(eventReply.EventData.SimName);
+                evinfo.SimName = Utils.BytesToString(eventReply.EventData.SimName);
                 evinfo.GlobalPos = eventReply.EventData.GlobalPos;
 
                 try { OnEventInfo(evinfo); }

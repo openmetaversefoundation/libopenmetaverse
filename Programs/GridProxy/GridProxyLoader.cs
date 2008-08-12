@@ -187,14 +187,14 @@ namespace GridProxy
         public void SayToUser(string message)
         {
             ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
-            packet.ChatData.FromName = Helpers.StringToField("GridProxy");
+            packet.ChatData.FromName = Utils.StringToBytes("GridProxy");
             packet.ChatData.SourceID = UUID.Random();
             packet.ChatData.OwnerID = agentID;
             packet.ChatData.SourceType = (byte)2;
             packet.ChatData.ChatType = (byte)1;
             packet.ChatData.Audible = (byte)1;
             packet.ChatData.Position = new Vector3(0, 0, 0);
-            packet.ChatData.Message = Helpers.StringToField(message);
+            packet.ChatData.Message = Utils.StringToBytes(message);
             proxy.InjectPacket(packet, Direction.Incoming);
         }
 

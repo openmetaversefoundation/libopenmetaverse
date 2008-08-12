@@ -287,7 +287,7 @@ namespace OpenMetaverse.StructuredData
                         throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in date.");
                     string date = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
                     DateTime dt;
-                    if (!Helpers.TryParse(date, out dt))
+                    if (!DateTime.TryParse(date, out dt))
                         throw new LLSDException("Notation LLSD parsing: Invalid date discovered.");
                     llsd = LLSD.FromDate(dt);
                     break;
@@ -320,7 +320,7 @@ namespace OpenMetaverse.StructuredData
                 reader.Read();
             }
             int integer;
-            if (!Helpers.TryParse(s.ToString(), out integer))
+            if (!Int32.TryParse(s.ToString(), out integer))
                 throw new LLSDException("Notation LLSD parsing: Can't parse integer value." + s.ToString());
 
             return LLSD.FromInteger(integer);
@@ -345,7 +345,7 @@ namespace OpenMetaverse.StructuredData
                 reader.Read();
             }
             double dbl;
-            if (!Helpers.TryParse(s.ToString(), out dbl))
+            if (!Utils.TryParseDouble(s.ToString(), out dbl))
                 throw new LLSDException("Notation LLSD parsing: Can't parse real value: " + s.ToString());
 
             return LLSD.FromReal(dbl);
@@ -677,7 +677,7 @@ namespace OpenMetaverse.StructuredData
             if (character < 0)
                 throw new LLSDException("Notation LLSD parsing: Can't parse length value cause unexpected end of stream.");
             int length;
-            if (!Helpers.TryParse(s.ToString(), out length))
+            if (!Int32.TryParse(s.ToString(), out length))
                 throw new LLSDException("Notation LLSD parsing: Can't parse length value.");
 
             return length;

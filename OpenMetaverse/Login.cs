@@ -201,7 +201,7 @@ namespace OpenMetaverse
                 }
             }
 
-            SecondsSinceEpoch = Helpers.UnixTimeToDateTime(ParseUInt("seconds_since_epoch", reply));
+            SecondsSinceEpoch = Utils.UnixTimeToDateTime(ParseUInt("seconds_since_epoch", reply));
             InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
             InventoryFolders = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
             LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
@@ -245,16 +245,12 @@ namespace OpenMetaverse
             {
                 if (llsd.Type == LLSDType.Array)
                 {
-                    Vector3 vec = new Vector3();
-                    vec.FromLLSD(llsd);
-                    return vec;
+                    return ((LLSDArray)llsd).AsVector3();
                 }
                 else if (llsd.Type == LLSDType.String)
                 {
                     LLSDArray array = (LLSDArray)LLSDParser.DeserializeNotation(llsd.AsString());
-                    Vector3 vec = new Vector3();
-                    vec.FromLLSD(array);
-                    return vec;
+                    return array.AsVector3();
                 }
             }
 
@@ -552,7 +548,7 @@ namespace OpenMetaverse
 
             // Convert the password to MD5 if it isn't already
             if (loginParams.Password.Length != 35 && !loginParams.Password.StartsWith("$1$"))
-                loginParams.Password = Helpers.MD5(loginParams.Password);
+                loginParams.Password = Utils.MD5(loginParams.Password);
 
             // Override SSL authentication mechanisms. DO NOT convert this to the 
             // .NET 2.0 preferred method, the equivalent function in Mono has a 

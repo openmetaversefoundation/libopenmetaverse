@@ -80,9 +80,10 @@ namespace OpenMetaverse.StructuredData
         public virtual double AsReal() { return 0d; }
         public virtual string AsString() { return String.Empty; }
         public virtual UUID AsUUID() { return UUID.Zero; }
-        public virtual DateTime AsDate() { return Helpers.Epoch; }
+        public virtual DateTime AsDate() { return Utils.Epoch; }
         public virtual Uri AsUri() { return new Uri(String.Empty); }
         public virtual byte[] AsBinary() { return new byte[0]; }
+
         public override string ToString() { return "undef"; }
 
         public static LLSD FromBoolean(bool value) { return new LLSDBoolean(value); }
@@ -101,6 +102,63 @@ namespace OpenMetaverse.StructuredData
         public static LLSD FromBinary(byte[] value) { return new LLSDBinary(value); }
         public static LLSD FromBinary(long value) { return new LLSDBinary(value); }
         public static LLSD FromBinary(ulong value) { return new LLSDBinary(value); }
+
+        public static LLSD FromVector2(Vector2 value)
+        {
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(value.X));
+            array.Add(LLSD.FromReal(value.Y));
+            return array;
+        }
+
+        public static LLSD FromVector3(Vector3 value)
+        {
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(value.X));
+            array.Add(LLSD.FromReal(value.Y));
+            array.Add(LLSD.FromReal(value.Z));
+            return array;
+        }
+
+        public static LLSD FromVector3d(Vector3d value)
+        {
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(value.X));
+            array.Add(LLSD.FromReal(value.Y));
+            array.Add(LLSD.FromReal(value.Z));
+            return array;
+        }
+
+        public static LLSD FromVector4(Vector4 value)
+        {
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(value.X));
+            array.Add(LLSD.FromReal(value.Y));
+            array.Add(LLSD.FromReal(value.Z));
+            array.Add(LLSD.FromReal(value.W));
+            return array;
+        }
+
+        public static LLSD FromQuaternion(Quaternion value)
+        {
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(value.X));
+            array.Add(LLSD.FromReal(value.Y));
+            array.Add(LLSD.FromReal(value.Z));
+            array.Add(LLSD.FromReal(value.W));
+            return array;
+        }
+
+        public static LLSD FromColor4(Color4 value)
+        {
+            LLSDArray array = new LLSDArray();
+            array.Add(LLSD.FromReal(value.R));
+            array.Add(LLSD.FromReal(value.G));
+            array.Add(LLSD.FromReal(value.B));
+            array.Add(LLSD.FromReal(value.A));
+            return array;
+        }
+
         public static LLSD FromObject(object value)
         {
             if (value == null) { return new LLSD(); }
@@ -120,6 +178,12 @@ namespace OpenMetaverse.StructuredData
             else if (value is byte[]) { return new LLSDBinary((byte[])value); }
             else if (value is long) { return new LLSDBinary((long)value); }
             else if (value is ulong) { return new LLSDBinary((ulong)value); }
+            else if (value is Vector2) { return FromVector2((Vector2)value); }
+            else if (value is Vector3) { return FromVector3((Vector3)value); }
+            else if (value is Vector3d) { return FromVector3d((Vector3d)value); }
+            else if (value is Vector4) { return FromVector4((Vector4)value); }
+            else if (value is Quaternion) { return FromQuaternion((Quaternion)value); }
+            else if (value is Color4) { return FromColor4((Color4)value); }
             else return new LLSD();
         }
     }
@@ -249,7 +313,7 @@ namespace OpenMetaverse.StructuredData
         public override int AsInteger()
         {
             double dbl;
-            if (Helpers.TryParse(value, out dbl))
+            if (Double.TryParse(value, out dbl))
                 return (int)Math.Floor( dbl );
             else
                 return 0;
@@ -257,7 +321,7 @@ namespace OpenMetaverse.StructuredData
         public override double AsReal()
         {
             double dbl;
-            if (Helpers.TryParse(value, out dbl))
+            if (Double.TryParse(value, out dbl))
                 return dbl;
             else
                 return 0d;
@@ -278,7 +342,7 @@ namespace OpenMetaverse.StructuredData
             if (DateTime.TryParse(value, out dt))
                 return dt;
             else
-                return Helpers.Epoch;
+                return Utils.Epoch;
         }
         public override Uri AsUri() { return new Uri(value); }
 
@@ -545,6 +609,92 @@ namespace OpenMetaverse.StructuredData
                 this.value = value;
             else
                 this.value = new List<LLSD>();
+        }
+
+        public Vector2 AsVector2()
+        {
+            Vector2 vector = Vector2.Zero;
+
+            if (this.Count == 2)
+            {
+                vector.X = (float)this[0].AsReal();
+                vector.Y = (float)this[1].AsReal();
+            }
+
+            return vector;
+        }
+
+        public Vector3 AsVector3()
+        {
+            Vector3 vector = Vector3.Zero;
+
+            if (this.Count == 3)
+            {
+                vector.X = (float)this[0].AsReal();
+                vector.Y = (float)this[1].AsReal();
+                vector.Z = (float)this[2].AsReal();
+            }
+
+            return vector;
+        }
+
+        public Vector3d AsVector3d()
+        {
+            Vector3d vector = Vector3d.Zero;
+
+            if (this.Count == 3)
+            {
+                vector.X = this[0].AsReal();
+                vector.Y = this[1].AsReal();
+                vector.Z = this[2].AsReal();
+            }
+
+            return vector;
+        }
+
+        public Vector4 AsVector4()
+        {
+            Vector4 vector = Vector4.Zero;
+
+            if (this.Count == 4)
+            {
+                vector.X = (float)this[0].AsReal();
+                vector.Y = (float)this[1].AsReal();
+                vector.Z = (float)this[2].AsReal();
+                vector.W = (float)this[3].AsReal();
+            }
+
+            return vector;
+        }
+
+        public Quaternion AsQuaternion()
+        {
+            Quaternion quaternion = Quaternion.Identity;
+
+            if (this.Count == 4)
+            {
+                quaternion.X = (float)this[0].AsReal();
+                quaternion.Y = (float)this[1].AsReal();
+                quaternion.Z = (float)this[2].AsReal();
+                quaternion.W = (float)this[3].AsReal();
+            }
+
+            return quaternion;
+        }
+
+        public Color4 AsColor4()
+        {
+            Color4 color = Color4.Black;
+
+            if (this.Count == 4)
+            {
+                color.R = (float)this[0].AsReal();
+                color.G = (float)this[1].AsReal();
+                color.B = (float)this[2].AsReal();
+                color.A = (float)this[3].AsReal();
+            }
+
+            return color;
         }
 
         public override bool AsBoolean() { return value.Count > 0; }

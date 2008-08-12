@@ -173,7 +173,7 @@ namespace OpenMetaverse
             double cx, cy, cz; // cosines
             double sx, sz; // sines
 
-            angleY = Math.Asin(MathHelper.Clamp(M13, -1f, 1f));
+            angleY = Math.Asin(Utils.Clamp(M13, -1f, 1f));
             cy = Math.Cos(angleY);
 
             if (Math.Abs(cy) > 0.005f)
@@ -899,7 +899,7 @@ namespace OpenMetaverse
         /// <returns>A string representation of the vector</returns>
         public override string ToString()
         {
-            return string.Format(Helpers.EnUsCulture,
+            return string.Format(Utils.EnUsCulture,
                 "|{0}, {1}, {2}, {3}|\n|{4}, {5}, {6}, {7}|\n|{8}, {9}, {10}, {11}|\n|{12}, {13}, {14}, {15}|",
                 M11, M12, M13, M14, M21, M22, M23, M24, M31, M32, M33, M34, M41, M42, M43, M44);
         }

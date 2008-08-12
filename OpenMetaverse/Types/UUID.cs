@@ -165,7 +165,17 @@ namespace OpenMetaverse
         /// <returns>An integer created from the first eight bytes of this UUID</returns>
         public ulong GetULong()
         {
-            return Helpers.BytesToUInt64(Guid.ToByteArray());
+            byte[] bytes = Guid.ToByteArray();
+
+            return (ulong)
+                ((ulong)bytes[7] +
+                ((ulong)bytes[6] << 8) +
+                ((ulong)bytes[5] << 16) +
+                ((ulong)bytes[4] << 24) +
+                ((ulong)bytes[3] << 32) +
+                ((ulong)bytes[2] << 40) +
+                ((ulong)bytes[1] << 48) +
+                ((ulong)bytes[0] << 56));
         }
 
         #endregion Public Methods
@@ -220,7 +230,7 @@ namespace OpenMetaverse
             Buffer.BlockCopy(first.GetBytes(), 0, input, 0, 16);
             Buffer.BlockCopy(second.GetBytes(), 0, input, 16, 16);
 
-            return new UUID(Helpers.MD5Builder.ComputeHash(input), 0);
+            return new UUID(Utils.MD5Builder.ComputeHash(input), 0);
         }
 
         /// <summary>

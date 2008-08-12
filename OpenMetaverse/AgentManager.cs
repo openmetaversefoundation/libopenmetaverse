@@ -1216,7 +1216,7 @@ namespace OpenMetaverse
             chat.AgentData.AgentID = this.id;
             chat.AgentData.SessionID = Client.Self.SessionID;
             chat.ChatData.Channel = channel;
-            chat.ChatData.Message = Helpers.StringToField(message);
+            chat.ChatData.Message = Utils.StringToBytes(message);
             chat.ChatData.Type = (byte)type;
 
             Client.Network.SendPacket(chat);
@@ -1312,10 +1312,10 @@ namespace OpenMetaverse
                 im.AgentData.SessionID = Client.Self.SessionID;
 
                 im.MessageBlock.Dialog = (byte)dialog;
-                im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+                im.MessageBlock.FromAgentName = Utils.StringToBytes(fromName);
                 im.MessageBlock.FromGroup = false;
                 im.MessageBlock.ID = imSessionID;
-                im.MessageBlock.Message = Helpers.StringToField(message);
+                im.MessageBlock.Message = Utils.StringToBytes(message);
                 im.MessageBlock.Offline = (byte)offline;
                 im.MessageBlock.ToAgentID = target;
 
@@ -1366,15 +1366,15 @@ namespace OpenMetaverse
                     im.AgentData.AgentID = Client.Self.AgentID;
                     im.AgentData.SessionID = Client.Self.SessionID;
                     im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionSend;
-                    im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+                    im.MessageBlock.FromAgentName = Utils.StringToBytes(fromName);
                     im.MessageBlock.FromGroup = false;
-                    im.MessageBlock.Message = Helpers.StringToField(message);
+                    im.MessageBlock.Message = Utils.StringToBytes(message);
                     im.MessageBlock.Offline = 0;
                     im.MessageBlock.ID = groupID;
                     im.MessageBlock.ToAgentID = groupID;
                     im.MessageBlock.Position = Vector3.Zero;
                     im.MessageBlock.RegionID = UUID.Zero;
-                    im.MessageBlock.BinaryBucket = Helpers.StringToField("\0");
+                    im.MessageBlock.BinaryBucket = Utils.StringToBytes("\0");
                     
                     Client.Network.SendPacket(im);
                 }
@@ -1396,7 +1396,7 @@ namespace OpenMetaverse
             im.AgentData.AgentID = Client.Self.AgentID;
             im.AgentData.SessionID = Client.Self.SessionID;
             im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionGroupStart;
-            im.MessageBlock.FromAgentName = Helpers.StringToField(Client.Self.Name);
+            im.MessageBlock.FromAgentName = Utils.StringToBytes(Client.Self.Name);
             im.MessageBlock.FromGroup = false;
             im.MessageBlock.Message = new byte[0];
             im.MessageBlock.Offline = 0;
@@ -1420,7 +1420,7 @@ namespace OpenMetaverse
             im.AgentData.AgentID = Client.Self.AgentID;
             im.AgentData.SessionID = Client.Self.SessionID;
             im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionDrop;
-            im.MessageBlock.FromAgentName = Helpers.StringToField(Client.Self.Name);
+            im.MessageBlock.FromAgentName = Utils.StringToBytes(Client.Self.Name);
             im.MessageBlock.FromGroup = false;
             im.MessageBlock.Message = new byte[0];
             im.MessageBlock.Offline = 0;
@@ -1449,7 +1449,7 @@ namespace OpenMetaverse
             reply.AgentData.SessionID = Client.Self.SessionID;
 
             reply.Data.ButtonIndex = buttonIndex;
-            reply.Data.ButtonLabel = Helpers.StringToField(buttonlabel);
+            reply.Data.ButtonLabel = Utils.StringToBytes(buttonlabel);
             reply.Data.ChatChannel = channel;
             reply.Data.ObjectID = objectID;
 
@@ -1711,14 +1711,14 @@ namespace OpenMetaverse
             autopilot.AgentData.SessionID = Client.Self.SessionID;
             autopilot.AgentData.TransactionID = UUID.Zero;
             autopilot.MethodData.Invoice = UUID.Zero;
-            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
+            autopilot.MethodData.Method = Utils.StringToBytes("autopilot");
             autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
             autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
+            autopilot.ParamList[0].Parameter = Utils.StringToBytes(globalX.ToString());
             autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
+            autopilot.ParamList[1].Parameter = Utils.StringToBytes(globalY.ToString());
             autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+            autopilot.ParamList[2].Parameter = Utils.StringToBytes(z.ToString());
 
             Client.Network.SendPacket(autopilot);
         }
@@ -1738,14 +1738,14 @@ namespace OpenMetaverse
             autopilot.AgentData.SessionID = Client.Self.SessionID;
             autopilot.AgentData.TransactionID = UUID.Zero;
             autopilot.MethodData.Invoice = UUID.Zero;
-            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
+            autopilot.MethodData.Method = Utils.StringToBytes("autopilot");
             autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
             autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
+            autopilot.ParamList[0].Parameter = Utils.StringToBytes(globalX.ToString());
             autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
+            autopilot.ParamList[1].Parameter = Utils.StringToBytes(globalY.ToString());
             autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+            autopilot.ParamList[2].Parameter = Utils.StringToBytes(z.ToString());
 
             Client.Network.SendPacket(autopilot);
         }
@@ -1951,7 +1951,7 @@ namespace OpenMetaverse
             MoneyTransferRequestPacket money = new MoneyTransferRequestPacket();
             money.AgentData.AgentID = this.id;
             money.AgentData.SessionID = Client.Self.SessionID;
-            money.MoneyData.Description = Helpers.StringToField(description);
+            money.MoneyData.Description = Utils.StringToBytes(description);
             money.MoneyData.DestID = target;
             money.MoneyData.SourceID = this.id;
             money.MoneyData.TransactionType = (int)type;
@@ -2229,7 +2229,7 @@ namespace OpenMetaverse
             p.AgentData.AgentID = Client.Self.id;
             p.AgentData.SessionID = Client.Self.SessionID;
             p.Info.LureType = 0;
-            p.Info.Message = Helpers.StringToField(message);
+            p.Info.Message = Utils.StringToBytes(message);
             p.TargetData = new StartLurePacket.TargetDataBlock[] { new StartLurePacket.TargetDataBlock() };
             p.TargetData[0].TargetID = targetID;
             Client.Network.SendPacket(p);
@@ -2274,13 +2274,13 @@ namespace OpenMetaverse
             AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
             apup.AgentData.AgentID = id;
             apup.AgentData.SessionID = sessionID;
-            apup.PropertiesData.AboutText = Helpers.StringToField(profile.AboutText);
+            apup.PropertiesData.AboutText = Utils.StringToBytes(profile.AboutText);
             apup.PropertiesData.AllowPublish = profile.AllowPublish;
-            apup.PropertiesData.FLAboutText = Helpers.StringToField(profile.FirstLifeText);
+            apup.PropertiesData.FLAboutText = Utils.StringToBytes(profile.FirstLifeText);
             apup.PropertiesData.FLImageID = profile.FirstLifeImage;
             apup.PropertiesData.ImageID = profile.ProfileImage;
             apup.PropertiesData.MaturePublish = profile.MaturePublish;
-            apup.PropertiesData.ProfileURL = Helpers.StringToField(profile.ProfileURL);
+            apup.PropertiesData.ProfileURL = Utils.StringToBytes(profile.ProfileURL);
 
             Client.Network.SendPacket(apup);
         }
@@ -2294,11 +2294,11 @@ namespace OpenMetaverse
             AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
             aiup.AgentData.AgentID = id;
             aiup.AgentData.SessionID = sessionID;
-            aiup.PropertiesData.LanguagesText = Helpers.StringToField(interests.LanguagesText);
+            aiup.PropertiesData.LanguagesText = Utils.StringToBytes(interests.LanguagesText);
             aiup.PropertiesData.SkillsMask = interests.SkillsMask;
-            aiup.PropertiesData.SkillsText = Helpers.StringToField(interests.SkillsText);
+            aiup.PropertiesData.SkillsText = Utils.StringToBytes(interests.SkillsText);
             aiup.PropertiesData.WantToMask = interests.WantToMask;
-            aiup.PropertiesData.WantToText = Helpers.StringToField(interests.WantToText);
+            aiup.PropertiesData.WantToText = Utils.StringToBytes(interests.WantToText);
 
             Client.Network.SendPacket(aiup);
         }
@@ -2349,7 +2349,7 @@ namespace OpenMetaverse
             s.StartLocationData = new SetStartLocationRequestPacket.StartLocationDataBlock();
             s.StartLocationData.LocationPos = Client.Self.SimPosition;
             s.StartLocationData.LocationID = 1;
-            s.StartLocationData.SimName = Helpers.StringToField(String.Empty);
+            s.StartLocationData.SimName = Utils.StringToBytes(String.Empty);
             s.StartLocationData.LocationLookAt = Movement.Camera.AtAxis;
             Client.Network.SendPacket(s);
         }
@@ -2421,7 +2421,7 @@ namespace OpenMetaverse
             request.Requester.RequestID = requestID;
             request.Requester.SearchDir = Quaternion.Identity; // TODO: this needs to be tested
             request.Requester.SearchID = searchID;
-            request.Requester.SearchName = Helpers.StringToField(name);
+            request.Requester.SearchName = Utils.StringToBytes(name);
             request.Requester.SearchPos = Vector3.Zero;
             request.Requester.SearchRegions = 0; // TODO: ?
             request.Requester.SourceID = Client.Self.AgentID;
@@ -2449,7 +2449,7 @@ namespace OpenMetaverse
                 {
                 	InstantMessage message;
                 	message.FromAgentID = im.AgentData.AgentID;
-                	message.FromAgentName = Helpers.FieldToUTF8String(im.MessageBlock.FromAgentName);
+                	message.FromAgentName = Utils.BytesToString(im.MessageBlock.FromAgentName);
                 	message.ToAgentID = im.MessageBlock.ToAgentID;
                 	message.ParentEstateID = im.MessageBlock.ParentEstateID;
                 	message.RegionID = im.MessageBlock.RegionID;
@@ -2458,7 +2458,7 @@ namespace OpenMetaverse
                 	message.GroupIM = im.MessageBlock.FromGroup;
                 	message.IMSessionID = im.MessageBlock.ID;
                 	message.Timestamp = new DateTime(im.MessageBlock.Timestamp);
-                	message.Message = Helpers.FieldToUTF8String(im.MessageBlock.Message);
+                	message.Message = Utils.BytesToString(im.MessageBlock.Message);
                 	message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
                 	message.BinaryBucket = im.MessageBlock.BinaryBucket;
 
@@ -2480,11 +2480,11 @@ namespace OpenMetaverse
             {
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
-                OnChat(Helpers.FieldToUTF8String(chat.ChatData.Message)
+                OnChat(Utils.BytesToString(chat.ChatData.Message)
                     , (ChatAudibleLevel)chat.ChatData.Audible
                     , (ChatType)chat.ChatData.ChatType
                     , (ChatSourceType)chat.ChatData.SourceType
-                    , Helpers.FieldToUTF8String(chat.ChatData.FromName)
+                    , Utils.BytesToString(chat.ChatData.FromName)
                     , chat.ChatData.SourceID
                     , chat.ChatData.OwnerID
                     , chat.ChatData.Position
@@ -2506,15 +2506,15 @@ namespace OpenMetaverse
 
                 foreach (ScriptDialogPacket.ButtonsBlock button in dialog.Buttons)
                 {
-                    buttons.Add(Helpers.FieldToUTF8String(button.ButtonLabel));
+                    buttons.Add(Utils.BytesToString(button.ButtonLabel));
                 }
 
-                OnScriptDialog(Helpers.FieldToUTF8String(dialog.Data.Message),
-                    Helpers.FieldToUTF8String(dialog.Data.ObjectName),
+                OnScriptDialog(Utils.BytesToString(dialog.Data.Message),
+                    Utils.BytesToString(dialog.Data.ObjectName),
                     dialog.Data.ImageID,
                     dialog.Data.ObjectID,
-                    Helpers.FieldToUTF8String(dialog.Data.FirstName),
-                    Helpers.FieldToUTF8String(dialog.Data.LastName),
+                    Utils.BytesToString(dialog.Data.FirstName),
+                    Utils.BytesToString(dialog.Data.LastName),
                     dialog.Data.ChatChannel,
                     buttons);
             }
@@ -2536,8 +2536,8 @@ namespace OpenMetaverse
                     OnScriptQuestion(simulator,
                         question.Data.TaskID,
                         question.Data.ItemID,
-                        Helpers.FieldToUTF8String(question.Data.ObjectName),
-                        Helpers.FieldToUTF8String(question.Data.ObjectOwner),
+                        Utils.BytesToString(question.Data.ObjectName),
+                        Utils.BytesToString(question.Data.ObjectOwner),
                         (ScriptPermission)question.Data.Questions);
                 }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -2579,12 +2579,12 @@ namespace OpenMetaverse
             {
                 try {
                     OnLoadURL(
-                        Helpers.FieldToUTF8String(loadURL.Data.ObjectName),
+                        Utils.BytesToString(loadURL.Data.ObjectName),
                         loadURL.Data.ObjectID,
                         loadURL.Data.OwnerID,
                         loadURL.Data.OwnerIsGroup,
-                        Helpers.FieldToUTF8String(loadURL.Data.Message),
-                        Helpers.FieldToUTF8String(loadURL.Data.URL)
+                        Utils.BytesToString(loadURL.Data.Message),
+                        Utils.BytesToString(loadURL.Data.URL)
                     );
                 }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -2604,7 +2604,7 @@ namespace OpenMetaverse
             relativePosition = movement.Data.Position;
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
-            simulator.SimVersion = Helpers.FieldToUTF8String(movement.SimData.ChannelVersion);
+            simulator.SimVersion = Utils.BytesToString(movement.SimData.ChannelVersion);
         }
 
         /// <summary>
@@ -2623,14 +2623,14 @@ namespace OpenMetaverse
 
             if (p.AgentData.AgentID == simulator.Client.Self.AgentID)
             {
-                firstName = Helpers.FieldToUTF8String(p.AgentData.FirstName);
-                lastName = Helpers.FieldToUTF8String(p.AgentData.LastName);
+                firstName = Utils.BytesToString(p.AgentData.FirstName);
+                lastName = Utils.BytesToString(p.AgentData.LastName);
                 activeGroup = p.AgentData.ActiveGroupID;
 
                 if (OnAgentDataUpdated != null)
                 {
-                    string groupTitle = Helpers.FieldToUTF8String(p.AgentData.GroupTitle);
-                    string groupName = Helpers.FieldToUTF8String(p.AgentData.GroupName);
+                    string groupTitle = Utils.BytesToString(p.AgentData.GroupTitle);
+                    string groupName = Utils.BytesToString(p.AgentData.GroupName);
 
                     try { OnAgentDataUpdated(firstName, lastName, activeGroup, groupTitle, (GroupPowers)p.AgentData.GroupPowers, groupName); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -2660,7 +2660,7 @@ namespace OpenMetaverse
                     try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
                         mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
                         mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
-                        Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
+                        Utils.BytesToString(mbrp.MoneyData.Description)); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
@@ -2725,7 +2725,7 @@ namespace OpenMetaverse
             {
                 TeleportProgressPacket progress = (TeleportProgressPacket)packet;
 
-                teleportMessage = Helpers.FieldToUTF8String(progress.Info.Message);
+                teleportMessage = Utils.BytesToString(progress.Info.Message);
                 flags = (TeleportFlags)progress.Info.TeleportFlags;
                 teleportStat = TeleportStatus.Progress;
 
@@ -2735,7 +2735,7 @@ namespace OpenMetaverse
             {
                 TeleportFailedPacket failed = (TeleportFailedPacket)packet;
 
-                teleportMessage = Helpers.FieldToUTF8String(failed.Info.Reason);
+                teleportMessage = Utils.BytesToString(failed.Info.Reason);
                 teleportStat = TeleportStatus.Failed;
                 finished = true;
 
@@ -2746,7 +2746,7 @@ namespace OpenMetaverse
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
 
                 flags = (TeleportFlags)finish.Info.TeleportFlags;
-                string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
+                string seedcaps = Utils.BytesToString(finish.Info.SeedCapability);
                 finished = true;
 
                 Logger.DebugLog("TeleportFinish received, Flags: " + flags.ToString(), Client);
@@ -2879,7 +2879,7 @@ namespace OpenMetaverse
                 {
                     MeanCollisionAlertPacket.MeanCollisionBlock block = collision.MeanCollision[i];
 
-                    DateTime time = Helpers.UnixTimeToDateTime(block.Time);
+                    DateTime time = Utils.UnixTimeToDateTime(block.Time);
                     MeanCollisionType type = (MeanCollisionType)block.Type;
 
                     try { OnMeanCollision(type, block.Perp, block.Victim, block.Mag, time); }
@@ -2918,7 +2918,7 @@ namespace OpenMetaverse
         private void CrossedRegionHandler(Packet packet, Simulator sim)
         {
             CrossedRegionPacket crossing = (CrossedRegionPacket)packet;
-            string seedCap = Helpers.FieldToUTF8String(crossing.RegionData.SeedCapability);
+            string seedCap = Utils.BytesToString(crossing.RegionData.SeedCapability);
             IPEndPoint endPoint = new IPEndPoint(crossing.RegionData.SimIP, crossing.RegionData.SimPort);
 
             Logger.DebugLog("Crossed in to new region area, attempting to connect to " + endPoint.ToString(), Client);
@@ -3064,7 +3064,7 @@ namespace OpenMetaverse
                     message.ToAgentID = msg["to_id"].AsString();
                     message.ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
                     message.RegionID = msg["region_id"].AsUUID();
-                    message.Position.FromLLSD(msg["position"]);
+                    message.Position = ((LLSDArray)msg["position"]).AsVector3();
                     message.Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
                     message.GroupIM = true;
                     message.IMSessionID = map["session_id"].AsUUID();
@@ -3086,7 +3086,7 @@ namespace OpenMetaverse
         private void AlertMessageHandler(Packet packet, Simulator simulator)
         {
             AlertMessagePacket alert = (AlertMessagePacket)packet;
-            string message = Helpers.FieldToUTF8String(alert.AlertData.Message);
+            string message = Utils.BytesToString(alert.AlertData.Message);
 
             if (OnAlertMessage != null)
             {
@@ -3127,7 +3127,7 @@ namespace OpenMetaverse
                     ScriptSensorReplyPacket.SensedDataBlock block = reply.SensedData[i];
                     ScriptSensorReplyPacket.RequesterBlock requestor = reply.Requester;
                     
-                    try { OnScriptSensorReply(requestor.SourceID, block.GroupID, Helpers.FieldToUTF8String(block.Name),
+                    try { OnScriptSensorReply(requestor.SourceID, block.GroupID, Utils.BytesToString(block.Name),
                         block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }

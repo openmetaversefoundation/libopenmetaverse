@@ -159,12 +159,12 @@ namespace OpenMetaverse
             temp += Text.Length + "\n";
             temp += Text;
             temp += "}";
-            AssetData = Helpers.StringToField(temp);
+            AssetData = Utils.StringToBytes(temp);
         }
         
         public override bool Decode()
         {
-            Text = Helpers.FieldToUTF8String(AssetData);
+            Text = Utils.BytesToString(AssetData);
             return true;
         }
     }
@@ -186,12 +186,12 @@ namespace OpenMetaverse
 
         public override void Encode()
         {
-            AssetData = Helpers.StringToField(Source);
+            AssetData = Utils.StringToBytes(Source);
         }
 
         public override bool Decode()
         {
-            Source = Helpers.FieldToUTF8String(AssetData);
+            Source = Utils.BytesToString(AssetData);
             return true;
         }
     }
@@ -299,14 +299,14 @@ namespace OpenMetaverse
 
         public AssetWearable(string source)
         {
-            AssetData = Helpers.StringToField(source);
+            AssetData = Utils.StringToBytes(source);
         }
 
         public override bool Decode()
         {
             int version = -1;
             Permissions = new Permissions();
-            string data = Helpers.FieldToUTF8String(AssetData);
+            string data = Utils.BytesToString(AssetData);
 
             string[] lines = data.Split('\n');
             for (int stri = 0; stri < lines.Length; stri++)
@@ -470,7 +470,7 @@ namespace OpenMetaverse
                 data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
             }
 
-            AssetData = Helpers.StringToField(data.ToString());
+            AssetData = Utils.StringToBytes(data.ToString());
         }
     }
 

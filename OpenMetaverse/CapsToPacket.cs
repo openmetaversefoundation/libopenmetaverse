@@ -86,7 +86,7 @@ namespace OpenMetaverse.Packets
         public static Packet FromXmlString(string xml)
         {
             System.Xml.XmlTextReader reader =
-                new System.Xml.XmlTextReader(new System.IO.MemoryStream(Helpers.StringToField(xml)));
+                new System.Xml.XmlTextReader(new System.IO.MemoryStream(Utils.StringToBytes(xml)));
 
             return FromLLSD(LLSDParser.DeserializeXml(reader));
         }
@@ -224,20 +224,17 @@ namespace OpenMetaverse.Packets
                     }
                     else if (fieldType == typeof(Vector3))
                     {
-                        Vector3 vec = (Vector3)field.GetValue(block);
-                        vec.FromLLSD(blockData[field.Name]);
+                        Vector3 vec = ((LLSDArray)blockData[field.Name]).AsVector3();
                         field.SetValue(block, vec);
                     }
                     else if (fieldType == typeof(Vector4))
                     {
-                        Vector4 vec = (Vector4)field.GetValue(block);
-                        vec.FromLLSD(blockData[field.Name]);
+                        Vector4 vec = ((LLSDArray)blockData[field.Name]).AsVector4();
                         field.SetValue(block, vec);
                     }
                     else if (fieldType == typeof(Quaternion))
                     {
-                        Quaternion quat = (Quaternion)field.GetValue(block);
-                        quat.FromLLSD(blockData[field.Name]);
+                        Quaternion quat = ((LLSDArray)blockData[field.Name]).AsQuaternion();
                         field.SetValue(block, quat);
                     }
                 }
@@ -257,7 +254,7 @@ namespace OpenMetaverse.Packets
                         set.Invoke(block, new object[] { blockData[property.Name].AsBinary() });
                     }
                     else
-                        set.Invoke(block, new object[] { Helpers.StringToField(blockData[property.Name].AsString()) });
+                        set.Invoke(block, new object[] { Utils.StringToBytes(blockData[property.Name].AsString()) });
                 }
             }
 
