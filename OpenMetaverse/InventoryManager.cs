@@ -3067,7 +3067,10 @@ namespace OpenMetaverse
                             if (contentsReceived >= request.Descendents)
                             {
                                 // Fire the callback:
-                                request.Callback(reply.AgentData.FolderID, request.ItemContents, request.FolderContents);
+                                if (request.Callback != null)
+                                {
+                                    request.Callback(reply.AgentData.FolderID, request.ItemContents, request.FolderContents);
+                                }
                                 _DescendentsRequests.RemoveAt(i);
                             }
                         }

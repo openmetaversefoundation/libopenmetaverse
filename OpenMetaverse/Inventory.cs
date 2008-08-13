@@ -862,12 +862,17 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="folder">The folder whose contents were retrieved.</param>
         public delegate void ContentsRetrieved(InventoryFolder folder);
+        public delegate void PartialContents(InventoryFolder folder, ICollection<InventoryBase> contents);
 
         /// <summary>
-        /// Triggered when the <code>InventoryFolder.Contents</code> dictionary 
-        /// is updated from the remote inventory.
+        /// Triggered when the InventoryFolder's contents have been completely retrieved.
         /// </summary>
         public event ContentsRetrieved OnContentsRetrieved;
+
+        /// <summary>
+        /// Triggered when the InventoryFolder's contents have been partially retrieved.
+        /// </summary>
+        public event PartialContents OnPartialContents;
 
         public FolderData Data;
 
@@ -1061,7 +1066,15 @@ namespace OpenMetaverse
                 timeout, out items, out folders);
             if (success) 
 			{
-                ContentsFromData(items, folders);
+                Dictionary<UUID, InventoryBase> contents = new Dictionary<UUID, InventoryBase>(items.Count + folders.Count);
+                foreach (ItemData item in items)
+                    contents.Add(item.UUID, Inventory.Manage(item));
+                foreach (FolderData folder in folders)
+                    contents.Add(folder.UUID, Inventory.Manage(folder));
+
+                lock (_Contents)
+                    _Contents = contents;
+
                 Data.DescendentCount = Contents.Count;
             }
             return success;
@@ -1086,41 +1099,44 @@ namespace OpenMetaverse
         /// <param name="sortOrder">The order in which results are returned.</param>
         public void RequestContents(InventorySortOrder sortOrder)
         {
-            InventoryManager.FolderContentsCallback callback =
-                delegate(UUID folder, List<ItemData> items, List<FolderData> folders)
+
+            Dictionary<UUID, InventoryBase> contents = null;
+            if (Data.DescendentCount > 0)
+                contents = new Dictionary<UUID, InventoryBase>(Data.DescendentCount);
+            else
+                contents = new Dictionary<UUID, InventoryBase>();
+
+            InventoryManager.PartialContentsCallback callback =
+                delegate(UUID folderid, ItemData[] items, FolderData[] folders, int remaining)
                 {
-                    if (folder != UUID)
+                    if (folderid != UUID)
                         return;
 
-                    ContentsFromData(items, folders);
-                    Data.DescendentCount = Contents.Count;
-                    if (OnContentsRetrieved != null)
+                    foreach (ItemData item in items)
+                        contents.Add(item.UUID, Inventory.Manage(item));
+
+                    foreach (FolderData folder in folders)
+                        contents.Add(folder.UUID, Inventory.Manage(folder));
+
+                    if (OnPartialContents != null)
                     {
-                        try { OnContentsRetrieved(this); }
+                        try { OnPartialContents(this, contents.Values); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
+                    if (remaining == 0)
+                    {
+                        lock (_Contents)
+                            _Contents = contents;
+                        Data.DescendentCount = contents.Count;
+                        if (OnContentsRetrieved != null)
+                        {
+                            try { OnContentsRetrieved(this); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, e); }
+                        }
+                    }
                 };
-
             Manager.RequestFolderContents(UUID, Data.OwnerID, true, true, sortOrder,
-                callback);
-        }
-
-        private void ContentsFromData(List<ItemData> items, List<FolderData> folders)
-        {
-            Dictionary<UUID, InventoryBase> contents = new Dictionary<UUID, InventoryBase>(items.Count + folders.Count);
-            foreach (ItemData item in items)
-            {
-                contents.Add(item.UUID, Inventory.Manage(item));
-            }
-            foreach (FolderData folder in folders)
-            {
-                contents.Add(folder.UUID, Inventory.Manage(folder));
-            }
-
-            lock (_Contents)
-            {
-                _Contents = contents;
-            }
+                null, callback);
         }
 
         #region IEnumerable<InventoryBase> Members
@@ -1133,9 +1149,12 @@ namespace OpenMetaverse
         /// <returns>An enumerator for this InventoryFolder.</returns>
         public IEnumerator<InventoryBase> GetEnumerator()
         {
-            foreach (KeyValuePair<UUID, InventoryBase> child in _Contents)
+            lock (_Contents)
             {
-                yield return child.Value;
+                foreach (KeyValuePair<UUID, InventoryBase> child in _Contents)
+                {
+                    yield return child.Value;
+                }
             }
         }
 
