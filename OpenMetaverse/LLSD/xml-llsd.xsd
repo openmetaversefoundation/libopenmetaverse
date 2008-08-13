@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="xml.xsd" namespace="http://www.w3.org/XML/1998/namespace" />
+  <xs:element name="uri" type="xs:string" />
+  <xs:element name="uuid" type="xs:string" />
+  <xs:element name="KEYDATA">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="key" />
+        <xs:element ref="DATA" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="date" type="xs:string" />
+  <xs:element name="key" type="xs:string" />
+  <xs:element name="boolean" type="xs:string" />
+  <xs:element name="undef">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="EMPTY" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="map">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="KEYDATA" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="real" type="xs:string" />
+  <xs:element name="ATOMIC">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="undef" />
+        <xs:element ref="boolean" />
+        <xs:element ref="integer" />
+        <xs:element ref="real" />
+        <xs:element ref="uuid" />
+        <xs:element ref="string" />
+        <xs:element ref="date" />
+        <xs:element ref="uri" />
+        <xs:element ref="binary" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DATA">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="ATOMIC" />
+        <xs:element ref="map" />
+        <xs:element ref="array" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="llsd">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="DATA" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="binary">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute default="base64" name="encoding" type="xs:string" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="array">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="DATA" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="integer" type="xs:string" />
+  <xs:element name="string">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute ref="xml:space" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

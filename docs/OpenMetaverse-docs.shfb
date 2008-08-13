@@ -1,0 +1,93 @@
+﻿<project schemaVersion="1.6.0.7">
+    <assemblies>
+        <assembly assemblyPath="..\bin\OpenMetaverse.dll" xmlCommentsPath="..\bin\OpenMetaverse.xml" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\OpenMetaverse.GUI.dll" xmlCommentsPath="..\bin\OpenMetaverse.GUI.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\OpenMetaverse.Utilities.dll" xmlCommentsPath="..\bin\OpenMetaverse.Utilities.XML" commentsOnly="False" />
+    </assemblies>
+    <namespaceSummaries>
+        <namespaceSummaryItem name="" isDocumented="False" />
+        <namespaceSummaryItem name="CommandLine.Utility" isDocumented="False" />
+        <namespaceSummaryItem name="libsecondlife" isDocumented="False">This is the root namespace for the libsecondlife library.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Baking" isDocumented="False">libsecondlife.Baking</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Capabilities" isDocumented="False">libsecondlife.Capabilities</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Imaging" isDocumented="False">Image Handling</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Packets" isDocumented="False">libsecondlife.Packets</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.StructuredData" isDocumented="False">libsecondlife.StructuredData</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient" isDocumented="False">The TestClient is a working text based client which illustrates many of the library features and are created by developers to test new library functionality. The TestClient is not intended as a fully functional client however could be used as a basis for one.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands" isDocumented="False">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Inventory.Shell" isDocumented="False" />
+        <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Movement" isDocumented="False">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Utilities" isDocumented="False">Utilities Class</namespaceSummaryItem>
+        <namespaceSummaryItem name="libsecondlife.Voice" isDocumented="False">Voice Classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenJPEGNet" isDocumented="True">Image Encoding/Decoding</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse" isDocumented="True">The OpenMetaverse library primary namespace</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Capabilities" isDocumented="True">Capabilities is a method of transferring data between the client and Simulator, The Caps Client and EventQueue classes are contained within this namespace.</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.GUI" isDocumented="True">GUI Abstraction Layer for using the library in a winforms based application</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Imaging" isDocumented="True">Classes for dealing with images (Textures), including encoding/decoding and our wrapper class for OpenJpeg</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Packets" isDocumented="True">Packet information classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Rendering" isDocumented="True">Prim Rendering</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.StructuredData" isDocumented="True">LLSD (Structured Data) classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.TestClient" isDocumented="False">TestClient for code examples and developer testing tools</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.TestClient.Commands.Inventory.Shell" isDocumented="False">TestClient commands to emulate a shell for managing inventory</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Utilities" isDocumented="True">Utilities Class</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Voice" isDocumented="True">Voice Handling Classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="System.Collections" isDocumented="False" />
+    </namespaceSummaries>
+    <dependencies>
+        <dependencyItem depPath="..\bin\log4net.dll" />
+    </dependencies>
+    <componentConfigurations>
+        <component id="Code Block Component" enabled="True" configuration="&lt;component id=&quot;Code Block Component&quot; type=&quot;SandcastleBuilder.Components.CodeBlockComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot;&gt;&lt;!-- Base path for relative filenames in source attributes&#xD;&#xA;                 (optional) --&gt;&lt;basePath value=&quot;{@ProjectFolder}&quot; /&gt;&lt;!-- Connect to language filter (optional).  If omitted,&#xD;&#xA;                 language filtering is enabled by default. --&gt;&lt;languageFilter value=&quot;true&quot; /&gt;&lt;!-- Code colorizer options (required).&#xD;&#xA;                 Attributes:&#xD;&#xA;                    Language syntax configuration file (required)&#xD;&#xA;                    XSLT style file (required)&#xD;&#xA;                    &quot;Copy&quot; image file URL (required)&#xD;&#xA;                    Default language (optional)&#xD;&#xA;                    Enable line numbering (optional)&#xD;&#xA;                    Enable outlining (optional)&#xD;&#xA;                    Keep XML comment &quot;see&quot; tags within the code (optional)&#xD;&#xA;                    Tab size override (optional, 0 = Use syntax file setting)&#xD;&#xA;                    Use language name as default title (optional) --&gt;&lt;colorizer syntaxFile=&quot;{@SHFBFolder}Colorizer\highlight.xml&quot; styleFile=&quot;{@SHFBFolder}Colorizer\highlight.xsl&quot; copyImageUrl=&quot;../icons/CopyCode.gif&quot; language=&quot;cs&quot; numberLines=&quot;false&quot; outlining=&quot;true&quot; keepSeeTags=&quot;false&quot; tabSize=&quot;4&quot; defaultTitle=&quot;true&quot; /&gt;&lt;/component&gt;" />
+        <component id="IntelliSense Component" enabled="True" configuration="&lt;component id=&quot;IntelliSense Component&quot; type=&quot;SandcastleBuilder.Components.IntelliSenseComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot;&gt;&lt;!-- Output options (optional)&#xD;&#xA;                 Attributes:&#xD;&#xA;                    Include Namespaces (false by default)&#xD;&#xA;                    Namespaces filename (&quot;Namespaces&quot; if not specified or empty)&#xD;&#xA;                    Directory (current folder if not specified or empty) --&gt;&lt;output includeNamespaces=&quot;true&quot; namespacesFile=&quot;Namespaces&quot; folder=&quot;{@OutputFolder}&quot; /&gt;&lt;/component&gt;" />
+        <component id="Post-transform Component" enabled="True" configuration="&lt;component id=&quot;Post-transform Component&quot; type=&quot;SandcastleBuilder.Components.PostTransformComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot;&gt;&lt;!-- Code colorizer files (required).&#xD;&#xA;                 Attributes:&#xD;&#xA;                    Stylesheet file (required)&#xD;&#xA;                    Script file (required)&#xD;&#xA;                    &quot;Copy&quot; image file (required) --&gt;&lt;colorizer stylesheet=&quot;{@SHFBFolder}Colorizer\highlight.css&quot; scriptFile=&quot;{@SHFBFolder}Colorizer\highlight.js&quot; copyImage=&quot;{@SHFBFolder}Colorizer\CopyCode.gif&quot; /&gt;&lt;!-- Base output path for the files (required).  This should match&#xD;&#xA;                 the parent folder of the output path of the HTML files (see&#xD;&#xA;                 SaveComponent). --&gt;&lt;outputPath value=&quot;Output\&quot; /&gt;&lt;!-- Logo image file (optional).  Filename is required. The height,&#xD;&#xA;                 width, altText, placement, and alignment attributes are&#xD;&#xA;                 optional. --&gt;&lt;logoFile filename=&quot;{@ProjectFolder}libslalt.gif&quot; height=&quot;0&quot; width=&quot;0&quot; altText=&quot;&quot; placement=&quot;right&quot; alignment=&quot;left&quot; /&gt;&lt;/component&gt;" />
+        <component id="Cached MSDN URL References" enabled="True" configuration="&lt;component id=&quot;Cached MSDN URL References&quot; type=&quot;SandcastleBuilder.Components.CachedResolveReferenceLinksComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot;&gt;&#xD;&#xA;&lt;cache filename=&quot;{@AppDataFolder}Cache\MsdnUrl.cache&quot; /&gt;&#xD;&#xA;&lt;targets base=&quot;{@SandcastlePath}Data\Reflection&quot; recurse=&quot;true&quot; files=&quot;*.xml&quot; type=&quot;{@SDKLinks}&quot; /&gt;&#xD;&#xA;&lt;targets files=&quot;reflection.xml&quot; type=&quot;{@ProjectLinks}&quot; /&gt;&#xD;&#xA;&lt;/component&gt;" />
+        <component id="Cached Framework Comments Index Data" enabled="True" configuration="&lt;component id=&quot;Cached Framework Comments Index Data&quot; type=&quot;SandcastleBuilder.Components.CachedCopyFromIndexComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot;&gt;&#xD;&#xA;&lt;index name=&quot;comments&quot; value=&quot;/doc/members/member&quot; key=&quot;@name&quot; cache=&quot;100&quot;&gt;&#xD;&#xA;{@CachedFrameworkCommentList}&#xD;&#xA;{@CommentFileList}&#xD;&#xA;            &lt;/index&gt;&#xD;&#xA;&lt;copy name=&quot;comments&quot; source=&quot;*&quot; target=&quot;/document/comments&quot; /&gt;&#xD;&#xA;&lt;/component&gt;" />
+    </componentConfigurations>
+    <ProjectSummary>&lt;p&gt;
+The OpenMetaverse project is an effort directed at understanding how Second Life(tm) works from a technical perspective, and extending and integrating the metaverse with the rest of the web. This includes understanding how the official Second Life(tm) client operates and how it communicates with the Second Life simulator servers, as well as development of independent third party clients and tools.&lt;/p&gt;
+&lt;ul&gt;
+    &lt;li&gt; See &lt;A HREF="http://www.libsecondlife.org/wiki/libsecondlife:License"&gt;http://www.libsecondlife.org/wiki/libsecondlife:License&lt;/A&gt; for a copy of the source license used by libsecondlife.&lt;/li&gt;
+    &lt;li&gt; The collective authors make no guarantee as to the reliability of this documentation and it is formally considered alpha status.&lt;/li&gt;
+    &lt;li&gt; This research and documentation is protected under the exceptions granted in the Second Life Terms of Service section 4.1 and DMCA section 1201(f), and is formally endorsed by Linden Labs. &lt;/li&gt;
+&lt;/ul&gt;</ProjectSummary>
+    <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace, TypeParameter</MissingTags>
+    <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
+    <HtmlHelp1xCompilerPath path="" />
+    <HtmlHelp2xCompilerPath path="" />
+    <OutputPath>.\trunk\</OutputPath>
+    <SandcastlePath path="" />
+    <WorkingPath path="" />
+    <CleanIntermediates>True</CleanIntermediates>
+    <KeepLogFile>False</KeepLogFile>
+    <BuildLogFile path="" />
+    <HelpFileFormat>Help1xAndWebsite</HelpFileFormat>
+    <CppCommentsFixup>False</CppCommentsFixup>
+    <FrameworkVersion>2.0.50727</FrameworkVersion>
+    <IndentHtml>True</IndentHtml>
+    <Preliminary>False</Preliminary>
+    <RootNamespaceContainer>False</RootNamespaceContainer>
+    <RootNamespaceTitle />
+    <HelpTitle>OpenMetaverse Library API Documentation</HelpTitle>
+    <HtmlHelpName>OpenMetaverse</HtmlHelpName>
+    <Language>en-US</Language>
+    <CopyrightHref>http://www.libsecondlife.org/wiki/libsecondlife:License</CopyrightHref>
+    <CopyrightText>License</CopyrightText>
+    <FeedbackEMailAddress>contact@libsecondlife.org</FeedbackEMailAddress>
+    <FeedbackEMailLinkText>The OpenMetaverse Ninjas</FeedbackEMailLinkText>
+    <HeaderText />
+    <FooterText />
+    <ProjectLinkType>Local</ProjectLinkType>
+    <SdkLinkType>Msdn</SdkLinkType>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
+    <PresentationStyle>Prototype</PresentationStyle>
+    <NamingMethod>MemberName</NamingMethod>
+    <SyntaxFilters>Standard</SyntaxFilters>
+    <ShowFeedbackControl>False</ShowFeedbackControl>
+    <BinaryTOC>True</BinaryTOC>
+    <IncludeFavorites>True</IncludeFavorites>
+    <CollectionTocStyle>Hierarchical</CollectionTocStyle>
+    <IncludeStopWordList>True</IncludeStopWordList>
+    <PlugInNamespaces>ms.vsipcc+, ms.vsexpresscc+</PlugInNamespaces>
+    <HelpFileVersion>1.0.0.0</HelpFileVersion>
+    <ContentPlacement>AboveNamespaces</ContentPlacement>
+</project>
