@@ -166,7 +166,7 @@ namespace OpenMetaverse.GUI
         private void InventoryTree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             InventoryFolder folder = (InventoryFolder)e.Node.Tag;
-            if (folder.IsStale) folder.RequestContents();
+            if (folder.IsStale) folder.RequestContents(InventorySortOrder.ByDate | InventorySortOrder.FoldersByName);
             else UpdateFolder(folder);
         }
 

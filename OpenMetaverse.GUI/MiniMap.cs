@@ -59,6 +59,12 @@ namespace OpenMetaverse.GUI
             InitializeClient(client);
         }
 
+        private void InitializeClient(GridClient client)
+        {
+            _Client = client;
+            _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
+        }
+
         private void UpdateMiniMap(Simulator sim)
         {
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateMiniMap(sim); });
@@ -115,12 +121,6 @@ namespace OpenMetaverse.GUI
                 g.DrawImage(bmp, 0, 0);
                 this.Image = bmp;
             }
-        }
-
-        private void InitializeClient(GridClient client)
-        {
-            _Client = client;
-            _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
         }
 
         private void Grid_OnCoarseLocationUpdate(Simulator sim)
