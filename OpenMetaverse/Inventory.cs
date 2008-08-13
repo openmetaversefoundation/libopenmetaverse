@@ -451,7 +451,7 @@ namespace OpenMetaverse
                 currentDirectory = RootFolder;
                 path = path.Remove(0, 1);
             }
-            return InventoryFromPath(path.Split(new char[] { '/' }), currentDirectory, fetchStale);
+            return InventoryFromPath(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries), currentDirectory, fetchStale);
         }
 
         /// <summary>
@@ -520,7 +520,7 @@ namespace OpenMetaverse
                         agenda.Push(new object[] { parent, goalLevel + 1 });
                     }
                 }
-                else if (path[goalLevel] == ".")
+                else if (path[goalLevel] == "." || String.IsNullOrEmpty(path[goalLevel]))
                 {
                     if (goalLevel == path.Length - 1) // End of the path. 
                     {
@@ -528,7 +528,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        agenda.Push(new object[] {currentFolder, goalLevel + 1});
+                        agenda.Push(new object[] { currentFolder, goalLevel + 1 });
                     }
                 }
                 else // We need to look at the children
