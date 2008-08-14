@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Text;
 using System.Threading;
+
 namespace OpenMetaverse
 {
     /// <summary>
@@ -57,15 +58,28 @@ namespace OpenMetaverse
         /// </summary>
         public event InventoryUpdate OnInventoryUpdate;
 
+
+        /// <summary>
+        /// Delegate for <seealso cref="OnInventoryManaged"/>
+        /// </summary>
+        /// <param name="inventory">The Inventory that is managing <paramref name="ibase"/></param>
+        /// <param name="ibase">The inventory item or folder that was managed.</param>
+        public delegate void InventoryManaged(Inventory inventory, InventoryBase ibase);
+
+        /// <summary>
+        /// Triggered when an inventory item is first managed.
+        /// </summary>
+        public event InventoryManaged OnInventoryManaged;
+
         /// <summary>
         /// Retrieves a managed InventoryBase from the Inventory.
         /// Returns null if the UUID isn't managed by this Inventory.
         /// </summary>
         /// <param name="uuid">The UUID of the InventoryBase to retrieve.</param>
         /// <returns>A managed InventoryBase.</returns>
-        public InventoryBase this[UUID uuid] 
+        public InventoryBase this[UUID uuid]
         {
-            get 
+            get
             {
                 InventoryBase item;
                 if (Items.TryGetValue(uuid, out item))
@@ -82,11 +96,12 @@ namespace OpenMetaverse
         /// The owner of this inventory. Inventorys can only manage items
         /// owned by the same agent.
         /// </summary>
-        public UUID Owner {
+        public UUID Owner
+        {
             get { return _Owner; }
             private set { _Owner = value; }
         }
-        
+
         private UUID _RootUUID;
         /// <summary>
         /// The UUID of the root folder.
@@ -123,7 +138,7 @@ namespace OpenMetaverse
         /// <param name="manager">Manager for remote updates.</param>
         /// <param name="skeleton">Skeleton of folders, inventory owner.</param>
         public Inventory(InventoryManager manager, InventorySkeleton skeleton)
-            : this (manager, skeleton.Owner, skeleton.RootUUID)
+            : this(manager, skeleton.Owner, skeleton.RootUUID)
         {
             ManageSkeleton(skeleton);
         }
@@ -325,18 +340,29 @@ namespace OpenMetaverse
                 InventoryBase b;
                 if (Items.TryGetValue(item.UUID, out b))
                 {
+                    //Logger.DebugLog(String.Format("{0}: {1} already managed, updating.", (RootFolder == null) ? RootUUID.ToString() : RootFolder.Name, item.Name));
                     Update(b as InventoryItem, item);
                     return b as InventoryItem;
                 }
                 else
                 {
                     InventoryItem wrapper = WrapItemData(item);
-                    Items.Add(item.UUID, wrapper);
+                    //Logger.DebugLog(String.Format("{0}: {1} managed, {2} total.", (RootFolder == null) ? RootUUID.ToString() : RootFolder.Name, item.Name, Items.Count));
+                    lock (Items)
+                        Items.Add(item.UUID, wrapper);
+
+                    if (OnInventoryManaged != null)
+                    {
+                        try { OnInventoryManaged(this, wrapper); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, e); }
+                    }
+
                     return wrapper;
                 }
             }
             else
             {
+                //Logger.DebugLog(String.Format("{0}: {1} is not owned by this inventory.", (RootFolder == null) ? RootUUID.ToString() : RootFolder.Name, item.Name));
                 return null;
             }
         }
@@ -359,29 +385,35 @@ namespace OpenMetaverse
                 InventoryBase b;
                 if (Items.TryGetValue(folder.UUID, out b))
                 {
+                    //Logger.DebugLog(String.Format("{0}: {1} already managed, updating.", (RootFolder == null) ? RootUUID.ToString() : RootFolder.Name, folder.Name));
                     Update(b as InventoryFolder, folder);
                     return b as InventoryFolder;
                 }
                 else
                 {
                     InventoryFolder wrapper = WrapFolderData(folder);
-                    Items.Add(folder.UUID, wrapper);
                     lock (Items)
+                        Items.Add(folder.UUID, wrapper);
+                    //Logger.DebugLog(String.Format("{0}: {1} managed, {2} total.", (RootFolder == null) ? RootUUID.ToString() : RootFolder.Name, folder.Name, Items.Count));
+                    // Folder is now managed, update its contents with known children.
+                    foreach (InventoryBase item in Items.Values)
                     {
-                        // Folder is now managed, update its contents with known children.
-                        foreach (InventoryBase item in Items.Values)
+                        if (item.ParentUUID == folder.UUID)
                         {
-                            if (item.ParentUUID == folder.UUID)
-                            {
-                                wrapper.AddChild(item);
-                            }
+                            wrapper.AddChild(item);
                         }
+                    }
+                    if (OnInventoryManaged != null)
+                    {
+                        try { OnInventoryManaged(this, wrapper); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                     return wrapper;
                 }
             }
             else
             {
+                //Logger.DebugLog(String.Format("{0}: {1} is not owned by this inventory.", (RootFolder == null) ? RootUUID.ToString() : RootFolder.Name, folder.Name));
                 return null;
             }
         }
@@ -393,7 +425,9 @@ namespace OpenMetaverse
         /// <param name="item"></param>
         public void Unmanage(InventoryBase item)
         {
-            Items.Remove(item.UUID);
+            lock (Items)
+                Items.Remove(item.UUID);
+            //Logger.DebugLog("Unmanaging " + item.Name);
         }
 
         protected void Update(InventoryItem item, ItemData update)
@@ -432,6 +466,8 @@ namespace OpenMetaverse
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
+
+        #region Pathing
 
         /// <summary>
         /// Fetches an inventory item or folder by path.
@@ -558,16 +594,19 @@ namespace OpenMetaverse
             return results;
         }
 
-
+        #endregion Pathing
 
 
         #region IEnumerable<InventoryBase> Members
 
         public IEnumerator<InventoryBase> GetEnumerator()
         {
-            foreach (KeyValuePair<UUID, InventoryBase> kvp in Items)
+            lock (Items)
             {
-                yield return kvp.Value;
+                foreach (KeyValuePair<UUID, InventoryBase> kvp in Items)
+                {
+                    yield return kvp.Value;
+                }
             }
         }
 
@@ -648,7 +687,7 @@ namespace OpenMetaverse
             get { return _Manager; }
             private set { _Manager = value; }
         }
-        
+
         public InventoryBase(InventoryManager manager, Inventory inventory)
         {
             Inventory = inventory;
@@ -662,7 +701,7 @@ namespace OpenMetaverse
         /// <param name="destination">The folder to move this InventoryBase to.</param>
         public virtual void Move(InventoryFolder destination)
         {
-            if (destination.UUID != ParentUUID) 
+            if (destination.UUID != ParentUUID)
             {
                 if (Parent != null)
                 {
@@ -925,7 +964,7 @@ namespace OpenMetaverse
                 _Contents[child.UUID] = child;
             }
         }
-        
+
         protected internal void RemoveChild(InventoryBase child)
         {
             lock (_Contents)
@@ -1062,10 +1101,10 @@ namespace OpenMetaverse
         {
             List<ItemData> items;
             List<FolderData> folders;
-            bool success = Manager.FolderContents(UUID, Data.OwnerID, true, true, InventorySortOrder.ByName, 
+            bool success = Manager.FolderContents(UUID, Data.OwnerID, true, true, InventorySortOrder.ByName,
                 timeout, out items, out folders);
-            if (success) 
-			{
+            if (success)
+            {
                 Dictionary<UUID, InventoryBase> contents = new Dictionary<UUID, InventoryBase>(items.Count + folders.Count);
                 foreach (ItemData item in items)
                     contents.Add(item.UUID, Inventory.Manage(item));
