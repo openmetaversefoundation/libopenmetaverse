@@ -723,8 +723,8 @@ namespace OpenMetaverse
         /// Use this delegate to create a callback for RequestFolderContents
         /// </summary>
         /// <param name="folder">The folder whose contents were received.</param>
-        /// <param name="items">The items in <paramref name="folder"/> that were just received.</param>
-        /// <param name="iolders">The folders in <paramref name="folder"/> that were just received.</param>
+        /// <param name="items">The items in <paramref name="folder"/> that were just received, <code>null</code> if none received.</param>
+        /// <param name="folders">The folders in <paramref name="folder"/> that were just received, <code>null</code> if none received.</param>
         /// <param name="remaining">Number of item or folders that remain to be downloaded.</param>
         public delegate void PartialContentsCallback(UUID folder, ItemData[] items, FolderData[] folders, int remaining);
         

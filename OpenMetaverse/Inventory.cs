@@ -127,7 +127,7 @@ namespace OpenMetaverse
         /// the owner and root data is known.
         /// </summary>
         /// <param name="manager">Manager for remote updates.</param>
-        internal Inventory(InventoryManager manager)
+        public Inventory(InventoryManager manager)
             : this(manager, UUID.Zero, UUID.Zero) { }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="item">The ItemData of the item to manage.</param>
         /// <returns>The managed InventoryItem wrapper.</returns>
-        public InventoryItem Manage(ItemData item)
+        public virtual InventoryItem Manage(ItemData item)
         {
             if (item.OwnerID == Owner)
             {
@@ -378,7 +378,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="folder">The FolderData of the folder to manage.</param>
         /// <returns>The managed InventoryFolder wrapper.</returns>
-        public InventoryFolder Manage(FolderData folder)
+        public virtual InventoryFolder Manage(FolderData folder)
         {
             if (folder.OwnerID == Owner)
             {
@@ -423,7 +423,7 @@ namespace OpenMetaverse
         /// longer be automatically updated.
         /// </summary>
         /// <param name="item"></param>
-        public void Unmanage(InventoryBase item)
+        public virtual void Unmanage(InventoryBase item)
         {
             lock (Items)
                 Items.Remove(item.UUID);
@@ -1151,11 +1151,13 @@ namespace OpenMetaverse
                     if (folderid != UUID)
                         return;
 
-                    foreach (ItemData item in items)
-                        contents.Add(item.UUID, Inventory.Manage(item));
+                    if (items != null)
+                        foreach (ItemData item in items)
+                            contents.Add(item.UUID, Inventory.Manage(item));
 
-                    foreach (FolderData folder in folders)
-                        contents.Add(folder.UUID, Inventory.Manage(folder));
+                    if (folders != null)
+                        foreach (FolderData folder in folders)
+                            contents.Add(folder.UUID, Inventory.Manage(folder));
 
                     if (OnPartialContents != null)
                     {
