@@ -132,7 +132,7 @@ namespace OpenMetaverse.Capabilities
             if (e.Error != null)
             {
                 HttpStatusCode code = HttpStatusCode.OK;
-                if (e.Error is WebException)
+                if (e.Error is WebException && ((WebException)e.Error).Response != null)
                     code = ((HttpWebResponse)((WebException)e.Error).Response).StatusCode;
 
                 if (code == HttpStatusCode.NotFound || code == HttpStatusCode.Gone)

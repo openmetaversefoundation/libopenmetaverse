@@ -36,22 +36,21 @@ namespace OpenMetaverse.StructuredData
     /// </summary>
     public static partial class LLSDParser
     {
-        private const string notationHead = "<?llsd/notation?>\n";
-        private const string baseIntend = "  ";
+        private const string baseIndent = "  ";
 
         private const char undefNotationValue = '!';
 
         private const char trueNotationValueOne = '1';
         private const char trueNotationValueTwo = 't';
-        private static char[] trueNotationValueTwoFull = { 't', 'r', 'u', 'e' };
+        private static readonly char[] trueNotationValueTwoFull = { 't', 'r', 'u', 'e' };
         private const char trueNotationValueThree = 'T';
-        private static char[] trueNotationValueThreeFull = { 'T', 'R', 'U', 'E' };
+        private static readonly char[] trueNotationValueThreeFull = { 'T', 'R', 'U', 'E' };
 
         private const char falseNotationValueOne = '0';
         private const char falseNotationValueTwo = 'f';
-        private static char[] falseNotationValueTwoFull = { 'f', 'a', 'l', 's', 'e' };
+        private static readonly char[] falseNotationValueTwoFull = { 'f', 'a', 'l', 's', 'e' };
         private const char falseNotationValueThree = 'F';
-        private static char[] falseNotationValueThreeFull = { 'F', 'A', 'L', 'S', 'E' };
+        private static readonly char[] falseNotationValueThreeFull = { 'F', 'A', 'L', 'S', 'E' };
 
         private const char integerNotationMarker = 'i';
         private const char realNotationMarker = 'r';
@@ -148,8 +147,8 @@ namespace OpenMetaverse.StructuredData
         {
             StringWriter writer = new StringWriter();
 
-            string intend = "";
-            SerializeNotationElementFormatted(writer, intend, llsd);
+            string indent = String.Empty;
+            SerializeNotationElementFormatted(writer, indent, llsd);
             return writer;
         }
 
@@ -504,7 +503,7 @@ namespace OpenMetaverse.StructuredData
             writer.Write(mapEndNotationMarker);
         }
 
-        private static void SerializeNotationElementFormatted(StringWriter writer, string intend, LLSD llsd)
+        private static void SerializeNotationElementFormatted(StringWriter writer, string indent, LLSD llsd)
         {
             switch (llsd.Type)
             {
@@ -554,10 +553,10 @@ namespace OpenMetaverse.StructuredData
                     writer.Write(doubleQuotesNotationMarker);
                     break;
                 case LLSDType.Array:
-                    SerializeNotationArrayFormatted(writer, intend + baseIntend, (LLSDArray)llsd);
+                    SerializeNotationArrayFormatted(writer, indent + baseIndent, (LLSDArray)llsd);
                     break;
                 case LLSDType.Map:
-                    SerializeNotationMapFormatted(writer, intend + baseIntend, (LLSDMap)llsd);
+                    SerializeNotationMapFormatted(writer, indent + baseIndent, (LLSDMap)llsd);
                     break;
                 default:
                     throw new LLSDException("Notation serialization: Not existing element discovered.");
@@ -576,7 +575,7 @@ namespace OpenMetaverse.StructuredData
             {
                 if (llsdArray[idx].Type != LLSDType.Array && llsdArray[idx].Type != LLSDType.Map)
                     writer.Write(Helpers.NewLine);
-                writer.Write(intend + baseIntend);
+                writer.Write(intend + baseIndent);
                 SerializeNotationElementFormatted(writer, intend, llsdArray[idx]);
                 if (idx < lastIndex)
                 {
@@ -599,7 +598,7 @@ namespace OpenMetaverse.StructuredData
 
             foreach (KeyValuePair<string, LLSD> kvp in llsdMap)
             {
-                writer.Write(intend + baseIntend);
+                writer.Write(intend + baseIndent);
                 writer.Write(singleQuotesNotationMarker);
                 writer.Write(EscapeCharacter(kvp.Key, singleQuotesNotationMarker));
                 writer.Write(singleQuotesNotationMarker);
@@ -608,7 +607,7 @@ namespace OpenMetaverse.StructuredData
                 if (idx < lastIndex)
                 {
                     writer.Write(Helpers.NewLine);
-                    writer.Write(intend + baseIntend);
+                    writer.Write(intend + baseIndent);
                     writer.Write(kommaNotationDelimiter);
                     writer.Write(Helpers.NewLine);
                 }
