@@ -3,6 +3,7 @@
         <assembly assemblyPath="..\bin\OpenMetaverse.dll" xmlCommentsPath="..\bin\OpenMetaverse.xml" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.GUI.dll" xmlCommentsPath="..\bin\OpenMetaverse.GUI.XML" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.Utilities.dll" xmlCommentsPath="..\bin\OpenMetaverse.Utilities.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\OpenMetaverseTypes.dll" xmlCommentsPath="..\bin\OpenMetaverseTypes.XML" commentsOnly="False" />
     </assemblies>
     <namespaceSummaries>
         <namespaceSummaryItem name="" isDocumented="False" />
