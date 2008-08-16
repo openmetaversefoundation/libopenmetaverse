@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Net;
+using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Capabilities;
@@ -100,6 +101,9 @@ namespace OpenMetaverse
 
     public struct LoginResponseData
     {
+        public bool Success;
+        public string Reason;
+        public string Message;
         public UUID AgentID;
         public UUID SessionID;
         public UUID SecureSessionID;
@@ -140,9 +144,7 @@ namespace OpenMetaverse
             }
             catch (LLSDException e)
             {
-                // FIXME: sometimes look_at comes back with invalid values e.g: 'look_at':'[r1,r2.0193899999999998204e-06,r0]'
-                // need to handle that somehow
-                Logger.DebugLog("login server returned (some) invalid data: " + e.Message);
+                Logger.DebugLog("Login server returned (some) invalid data: " + e.Message);
             }
 
             // Home
@@ -207,6 +209,167 @@ namespace OpenMetaverse
             LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
             LibraryFolders = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
+        }
+
+        public void ToXmlRpc(XmlWriter writer)
+        {
+            writer.WriteStartElement("methodResponse");
+            {
+                writer.WriteStartElement("params");
+                writer.WriteStartElement("param");
+                writer.WriteStartElement("value");
+                writer.WriteStartElement("struct");
+                {
+                    if (Success)
+                    {
+                        // session_id
+                        WriteXmlRpcStringMember(writer, false, "session_id", SessionID.ToString());
+
+                        // ui-config
+                        WriteXmlRpcArrayStart(writer, "ui-config");
+                        WriteXmlRpcStringMember(writer, true, "allow_first_life", "Y");
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // inventory-lib-owner
+                        WriteXmlRpcArrayStart(writer, "inventory-lib-owner");
+                        WriteXmlRpcStringMember(writer, true, "agent_id", LibraryOwner.ToString());
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // start_location
+                        WriteXmlRpcStringMember(writer, false, "start_location", StartLocation);
+
+                        // seconds_since_epoch
+                        WriteXmlRpcIntMember(writer, false, "seconds_since_epoch", Utils.DateTimeToUnixTime(SecondsSinceEpoch));
+
+                        // event_categories
+                        WriteXmlRpcArrayStart(writer, "event_categories");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // classified_categories
+                        WriteXmlRpcArrayStart(writer, "classified_categories");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // inventory-root
+                        WriteXmlRpcArrayStart(writer, "inventory-root");
+                        WriteXmlRpcStringMember(writer, true, "folder_id", InventoryRoot.ToString());
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // sim_port
+                        WriteXmlRpcIntMember(writer, false, "sim_port", SimPort);
+
+                        // agent_id
+                        WriteXmlRpcStringMember(writer, false, "agent_id", AgentID.ToString());
+
+                        // agent_access
+                        WriteXmlRpcStringMember(writer, false, "agent_access", AgentAccess);
+
+                        // inventory-skeleton
+                        WriteXmlRpcArrayStart(writer, "inventory-skeleton");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // buddy-list
+                        WriteXmlRpcArrayStart(writer, "buddy-list");
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // first_name
+                        WriteXmlRpcStringMember(writer, false, "first_name", FirstName);
+
+                        // global-textures
+                        WriteXmlRpcArrayStart(writer, "global-textures");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // inventory-skel-lib
+                        WriteXmlRpcArrayStart(writer, "inventory-skel-lib");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // seed_capability
+                        WriteXmlRpcStringMember(writer, false, "seed_capability", SeedCapability);
+
+                        // gestures
+                        WriteXmlRpcArrayStart(writer, "gestures");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // sim_ip
+                        WriteXmlRpcStringMember(writer, false, "sim_ip", SimIP.ToString());
+
+                        // inventory-lib-root
+                        WriteXmlRpcArrayStart(writer, "inventory-lib-root");
+                        WriteXmlRpcStringMember(writer, true, "folder_id", LibraryRoot.ToString());
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // login-flags
+                        WriteXmlRpcArrayStart(writer, "login-flags");
+                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // inventory_host
+                        WriteXmlRpcStringMember(writer, false, "inventory_host", String.Empty);
+
+                        // home
+                        LLSDMap home = new LLSDMap(3);
+
+                        LLSDArray homeRegionHandle = new LLSDArray(2);
+                        uint homeRegionX, homeRegionY;
+                        Helpers.LongToUInts(HomeRegion, out homeRegionX, out homeRegionY);
+                        homeRegionHandle.Add(LLSD.FromReal((double)homeRegionX));
+                        homeRegionHandle.Add(LLSD.FromReal((double)homeRegionY));
+
+                        home["region_handle"] = homeRegionHandle;
+                        home["position"] = LLSD.FromVector3(HomePosition);
+                        home["look_at"] = LLSD.FromVector3(HomeLookAt);
+
+                        WriteXmlRpcStringMember(writer, false, "home", LLSDParser.SerializeNotation(home));
+
+                        // message
+                        WriteXmlRpcStringMember(writer, false, "message", Message);
+
+                        // look_at
+                        WriteXmlRpcStringMember(writer, false, "look_at", LLSDParser.SerializeNotation(LLSD.FromVector3(LookAt)));
+
+                        // login
+                        WriteXmlRpcStringMember(writer, false, "login", "true");
+
+                        // event_notifications
+                        WriteXmlRpcArrayStart(writer, "event_notifications");
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // secure_session_id
+                        WriteXmlRpcStringMember(writer, false, "secure_session_id", SecureSessionID.ToString());
+
+                        // region_x
+                        WriteXmlRpcIntMember(writer, false, "region_x", RegionX);
+
+                        // last_name
+                        WriteXmlRpcStringMember(writer, false, "last_name", LastName);
+
+                        // region_y
+                        WriteXmlRpcIntMember(writer, false, "region_y", RegionY);
+
+                        // circuit_code
+                        WriteXmlRpcIntMember(writer, false, "circuit_code", CircuitCode);
+
+                        // initial-outfit
+                        WriteXmlRpcArrayStart(writer, "initial-outfit");
+                        WriteXmlRpcArrayEnd(writer);
+                    }
+                    else
+                    {
+                        // Login failure
+                    }
+                }
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
+            writer.Close();
         }
 
         #region Parsing Helpers
@@ -305,6 +468,75 @@ namespace OpenMetaverse
         }
 
         #endregion Parsing Helpers
+
+        #region XmlRpc Serializing Helpers
+
+        public static void WriteXmlRpcStringMember(XmlWriter writer, bool wrapWithValueStruct, string name, string value)
+        {
+            if (wrapWithValueStruct)
+            {
+                writer.WriteStartElement("value");
+                writer.WriteStartElement("struct");
+            }
+            writer.WriteStartElement("member");
+            {
+                writer.WriteElementString("name", name);
+                writer.WriteStartElement("value");
+                {
+                    writer.WriteElementString("string", value);
+                }
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
+            if (wrapWithValueStruct)
+            {
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+            }
+        }
+
+        public static void WriteXmlRpcIntMember(XmlWriter writer, bool wrapWithValueStruct, string name, uint value)
+        {
+            if (wrapWithValueStruct)
+            {
+                writer.WriteStartElement("value");
+                writer.WriteStartElement("struct");
+            }
+            writer.WriteStartElement("member");
+            {
+                writer.WriteElementString("name", name);
+                writer.WriteStartElement("value");
+                {
+                    writer.WriteElementString("i4", value.ToString());
+                }
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
+            if (wrapWithValueStruct)
+            {
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+            }
+        }
+
+        public static void WriteXmlRpcArrayStart(XmlWriter writer, string name)
+        {
+            writer.WriteStartElement("member");
+                writer.WriteElementString("name", name);
+                writer.WriteStartElement("value");
+                    writer.WriteStartElement("array");
+                        writer.WriteStartElement("data");
+        }
+
+        public static void WriteXmlRpcArrayEnd(XmlWriter writer)
+        {
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        #endregion XmlRpc Serializing Helpers
     }
 
     #endregion Structs
@@ -656,6 +888,8 @@ namespace OpenMetaverse
                         bool loginSuccess = llsd.AsBoolean();
                         bool redirect = (llsd.AsString() == "indeterminate");
                         LoginResponseData data = new LoginResponseData();
+                        data.Reason = reason;
+                        data.Message = message;
 
                         if (redirect)
                         {

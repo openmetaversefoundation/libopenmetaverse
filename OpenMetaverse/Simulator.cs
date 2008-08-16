@@ -855,7 +855,7 @@ namespace OpenMetaverse
             }
 
             Stats.RecvBytes += (ulong)buffer.DataLength;
-            Stats.RecvPackets++;
+            ++Stats.RecvPackets;
 
             #endregion Packet Decoding
 

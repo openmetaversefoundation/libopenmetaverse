@@ -776,20 +776,14 @@ namespace OpenMetaverse
                             #endregion ACK handling
                         }
 
-                        #region FireCallbacks
+                        #region Fire callbacks
 
                         if (Client.Settings.SYNC_PACKETCALLBACKS)
-                        {
-                            PacketEvents.RaiseEvent(PacketType.Default, packet, simulator);
                             PacketEvents.RaiseEvent(packet.Type, packet, simulator);
-                        }
                         else
-                        {
-                            PacketEvents.BeginRaiseEvent(PacketType.Default, packet, simulator);
                             PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
-                        }
 
-                        #endregion FireCallbacks
+                        #endregion Fire callbacks
                     }
                 }
             }

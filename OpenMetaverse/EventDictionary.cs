@@ -110,18 +110,28 @@ namespace OpenMetaverse
         {
             NetworkManager.PacketCallback callback;
 
-            if (_EventTable.TryGetValue(packetType, out callback))
+            // Default handler first, if one exists
+            if (_EventTable.TryGetValue(PacketType.Default, out callback))
             {
-                try
-                {
-                    callback(packet, simulator);
-                }
+                try { callback(packet, simulator); }
                 catch (Exception ex)
                 {
-                    Logger.Log("Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    Logger.Log("Default packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
                 }
             }
-            else if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
+
+            if (_EventTable.TryGetValue(packetType, out callback))
+            {
+                try { callback(packet, simulator); }
+                catch (Exception ex)
+                {
+                    Logger.Log("Packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                }
+
+                return;
+            }
+            
+            if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
                 Logger.DebugLog("No handler registered for packet event " + packetType, Client);
             }
@@ -136,12 +146,24 @@ namespace OpenMetaverse
         internal void BeginRaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
         {
             NetworkManager.PacketCallback callback;
+            PacketCallbackWrapper wrapper;
+
+            // Default handler first, if one exists
+            if (_EventTable.TryGetValue(PacketType.Default, out callback))
+            {
+                if (callback != null)
+                {
+                    wrapper.Callback = callback;
+                    wrapper.Packet = packet;
+                    wrapper.Simulator = simulator;
+                    ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+                }
+            }
 
             if (_EventTable.TryGetValue(packetType, out callback))
             {
                 if (callback != null)
                 {
-                    PacketCallbackWrapper wrapper;
                     wrapper.Callback = callback;
                     wrapper.Packet = packet;
                     wrapper.Simulator = simulator;
