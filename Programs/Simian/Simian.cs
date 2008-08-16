@@ -13,8 +13,9 @@ namespace Simian
 {
     public partial class Simian
     {
-        HttpServer httpServer;
-        UDPServer udpServer;
+        public HttpServer HttpServer;
+        public UDPServer UDPServer;
+        
         Dictionary<uint, Agent> unassociatedAgents;
         int currentCircuitCode;
         int tcpPort;
@@ -34,12 +35,24 @@ namespace Simian
 
             InitUDPServer(udpPort);
             InitHttpServer(tcpPort, ssl);
+
+            // Load all of the extensions
+            ExtensionLoader.LoadAllExtensions(AppDomain.CurrentDomain.BaseDirectory, this);
+
+            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            {
+                Logger.DebugLog("Loading extension " + extension.GetType().Name);
+                extension.Start();
+            }
         }
 
         public void Stop()
         {
-            udpServer.Stop();
-            httpServer.Stop();
+            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+                extension.Stop();
+
+            UDPServer.Stop();
+            HttpServer.Stop();
         }
 
         public bool TryGetUnassociatedAgent(uint circuitCode, out Agent agent)
@@ -59,17 +72,12 @@ namespace Simian
 
         void InitUDPServer(int port)
         {
-            udpServer = new UDPServer(port, this);
-
-            udpServer.RegisterPacketCallback(PacketType.UseCircuitCode, new UDPServer.PacketCallback(UseCircuitCodeHandler));
-            udpServer.RegisterPacketCallback(PacketType.StartPingCheck, new UDPServer.PacketCallback(StartPingCheckHandler));
-            udpServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
-            udpServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
+            UDPServer = new UDPServer(port, this);
         }
 
         void InitHttpServer(int port, bool ssl)
         {
-            httpServer = new HttpServer(tcpPort, ssl);
+            HttpServer = new HttpServer(tcpPort, ssl);
 
             // Login webpage HEAD request, used to check if the login webpage is alive
             HttpRequestSignature signature = new HttpRequestSignature();
@@ -78,7 +86,7 @@ namespace Simian
             signature.Path = "/loginpage";
             HttpServer.HttpRequestCallback callback = new HttpServer.HttpRequestCallback(LoginWebpageHeadHandler);
             HttpServer.HttpRequestHandler handler = new HttpServer.HttpRequestHandler(signature, callback);
-            httpServer.AddHandler(handler);
+            HttpServer.AddHandler(handler);
 
             // Login webpage GET request, gets the login webpage data (purely aesthetic)
             signature.Method = "get";
@@ -87,7 +95,7 @@ namespace Simian
             callback = new HttpServer.HttpRequestCallback(LoginWebpageGetHandler);
             handler.Signature = signature;
             handler.Callback = callback;
-            httpServer.AddHandler(handler);
+            HttpServer.AddHandler(handler);
 
             // Client XML-RPC login
             signature.Method = "post";
@@ -96,7 +104,7 @@ namespace Simian
             callback = new HttpServer.HttpRequestCallback(LoginXmlRpcPostHandler);
             handler.Signature = signature;
             handler.Callback = callback;
-            httpServer.AddHandler(handler);
+            HttpServer.AddHandler(handler);
 
             // Client LLSD login
             signature.Method = "post";
@@ -105,9 +113,9 @@ namespace Simian
             callback = new HttpServer.HttpRequestCallback(LoginLLSDPostHandler);
             handler.Signature = signature;
             handler.Callback = callback;
-            httpServer.AddHandler(handler);
+            HttpServer.AddHandler(handler);
 
-            httpServer.Start();
+            HttpServer.Start();
         }
 
         void LoginWebpageHeadHandler(ref HttpListenerContext context)
@@ -267,7 +275,7 @@ namespace Simian
         {
             uint circuitCode = (uint)Interlocked.Increment(ref currentCircuitCode);
 
-            Agent agent = new Agent(udpServer, agentID, sessionID, secureSessionID, circuitCode);
+            Agent agent = new Agent(UDPServer, agentID, sessionID, secureSessionID, circuitCode);
 
             // Put this client in the list of clients that have not been associated with an IPEndPoint yet
             lock (unassociatedAgents)

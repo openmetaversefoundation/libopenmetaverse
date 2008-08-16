@@ -1,0 +1,30 @@
+using System;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
+
+namespace Simian
+{
+    public class ViewerEffectPrinter : ISimianExtension
+    {
+        Simian Server;
+
+        public ViewerEffectPrinter(Simian server)
+        {
+            Server = server;
+        }
+
+        public void Start()
+        {
+            Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
+        }
+
+        public void Stop()
+        {
+        }
+
+        void ViewerEffectHandler(Packet packet, Agent agent)
+        {
+            Logger.Log("Received a ViewerEffect!", Helpers.LogLevel.Info);
+        }
+    }
+}

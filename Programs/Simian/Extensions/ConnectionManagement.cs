@@ -4,8 +4,27 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public partial class Simian
+    public class ConnectionManagement : ISimianExtension
     {
+        Simian Server;
+
+        public ConnectionManagement(Simian server)
+        {
+            Server = server;
+        }
+
+        public void Start()
+        {
+            Server.UDPServer.RegisterPacketCallback(PacketType.UseCircuitCode, new UDPServer.PacketCallback(UseCircuitCodeHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.StartPingCheck, new UDPServer.PacketCallback(StartPingCheckHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
+        }
+
+        public void Stop()
+        {
+        }
+
         void UseCircuitCodeHandler(Packet packet, Agent agent)
         {
             RegionHandshakePacket handshake = new RegionHandshakePacket();
