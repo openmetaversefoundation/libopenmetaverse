@@ -138,7 +138,6 @@ namespace OpenMetaverse.Capabilities
                 if (e.Error == null)
                 {
                     LLSD result = LLSDParser.DeserializeXml(e.Result);
-                    Logger.DebugLog("Received CAPS response: " + System.Text.Encoding.UTF8.GetString(e.Result));
 
                     try { OnComplete(this, result, e.Error); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }

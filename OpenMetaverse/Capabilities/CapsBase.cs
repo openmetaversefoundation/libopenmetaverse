@@ -150,7 +150,6 @@ namespace OpenMetaverse.Capabilities
         public bool IsBusy { get { return isBusy; } }
         public WebHeaderCollection ResponseHeaders { get { return responseHeaders; } }
 
-        protected HttpWebRequest uploadDataRequest;
         protected WebHeaderCollection responseHeaders;
         protected Uri location;
         protected bool isBusy;
@@ -301,10 +300,9 @@ namespace OpenMetaverse.Capabilities
             if (asyncThread == null)
                 return;
 
-            uploadDataRequest.Abort();
-
             Thread t = asyncThread;
             CompleteAsync();
+            t.Interrupt();
         }
 
         protected void CompleteAsync()
@@ -444,7 +442,7 @@ namespace OpenMetaverse.Capabilities
 
         protected byte[] UploadDataCore(Uri address, string method, byte[] data, object userToken)
         {
-            uploadDataRequest = (HttpWebRequest)SetupRequest(address);
+            HttpWebRequest request = (HttpWebRequest)SetupRequest(address);
 
             // Mono insists that if you have Content-Length set, Keep-Alive must be true.
             // Otherwise the unhelpful exception of "Content-Length not set" will be thrown.
@@ -452,15 +450,15 @@ namespace OpenMetaverse.Capabilities
             // Connection: Close header, which will confuse the Windows .NET runtime and throw
             // a "Connection unexpectedly closed" exception. This is our cross-platform hack
             if (Utils.GetRunningRuntime() == Utils.Runtime.Mono)
-                uploadDataRequest.KeepAlive = true;
+                request.KeepAlive = true;
 
             try
             {
                 // Content-Length
                 int contentLength = data.Length;
-                uploadDataRequest.ContentLength = contentLength;
+                request.ContentLength = contentLength;
 
-                using (Stream stream = uploadDataRequest.GetRequestStream())
+                using (Stream stream = request.GetRequestStream())
                 {
                     // Most uploads are very small chunks of data, use an optimized path for these
                     if (contentLength < 4096)
@@ -470,7 +468,7 @@ namespace OpenMetaverse.Capabilities
                     else
                     {
                         // Upload chunks directly instead of buffering to memory
-                        uploadDataRequest.AllowWriteStreamBuffering = false;
+                        request.AllowWriteStreamBuffering = false;
 
                         MemoryStream ms = new MemoryStream(data);
 
@@ -491,45 +489,16 @@ namespace OpenMetaverse.Capabilities
                     }
                 }
 
-                HttpWebResponse response = null;
-                Exception responseException = null;
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream st = ProcessResponse(response);
 
-                IAsyncResult result = uploadDataRequest.BeginGetResponse(
-                    delegate(IAsyncResult asyncResult)
-                    {
-                        try { response = (HttpWebResponse)uploadDataRequest.EndGetResponse(asyncResult); }
-                        catch (Exception ex) { responseException = ex; }
-                    }, null);
-
-                // Not sure if one of these is better than the other, but
-                // ThreadPool.RegisterWaitForSingleObject fails to wait on Mono 1.9.1 in this case
-                result.AsyncWaitHandle.WaitOne(1000 * 100, false);
-                //ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle,
-                //    delegate(object state, bool timedOut) { }, null, 1000 * 100, true);
-
-                if (responseException != null)
-                {
-                    // Exception occurred
-                    throw responseException;
-                }
-                else if (response == null)
-                {
-                    // No exception, but no response
-                    throw new WebException("No response from the CAPS server", WebExceptionStatus.ReceiveFailure);
-                }
-                else
-                {
-                    // Server responded
-                    Stream st = ProcessResponse(response);
-                    contentLength = (int)response.ContentLength;
-
-                    return ReadAll(st, contentLength, userToken, true);
-                }
+                contentLength = (int)response.ContentLength;
+                return ReadAll(st, contentLength, userToken, true);
             }
             catch (ThreadInterruptedException)
             {
-                if (uploadDataRequest != null)
-                    uploadDataRequest.Abort();
+                if (request != null)
+                    request.Abort();
                 throw;
             }
         }

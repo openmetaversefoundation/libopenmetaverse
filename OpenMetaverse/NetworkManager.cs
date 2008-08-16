@@ -682,7 +682,7 @@ namespace OpenMetaverse
 
                     if (ms < 75)
                     {
-                        Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
+                        //Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
                         Thread.Sleep(75 - ms);
                     }
 

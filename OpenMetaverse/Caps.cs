@@ -166,17 +166,10 @@ namespace OpenMetaverse
             {
                 LLSDMap respTable = (LLSDMap)result;
 
-                StringBuilder capsList = new StringBuilder();
-
                 foreach (string cap in respTable.Keys)
                 {
-                    capsList.Append(cap);
-                    capsList.Append(' ');
-
                     _Caps[cap] = respTable[cap].AsUri();
                 }
-
-                Logger.DebugLog("Got capabilities: " + capsList.ToString(), Simulator.Client);
 
                 if (_Caps.ContainsKey("EventQueueGet"))
                 {
