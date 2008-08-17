@@ -901,7 +901,14 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="folder">The folder whose contents were retrieved.</param>
         public delegate void ContentsRetrieved(InventoryFolder folder);
-        public delegate void PartialContents(InventoryFolder folder, ICollection<InventoryBase> contents);
+
+        /// <summary>
+        /// Delegate for <code>InventoryFolder.OnPartialContents</code>
+        /// </summary>
+        /// <param name="folder">The folder we're concerned with.</param>
+        /// <param name="contents">The contents that were just retrieved.</param>
+        /// <param name="remaining">Number of contents remaining to be retrieved.</param>
+        public delegate void PartialContents(InventoryFolder folder, ICollection<InventoryBase> contents, int remaining);
 
         /// <summary>
         /// Triggered when the InventoryFolder's contents have been completely retrieved.
@@ -1161,7 +1168,7 @@ namespace OpenMetaverse
 
                     if (OnPartialContents != null)
                     {
-                        try { OnPartialContents(this, contents.Values); }
+                        try { OnPartialContents(this, contents.Values, remaining); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                     if (remaining == 0)
