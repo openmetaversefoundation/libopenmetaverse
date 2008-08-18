@@ -9,8 +9,6 @@ namespace Simian
     public class SceneManager : ISimianExtension
     {
         Simian server;
-        Dictionary<uint, Primitive> sceneObjects = new Dictionary<uint, Primitive>();
-        Dictionary<UUID, Avatar> sceneAvatars = new Dictionary<UUID, Avatar>();
         int currentLocalID = 0;
         int currentWearablesSerialNum = 0;
         ulong regionHandle;
@@ -48,8 +46,8 @@ namespace Simian
             avatar.Scale = new Vector3(1f, 1f, 3f);
 
             // Add this agent to the scene graph
-            lock (sceneAvatars)
-                sceneAvatars[avatar.ID] = avatar;
+            lock (server.SceneAvatars)
+                server.SceneAvatars[avatar.ID] = avatar;
 
             AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
             complete.AgentData.AgentID = agent.AgentID;
@@ -68,7 +66,7 @@ namespace Simian
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
             Avatar avatar;
-            if (sceneAvatars.TryGetValue(agent.AgentID, out avatar))
+            if (server.SceneAvatars.TryGetValue(agent.AgentID, out avatar))
             {
                 SendFullUpdate(agent, avatar, update.AgentData.State, update.AgentData.Flags);
             }

@@ -15,7 +15,9 @@ namespace Simian
     {
         public HttpServer HttpServer;
         public UDPServer UDPServer;
-        
+        public Dictionary<uint, Primitive> SceneObjects = new Dictionary<uint, Primitive>();
+        public Dictionary<UUID, Avatar> SceneAvatars = new Dictionary<UUID, Avatar>();
+
         Dictionary<uint, Agent> unassociatedAgents;
         int currentCircuitCode;
         int tcpPort;
