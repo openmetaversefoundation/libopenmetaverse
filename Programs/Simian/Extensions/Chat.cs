@@ -36,8 +36,8 @@ namespace Simian.Extensions
             ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
             chat.ChatData.Audible = (byte)ChatAudibleLevel.Fully;
             chat.ChatData.ChatType = viewerChat.ChatData.Type;
-            chat.ChatData.OwnerID = agent.ID;
-            chat.ChatData.SourceID = agent.ID;
+            chat.ChatData.OwnerID = agent.AgentID;
+            chat.ChatData.SourceID = agent.AgentID;
             chat.ChatData.SourceType = (byte)ChatSourceType.Agent;
             chat.ChatData.Position = agent.Avatar.Position;
             chat.ChatData.FromName = Utils.StringToBytes(agent.Avatar.Name);

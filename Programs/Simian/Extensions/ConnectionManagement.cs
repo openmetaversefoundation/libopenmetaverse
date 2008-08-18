@@ -17,6 +17,7 @@ namespace Simian
         {
             server.UDPServer.RegisterPacketCallback(PacketType.UseCircuitCode, new UDPServer.PacketCallback(UseCircuitCodeHandler));
             server.UDPServer.RegisterPacketCallback(PacketType.StartPingCheck, new UDPServer.PacketCallback(StartPingCheckHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.LogoutRequest, new UDPServer.PacketCallback(LogoutRequestHandler));
             
         }
 
@@ -66,5 +67,22 @@ namespace Simian
 
             agent.SendPacket(complete);
         }
+
+        void LogoutRequestHandler(Packet packet, Agent agent)
+        {
+            LogoutRequestPacket request = (LogoutRequestPacket)packet;
+
+            LogoutReplyPacket reply = new LogoutReplyPacket();
+            reply.AgentData.AgentID = agent.AgentID;
+            reply.AgentData.SessionID = agent.SessionID;
+            reply.InventoryData = new LogoutReplyPacket.InventoryDataBlock[0];
+
+            lock (server.Agents)
+            {
+                if (server.Agents.ContainsKey(agent.Address))
+                    server.Agents.Remove(agent.Address);
+            }
+        }
+
     }
 }
