@@ -49,7 +49,7 @@ namespace Simian.Extensions
 
                     float speed = 0.5f;
                     if ((heldForward || heldBack) && (heldLeft || heldRight))
-                        speed *= SQRT_TWO;
+                        speed /= SQRT_TWO;
 
                     if (heldForward)
                     {
@@ -79,6 +79,13 @@ namespace Simian.Extensions
                         agent.Avatar.Velocity.X -= left.X * speed;
                         agent.Avatar.Velocity.Y -= left.Y * speed;
                     }
+
+                    if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
+                    else if (agent.Avatar.Position.X > 255) agent.Avatar.Position.X = 255f;
+
+                    if (agent.Avatar.Position.Y < 0) agent.Avatar.Position.Y = 0f;
+                    else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
+
                 }
             }
         }
