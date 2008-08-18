@@ -241,14 +241,19 @@ namespace OpenMetaverse
                         // seconds_since_epoch
                         WriteXmlRpcIntMember(writer, false, "seconds_since_epoch", Utils.DateTimeToUnixTime(SecondsSinceEpoch));
 
-                        // event_categories
+                        // event_categories (TODO)
                         WriteXmlRpcArrayStart(writer, "event_categories");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcCategory(writer, "Default", 20);
                         WriteXmlRpcArrayEnd(writer);
 
-                        // classified_categories
+                        // tutorial_setting (TODO)
+                        WriteXmlRpcArrayStart(writer, "tutorial_setting");
+                        WriteXmlRpcTutorialSetting(writer, "http://127.0.0.1/tutorial/");
+                        WriteXmlRpcArrayEnd(writer);
+
+                        // classified_categories (TODO)
                         WriteXmlRpcArrayStart(writer, "classified_categories");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcCategory(writer, "Default", 1);
                         WriteXmlRpcArrayEnd(writer);
 
                         // inventory-root
@@ -267,11 +272,12 @@ namespace OpenMetaverse
 
                         // inventory-skeleton
                         WriteXmlRpcArrayStart(writer, "inventory-skeleton");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcInventoryItem(writer, "Default", InventoryRoot, 1, (uint)InventoryType.Folder, UUID.Random());
                         WriteXmlRpcArrayEnd(writer);
 
                         // buddy-list
                         WriteXmlRpcArrayStart(writer, "buddy-list");
+                        WriteXmlRpcBuddy(writer, 0, 0, UUID.Random());
                         WriteXmlRpcArrayEnd(writer);
 
                         // first_name
@@ -279,12 +285,20 @@ namespace OpenMetaverse
 
                         // global-textures
                         WriteXmlRpcArrayStart(writer, "global-textures");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        writer.WriteStartElement("value");
+                        writer.WriteStartElement("struct");
+                        {
+                            WriteXmlRpcStringMember(writer, false, "sun_texture_id", "cce0f112-878f-4586-a2e2-a8f104bba271");
+                            WriteXmlRpcStringMember(writer, false, "cloud_texture_id", "fc4b9f0b-d008-45c6-96a4-01dd947ac621");
+                            WriteXmlRpcStringMember(writer, false, "moon_texture_id", "d07f6eed-b96a-47cd-b51d-400ad4a1c428");
+                        }
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
                         WriteXmlRpcArrayEnd(writer);
 
                         // inventory-skel-lib
                         WriteXmlRpcArrayStart(writer, "inventory-skel-lib");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcInventoryItem(writer, "Default", LibraryRoot, 1, (uint)InventoryType.Folder, UUID.Random());
                         WriteXmlRpcArrayEnd(writer);
 
                         // seed_capability
@@ -292,7 +306,7 @@ namespace OpenMetaverse
 
                         // gestures
                         WriteXmlRpcArrayStart(writer, "gestures");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        WriteXmlRpcGesture(writer, UUID.Random(), UUID.Random());
                         WriteXmlRpcArrayEnd(writer);
 
                         // sim_ip
@@ -305,11 +319,23 @@ namespace OpenMetaverse
 
                         // login-flags
                         WriteXmlRpcArrayStart(writer, "login-flags");
-                        writer.WriteStartElement("struct"); writer.WriteEndElement();
+                        writer.WriteStartElement("value");
+                        writer.WriteStartElement("struct");
+                        {
+                            WriteXmlRpcStringMember(writer, false, "gendered", "Y");
+                            WriteXmlRpcStringMember(writer, false, "stipend_since_login", "N");
+                            WriteXmlRpcStringMember(writer, false, "ever_logged_in", "Y");
+                            if (DateTime.Now.IsDaylightSavingTime())
+                                WriteXmlRpcStringMember(writer, false, "daylight_savings", "Y");
+                            else
+                                WriteXmlRpcStringMember(writer, false, "daylight_savings", "N");
+                        }
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
                         WriteXmlRpcArrayEnd(writer);
 
                         // inventory_host
-                        WriteXmlRpcStringMember(writer, false, "inventory_host", String.Empty);
+                        WriteXmlRpcStringMember(writer, false, "inventory_host", IPAddress.Loopback.ToString());
 
                         // home
                         LLSDMap home = new LLSDMap(3);
@@ -532,6 +558,92 @@ namespace OpenMetaverse
         {
             writer.WriteEndElement();
             writer.WriteEndElement();
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlRpcEmptyValueStruct(XmlWriter writer)
+        {
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlRpcCategory(XmlWriter writer, string name, uint id)
+        {
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            {
+                WriteXmlRpcStringMember(writer, false, "category_name", name);
+                WriteXmlRpcIntMember(writer, false, "category_id", id);
+            }
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlRpcInventoryItem(XmlWriter writer, string name, UUID parentID,
+            uint version, uint typeDefault, UUID folderID)
+        {
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            {
+                WriteXmlRpcStringMember(writer, false, "name", name);
+                WriteXmlRpcStringMember(writer, false, "parent_id", parentID.ToString());
+                WriteXmlRpcIntMember(writer, false, "version", version);
+                WriteXmlRpcIntMember(writer, false, "type_default", typeDefault);
+                WriteXmlRpcStringMember(writer, false, "folder_id", folderID.ToString());
+            }
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlRpcBuddy(XmlWriter writer, uint rightsHas, uint rightsGiven, UUID buddyID)
+        {
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            {
+                WriteXmlRpcIntMember(writer, false, "buddy_rights_has", rightsHas);
+                WriteXmlRpcIntMember(writer, false, "buddy_rights_given", rightsGiven);
+                WriteXmlRpcStringMember(writer, false, "buddy_id", buddyID.ToString());
+            }
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlRpcGesture(XmlWriter writer, UUID assetID, UUID itemID)
+        {
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            {
+                WriteXmlRpcStringMember(writer, false, "asset_id", assetID.ToString());
+                WriteXmlRpcStringMember(writer, false, "item_id", itemID.ToString());
+            }
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlRpcTutorialSetting(XmlWriter writer, string url)
+        {
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            {
+                WriteXmlRpcStringMember(writer, false, "tutorial_url", url);
+            }
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+
+            writer.WriteStartElement("value");
+            writer.WriteStartElement("struct");
+            {
+                writer.WriteStartElement("member");
+                {
+                    writer.WriteElementString("name", "use_tutorial");
+                    writer.WriteStartElement("value");
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
             writer.WriteEndElement();
             writer.WriteEndElement();
         }
