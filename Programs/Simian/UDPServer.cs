@@ -27,8 +27,6 @@ namespace Simian
         Simian server;
         /// <summary>Handlers for incoming packets</summary>
         PacketEventDictionary packetEvents = new PacketEventDictionary();
-        /// <summary>All of the agents currently connected to this UDP server</summary>
-        Dictionary<IPEndPoint, Agent> agents = new Dictionary<IPEndPoint, Agent>();
         /// <summary>Incoming packets that are awaiting handling</summary>
         BlockingQueue<IncomingPacket> packetInbox = new BlockingQueue<IncomingPacket>(Settings.PACKET_INBOX_SIZE);
 
@@ -84,8 +82,8 @@ namespace Simian
                 {
                     agent.Initialize((IPEndPoint)buffer.RemoteEndPoint);
 
-                    lock (agents)
-                        agents[(IPEndPoint)buffer.RemoteEndPoint] = agent;
+                    lock (server.Agents)
+                        server.Agents[(IPEndPoint)buffer.RemoteEndPoint] = agent;
 
                     Logger.Log("Activated UDP circuit " + useCircuitCode.CircuitCode.Code, Helpers.LogLevel.Info);
 
@@ -101,7 +99,7 @@ namespace Simian
             else
             {
                 // Determine which agent this packet came from
-                if (!agents.TryGetValue((IPEndPoint)buffer.RemoteEndPoint, out agent))
+                if (!server.Agents.TryGetValue((IPEndPoint)buffer.RemoteEndPoint, out agent))
                 {
                     Logger.Log("Received UDP packet from an unrecognized source: " + ((IPEndPoint)buffer.RemoteEndPoint).ToString(),
                         Helpers.LogLevel.Warning);

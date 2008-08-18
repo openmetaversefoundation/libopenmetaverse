@@ -15,6 +15,8 @@ namespace Simian
         public uint CircuitCode;
         public string FirstName;
         public string LastName;
+        public Avatar Avatar = new Avatar();
+        public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
 
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>
         internal Queue<uint> packetArchive = new Queue<uint>();

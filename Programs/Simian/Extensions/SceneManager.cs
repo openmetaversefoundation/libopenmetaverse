@@ -45,9 +45,8 @@ namespace Simian
             avatar.Rotation = Quaternion.Identity;
             avatar.Scale = new Vector3(1f, 1f, 3f);
 
-            // Add this agent to the scene graph
-            lock (server.SceneAvatars)
-                server.SceneAvatars[avatar.ID] = avatar;
+            // Link this avatar up with the corresponding agent
+            agent.Avatar = avatar;
 
             AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
             complete.AgentData.AgentID = agent.AgentID;
@@ -65,11 +64,7 @@ namespace Simian
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
-            Avatar avatar;
-            if (server.SceneAvatars.TryGetValue(agent.AgentID, out avatar))
-            {
-                SendFullUpdate(agent, avatar, update.AgentData.State, update.AgentData.Flags);
-            }
+            SendFullUpdate(agent, agent.Avatar, update.AgentData.State, update.AgentData.Flags);
         }
 
         void AgentWearablesRequestHandler(Packet packet, Agent agent)
