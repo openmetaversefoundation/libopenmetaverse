@@ -16,9 +16,13 @@ namespace Simian
         public HttpServer HttpServer;
         public UDPServer UDPServer;
         public Dictionary<uint, Primitive> SceneObjects = new Dictionary<uint, Primitive>();
+        public ulong RegionHandle;
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<IPEndPoint, Agent> Agents = new Dictionary<IPEndPoint, Agent>();
+
+        const uint regionX = 256000;
+        const uint regionY = 256000;
 
         Dictionary<uint, Agent> unassociatedAgents;
         int currentCircuitCode;
@@ -39,6 +43,8 @@ namespace Simian
 
             InitUDPServer(udpPort);
             InitHttpServer(tcpPort, ssl);
+
+            RegionHandle = Helpers.UIntsToLong(regionX, regionY);
 
             // Load all of the extensions
             ExtensionLoader.LoadAllExtensions(AppDomain.CurrentDomain.BaseDirectory, this);
