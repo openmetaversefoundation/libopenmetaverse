@@ -94,8 +94,85 @@ namespace Simian.Extensions
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
-            agent.Avatar.Rotation = update.AgentData.BodyRotation;
-            agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
+            lock (Server.Agents)
+            {
+                agent.Avatar.Rotation = update.AgentData.BodyRotation;
+                agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
+
+                ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, update.AgentData.State, update.AgentData.Flags);
+
+                foreach (Agent recipient in Server.Agents.Values)
+                    recipient.SendPacket(fullUpdate);                    
+            }
+        }
+
+        ObjectUpdatePacket BuildFullUpdate(Agent agent, LLObject obj, byte state, uint flags)
+        {
+            byte[] objectData = new byte[60];
+            int pos = 0;
+            agent.Avatar.Position.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.Velocity.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.Acceleration.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.Rotation.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.AngularVelocity.GetBytes().CopyTo(objectData, pos);
+
+            ObjectUpdatePacket update = new ObjectUpdatePacket();
+            update.RegionData.RegionHandle = Server.RegionHandle;
+            update.RegionData.TimeDilation = Helpers.FloatToByte(1f, 0f, 1f);
+            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+            update.ObjectData[0] = new ObjectUpdatePacket.ObjectDataBlock();
+            update.ObjectData[0].ClickAction = (byte)0;
+            update.ObjectData[0].CRC = 0;
+            update.ObjectData[0].ExtraParams = new byte[0];
+            update.ObjectData[0].Flags = 0;
+            update.ObjectData[0].FullID = obj.ID;
+            update.ObjectData[0].Gain = 0;
+            update.ObjectData[0].ID = obj.LocalID;
+            update.ObjectData[0].JointAxisOrAnchor = Vector3.Zero;
+            update.ObjectData[0].JointPivot = Vector3.Zero;
+            update.ObjectData[0].JointType = (byte)0;
+            update.ObjectData[0].Material = (byte)3;
+            update.ObjectData[0].MediaURL = new byte[0];
+            update.ObjectData[0].NameValue = new byte[0];
+            update.ObjectData[0].ObjectData = objectData;
+            update.ObjectData[0].OwnerID = UUID.Zero;
+            update.ObjectData[0].ParentID = 0;
+            update.ObjectData[0].PathBegin = 0;
+            update.ObjectData[0].PathCurve = (byte)32;
+            update.ObjectData[0].PathEnd = 0;
+            update.ObjectData[0].PathRadiusOffset = (sbyte)0;
+            update.ObjectData[0].PathRevolutions = (byte)0;
+            update.ObjectData[0].PathScaleX = (byte)100;
+            update.ObjectData[0].PathScaleY = (byte)150;
+            update.ObjectData[0].PathShearX = (byte)0;
+            update.ObjectData[0].PathShearY = (byte)0;
+            update.ObjectData[0].PathSkew = (sbyte)0;
+            update.ObjectData[0].PathTaperX = (sbyte)0;
+            update.ObjectData[0].PathTaperY = (sbyte)0;
+            update.ObjectData[0].PathTwist = (sbyte)0;
+            update.ObjectData[0].PathTwistBegin = (sbyte)0;
+            update.ObjectData[0].PCode = (byte)PCode.Avatar;
+            update.ObjectData[0].ProfileBegin = 0;
+            update.ObjectData[0].ProfileCurve = (byte)0;
+            update.ObjectData[0].ProfileEnd = 0;
+            update.ObjectData[0].ProfileHollow = 0;
+            update.ObjectData[0].PSBlock = new byte[0];
+            update.ObjectData[0].TextColor = Vector3.Zero.GetBytes();
+            update.ObjectData[0].TextureAnim = new byte[0];
+            update.ObjectData[0].TextureEntry = new byte[63];
+            update.ObjectData[0].Radius = 0f;
+            update.ObjectData[0].Scale = obj.Scale;
+            update.ObjectData[0].Sound = UUID.Zero;
+            update.ObjectData[0].State = state;
+            update.ObjectData[0].Text = new byte[0];
+            update.ObjectData[0].UpdateFlags = flags;
+            update.ObjectData[0].Data = new byte[0];
+
+            return update;
         }
 
     }

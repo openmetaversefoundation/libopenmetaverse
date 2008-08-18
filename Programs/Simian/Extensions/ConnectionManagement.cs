@@ -75,7 +75,9 @@ namespace Simian
             LogoutReplyPacket reply = new LogoutReplyPacket();
             reply.AgentData.AgentID = agent.AgentID;
             reply.AgentData.SessionID = agent.SessionID;
-            reply.InventoryData = new LogoutReplyPacket.InventoryDataBlock[0];
+            reply.InventoryData = new LogoutReplyPacket.InventoryDataBlock[1];
+            reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
+            reply.InventoryData[0].ItemID = UUID.Zero;
 
             lock (server.Agents)
             {
