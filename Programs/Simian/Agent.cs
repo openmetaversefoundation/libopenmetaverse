@@ -13,6 +13,8 @@ namespace Simian
         public UUID SessionID;
         public UUID SecureSessionID;
         public uint CircuitCode;
+        public string FirstName;
+        public string LastName;
 
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>
         internal Queue<uint> packetArchive = new Queue<uint>();
@@ -32,13 +34,8 @@ namespace Simian
             set { address = value; }
         }
 
-        public Agent(UDPServer udpServer, UUID agentID, UUID sessionID, UUID secureSessionID, uint circuitCode)
+        public Agent(UDPServer udpServer)
         {
-            AgentID = agentID;
-            SessionID = sessionID;
-            SecureSessionID = secureSessionID;
-            CircuitCode = circuitCode;
-
             this.udpServer = udpServer;
         }
 

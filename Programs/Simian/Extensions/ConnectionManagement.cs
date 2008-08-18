@@ -6,19 +6,18 @@ namespace Simian
 {
     public class ConnectionManagement : ISimianExtension
     {
-        Simian Server;
+        Simian server;
 
         public ConnectionManagement(Simian server)
         {
-            Server = server;
+            this.server = server;
         }
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.UseCircuitCode, new UDPServer.PacketCallback(UseCircuitCodeHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.StartPingCheck, new UDPServer.PacketCallback(StartPingCheckHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.UseCircuitCode, new UDPServer.PacketCallback(UseCircuitCodeHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.StartPingCheck, new UDPServer.PacketCallback(StartPingCheckHandler));
+            
         }
 
         public void Stop()
@@ -66,29 +65,6 @@ namespace Simian
             complete.PingID.PingID = start.PingID.PingID;
 
             agent.SendPacket(complete);
-        }
-
-        void CompleteAgentMovementHandler(Packet packet, Agent agent)
-        {
-            uint regionX = 256000;
-            uint regionY = 256000;
-
-            CompleteAgentMovementPacket request = (CompleteAgentMovementPacket)packet;
-
-            AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
-            complete.AgentData.AgentID = agent.AgentID;
-            complete.AgentData.SessionID = agent.SessionID;
-            complete.Data.LookAt = Vector3.UnitX;
-            complete.Data.Position = new Vector3(128f, 128f, 25f);
-            complete.Data.RegionHandle = Helpers.UIntsToLong(regionX, regionY);
-            complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
-            complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
-
-            agent.SendPacket(complete);
-        }
-
-        void AgentUpdateHandler(Packet packet, Agent agent)
-        {
         }
     }
 }

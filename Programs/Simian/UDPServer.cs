@@ -129,7 +129,6 @@ namespace Simian
 
         protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
         {
-            Logger.DebugLog("Sent " + buffer.DataLength + " byte packet");
         }
 
         private void IncomingPacketHandler()

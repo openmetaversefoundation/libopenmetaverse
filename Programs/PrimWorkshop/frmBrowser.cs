@@ -40,7 +40,7 @@ namespace PrimWorkshop
 
         // Terrain
         float MaxHeight = 0.1f;
-        TerrainManager.Patch[,] Heightmap;
+        TerrainPatch[,] Heightmap;
         HeightmapLookupValue[] LookupHeightTable;
 
         // Picking globals
@@ -214,12 +214,12 @@ namespace PrimWorkshop
         private void InitHeightmap()
         {
             // Initialize the heightmap
-            Heightmap = new TerrainManager.Patch[16, 16];
+            Heightmap = new TerrainPatch[16, 16];
             for (int y = 0; y < 16; y++)
             {
                 for (int x = 0; x < 16; x++)
                 {
-                    Heightmap[y, x] = new TerrainManager.Patch();
+                    Heightmap[y, x] = new TerrainPatch();
                     Heightmap[y, x].Heightmap = new float[16 * 16];
                 }
             }

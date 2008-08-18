@@ -6,16 +6,16 @@ namespace Simian
 {
     public class ViewerEffectPrinter : ISimianExtension
     {
-        Simian Server;
+        Simian server;
 
         public ViewerEffectPrinter(Simian server)
         {
-            Server = server;
+            this.server = server;
         }
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
         }
 
         public void Stop()

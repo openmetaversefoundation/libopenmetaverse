@@ -236,22 +236,30 @@ namespace Simian
             uint regionX = 256000;
             uint regionY = 256000;
 
+            Agent agent = new Agent(UDPServer);
+            agent.AgentID = UUID.Random();
+            agent.FirstName = firstName;
+            agent.LastName = lastName;
+            agent.SessionID = UUID.Random();
+            agent.SecureSessionID = UUID.Random();
+            agent.CircuitCode = CreateAgentCircuit(agent);
+
             // Setup default login response values
             LoginResponseData response;
 
-            response.AgentID = UUID.Random();
-            response.SecureSessionID = UUID.Random();
-            response.SessionID = UUID.Random();
-            response.CircuitCode = CreateAgentCircuit(response.AgentID, response.SessionID, response.SecureSessionID);
+            response.AgentID = agent.AgentID;
+            response.SecureSessionID = agent.SecureSessionID;
+            response.SessionID = agent.SessionID;
+            response.CircuitCode = agent.CircuitCode;
             response.AgentAccess = "M";
             response.BuddyList = null;
-            response.FirstName = firstName;
+            response.FirstName = agent.FirstName;
             response.HomeLookAt = Vector3.UnitX;
             response.HomePosition = new Vector3(128f, 128f, 25f);
             response.HomeRegion = Helpers.UIntsToLong(regionX, regionY);
             response.InventoryFolders = null;
             response.InventoryRoot = UUID.Random();
-            response.LastName = lastName;
+            response.LastName = agent.LastName;
             response.LibraryFolders = null;
             response.LibraryOwner = response.AgentID;
             response.LibraryRoot = UUID.Random();
@@ -271,17 +279,15 @@ namespace Simian
             return response;
         }
 
-        uint CreateAgentCircuit(UUID agentID, UUID sessionID, UUID secureSessionID)
+        uint CreateAgentCircuit(Agent agent)
         {
             uint circuitCode = (uint)Interlocked.Increment(ref currentCircuitCode);
-
-            Agent agent = new Agent(UDPServer, agentID, sessionID, secureSessionID, circuitCode);
 
             // Put this client in the list of clients that have not been associated with an IPEndPoint yet
             lock (unassociatedAgents)
                 unassociatedAgents[circuitCode] = agent;
 
-            Logger.Log("Created a circuit for agent " + agentID.ToString(), Helpers.LogLevel.Info);
+            Logger.Log("Created a circuit for " + agent.FirstName, Helpers.LogLevel.Info);
 
             return circuitCode;
         }
