@@ -82,6 +82,18 @@ namespace Simian
 
         void SendFullUpdate(Agent agent, LLObject obj, byte state, uint flags)
         {
+            byte[] objectData = new byte[60];
+            int pos = 0;
+            agent.Avatar.Position.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.Velocity.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.Acceleration.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.Rotation.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            agent.Avatar.AngularVelocity.GetBytes().CopyTo(objectData, pos);
+
             ObjectUpdatePacket update = new ObjectUpdatePacket();
             update.RegionData.RegionHandle = regionHandle;
             update.RegionData.TimeDilation = Helpers.FloatToByte(1f, 0f, 1f);
@@ -100,7 +112,7 @@ namespace Simian
             update.ObjectData[0].Material = (byte)3;
             update.ObjectData[0].MediaURL = new byte[0];
             update.ObjectData[0].NameValue = new byte[0];
-            update.ObjectData[0].ObjectData = new byte[60];
+            update.ObjectData[0].ObjectData = objectData;
             update.ObjectData[0].OwnerID = UUID.Zero;
             update.ObjectData[0].ParentID = 0;
             update.ObjectData[0].PathBegin = 0;
