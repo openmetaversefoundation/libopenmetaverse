@@ -89,6 +89,11 @@ namespace Simian.Extensions
                     int x = (int)agent.Avatar.Position.X;
                     int y = (int)agent.Avatar.Position.Y;
 
+                    if (x > 255) x = 255;
+                    else if (x < 0) x = 0;
+                    if (y > 255) y = 255;
+                    else if (y < 0) y = 0;
+
                     float center = Server.Heightmap[y * 256 + x];
                     float distX = agent.Avatar.Position.X - (int)agent.Avatar.Position.X;
                     float distY = agent.Avatar.Position.Y - (int)agent.Avatar.Position.Y;
@@ -96,10 +101,10 @@ namespace Simian.Extensions
                     float nearestX;
                     float nearestY;
 
-                    if (distX > 0) nearestX = Server.Heightmap[y * 256 + x + (x < 256 ? 1 : 0)];
+                    if (distX > 0) nearestX = Server.Heightmap[y * 256 + x + (x < 255 ? 1 : 0)];
                     else nearestX = Server.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
 
-                    if (distY > 0) nearestY = Server.Heightmap[(y + (y < 256 ? 1 : 0)) * 256 + x];
+                    if (distY > 0) nearestY = Server.Heightmap[(y + (y < 255 ? 1 : 0)) * 256 + x];
                     else nearestY = Server.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
 
                     float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
