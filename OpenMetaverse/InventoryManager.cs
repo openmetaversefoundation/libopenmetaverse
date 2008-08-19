@@ -200,6 +200,10 @@ namespace OpenMetaverse
     /// </summary>
     public enum DeRezDestination : byte
     {
+        /// <summary>
+        /// Take a copy of the item
+        /// </summary>
+        TakeCopy = 1,
         /// <summary>Derez to TaskInventory</summary>
         TaskInventory = 2,
         /// <summary>Take Object</summary>
