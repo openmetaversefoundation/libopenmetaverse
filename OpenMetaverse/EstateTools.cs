@@ -477,7 +477,7 @@ namespace OpenMetaverse
         public void BanUser(UUID userID, bool allEstates)
         {
             List<string> listParams = new List<string>();
-            uint flag = AllEstates ? (uint)EstateAccessDelta.BanUserAllEstates : (uint)EstateAccessDelta.BanUser;
+            uint flag = allEstates ? (uint)EstateAccessDelta.BanUserAllEstates : (uint)EstateAccessDelta.BanUser;
             listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
@@ -490,7 +490,7 @@ namespace OpenMetaverse
         public void UnbanUser(UUID userID, bool allEstates)
         {
             List<string> listParams = new List<string>();
-            uint flag = AllEstates ? (uint)EstateAccessDelta.UnbanUserAllEstates : (uint)EstateAccessDelta.UnbanUser;
+            uint flag = allEstates ? (uint)EstateAccessDelta.UnbanUserAllEstates : (uint)EstateAccessDelta.UnbanUser;
             listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
