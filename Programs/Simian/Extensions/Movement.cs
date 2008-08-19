@@ -86,6 +86,8 @@ namespace Simian.Extensions
                     if (agent.Avatar.Position.Y < 0) agent.Avatar.Position.Y = 0f;
                     else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
 
+                    agent.Avatar.Position.Z = Server.Heightmap[(int)agent.Avatar.Position.Y * 256 + (int)agent.Avatar.Position.X] + agent.Avatar.Scale.Z / 2;
+
                 }
             }
         }

@@ -14,7 +14,6 @@ namespace Simian
     public class SceneManager : ISimianExtension
     {
         Simian server;
-        float[] heightmap = new float[65535];
         int currentLocalID = 0;
         int currentWearablesSerialNum = 0;
 
@@ -94,40 +93,46 @@ namespace Simian
         {
             if (File.Exists(mapFile))
             {
-                Bitmap bmp = LoadTGAClass.LoadTGA(mapFile);
+                lock (server.Heightmap)
+                {
+                    Bitmap bmp = LoadTGAClass.LoadTGA(mapFile);
 
-                Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                BitmapData bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-                IntPtr ptr = bmpData.Scan0;
-                int bytes = bmpData.Stride * bmp.Height;
-                byte[] rgbValues = new byte[bytes];
-                Marshal.Copy(ptr, rgbValues, 0, bytes);
-                bmp.UnlockBits(bmpData);
+                    Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                    BitmapData bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                    IntPtr ptr = bmpData.Scan0;
+                    int bytes = bmpData.Stride * bmp.Height;
+                    byte[] rgbValues = new byte[bytes];
+                    Marshal.Copy(ptr, rgbValues, 0, bytes);
+                    bmp.UnlockBits(bmpData);
 
-                heightmap = new float[65536];
-                for (int i = 1, pos = 0; i < heightmap.Length; i++, pos += 3)
-                    heightmap[i] = (float)rgbValues[pos];
+                    server.Heightmap = new float[65536];
+                    for (int i = 1, pos = 0; i < server.Heightmap.Length; i++, pos += 3)
+                        server.Heightmap[i] = (float)rgbValues[pos];
+                }
             }
             else
             {
                 Logger.Log("Map file " + mapFile + " not found, defaulting to 25m", Helpers.LogLevel.Info);
 
-                heightmap = new float[65536];
-                for (int i = 0; i < heightmap.Length; i++)
-                    heightmap[i] = 25f;
+                server.Heightmap = new float[65536];
+                for (int i = 0; i < server.Heightmap.Length; i++)
+                    server.Heightmap[i] = 25f;
             }
         }
 
         void SendLayerData(Agent agent)
         {
-            for (int y = 0; y < 16; y++)
+            lock (server.Heightmap)
             {
-                for (int x = 0; x < 16; x++)
+                for (int y = 0; y < 16; y++)
                 {
-                    int[] patches = new int[1];
-                    patches[0] = (y * 16) + x;
-                    LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap, patches);
-                    agent.SendPacket(layer);
+                    for (int x = 0; x < 16; x++)
+                    {
+                        int[] patches = new int[1];
+                        patches[0] = (y * 16) + x;
+                        LayerDataPacket layer = TerrainCompressor.CreateLandPacket(server.Heightmap, patches);
+                        agent.SendPacket(layer);
+                    }
                 }
             }
         }
