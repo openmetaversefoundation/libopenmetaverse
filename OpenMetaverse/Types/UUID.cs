@@ -82,7 +82,11 @@ namespace OpenMetaverse
         /// <param name="val">64-bit unsigned integer to convert to a UUID</param>
         public UUID(ulong val)
         {
-            Guid = new Guid(0, 0, 0, BitConverter.GetBytes(val));
+            byte[] end = BitConverter.GetBytes(val);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(end);
+
+            Guid = new Guid(0, 0, 0, end);
         }
 
         /// <summary>
@@ -160,22 +164,22 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Create a 64-bit integer representation of the first half of this UUID
+        /// Create a 64-bit integer representation from the second half of this UUID
         /// </summary>
-        /// <returns>An integer created from the first eight bytes of this UUID</returns>
+        /// <returns>An integer created from the last eight bytes of this UUID</returns>
         public ulong GetULong()
         {
             byte[] bytes = Guid.ToByteArray();
 
             return (ulong)
-                ((ulong)bytes[7] +
-                ((ulong)bytes[6] << 8) +
-                ((ulong)bytes[5] << 16) +
-                ((ulong)bytes[4] << 24) +
-                ((ulong)bytes[3] << 32) +
-                ((ulong)bytes[2] << 40) +
-                ((ulong)bytes[1] << 48) +
-                ((ulong)bytes[0] << 56));
+                ((ulong)bytes[8] +
+                ((ulong)bytes[9] << 8) +
+                ((ulong)bytes[10] << 16) +
+                ((ulong)bytes[12] << 24) +
+                ((ulong)bytes[13] << 32) +
+                ((ulong)bytes[13] << 40) +
+                ((ulong)bytes[14] << 48) +
+                ((ulong)bytes[15] << 56));
         }
 
         #endregion Public Methods
@@ -230,7 +234,7 @@ namespace OpenMetaverse
             Buffer.BlockCopy(first.GetBytes(), 0, input, 0, 16);
             Buffer.BlockCopy(second.GetBytes(), 0, input, 16, 16);
 
-            return new UUID(Utils.MD5Builder.ComputeHash(input), 0);
+            return new UUID(Utils.MD5(input), 0);
         }
 
         /// <summary>

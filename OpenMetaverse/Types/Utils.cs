@@ -77,13 +77,13 @@ namespace OpenMetaverse
         public static readonly System.Globalization.CultureInfo EnUsCulture =
             new System.Globalization.CultureInfo("en-us");
 
-        /// <summary>Provide a single instance of the MD5 class to avoid making
-        /// duplicate copies</summary>
-        public static readonly System.Security.Cryptography.MD5 MD5Builder =
-            new System.Security.Cryptography.MD5CryptoServiceProvider();
-
         /// <summary>UNIX epoch in DateTime format</summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1);
+
+        /// <summary>Provide a single instance of the MD5 class to avoid making
+        /// duplicate copies</summary>
+        private static readonly System.Security.Cryptography.MD5 MD5Builder =
+            new System.Security.Cryptography.MD5CryptoServiceProvider();
 
         #region Math
 
@@ -245,6 +245,17 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Compute the MD5 hash for a byte array
+        /// </summary>
+        /// <param name="data">Byte array to compute the hash for</param>
+        /// <returns>MD5 hash of the input data</returns>
+        public static byte[] MD5(byte[] data)
+        {
+            lock (MD5Builder)
+                return MD5Builder.ComputeHash(data);
+        }
+
+        /// <summary>
         /// Calculate the MD5 hash of a given string
         /// </summary>
         /// <param name="password">The password to hash</param>
@@ -252,8 +263,7 @@ namespace OpenMetaverse
         public static string MD5(string password)
         {
             StringBuilder digest = new StringBuilder();
-            byte[] hash;
-            lock (MD5Builder) hash = MD5Builder.ComputeHash(ASCIIEncoding.Default.GetBytes(password));
+            byte[] hash = MD5(ASCIIEncoding.Default.GetBytes(password));
 
             // Convert the hash to a hex string
             foreach (byte b in hash)
