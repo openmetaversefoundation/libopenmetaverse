@@ -255,6 +255,9 @@ namespace Simian
             agent.SecureSessionID = UUID.Random();
             agent.CircuitCode = CreateAgentCircuit(agent);
 
+            IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
+            IPAddress simIP = addresses.AddressList.Length > 0 ? addresses.AddressList[0] : IPAddress.Loopback;
+
             // Setup default login response values
             LoginResponseData response;
 
@@ -281,8 +284,8 @@ namespace Simian
             response.RegionY = regionY;
             response.SecondsSinceEpoch = DateTime.Now;
             // FIXME: Actually generate a seed capability
-            response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", IPAddress.Loopback, tcpPort);
-            response.SimIP = IPAddress.Loopback;
+            response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, tcpPort);
+            response.SimIP = simIP;
             response.SimPort = (ushort)udpPort;
             response.StartLocation = "last";
             response.Success = true;
