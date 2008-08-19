@@ -27,13 +27,23 @@
 using System;
 using System.Net;
 
-#if !PocketPC
-
 namespace OpenMetaverse.Capabilities
 {
     public class EventQueueServer
     {
+        public EventQueueServer(HttpServer server, string path)
+        {
+            HttpRequestSignature signature = new HttpRequestSignature();
+            signature.Method = "post";
+            signature.ContentType = String.Empty;
+            signature.Path = path;
+            HttpServer.HttpRequestCallback callback = new HttpServer.HttpRequestCallback(EventQueueHandler);
+            HttpServer.HttpRequestHandler handler = new HttpServer.HttpRequestHandler(signature, callback);
+            server.AddHandler(handler);
+        }
+
+        protected void EventQueueHandler(HttpRequestSignature signature, ref HttpListenerContext context)
+        {
+        }
     }
 }
-
-#endif

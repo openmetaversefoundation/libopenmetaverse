@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace OpenMetaverse
 {
@@ -35,6 +36,8 @@ namespace OpenMetaverse
     /// </summary>
     public struct NameValue
     {
+        #region Enums
+
         /// <summary>Type of the value</summary>
         public enum ValueType
         {
@@ -91,6 +94,8 @@ namespace OpenMetaverse
             DataSimViewer
         }
 
+        #endregion Enums
+
 
         /// <summary></summary>
         public string Name;
@@ -111,7 +116,6 @@ namespace OpenMetaverse
             "S32",
             "VEC3",
             "U32",
-            "CAMERA", // Obsolete
             "ASSET",
             "U64"
         };
@@ -127,6 +131,13 @@ namespace OpenMetaverse
             "DS",   // Data Sim
             "SV",   // Sim Viewer
             "DSV"   // Data Sim Viewer
+        };
+        private static readonly char[] Separators = new char[]
+        {
+            ' ',
+            '\n',
+            '\t',
+            '\r'
         };
 
         /// <summary>
@@ -153,10 +164,9 @@ namespace OpenMetaverse
         public NameValue(string data)
         {
             int i;
-            char[] seps = new char[]{ ' ', '\n', '\t', '\r' };
 
             // Name
-            i = data.IndexOfAny(seps);
+            i = data.IndexOfAny(Separators);
             if (i < 1)
             {
                 Name = String.Empty;
@@ -170,21 +180,21 @@ namespace OpenMetaverse
             data = data.Substring(i + 1);
 
             // Type
-            i = data.IndexOfAny(seps);
+            i = data.IndexOfAny(Separators);
             if (i > 0)
             {
                 Type = GetValueType(data.Substring(0, i));
                 data = data.Substring(i + 1);
 
                 // Class
-                i = data.IndexOfAny(seps);
+                i = data.IndexOfAny(Separators);
                 if (i > 0)
                 {
                     Class = GetClassType(data.Substring(0, i));
                     data = data.Substring(i + 1);
 
                     // Sendto
-                    i = data.IndexOfAny(seps);
+                    i = data.IndexOfAny(Separators);
                     if (i > 0)
                     {
                         Sendto = GetSendtoType(data.Substring(0, 1));
@@ -199,6 +209,28 @@ namespace OpenMetaverse
             Sendto = SendtoType.Sim;
             Value = null;
             SetValue(data);
+        }
+
+        public static string NameValuesToString(NameValue[] values)
+        {
+            if (values == null || values.Length == 0)
+                return String.Empty;
+
+            StringBuilder output = new StringBuilder();
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                NameValue value = values[i];
+
+                if (value.Value != null)
+                {
+                    string newLine = (i < values.Length - 1) ? "\n" : String.Empty;
+                    output.AppendFormat("{0} {1} {2} {3} {4}{5}", value.Name, TypeStrings[(int)value.Type],
+                        ClassStrings[(int)value.Class], SendtoStrings[(int)value.Sendto], value.Value.ToString(), newLine);
+                }
+            }
+
+            return output.ToString();
         }
 
         private void SetValue(string value)

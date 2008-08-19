@@ -32,7 +32,7 @@ namespace OpenMetaverse.Capabilities
 {
     public class HttpServer
     {
-        public delegate void HttpRequestCallback(ref HttpListenerContext context);
+        public delegate void HttpRequestCallback(HttpRequestSignature signature, ref HttpListenerContext context);
 
         public struct HttpRequestHandler : IEquatable<HttpRequestHandler>
         {
@@ -153,7 +153,7 @@ namespace OpenMetaverse.Capabilities
                             // Request signature matched, handle it
                             try
                             {
-                                handler.Callback(ref context);
+                                handler.Callback(signature, ref context);
                             }
                             catch (Exception e)
                             {

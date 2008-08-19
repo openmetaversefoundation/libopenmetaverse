@@ -129,13 +129,13 @@ namespace Simian
             HttpServer.Start();
         }
 
-        void LoginWebpageHeadHandler(ref HttpListenerContext context)
+        void LoginWebpageHeadHandler(HttpRequestSignature signature, ref HttpListenerContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.StatusDescription = "OK";
         }
 
-        void LoginWebpageGetHandler(ref HttpListenerContext context)
+        void LoginWebpageGetHandler(HttpRequestSignature signature, ref HttpListenerContext context)
         {
             string pageContent = "<html><head><title>Simian</title></head><body><br/><h1>Welcome to Simian</h1></body></html>";
             byte[] pageData = Encoding.UTF8.GetBytes(pageContent);
@@ -143,7 +143,7 @@ namespace Simian
             context.Response.Close();
         }
 
-        void LoginXmlRpcPostHandler(ref HttpListenerContext context)
+        void LoginXmlRpcPostHandler(HttpRequestSignature signature, ref HttpListenerContext context)
         {
             string
                 firstName = String.Empty,
@@ -230,7 +230,7 @@ namespace Simian
             }
         }
 
-        void LoginLLSDPostHandler(ref HttpListenerContext context)
+        void LoginLLSDPostHandler(HttpRequestSignature signature, ref HttpListenerContext context)
         {
             string body = String.Empty;
 

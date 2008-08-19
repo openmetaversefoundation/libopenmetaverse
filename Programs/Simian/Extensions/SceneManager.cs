@@ -41,19 +41,17 @@ namespace Simian
             // Create a representation for this agent
             Avatar avatar = new Avatar();
             avatar.ID = agent.AgentID;
-            avatar.NameValues = agent.Avatar.NameValues;
             avatar.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
             avatar.Position = new Vector3(128f, 128f, 25f);
             avatar.Rotation = Quaternion.Identity;
             avatar.Scale = new Vector3(1f, 1f, 3f);
 
+            // Set the avatar name
             NameValue[] name = new NameValue[2];
-            name[0] = new NameValue();
-            name[0].Name = "FirstName";
-            name[0].Value = agent.FirstName;
-            name[1] = new NameValue();
-            name[1].Name = "LastName";
-            name[1].Value = agent.LastName;
+            name[0] = new NameValue("FirstName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
+                NameValue.SendtoType.SimViewer, agent.FirstName);
+            name[1] = new NameValue("LastName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
+                NameValue.SendtoType.SimViewer, agent.LastName);
             avatar.NameValues = name;
 
             // Link this avatar up with the corresponding agent
@@ -78,15 +76,22 @@ namespace Simian
 
         void AgentWearablesRequestHandler(Packet packet, Agent agent)
         {
-            /*AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
+            AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
             update.AgentData.AgentID = agent.AgentID;
             update.AgentData.SessionID = agent.SessionID;
             // Technically this should be per-agent, but if the only requirement is that it
             // increments this is easier
             update.AgentData.SerialNum = (uint)Interlocked.Increment(ref currentWearablesSerialNum);
-            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[0];
+            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[4];
+            for (int i = 0; i < 4; i++)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = UUID.Zero;
+                update.WearableData[i].ItemID = UUID.Zero;
+                update.WearableData[i].WearableType = 42; // HACK
+            }
 
-            agent.SendPacket(update);*/
+            agent.SendPacket(update);
         }
 
         void LoadTerrain(string mapFile)
