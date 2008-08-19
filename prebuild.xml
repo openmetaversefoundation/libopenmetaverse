@@ -679,6 +679,7 @@
 
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
+      <Reference name="System.Drawing"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
