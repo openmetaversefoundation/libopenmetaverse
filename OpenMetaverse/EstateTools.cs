@@ -132,7 +132,9 @@ namespace OpenMetaverse
         public enum EstateAccessDelta
         {
             BanUser = 64,
-            UnbanUser = 128
+            BanUserAllEstates = 66,
+            UnbanUser = 128,
+            UnbanUserAllEstates = 130
         }
 
         public enum EstateAccessReplyDelta : uint
@@ -468,12 +470,14 @@ namespace OpenMetaverse
             EstateOwnerMessage("kickestate", userID.ToString());
 		}
 
-        /// <summary>Ban an avatar from an estate</summary>
+        /// <summary>
+        /// Ban an avatar from an estate</summary>
         /// <param name="userID">Key of Agent to remove</param>
-        public void BanUser(UUID userID)
+        /// <param name="allEstates">Ban user from this estate and all others owned by the estate owner</param>
+        public void BanUser(UUID userID, bool allEstates)
         {
             List<string> listParams = new List<string>();
-            uint flag = (uint)EstateAccessDelta.BanUser;
+            uint flag = AllEstates ? (uint)EstateAccessDelta.BanUserAllEstates : (uint)EstateAccessDelta.BanUser;
             listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
@@ -482,10 +486,11 @@ namespace OpenMetaverse
 
         /// <summary>Unban an avatar from an estate</summary>
         /// <param name="userID">Key of Agent to remove</param>
-        public void UnbanUser(UUID userID)
+        ///  /// <param name="allEstates">Unban user from this estate and all others owned by the estate owner</param>
+        public void UnbanUser(UUID userID, bool allEstates)
         {
             List<string> listParams = new List<string>();
-            uint flag = (uint)EstateAccessDelta.UnbanUser;
+            uint flag = AllEstates ? (uint)EstateAccessDelta.UnbanUserAllEstates : (uint)EstateAccessDelta.UnbanUser;
             listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
