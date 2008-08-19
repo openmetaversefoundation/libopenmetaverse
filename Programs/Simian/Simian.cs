@@ -17,6 +17,7 @@ namespace Simian
         public UDPServer UDPServer;
         public Dictionary<uint, Primitive> SceneObjects = new Dictionary<uint, Primitive>();
         public ulong RegionHandle;
+        public float[] Heightmap = new float[65536];
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<IPEndPoint, Agent> Agents = new Dictionary<IPEndPoint, Agent>();
