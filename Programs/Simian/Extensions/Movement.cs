@@ -12,6 +12,8 @@ namespace Simian.Extensions
         Simian Server;
         Timer UpdateTimer;
         const float SQRT_TWO = 1.41421356f;
+        const float WALK_SPEED = 0.5f;
+        const float FLY_SPEED = 1.5f;
 
         public Movement(Simian server)
         {
@@ -46,8 +48,12 @@ namespace Simian.Extensions
                     bool heldBack = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG;
                     bool heldLeft = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS;
                     bool heldRight = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG;
+                    bool heldUp = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_POS) == AgentManager.ControlFlags.AGENT_CONTROL_UP_POS;
+                    bool heldDown = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG;
+                    bool flying = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_FLY) == AgentManager.ControlFlags.AGENT_CONTROL_FLY;
+                    
+                    float speed = flying ? FLY_SPEED : WALK_SPEED;
 
-                    float speed = 0.5f;
                     if ((heldForward || heldBack) && (heldLeft || heldRight))
                         speed /= SQRT_TWO;
 
@@ -80,13 +86,45 @@ namespace Simian.Extensions
                         agent.Avatar.Velocity.Y -= left.Y * speed;
                     }
 
+                    int x = (int)agent.Avatar.Position.X;
+                    int y = (int)agent.Avatar.Position.Y;
+
+                    float center = Server.Heightmap[y * 256 + x];
+                    float distX = agent.Avatar.Position.X - (int)agent.Avatar.Position.X;
+                    float distY = agent.Avatar.Position.Y - (int)agent.Avatar.Position.Y;
+
+                    float nearestX;
+                    float nearestY;
+
+                    if (distX > 0) nearestX = Server.Heightmap[y * 256 + x + (x < 256 ? 1 : 0)];
+                    else nearestX = Server.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
+
+                    if (distY > 0) nearestY = Server.Heightmap[(y + (y < 256 ? 1 : 0)) * 256 + x];
+                    else nearestY = Server.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
+
+                    float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
+                    float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
+
+                    float floor = ((lerpX + lerpY) / 2) + agent.Avatar.Scale.Z / 2;
+
+
+                    if (flying)
+                    {
+                        if (heldUp)
+                            agent.Avatar.Position.Z += speed;
+
+                        if (heldDown)
+                            agent.Avatar.Position.Z -= speed;
+                    }
+                    else agent.Avatar.Position.Z = floor;
+
                     if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
                     else if (agent.Avatar.Position.X > 255) agent.Avatar.Position.X = 255f;
 
                     if (agent.Avatar.Position.Y < 0) agent.Avatar.Position.Y = 0f;
                     else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
 
-                    agent.Avatar.Position.Z = Server.Heightmap[(int)agent.Avatar.Position.Y * 256 + (int)agent.Avatar.Position.X] + agent.Avatar.Scale.Z / 2;
+                    if (agent.Avatar.Position.Z < floor) agent.Avatar.Position.Z = floor;
 
                 }
             }
