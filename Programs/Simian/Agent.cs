@@ -16,6 +16,7 @@ namespace Simian
         public string FirstName;
         public string LastName;
         public Avatar Avatar = new Avatar();
+        public int Balance;
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
 
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>

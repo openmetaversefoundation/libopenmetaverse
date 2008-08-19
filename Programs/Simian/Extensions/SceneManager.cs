@@ -52,6 +52,9 @@ namespace Simian
             // Link this avatar up with the corresponding agent
             agent.Avatar = avatar;
 
+            // Give testers a provisionary balance of 1000L
+            agent.Balance = 1000;
+
             AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
             complete.AgentData.AgentID = agent.AgentID;
             complete.AgentData.SessionID = agent.SessionID;
@@ -62,6 +65,8 @@ namespace Simian
             complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
             agent.SendPacket(complete);
+
+            SendLayerData(agent);
         }
 
         void AgentWearablesRequestHandler(Packet packet, Agent agent)
@@ -75,6 +80,24 @@ namespace Simian
             update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[0];
 
             agent.SendPacket(update);*/
+        }
+
+        void SendLayerData(Agent agent)
+        {
+            float[] heightmap = new float[65536];
+            for (int i = 0; i < heightmap.Length; i++)
+                heightmap[i] = 25f;
+
+            for (int y = 0; y < 16; y++)
+            {
+                for (int x = 0; x < 16; x++)
+                {
+                    int[] patches = new int[1];
+                    patches[0] = (y * 16) + x;
+                    LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap, patches);
+                    agent.SendPacket(layer);
+                }
+            }
         }
 
     }
