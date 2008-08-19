@@ -34,10 +34,20 @@ namespace Simian
             // Create a representation for this agent
             Avatar avatar = new Avatar();
             avatar.ID = agent.AgentID;
+            avatar.NameValues = agent.Avatar.NameValues;
             avatar.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
             avatar.Position = new Vector3(128f, 128f, 25f);
             avatar.Rotation = Quaternion.Identity;
             avatar.Scale = new Vector3(1f, 1f, 3f);
+
+            NameValue[] name = new NameValue[2];
+            name[0] = new NameValue();
+            name[0].Name = "FirstName";
+            name[0].Value = agent.FirstName;
+            name[1] = new NameValue();
+            name[1].Name = "LastName";
+            name[1].Value = agent.LastName;
+            avatar.NameValues = name;
 
             // Link this avatar up with the corresponding agent
             agent.Avatar = avatar;

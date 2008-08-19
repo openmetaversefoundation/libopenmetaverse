@@ -137,7 +137,7 @@ namespace Simian.Extensions
             update.ObjectData[0].JointType = (byte)0;
             update.ObjectData[0].Material = (byte)3;
             update.ObjectData[0].MediaURL = new byte[0];
-            update.ObjectData[0].NameValue = new byte[0];
+            update.ObjectData[0].NameValue = Utils.StringToBytes(agent.Avatar.Name);
             update.ObjectData[0].ObjectData = objectData;
             update.ObjectData[0].OwnerID = UUID.Zero;
             update.ObjectData[0].ParentID = 0;
