@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using OpenMetaverse;
+using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
 
 namespace Simian
@@ -9,6 +14,7 @@ namespace Simian
     public class SceneManager : ISimianExtension
     {
         Simian server;
+        float[] heightmap = new float[65535];
         int currentLocalID = 0;
         int currentWearablesSerialNum = 0;
 
@@ -21,6 +27,8 @@ namespace Simian
         {
             server.UDPServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
             server.UDPServer.RegisterPacketCallback(PacketType.AgentWearablesRequest, new UDPServer.PacketCallback(AgentWearablesRequestHandler));
+
+            LoadTerrain("Maps/default.tga");
         }
 
         public void Stop()
@@ -82,12 +90,36 @@ namespace Simian
             agent.SendPacket(update);*/
         }
 
+        void LoadTerrain(string mapFile)
+        {
+            if (File.Exists(mapFile))
+            {
+                Bitmap bmp = LoadTGAClass.LoadTGA(mapFile);
+
+                Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                BitmapData bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                IntPtr ptr = bmpData.Scan0;
+                int bytes = bmpData.Stride * bmp.Height;
+                byte[] rgbValues = new byte[bytes];
+                Marshal.Copy(ptr, rgbValues, 0, bytes);
+                bmp.UnlockBits(bmpData);
+
+                heightmap = new float[65536];
+                for (int i = 1, pos = 0; i < heightmap.Length; i++, pos += 3)
+                    heightmap[i] = (float)rgbValues[pos];
+            }
+            else
+            {
+                Logger.Log("Map file " + mapFile + " not found, defaulting to 25m", Helpers.LogLevel.Info);
+
+                heightmap = new float[65536];
+                for (int i = 0; i < heightmap.Length; i++)
+                    heightmap[i] = 25f;
+            }
+        }
+
         void SendLayerData(Agent agent)
         {
-            float[] heightmap = new float[65536];
-            for (int i = 0; i < heightmap.Length; i++)
-                heightmap[i] = 25f;
-
             for (int y = 0; y < 16; y++)
             {
                 for (int x = 0; x < 16; x++)
