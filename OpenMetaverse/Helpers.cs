@@ -210,6 +210,32 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Convert the first four bytes starting at the given position in
+        /// little endian ordering to a signed integer
+        /// </summary>
+        /// <param name="bytes">Byte array containing the int</param>
+        /// <param name="pos">Position to start reading the int from</param>
+        /// <returns>A signed integer, will be zero if an int can't be read
+        /// at the given position</returns>
+        public static int BytesToInt(byte[] bytes, int pos)
+        {
+            if (bytes.Length < pos + 4) return 0;
+            return (int)(bytes[pos + 0] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24));
+        }
+
+        /// <summary>
+        /// Convert the first four bytes of the given array in little endian
+        /// ordering to a signed integer
+        /// </summary>
+        /// <param name="bytes">An array four bytes or longer</param>
+        /// <returns>A signed integer, will be zero if the array contains
+        /// less than four bytes</returns>
+        public static int BytesToInt(byte[] bytes)
+        {
+            return BytesToInt(bytes, 0);
+        }
+
+        /// <summary>
         /// Convert the first two bytes starting at the given position in
         /// little endian ordering to an unsigned short
         /// </summary>
@@ -234,7 +260,7 @@ namespace OpenMetaverse
         public static uint BytesToUInt(byte[] bytes, int pos)
         {
             if (bytes.Length < pos + 4) return 0;
-            return (uint)(bytes[pos + 3] + (bytes[pos + 2] << 8) + (bytes[pos + 1] << 16) + (bytes[pos] << 24));
+            return (uint)(bytes[pos + 0] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24));
         }
 
         /// <summary>
@@ -260,7 +286,7 @@ namespace OpenMetaverse
         public static uint BytesToUIntBig(byte[] bytes, int pos)
         {
             if (bytes.Length < pos + 4) return 0;
-            return (uint)(bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24));
+            return (uint)(bytes[pos + 3] + (bytes[pos + 2] << 8) + (bytes[pos + 1] << 16) + (bytes[pos + 0] << 24));
         }
 
         /// <summary>
@@ -272,8 +298,7 @@ namespace OpenMetaverse
         /// less than four bytes</returns>
         public static uint BytesToUIntBig(byte[] bytes)
         {
-            if (bytes.Length < 4) return 0;
-            return (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
+            return BytesToUIntBig(bytes, 0);
         }
 
         /// <summary>
@@ -287,14 +312,14 @@ namespace OpenMetaverse
         {
             if (bytes.Length < 8) return 0;
             return (ulong)
-                ((ulong)bytes[7] +
-                ((ulong)bytes[6] << 8) +
-                ((ulong)bytes[5] << 16) +
-                ((ulong)bytes[4] << 24) +
-                ((ulong)bytes[3] << 32) +
-                ((ulong)bytes[2] << 40) +
-                ((ulong)bytes[1] << 48) +
-                ((ulong)bytes[0] << 56));
+                ((ulong)bytes[0] +
+                ((ulong)bytes[1] << 8) +
+                ((ulong)bytes[2] << 16) +
+                ((ulong)bytes[3] << 24) +
+                ((ulong)bytes[4] << 32) +
+                ((ulong)bytes[5] << 40) +
+                ((ulong)bytes[6] << 48) +
+                ((ulong)bytes[7] << 56));
         }
 
         /// <summary>

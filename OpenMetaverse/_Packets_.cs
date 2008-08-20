@@ -2156,6 +2156,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 1;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             TestBlock1 = new TestBlock1Block();
             NeighborBlock = new NeighborBlockBlock[4];
         }
@@ -2818,6 +2819,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 25;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Info = new InfoBlock();
         }
 
@@ -3507,6 +3509,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 29;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
             QueryData = new QueryDataBlock();
@@ -3850,6 +3853,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 30;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
             QueryData = new QueryDataBlock[0];
@@ -4081,6 +4085,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 31;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
         }
@@ -4313,6 +4318,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 33;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
         }
@@ -4565,6 +4571,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 35;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock[0];
             QueryReplies = new QueryRepliesBlock[0];
@@ -4893,6 +4900,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 36;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
             QueryReplies = new QueryRepliesBlock[0];
@@ -5193,6 +5201,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 37;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
             QueryReplies = new QueryRepliesBlock[0];
@@ -5467,6 +5476,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 38;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
             QueryReplies = new QueryRepliesBlock[0];
@@ -5705,6 +5715,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 39;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
         }
@@ -5966,6 +5977,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 41;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
             QueryReplies = new QueryRepliesBlock[0];
@@ -6372,6 +6384,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 43;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -7485,6 +7498,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 48;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
         }
@@ -7743,6 +7757,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 50;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
             QueryReplies = new QueryRepliesBlock[0];
@@ -7945,6 +7960,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 51;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
         }
@@ -8189,6 +8205,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 53;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
             QueryReplies = new QueryRepliesBlock[0];
@@ -8683,6 +8700,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 55;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -8995,6 +9013,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 57;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Data = new DataBlock[0];
         }
 
@@ -10237,6 +10256,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 65;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Info = new InfoBlock();
         }
 
@@ -12345,6 +12365,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 80;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ChatData = new ChatDataBlock();
         }
@@ -12548,6 +12569,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 81;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Throttle = new ThrottleBlock();
         }
@@ -13227,6 +13249,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 84;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             WearableData = new WearableDataBlock[0];
             ObjectData = new ObjectDataBlock();
@@ -13986,6 +14009,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 89;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -14236,6 +14260,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 90;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             SharedData = new SharedDataBlock();
             ObjectData = new ObjectDataBlock[0];
@@ -14473,6 +14498,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 91;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -14670,6 +14696,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 92;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -14867,6 +14894,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 93;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -15034,6 +15062,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 94;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
         }
 
@@ -15208,6 +15237,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 95;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -15443,6 +15473,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 96;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -15640,6 +15671,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 97;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -15910,6 +15942,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 98;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -16140,6 +16173,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 99;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -16387,6 +16421,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 100;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
             ObjectData = new ObjectDataBlock[0];
@@ -16589,6 +16624,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 101;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -16801,6 +16837,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 102;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -16999,6 +17036,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 103;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -17125,6 +17163,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 104;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Data = new DataBlock();
         }
 
@@ -17356,6 +17395,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 105;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
             ObjectData = new ObjectDataBlock[0];
@@ -17565,6 +17605,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 106;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -17779,6 +17820,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 107;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -17993,6 +18035,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 108;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -18193,6 +18236,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 109;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -18386,6 +18430,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 110;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -18579,6 +18624,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 111;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -18780,6 +18826,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 112;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -19749,6 +19796,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 117;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -19936,6 +19984,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 118;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -20283,6 +20332,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 120;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -20459,6 +20509,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 121;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -20631,6 +20682,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 122;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -20808,6 +20860,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 123;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -21095,6 +21148,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 124;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ModifyBlock = new ModifyBlockBlock();
             ParcelData = new ParcelDataBlock[0];
@@ -22556,6 +22610,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 131;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             DownloadTotals = new DownloadTotalsBlock();
             NetStats = new NetStatsBlock[2];
@@ -23068,6 +23123,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 133;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ReportData = new ReportDataBlock();
         }
@@ -23536,6 +23592,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 136;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             MeanCollision = new MeanCollisionBlock[0];
         }
 
@@ -23792,6 +23849,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 138;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             HealthData = new HealthDataBlock();
         }
 
@@ -24649,6 +24707,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 142;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             RegionInfo = new RegionInfoBlock();
         }
@@ -24889,6 +24948,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 143;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             RegionInfo = new RegionInfoBlock();
         }
@@ -25325,6 +25385,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 148;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             RegionInfo = new RegionInfoBlock();
             RegionInfo2 = new RegionInfo2Block();
         }
@@ -25500,6 +25561,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 149;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             RegionInfo = new RegionInfoBlock();
         }
@@ -26022,6 +26084,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 153;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             TransferInfo = new TransferInfoBlock();
         }
 
@@ -26189,6 +26252,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 154;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             TransferInfo = new TransferInfoBlock();
         }
 
@@ -26313,6 +26377,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 155;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             TransferInfo = new TransferInfoBlock();
         }
 
@@ -26480,6 +26545,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 156;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             XferID = new XferIDBlock();
         }
 
@@ -26842,6 +26908,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 158;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Sender = new SenderBlock();
             ObjectData = new ObjectDataBlock();
             VisualParam = new VisualParamBlock[0];
@@ -28745,6 +28812,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 171;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             PropertiesData = new PropertiesDataBlock();
         }
@@ -28988,6 +29056,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 172;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             PropertiesData = new PropertiesDataBlock();
         }
@@ -29267,6 +29336,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 173;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock[0];
             NewGroupData = new NewGroupDataBlock();
@@ -29536,6 +29606,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 174;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             PropertiesData = new PropertiesDataBlock();
         }
@@ -29779,6 +29850,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 175;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             PropertiesData = new PropertiesDataBlock();
         }
@@ -32985,6 +33057,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 190;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Data = new DataBlock();
             Buttons = new ButtonsBlock[0];
         }
@@ -33210,6 +33283,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 191;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -34006,6 +34080,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 196;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             ParcelData = new ParcelDataBlock();
         }
 
@@ -34183,6 +34258,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 197;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
         }
@@ -34512,6 +34588,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 198;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
         }
@@ -34786,6 +34863,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 199;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
             TaskIDs = new TaskIDsBlock[0];
@@ -35014,6 +35092,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 200;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
         }
@@ -35288,6 +35367,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 201;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
             TaskIDs = new TaskIDsBlock[0];
@@ -35562,6 +35642,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 202;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
             ReturnIDs = new ReturnIDsBlock[0];
@@ -36825,6 +36906,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 209;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
             ParcelData = new ParcelDataBlock[0];
@@ -37664,6 +37746,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 213;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
             ParcelData = new ParcelDataBlock();
@@ -37848,6 +37931,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 214;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -38037,6 +38121,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 215;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -38240,6 +38325,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 216;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Data = new DataBlock();
             List = new ListBlock[0];
         }
@@ -38518,6 +38604,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 217;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
             List = new ListBlock[0];
@@ -39985,6 +40072,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 240;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
         }
 
@@ -40900,6 +40988,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 247;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Requester = new RequesterBlock();
         }
 
@@ -41120,6 +41209,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 248;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             Requester = new RequesterBlock();
             SensedData = new SensedDataBlock[0];
         }
@@ -41822,6 +41912,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 253;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -42113,6 +42204,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 254;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MessageBlock = new MessageBlockBlock();
         }
@@ -43055,6 +43147,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 259;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MethodData = new MethodDataBlock();
             ParamList = new ParamListBlock[0];
@@ -43339,6 +43432,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 260;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MethodData = new MethodDataBlock();
             ParamList = new ParamListBlock[0];
@@ -43623,6 +43717,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 261;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MethodData = new MethodDataBlock();
             ParamList = new ParamListBlock[0];
@@ -44448,6 +44543,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 265;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             NotecardData = new NotecardDataBlock();
             InventoryData = new InventoryDataBlock[0];
@@ -44795,6 +44891,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 266;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -45137,6 +45234,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 267;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -45356,6 +45454,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 268;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -45582,6 +45681,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 269;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -46759,6 +46859,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 275;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -47158,6 +47259,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 277;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock();
         }
@@ -47564,6 +47666,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 278;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             FolderData = new FolderDataBlock[0];
             ItemData = new ItemDataBlock[0];
@@ -47781,6 +47884,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 279;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -48108,6 +48212,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 280;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock[0];
         }
@@ -48521,6 +48626,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 281;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             FolderData = new FolderDataBlock[0];
             ItemData = new ItemDataBlock[0];
@@ -49247,6 +49353,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 285;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock();
         }
@@ -49613,6 +49720,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 286;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             UpdateData = new UpdateDataBlock();
             InventoryData = new InventoryDataBlock();
@@ -49797,6 +49905,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 287;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryData = new InventoryDataBlock();
         }
@@ -50303,6 +50412,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 290;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
         }
 
@@ -50539,6 +50649,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 291;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             AgentBlock = new AgentBlockBlock();
             ObjectData = new ObjectDataBlock[0];
@@ -51102,6 +51213,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 293;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             RezData = new RezDataBlock();
             InventoryData = new InventoryDataBlock();
@@ -51435,6 +51547,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 294;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             RezData = new RezDataBlock();
             NotecardData = new NotecardDataBlock();
@@ -53128,6 +53241,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 304;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             UpdateBlock = new UpdateBlockBlock();
             InventoryBlock = new InventoryBlockBlock();
@@ -53376,6 +53490,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 305;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             InventoryBlock = new InventoryBlockBlock();
         }
@@ -53618,6 +53733,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 306;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             EventData = new EventDataBlock();
             InventoryBlock = new InventoryBlockBlock();
@@ -54091,6 +54207,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 311;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -54263,6 +54380,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 313;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -54435,6 +54553,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 314;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
         }
 
@@ -54656,6 +54775,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 315;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             TargetBlock = new TargetBlockBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -56188,6 +56308,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 324;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             StartLocationData = new StartLocationDataBlock();
         }
@@ -56702,6 +56823,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 339;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
         }
@@ -57117,6 +57239,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 341;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
         }
@@ -57494,6 +57617,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 343;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
         }
@@ -59185,6 +59309,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 352;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
         }
@@ -59375,6 +59500,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 353;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -59720,6 +59846,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 354;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -59910,6 +60037,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 355;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -60188,6 +60316,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 356;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
             HistoryData = new HistoryDataBlock[0];
@@ -60401,6 +60530,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 357;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
         }
@@ -60726,6 +60856,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 358;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
             HistoryData = new HistoryDataBlock[0];
@@ -61321,6 +61452,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 360;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
             ProposalData = new ProposalDataBlock[0];
@@ -62008,6 +62140,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 362;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
             HistoryItemData = new HistoryItemDataBlock();
@@ -62251,6 +62384,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 363;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ProposalData = new ProposalDataBlock();
         }
@@ -62913,6 +63047,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 367;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
             MemberData = new MemberDataBlock[0];
@@ -63066,6 +63201,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 368;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
         }
 
@@ -64683,6 +64819,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 376;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock[0];
         }
@@ -65672,6 +65809,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 382;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             WearableData = new WearableDataBlock[0];
         }
@@ -65866,6 +66004,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 383;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             WearableData = new WearableDataBlock[0];
         }
@@ -66646,6 +66785,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 387;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
         }
 
@@ -66799,6 +66939,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 388;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentGroupData = new AgentGroupDataBlock[0];
         }
 
@@ -67027,6 +67168,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 389;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock[0];
         }
@@ -67171,6 +67313,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 390;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
         }
 
@@ -67720,6 +67863,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 395;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -68023,6 +68167,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 396;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
             ObjectData = new ObjectDataBlock[0];
@@ -69353,6 +69498,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 404;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
             ParamList = new ParamListBlock[0];
         }
@@ -72262,6 +72408,7 @@ namespace OpenMetaverse.Packets
             Header = new LowHeader();
             Header.ID = 423;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
         }
@@ -73084,6 +73231,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 1;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -73284,6 +73432,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 2;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -73481,6 +73630,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 3;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -73678,6 +73828,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 4;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -73875,6 +74026,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 5;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
         }
@@ -74872,6 +75024,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 9;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             ObjectData = new ObjectDataBlock[0];
         }
 
@@ -75127,6 +75280,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 10;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             ObjectData = new ObjectDataBlock();
         }
 
@@ -75330,6 +75484,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 11;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
         }
@@ -75950,6 +76105,7 @@ namespace OpenMetaverse.Packets
             Header = new MediumHeader();
             Header.ID = 17;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Effect = new EffectBlock[0];
         }
@@ -76382,6 +76538,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 4;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
         }
 
@@ -76833,6 +76990,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 6;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TargetObject = new TargetObjectBlock();
         }
@@ -78281,6 +78439,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 12;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             RegionData = new RegionDataBlock();
             ObjectData = new ObjectDataBlock[0];
         }
@@ -80138,6 +80297,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 21;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             SitObject = new SitObjectBlock();
             SitTransform = new SitTransformBlock();
         }
@@ -80260,6 +80420,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 22;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             CameraCollidePlane = new CameraCollidePlaneBlock();
         }
 
@@ -80774,6 +80935,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 23;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             ParcelData = new ParcelDataBlock();
             AgeVerificationBlock = new AgeVerificationBlockBlock();
         }
@@ -81324,6 +81486,7 @@ namespace OpenMetaverse.Packets
             Header = new HighHeader();
             Header.ID = 25;
             Header.Reliable = true;
+            Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock[0];
             AnimationData = new AnimationDataBlock[0];

@@ -41,17 +41,17 @@ namespace mapgenerator
         /// <summary></summary>
 		F64,
         /// <summary></summary>
-		UUID,
+		LLUUID,
         /// <summary></summary>
 		BOOL,
         /// <summary></summary>
-		Vector3,
+		LLVector3,
         /// <summary></summary>
-		Vector3d,
+		LLVector3d,
         /// <summary></summary>
-		Vector4,
+		LLVector4,
         /// <summary></summary>
-		Quaternion,
+		LLQuaternion,
         /// <summary></summary>
 		IPADDR,
         /// <summary></summary>
@@ -207,12 +207,12 @@ namespace mapgenerator
 			TypeSizes.Add(FieldType.S32, 4);
 			TypeSizes.Add(FieldType.F32, 4);
 			TypeSizes.Add(FieldType.F64, 8);
-			TypeSizes.Add(FieldType.UUID, 16);
+            TypeSizes.Add(FieldType.LLUUID, 16);
 			TypeSizes.Add(FieldType.BOOL, 1);
-			TypeSizes.Add(FieldType.Vector3, 12);
-			TypeSizes.Add(FieldType.Vector3d, 24);
-			TypeSizes.Add(FieldType.Vector4, 16);
-			TypeSizes.Add(FieldType.Quaternion, 16);
+            TypeSizes.Add(FieldType.LLVector3, 12);
+            TypeSizes.Add(FieldType.LLVector3d, 24);
+            TypeSizes.Add(FieldType.LLVector4, 16);
+            TypeSizes.Add(FieldType.LLQuaternion, 16);
 			TypeSizes.Add(FieldType.IPADDR, 4);
 			TypeSizes.Add(FieldType.IPPORT, 2);
 			TypeSizes.Add(FieldType.Variable, -1);
@@ -347,7 +347,7 @@ namespace mapgenerator
 				{
 					writer.WriteLine("{0} {1,5} - {2} - {3} - {4}", frequency, i, map[i].Name,
 						map[i].Trusted ? "Trusted" : "Untrusted",
-						map[i].Encoded ? "Unencoded" : "Zerocoded");
+                        map[i].Encoded ? "Zerocoded" : "Unencoded");
 
 					foreach (MapBlock block in map[i].Blocks)
 					{
@@ -529,7 +529,7 @@ namespace mapgenerator
 										LowMaps[packetID].Frequency = PacketFrequency.Low;
 										LowMaps[packetID].Name = tokens[0];
 										LowMaps[packetID].Trusted = (tokens[2] == "Trusted");
-										LowMaps[packetID].Encoded = (tokens[3] == "Zerocoded");
+										LowMaps[packetID].Encoded = (tokens[4] == "Zerocoded");
 										LowMaps[packetID].Blocks = new List<MapBlock>();
 
 										currentPacket = LowMaps[packetID];
@@ -542,7 +542,7 @@ namespace mapgenerator
 										MediumMaps[packetID].Frequency = PacketFrequency.Medium;
 										MediumMaps[packetID].Name = tokens[0];
 										MediumMaps[packetID].Trusted = (tokens[2] == "Trusted");
-										MediumMaps[packetID].Encoded = (tokens[3] == "Zerocoded");
+										MediumMaps[packetID].Encoded = (tokens[4] == "Zerocoded");
 										MediumMaps[packetID].Blocks = new List<MapBlock>();
 
 										currentPacket = MediumMaps[packetID];
@@ -555,7 +555,7 @@ namespace mapgenerator
 										HighMaps[packetID].Frequency = PacketFrequency.High;
 										HighMaps[packetID].Name = tokens[0];
 										HighMaps[packetID].Trusted = (tokens[2] == "Trusted");
-										HighMaps[packetID].Encoded = (tokens[3] == "Zerocoded");
+										HighMaps[packetID].Encoded = (tokens[4] == "Zerocoded");
 										HighMaps[packetID].Blocks = new List<MapBlock>();
 
 										currentPacket = HighMaps[packetID];

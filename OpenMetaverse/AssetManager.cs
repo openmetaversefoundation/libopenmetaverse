@@ -96,42 +96,10 @@ namespace OpenMetaverse
         Simstate = 22,
     }
 
-    public static class AssetTypeParser
+    public enum EstateAssetType : int
     {
-        private static readonly ReversableDictionary<string, AssetType> AssetTypeMap = new ReversableDictionary<string, AssetType>();
-        static AssetTypeParser() 
-        {
-            AssetTypeMap.Add("animatn", AssetType.Animation);
-            AssetTypeMap.Add("clothing", AssetType.Clothing);
-            AssetTypeMap.Add("callcard", AssetType.CallingCard);
-            AssetTypeMap.Add("object", AssetType.Object);
-            AssetTypeMap.Add("texture", AssetType.Texture);
-            AssetTypeMap.Add("sound", AssetType.Sound);
-            AssetTypeMap.Add("bodypart", AssetType.Bodypart);
-            AssetTypeMap.Add("gesture", AssetType.Gesture);
-            AssetTypeMap.Add("lsltext", AssetType.LSLText);
-            AssetTypeMap.Add("landmark", AssetType.Landmark);
-            AssetTypeMap.Add("notecard", AssetType.Notecard);
-            AssetTypeMap.Add("category", AssetType.Folder);
-        }
-
-        public static AssetType Parse(string str)
-        {
-            AssetType t;
-            if (AssetTypeMap.TryGetValue(str, out t))
-                return t;
-            else
-                return AssetType.Unknown;
-        }
-
-        public static string StringValueOf(AssetType type)
-        {
-            string str;
-            if (AssetTypeMap.TryGetKey(type, out str))
-                return str;
-            else
-                return "unknown";
-        }
+        None = -1,
+        Covenant = 0
     }
 
     /// <summary>
@@ -177,14 +145,11 @@ namespace OpenMetaverse
     {
         /// <summary></summary>
         Unknown = 0,
-        // <summary>Arbitrary system files off the server</summary>
-        //[Obsolete]
-        //File = 1,
         /// <summary>Asset from the asset server</summary>
         Asset = 2,
         /// <summary>Inventory item</summary>
         SimInventoryItem = 3,
-        /// <summary></summary>
+        /// <summary>Estate asset, such as an estate covenant</summary>
         SimEstate = 4
     }
 
@@ -196,9 +161,9 @@ namespace OpenMetaverse
         /// <summary></summary>
         Unknown = 0,
         /// <summary></summary>
-        File,
+        File = 1,
         /// <summary></summary>
-        VFile
+        VFile = 2
     }
 
     /// <summary>
@@ -212,7 +177,60 @@ namespace OpenMetaverse
         Baked = 1
     }
 
+    public enum TransferError : int
+    {
+        None = 0,
+        Failed = -1,
+        AssetNotFound = -3,
+        AssetNotFoundInDatabase = -4,
+        InsufficientPermissions = -5,
+        EOF = -39,
+        CannotOpenFile = -42,
+        FileNotFound = -43,
+        FileIsEmpty = -44,
+        TCPTimeout = -23016,
+        CircuitGone = -23017
+    }
+
     #endregion Enums
+
+    public static class AssetTypeParser
+    {
+        private static readonly ReversableDictionary<string, AssetType> AssetTypeMap = new ReversableDictionary<string, AssetType>();
+        static AssetTypeParser()
+        {
+            AssetTypeMap.Add("animatn", AssetType.Animation);
+            AssetTypeMap.Add("clothing", AssetType.Clothing);
+            AssetTypeMap.Add("callcard", AssetType.CallingCard);
+            AssetTypeMap.Add("object", AssetType.Object);
+            AssetTypeMap.Add("texture", AssetType.Texture);
+            AssetTypeMap.Add("sound", AssetType.Sound);
+            AssetTypeMap.Add("bodypart", AssetType.Bodypart);
+            AssetTypeMap.Add("gesture", AssetType.Gesture);
+            AssetTypeMap.Add("lsltext", AssetType.LSLText);
+            AssetTypeMap.Add("landmark", AssetType.Landmark);
+            AssetTypeMap.Add("notecard", AssetType.Notecard);
+            AssetTypeMap.Add("category", AssetType.Folder);
+        }
+
+        public static AssetType Parse(string str)
+        {
+            AssetType t;
+            if (AssetTypeMap.TryGetValue(str, out t))
+                return t;
+            else
+                return AssetType.Unknown;
+        }
+
+        public static string StringValueOf(AssetType type)
+        {
+            string str;
+            if (AssetTypeMap.TryGetKey(type, out str))
+                return str;
+            else
+                return "unknown";
+        }
+    }
 
     #region Transfer Classes
 
@@ -598,8 +616,7 @@ namespace OpenMetaverse
                 {
                     if (null != OnImageReceived)
                     {
-                        AssetTexture asset = new AssetTexture(transfer.AssetData);
-                        asset.AssetID = transfer.ID;
+                        AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
                         try { OnImageReceived(transfer, asset); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -690,8 +707,7 @@ namespace OpenMetaverse
                     {
                         if (null != OnImageReceived)
                         {
-                            AssetTexture asset = new AssetTexture(transfer.AssetData);
-                            asset.AssetID = transfer.ID;
+                            AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
                             try { OnImageReceived(transfer, asset); }
                             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -1312,8 +1328,7 @@ namespace OpenMetaverse
 
                 if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
                 {
-                    AssetTexture asset = new AssetTexture(transfer.AssetData);
-                    asset.AssetID = transfer.ID;
+                    AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
                     try { OnImageReceived(transfer, asset); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -1387,8 +1402,7 @@ namespace OpenMetaverse
 
             if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
             {
-                AssetTexture asset = new AssetTexture(transfer.AssetData);
-                asset.AssetID = transfer.ID;
+                AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
                 try { OnImageReceived(transfer, asset); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }

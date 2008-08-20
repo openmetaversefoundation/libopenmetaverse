@@ -114,8 +114,9 @@ namespace OpenMetaverse
 
         public Asset() { }
 
-        public Asset(byte[] assetData)
+        public Asset(UUID assetID, byte[] assetData)
         {
+            _AssetID = assetID;
             AssetData = assetData;
         }
 
@@ -141,7 +142,7 @@ namespace OpenMetaverse
 
         public AssetNotecard() { }
         
-        public AssetNotecard(byte[] assetData) : base(assetData) 
+        public AssetNotecard(UUID assetID, byte[] assetData) : base(assetID, assetData) 
         {
             Decode();
         }
@@ -176,8 +177,8 @@ namespace OpenMetaverse
         public string Source;
 
         public AssetScriptText() { }
-        
-        public AssetScriptText(byte[] assetData) : base(assetData) { }
+
+        public AssetScriptText(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
         
         public AssetScriptText(string source)
         {
@@ -203,8 +204,9 @@ namespace OpenMetaverse
         public byte[] Bytecode;
 
         public AssetScriptBinary() { }
-        
-        public AssetScriptBinary(byte[] assetData) : base (assetData)
+
+        public AssetScriptBinary(UUID assetID, byte[] assetData)
+            : base(assetID, assetData)
         {
             Bytecode = assetData;
         }
@@ -221,7 +223,7 @@ namespace OpenMetaverse
         
         public AssetTexture() { }
 
-        public AssetTexture(byte[] assetData) : base(assetData) { }
+        public AssetTexture(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
         
         public AssetTexture(ManagedImage image)
         {
@@ -295,7 +297,7 @@ namespace OpenMetaverse
 
         public AssetWearable() { }
 
-        public AssetWearable(byte[] assetData) : base(assetData) { }
+        public AssetWearable(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
 
         public AssetWearable(string source)
         {
@@ -479,7 +481,7 @@ namespace OpenMetaverse
         public override AssetType AssetType { get { return AssetType.Clothing; } }
 
         public AssetClothing() { }
-        public AssetClothing(byte[] assetData) : base(assetData) { }
+        public AssetClothing(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
         public AssetClothing(string source) : base(source) { }
     }
 
@@ -488,7 +490,7 @@ namespace OpenMetaverse
         public override AssetType AssetType { get { return AssetType.Bodypart; } }
 
         public AssetBodypart() { }
-        public AssetBodypart(byte[] assetData) : base(assetData) { }
+        public AssetBodypart(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
         public AssetBodypart(string source) : base(source) { }
     }
 }
