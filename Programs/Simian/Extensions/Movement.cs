@@ -9,9 +9,10 @@ namespace Simian.Extensions
 {
     public class Movement : ISimianExtension
     {
-        Simian Server;
-        Timer UpdateTimer;
-        long _LastTick;
+        Simian server;
+        Timer updateTimer;
+        long lastTick;
+        int animationSerialNum;
 
         const int UPDATE_ITERATION = 100;
 
@@ -23,31 +24,31 @@ namespace Simian.Extensions
 
         public int LastTick
         {
-            get { return (int) Interlocked.Read(ref _LastTick); }
-            set { Interlocked.Exchange(ref _LastTick, value); }
+            get { return (int) Interlocked.Read(ref lastTick); }
+            set { Interlocked.Exchange(ref lastTick, value); }
         }
 
         public Movement(Simian server)
         {
-            Server = server;
+            this.server = server;
         }
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentHeightWidth, new UDPServer.PacketCallback(AgentHeightWidthHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.SetAlwaysRun, new UDPServer.PacketCallback(SetAlwaysRunHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.AgentHeightWidth, new UDPServer.PacketCallback(AgentHeightWidthHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.SetAlwaysRun, new UDPServer.PacketCallback(SetAlwaysRunHandler));
+            server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
 
-            UpdateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
+            updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             LastTick = Environment.TickCount;
-            UpdateTimer.Change(UPDATE_ITERATION, UPDATE_ITERATION);
+            updateTimer.Change(UPDATE_ITERATION, UPDATE_ITERATION);
         }
 
         public void Stop()
         {
-            UpdateTimer.Dispose();
+            updateTimer.Dispose();
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -56,9 +57,9 @@ namespace Simian.Extensions
             float seconds = (float)((tick  - LastTick) / 1000f);
             LastTick = tick;
 
-            lock (Server.Agents)
+            lock (server.Agents)
             {
-                foreach (Agent agent in Server.Agents.Values)
+                foreach (Agent agent in server.Agents.Values)
                 {
                     agent.Avatar.Velocity.X = 0f;
 
@@ -130,31 +131,31 @@ namespace Simian.Extensions
             agent.State = update.AgentData.State;
             agent.Flags = (LLObject.ObjectFlags)update.AgentData.Flags;
 
-            lock (Server.Agents)
+            lock (server.Agents)
             {
-                ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, Server.RegionHandle,
+                ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, server.RegionHandle,
                     agent.State, agent.Flags);
 
-                foreach (Agent recipient in Server.Agents.Values)
+                foreach (Agent recipient in server.Agents.Values)
                 {
                     recipient.SendPacket(fullUpdate);
 
-                    /*
+                    
                     if (agent.Animations.Count == 0) //TODO: need to start default standing animation
                     {
-                        agent.Animations.Add(ANIM_STAND);
+                        agent.Animations.Add(Animations.STAND);
 
                         AgentAnimationPacket startAnim = new AgentAnimationPacket();
                         startAnim.AgentData.AgentID = agent.AgentID;
                         startAnim.AnimationList = new AgentAnimationPacket.AnimationListBlock[1];
                         startAnim.AnimationList[0] = new AgentAnimationPacket.AnimationListBlock();
-                        startAnim.AnimationList[0].AnimID = ANIM_STAND;
+                        startAnim.AnimationList[0].AnimID = Animations.STAND;
                         startAnim.AnimationList[0].StartAnim = true;
                         startAnim.PhysicalAvatarEventList = new AgentAnimationPacket.PhysicalAvatarEventListBlock[0];
 
                         recipient.SendPacket(startAnim);
                     }
-                    */
+                    
                 }
             }
         }
@@ -176,18 +177,18 @@ namespace Simian.Extensions
             if (y > 255) y = 255;
             else if (y < 0) y = 0;
 
-            float center = Server.Heightmap[y * 256 + x];
+            float center = server.Heightmap[y * 256 + x];
             float distX = position.X - (int)position.X;
             float distY = position.Y - (int)position.Y;
 
             float nearestX;
             float nearestY;
 
-            if (distX > 0) nearestX = Server.Heightmap[y * 256 + x + (x < 255 ? 1 : 0)];
-            else nearestX = Server.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
+            if (distX > 0) nearestX = server.Heightmap[y * 256 + x + (x < 255 ? 1 : 0)];
+            else nearestX = server.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
 
-            if (distY > 0) nearestY = Server.Heightmap[(y + (y < 255 ? 1 : 0)) * 256 + x];
-            else nearestY = Server.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
+            if (distY > 0) nearestY = server.Heightmap[(y + (y < 255 ? 1 : 0)) * 256 + x];
+            else nearestY = server.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
 
             float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
             float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
@@ -197,25 +198,46 @@ namespace Simian.Extensions
 
         void AgentAnimationHandler(Packet packet, Agent agent)
         {
-            AgentAnimationPacket anim = (AgentAnimationPacket)packet;
-            anim.AgentData.SessionID = UUID.Zero;
+            AgentAnimationPacket animPacket = (AgentAnimationPacket)packet;
+
+            List<UUID> startAnims = new List<UUID>();
+            List<UUID> stopAnims = new List<UUID>();
+
+            foreach (AgentAnimationPacket.AnimationListBlock block in animPacket.AnimationList)
+            {
+                if (block.StartAnim) startAnims.Add(block.AnimID);
+                else stopAnims.Add(block.AnimID);
+            }
 
             lock (agent.Animations)
             {
-                foreach (AgentAnimationPacket.AnimationListBlock block in anim.AnimationList)
-                {
-                    if (agent.Animations.Contains(block.AnimID))
-                    {
-                        if (!block.StartAnim) agent.Animations.Remove(block.AnimID);
-                    }
-                    else if (block.StartAnim) agent.Animations.Add(block.AnimID);
-                }
+                foreach (UUID anim in stopAnims)
+                    if (agent.Animations.Contains(anim)) agent.Animations.Remove(anim);
+
+                foreach (UUID anim in startAnims)
+                    if (!agent.Animations.Contains(anim)) agent.Animations.Add(anim);
+            }            
+
+            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
+            sendAnim.Sender.ID = agent.AgentID;
+            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[agent.Animations.Count];
+            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[agent.Animations.Count];
+
+            int i = 0;
+            foreach(UUID anim in agent.Animations)
+            {
+                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
+                sendAnim.AnimationList[i].AnimID = anim;
+                sendAnim.AnimationList[i].AnimSequenceID = (int)Interlocked.Increment(ref animationSerialNum);
+                sendAnim.AnimationSourceList[i] = new AvatarAnimationPacket.AnimationSourceListBlock();
+                sendAnim.AnimationSourceList[i].ObjectID = agent.AgentID;
+                i++;
             }
 
-            lock (Server.Agents)
+            lock (server.Agents)
             {
-                foreach (Agent recipient in Server.Agents.Values)
-                    recipient.SendPacket(anim);
+                foreach (Agent recipient in server.Agents.Values)
+                    recipient.SendPacket(sendAnim);
             }
         }
 
@@ -235,9 +257,9 @@ namespace Simian.Extensions
             effect.AgentData.SessionID = UUID.Zero;
 
             // Broadcast this to everyone
-            lock (Server.Agents)
+            lock (server.Agents)
             {
-                foreach (Agent recipient in Server.Agents.Values)
+                foreach (Agent recipient in server.Agents.Values)
                     recipient.SendPacket(effect);
             }
         }
