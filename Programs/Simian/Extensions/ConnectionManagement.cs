@@ -2,7 +2,7 @@ using System;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian
+namespace Simian.Extensions
 {
     public class ConnectionManagement : ISimianExtension
     {

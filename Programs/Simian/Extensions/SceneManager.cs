@@ -9,13 +9,12 @@ using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
 
-namespace Simian
+namespace Simian.Extensions
 {
     public class SceneManager : ISimianExtension
     {
         Simian server;
         int currentLocalID = 0;
-        int currentWearablesSerialNum = 0;
 
         public SceneManager(Simian server)
         {
@@ -25,8 +24,6 @@ namespace Simian
         public void Start()
         {
             server.UDPServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
-            server.UDPServer.RegisterPacketCallback(PacketType.AgentWearablesRequest, new UDPServer.PacketCallback(AgentWearablesRequestHandler));
-
             LoadTerrain("Maps/default.tga");
         }
 
@@ -44,7 +41,11 @@ namespace Simian
             avatar.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
             avatar.Position = new Vector3(128f, 128f, 25f);
             avatar.Rotation = Quaternion.Identity;
-            avatar.Scale = new Vector3(1f, 1f, 3f);
+            avatar.Scale = new Vector3(0.45f, 0.6f, 1.9f);
+
+            // Create a default outfit for the avatar
+            LLObject.TextureEntry te = new LLObject.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
+            avatar.Textures = te;
 
             // Set the avatar name
             NameValue[] name = new NameValue[2];
@@ -72,26 +73,6 @@ namespace Simian
             agent.SendPacket(complete);
 
             SendLayerData(agent);
-        }
-
-        void AgentWearablesRequestHandler(Packet packet, Agent agent)
-        {
-            AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
-            update.AgentData.AgentID = agent.AgentID;
-            update.AgentData.SessionID = agent.SessionID;
-            // Technically this should be per-agent, but if the only requirement is that it
-            // increments this is easier
-            update.AgentData.SerialNum = (uint)Interlocked.Increment(ref currentWearablesSerialNum);
-            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[4];
-            for (int i = 0; i < 4; i++)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = UUID.Zero;
-                update.WearableData[i].ItemID = UUID.Zero;
-                update.WearableData[i].WearableType = 42; // HACK
-            }
-
-            agent.SendPacket(update);
         }
 
         void LoadTerrain(string mapFile)

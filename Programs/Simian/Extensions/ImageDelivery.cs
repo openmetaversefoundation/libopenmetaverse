@@ -1,17 +1,17 @@
-using OpenMetaverse;
-using OpenMetaverse.Imaging;
-using OpenMetaverse.Packets;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
+using OpenMetaverse;
+using OpenMetaverse.Imaging;
+using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
     public class ImageDelivery : ISimianExtension
     {
         Simian Server;
-        Bitmap DefaultImage;
+        byte[] DefaultJP2;
+        byte[] DefaultBakedJP2;
 
         public ImageDelivery(Simian server)
         {
@@ -22,12 +22,22 @@ namespace Simian.Extensions
         {
             Server.UDPServer.RegisterPacketCallback(PacketType.RequestImage, new UDPServer.PacketCallback(RequestImageHandler));
 
-            if (DefaultImage != null) DefaultImage = null;
-            DefaultImage = new Bitmap(32, 32);
-            Graphics gfx = Graphics.FromImage(DefaultImage);
+            Bitmap defaultImage = new Bitmap(32, 32);
+            Graphics gfx = Graphics.FromImage(defaultImage);
             gfx.Clear(Color.White);
             gfx.FillRectangles(Brushes.LightGray, new Rectangle[] { new Rectangle(16, 16, 16, 16), new Rectangle(0, 0, 16, 16) });
-            gfx.DrawImage(DefaultImage, 0, 0, 32, 32);  
+            gfx.DrawImage(defaultImage, 0, 0, 32, 32);
+
+            ManagedImage defaultManaged = new ManagedImage(defaultImage);
+
+            ManagedImage defaultBaked = new ManagedImage(defaultImage);
+            defaultBaked.Channels = ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha |
+                ManagedImage.ImageChannels.Bump;
+            defaultBaked.Alpha = defaultBaked.Red;
+            defaultBaked.Bump = defaultBaked.Red;
+
+            DefaultJP2 = OpenJPEG.Encode(defaultManaged, true);
+            DefaultBakedJP2 = OpenJPEG.Encode(defaultBaked, true);
         }
 
         public void Stop()
@@ -38,22 +48,29 @@ namespace Simian.Extensions
         {
             RequestImagePacket request = (RequestImagePacket)packet;
 
-            foreach (RequestImagePacket.RequestImageBlock block in request.RequestImage)
+            for (int i = 0; i < request.RequestImage.Length; i++)
             {
-                //ImageNotInDatabasePacket missing = new ImageNotInDatabasePacket();
-                //missing.ImageID.ID = block.Image;
-                //agent.SendPacket(missing);
+                RequestImagePacket.RequestImageBlock block = request.RequestImage[i];
+                bool bake = ((ImageType)block.Type == ImageType.Baked);
 
                 ImageDataPacket imageData = new ImageDataPacket();
-                imageData.ImageData.Data = OpenJPEG.EncodeFromImage(DefaultImage, true);
                 imageData.ImageID.ID = block.Image;
                 imageData.ImageID.Codec = 1;
                 imageData.ImageID.Packets = 1;
+                if (bake)
+                {
+                    Logger.DebugLog("Sending default bake texture");
+                    imageData.ImageData.Data = DefaultBakedJP2;
+                }
+                else
+                {
+                    Logger.DebugLog("Sending default texture");
+                    imageData.ImageData.Data = DefaultJP2;
+                }
                 imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
 
                 agent.SendPacket(imageData);
             }
         }
-
     }
 }

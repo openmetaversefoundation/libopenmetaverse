@@ -24,15 +24,17 @@ namespace Simian.Extensions
         public void Start()
         {
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.AgentHeightWidth, new UDPServer.PacketCallback(AgentHeightWidthHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.SetAlwaysRun, new UDPServer.PacketCallback(SetAlwaysRunHandler));
-            if (UpdateTimer != null) UpdateTimer = null;
+            Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
+
             UpdateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             UpdateTimer.Change(100, 100);
         }
 
         public void Stop()
         {
-            UpdateTimer = null;
+            UpdateTimer.Dispose();
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -92,7 +94,6 @@ namespace Simian.Extensions
                     else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
 
                     if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
-
                 }
             }
         }
@@ -105,11 +106,17 @@ namespace Simian.Extensions
             {
                 agent.Avatar.Rotation = update.AgentData.BodyRotation;
                 agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
+                agent.State = update.AgentData.State;
+                //agent.Flags = (LLObject.ObjectFlags)update.AgentData.Flags;
 
-                ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, update.AgentData.State, update.AgentData.Flags);
+                ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, Server.RegionHandle,
+                    agent.State, agent.Flags);
 
-                foreach (Agent recipient in Server.Agents.Values)
-                    recipient.SendPacket(fullUpdate);                    
+                lock (Server.Agents)
+                {
+                    foreach (Agent recipient in Server.Agents.Values)
+                        recipient.SendPacket(fullUpdate);
+                }
             }
         }
 
@@ -149,7 +156,22 @@ namespace Simian.Extensions
             return ((lerpX + lerpY) / 2);
         }
 
-        ObjectUpdatePacket BuildFullUpdate(Agent agent, LLObject obj, byte state, uint flags)
+        void AgentHeightWidthHandler(Packet packet, Agent agent)
+        {
+            AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
+
+            Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
+                heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
+        }
+
+        void ViewerEffectHandler(Packet packet, Agent agent)
+        {
+            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
+
+            // TODO: Do something with these
+        }
+
+        public static ObjectUpdatePacket BuildFullUpdate(Agent agent, LLObject obj, ulong regionHandle, byte state, LLObject.ObjectFlags flags)
         {
             byte[] objectData = new byte[60];
             int pos = 0;
@@ -164,7 +186,7 @@ namespace Simian.Extensions
             agent.Avatar.AngularVelocity.GetBytes().CopyTo(objectData, pos);
 
             ObjectUpdatePacket update = new ObjectUpdatePacket();
-            update.RegionData.RegionHandle = Server.RegionHandle;
+            update.RegionData.RegionHandle = regionHandle;
             update.RegionData.TimeDilation = Helpers.FloatToByte(1f, 0f, 1f);
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
             update.ObjectData[0] = new ObjectUpdatePacket.ObjectDataBlock();
@@ -178,19 +200,19 @@ namespace Simian.Extensions
             update.ObjectData[0].JointAxisOrAnchor = Vector3.Zero;
             update.ObjectData[0].JointPivot = Vector3.Zero;
             update.ObjectData[0].JointType = (byte)0;
-            update.ObjectData[0].Material = (byte)3;
+            update.ObjectData[0].Material = (byte)LLObject.MaterialType.Flesh;
             update.ObjectData[0].MediaURL = new byte[0];
             update.ObjectData[0].NameValue = Utils.StringToBytes(NameValue.NameValuesToString(agent.Avatar.NameValues));
             update.ObjectData[0].ObjectData = objectData;
             update.ObjectData[0].OwnerID = UUID.Zero;
             update.ObjectData[0].ParentID = 0;
             update.ObjectData[0].PathBegin = 0;
-            update.ObjectData[0].PathCurve = (byte)32;
+            update.ObjectData[0].PathCurve = (byte)16;
             update.ObjectData[0].PathEnd = 0;
             update.ObjectData[0].PathRadiusOffset = (sbyte)0;
             update.ObjectData[0].PathRevolutions = (byte)0;
             update.ObjectData[0].PathScaleX = (byte)100;
-            update.ObjectData[0].PathScaleY = (byte)150;
+            update.ObjectData[0].PathScaleY = (byte)100;
             update.ObjectData[0].PathShearX = (byte)0;
             update.ObjectData[0].PathShearY = (byte)0;
             update.ObjectData[0].PathSkew = (sbyte)0;
@@ -200,23 +222,22 @@ namespace Simian.Extensions
             update.ObjectData[0].PathTwistBegin = (sbyte)0;
             update.ObjectData[0].PCode = (byte)PCode.Avatar;
             update.ObjectData[0].ProfileBegin = 0;
-            update.ObjectData[0].ProfileCurve = (byte)0;
+            update.ObjectData[0].ProfileCurve = (byte)1;
             update.ObjectData[0].ProfileEnd = 0;
             update.ObjectData[0].ProfileHollow = 0;
             update.ObjectData[0].PSBlock = new byte[0];
             update.ObjectData[0].TextColor = Vector3.Zero.GetBytes();
             update.ObjectData[0].TextureAnim = new byte[0];
-            update.ObjectData[0].TextureEntry = new byte[63];
+            update.ObjectData[0].TextureEntry = obj.Textures.ToBytes();
             update.ObjectData[0].Radius = 0f;
             update.ObjectData[0].Scale = obj.Scale;
             update.ObjectData[0].Sound = UUID.Zero;
             update.ObjectData[0].State = state;
             update.ObjectData[0].Text = new byte[0];
-            update.ObjectData[0].UpdateFlags = flags;
+            update.ObjectData[0].UpdateFlags = (uint)flags;
             update.ObjectData[0].Data = new byte[0];
 
             return update;
         }
-
     }
 }

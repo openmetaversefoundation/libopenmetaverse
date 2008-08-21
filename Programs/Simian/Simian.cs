@@ -18,6 +18,7 @@ namespace Simian
         public Dictionary<uint, Primitive> SceneObjects = new Dictionary<uint, Primitive>();
         public ulong RegionHandle;
         public float[] Heightmap = new float[65536];
+        public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<IPEndPoint, Agent> Agents = new Dictionary<IPEndPoint, Agent>();
@@ -254,6 +255,29 @@ namespace Simian
             agent.SessionID = UUID.Random();
             agent.SecureSessionID = UUID.Random();
             agent.CircuitCode = CreateAgentCircuit(agent);
+            agent.InventoryRoot = UUID.Random();
+            agent.InventoryLibRoot = UUID.Random();
+            agent.Flags = LLObject.ObjectFlags.Physics | LLObject.ObjectFlags.ObjectModify | LLObject.ObjectFlags.ObjectCopy |
+                LLObject.ObjectFlags.ObjectAnyOwner | LLObject.ObjectFlags.ObjectMove | LLObject.ObjectFlags.InventoryEmpty |
+                LLObject.ObjectFlags.ObjectTransfer | LLObject.ObjectFlags.ObjectOwnerModify | LLObject.ObjectFlags.ObjectYouOwner;
+
+            // Setup the agent inventory
+            InventoryFolder rootFolder = new InventoryFolder();
+            rootFolder.ID = agent.InventoryRoot;
+            rootFolder.Name = "Inventory";
+            rootFolder.OwnerID = agent.AgentID;
+            rootFolder.PreferredType = AssetType.RootFolder;
+            rootFolder.Version = 1;
+            agent.Inventory[rootFolder.ID] = rootFolder;
+
+            // Setup the default library
+            InventoryFolder libRootFolder = new InventoryFolder();
+            libRootFolder.ID = agent.InventoryLibRoot;
+            libRootFolder.Name = "Library";
+            libRootFolder.OwnerID = agent.AgentID;
+            libRootFolder.PreferredType = AssetType.RootFolder;
+            libRootFolder.Version = 1;
+            agent.Library[libRootFolder.ID] = libRootFolder;
 
             IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
             IPAddress simIP = addresses.AddressList.Length > 0 ? addresses.AddressList[0] : IPAddress.Loopback;
@@ -271,12 +295,12 @@ namespace Simian
             response.HomeLookAt = Vector3.UnitX;
             response.HomePosition = new Vector3(128f, 128f, 25f);
             response.HomeRegion = Helpers.UIntsToLong(regionX, regionY);
-            response.InventorySkeleton = null;
-            response.InventoryRoot = UUID.Random();
+            response.InventoryRoot = agent.InventoryRoot;
+            response.InventoryFolders = null;
             response.LastName = agent.LastName;
-            response.LibrarySkeleton = null;
             response.LibraryOwner = response.AgentID;
-            response.LibraryRoot = UUID.Random();
+            response.LibraryRoot = agent.InventoryLibRoot;
+            response.LibraryFolders = null;
             response.LookAt = Vector3.UnitX;
             response.Message = "Welcome to Simian";
             response.Reason = String.Empty;

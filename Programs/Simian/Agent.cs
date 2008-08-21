@@ -19,6 +19,14 @@ namespace Simian
         public int Balance;
         public bool Running;
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
+        public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();
+        public Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
+        public Dictionary<WearableType, UUID> Wearables = new Dictionary<WearableType, UUID>();
+        // TODO: Replace byte with enum
+        public byte State;
+        public LLObject.ObjectFlags Flags;
+        public UUID InventoryRoot;
+        public UUID InventoryLibRoot;
 
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>
         internal Queue<uint> packetArchive = new Queue<uint>();
