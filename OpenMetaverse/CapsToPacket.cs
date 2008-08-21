@@ -181,7 +181,7 @@ namespace OpenMetaverse.Packets
                     {
                         // uints come in as a byte array, convert it manually here
                         byte[] bytes = blockData[field.Name].AsBinary();
-                        uint value = Helpers.BytesToUIntBig(bytes);
+                        uint value = Helpers.BytesToUInt(bytes);
                         field.SetValue(block, value);
                     }
                     else if (fieldType == typeof(ushort))

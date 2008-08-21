@@ -540,7 +540,7 @@ namespace GridProxy
 
             if (uri == "/")
             {
-                if (contentType == "application/xml+llsd") {
+                if (contentType == "application/xml+llsd" || contentType == "application/xml") {
                     ProxyLoginLLSD(netStream, content);
                 } else {
                     ProxyLogin(netStream, content);
@@ -914,7 +914,7 @@ namespace GridProxy
                     else
                         info = (LLSDMap)(((LLSDArray)body["RegionData"])[0]);
                     byte[] bytes = info["SimIP"].AsBinary();
-                    uint simIP = Helpers.BytesToUIntBig(bytes);
+                    uint simIP = Helpers.BytesToUInt(bytes);
                     ushort simPort = (ushort)info["SimPort"].AsInteger();
                     string capsURL = info["SeedCapability"].AsString();
 
@@ -933,7 +933,7 @@ namespace GridProxy
                     string ipAndPort = body["sim-ip-and-port"].AsString();
                     string[] pieces = ipAndPort.Split(':');
                     byte[] bytes = IPAddress.Parse(pieces[0]).GetAddressBytes();
-                    uint simIP = (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
+                    uint simIP = Helpers.BytesToUInt(bytes);
                     ushort simPort = (ushort)Convert.ToInt32(pieces[1]);
 
                     string capsURL = body["seed-capability"].AsString();
@@ -974,14 +974,6 @@ namespace GridProxy
                         Log("exception in login request deligate: " + e.Message, true);
                         Log(e.StackTrace, true);
                     }
-
-                // add our userAgent and author to the request
-                System.Collections.Hashtable requestParams = new System.Collections.Hashtable();
-                if (proxyConfig.userAgent != null)
-                    requestParams["user-agent"] = proxyConfig.userAgent;
-                if (proxyConfig.author != null)
-                    requestParams["author"] = proxyConfig.author;
-                request.Params.Add(requestParams);
 
                 XmlRpcResponse response;
                 try
@@ -1051,7 +1043,8 @@ namespace GridProxy
             lock (this) {
                 ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
                 AutoResetEvent remoteComplete = new AutoResetEvent(false);
-                CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
+                //CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
+                CapsClient loginRequest = new CapsClient(new Uri("https://login1.aditi.lindenlab.com/cgi-bin/auth.cgi"));
                 LLSD response = null;
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(
                     delegate(CapsClient client, LLSD result, Exception error)
@@ -1064,7 +1057,7 @@ namespace GridProxy
                         remoteComplete.Set();
                     }
                     );
-                loginRequest.StartRequest(content, "application/xml+llsd");
+                loginRequest.StartRequest(content, "application/xml"); //xml+llsd
                 remoteComplete.WaitOne(30000, false);
 
                 if (response == null) {
@@ -1548,105 +1541,110 @@ namespace GridProxy
                         // pause listening and fetch the packet
                         bool needsZero = false;
                         bool needsCopy = true;
-                        int length;
-                        length = socket.EndReceiveFrom(ar, ref clientEndPoint);
+                        int length = 0;
 
-                        // interpret the packet according to the SL protocol
-                        int end = length - 1;
-                        Packet packet = OpenMetaverse.Packets.Packet.BuildPacket(receiveBuffer, ref end, zeroBuffer);
+                        try { length = socket.EndReceiveFrom(ar, ref clientEndPoint); }
+                        catch (SocketException) { }
+
+                        if (length != 0)
+                        {
+                            // interpret the packet according to the SL protocol
+                            int end = length - 1;
+                            Packet packet = OpenMetaverse.Packets.Packet.BuildPacket(receiveBuffer, ref end, zeroBuffer);
 
 #if DEBUG_SEQUENCE
 				Console.WriteLine("-> " + packet.Type + " #" + packet.Header.Sequence);
 #endif
 
-                        // check for ACKs we're waiting for
-                        packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
+                            // check for ACKs we're waiting for
+                            packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
 
-                        // modify sequence numbers to account for injections
-                        uint oldSequence = packet.Header.Sequence;
-                        packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
+                            // modify sequence numbers to account for injections
+                            uint oldSequence = packet.Header.Sequence;
+                            packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
 
-                        // keep track of sequence numbers
-                        if (packet.Header.Sequence > outgoingSequence)
-                            outgoingSequence = packet.Header.Sequence;
+                            // keep track of sequence numbers
+                            if (packet.Header.Sequence > outgoingSequence)
+                                outgoingSequence = packet.Header.Sequence;
 
-                        // check the packet for addresses that need proxying
-                        if (proxy.outgoingCheckers.ContainsKey(packet.Type))
-                        {
-                            /* if (packet.Header.Zerocoded) {
-                                length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
-                                packet.Header.Data = zeroBuffer;
-                                needsZero = false;
-                            } */
-
-                            Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Type])(packet);
-                            SwapPacket(packet, newPacket);
-                            packet = newPacket;
-                            length = packet.Header.Data.Length;
-                            needsCopy = false;
-                        }
-
-                        // pass the packet to any callback delegates
-                        if (proxy.outgoingDelegates.ContainsKey(packet.Type))
-                        {
-                            /* if (packet.Header.Zerocoded) {
-                                length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
-                                packet.Header.Data = zeroBuffer;
-                                needsCopy = true;
-                            } */
-
-                            if (needsCopy)
+                            // check the packet for addresses that need proxying
+                            if (proxy.outgoingCheckers.ContainsKey(packet.Type))
                             {
-                                byte[] newData = new byte[packet.Header.Data.Length];
-                                Array.Copy(packet.Header.Data, 0, newData, 0, packet.Header.Data.Length);
-                                packet.Header.Data = newData; // FIXME!!!
+                                /* if (packet.Header.Zerocoded) {
+                                    length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
+                                    packet.Header.Data = zeroBuffer;
+                                    needsZero = false;
+                                } */
+
+                                Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Type])(packet);
+                                SwapPacket(packet, newPacket);
+                                packet = newPacket;
+                                length = packet.Header.Data.Length;
+                                needsCopy = false;
                             }
 
-                            try
+                            // pass the packet to any callback delegates
+                            if (proxy.outgoingDelegates.ContainsKey(packet.Type))
                             {
-                                Packet newPacket = proxy.callDelegates(proxy.outgoingDelegates, packet, remoteEndPoint);
-                                if (newPacket == null)
-                                {
-                                    if ((packet.Header.Flags & Helpers.MSG_RELIABLE) != 0)
-                                        Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+                                /* if (packet.Header.Zerocoded) {
+                                    length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
+                                    packet.Header.Data = zeroBuffer;
+                                    needsCopy = true;
+                                } */
 
-                                    if ((packet.Header.Flags & Helpers.MSG_APPENDED_ACKS) != 0)
-                                        packet = proxy.SeparateAck(packet);
+                                if (needsCopy)
+                                {
+                                    byte[] newData = new byte[packet.Header.Data.Length];
+                                    Array.Copy(packet.Header.Data, 0, newData, 0, packet.Header.Data.Length);
+                                    packet.Header.Data = newData; // FIXME!!!
+                                }
+
+                                try
+                                {
+                                    Packet newPacket = proxy.callDelegates(proxy.outgoingDelegates, packet, remoteEndPoint);
+                                    if (newPacket == null)
+                                    {
+                                        if ((packet.Header.Flags & Helpers.MSG_RELIABLE) != 0)
+                                            Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+
+                                        if ((packet.Header.Flags & Helpers.MSG_APPENDED_ACKS) != 0)
+                                            packet = proxy.SeparateAck(packet);
+                                        else
+                                            packet = null;
+                                    }
                                     else
-                                        packet = null;
+                                    {
+                                        bool oldReliable = (packet.Header.Flags & Helpers.MSG_RELIABLE) != 0;
+                                        bool newReliable = (newPacket.Header.Flags & Helpers.MSG_RELIABLE) != 0;
+                                        if (oldReliable && !newReliable)
+                                            Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+                                        else if (!oldReliable && newReliable)
+                                            WaitForAck(packet, Direction.Outgoing);
+
+                                        SwapPacket(packet, newPacket);
+                                        packet = newPacket;
+                                    }
                                 }
-                                else
+                                catch (Exception e)
                                 {
-                                    bool oldReliable = (packet.Header.Flags & Helpers.MSG_RELIABLE) != 0;
-                                    bool newReliable = (newPacket.Header.Flags & Helpers.MSG_RELIABLE) != 0;
-                                    if (oldReliable && !newReliable)
-                                        Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
-                                    else if (!oldReliable && newReliable)
-                                        WaitForAck(packet, Direction.Outgoing);
-
-                                    SwapPacket(packet, newPacket);
-                                    packet = newPacket;
+                                    proxy.Log("exception in outgoing delegate: " + e.Message, true);
+                                    proxy.Log(e.StackTrace, true);
                                 }
+
+                                if (packet != null)
+                                    proxy.SendPacket(packet, remoteEndPoint, false);
                             }
-                            catch (Exception e)
+                            else
+                                proxy.SendPacket(packet, remoteEndPoint, needsZero);
+
+                            // send any packets queued for injection
+                            if (firstReceive)
                             {
-                                proxy.Log("exception in outgoing delegate: " + e.Message, true);
-                                proxy.Log(e.StackTrace, true);
+                                firstReceive = false;
+                                foreach (Packet queuedPacket in proxy.queuedIncomingInjections)
+                                    Inject(queuedPacket, Direction.Incoming);
+                                proxy.queuedIncomingInjections = new List<Packet>();
                             }
-
-                            if (packet != null)
-                                proxy.SendPacket(packet, remoteEndPoint, false);
-                        }
-                        else
-                            proxy.SendPacket(packet, remoteEndPoint, needsZero);
-
-                        // send any packets queued for injection
-                        if (firstReceive)
-                        {
-                            firstReceive = false;
-                            foreach (Packet queuedPacket in proxy.queuedIncomingInjections)
-                                Inject(queuedPacket, Direction.Incoming);
-                            proxy.queuedIncomingInjections = new List<Packet>();
                         }
                     }
                     catch (Exception e)
@@ -1931,7 +1929,7 @@ namespace GridProxy
             simPort = (ushort)fakeSim.Port;
             int i = 0;
             byte[] bytes = fakeSim.Address.GetAddressBytes();
-            simIP = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+            simIP = Helpers.BytesToUInt(bytes);
             if (simCaps != null && simCaps.Length > 0)
             {
                 CapInfo info = new CapInfo(simCaps, realSim, "SeedCapability");

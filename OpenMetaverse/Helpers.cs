@@ -276,32 +276,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Convert the first four bytes starting at the given position in
-        /// big endian ordering to an unsigned integer
-        /// </summary>
-        /// <param name="bytes">Byte array containing the uint</param>
-        /// <param name="pos">Position to start reading the uint from</param>
-        /// <returns>An unsigned integer, will be zero if a uint can't be read
-        /// at the given position</returns>
-        public static uint BytesToUIntBig(byte[] bytes, int pos)
-        {
-            if (bytes.Length < pos + 4) return 0;
-            return (uint)(bytes[pos + 3] + (bytes[pos + 2] << 8) + (bytes[pos + 1] << 16) + (bytes[pos + 0] << 24));
-        }
-
-        /// <summary>
-        /// Convert the first four bytes of the given array in big endian
-        /// ordering to an unsigned integer
-        /// </summary>
-        /// <param name="bytes">An array four bytes or longer</param>
-        /// <returns>An unsigned integer, will be zero if the array contains
-        /// less than four bytes</returns>
-        public static uint BytesToUIntBig(byte[] bytes)
-        {
-            return BytesToUIntBig(bytes, 0);
-        }
-
-        /// <summary>
         /// Convert the first eight bytes of the given array in little endian
         /// ordering to an unsigned 64-bit integer
         /// </summary>

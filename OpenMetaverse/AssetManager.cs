@@ -1230,7 +1230,9 @@ namespace OpenMetaverse
                 if (packetNum == 0)
                 {
                     // This is the first packet received in the download, the first four bytes are a network order size integer
-                    download.Size = (int)Helpers.BytesToUIntBig(xfer.DataPacket.Data);
+                    // FIXME: Is this actually true?
+                    byte[] bytes = xfer.DataPacket.Data;
+                    download.Size = (bytes[3] + (bytes[2] << 8) + (bytes[1] << 16) + (bytes[0] << 24));
                     download.AssetData = new byte[download.Size];
 
                     Buffer.BlockCopy(xfer.DataPacket.Data, 4, download.AssetData, 0, xfer.DataPacket.Data.Length - 4);

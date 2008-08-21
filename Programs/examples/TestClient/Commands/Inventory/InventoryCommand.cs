@@ -37,13 +37,19 @@ namespace OpenMetaverse.TestClient
 
         void PrintFolder(InventoryFolder f, StringBuilder result, int indent)
         {
-            foreach (InventoryBase i in Manager.FolderContents(f.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByName, 3000))
+            List<InventoryBase> contents = Manager.FolderContents(f.UUID, Client.Self.AgentID,
+                true, true, InventorySortOrder.ByName, 3000);
+
+            if (contents != null)
             {
-                result.AppendFormat("{0}{1} ({2})\n", new String(' ', indent * 2), i.Name, i.UUID);
-                if (i is InventoryFolder)
+                foreach (InventoryBase i in contents)
                 {
-                    InventoryFolder folder = (InventoryFolder)i;
-                    PrintFolder(folder, result, indent + 1);
+                    result.AppendFormat("{0}{1} ({2})\n", new String(' ', indent * 2), i.Name, i.UUID);
+                    if (i is InventoryFolder)
+                    {
+                        InventoryFolder folder = (InventoryFolder)i;
+                        PrintFolder(folder, result, indent + 1);
+                    }
                 }
             }
         }
