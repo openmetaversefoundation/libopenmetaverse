@@ -19785,11 +19785,80 @@ namespace OpenMetaverse.Packets
             }
         }
 
+        /// <exclude/>
+        public class SurfaceInfoBlock
+        {
+            public Vector3 UVCoord;
+            public Vector3 STCoord;
+            public int FaceIndex;
+            public Vector3 Position;
+            public Vector3 Normal;
+            public Vector3 Binormal;
+
+            public int Length
+            {
+                get
+                {
+                    return 64;
+                }
+            }
+
+            public SurfaceInfoBlock() { }
+            public SurfaceInfoBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    UVCoord.FromBytes(bytes, i); i += 12;
+                    STCoord.FromBytes(bytes, i); i += 12;
+                    FaceIndex = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    Position.FromBytes(bytes, i); i += 12;
+                    Normal.FromBytes(bytes, i); i += 12;
+                    Binormal.FromBytes(bytes, i); i += 12;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                bytes[i++] = (byte)(FaceIndex % 256);
+                bytes[i++] = (byte)((FaceIndex >> 8) % 256);
+                bytes[i++] = (byte)((FaceIndex >> 16) % 256);
+                bytes[i++] = (byte)((FaceIndex >> 24) % 256);
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- SurfaceInfo --");
+                output.AppendLine(String.Format("UVCoord: {0}", UVCoord));
+                output.AppendLine(String.Format("STCoord: {0}", STCoord));
+                output.AppendLine(String.Format("FaceIndex: {0}", FaceIndex));
+                output.AppendLine(String.Format("Position: {0}", Position));
+                output.AppendLine(String.Format("Normal: {0}", Normal));
+                output.Append(String.Format("Binormal: {0}", Binormal));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectGrab; } }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
+        public SurfaceInfoBlock[] SurfaceInfo;
 
         public ObjectGrabPacket()
         {
@@ -19799,6 +19868,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
+            SurfaceInfo = new SurfaceInfoBlock[0];
         }
 
         public ObjectGrabPacket(byte[] bytes, ref int i) : this()
@@ -19817,6 +19887,13 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(SurfaceInfo.Length < count) {
+                SurfaceInfo = new SurfaceInfoBlock[count];
+                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { SurfaceInfo[j].FromBytes(bytes, ref i); }
         }
 
         public ObjectGrabPacket(Header head, byte[] bytes, ref int i): this()
@@ -19835,18 +19912,29 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(SurfaceInfo.Length < count) {
+                SurfaceInfo = new SurfaceInfoBlock[count];
+                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { SurfaceInfo[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
             length += AgentData.Length;            length += ObjectData.Length;;
+            length++;
+            for (int j = 0; j < SurfaceInfo.Length; j++) { length += SurfaceInfo[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             ObjectData.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)SurfaceInfo.Length;
+            for (int j = 0; j < SurfaceInfo.Length; j++) { SurfaceInfo[j].ToBytes(bytes, ref i); }
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -19856,6 +19944,10 @@ namespace OpenMetaverse.Packets
             string output = "--- ObjectGrab ---" + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
                 output += ObjectData.ToString() + Environment.NewLine;
+            for (int j = 0; j < SurfaceInfo.Length; j++)
+            {
+                output += SurfaceInfo[j].ToString() + Environment.NewLine;
+            }
             return output;
         }
 
@@ -19973,11 +20065,80 @@ namespace OpenMetaverse.Packets
             }
         }
 
+        /// <exclude/>
+        public class SurfaceInfoBlock
+        {
+            public Vector3 UVCoord;
+            public Vector3 STCoord;
+            public int FaceIndex;
+            public Vector3 Position;
+            public Vector3 Normal;
+            public Vector3 Binormal;
+
+            public int Length
+            {
+                get
+                {
+                    return 64;
+                }
+            }
+
+            public SurfaceInfoBlock() { }
+            public SurfaceInfoBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    UVCoord.FromBytes(bytes, i); i += 12;
+                    STCoord.FromBytes(bytes, i); i += 12;
+                    FaceIndex = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    Position.FromBytes(bytes, i); i += 12;
+                    Normal.FromBytes(bytes, i); i += 12;
+                    Binormal.FromBytes(bytes, i); i += 12;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                bytes[i++] = (byte)(FaceIndex % 256);
+                bytes[i++] = (byte)((FaceIndex >> 8) % 256);
+                bytes[i++] = (byte)((FaceIndex >> 16) % 256);
+                bytes[i++] = (byte)((FaceIndex >> 24) % 256);
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- SurfaceInfo --");
+                output.AppendLine(String.Format("UVCoord: {0}", UVCoord));
+                output.AppendLine(String.Format("STCoord: {0}", STCoord));
+                output.AppendLine(String.Format("FaceIndex: {0}", FaceIndex));
+                output.AppendLine(String.Format("Position: {0}", Position));
+                output.AppendLine(String.Format("Normal: {0}", Normal));
+                output.Append(String.Format("Binormal: {0}", Binormal));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectGrabUpdate; } }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
+        public SurfaceInfoBlock[] SurfaceInfo;
 
         public ObjectGrabUpdatePacket()
         {
@@ -19987,6 +20148,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
+            SurfaceInfo = new SurfaceInfoBlock[0];
         }
 
         public ObjectGrabUpdatePacket(byte[] bytes, ref int i) : this()
@@ -20005,6 +20167,13 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(SurfaceInfo.Length < count) {
+                SurfaceInfo = new SurfaceInfoBlock[count];
+                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { SurfaceInfo[j].FromBytes(bytes, ref i); }
         }
 
         public ObjectGrabUpdatePacket(Header head, byte[] bytes, ref int i): this()
@@ -20023,18 +20192,29 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(SurfaceInfo.Length < count) {
+                SurfaceInfo = new SurfaceInfoBlock[count];
+                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { SurfaceInfo[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
             length += AgentData.Length;            length += ObjectData.Length;;
+            length++;
+            for (int j = 0; j < SurfaceInfo.Length; j++) { length += SurfaceInfo[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             ObjectData.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)SurfaceInfo.Length;
+            for (int j = 0; j < SurfaceInfo.Length; j++) { SurfaceInfo[j].ToBytes(bytes, ref i); }
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -20044,6 +20224,10 @@ namespace OpenMetaverse.Packets
             string output = "--- ObjectGrabUpdate ---" + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
                 output += ObjectData.ToString() + Environment.NewLine;
+            for (int j = 0; j < SurfaceInfo.Length; j++)
+            {
+                output += SurfaceInfo[j].ToString() + Environment.NewLine;
+            }
             return output;
         }
 
@@ -20149,11 +20333,80 @@ namespace OpenMetaverse.Packets
             }
         }
 
+        /// <exclude/>
+        public class SurfaceInfoBlock
+        {
+            public Vector3 UVCoord;
+            public Vector3 STCoord;
+            public int FaceIndex;
+            public Vector3 Position;
+            public Vector3 Normal;
+            public Vector3 Binormal;
+
+            public int Length
+            {
+                get
+                {
+                    return 64;
+                }
+            }
+
+            public SurfaceInfoBlock() { }
+            public SurfaceInfoBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    UVCoord.FromBytes(bytes, i); i += 12;
+                    STCoord.FromBytes(bytes, i); i += 12;
+                    FaceIndex = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    Position.FromBytes(bytes, i); i += 12;
+                    Normal.FromBytes(bytes, i); i += 12;
+                    Binormal.FromBytes(bytes, i); i += 12;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                bytes[i++] = (byte)(FaceIndex % 256);
+                bytes[i++] = (byte)((FaceIndex >> 8) % 256);
+                bytes[i++] = (byte)((FaceIndex >> 16) % 256);
+                bytes[i++] = (byte)((FaceIndex >> 24) % 256);
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- SurfaceInfo --");
+                output.AppendLine(String.Format("UVCoord: {0}", UVCoord));
+                output.AppendLine(String.Format("STCoord: {0}", STCoord));
+                output.AppendLine(String.Format("FaceIndex: {0}", FaceIndex));
+                output.AppendLine(String.Format("Position: {0}", Position));
+                output.AppendLine(String.Format("Normal: {0}", Normal));
+                output.Append(String.Format("Binormal: {0}", Binormal));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDeGrab; } }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
+        public SurfaceInfoBlock[] SurfaceInfo;
 
         public ObjectDeGrabPacket()
         {
@@ -20162,6 +20415,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
+            SurfaceInfo = new SurfaceInfoBlock[0];
         }
 
         public ObjectDeGrabPacket(byte[] bytes, ref int i) : this()
@@ -20180,6 +20434,13 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(SurfaceInfo.Length < count) {
+                SurfaceInfo = new SurfaceInfoBlock[count];
+                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { SurfaceInfo[j].FromBytes(bytes, ref i); }
         }
 
         public ObjectDeGrabPacket(Header head, byte[] bytes, ref int i): this()
@@ -20198,18 +20459,29 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(SurfaceInfo.Length < count) {
+                SurfaceInfo = new SurfaceInfoBlock[count];
+                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+            }
+            for (int j = 0; j < count; j++)
+            { SurfaceInfo[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
             length += AgentData.Length;            length += ObjectData.Length;;
+            length++;
+            for (int j = 0; j < SurfaceInfo.Length; j++) { length += SurfaceInfo[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             ObjectData.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)SurfaceInfo.Length;
+            for (int j = 0; j < SurfaceInfo.Length; j++) { SurfaceInfo[j].ToBytes(bytes, ref i); }
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -20219,6 +20491,10 @@ namespace OpenMetaverse.Packets
             string output = "--- ObjectDeGrab ---" + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
                 output += ObjectData.ToString() + Environment.NewLine;
+            for (int j = 0; j < SurfaceInfo.Length; j++)
+            {
+                output += SurfaceInfo[j].ToString() + Environment.NewLine;
+            }
             return output;
         }
 

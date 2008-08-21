@@ -1179,7 +1179,7 @@ version 2.0
 // simulator -> viewer
 // reliable
 {
-	ParcelObjectOwnersReply Low 57 Trusted Zerocoded
+	ParcelObjectOwnersReply Low 57 Trusted Zerocoded UDPDeprecated
 	{
 		Data			Variable
 		{	OwnerID			LLUUID			}
@@ -2436,6 +2436,15 @@ version 2.0
 		{	LocalID				U32  }
 		{	GrabOffset			LLVector3 }
 	}
+	{
+		SurfaceInfo     Variable
+		{   UVCoord     LLVector3 }
+		{   STCoord     LLVector3 }
+       	{   FaceIndex   S32 }
+       	{   Position    LLVector3 }
+       	{   Normal      LLVector3 }
+       	{   Binormal    LLVector3 }
+	}
 }
 
 
@@ -2457,6 +2466,16 @@ version 2.0
 		{	GrabPosition		LLVector3	}	// LLVector3, region local
 		{	TimeSinceLast		U32	}
 	}
+	{
+		SurfaceInfo     Variable
+		{   UVCoord     LLVector3 }
+		{   STCoord     LLVector3 }
+       	{   FaceIndex   S32 }
+       	{   Position    LLVector3 }
+       	{   Normal      LLVector3 }
+       	{   Binormal    LLVector3 }
+	}
+
 }
 
 
@@ -2471,6 +2490,15 @@ version 2.0
 	{
 		ObjectData			Single
 		{	LocalID				U32  }
+	}
+	{
+		SurfaceInfo     Variable
+		{   UVCoord     LLVector3 }
+		{   STCoord     LLVector3 }
+       	{   FaceIndex   S32 }
+       	{   Position    LLVector3 }
+       	{   Normal      LLVector3 }
+       	{   Binormal    LLVector3 }
 	}
 }
 
@@ -5307,6 +5335,7 @@ version 2.0
 		{	ObjectID		LLUUID	}
 		{	ItemID			LLUUID	}
 		{	Running			BOOL	}
+//		{	Mono			BOOL	} Added to LLSD message
 	}
 }
 
@@ -8767,7 +8796,7 @@ version 2.0
 // LandStatReply
 // Sent by the simulator in response to LandStatRequest
 {
-	LandStatReply Low 422 Trusted Unencoded
+	LandStatReply Low 422 Trusted Unencoded UDPDeprecated
 	{
 		RequestData	Single
 		{	ReportType			U32				}
