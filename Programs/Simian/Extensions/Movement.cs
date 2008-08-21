@@ -139,6 +139,7 @@ namespace Simian.Extensions
                 {
                     recipient.SendPacket(fullUpdate);
 
+                    /*
                     if (agent.Animations.Count == 0) //TODO: need to start default standing animation
                     {
                         agent.Animations.Add(ANIM_STAND);
@@ -153,6 +154,7 @@ namespace Simian.Extensions
 
                         recipient.SendPacket(startAnim);
                     }
+                    */
                 }
             }
         }
