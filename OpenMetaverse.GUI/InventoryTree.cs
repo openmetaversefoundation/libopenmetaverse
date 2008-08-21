@@ -97,17 +97,17 @@ namespace OpenMetaverse.GUI
         /// Thread-safe method for updating the contents of the specified folder UUID
         /// </summary>
         /// <param name="folderID"></param>
-        public void UpdateFolder(InventoryFolder folder)
+        public void UpdateFolder(UUID folderID)
         {
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateFolder(folder); });
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateFolder(folderID); });
             else
             {
                 TreeNode node = null;
                 TreeNodeCollection children;
 
-                if (folder != Client.InventoryStore.RootFolder)
+                if (folderID != Client.Inventory.Store.RootFolder.UUID)
                 {
-                    TreeNode[] found = Nodes.Find(folder.UUID.ToString(), true);
+                    TreeNode[] found = Nodes.Find(folderID.ToString(), true);
                     if (found.Length > 0)
                     {
                         node = found[0];
@@ -115,7 +115,7 @@ namespace OpenMetaverse.GUI
                     }
                     else
                     {
-                        Logger.Log("Received update for unknown TreeView node " + folder.UUID, Helpers.LogLevel.Warning);
+                        Logger.Log("Received update for unknown TreeView node " + folderID, Helpers.LogLevel.Warning);
                         return;
                     }
                 }
@@ -123,7 +123,7 @@ namespace OpenMetaverse.GUI
 
                 children.Clear();
 
-                List<InventoryBase> contents = folder.Contents;
+                List<InventoryBase> contents = Client.Inventory.Store.GetContents(folderID);
                 if (contents.Count == 0)
                 {
                     TreeNode add = children.Add(null, "(empty)");
@@ -139,7 +139,6 @@ namespace OpenMetaverse.GUI
                         if (inv is InventoryFolder)
                         {
                             children[key].Nodes.Add(null, "(loading...)").ForeColor = Color.FromKnownColor(KnownColor.GrayText);
-                            ((InventoryFolder)inv).OnContentsRetrieved += new InventoryFolder.ContentsRetrieved(InventoryFolder_OnContentsRetrieved);
                         }
                     }
                 }
@@ -149,25 +148,25 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Inventory.OnSkeletonsReceived += new InventoryManager.SkeletonsReceived(Inventory_OnSkeletonsReceived);
+            _Client.Inventory.OnFolderUpdated += new InventoryManager.FolderUpdatedCallback(Inventory_OnFolderUpdated);
+            _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
         }
 
-        private void Inventory_OnSkeletonsReceived(InventoryManager manager)
+        void Network_OnLogin(LoginStatus login, string message)
         {
-            _Client.InventoryStore.RootFolder.OnContentsRetrieved += new InventoryFolder.ContentsRetrieved(InventoryFolder_OnContentsRetrieved);
-            UpdateFolder(_Client.InventoryStore.RootFolder);
+            if (login == LoginStatus.Success)
+                UpdateFolder(Client.Inventory.Store.RootFolder.UUID);
         }
 
-        private void InventoryFolder_OnContentsRetrieved(InventoryFolder folder)
+        void Inventory_OnFolderUpdated(UUID folderID)
         {
-            UpdateFolder(folder);
+            UpdateFolder(folderID);
         }
 
         private void InventoryTree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             InventoryFolder folder = (InventoryFolder)e.Node.Tag;
-            if (folder.IsStale) folder.RequestContents(InventorySortOrder.ByDate | InventorySortOrder.FoldersByName);
-            else UpdateFolder(folder);
+            Client.Inventory.RequestFolderContents(folder.UUID, _Client.Self.AgentID, true, true, InventorySortOrder.ByDate | InventorySortOrder.FoldersByName);
         }
 
     }
