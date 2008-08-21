@@ -100,19 +100,6 @@ namespace OpenMetaverse
         /// for specific data stream types</summary>
         public AgentThrottle Throttle;
         /// <summary>
-        /// Inventory instance that holds information and manages the local data structure
-        /// of the agent's inventory.
-        /// <seealso cref="Settings.ENABLE_INVENTORY_STORE"/>
-        /// </summary>
-        public Inventory InventoryStore;
-        /// <summary>
-        /// Inventory instance that holds information and manages the local data structure
-        /// of the Linden-provided inventory library.
-        /// <seealso cref="Settings.ENABLE_LIBRARY_STORE"/>
-        /// </summary>
-        public Inventory LibraryStore;
-
-        /// <summary>
         /// Default constructor
         /// </summary>
         public GridClient()
