@@ -35,7 +35,7 @@ namespace Simian.Extensions
             handshake.RegionInfo.SimOwner = UUID.Random();
             handshake.RegionInfo.SimAccess = 1;
             handshake.RegionInfo.SimName = Utils.StringToBytes("Simian");
-            handshake.RegionInfo.WaterHeight = 20.0f;
+            handshake.RegionInfo.WaterHeight = 35.0f;
             handshake.RegionInfo.TerrainBase0 = UUID.Zero;
             handshake.RegionInfo.TerrainBase1 = UUID.Zero;
             handshake.RegionInfo.TerrainBase2 = UUID.Zero;
@@ -79,6 +79,8 @@ namespace Simian.Extensions
             reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
             reply.InventoryData[0].ItemID = UUID.Zero;
 
+            agent.SendPacket(reply);
+
             lock (server.Agents)
             {
                 if (server.Agents.ContainsKey(agent.Address))
@@ -96,6 +98,5 @@ namespace Simian.Extensions
                 }
             }
         }
-
     }
 }

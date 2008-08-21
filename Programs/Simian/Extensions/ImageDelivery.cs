@@ -59,12 +59,12 @@ namespace Simian.Extensions
                 imageData.ImageID.Packets = 1;
                 if (bake)
                 {
-                    Logger.DebugLog("Sending default bake texture");
+                    Logger.DebugLog(String.Format("Sending default bake texture for {0}", block.Image));
                     imageData.ImageData.Data = DefaultBakedJP2;
                 }
                 else
                 {
-                    Logger.DebugLog("Sending default texture");
+                    Logger.DebugLog(String.Format("Sending default texture for {0}", block.Image));
                     imageData.ImageData.Data = DefaultJP2;
                 }
                 imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
