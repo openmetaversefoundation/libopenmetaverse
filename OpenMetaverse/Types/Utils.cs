@@ -462,40 +462,77 @@ namespace OpenMetaverse
         ///// </summary>
         ///// <param name="hexString">String containing hexadecimal characters</param>
         ///// <returns>The converted byte array</returns>
-        //public static byte[] HexStringToBytes(string hexString)
-        //{
-        //    string newString = "";
-        //    char c;
+        public static byte[] HexStringToBytes(string hexString)
+        {
+            StringBuilder stripped = new StringBuilder(hexString.Length);
+            char c;
 
-        //    // FIXME: For each line of the string, if a colon is found
-        //    // remove everything before it
+            // remove all non A-F, 0-9, characters
+            for (int i = 0; i < hexString.Length; i++)
+            {
+                c = hexString[i];
+                if (IsHexDigit(c))
+                    stripped.Append(c);
+            }
 
-        //    // remove all non A-F, 0-9, characters
-        //    for (int i = 0; i < hexString.Length; i++)
-        //    {
-        //        c = hexString[i];
-        //        if (IsHexDigit(c))
-        //            newString += c;
-        //    }
+            string newString = stripped.ToString();
 
-        //    // if odd number of characters, discard last character
-        //    if (newString.Length % 2 != 0)
-        //    {
-        //        newString = newString.Substring(0, newString.Length - 1);
-        //    }
+            // if odd number of characters, discard last character
+            if (newString.Length % 2 != 0)
+            {
+                newString = newString.Substring(0, newString.Length - 1);
+            }
 
-        //    int byteLength = newString.Length / 2;
-        //    byte[] bytes = new byte[byteLength];
-        //    string hex;
-        //    int j = 0;
-        //    for (int i = 0; i < bytes.Length; i++)
-        //    {
-        //        hex = new String(new Char[] { newString[j], newString[j + 1] });
-        //        bytes[i] = HexToByte(hex);
-        //        j = j + 2;
-        //    }
-        //    return bytes;
-        //}
+            int byteLength = newString.Length / 2;
+            byte[] bytes = new byte[byteLength];
+            string hex;
+            int j = 0;
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                hex = new String(new Char[] { newString[j], newString[j + 1] });
+                bytes[i] = HexToByte(hex);
+                j = j + 2;
+            }
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// Returns true is c is a hexadecimal digit (A-F, a-f, 0-9)
+        /// </summary>
+        /// <param name="c">Character to test</param>
+        /// <returns>true if hex digit, false if not</returns>
+        private static bool IsHexDigit(Char c)
+        {
+            const int numA = 65;
+            const int num0 = 48;
+
+            int numChar;
+
+            c = Char.ToUpper(c);
+            numChar = Convert.ToInt32(c);
+
+            if (numChar >= numA && numChar < (numA + 6))
+                return true;
+            else if (numChar >= num0 && numChar < (num0 + 10))
+                return true;
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Converts 1 or 2 character string into equivalant byte value
+        /// </summary>
+        /// <param name="hex">1 or 2 character string</param>
+        /// <returns>byte</returns>
+        private static byte HexToByte(string hex)
+        {
+            if (hex.Length > 2 || hex.Length <= 0)
+                throw new ArgumentException("hex must be 1 or 2 characters in length");
+            byte newByte = Byte.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+            return newByte;
+        }
 
         /// <summary>
         /// Gets a unix timestamp for the current time

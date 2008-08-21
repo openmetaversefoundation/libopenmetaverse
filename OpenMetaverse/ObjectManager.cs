@@ -1813,7 +1813,7 @@ namespace OpenMetaverse
                 try
                 {
                     int pos = 4;
-                    uint localid = Helpers.BytesToUIntBig(block.Data, 0);
+                    uint localid = Helpers.BytesToUInt(block.Data, 0);
 
                     // Check if we are interested in this update
                     if (!Client.Settings.ALWAYS_DECODE_OBJECTS && localid != Client.Self.localID && OnObjectUpdated == null)
@@ -2009,7 +2009,7 @@ namespace OpenMetaverse
                             prim.Rotation = new Quaternion(block.Data, i, true);
                             i += 12;
                             // Compressed flags
-                            CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
+                            CompressedFlags flags = (CompressedFlags)Helpers.BytesToUInt(block.Data, i);
                             i += 4;
 
                             prim.OwnerID = new UUID(block.Data, i);
@@ -2170,7 +2170,7 @@ namespace OpenMetaverse
                             prim.Data.ProfileHollow = LLObject.UnpackProfileHollow(profileHollow);
 
                             // TextureEntry
-                            int textureEntryLength = (int)Helpers.BytesToUIntBig(block.Data, i);
+                            int textureEntryLength = (int)Helpers.BytesToUInt(block.Data, i);
                             i += 4;
                             prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
                             i += textureEntryLength;

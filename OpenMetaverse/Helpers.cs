@@ -564,6 +564,9 @@ namespace OpenMetaverse
         /// <returns>The length of the output buffer</returns>
         public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
         {
+            if (srclen > src.Length)
+                throw new ArgumentException("srclen cannot be greater than src.Length");
+
             uint zerolen = 0;
             int bodylen = 0;
             uint i = 0;

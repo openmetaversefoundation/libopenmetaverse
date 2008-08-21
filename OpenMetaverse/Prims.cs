@@ -671,7 +671,7 @@ namespace OpenMetaverse
                     ExtraParamType type = (ExtraParamType)Helpers.BytesToUInt16(data, i);
                     i += 2;
 
-                    uint paramLength = Helpers.BytesToUIntBig(data, i);
+                    uint paramLength = Helpers.BytesToUInt(data, i);
                     i += 4;
 
                     if (type == ExtraParamType.Flexible)
