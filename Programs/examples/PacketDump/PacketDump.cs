@@ -37,11 +37,90 @@ namespace PacketDump
         static bool LoginSuccess = false;
         static AutoResetEvent LoginEvent = new AutoResetEvent(false);
 
-		// Default packet handler, registered for all packet types
-		public static void DefaultHandler(Packet packet, Simulator simulator)
+		/// <summary>
+		/// The main entry point for the application.
+		/// </summary>
+		[STAThread]
+		static void Main(string[] args)
 		{
-			Console.WriteLine(packet.ToString());
+			GridClient client;
+
+			if (args.Length != 4)
+			{
+				Console.WriteLine("Usage: PacketDump [firstname] [lastname] [password] [seconds (0 for infinite)]");
+				return;
+			}
+
+            client = new GridClient();
+            // Turn off some unnecessary things
+            client.Settings.MULTIPLE_SIMS = false;
+            // Throttle packets that we don't want all the way down
+            client.Throttle.Land = 0;
+            client.Throttle.Wind = 0;
+            client.Throttle.Cloud = 0;
+
+			// Setup a packet callback that is called for every packet (PacketType.Default)
+            client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
+            
+            // Register handlers for when we login, and when we are disconnected
+            client.Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
+            client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
+
+            // Start the login process
+            client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "PacketDump", "1.0.0"));
+
+            // Wait until LoginEvent is set in the LoginHandler callback, or we time out
+            if (LoginEvent.WaitOne(1000 * 20, false))
+            {
+                if (LoginSuccess)
+                {
+                    // Network.LoginMessage is set after a successful login
+                    Logger.Log("Message of the day: " + client.Network.LoginMessage, Helpers.LogLevel.Info);
+
+                    // Determine how long to run for
+                    int start = Environment.TickCount;
+                    int milliseconds = Int32.Parse(args[3]) * 1000;
+                    bool forever = (milliseconds > 0) ? false : true;
+
+                    // Packet handling is done with asynchronous callbacks. Run a sleeping loop in the main
+                    // thread until we run out of time or the program is closed
+                    while (true)
+                    {
+                        System.Threading.Thread.Sleep(100);
+
+                        if (!forever && Environment.TickCount - start > milliseconds)
+                            break;
+                    }
+
+                    // Finished running, log out
+                    client.Network.Logout();
+                }
+                else
+                {
+                    Logger.Log("Login failed: " + client.Network.LoginMessage, Helpers.LogLevel.Error);
+                }
+            }
+            else
+            {
+                Logger.Log("Login timed out", Helpers.LogLevel.Error);
+            }
 		}
+
+        static void LoginHandler(LoginStatus login, string message)
+        {
+            Logger.Log(String.Format("Login: {0} ({1})", login, message), Helpers.LogLevel.Info);
+
+            switch (login)
+            {
+                case LoginStatus.Failed:
+                    LoginEvent.Set();
+                    break;
+                case LoginStatus.Success:
+                    LoginSuccess = true;
+                    LoginEvent.Set();
+                    break;
+            }
+        }
 
         public static void DisconnectHandler(NetworkManager.DisconnectType type, string message)
         {
@@ -55,111 +134,9 @@ namespace PacketDump
             }
         }
 
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
-		[STAThread]
-		static void Main(string[] args)
-		{
-			GridClient client;
-
-			if (args.Length == 0 || (args.Length < 4 && args[0] != "--printmap"))
-			{
-				Console.WriteLine("Usage: PacketDump [--printmap] [--decrypt] [inputfile] [outputfile] "
-                    + "[--protocol] [firstname] [lastname] [password] [seconds (0 for infinite)]");
-				return;
-			}
-
-			if (args[0] == "--decrypt")
-			{
-				try
-				{
-					ProtocolManager.DecodeMapFile(args[1], args[2]);
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e.ToString());
-				}
-
-				return;
-			}
-
-            client = new GridClient();
-            // Turn off some unnecessary things
-            Settings.LOG_LEVEL = Helpers.LogLevel.None;
-            client.Settings.MULTIPLE_SIMS = false;
-            // Throttle packets that we don't want all the way down
-            client.Throttle.Land = 0;
-            client.Throttle.Wind = 0;
-            client.Throttle.Cloud = 0;
-
-			if (args[0] == "--printmap")
-			{
-                ProtocolManager protocol;
-
-                try
-                {
-                    protocol = new ProtocolManager("message_template.msg", client);
-                }
-                catch (Exception e)
-                {
-                    // Error initializing the client, probably missing file(s)
-                    Console.WriteLine(e.ToString());
-                    return;
-                }
-
-                protocol.PrintMap();
-				return;
-			}
-
-			// Setup the packet callback and disconnect event handler
-            client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
-            client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
-
-            client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
-            client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "PacketDump", "1.0.0"));
-
-            LoginEvent.WaitOne();
-
-            if (!LoginSuccess)
-            {
-                Console.WriteLine("Login failed: {0}", client.Network.LoginMessage);
-                return;
-            }
-
-			Console.WriteLine("Message of the day: " + client.Network.LoginMessage);
-
-            int start = Environment.TickCount;
-            int milliseconds = Int32.Parse(args[3]) * 1000;
-            bool forever = (milliseconds > 0) ? false : true;
-
-			while (true)
-			{
-                System.Threading.Thread.Sleep(100);
-
-                if (!forever && Environment.TickCount - start > milliseconds)
-                {
-                    break;
-                }
-			}
-
-            client.Network.Logout();
-		}
-
-        static void Network_OnLogin(LoginStatus login, string message)
+        public static void DefaultHandler(Packet packet, Simulator simulator)
         {
-            Console.WriteLine("Login: " + login.ToString() + " (" + message + ")");
-
-            switch (login)
-            {
-                case LoginStatus.Failed:
-                    LoginEvent.Set();
-                    break;
-                case LoginStatus.Success:
-                    LoginSuccess = true;
-                    LoginEvent.Set();
-                    break;
-            }
+            Logger.Log(packet.ToString(), Helpers.LogLevel.Info);
         }
 	}
 }
