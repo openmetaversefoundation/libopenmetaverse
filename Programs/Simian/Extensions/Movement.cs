@@ -11,10 +11,21 @@ namespace Simian.Extensions
     {
         Simian Server;
         Timer UpdateTimer;
+        long _LastTick;
+
+        const int UPDATE_ITERATION = 100;
+
+        const float WALK_SPEED = 3f;
+        const float RUN_SPEED = 6f;
+        const float FLY_SPEED = 12f;
+
         const float SQRT_TWO = 1.41421356f;
-        const float WALK_SPEED = 0.5f;
-        const float RUN_SPEED = 1.0f;
-        const float FLY_SPEED = 1.5f;
+
+        public int LastTick
+        {
+            get { return (int) Interlocked.Read(ref _LastTick); }
+            set { Interlocked.Exchange(ref _LastTick, value); }
+        }
 
         public Movement(Simian server)
         {
@@ -23,13 +34,15 @@ namespace Simian.Extensions
 
         public void Start()
         {
+            Server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentHeightWidth, new UDPServer.PacketCallback(AgentHeightWidthHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.SetAlwaysRun, new UDPServer.PacketCallback(SetAlwaysRunHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
 
             UpdateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
-            UpdateTimer.Change(100, 100);
+            LastTick = Environment.TickCount;
+            UpdateTimer.Change(UPDATE_ITERATION, UPDATE_ITERATION);
         }
 
         public void Stop()
@@ -39,6 +52,10 @@ namespace Simian.Extensions
 
         void UpdateTimer_Elapsed(object sender)
         {
+            int tick = Environment.TickCount;
+            float seconds = (float)((tick  - LastTick) / 1000f);
+            LastTick = tick;
+
             lock (Server.Agents)
             {
                 foreach (Agent agent in Server.Agents.Values)
@@ -53,10 +70,15 @@ namespace Simian.Extensions
                     bool heldBack = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG;
                     bool heldLeft = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS;
                     bool heldRight = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG;
+                    bool heldTurnLeft = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_TURN_LEFT) == AgentManager.ControlFlags.AGENT_CONTROL_TURN_LEFT;
+                    bool heldTurnRight = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT) == AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT;
                     bool heldUp = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_POS) == AgentManager.ControlFlags.AGENT_CONTROL_UP_POS;
                     bool heldDown = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG;
                     bool flying = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_FLY) == AgentManager.ControlFlags.AGENT_CONTROL_FLY;
-                    
+                    bool mouselook = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK) == AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK;
+
+                    float speed = seconds * (flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED);
+
                     Vector3 move = Vector3.Zero;
 
                     if (heldForward) { move.X += fwd.X; move.Y += fwd.Y; }
@@ -68,9 +90,10 @@ namespace Simian.Extensions
                     float newFloor = GetLandHeightAt(agent.Avatar.Position + move);
                     float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
 
-                    float speed = flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED;
                     if ((heldForward || heldBack) && (heldLeft || heldRight))
                         speed /= SQRT_TWO;
+
+                    if (!flying && newFloor != oldFloor) speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
 
                     if (flying)
                     {
@@ -102,20 +125,34 @@ namespace Simian.Extensions
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
+            agent.Avatar.Rotation = update.AgentData.BodyRotation;
+            agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
+            agent.State = update.AgentData.State;
+            agent.Flags = (LLObject.ObjectFlags)update.AgentData.Flags;
+
             lock (Server.Agents)
             {
-                agent.Avatar.Rotation = update.AgentData.BodyRotation;
-                agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
-                agent.State = update.AgentData.State;
-                //agent.Flags = (LLObject.ObjectFlags)update.AgentData.Flags;
-
                 ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, Server.RegionHandle,
                     agent.State, agent.Flags);
 
-                lock (Server.Agents)
+                foreach (Agent recipient in Server.Agents.Values)
                 {
-                    foreach (Agent recipient in Server.Agents.Values)
-                        recipient.SendPacket(fullUpdate);
+                    recipient.SendPacket(fullUpdate);
+
+                    if (agent.Animations.Count == 0) //TODO: need to start default standing animation
+                    {
+                        agent.Animations.Add(ANIM_STAND);
+
+                        AgentAnimationPacket startAnim = new AgentAnimationPacket();
+                        startAnim.AgentData.AgentID = agent.AgentID;
+                        startAnim.AnimationList = new AgentAnimationPacket.AnimationListBlock[1];
+                        startAnim.AnimationList[0] = new AgentAnimationPacket.AnimationListBlock();
+                        startAnim.AnimationList[0].AnimID = ANIM_STAND;
+                        startAnim.AnimationList[0].StartAnim = true;
+                        startAnim.PhysicalAvatarEventList = new AgentAnimationPacket.PhysicalAvatarEventListBlock[0];
+
+                        recipient.SendPacket(startAnim);
+                    }
                 }
             }
         }
@@ -154,6 +191,30 @@ namespace Simian.Extensions
             float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
 
             return ((lerpX + lerpY) / 2);
+        }
+
+        void AgentAnimationHandler(Packet packet, Agent agent)
+        {
+            AgentAnimationPacket anim = (AgentAnimationPacket)packet;
+            anim.AgentData.SessionID = UUID.Zero;
+
+            lock (agent.Animations)
+            {
+                foreach (AgentAnimationPacket.AnimationListBlock block in anim.AnimationList)
+                {
+                    if (agent.Animations.Contains(block.AnimID))
+                    {
+                        if (!block.StartAnim) agent.Animations.Remove(block.AnimID);
+                    }
+                    else if (block.StartAnim) agent.Animations.Add(block.AnimID);
+                }
+            }
+
+            lock (Server.Agents)
+            {
+                foreach (Agent recipient in Server.Agents.Values)
+                    recipient.SendPacket(anim);
+            }
         }
 
         void AgentHeightWidthHandler(Packet packet, Agent agent)

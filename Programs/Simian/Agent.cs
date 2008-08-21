@@ -19,6 +19,7 @@ namespace Simian
         public int Balance;
         public bool Running;
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
+        public List<UUID> Animations = new List<UUID>();
         public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();
         public Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
         public Dictionary<WearableType, UUID> Wearables = new Dictionary<WearableType, UUID>();
@@ -57,6 +58,13 @@ namespace Simian
 
             ackTimer = new Timer(new TimerCallback(AckTimer_Elapsed), null, Settings.NETWORK_TICK_INTERVAL,
                 Settings.NETWORK_TICK_INTERVAL);
+        }
+
+        public void Dispose()
+        {
+            ackTimer.Dispose();
+            packetArchive.Clear();
+            needAcks.Clear();
         }
 
         public void SendPacket(Packet packet)

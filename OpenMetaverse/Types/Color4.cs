@@ -85,6 +85,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="byteArray">Byte array containing a 16 byte color</param>
         /// <param name="pos">Beginning position in the byte array</param>
+        /// <param name="inverted">True if the byte array stores inverted values,
+        /// otherwise false. For example the color black (fully opaque) inverted
+        /// would be 0xFF 0xFF 0xFF 0x00</param>
         public Color4(byte[] byteArray, int pos, bool inverted)
         {
             R = G = B = A = 0f;

@@ -373,7 +373,7 @@ namespace OpenMetaverse
         /// Creates a quaternion from a vector containing roll, pitch, and yaw
         /// in radians
         /// </summary>
-        /// <param name="euler">Vector representation of the euler angles in
+        /// <param name="eulers">Vector representation of the euler angles in
         /// radians</param>
         /// <returns>Quaternion representation of the euler angles</returns>
         public static Quaternion CreateFromEulers(Vector3 eulers)

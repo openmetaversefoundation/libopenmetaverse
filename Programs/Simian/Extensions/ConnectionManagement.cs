@@ -88,6 +88,7 @@ namespace Simian.Extensions
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = agent.Avatar.LocalID;
 
+                    agent.Dispose();
                     server.Agents.Remove(agent.Address);
 
                     foreach (Agent recipient in server.Agents.Values)
