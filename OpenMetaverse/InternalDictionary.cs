@@ -40,7 +40,9 @@ namespace OpenMetaverse
     /// <typeparam name="TValue">Value <see langword="TValue"/></typeparam>
     public class InternalDictionary<TKey, TValue>
     {
-        internal Dictionary<TKey, TValue> Dictionary;
+        /// <summary>Internal dictionary that this class wraps around. Do not
+        /// modify or enumerate the contents of this dictionary without locking</summary>
+        public Dictionary<TKey, TValue> Dictionary;
 
         /// <summary>
         /// Gets the number of Key/Value pairs contained in the <seealso cref="T:InternalDictionary"/>
