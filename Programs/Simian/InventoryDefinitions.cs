@@ -76,7 +76,7 @@ namespace Simian
 
         public override bool Equals(object obj)
         {
-            if (!(obj is ItemData))
+            if (!(obj is InventoryItem))
                 return false;
 
             InventoryItem o = (InventoryItem)obj;
@@ -108,10 +108,10 @@ namespace Simian
         }
 
         /// <summary>
-        /// Returns the ItemData in the hierarchical bracket format
+        /// Returns the InventoryItem in the hierarchical bracket format
         /// used in the Second Life client's notecards and inventory cache.
         /// </summary>
-        /// <returns>a string representation of this ItemData</returns>
+        /// <returns>a string representation of this InventoryItem</returns>
         public override string ToString()
         {
             StringWriter writer = new StringWriter();
@@ -163,19 +163,19 @@ namespace Simian
         }
 
         /// <summary>
-        /// Reads the ItemData from a string source. The string is wrapped
+        /// Reads the InventoryItem from a string source. The string is wrapped
         /// in a <seealso cref="System.IO.StringReader"/> and passed to the
         /// other <seealso cref="Parse"/> method.
         /// </summary>
-        /// <param name="src">String to parse ItemData from.</param>
-        /// <returns>Parsed ItemData</returns>
-        public static ItemData Parse(string src)
+        /// <param name="src">String to parse InventoryItem from.</param>
+        /// <returns>Parsed InventoryItem</returns>
+        public static InventoryItem Parse(string src)
         {
             return Parse(new StringReader(src));
         }
 
         /// <summary>
-        /// Reads an ItemData from a TextReader source. The format of the text
+        /// Reads an InventoryItem from a TextReader source. The format of the text
         /// should be the same as the one used by Second Life Notecards. The TextReader should
         /// be placed ideally on the line containing "inv_item" but parsing will succeed as long
         /// as it is before the opening bracket immediately following the inv_item line.
@@ -183,16 +183,16 @@ namespace Simian
         /// </summary>
         /// <param name="reader">text source</param>
         /// <returns>Parsed item.</returns>
-        public static ItemData Parse(TextReader reader)
+        public static InventoryItem Parse(TextReader reader)
         {
-            ItemData item = new ItemData();
+            InventoryItem item = new InventoryItem();
             #region Parsing
             TextData invItem = TextHierarchyParser.Parse(reader);
             Console.WriteLine(invItem);
             //if (invItem.Name == "inv_item") // YAY
-            item.UUID = new UUID(invItem.Nested["item_id"].Value);
-            item.ParentUUID = new UUID(invItem.Nested["parent_id"].Value);
-            item.AssetUUID = new UUID(invItem.Nested["asset_id"].Value);
+            item.ID = new UUID(invItem.Nested["item_id"].Value);
+            item.ParentID = new UUID(invItem.Nested["parent_id"].Value);
+            item.AssetID = new UUID(invItem.Nested["asset_id"].Value);
             item.AssetType = AssetTypeParser.Parse(invItem.Nested["type"].Value);
             item.InventoryType = InventoryTypeParser.Parse(invItem.Nested["inv_type"].Value);
             Utils.TryParseHex(invItem.Nested["flags"].Value, out item.Flags);
@@ -223,23 +223,23 @@ namespace Simian
         }
 
         /// <summary>
-        /// <seealso cref="ItemData.Parse"/>
+        /// <seealso cref="InventoryItem.Parse"/>
         /// </summary>
-        /// <param name="str">String to parse from.</param>
-        /// <param name="item">Parsed ItemData.</param>
+        /// <param name="str">String to parse from</param>
+        /// <param name="item">Parsed InventoryItem</param>
         /// <returns><code>true</code> if successful, <code>false</code> otherwise.</returns>
-        public static bool TryParse(string str, out ItemData item)
+        public static bool TryParse(string str, out InventoryItem item)
         {
             return TryParse(new StringReader(str), out item);
         }
 
         /// <summary>
-        /// <seealso cref="ItemData.Parse"/>
+        /// <seealso cref="InventoryItem.Parse"/>
         /// </summary>
         /// <param name="reader">Text source.</param>
-        /// <param name="item">Parsed ItemData.</param>
+        /// <param name="item">Parsed InventoryItem.</param>
         /// <returns><code>true</code> if successful <code>false</code> otherwise.</returns>
-        public static bool TryParse(TextReader reader, out ItemData item)
+        public static bool TryParse(TextReader reader, out InventoryItem item)
         {
             try
             {
@@ -247,7 +247,7 @@ namespace Simian
             }
             catch (Exception e)
             {
-                item = new ItemData();
+                item = new InventoryItem();
                 Logger.Log(e.Message, Helpers.LogLevel.Error, e);
                 return false;
             }
@@ -270,7 +270,7 @@ namespace Simian
 
         public override bool Equals(object obj)
         {
-            if (!(obj is FolderData))
+            if (!(obj is InventoryFolder))
                 return false;
 
             InventoryFolder o = (InventoryFolder)obj;
@@ -288,10 +288,10 @@ namespace Simian
         }
 
         /// <summary>
-        /// Returns the FolderData in the hierarchical bracket format
+        /// Returns the InventoryFolder in the hierarchical bracket format
         /// used in the Second Life client's notecards and inventory cache.
         /// </summary>
-        /// <returns>a string representation of this FolderData</returns>
+        /// <returns>a string representation of this InventoryFolder</returns>
         public override string ToString()
         {
             StringWriter writer = new StringWriter();
@@ -300,7 +300,7 @@ namespace Simian
         }
 
         /// <summary>
-        /// Writes the FolderData to the TextWriter in the hierarchical bracket format
+        /// Writes the InventoryFolder to the TextWriter in the hierarchical bracket format
         /// used in the Second Life client's notecards and inventory cache.
         /// </summary>
         /// <param name="writer">Writer to write to.</param>
@@ -320,13 +320,13 @@ namespace Simian
         }
 
         /// <summary>
-        /// Reads the FolderData from a string source. The string is wrapped
+        /// Reads the InventoryFolder from a string source. The string is wrapped
         /// in a <seealso cref="System.IO.StringReader"/> and passed to the
         /// other <seealso cref="Parse"/> method.
         /// </summary>
-        /// <param name="src">String to parse FolderData from.</param>
-        /// <returns>Parsed FolderData</returns>
-        public static FolderData Parse(string src)
+        /// <param name="src">String to parse InventoryFolder from.</param>
+        /// <returns>Parsed InventoryFolder</returns>
+        public static InventoryFolder Parse(string src)
         {
             return Parse(new StringReader(src));
         }
@@ -340,18 +340,18 @@ namespace Simian
         /// </summary>
         /// <param name="reader">text source</param>
         /// <returns>Parsed item.</returns>
-        public static FolderData Parse(TextReader reader)
+        public static InventoryFolder Parse(TextReader reader)
         {
-            FolderData folder = new FolderData();
+            InventoryFolder folder = new InventoryFolder();
             #region Parsing
             TextData invCategory = TextHierarchyParser.Parse(reader);
 
             //if (invCategory.Name == "inv_category") // YAY
-            folder.UUID = new UUID(invCategory.Nested["cat_id"].Value);
+            folder.ID = new UUID(invCategory.Nested["cat_id"].Value);
             string rawName = invCategory.Nested["name"].Value;
             folder.Name = rawName.Substring(0, rawName.LastIndexOf('|'));
             folder.OwnerID = new UUID(invCategory.Nested["owner_id"].Value);
-            folder.ParentUUID = new UUID(invCategory.Nested["parent_id"].Value);
+            folder.ParentID = new UUID(invCategory.Nested["parent_id"].Value);
             folder.PreferredType = AssetTypeParser.Parse(invCategory.Nested["pref_type"].Value);
             folder.Version = int.Parse(invCategory.Nested["version"].Value);
             // TODO: Investigate invCategory.Nested["type"]
@@ -359,12 +359,12 @@ namespace Simian
             return folder;
         }
 
-        public static bool TryParse(string str, out FolderData folder)
+        public static bool TryParse(string str, out InventoryFolder folder)
         {
             return TryParse(new StringReader(str), out folder);
         }
 
-        public static bool TryParse(TextReader reader, out FolderData folder)
+        public static bool TryParse(TextReader reader, out InventoryFolder folder)
         {
             try
             {
@@ -372,7 +372,7 @@ namespace Simian
             }
             catch (Exception e)
             {
-                folder = new FolderData();
+                folder = new InventoryFolder();
                 Logger.Log(e.Message, Helpers.LogLevel.Error, e);
                 return false;
             }
