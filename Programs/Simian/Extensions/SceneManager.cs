@@ -24,7 +24,7 @@ namespace Simian.Extensions
         public void Start()
         {
             server.UDPServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
-            LoadTerrain("Maps/default.tga");
+            LoadTerrain(server.DataDir + "heightmap.tga");
         }
 
         public void Stop()

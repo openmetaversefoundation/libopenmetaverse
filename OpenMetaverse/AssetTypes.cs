@@ -310,6 +310,7 @@ namespace OpenMetaverse
             Permissions = new Permissions();
             string data = Utils.BytesToString(AssetData);
 
+            data = data.Replace("\r", String.Empty);
             string[] lines = data.Split('\n');
             for (int stri = 0; stri < lines.Length; stri++)
             {

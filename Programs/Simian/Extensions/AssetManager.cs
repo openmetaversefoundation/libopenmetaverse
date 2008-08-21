@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
@@ -18,6 +19,8 @@ namespace Simian.Extensions
 
         public void Start()
         {
+            LoadDefaultAssets(Server.DataDir);
+
             Server.UDPServer.RegisterPacketCallback(PacketType.AssetUploadRequest, new UDPServer.PacketCallback(AssetUploadRequestHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.SendXferPacket, new UDPServer.PacketCallback(SendXferPacketHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.AbortXfer, new UDPServer.PacketCallback(AbortXferHandler));
@@ -203,22 +206,8 @@ namespace Simian.Extensions
 
                     // Check if we have this asset
                     Asset asset;
-                    if (Server.AssetStore.TryGetValue(assetID, out asset) || true /* HACK */)
+                    if (Server.AssetStore.TryGetValue(assetID, out asset))
                     {
-                        // HACK: Always return some clothing to get avatars appearing for now
-                        if (asset == null)
-                        {
-                            asset = CreateAsset(type, assetID, System.IO.File.ReadAllBytes("testclothing.txt"));
-                            if (asset == null)
-                            {
-                                response.TransferInfo.Size = 0;
-                                response.TransferInfo.Status = (int)StatusCode.UnknownSource;
-                                response.TransferInfo.TargetType = (int)TargetType.Unknown;
-                                agent.SendPacket(response);
-                            }
-                        }
-                        // END HACK
-
                         if (asset.AssetType == type)
                         {
                             Logger.DebugLog(String.Format("Transferring asset {0} ({1})", asset.AssetID, asset.AssetType));
@@ -354,6 +343,54 @@ namespace Simian.Extensions
                 default:
                     Logger.Log("Asset type " + type.ToString() + " not implemented!", Helpers.LogLevel.Warning);
                     return null;
+            }
+        }
+
+        void LoadDefaultAssets(string path)
+        {
+            string[] textures = Directory.GetFiles(path, "*.jp2", SearchOption.TopDirectoryOnly);
+            string[] clothing = Directory.GetFiles(path, "*.clothing", SearchOption.TopDirectoryOnly);
+            string[] bodyparts = Directory.GetFiles(path, "*.bodypart", SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < textures.Length; i++)
+            {
+                UUID assetID = ParseUUIDFromFilename(textures[i]);
+                AssetTexture item = new AssetTexture(assetID, File.ReadAllBytes(textures[i]));
+                Server.AssetStore[assetID] = item;
+            }
+
+            for (int i = 0; i < clothing.Length; i++)
+            {
+                UUID assetID = ParseUUIDFromFilename(clothing[i]);
+                AssetClothing item = new AssetClothing(assetID, File.ReadAllBytes(clothing[i]));
+                item.Decode();
+                Server.AssetStore[assetID] = item;
+            }
+
+            for (int i = 0; i < bodyparts.Length; i++)
+            {
+                UUID assetID = ParseUUIDFromFilename(bodyparts[i]);
+                AssetBodypart item = new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i]));
+                item.Decode();
+                Server.AssetStore[assetID] = item;
+            }
+        }
+
+        static UUID ParseUUIDFromFilename(string filename)
+        {
+            int dot = filename.LastIndexOf('.');
+
+            if (dot > 35)
+            {
+                // Grab the last 36 characters of the filename
+                string uuidString = filename.Substring(dot - 36, 36);
+                UUID uuid;
+                UUID.TryParse(uuidString, out uuid);
+                return uuid;
+            }
+            else
+            {
+                return UUID.Zero;
             }
         }
     }

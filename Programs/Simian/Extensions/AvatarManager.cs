@@ -68,17 +68,33 @@ namespace Simian.Extensions
             // Technically this should be per-agent, but if the only requirement is that it
             // increments this is easier
             update.AgentData.SerialNum = (uint)Interlocked.Increment(ref currentWearablesSerialNum);
-            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[13];
-            for (int i = 0; i < 13; i++)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = UUID.Random();
-                update.WearableData[i].ItemID = UUID.Random();
-                update.WearableData[i].WearableType = (byte)i;
-            }
+            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[5];
 
-            //HACK
-            //update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[0];
+            // TODO: These are hardcoded in for now, should change that
+            update.WearableData[0] = new AgentWearablesUpdatePacket.WearableDataBlock();
+            update.WearableData[0].AssetID = new UUID("dc675529-7ba5-4976-b91d-dcb9e5e36188");
+            update.WearableData[0].ItemID = UUID.Random();
+            update.WearableData[0].WearableType = (byte)WearableType.Hair;
+
+            update.WearableData[1] = new AgentWearablesUpdatePacket.WearableDataBlock();
+            update.WearableData[1].AssetID = new UUID("3e8ee2d6-4f21-4a55-832d-77daa505edff");
+            update.WearableData[1].ItemID = UUID.Random();
+            update.WearableData[1].WearableType = (byte)WearableType.Pants;
+
+            update.WearableData[2] = new AgentWearablesUpdatePacket.WearableDataBlock();
+            update.WearableData[2].AssetID = new UUID("530a2614-052e-49a2-af0e-534bb3c05af0");
+            update.WearableData[2].ItemID = UUID.Random();
+            update.WearableData[2].WearableType = (byte)WearableType.Shape;
+
+            update.WearableData[3] = new AgentWearablesUpdatePacket.WearableDataBlock();
+            update.WearableData[3].AssetID = new UUID("6a714f37-fe53-4230-b46f-8db384465981");
+            update.WearableData[3].ItemID = UUID.Random();
+            update.WearableData[3].WearableType = (byte)WearableType.Shirt;
+
+            update.WearableData[4] = new AgentWearablesUpdatePacket.WearableDataBlock();
+            update.WearableData[4].AssetID = new UUID("5f787f25-f761-4a35-9764-6418ee4774c4");
+            update.WearableData[4].ItemID = UUID.Random();
+            update.WearableData[4].WearableType = (byte)WearableType.Skin;
 
             agent.SendPacket(update);
         }

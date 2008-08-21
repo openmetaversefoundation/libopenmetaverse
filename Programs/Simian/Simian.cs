@@ -13,6 +13,8 @@ namespace Simian
 {
     public partial class Simian
     {
+        public string DataDir = "SimianData/";
+
         public HttpServer HttpServer;
         public UDPServer UDPServer;
         public Dictionary<uint, Primitive> SceneObjects = new Dictionary<uint, Primitive>();
@@ -296,11 +298,11 @@ namespace Simian
             response.HomePosition = new Vector3(128f, 128f, 25f);
             response.HomeRegion = Helpers.UIntsToLong(regionX, regionY);
             response.InventoryRoot = agent.InventoryRoot;
-            response.InventoryFolders = null;
+            response.InventorySkeleton = null;
             response.LastName = agent.LastName;
             response.LibraryOwner = response.AgentID;
             response.LibraryRoot = agent.InventoryLibRoot;
-            response.LibraryFolders = null;
+            response.LibrarySkeleton = null;
             response.LookAt = Vector3.UnitX;
             response.Message = "Welcome to Simian";
             response.Reason = String.Empty;
