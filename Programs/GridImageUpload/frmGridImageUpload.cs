@@ -78,9 +78,9 @@ namespace GridImageUpload
 
         private void LoadImage()
         {
-        	if (FileName == null || FileName == "")
-        		return;
-        	
+            if (FileName == null || FileName == "")
+                return;
+
             string lowfilename = FileName.ToLower();
             Bitmap bitmap = null;
 
@@ -175,7 +175,8 @@ namespace GridImageUpload
 
         private void cmdConnect_Click(object sender, EventArgs e)
         {
-            if (cmdConnect.Text == "Connect") {
+            if (cmdConnect.Text == "Connect")
+            {
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
                 LoginParams lp = new LoginParams();
@@ -187,7 +188,9 @@ namespace GridImageUpload
                 cmdConnect.Enabled = false;
                 Client.Network.BeginLogin(lp);
                 return;
-            } else {
+            }
+            else
+            {
                 Client.Network.Logout();
                 cmdConnect.Text = "Connect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
@@ -198,7 +201,8 @@ namespace GridImageUpload
 
         void Network_OnLogin(LoginStatus login, string message)
         {
-            if (InvokeRequired) {
+            if (InvokeRequired)
+            {
                 BeginInvoke(new MethodInvoker(
                     delegate()
                     {
@@ -207,10 +211,13 @@ namespace GridImageUpload
                     ));
                 return;
             }
-            if (login == LoginStatus.Success) {
+            if (login == LoginStatus.Success)
+            {
                 MessageBox.Show("Connected: " + message);
                 cmdConnect.Enabled = true;
-            } else if (login == LoginStatus.Failed) {
+            }
+            else if (login == LoginStatus.Failed)
+            {
                 MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
      Client.Network.LoginMessage));
                 cmdConnect.Text = "Connect";
@@ -224,8 +231,8 @@ namespace GridImageUpload
         private void cmdLoad_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = 
-                "Image Files (*.jp2,*.j2c,*.jpg,*.jpeg,*.gif,*.png,*.bmp,*.tga,*.tif,*.tiff,*.ico,*.wmf,*.emf)|" + 
+            dialog.Filter =
+                "Image Files (*.jp2,*.j2c,*.jpg,*.jpeg,*.gif,*.png,*.bmp,*.tga,*.tif,*.tiff,*.ico,*.wmf,*.emf)|" +
                 "*.jp2;*.j2c;*.jpg;*.jpeg;*.gif;*.png;*.bmp;*.tga;*.tif;*.tiff;*.ico;*.wmf;*.emf;";
 
             if (dialog.ShowDialog() == DialogResult.OK)
@@ -312,11 +319,12 @@ namespace GridImageUpload
                             UpdateAssetID();
 
                             // Fix the permissions on the new upload since they are fscked by default
+                            InventoryItem item = Client.Inventory.FetchItem(itemID, Client.Self.AgentID, 1000 * 15);
 
                             Transferred = UploadData.Length;
                             BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
-                            ItemData item;
-                            if (Client.Inventory.FetchItem(itemID, Client.Self.AgentID, TimeSpan.FromSeconds(15), out item))
+
+                            if (item != null)
                             {
                                 item.Permissions.EveryoneMask = PermissionMask.All;
                                 item.Permissions.NextOwnerMask = PermissionMask.All;

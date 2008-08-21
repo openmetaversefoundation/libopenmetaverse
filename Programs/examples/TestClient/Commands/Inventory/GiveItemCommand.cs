@@ -26,24 +26,34 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                 return "First argument expected agent UUID.";
             }
             Manager = Client.Inventory;
-            Inventory = Client.InventoryStore;
+            Inventory = Manager.Store;
             string ret = "";
             string nl = "\n";
             for (int i = 1; i < args.Length; ++i)
             {
-                string itemPath = args[i];
-
-                List<InventoryBase> results = Inventory.InventoryFromPath(itemPath, Client.CurrentDirectory, true);
-
-                if (results.Count == 0)
+                string inventoryName = args[i];
+                // WARNING: Uses local copy of inventory contents, need to download them first.
+                List<InventoryBase> contents = Inventory.GetContents(Client.CurrentDirectory);
+                bool found = false;
+                foreach (InventoryBase b in contents)
                 {
-                    ret += "No inventory item at " + itemPath + " found." + nl;
+                    if (inventoryName == b.Name || inventoryName == b.UUID.ToString())
+                    {
+                        found = true;
+                        if (b is InventoryItem)
+                        {
+                            InventoryItem item = b as InventoryItem;
+                            Manager.GiveItem(item.UUID, item.Name, item.AssetType, dest, true);
+                            ret += "Gave " + item.Name + nl;
+                        }
+                        else
+                        {
+                            ret += "Unable to give folder " + b.Name + nl;
+                        }
+                    }
                 }
-                else
-                {
-                    results[0].Give(dest, true);
-                    ret += "Gave " + results[0].Name + nl;
-                }
+                if (!found)
+                    ret += "No inventory item named " + inventoryName + " found." + nl;
             }
             return ret;
         }

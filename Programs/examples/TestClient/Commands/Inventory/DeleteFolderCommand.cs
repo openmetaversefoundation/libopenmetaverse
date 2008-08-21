@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
     /// </summary>
     public class DeleteFolderCommand : Command
     {
-		public DeleteFolderCommand(TestClient testClient)
+        public DeleteFolderCommand(TestClient testClient)
         {
             Name = "deleteFolder";
             Description = "Moves a folder to the Trash Folder";
@@ -27,27 +27,19 @@ namespace OpenMetaverse.TestClient
             string target = String.Empty;
             for (int ct = 0; ct < args.Length; ct++)
                 target = target + args[ct] + " ";
+            target = target.TrimEnd();
 
             // initialize results list
             List<InventoryBase> found = new List<InventoryBase>();
             try
             {
                 // find the folder
-
-                found = Client.InventoryStore.InventoryFromPath(target, Client.CurrentDirectory, true);
-                if (found.Count > 0)
+                found = Client.Inventory.LocalFind(Client.Inventory.Store.RootFolder.UUID, target.Split('/'), 0, true);
+                if (found.Count.Equals(1))
                 {
-                    InventoryBase item = found[0];
-                    InventoryFolder trash = Client.InventoryStore[Client.Inventory.FindFolderForType(AssetType.TrashFolder)] as InventoryFolder;
-                    if (trash != null)
-                    {
-                        item.Move(trash);
-                        return String.Format("Moved folder {0} ({1}) to Trash", item.Name, item.UUID);
-                    }
-                }
-                else
-                {
-                    return String.Format("Unable to locate {0}", target);
+                    // move the folder to the trash folder
+                    Client.Inventory.MoveFolder(found[0].UUID, Client.Inventory.FindFolderForType(AssetType.TrashFolder));
+                    return String.Format("Moved folder {0} to Trash", found[0].Name);
                 }
             }
             catch (InvalidOutfitException ex)
@@ -55,6 +47,6 @@ namespace OpenMetaverse.TestClient
                 return "Folder Not Found: (" + ex.Message + ")";
             }
             return string.Empty;
-		}
-	}
+        }
+    }
 }

@@ -1,12 +1,11 @@
 using System;
 using OpenMetaverse;
-using System.Collections.Generic;
 
 namespace OpenMetaverse.TestClient
 {
     public class WearCommand : Command
     {
-		public WearCommand(TestClient testClient)
+        public WearCommand(TestClient testClient)
         {
             Client = testClient;
             Name = "wear";
@@ -17,7 +16,7 @@ namespace OpenMetaverse.TestClient
         public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
-                return "Usage: wear [outfit name] [nobake] eg: 'wear \"/Clothing/My Outfit\" [nobake]'";
+                return "Usage: wear [outfit name] eg: 'wear /My Outfit/Dance Party";
 
             string target = String.Empty;
             bool bake = true;
@@ -30,13 +29,11 @@ namespace OpenMetaverse.TestClient
                     target = target + args[ct] + " ";
             }
 
-            List<InventoryBase> results = Client.InventoryStore.InventoryFromPath(target, Client.CurrentDirectory, true);
-            if (results.Count == 0 || !(results[0] is InventoryFolder))
-                return "Unable to find folder at " + target;
+            target = target.TrimEnd();
 
             try
             {
-                Client.Appearance.WearOutfit(results[0] as InventoryFolder, bake);
+                Client.Appearance.WearOutfit(target.Split('/'), bake);
             }
             catch (InvalidOutfitException ex)
             {

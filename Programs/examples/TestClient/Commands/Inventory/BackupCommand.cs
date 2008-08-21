@@ -155,7 +155,7 @@ namespace OpenMetaverse.TestClient
 
             BackupWorker = new BackgroundWorker();
             BackupWorker.WorkerSupportsCancellation = true;
-            BackupWorker.DoWork +=new DoWorkEventHandler(bwBackup_DoWork);
+            BackupWorker.DoWork += new DoWorkEventHandler(bwBackup_DoWork);
             BackupWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bwBackup_RunWorkerCompleted);
 
             BackupWorker.RunWorkerAsync(args);
@@ -202,7 +202,7 @@ namespace OpenMetaverse.TestClient
                         qdi.IsRequested = true;
                         qdi.TransferID = Client.Assets.RequestInventoryAsset(
                             qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true);
-                        
+
                         lock (CurrentDownloads) CurrentDownloads.Add(qdi);
                     }
                 }
@@ -229,7 +229,7 @@ namespace OpenMetaverse.TestClient
 
             TextItemsFound = 0;
 
-            args = (string[]) e.Argument;
+            args = (string[])e.Argument;
 
             lock (CurrentDownloads) CurrentDownloads.Clear();
 
@@ -240,7 +240,7 @@ namespace OpenMetaverse.TestClient
             DirectoryInfo di = new DirectoryInfo(args[1]);
 
             // recurse on the root folder into the entire inventory
-            BackupFolder(Client.InventoryStore.RootFolder, di.FullName);
+            BackupFolder(Client.Inventory.Store.RootNode, di.FullName);
         }
 
         /// <summary>
@@ -248,43 +248,42 @@ namespace OpenMetaverse.TestClient
         /// </summary>
         /// <param name="folder">The current leaf in the inventory tree</param>
         /// <param name="sPathSoFar">path so far, in the form @"c:\here" -- this needs to be "clean" for the current filesystem</param>
-        private void BackupFolder(InventoryFolder folder, string sPathSoFar)
+        private void BackupFolder(InventoryNode folder, string sPathSoFar)
         {
             StringBuilder sbRequests = new StringBuilder();
 
-
-            if (folder.IsStale)
-                folder.DownloadContents(TimeSpan.FromSeconds(10));
+            // FIXME:
+            //Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Self.AgentID, true, true, false, 
+            //    InventorySortOrder.ByName);
 
             // first scan this folder for text
-
-            foreach (InventoryBase ib in folder)
+            foreach (InventoryNode iNode in folder.Nodes.Values)
             {
                 if (BackupWorker.CancellationPending)
                     return;
-                if (ib is InventoryItem)
+                if (iNode.Data is OpenMetaverse.InventoryItem)
                 {
-                    InventoryItem ii = ib as InventoryItem;
-                    if (ii.Data.AssetType == AssetType.LSLText || ii.Data.AssetType == AssetType.Notecard)
+                    InventoryItem ii = iNode.Data as InventoryItem;
+                    if (ii.AssetType == AssetType.LSLText || ii.AssetType == AssetType.Notecard)
                     {
                         // check permissions on scripts
-                        if (ii.Data.AssetType == AssetType.LSLText)
+                        if (ii.AssetType == AssetType.LSLText)
                         {
-                            if ((ii.Data.Permissions.OwnerMask & PermissionMask.Modify) == PermissionMask.None)
+                            if ((ii.Permissions.OwnerMask & PermissionMask.Modify) == PermissionMask.None)
                             {
                                 // skip this one
                                 continue;
                             }
                         }
 
-                        string sExtension = (ii.Data.AssetType == AssetType.LSLText) ? ".lsl" : ".txt";
+                        string sExtension = (ii.AssetType == AssetType.LSLText) ? ".lsl" : ".txt";
                         // make the output file
                         string sPath = sPathSoFar + @"\" + MakeValid(ii.Name.Trim()) + sExtension;
 
                         // create the new qdi
-                        QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.Data.AssetUUID, ii.UUID, UUID.Zero, 
-                            Client.Self.AgentID, ii.Data.AssetType);
-                        
+                        QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.AssetUUID, iNode.Data.UUID, UUID.Zero,
+                            Client.Self.AgentID, ii.AssetType);
+
                         // add it to the queue
                         lock (PendingDownloads)
                         {
@@ -296,12 +295,12 @@ namespace OpenMetaverse.TestClient
             }
 
             // now run any subfolders
-            foreach (InventoryBase ib in folder)
+            foreach (InventoryNode i in folder.Nodes.Values)
             {
                 if (BackupWorker.CancellationPending)
                     return;
-                else if (ib is InventoryFolder)
-                    BackupFolder(ib as InventoryFolder, sPathSoFar + @"\" + MakeValid(ib.Name.Trim()));
+                else if (i.Data is OpenMetaverse.InventoryFolder)
+                    BackupFolder(i, sPathSoFar + @"\" + MakeValid(i.Data.Name.Trim()));
             }
         }
 
@@ -336,7 +335,7 @@ namespace OpenMetaverse.TestClient
                     else
                     {
                         TextItemErrors++;
-                        Console.WriteLine("{0}: Download of asset {1} ({2}) failed with status {3}", Name, r.FileName, 
+                        Console.WriteLine("{0}: Download of asset {1} ({2}) failed with status {3}", Name, r.FileName,
                             r.AssetID.ToString(), asset.Status.ToString());
                     }
 

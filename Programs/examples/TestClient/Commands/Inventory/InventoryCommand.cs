@@ -14,8 +14,8 @@ namespace OpenMetaverse.TestClient
     {
         private Inventory Inventory;
         private InventoryManager Manager;
-        
-		public InventoryCommand(TestClient testClient)
+
+        public InventoryCommand(TestClient testClient)
         {
             Name = "i";
             Description = "Prints out inventory.";
@@ -25,7 +25,7 @@ namespace OpenMetaverse.TestClient
         public override string Execute(string[] args, UUID fromAgentID)
         {
             Manager = Client.Inventory;
-            Inventory = Client.InventoryStore;
+            Inventory = Manager.Store;
 
             StringBuilder result = new StringBuilder();
 
@@ -35,29 +35,17 @@ namespace OpenMetaverse.TestClient
             return result.ToString();
         }
 
-        void PrintFolder(InventoryFolder folder, StringBuilder result, int indent)
+        void PrintFolder(InventoryFolder f, StringBuilder result, int indent)
         {
-            folder.DownloadContents(TimeSpan.FromSeconds(10));
-            foreach (InventoryBase b in folder)
+            foreach (InventoryBase i in Manager.FolderContents(f.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByName, 3000))
             {
-                if (b is InventoryFolder)
+                result.AppendFormat("{0}{1} ({2})\n", new String(' ', indent * 2), i.Name, i.UUID);
+                if (i is InventoryFolder)
                 {
-                    result.Append(Print(b as InventoryFolder, indent));
-                    PrintFolder(b as InventoryFolder, result, indent + 1);
-                }
-                else if (b is InventoryItem)
-                {
-                    result.Append(Print(b as InventoryItem, indent));
+                    InventoryFolder folder = (InventoryFolder)i;
+                    PrintFolder(folder, result, indent + 1);
                 }
             }
         }
-        string Print(InventoryItem item, int indent)
-        {
-            return string.Format("{0}{1} ({2})\n", new String(' ', indent * 2), item.Data.Name, item.UUID);
-        }
-        string Print(InventoryFolder folder, int indent)
-        {
-            return string.Format("{0}{1} ({2})\n", new String(' ', indent * 2), folder.Data.Name, folder.UUID);
-        }
-	}
+    }
 }

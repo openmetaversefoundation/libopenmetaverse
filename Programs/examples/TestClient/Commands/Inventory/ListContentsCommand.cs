@@ -17,49 +17,20 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            Manager = Client.Inventory;
-            Inventory = Client.InventoryStore;
             if (args.Length > 1)
-                return "Usage: ls [-l] [directory path]";
+                return "Usage: ls [-l]";
             bool longDisplay = false;
-            InventoryFolder directory = Client.CurrentDirectory;
-            if (args.Length > 0)
-            {
-                int start = 0;
-                if (args[0] == "-l")
-                {
-                    longDisplay = true;
-                    start = 1;
-                }
-                if (start < args.Length)
-                {
-                    string path = args[start];
-                    for (int i = start + 1; i < args.Length; ++i)
-                    {
-                        path += " " + args[i];
-                    }
-                    bool found = false;
-                    List<InventoryBase> results = Inventory.InventoryFromPath(path, Client.CurrentDirectory, true);
-                    foreach (InventoryBase ib in results)
-                    {
-                        if (ib is InventoryFolder)
-                        {
-                            directory = ib as InventoryFolder;
-                            found = true;
-                        }
-                    }
-                    if (!found)
-                        return "Unable to find directory at path: " + path;
-                }
-            }
+            if (args.Length > 0 && args[0] == "-l")
+                longDisplay = true;
 
-            if (directory.IsStale)
-                directory.DownloadContents(TimeSpan.FromSeconds(30));
-
+            Manager = Client.Inventory;
+            Inventory = Manager.Store;
+            // WARNING: Uses local copy of inventory contents, need to download them first.
+            List<InventoryBase> contents = Inventory.GetContents(Client.CurrentDirectory);
             string displayString = "";
             string nl = "\n"; // New line character
             // Pretty simple, just print out the contents.
-            foreach (InventoryBase b in directory)
+            foreach (InventoryBase b in contents)
             {
                 if (longDisplay)
                 {
@@ -80,17 +51,16 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                     {
                         InventoryItem item = b as InventoryItem;
                         displayString += "-";
-                        displayString += PermMaskString(item.Data.Permissions.OwnerMask);
-                        displayString += PermMaskString(item.Data.Permissions.GroupMask);
-                        displayString += PermMaskString(item.Data.Permissions.EveryoneMask);
+                        displayString += PermMaskString(item.Permissions.OwnerMask);
+                        displayString += PermMaskString(item.Permissions.GroupMask);
+                        displayString += PermMaskString(item.Permissions.EveryoneMask);
                         displayString += " " + item.UUID;
                         displayString += " " + item.Name;
                     }
                 }
                 else
                 {
-                    string name = b.Name;
-                    displayString += name;
+                    displayString += b.Name;
                 }
                 displayString += nl;
             }
@@ -106,7 +76,8 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         /// </summary>
         /// <param name="mask"></param>
         /// <returns></returns>
-        private static string PermMaskString(PermissionMask mask) {
+        private static string PermMaskString(PermissionMask mask)
+        {
             string str = "";
             if (((uint)mask | (uint)PermissionMask.Copy) == (uint)PermissionMask.Copy)
                 str += "C";

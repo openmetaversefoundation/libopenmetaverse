@@ -193,7 +193,7 @@ namespace OpenMetaverse
     }
 
     #endregion Enums
-
+    /*
     public static class AssetTypeParser
     {
         private static readonly ReversableDictionary<string, AssetType> AssetTypeMap = new ReversableDictionary<string, AssetType>();
@@ -231,7 +231,7 @@ namespace OpenMetaverse
                 return "unknown";
         }
     }
-
+    */
     #region Transfer Classes
 
     /// <summary>
@@ -574,7 +574,7 @@ namespace OpenMetaverse
             return transfer.ID;
         }
 
-        public UUID RequestInventoryAsset(ItemData item, bool priority)
+        public UUID RequestInventoryAsset(InventoryItem item, bool priority)
         {
             return RequestInventoryAsset(item.AssetUUID, item.UUID, UUID.Zero, item.OwnerID, item.AssetType, priority);
         }

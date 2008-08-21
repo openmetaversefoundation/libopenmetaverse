@@ -29,22 +29,24 @@ namespace OpenMetaverse.TestClient
             else
                 return "Couldn't find prim " + objectID.ToString();
 
-            List<ItemData> items;
-            List<FolderData> folders;
-            Client.Inventory.GetTaskInventory(objectID, objectLocalID, TimeSpan.FromMilliseconds(1000 * 30), out items, out folders);
+            List<InventoryBase> items = Client.Inventory.GetTaskInventory(objectID, objectLocalID, 1000 * 30);
 
             if (items != null)
             {
                 string result = String.Empty;
 
-                foreach (ItemData item in items)
+                for (int i = 0; i < items.Count; i++)
                 {
-                    result += String.Format("[Item] Name: {0} Desc: {1} Type: {2}", item.Name, item.Description,
+                    if (items[i] is InventoryFolder)
+                    {
+                        result += String.Format("[Folder] Name: {0}", items[i].Name) + Environment.NewLine;
+                    }
+                    else
+                    {
+                        InventoryItem item = (InventoryItem)items[i];
+                        result += String.Format("[Item] Name: {0} Desc: {1} Type: {2}", item.Name, item.Description,
                             item.AssetType) + Environment.NewLine;
-                }
-                foreach (FolderData folder in folders)
-                {
-                    result += String.Format("[Folder] Name: {0}", folder.Name) + Environment.NewLine;
+                    }
                 }
 
                 return result;

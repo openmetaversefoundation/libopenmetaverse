@@ -271,10 +271,10 @@ namespace Simian
             response.HomeLookAt = Vector3.UnitX;
             response.HomePosition = new Vector3(128f, 128f, 25f);
             response.HomeRegion = Helpers.UIntsToLong(regionX, regionY);
-            response.InventoryFolders = null;
+            response.InventorySkeleton = null;
             response.InventoryRoot = UUID.Random();
             response.LastName = agent.LastName;
-            response.LibraryFolders = null;
+            response.LibrarySkeleton = null;
             response.LibraryOwner = response.AgentID;
             response.LibraryRoot = UUID.Random();
             response.LookAt = Vector3.UnitX;

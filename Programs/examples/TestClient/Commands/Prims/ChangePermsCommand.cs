@@ -131,18 +131,20 @@ namespace OpenMetaverse.TestClient
             {
                 if ((prim.Flags & LLObject.ObjectFlags.InventoryEmpty) == 0)
                 {
-                    List<ItemData> items;
-                    List<FolderData> folders;
-                    Client.Inventory.GetTaskInventory(prim.ID, prim.LocalID, TimeSpan.FromSeconds(30), out items, out folders);
+                    List<InventoryBase> items = Client.Inventory.GetTaskInventory(prim.ID, prim.LocalID, 1000 * 30);
 
                     if (items != null)
                     {
-                        foreach (ItemData item in items)
+                        for (int i = 0; i < items.Count; i++)
                         {
-                            ItemData iitem = item;
-                            iitem.Permissions.NextOwnerMask = Perms;
-                            Client.Inventory.UpdateTaskInventory(prim.LocalID, iitem);
-                            ++taskItems;
+                            if (!(items[i] is InventoryFolder))
+                            {
+                                InventoryItem item = (InventoryItem)items[i];
+                                item.Permissions.NextOwnerMask = Perms;
+
+                                Client.Inventory.UpdateTaskInventory(prim.LocalID, item);
+                                ++taskItems;
+                            }
                         }
                     }
                 }

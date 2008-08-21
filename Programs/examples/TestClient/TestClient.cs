@@ -12,14 +12,14 @@ namespace OpenMetaverse.TestClient
     {
         public UUID GroupID = UUID.Zero;
         public Dictionary<UUID, GroupMember> GroupMembers;
-		public Dictionary<UUID, AvatarAppearancePacket> Appearances = new Dictionary<UUID, AvatarAppearancePacket>();
-		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
-		public bool Running = true;
+        public Dictionary<UUID, AvatarAppearancePacket> Appearances = new Dictionary<UUID, AvatarAppearancePacket>();
+        public Dictionary<string, Command> Commands = new Dictionary<string, Command>();
+        public bool Running = true;
         public bool GroupCommands = false;
         public string MasterName = String.Empty;
         public UUID MasterKey = UUID.Zero;
         public bool AllowObjectMaster = false;
-		public ClientManager ClientManager;
+        public ClientManager ClientManager;
         public VoiceManager VoiceManager;
         // Shell-like inventory commands need to be aware of the 'current' inventory folder.
         public InventoryFolder CurrentDirectory = null;
@@ -35,7 +35,7 @@ namespace OpenMetaverse.TestClient
         /// </summary>
         public TestClient(ClientManager manager)
         {
-			ClientManager = manager;
+            ClientManager = manager;
 
             updateTimer = new System.Timers.Timer(500);
             updateTimer.Elapsed += new System.Timers.ElapsedEventHandler(updateTimer_Elapsed);
@@ -60,6 +60,7 @@ namespace OpenMetaverse.TestClient
             Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
 
             VoiceManager = new VoiceManager(this);
+
             updateTimer.Start();
         }
 
@@ -68,16 +69,12 @@ namespace OpenMetaverse.TestClient
         /// </summary>
         /// <param name="login">The status of the login</param>
         /// <param name="message">Error message on failure, MOTD on success.</param>
-        public void  LoginHandler(LoginStatus login, string message)
+        public void LoginHandler(LoginStatus login, string message)
         {
             if (login == LoginStatus.Success)
             {
-                // Create the stores:
-                InventoryStore = new Inventory(Inventory, Inventory.InventorySkeleton);
-                LibraryStore = new Inventory(Inventory, Inventory.LibrarySkeleton);
-
-                // Start in the inventory root folder:
-                CurrentDirectory = InventoryStore.RootFolder;
+                // Start in the inventory root folder.
+                CurrentDirectory = Inventory.Store.RootFolder;
             }
         }
 
@@ -103,17 +100,18 @@ namespace OpenMetaverse.TestClient
 
         public void RegisterCommand(Command command)
         {
-			command.Client = this;
-			if (!Commands.ContainsKey(command.Name.ToLower()))
-			{
+            command.Client = this;
+            if (!Commands.ContainsKey(command.Name.ToLower()))
+            {
                 Commands.Add(command.Name.ToLower(), command);
-			}
+            }
         }
 
         //breaks up large responses to deal with the max IM size
         private void SendResponseIM(GridClient client, UUID fromAgentID, string data)
         {
-            for ( int i = 0 ; i < data.Length ; i += 1024 ) {
+            for (int i = 0; i < data.Length; i += 1024)
+            {
                 int y;
                 if ((i + 1023) > data.Length)
                 {
@@ -128,33 +126,33 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-		public void DoCommand(string cmd, UUID fromAgentID)
+        public void DoCommand(string cmd, UUID fromAgentID)
         {
-			string[] tokens;
+            string[] tokens;
 
             try { tokens = Parsing.ParseArguments(cmd); }
             catch (FormatException ex) { Console.WriteLine(ex.Message); return; }
 
             if (tokens.Length == 0)
                 return;
-			
-			string firstToken = tokens[0].ToLower();
+
+            string firstToken = tokens[0].ToLower();
 
             // "all balance" will send the balance command to all currently logged in bots
-			if (firstToken == "all" && tokens.Length > 1)
-			{
-			    cmd = String.Empty;
+            if (firstToken == "all" && tokens.Length > 1)
+            {
+                cmd = String.Empty;
 
-			    // Reserialize all of the arguments except for "all"
-			    for (int i = 1; i < tokens.Length; i++)
-			    {
-			        cmd += tokens[i] + " ";
-			    }
+                // Reserialize all of the arguments except for "all"
+                for (int i = 1; i < tokens.Length; i++)
+                {
+                    cmd += tokens[i] + " ";
+                }
 
-			    ClientManager.DoCommandAll(cmd, fromAgentID);
+                ClientManager.DoCommandAll(cmd, fromAgentID);
 
-			    return;
-			}
+                return;
+            }
 
             if (Commands.ContainsKey(firstToken))
             {
@@ -220,10 +218,7 @@ namespace OpenMetaverse.TestClient
 
             bool groupIM = im.GroupIM && GroupMembers != null && GroupMembers.ContainsKey(im.FromAgentID) ? true : false;
 
-            if ((im.Dialog == InstantMessageDialog.MessageFromObject) && !AllowObjectMaster)
-                return;
-
-            if (im.FromAgentID == MasterKey || im.FromAgentName == MasterName || (GroupCommands && groupIM))
+            if (im.FromAgentID == MasterKey || (GroupCommands && groupIM))
             {
                 // Received an IM from someone that is authenticated
                 Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
@@ -248,31 +243,23 @@ namespace OpenMetaverse.TestClient
                     im.RegionID, im.Position);
                 return;
             }
+
         }
 
-        private UUID Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
+        private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
             UUID objectID, bool fromTask)
         {
             if (MasterKey != UUID.Zero)
             {
                 if (offer.FromAgentID != MasterKey)
-                    return UUID.Zero;
+                    return false;
             }
             else if (GroupMembers != null && !GroupMembers.ContainsKey(offer.FromAgentID))
             {
-                return UUID.Zero;
-            }
-            else if (MasterName != String.Empty)
-            {
-                if (offer.FromAgentName != MasterName)
-                    return UUID.Zero;
-            }
-            else if (fromTask && !AllowObjectMaster)
-            {
-                return UUID.Zero;
+                return false;
             }
 
-            return Inventory.FindFolderForType(type);
+            return true;
         }
-	}
+    }
 }

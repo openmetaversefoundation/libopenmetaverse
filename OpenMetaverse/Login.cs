@@ -125,8 +125,8 @@ namespace OpenMetaverse
         public DateTime SecondsSinceEpoch;
         public UUID InventoryRoot;
         public UUID LibraryRoot;
-        public FolderData[] InventoryFolders;
-        public FolderData[] LibraryFolders;
+        public InventoryFolder[] InventorySkeleton;
+        public InventoryFolder[] LibrarySkeleton;
         public UUID LibraryOwner;
 
         public void Parse(LLSDMap reply)
@@ -205,10 +205,10 @@ namespace OpenMetaverse
 
             SecondsSinceEpoch = Utils.UnixTimeToDateTime(ParseUInt("seconds_since_epoch", reply));
             InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
-            InventoryFolders = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
+            InventorySkeleton = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
             LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
-            LibraryFolders = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
+            LibrarySkeleton = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
         }
 
         public void ToXmlRpc(XmlWriter writer)
@@ -464,9 +464,9 @@ namespace OpenMetaverse
             return UUID.Zero;
         }
 
-        public static FolderData[] ParseInventoryFolders(string key, UUID owner, LLSDMap reply)
+        public static InventoryFolder[] ParseInventoryFolders(string key, UUID owner, LLSDMap reply)
         {
-            List<FolderData> folders = new List<FolderData>();
+            List<InventoryFolder> folders = new List<InventoryFolder>();
 
             LLSD skeleton;
             if (reply.TryGetValue(key, out skeleton) && skeleton.Type == LLSDType.Array)
@@ -478,7 +478,7 @@ namespace OpenMetaverse
                     if (array[i].Type == LLSDType.Map)
                     {
                         LLSDMap map = (LLSDMap)array[i];
-                        FolderData folder = new FolderData(map["folder_id"].AsUUID());
+                        InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
                         folder.PreferredType = (AssetType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
                         folder.OwnerID = owner;

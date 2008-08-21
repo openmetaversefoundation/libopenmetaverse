@@ -16,19 +16,19 @@ namespace OpenMetaverse.TestClient
 
         void OnNoteUpdate(bool success, string status, UUID itemID, UUID assetID)
         {
-            if (success) 
-            Console.WriteLine("Notecard successfully uploaded, ItemID {0} AssetID {1}", itemID, assetID);
+            if (success)
+                Console.WriteLine("Notecard successfully uploaded, ItemID {0} AssetID {1}", itemID, assetID);
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            if(args.Length < 1)
+            if (args.Length < 1)
                 return "Usage: createnotecard filename.txt";
 
             string file = String.Empty;
-			for (int ct = 0; ct < args.Length; ct++)
-				file = file + args[ct] + " ";
-			file = file.TrimEnd();
+            for (int ct = 0; ct < args.Length; ct++)
+                file = file + args[ct] + " ";
+            file = file.TrimEnd();
 
             Console.WriteLine("Filename: {0}", file);
             if (!File.Exists(file))
@@ -45,9 +45,10 @@ namespace OpenMetaverse.TestClient
 
                 Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
                     file, desc, AssetType.Notecard, UUID.Random(), InventoryType.Notecard, PermissionMask.All,
-                    delegate(bool success, ItemData item) { 
-                    if(success) // upload the asset
-                        Client.Inventory.RequestUploadNotecardAsset(CreateNotecardAsset(body), item.UUID, new InventoryManager.NotecardUploadedAssetCallback(OnNoteUpdate));
+                    delegate(bool success, InventoryItem item)
+                    {
+                        if (success) // upload the asset
+                            Client.Inventory.RequestUploadNotecardAsset(CreateNotecardAsset(body), item.UUID, new InventoryManager.NotecardUploadedAssetCallback(OnNoteUpdate));
                     }
                 );
                 return "Done";
