@@ -231,7 +231,15 @@ namespace Simian.Extensions
         {
             ViewerEffectPacket effect = (ViewerEffectPacket)packet;
 
-            // TODO: Do something with these
+            effect.AgentData.AgentID = UUID.Zero;
+            effect.AgentData.SessionID = UUID.Zero;
+
+            // Broadcast this to everyone
+            lock (Server.Agents)
+            {
+                foreach (Agent recipient in Server.Agents.Values)
+                    recipient.SendPacket(effect);
+            }
         }
 
         public static ObjectUpdatePacket BuildFullUpdate(Agent agent, LLObject obj, ulong regionHandle, byte state, LLObject.ObjectFlags flags)

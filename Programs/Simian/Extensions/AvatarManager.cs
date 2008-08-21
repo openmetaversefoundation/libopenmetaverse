@@ -118,29 +118,23 @@ namespace Simian.Extensions
         {
             AgentSetAppearancePacket set = (AgentSetAppearancePacket)packet;
 
+            Logger.DebugLog("Updating avatar appearance");
+
             agent.Avatar.Textures = new LLObject.TextureEntry(set.ObjectData.TextureEntry, 0,
                 set.ObjectData.TextureEntry.Length);
 
-            Logger.DebugLog("Updating avatar appearance");
-
-            AvatarAppearancePacket appearance = new AvatarAppearancePacket();
-            appearance.ObjectData.TextureEntry = set.ObjectData.TextureEntry;
-            appearance.Sender.ID = agent.AgentID;
-            appearance.Sender.IsTrial = false;
-
-            // TODO: Store these visual params in Agent
-            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[set.VisualParam.Length];
+            // Update agent visual params
             for (int i = 0; i < set.VisualParam.Length; i++)
-            {
-                appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
-                appearance.VisualParam[i].ParamValue = set.VisualParam[i].ParamValue;
-            }
+                agent.VisualParams[i] = set.VisualParam[i].ParamValue;
 
             //TODO: What is WearableData used for?
 
             ObjectUpdatePacket update = Movement.BuildFullUpdate(agent, agent.Avatar, Server.RegionHandle,
                 agent.State, agent.Flags | LLObject.ObjectFlags.ObjectYouOwner);
             agent.SendPacket(update);
+
+            // Send out this appearance to all other connected avatars
+            AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
 
             lock (Server.Agents)
             {
@@ -150,6 +144,23 @@ namespace Simian.Extensions
                         recipient.SendPacket(appearance);
                 }
             }
+        }
+
+        public static AvatarAppearancePacket BuildAppearancePacket(Agent agent)
+        {
+            AvatarAppearancePacket appearance = new AvatarAppearancePacket();
+            appearance.ObjectData.TextureEntry = agent.Avatar.Textures.ToBytes();
+            appearance.Sender.ID = agent.AgentID;
+            appearance.Sender.IsTrial = false;
+
+            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[218];
+            for (int i = 0; i < 218; i++)
+            {
+                appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
+                appearance.VisualParam[i].ParamValue = agent.VisualParams[i];
+            }
+
+            return appearance;
         }
     }
 }

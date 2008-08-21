@@ -23,6 +23,7 @@ namespace Simian
         public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();
         public Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
         public Dictionary<WearableType, UUID> Wearables = new Dictionary<WearableType, UUID>();
+        public byte[] VisualParams = new byte[218];
         // TODO: Replace byte with enum
         public byte State;
         public LLObject.ObjectFlags Flags;

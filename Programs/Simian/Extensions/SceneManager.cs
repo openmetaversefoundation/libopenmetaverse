@@ -72,6 +72,22 @@ namespace Simian.Extensions
 
             agent.SendPacket(complete);
 
+            lock (server.Agents)
+            {
+                foreach (Agent otherAgent in server.Agents.Values)
+                {
+                    // Send ObjectUpdate packets for this avatar
+                    ObjectUpdatePacket update = Movement.BuildFullUpdate(otherAgent, otherAgent.Avatar,
+                        server.RegionHandle, otherAgent.State, otherAgent.Flags);
+                    agent.SendPacket(update);
+
+                    // Send appearances for this avatar
+                    AvatarAppearancePacket appearance = AvatarManager.BuildAppearancePacket(otherAgent);
+                    agent.SendPacket(appearance);
+                }
+            }
+
+            // Send terrain data
             SendLayerData(agent);
         }
 
