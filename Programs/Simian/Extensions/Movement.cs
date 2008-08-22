@@ -19,6 +19,7 @@ namespace Simian.Extensions
         const float WALK_SPEED = 3f;
         const float RUN_SPEED = 6f;
         const float FLY_SPEED = 12f;
+        const float FALL_FORGIVENESS = 0.5f;
 
         const float SQRT_TWO = 1.41421356f;
 
@@ -101,8 +102,7 @@ namespace Simian.Extensions
                     bool heldDown = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG;
                     bool flying = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_FLY) == AgentManager.ControlFlags.AGENT_CONTROL_FLY;
                     bool mouselook = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK) == AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK;
-
-                    bool updated = false;
+                    bool falling = false;
 
                     float speed = seconds * (flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED);
 
@@ -130,6 +130,13 @@ namespace Simian.Extensions
                         if (heldDown)
                             agent.Avatar.Position.Z -= speed;
                     }
+                    else if (agent.Avatar.Position.Z > lowerLimit)
+                    {
+                        agent.Avatar.Position.Z -= 9.8f * seconds;
+
+                        if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
+                            falling = true;
+                    }
                     else agent.Avatar.Position.Z = lowerLimit;
 
                     agent.Avatar.Position.X += move.X * speed;
@@ -149,24 +156,29 @@ namespace Simian.Extensions
 
                     List<UUID> animations = new List<UUID>();
 
-                    lock (agent.Animations)
-                    {
-                        bool movingHorizontally = (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) + (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
+                    bool movingHorizontally = (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) + (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
 
-                        if (flying)
+                    if (flying)
+                    {
+                        if (movingHorizontally) animations.Add(Animations.FLY);
+                        else if (heldUp && !heldDown) animations.Add(Animations.HOVER_UP);
+                        else if (heldDown && !heldUp) animations.Add(Animations.HOVER_DOWN);
+                        else animations.Add(Animations.HOVER);
+                    }
+                    else if (falling)
+                    {
+                        animations.Add(Animations.FALLDOWN);
+                    }
+                    else //on the ground
+                    {
+                        if (movingHorizontally)
                         {
-                            if (movingHorizontally) animations.Add(Animations.FLY);
-                            else animations.Add(Animations.HOVER);
+                            if (heldDown) animations.Add(Animations.CROUCHWALK);
+                            else if (agent.Running) animations.Add(Animations.RUN);
+                            else animations.Add(Animations.WALK);
                         }
-                        else
-                        {
-                            if (movingHorizontally)
-                            {
-                                if (agent.Running) animations.Add(Animations.RUN);
-                                else animations.Add(Animations.WALK);
-                            }
-                            else animations.Add(Animations.STAND);
-                        }
+                        else if (heldDown) animations.Add(Animations.CROUCH);
+                        else animations.Add(Animations.STAND);
                     }
 
                     SetAgentAnimations(agent, animations);
