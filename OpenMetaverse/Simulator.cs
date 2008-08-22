@@ -560,9 +560,10 @@ namespace OpenMetaverse
                 {
                     // Try to send the CloseCircuit notice
                     CloseCircuitPacket close = new CloseCircuitPacket();
-                    UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false, false);
-                    buf.Data = close.ToBytes();
-                    buf.DataLength = buf.Data.Length;
+                    UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint);
+                    byte[] data = close.ToBytes();
+                    Buffer.BlockCopy(data, 0, buf.Data, 0, data.Length);
+                    buf.DataLength = data.Length;
 
                     AsyncBeginSend(buf);
                 }
@@ -685,23 +686,15 @@ namespace OpenMetaverse
             Stats.SentBytes += (ulong)bytes;
             ++Stats.SentPackets;
 
-            UDPPacketBuffer buf;
+            UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint);
 
             // Zerocode if needed
             if (packet.Header.Zerocoded)
-            {
-                buf = new UDPPacketBuffer(ipEndPoint, true, false);
-
                 bytes = Helpers.ZeroEncode(buffer, bytes, buf.Data);
-                buf.DataLength = bytes;
-            }
             else
-            {
-                buf = new UDPPacketBuffer(ipEndPoint, false, false);
+                Buffer.BlockCopy(buffer, 0, buf.Data, 0, bytes);
 
-                buf.Data = buffer;
-                buf.DataLength = bytes;
-            }
+            buf.DataLength = bytes;
 
             AsyncBeginSend(buf);
         }
@@ -728,8 +721,8 @@ namespace OpenMetaverse
                 Stats.SentBytes += (ulong)payload.Length;
                 ++Stats.SentPackets;
 
-                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false, false);
-                buf.Data = payload;
+                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint);
+                Buffer.BlockCopy(payload, 0, buf.Data, 0, payload.Length);
                 buf.DataLength = payload.Length;
 
                 AsyncBeginSend(buf);

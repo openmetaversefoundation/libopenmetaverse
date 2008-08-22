@@ -14,10 +14,10 @@ namespace OpenMetaverse
         /// zeroencoding this packet</summary>
         public const int ZERO_BUFFER_SIZE = 4096;
         /// <summary>Raw packet data buffer</summary>
-        public byte[] Data;
+        public readonly byte[] Data;
         /// <summary>Temporary buffer used for zerodecoding and zeroencoding
         /// this packet</summary>
-        public byte[] ZeroData;
+        public readonly byte[] ZeroData;
         /// <summary>Length of the data to transmit</summary>
         public int DataLength;
         /// <summary>EndPoint of the remote host</summary>
@@ -43,21 +43,6 @@ namespace OpenMetaverse
             Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
             ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
             RemoteEndPoint = (EndPoint)endPoint;
-        }
-
-        /// <summary>
-        /// Create an allocated UDP packet buffer for receiving a packet
-        /// </summary>
-        /// <param name="endPoint">EndPoint of the remote host</param>
-        /// <param name="allocate">True to allocate space for the raw packet
-        /// buffer, otherwise false</param>
-        /// <param name="allocateZero">True to allocate space for zerodecoding
-        /// or zeroencoding, otherwise false</param>
-        public UDPPacketBuffer(EndPoint endPoint, bool allocate, bool allocateZero)
-        {
-            if (allocate) Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
-            if (allocateZero) ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
-            RemoteEndPoint = endPoint;
         }
     }
 
