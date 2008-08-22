@@ -167,10 +167,9 @@ namespace Simian.Extensions
                             }
                             else animations.Add(Animations.STAND);
                         }
-
-                        SetAgentAnimations(agent, animations);
                     }
 
+                    SetAgentAnimations(agent, animations);
                 }
             }
         }
