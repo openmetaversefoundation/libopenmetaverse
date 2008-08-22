@@ -60,10 +60,6 @@ namespace Simian.Extensions
                 {
                     bool animsChanged = false;
 
-                    // Reset velocity and acceleration
-                    agent.Avatar.Acceleration = Vector3.Zero;
-                    agent.Avatar.Velocity = Vector3.Zero;
-
                     // Create forward and left vectors from the current avatar rotation
                     Matrix4 rotMatrix = Matrix4.CreateFromQuaternion(agent.Avatar.Rotation);
                     Vector3 fwd = Vector3.Transform(Vector3.UnitX, rotMatrix);
@@ -103,13 +99,14 @@ namespace Simian.Extensions
                     if (flying)
                     {
                         if (heldUp)
-                            agent.Avatar.Position.Z += speed;
+                            move.Z += speed;
 
                         if (heldDown)
-                            agent.Avatar.Position.Z -= speed;
+                            move.Z -= speed;
                     }
                     else if (agent.Avatar.Position.Z > lowerLimit)
                     {
+                        agent.Avatar.Position.Z -= 9.8f * seconds;
                         agent.Avatar.Position.Z -= 9.8f * seconds;
 
                         if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
@@ -117,27 +114,13 @@ namespace Simian.Extensions
                     }
                     else agent.Avatar.Position.Z = lowerLimit;
 
-                    agent.Avatar.Position.X += move.X * speed;
-                    agent.Avatar.Position.Y += move.Y * speed;
-                    agent.Avatar.Velocity.X += move.X * speed;
-                    agent.Avatar.Velocity.Y += move.Y * speed;
-                    agent.Avatar.Acceleration.X += move.X * speed;
-                    agent.Avatar.Acceleration.Y += move.Y * speed;
-
-                    if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
-                    else if (agent.Avatar.Position.X > 255) agent.Avatar.Position.X = 255f;
-
-                    if (agent.Avatar.Position.Y < 0) agent.Avatar.Position.Y = 0f;
-                    else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
-
-                    if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
-
                     bool movingHorizontally =
                         (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) +
                         (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
 
                     if (flying)
                     {
+                        agent.Avatar.Acceleration = move * speed;
                         if (movingHorizontally)
                         {
                             if (server.AvatarManager.SetDefaultAnimation(agent, Animations.FLY))
@@ -161,11 +144,14 @@ namespace Simian.Extensions
                     }
                     else if (falling)
                     {
+                        agent.Avatar.Acceleration /= 1 + (seconds / SQRT_TWO);
+
                         if (server.AvatarManager.SetDefaultAnimation(agent, Animations.FALLDOWN))
                             animsChanged = true;
                     }
                     else //on the ground
                     {
+                        agent.Avatar.Acceleration = move * speed;
                         if (movingHorizontally)
                         {
                             if (heldDown)
@@ -198,6 +184,18 @@ namespace Simian.Extensions
 
                     if (animsChanged)
                         server.AvatarManager.SendAnimations(agent);
+
+                    agent.Avatar.Velocity = agent.Avatar.Acceleration;
+                    agent.Avatar.Position += agent.Avatar.Velocity;
+
+                    if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
+                    else if (agent.Avatar.Position.X > 255) agent.Avatar.Position.X = 255f;
+
+                    if (agent.Avatar.Position.Y < 0) agent.Avatar.Position.Y = 0f;
+                    else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
+
+                    if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
+
                 }
             }
         }
