@@ -156,23 +156,15 @@ namespace Simian
             //Stats.SentBytes += (ulong)bytes;
             //++Stats.SentPackets;
 
-            UDPPacketBuffer buf;
+            UDPPacketBuffer buf = new UDPPacketBuffer(address);
 
             // Zerocode if needed
             if (packet.Header.Zerocoded)
-            {
-                buf = new UDPPacketBuffer(address, true, false);
-
                 bytes = Helpers.ZeroEncode(buffer, bytes, buf.Data);
-                buf.DataLength = bytes;
-            }
             else
-            {
-                buf = new UDPPacketBuffer(address, false, false);
+                Buffer.BlockCopy(buffer, 0, buf.Data, 0, bytes);
 
-                buf.Data = buffer;
-                buf.DataLength = bytes;
-            }
+            buf.DataLength = bytes;
 
             udpServer.AsyncBeginSend(buf);
         }
