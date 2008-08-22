@@ -22,6 +22,9 @@ namespace Simian
         public float[] Heightmap = new float[65536];
         public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
+        // Interfaces
+        public IAvatarManager AvatarManager;
+
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<IPEndPoint, Agent> Agents = new Dictionary<IPEndPoint, Agent>();
 
@@ -57,6 +60,15 @@ namespace Simian
             {
                 Logger.DebugLog("Loading extension " + extension.GetType().Name);
                 extension.Start();
+
+                // Assign to an interface if possible
+                TryAssignToInterface(extension);
+            }
+
+            if (!CheckInterfaces())
+            {
+                Logger.Log("Missing interfaces, shutting down", Helpers.LogLevel.Error);
+                Stop();
             }
         }
 
@@ -82,6 +94,26 @@ namespace Simian
             {
                 return false;
             }
+        }
+
+        void TryAssignToInterface(ISimianExtension extension)
+        {
+            if (extension is IAvatarManager)
+            {
+                IAvatarManager manager = (IAvatarManager)extension;
+                AvatarManager = manager;
+            }
+        }
+
+        bool CheckInterfaces()
+        {
+            if (AvatarManager == null)
+            {
+                Logger.Log("No AvatarManager interface loaded", Helpers.LogLevel.Error);
+                return false;
+            }
+
+            return true;
         }
 
         void InitUDPServer(int port)

@@ -6,131 +6,11 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public struct Animation
-    {
-        public UUID ID;
-        public int SequenceNum;
-
-        public Animation(UUID id, int sequenceNum)
-        {
-            ID = id;
-            SequenceNum = sequenceNum;
-        }
-    }
-
-    public class AnimationSet
-    {
-        private Animation defaultAnimation;
-        private List<Animation> animations = new List<Animation>();
-
-        public AnimationSet()
-        {
-            ResetDefaultAnimation();
-        }
-
-        public bool HasAnimation(UUID animID)
-        {
-            if (defaultAnimation.ID == animID)
-                return true;
-
-            lock (animations)
-            {
-                for (int i = 0; i < animations.Count; ++i)
-                {
-                    if (animations[i].ID == animID)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool Add(UUID animID, int sequenceNum)
-        {
-            lock (animations)
-            {
-                if (!HasAnimation(animID))
-                {
-                    animations.Add(new Animation(animID, sequenceNum));
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool Remove(UUID animID)
-        {
-            if (defaultAnimation.ID == animID)
-            {
-                ResetDefaultAnimation();
-                return true;
-            }
-            else if (HasAnimation(animID))
-            {
-                lock (animations)
-                {
-                    for (int i = 0; i < animations.Count; i++)
-                    {
-                        if (animations[i].ID == animID)
-                        {
-                            animations.RemoveAt(i);
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public void Clear()
-        {
-            ResetDefaultAnimation();
-            lock (animations) animations.Clear();
-        }
-
-        public bool SetDefaultAnimation(UUID animID, int sequenceNum)
-        {
-            if (defaultAnimation.ID != animID)
-            {
-                defaultAnimation = new Animation(animID, sequenceNum);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public void GetArrays(out UUID[] animIDs, out int[] sequenceNums)
-        {
-            lock (animations)
-            {
-                animIDs = new UUID[animations.Count + 1];
-                sequenceNums = new int[animations.Count + 1];
-
-                animIDs[0] = defaultAnimation.ID;
-                sequenceNums[0] = defaultAnimation.SequenceNum;
-
-                for (int i = 0; i < animations.Count; ++i)
-                {
-                    animIDs[i + 1] = animations[i].ID;
-                    sequenceNums[i + 1] = animations[i].SequenceNum;
-                }
-            }
-        }
-
-        protected bool ResetDefaultAnimation()
-        {
-            return SetDefaultAnimation(Animations.STAND, 1);
-        }
-    }
-
-    class AvatarManager : ISimianExtension
+    class AvatarManager : ISimianExtension, IAvatarManager
     {
         Simian Server;
         int currentWearablesSerialNum = -1;
+        int currentAnimSequenceNum = 0;
 
         public AvatarManager(Simian server)
         {
@@ -143,10 +23,94 @@ namespace Simian.Extensions
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentWearablesRequest, new UDPServer.PacketCallback(AgentWearablesRequestHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentIsNowWearing, new UDPServer.PacketCallback(AgentIsNowWearingHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentSetAppearance, new UDPServer.PacketCallback(AgentSetAppearanceHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
         }
 
         public void Stop()
         {
+        }
+
+        public bool SetDefaultAnimation(Agent agent, UUID animID)
+        {
+            return agent.Animations.SetDefaultAnimation(animID, ref currentAnimSequenceNum);
+        }
+
+        public bool AddAnimation(Agent agent, UUID animID)
+        {
+            return agent.Animations.Add(animID, ref currentAnimSequenceNum);
+        }
+
+        public bool RemoveAnimation(Agent agent, UUID animID)
+        {
+            return agent.Animations.Remove(animID);
+        }
+
+        public void SendAnimations(Agent agent)
+        {
+            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
+            sendAnim.Sender.ID = agent.AgentID;
+            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[1];
+            sendAnim.AnimationSourceList[0] = new AvatarAnimationPacket.AnimationSourceListBlock();
+            sendAnim.AnimationSourceList[0].ObjectID = agent.AgentID;
+
+            UUID[] animIDS;
+            int[] sequenceNums;
+            agent.Animations.GetArrays(out animIDS, out sequenceNums);
+
+            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[animIDS.Length];
+            for (int i = 0; i < animIDS.Length; i++)
+            {
+                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
+                sendAnim.AnimationList[i].AnimID = animIDS[i];
+                sendAnim.AnimationList[i].AnimSequenceID = sequenceNums[i];
+            }
+
+            lock (Server.Agents)
+            {
+                foreach (Agent recipient in Server.Agents.Values)
+                    recipient.SendPacket(sendAnim);
+            }
+        }
+
+        void AgentAnimationHandler(Packet packet, Agent agent)
+        {
+            AgentAnimationPacket animPacket = (AgentAnimationPacket)packet;
+            bool changed = false;
+
+            for (int i = 0; i < animPacket.AnimationList.Length; i++)
+            {
+                AgentAnimationPacket.AnimationListBlock block = animPacket.AnimationList[i];
+
+                if (block.StartAnim)
+                {
+                    if (agent.Animations.Add(block.AnimID, ref currentAnimSequenceNum))
+                        changed = true;
+                }
+                else
+                {
+                    if (agent.Animations.Remove(block.AnimID))
+                        changed = true;
+                }
+            }
+
+            if (changed)
+                SendAnimations(agent);
+        }
+
+        void ViewerEffectHandler(Packet packet, Agent agent)
+        {
+            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
+
+            effect.AgentData.AgentID = UUID.Zero;
+            effect.AgentData.SessionID = UUID.Zero;
+
+            // Broadcast this to everyone
+            lock (Server.Agents)
+            {
+                foreach (Agent recipient in Server.Agents.Values)
+                    recipient.SendPacket(effect);
+            }
         }
 
         void AvatarPropertiesRequestHandler(Packet packet, Agent agent)

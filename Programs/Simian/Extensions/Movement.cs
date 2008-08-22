@@ -9,19 +9,17 @@ namespace Simian.Extensions
 {
     public class Movement : ISimianExtension
     {
-        Simian server;
-        Timer updateTimer;
-        long lastTick;
-        int animationSerialNum;
-
         const int UPDATE_ITERATION = 100;
-
         const float WALK_SPEED = 3f;
         const float RUN_SPEED = 6f;
         const float FLY_SPEED = 12f;
         const float FALL_FORGIVENESS = 0.5f;
-
         const float SQRT_TWO = 1.41421356f;
+
+        Simian server;
+        AvatarManager avatarManager;
+        Timer updateTimer;
+        long lastTick;
 
         public int LastTick
         {
@@ -36,11 +34,9 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
             server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
             server.UDPServer.RegisterPacketCallback(PacketType.AgentHeightWidth, new UDPServer.PacketCallback(AgentHeightWidthHandler));
             server.UDPServer.RegisterPacketCallback(PacketType.SetAlwaysRun, new UDPServer.PacketCallback(SetAlwaysRunHandler));
-            server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
 
             updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             LastTick = Environment.TickCount;
@@ -50,29 +46,6 @@ namespace Simian.Extensions
         public void Stop()
         {
             updateTimer.Dispose();
-        }
-
-        void SetAgentAnimations(Agent agent, List<UUID> animations)
-        {
-            lock (agent.Animations)
-            {
-                //definitely update
-                if (animations.Count != agent.Animations.Count) SendAnimationUpdate(agent);
-
-                else //maybe update
-                {
-                    foreach (UUID checkAnim in animations)
-                    {
-                        if (!agent.Animations.Contains(checkAnim))
-                        {
-                            //yes, update
-                            agent.Animations = animations;
-                            SendAnimationUpdate(agent);
-                            break;
-                        }
-                    }
-                }
-            }
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -85,13 +58,18 @@ namespace Simian.Extensions
             {
                 foreach (Agent agent in server.Agents.Values)
                 {
+                    bool animsChanged = false;
+
+                    // Reset velocity and acceleration
                     agent.Avatar.Acceleration = Vector3.Zero;
                     agent.Avatar.Velocity = Vector3.Zero;
 
+                    // Create forward and left vectors from the current avatar rotation
                     Matrix4 rotMatrix = Matrix4.CreateFromQuaternion(agent.Avatar.Rotation);
                     Vector3 fwd = Vector3.Transform(Vector3.UnitX, rotMatrix);
                     Vector3 left = Vector3.Transform(Vector3.UnitY, rotMatrix);
 
+                    // Check control flags
                     bool heldForward = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_AT_POS) == AgentManager.ControlFlags.AGENT_CONTROL_AT_POS;
                     bool heldBack = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG;
                     bool heldLeft = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS;
@@ -154,34 +132,72 @@ namespace Simian.Extensions
 
                     if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
 
-                    List<UUID> animations = new List<UUID>();
-
-                    bool movingHorizontally = (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) + (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
+                    bool movingHorizontally =
+                        (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) +
+                        (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
 
                     if (flying)
                     {
-                        if (movingHorizontally) animations.Add(Animations.FLY);
-                        else if (heldUp && !heldDown) animations.Add(Animations.HOVER_UP);
-                        else if (heldDown && !heldUp) animations.Add(Animations.HOVER_DOWN);
-                        else animations.Add(Animations.HOVER);
+                        if (movingHorizontally)
+                        {
+                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.FLY))
+                                animsChanged = true;
+                        }
+                        else if (heldUp && !heldDown)
+                        {
+                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                                animsChanged = true;
+                        }
+                        else if (heldDown && !heldUp)
+                        {
+                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
+                                animsChanged = true;
+                        }
+                        else
+                        {
+                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.HOVER))
+                                animsChanged = true;
+                        }
                     }
                     else if (falling)
                     {
-                        animations.Add(Animations.FALLDOWN);
+                        if (server.AvatarManager.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                            animsChanged = true;
                     }
                     else //on the ground
                     {
                         if (movingHorizontally)
                         {
-                            if (heldDown) animations.Add(Animations.CROUCHWALK);
-                            else if (agent.Running) animations.Add(Animations.RUN);
-                            else animations.Add(Animations.WALK);
+                            if (heldDown)
+                            {
+                                if (server.AvatarManager.SetDefaultAnimation(agent, Animations.CROUCHWALK))
+                                    animsChanged = true;
+                            }
+                            else if (agent.Running)
+                            {
+                                if (server.AvatarManager.SetDefaultAnimation(agent, Animations.RUN))
+                                    animsChanged = true;
+                            }
+                            else
+                            {
+                                if (server.AvatarManager.SetDefaultAnimation(agent, Animations.WALK))
+                                    animsChanged = true;
+                            }
                         }
-                        else if (heldDown) animations.Add(Animations.CROUCH);
-                        else animations.Add(Animations.STAND);
+                        else if (heldDown)
+                        {
+                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.CROUCH))
+                                animsChanged = true;
+                        }
+                        else
+                        {
+                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.STAND))
+                                animsChanged = true;
+                        }
                     }
 
-                    SetAgentAnimations(agent, animations);
+                    if (animsChanged)
+                        server.AvatarManager.SendAnimations(agent);
                 }
             }
         }
@@ -195,33 +211,14 @@ namespace Simian.Extensions
             agent.State = update.AgentData.State;
             agent.Flags = (LLObject.ObjectFlags)update.AgentData.Flags;
 
+            ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, server.RegionHandle,
+                agent.State, agent.Flags);
+
             lock (server.Agents)
             {
-                ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, server.RegionHandle,
-                    agent.State, agent.Flags);
-
                 foreach (Agent recipient in server.Agents.Values)
-                {
                     recipient.SendPacket(fullUpdate);
-
-                    
-                    if (agent.Animations.Count == 0) //TODO: need to start default standing animation
-                    {
-                        agent.Animations.Add(Animations.STAND);
-
-                        AgentAnimationPacket startAnim = new AgentAnimationPacket();
-                        startAnim.AgentData.AgentID = agent.AgentID;
-                        startAnim.AnimationList = new AgentAnimationPacket.AnimationListBlock[1];
-                        startAnim.AnimationList[0] = new AgentAnimationPacket.AnimationListBlock();
-                        startAnim.AnimationList[0].AnimID = Animations.STAND;
-                        startAnim.AnimationList[0].StartAnim = true;
-                        startAnim.PhysicalAvatarEventList = new AgentAnimationPacket.PhysicalAvatarEventListBlock[0];
-
-                        recipient.SendPacket(startAnim);
-                    }                    
-                }
             }
-
         }
 
         void SetAlwaysRunHandler(Packet packet, Agent agent)
@@ -260,67 +257,12 @@ namespace Simian.Extensions
             return ((lerpX + lerpY) / 2);
         }
 
-        void SendAnimationUpdate(Agent agent)
-        {
-            lock (agent.Animations)
-            {
-                AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
-                sendAnim.Sender.ID = agent.AgentID;
-                sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[agent.Animations.Count];
-                sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[agent.Animations.Count];
-
-                int i = 0;
-                foreach (UUID anim in agent.Animations)
-                {
-                    sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
-                    sendAnim.AnimationList[i].AnimID = anim;
-                    sendAnim.AnimationList[i].AnimSequenceID = (int)Interlocked.Increment(ref animationSerialNum);
-                    sendAnim.AnimationSourceList[i] = new AvatarAnimationPacket.AnimationSourceListBlock();
-                    sendAnim.AnimationSourceList[i].ObjectID = agent.AgentID;
-                    i++;
-                }
-
-                lock (server.Agents)
-                {
-                    foreach (Agent recipient in server.Agents.Values)
-                        recipient.SendPacket(sendAnim);
-                }
-            }
-        }
-
-        void AgentAnimationHandler(Packet packet, Agent agent)
-        {
-            AgentAnimationPacket animPacket = (AgentAnimationPacket)packet;
-
-            List<UUID> animations = new List<UUID>();
-
-            foreach (AgentAnimationPacket.AnimationListBlock block in animPacket.AnimationList)
-                if (block.StartAnim && !animations.Contains(block.AnimID)) animations.Add(block.AnimID);
-
-            SetAgentAnimations(agent, animations);
-        }
-
         void AgentHeightWidthHandler(Packet packet, Agent agent)
         {
             AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
 
             Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
                 heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
-        }
-
-        void ViewerEffectHandler(Packet packet, Agent agent)
-        {
-            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
-
-            effect.AgentData.AgentID = UUID.Zero;
-            effect.AgentData.SessionID = UUID.Zero;
-
-            // Broadcast this to everyone
-            lock (server.Agents)
-            {
-                foreach (Agent recipient in server.Agents.Values)
-                    recipient.SendPacket(effect);
-            }
         }
 
         public static ObjectUpdatePacket BuildFullUpdate(Agent agent, LLObject obj, ulong regionHandle, byte state, LLObject.ObjectFlags flags)
@@ -339,7 +281,7 @@ namespace Simian.Extensions
 
             ObjectUpdatePacket update = new ObjectUpdatePacket();
             update.RegionData.RegionHandle = regionHandle;
-            update.RegionData.TimeDilation = Helpers.FloatToByte(1f, 0f, 1f);
+            update.RegionData.TimeDilation = UInt16.MaxValue;
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
             update.ObjectData[0] = new ObjectUpdatePacket.ObjectDataBlock();
             update.ObjectData[0].ClickAction = (byte)0;

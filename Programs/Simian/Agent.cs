@@ -19,7 +19,7 @@ namespace Simian
         public int Balance;
         public bool Running;
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
-        public List<UUID> Animations = new List<UUID>();
+        public AnimationSet Animations = new AnimationSet();
         public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();
         public Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
         public Dictionary<WearableType, UUID> Wearables = new Dictionary<WearableType, UUID>();
