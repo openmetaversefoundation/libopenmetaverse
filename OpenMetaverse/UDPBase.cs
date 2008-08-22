@@ -190,21 +190,23 @@ namespace OpenMetaverse
                 Interlocked.Increment(ref rwOperationCount);
 
                 // allocate a packet buffer
-                WrappedObject<UDPPacketBuffer> wrappedBuffer = Pool.CheckOut();
-                //UDPPacketBuffer buf = new UDPPacketBuffer();
+                //WrappedObject<UDPPacketBuffer> wrappedBuffer = Pool.CheckOut();
+                UDPPacketBuffer buf = new UDPPacketBuffer();
 
                 try
                 {
                     // kick off an async read
                     udpSocket.BeginReceiveFrom(
-                        wrappedBuffer.Instance.Data,
-                        //buf.Data,
+                        //wrappedBuffer.Instance.Data,
+                        buf.Data,
                         0,
                         UDPPacketBuffer.BUFFER_SIZE,
                         SocketFlags.None,
-                        ref wrappedBuffer.Instance.RemoteEndPoint,
+                        //ref wrappedBuffer.Instance.RemoteEndPoint,
+                        ref buf.RemoteEndPoint,
                         new AsyncCallback(AsyncEndReceive),
-                        wrappedBuffer);
+                        //wrappedBuffer);
+                        buf);
                 }
                 catch (SocketException)
                 {
@@ -237,9 +239,9 @@ namespace OpenMetaverse
 
                 // get the buffer that was created in AsyncBeginReceive
                 // this is the received data
-                WrappedObject<UDPPacketBuffer> wrappedBuffer = (WrappedObject<UDPPacketBuffer>)iar.AsyncState;
-                UDPPacketBuffer buffer = wrappedBuffer.Instance;
-                //UDPPacketBuffer buffer = (UDPPacketBuffer)iar.AsyncState;
+                //WrappedObject<UDPPacketBuffer> wrappedBuffer = (WrappedObject<UDPPacketBuffer>)iar.AsyncState;
+                //UDPPacketBuffer buffer = wrappedBuffer.Instance;
+                UDPPacketBuffer buffer = (UDPPacketBuffer)iar.AsyncState;
 
                 try
                 {
@@ -259,19 +261,16 @@ namespace OpenMetaverse
                 }
                 catch (SocketException)
                 {
-                    // something bad happened
-                    //Logger.Log(
-                    //    "A SocketException occurred in UDPServer.AsyncEndReceive()",
-                    //    Helpers.LogLevel.Error, se);
-
                     // an error occurred, therefore the operation is void.  Decrement the reference count.
                     Interlocked.Decrement(ref rwOperationCount);
 
                     // we're done with the socket for now, release the reader lock.
                     rwLock.ReleaseReaderLock();
                 }
-
-                wrappedBuffer.Dispose();
+                finally
+                {
+                    //wrappedBuffer.Dispose();
+                }
             }
             else
             {

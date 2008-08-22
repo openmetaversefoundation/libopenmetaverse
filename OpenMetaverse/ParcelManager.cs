@@ -1491,7 +1491,7 @@ namespace OpenMetaverse
                 }
 
                 // Check if all of the simulator parcels have been retrieved, if so fire another callback
-                if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
+                if (simulator.IsParcelMapFull() && OnSimParcelsDownloaded != null)
                 {
                     try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }

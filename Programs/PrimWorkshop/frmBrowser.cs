@@ -106,9 +106,9 @@ namespace PrimWorkshop
             Application.Idle += IdleEvent;
 
             // Show a flat sim before login so the screen isn't so boring
+            InitHeightmap();
             InitOpenGL();
             InitCamera();
-            InitHeightmap();
 
             glControl_Resize(null, null);
         }
@@ -134,7 +134,6 @@ namespace PrimWorkshop
 
         private void InitializeObjects()
         {
-            InitHeightmap();
             InitLists();
 
             if (DownloadList != null)
@@ -1059,7 +1058,7 @@ namespace PrimWorkshop
             
             BeginInvoke((MethodInvoker)delegate() { txtSim.Text = Client.Network.CurrentSim.Name; });
 
-            InitHeightmap();
+            //InitHeightmap();
             InitLists();
 
             // Disable teleports until the new event queue comes online
