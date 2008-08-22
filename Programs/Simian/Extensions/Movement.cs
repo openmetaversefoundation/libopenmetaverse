@@ -51,6 +51,29 @@ namespace Simian.Extensions
             updateTimer.Dispose();
         }
 
+        void SetAgentAnimations(Agent agent, List<UUID> animations)
+        {
+            lock (agent.Animations)
+            {
+                //definitely update
+                if (animations.Count != agent.Animations.Count) SendAnimationUpdate(agent);
+
+                else //maybe update
+                {
+                    foreach (UUID checkAnim in animations)
+                    {
+                        if (!agent.Animations.Contains(checkAnim))
+                        {
+                            //yes, update
+                            agent.Animations = animations;
+                            SendAnimationUpdate(agent);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         void UpdateTimer_Elapsed(object sender)
         {
             int tick = Environment.TickCount;
@@ -61,7 +84,8 @@ namespace Simian.Extensions
             {
                 foreach (Agent agent in server.Agents.Values)
                 {
-                    agent.Avatar.Velocity.X = 0f;
+                    agent.Avatar.Acceleration = Vector3.Zero;
+                    agent.Avatar.Velocity = Vector3.Zero;
 
                     Matrix4 rotMatrix = Matrix4.CreateFromQuaternion(agent.Avatar.Rotation);
                     Vector3 fwd = Vector3.Transform(Vector3.UnitX, rotMatrix);
@@ -77,6 +101,8 @@ namespace Simian.Extensions
                     bool heldDown = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG;
                     bool flying = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_FLY) == AgentManager.ControlFlags.AGENT_CONTROL_FLY;
                     bool mouselook = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK) == AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK;
+
+                    bool updated = false;
 
                     float speed = seconds * (flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED);
 
@@ -110,6 +136,8 @@ namespace Simian.Extensions
                     agent.Avatar.Position.Y += move.Y * speed;
                     agent.Avatar.Velocity.X += move.X * speed;
                     agent.Avatar.Velocity.Y += move.Y * speed;
+                    agent.Avatar.Acceleration.X += move.X * speed;
+                    agent.Avatar.Acceleration.Y += move.Y * speed;
 
                     if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
                     else if (agent.Avatar.Position.X > 255) agent.Avatar.Position.X = 255f;
@@ -118,6 +146,31 @@ namespace Simian.Extensions
                     else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
 
                     if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
+
+                    List<UUID> animations = new List<UUID>();
+
+                    lock (agent.Animations)
+                    {
+                        bool movingHorizontally = (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) + (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
+
+                        if (flying)
+                        {
+                            if (movingHorizontally) animations.Add(Animations.FLY);
+                            else animations.Add(Animations.HOVER);
+                        }
+                        else
+                        {
+                            if (movingHorizontally)
+                            {
+                                if (agent.Running) animations.Add(Animations.RUN);
+                                else animations.Add(Animations.WALK);
+                            }
+                            else animations.Add(Animations.STAND);
+                        }
+
+                        SetAgentAnimations(agent, animations);
+                    }
+
                 }
             }
         }
@@ -154,10 +207,10 @@ namespace Simian.Extensions
                         startAnim.PhysicalAvatarEventList = new AgentAnimationPacket.PhysicalAvatarEventListBlock[0];
 
                         recipient.SendPacket(startAnim);
-                    }
-                    
+                    }                    
                 }
             }
+
         }
 
         void SetAlwaysRunHandler(Packet packet, Agent agent)
@@ -196,49 +249,44 @@ namespace Simian.Extensions
             return ((lerpX + lerpY) / 2);
         }
 
+        void SendAnimationUpdate(Agent agent)
+        {
+            lock (agent.Animations)
+            {
+                AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
+                sendAnim.Sender.ID = agent.AgentID;
+                sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[agent.Animations.Count];
+                sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[agent.Animations.Count];
+
+                int i = 0;
+                foreach (UUID anim in agent.Animations)
+                {
+                    sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
+                    sendAnim.AnimationList[i].AnimID = anim;
+                    sendAnim.AnimationList[i].AnimSequenceID = (int)Interlocked.Increment(ref animationSerialNum);
+                    sendAnim.AnimationSourceList[i] = new AvatarAnimationPacket.AnimationSourceListBlock();
+                    sendAnim.AnimationSourceList[i].ObjectID = agent.AgentID;
+                    i++;
+                }
+
+                lock (server.Agents)
+                {
+                    foreach (Agent recipient in server.Agents.Values)
+                        recipient.SendPacket(sendAnim);
+                }
+            }
+        }
+
         void AgentAnimationHandler(Packet packet, Agent agent)
         {
             AgentAnimationPacket animPacket = (AgentAnimationPacket)packet;
 
-            List<UUID> startAnims = new List<UUID>();
-            List<UUID> stopAnims = new List<UUID>();
+            List<UUID> animations = new List<UUID>();
 
             foreach (AgentAnimationPacket.AnimationListBlock block in animPacket.AnimationList)
-            {
-                if (block.StartAnim) startAnims.Add(block.AnimID);
-                else stopAnims.Add(block.AnimID);
-            }
+                if (block.StartAnim && !animations.Contains(block.AnimID)) animations.Add(block.AnimID);
 
-            lock (agent.Animations)
-            {
-                foreach (UUID anim in stopAnims)
-                    if (agent.Animations.Contains(anim)) agent.Animations.Remove(anim);
-
-                foreach (UUID anim in startAnims)
-                    if (!agent.Animations.Contains(anim)) agent.Animations.Add(anim);
-            }            
-
-            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
-            sendAnim.Sender.ID = agent.AgentID;
-            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[agent.Animations.Count];
-            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[agent.Animations.Count];
-
-            int i = 0;
-            foreach(UUID anim in agent.Animations)
-            {
-                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
-                sendAnim.AnimationList[i].AnimID = anim;
-                sendAnim.AnimationList[i].AnimSequenceID = (int)Interlocked.Increment(ref animationSerialNum);
-                sendAnim.AnimationSourceList[i] = new AvatarAnimationPacket.AnimationSourceListBlock();
-                sendAnim.AnimationSourceList[i].ObjectID = agent.AgentID;
-                i++;
-            }
-
-            lock (server.Agents)
-            {
-                foreach (Agent recipient in server.Agents.Values)
-                    recipient.SendPacket(sendAnim);
-            }
+            SetAgentAnimations(agent, animations);
         }
 
         void AgentHeightWidthHandler(Packet packet, Agent agent)
