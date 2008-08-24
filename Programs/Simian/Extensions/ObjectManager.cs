@@ -276,12 +276,56 @@ namespace Simian.Extensions
             return closestPoint;
         }
 
+        /// <summary>
+        /// Adapted from http://www.cs.virginia.edu/~gfx/Courses/2003/ImageSynthesis/papers/Acceleration/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="direction"></param>
+        /// <param name="vert0"></param>
+        /// <param name="vert1"></param>
+        /// <param name="vert2"></param>
+        /// <returns></returns>
         bool RayTriangleIntersection(Vector3 origin, Vector3 direction, Vector3 vert0, Vector3 vert1, Vector3 vert2)
         {
-            // TODO:
-            return false;
-        }
+            const float EPSILON = 0.00001f;
 
-        
+            Vector3 edge1, edge2, pvec;
+            float determinant, invDeterminant;
+
+            // Find vectors for two edges sharing vert0
+            edge1 = vert1 - vert0;
+            edge2 = vert2 - vert0;
+
+            // Begin calculating the determinant
+            pvec = Vector3.Cross(direction, edge2);
+
+            // If the determinant is near zero, ray lies in plane of triangle
+            determinant = Vector3.Dot(edge1, pvec);
+
+            if (determinant > -EPSILON && determinant < EPSILON)
+                return false;
+
+            invDeterminant = 1f / determinant;
+
+            // Calculate distance from vert0 to ray origin
+            Vector3 tvec = origin - vert0;
+
+            // Calculate U parameter and test bounds
+            float u = Vector3.Dot(tvec, pvec) * invDeterminant;
+            if (u < 0.0f || u > 1.0f)
+                return false;
+
+            // Prepare to test V parameter
+            Vector3 qvec = Vector3.Cross(tvec, edge1);
+
+            // Calculate V parameter and test bounds
+            float v = Vector3.Dot(direction, qvec) * invDeterminant;
+            if (v < 0.0f || u + v > 1.0f)
+                return false;
+
+            //t = Vector3.Dot(edge2, qvec) * invDeterminant;
+
+            return true;
+        }
     }
 }

@@ -18,6 +18,8 @@ namespace Simian
         public Avatar Avatar = new Avatar();
         public int Balance;
         public bool Running;
+        public int TickFall;
+        public int TickJump;
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
         public AnimationSet Animations = new AnimationSet();
         public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();

@@ -10,11 +10,15 @@ namespace Simian.Extensions
     public class Movement : ISimianExtension
     {
         const int UPDATE_ITERATION = 100;
-        const float WALK_SPEED = 3f;
-        const float RUN_SPEED = 6f;
-        const float FLY_SPEED = 12f;
-        const float FALL_FORGIVENESS = 0.5f;
+        const float WALK_SPEED = 3f; //meters/sec
+        const float RUN_SPEED = 6f; //meters/sec
+        const float FLY_SPEED = 12f; //meters/sec
+        const float FALL_DELAY = 0.5f; //seconds before starting animation
+        const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
+        const float JUMP_IMPULSE = 2.5f; //boots amount in meters/sec
+        const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float SQRT_TWO = 1.41421356f;
+        const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
 
         Simian server;
         AvatarManager Avatars;
@@ -76,116 +80,171 @@ namespace Simian.Extensions
                     bool heldDown = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG;
                     bool flying = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_FLY) == AgentManager.ControlFlags.AGENT_CONTROL_FLY;
                     bool mouselook = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK) == AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK;
-                    bool falling = false;
 
-                    float speed = seconds * (flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED);
-
+                    // direction in which the avatar is trying to move
                     Vector3 move = Vector3.Zero;
-
                     if (heldForward) { move.X += fwd.X; move.Y += fwd.Y; }
                     if (heldBack) { move.X -= fwd.X; move.Y -= fwd.Y; }
                     if (heldLeft) { move.X += left.X; move.Y += left.Y; }
                     if (heldRight) { move.X -= left.X; move.Y -= left.Y; }
+                    if (heldUp) { move.Z += 1; }
+                    if (heldDown) { move.Z -= 1; }
 
-                    float oldFloor = GetLandHeightAt(agent.Avatar.Position);
-                    float newFloor = GetLandHeightAt(agent.Avatar.Position + move);
-                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
+                    // is the avatar trying to move?
+                    bool moving = move != Vector3.Zero;
 
+                    // 2-dimensional speed multipler
+                    float speed = seconds * (flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED);
                     if ((heldForward || heldBack) && (heldLeft || heldRight))
                         speed /= SQRT_TWO;
 
-                    if (!flying && newFloor != oldFloor) speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
+                    // adjust multiplier for Z dimension
+                    float oldFloor = GetLandHeightAt(agent.Avatar.Position);
+                    float newFloor = GetLandHeightAt(agent.Avatar.Position + move);
+                    if (!flying && newFloor != oldFloor)
+                        speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
+
+                    // least possible distance from avatar to the ground
+                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
+
+                    // Z acceleration resulting from gravity
+                    float gravity = 0f;
 
                     if (flying)
                     {
-                        if (heldUp)
-                            move.Z += speed;
+                        agent.TickFall = 0;
+                        agent.TickJump = 0;
 
-                        if (heldDown)
-                            move.Z -= speed;
-                    }
-                    else if (agent.Avatar.Position.Z > lowerLimit)
-                    {
-                        agent.Avatar.Position.Z -= 9.8f * seconds;
-                        agent.Avatar.Position.Z -= 9.8f * seconds;
+                        agent.Avatar.Velocity *= 0.5f;
 
-                        if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
-                            falling = true;
-                    }
-                    else agent.Avatar.Position.Z = lowerLimit;
-
-                    bool movingHorizontally =
-                        (agent.Avatar.Velocity.X * agent.Avatar.Velocity.X) +
-                        (agent.Avatar.Velocity.Y * agent.Avatar.Velocity.Y) > 0f;
-
-                    if (flying)
-                    {
-                        agent.Avatar.Acceleration = move * speed;
-                        if (movingHorizontally)
-                        {
+                        if (move.X != 0 || move.Y != 0)
+                        { //flying horizontally
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.FLY))
                                 animsChanged = true;
                         }
-                        else if (heldUp && !heldDown)
-                        {
+                        else if (move.Z > 0)
+                        { //flying straight up
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
                                 animsChanged = true;
                         }
-                        else if (heldDown && !heldUp)
-                        {
+                        else if (move.Z < 0)
+                        { //flying straight down
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
                                 animsChanged = true;
                         }
                         else
-                        {
+                        { //hovering in the air
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
                                 animsChanged = true;
                         }
                     }
-                    else if (falling)
-                    {
-                        agent.Avatar.Acceleration /= 1 + (seconds / SQRT_TWO);
 
-                        if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
-                            animsChanged = true;
-                    }
-                    else //on the ground
-                    {
-                        agent.Avatar.Acceleration = move * speed;
-                        if (movingHorizontally)
-                        {
-                            if (heldDown)
-                            {
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
-                                    animsChanged = true;
-                            }
-                            else if (agent.Running)
-                            {
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.RUN))
-                                    animsChanged = true;
-                            }
-                            else
-                            {
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.WALK))
-                                    animsChanged = true;
-                            }
-                        }
-                        else if (heldDown)
-                        {
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
-                                animsChanged = true;
+                    else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
+                    { //falling
+
+                        move.X = 0;
+                        move.Y = 0;
+
+                        agent.Avatar.Velocity *= 0.8f; 
+
+                        if (agent.TickFall == 0)
+                        { //just started falling
+                            agent.TickFall = Environment.TickCount;
                         }
                         else
                         {
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.STAND))
-                                animsChanged = true;
+                            //adjust acceleration to account for gravity
+                            gravity = 9.8f * seconds * ((float)(Environment.TickCount - agent.TickFall) / 1000f);
+
+                            if (Environment.TickCount - agent.TickFall > (FALL_DELAY * 1000))
+                            { //falling long enough to trigger the animation
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                    animsChanged = true;
+                            }
+                        }
+                    }
+                    else
+                    { //on the ground
+
+                        agent.TickFall = 0;
+
+                        //friction
+                        agent.Avatar.Acceleration *= 0.2f;
+                        agent.Avatar.Velocity *= 0.2f;                        
+
+                        agent.Avatar.Position.Z = lowerLimit;
+
+                        if (move.Z > 0)
+                        { //jumping
+                            if (agent.TickJump == 0)
+                            { //begin prejump
+                                move.Z = 0; //override Z control
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
+                                    animsChanged = true;
+
+                                agent.TickJump = Environment.TickCount;                                
+                            }
+                            else if (Environment.TickCount - agent.TickJump > PREJUMP_DELAY * 1000)
+                            { //start actual jump
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
+                                    animsChanged = true;
+
+                                move.Z = JUMP_IMPULSE;
+                            }
+                            else move.Z = 0; //override Z control
+                        }
+
+                        else
+                        { //not jumping
+
+                            agent.TickJump = 0;
+
+                            if (move.X != 0 || move.Y != 0)
+                            { //not walking
+
+                                if (move.Z < 0)
+                                { //crouchwalking
+                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
+                                        animsChanged = true;
+                                }
+                                else if (agent.Running)
+                                { //running
+                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.RUN))
+                                        animsChanged = true;
+                                }
+                                else
+                                { //walking
+                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.WALK))
+                                        animsChanged = true;
+                                }
+                            }
+                            else
+                            { //walking
+                                if (move.Z < 0)
+                                { //crouching
+                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
+                                        animsChanged = true;
+                                }
+                                else
+                                { //standing
+                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.STAND))
+                                        animsChanged = true;
+                                }
+                            }
                         }
                     }
 
                     if (animsChanged)
                         server.Avatars.SendAnimations(agent);
 
-                    agent.Avatar.Velocity = agent.Avatar.Acceleration;
+                    // static acceleration when any control is held
+                    if (moving) agent.Avatar.Acceleration = move * speed; //FIXME
+                    // taper off speed when no controls are held                    
+                    else agent.Avatar.Acceleration *= 0.8f;
+
+                    if (gravity > AVATAR_TERMINAL_VELOCITY) gravity = AVATAR_TERMINAL_VELOCITY;
+                    agent.Avatar.Velocity += agent.Avatar.Acceleration - new Vector3(0f, 0f, gravity); 
+
                     agent.Avatar.Position += agent.Avatar.Velocity;
 
                     if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
