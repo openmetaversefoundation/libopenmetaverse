@@ -129,7 +129,7 @@ namespace OpenMetaverse.TestClient
             int taskItems = 0;
             foreach (Primitive prim in Objects.Values)
             {
-                if ((prim.Flags & LLObject.ObjectFlags.InventoryEmpty) == 0)
+                if ((prim.Flags & PrimFlags.InventoryEmpty) == 0)
                 {
                     List<InventoryBase> items = Client.Inventory.GetTaskInventory(prim.ID, prim.LocalID, 1000 * 30);
 
@@ -153,7 +153,7 @@ namespace OpenMetaverse.TestClient
             return "Set permissions to " + Perms.ToString() + " on " + localIDs.Count + " objects and " + taskItems + " inventory items";
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectProperties properties)
+        void Objects_OnObjectProperties(Simulator simulator, Primitive.ObjectProperties properties)
         {
             if (PermsSent)
             {

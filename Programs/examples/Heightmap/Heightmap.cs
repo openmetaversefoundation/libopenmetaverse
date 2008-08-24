@@ -15,8 +15,6 @@ namespace Heightmap
             if (args.Length != 3)
             {
                 Console.WriteLine("Usage: [FirstName] [LastName] [password]");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
                 return;
             }
 

@@ -39,18 +39,18 @@ namespace OpenMetaverse.TestClient
                     {
                         if (prim.Text != null && regexPrimName.IsMatch(prim.Text.ToLower()))
                         {
-                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.PropertiesFamily.Name,
-                                prim.ID, prim.Flags.ToString(), prim.Text, prim.PropertiesFamily.Description), Helpers.LogLevel.Info, Client);
+                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.Properties.Name,
+                                prim.ID, prim.Flags.ToString(), prim.Text, prim.Properties.Description), Helpers.LogLevel.Info, Client);
                         }
-                        else if (prim.PropertiesFamily.Name != null && regexPrimName.IsMatch(prim.PropertiesFamily.Name.ToLower()))
+                        else if (prim.Properties.Name != null && regexPrimName.IsMatch(prim.Properties.Name.ToLower()))
                         {
-                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.PropertiesFamily.Name,
-                                prim.ID, prim.Flags.ToString(), prim.Text, prim.PropertiesFamily.Description), Helpers.LogLevel.Info, Client);
+                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.Properties.Name,
+                                prim.ID, prim.Flags.ToString(), prim.Text, prim.Properties.Description), Helpers.LogLevel.Info, Client);
                         }
-                        else if (prim.PropertiesFamily.Description != null && regexPrimName.IsMatch(prim.PropertiesFamily.Description.ToLower()))
+                        else if (prim.Properties.Description != null && regexPrimName.IsMatch(prim.Properties.Description.ToLower()))
                         {
-                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.PropertiesFamily.Name,
-                                prim.ID, prim.Flags.ToString(), prim.Text, prim.PropertiesFamily.Description), Helpers.LogLevel.Info, Client);
+                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.Properties.Name,
+                                prim.ID, prim.Flags.ToString(), prim.Text, prim.Properties.Description), Helpers.LogLevel.Info, Client);
                         }
                     }
                 );

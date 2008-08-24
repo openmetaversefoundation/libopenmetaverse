@@ -137,8 +137,38 @@ namespace OpenMetaverse
 
     #endregion Enumerations
 
-    public abstract partial class LLObject
+    public partial class Primitive
     {
+        #region Enums
+
+        /// <summary>
+        /// Texture animation mode
+        /// </summary>
+        [Flags]
+        public enum TextureAnimMode : uint
+        {
+            /// <summary>Disable texture animation</summary>
+            ANIM_OFF = 0x00,
+            /// <summary>Enable texture animation</summary>
+            ANIM_ON = 0x01,
+            /// <summary>Loop when animating textures</summary>
+            LOOP = 0x02,
+            /// <summary>Animate in reverse direction</summary>
+            REVERSE = 0x04,
+            /// <summary>Animate forward then reverse</summary>
+            PING_PONG = 0x08,
+            /// <summary>Slide texture smoothly instead of frame-stepping</summary>
+            SMOOTH = 0x10,
+            /// <summary>Rotate texture instead of using frames</summary>
+            ROTATE = 0x20,
+            /// <summary>Scale texture instead of using frames</summary>
+            SCALE = 0x40,
+        }
+
+        #endregion Enums
+
+        #region Subclasses
+
         /// <summary>
         /// A single textured face. Don't instantiate this class yourself, use the
         /// methods in TextureEntry
@@ -449,7 +479,7 @@ namespace OpenMetaverse
                 tex["mapping"] = LLSD.FromInteger((int)TexMapType);
                 tex["glow"] = LLSD.FromReal(Glow);
 
-                if (TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                if (TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                     tex["imageid"] = LLSD.FromUUID(TextureID);
                 else
                     tex["imageid"] = LLSD.FromUUID(UUID.Zero);
@@ -1108,5 +1138,89 @@ namespace OpenMetaverse
 
             #endregion Helpers
         }
+
+        /// <summary>
+        /// Controls the texture animation of a particular prim
+        /// </summary>
+        public struct TextureAnimation
+        {
+            /// <summary></summary>
+            public TextureAnimMode Flags;
+            /// <summary></summary>
+            public uint Face;
+            /// <summary></summary>
+            public uint SizeX;
+            /// <summary></summary>
+            public uint SizeY;
+            /// <summary></summary>
+            public float Start;
+            /// <summary></summary>
+            public float Length;
+            /// <summary></summary>
+            public float Rate;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="data"></param>
+            /// <param name="pos"></param>
+            public TextureAnimation(byte[] data, int pos)
+            {
+                if (data.Length >= 16)
+                {
+                    Flags = (TextureAnimMode)((uint)data[pos++]);
+                    Face = (uint)data[pos++];
+                    SizeX = (uint)data[pos++];
+                    SizeY = (uint)data[pos++];
+
+                    Start = Helpers.BytesToFloat(data, pos);
+                    Length = Helpers.BytesToFloat(data, pos + 4);
+                    Rate = Helpers.BytesToFloat(data, pos + 8);
+                }
+                else
+                {
+                    Flags = 0;
+                    Face = 0;
+                    SizeX = 0;
+                    SizeY = 0;
+
+                    Start = 0.0f;
+                    Length = 0.0f;
+                    Rate = 0.0f;
+                }
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public byte[] GetBytes()
+            {
+                byte[] data = new byte[16];
+                int pos = 0;
+
+                data[pos++] = (byte)Flags;
+                data[pos++] = (byte)Face;
+                data[pos++] = (byte)SizeX;
+                data[pos++] = (byte)SizeY;
+
+                Helpers.FloatToBytes(Start).CopyTo(data, pos);
+                Helpers.FloatToBytes(Length).CopyTo(data, pos + 4);
+                Helpers.FloatToBytes(Rate).CopyTo(data, pos + 4);
+
+                return data;
+            }
+        }
+
+        #endregion Subclasses
+
+        #region Public Members
+
+        /// <summary></summary>
+        public TextureEntry Textures;
+        /// <summary></summary>
+        public TextureAnimation TextureAnim;
+
+        #endregion Public Members
     }
 }

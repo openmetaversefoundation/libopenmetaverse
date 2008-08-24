@@ -75,6 +75,6 @@ namespace OpenMetaverse.Rendering
         /// <param name="vertices">Vertex list to modify texture coordinates for</param>
         /// <param name="center">Center-point of the face</param>
         /// <param name="teFace">Face texture parameters</param>
-        void TransformTexCoords(List<Vertex> vertices, Vector3 center, LLObject.TextureEntryFace teFace);
+        void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace);
     }
 }

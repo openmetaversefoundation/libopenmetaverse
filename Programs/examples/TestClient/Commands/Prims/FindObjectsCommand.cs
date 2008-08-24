@@ -78,7 +78,7 @@ namespace OpenMetaverse.TestClient
             return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectProperties properties)
+        void Objects_OnObjectProperties(Simulator simulator, Primitive.ObjectProperties properties)
         {
             lock (PrimsWaiting) {
                 Primitive prim;

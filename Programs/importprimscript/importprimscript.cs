@@ -154,12 +154,12 @@ namespace importprimscript
 
                 // Create basic spherical volume parameters. It will be set to
                 // a scultpy in the callback for new objects being created
-                LLObject.ObjectData volume = new LLObject.ObjectData();
+                Primitive.ConstructionData volume = new Primitive.ConstructionData();
                 volume.PCode = PCode.Prim;
-                volume.Material = LLObject.MaterialType.Wood;
+                volume.Material = Material.Wood;
                 volume.PathScaleY = 0.5f;
-                volume.PathCurve = LLObject.PathCurve.Circle;
-                volume.ProfileCurve = LLObject.ProfileCurve.Circle;
+                volume.PathCurve = PathCurve.Circle;
+                volume.ProfileCurve = ProfileCurve.Circle;
 
                 // Rez this prim
                 CurrentSculpt = sculpties[i];
@@ -246,7 +246,7 @@ namespace importprimscript
 
         static void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
-            if (CurrentSculpt != null && (prim.Flags & LLObject.ObjectFlags.CreateSelected) != 0 &&
+            if (CurrentSculpt != null && (prim.Flags & PrimFlags.CreateSelected) != 0 &&
                 !RezzedPrims.Contains(prim.LocalID))
             {
                 lock (RezzedPrims) RezzedPrims.Add(prim.LocalID);
@@ -261,13 +261,13 @@ namespace importprimscript
                     RootPosition + CurrentSculpt.Offset);
 
                 // Set the texture
-                LLObject.TextureEntry textures = new LLObject.TextureEntry(CurrentSculpt.TextureID);
+                Primitive.TextureEntry textures = new Primitive.TextureEntry(CurrentSculpt.TextureID);
                 Client.Objects.SetTextures(Client.Network.CurrentSim, prim.LocalID, textures);
 
                 // Turn it in to a sculpted prim
                 Primitive.SculptData sculpt = new Primitive.SculptData();
                 sculpt.SculptTexture = CurrentSculpt.SculptID;
-                sculpt.Type = Primitive.SculptType.Sphere;
+                sculpt.Type = SculptType.Sphere;
                 Client.Objects.SetSculpt(Client.Network.CurrentSim, prim.LocalID, sculpt);
 
                 // Set the prim name

@@ -6,7 +6,7 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    class AvatarManager : ISimianExtension, IAvatarManager
+    class AvatarManager : ISimianExtension, IAvatarProvider
     {
         Simian Server;
         int currentWearablesSerialNum = -1;
@@ -205,7 +205,7 @@ namespace Simian.Extensions
 
             Logger.DebugLog("Updating avatar appearance");
 
-            agent.Avatar.Textures = new LLObject.TextureEntry(set.ObjectData.TextureEntry, 0,
+            agent.Avatar.Textures = new Primitive.TextureEntry(set.ObjectData.TextureEntry, 0,
                 set.ObjectData.TextureEntry.Length);
 
             // Update agent visual params
@@ -214,8 +214,9 @@ namespace Simian.Extensions
 
             //TODO: What is WearableData used for?
 
-            ObjectUpdatePacket update = Movement.BuildFullUpdate(agent, agent.Avatar, Server.RegionHandle,
-                agent.State, agent.Flags | LLObject.ObjectFlags.ObjectYouOwner);
+            ObjectUpdatePacket update = Movement.BuildFullUpdate(agent.Avatar,
+                NameValue.NameValuesToString(agent.Avatar.NameValues), Server.RegionHandle,
+                agent.State, agent.Flags | PrimFlags.ObjectYouOwner);
             agent.SendPacket(update);
 
             // Send out this appearance to all other connected avatars

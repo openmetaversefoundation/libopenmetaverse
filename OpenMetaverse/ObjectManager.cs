@@ -34,112 +34,16 @@ namespace OpenMetaverse
     #region Enums
 
     /// <summary>
-    /// Identifier code for object types
+    /// 
     /// </summary>
-    public enum PCode : byte
+    public enum ObjectPropertiesRequestType
     {
-        /// <summary>None</summary>
+        /// <summary></summary>
         None = 0,
-        /// <summary>A Primitive</summary>
-        Prim = 9,
-        /// <summary>A Avatar</summary>
-        Avatar = 47,
-        /// <summary>Linden grass</summary>
-        Grass = 95,
-        /// <summary>Linden tree</summary>
-        NewTree = 111,
-        /// <summary>A primitive that acts as the source for a particle stream</summary>
-        ParticleSystem = 143,
-        /// <summary>A Linden tree</summary>
-        Tree = 255
-    }
-
-    /// <summary>
-    /// Attachment points for objects on avatar bodies
-    /// </summary>
-    /// <remarks>
-    /// Both InventoryObject and InventoryAttachment types can be attached
-    ///</remarks>
-    public enum AttachmentPoint : byte
-    {
-        /// <summary>Right hand if object was not previously attached</summary>
-        Default = 0,
-        /// <summary>Chest</summary>
-        Chest = 1,
-        /// <summary>Skull</summary>
-        Skull,
-        /// <summary>Left shoulder</summary>
-        LeftShoulder,
-        /// <summary>Right shoulder</summary>
-        RightShoulder,
-        /// <summary>Left hand</summary>
-        LeftHand,
-        /// <summary>Right hand</summary>
-        RightHand,
-        /// <summary>Left foot</summary>
-        LeftFoot,
-        /// <summary>Right foot</summary>
-        RightFoot,
-        /// <summary>Spine</summary>
-        Spine,
-        /// <summary>Pelvis</summary>
-        Pelvis,
-        /// <summary>Mouth</summary>
-        Mouth,
-        /// <summary>Chin</summary>
-        Chin,
-        /// <summary>Left ear</summary>
-        LeftEar,
-        /// <summary>Right ear</summary>
-        RightEar,
-        /// <summary>Left eyeball</summary>
-        LeftEyeball,
-        /// <summary>Right eyeball</summary>
-        RightEyeball,
-        /// <summary>Nose</summary>
-        Nose,
-        /// <summary>Right upper arm</summary>
-        RightUpperArm,
-        /// <summary>Right forearm</summary>
-        RightForearm,
-        /// <summary>Left upper arm</summary>
-        LeftUpperArm,
-        /// <summary>Left forearm</summary>
-        LeftForearm,
-        /// <summary>Right hip</summary>
-        RightHip,
-        /// <summary>Right upper leg</summary>
-        RightUpperLeg,
-        /// <summary>Right lower leg</summary>
-        RightLowerLeg,
-        /// <summary>Left hip</summary>
-        LeftHip,
-        /// <summary>Left upper leg</summary>
-        LeftUpperLeg,
-        /// <summary>Left lower leg</summary>
-        LeftLowerLeg,
-        /// <summary>Stomach</summary>
-        Stomach,
-        /// <summary>Left pectoral</summary>
-        LeftPec,
-        /// <summary>Right pectoral</summary>
-        RightPec,
-        /// <summary>HUD Center position 2</summary>
-        HUDCenter2,
-        /// <summary>HUD Top-right</summary>
-        HUDTopRight,
-        /// <summary>HUD Top</summary>
-        HUDTop,
-        /// <summary>HUD Top-left</summary>
-        HUDTopLeft,
-        /// <summary>HUD Center</summary>
-        HUDCenter,
-        /// <summary>HUD Bottom-left</summary>
-        HUDBottomLeft,
-        /// <summary>HUD Bottom</summary>
-        HUDBottom,
-        /// <summary>HUD Bottom-right</summary>
-        HUDBottomRight
+        /// <summary></summary>
+        BugReportRequest = 1,
+        /// <summary></summary>
+        ComplaintReportRequest = 2
     }
 
     /// <summary>
@@ -169,95 +73,6 @@ namespace OpenMetaverse
         HasNameValues = 0x100,
         /// <summary>Whether the object has a Media URL set</summary>
         MediaURL = 0x200
-    }
-
-    /// <summary>
-    /// Tree foliage types
-    /// </summary>
-    public enum Tree : byte
-    {
-        /// <summary>Pine1 tree</summary>
-        Pine1 = 0,
-        /// <summary>Oak tree</summary>
-        Oak,
-        /// <summary>Tropical Bush1</summary>
-        TropicalBush1,
-        /// <summary>Palm1 tree</summary>
-        Palm1,
-        /// <summary>Dogwood tree</summary>
-        Dogwood,
-        /// <summary>Tropical Bush2</summary>
-        TropicalBush2,
-        /// <summary>Palm2 tree</summary>
-        Palm2,
-        /// <summary>Cypress1 tree</summary>
-        Cypress1,
-        /// <summary>Cypress2 tree</summary>
-        Cypress2,
-        /// <summary>Pine2 tree</summary>
-        Pine2,
-        /// <summary>Plumeria</summary>
-        Plumeria,
-        /// <summary>Winter pinetree1</summary>
-        WinterPine1,
-        /// <summary>Winter Aspen tree</summary>
-        WinterAspen,
-        /// <summary>Winter pinetree2</summary>
-        WinterPine2,
-        /// <summary>Eucalyptus tree</summary>
-        Eucalyptus,
-        /// <summary>Fern</summary>
-        Fern,
-        /// <summary>Eelgrass</summary>
-        Eelgrass,
-        /// <summary>Sea Sword</summary>
-        SeaSword,
-        /// <summary>Kelp1 plant</summary>
-        Kelp1,
-        /// <summary>Beach grass</summary>
-        BeachGrass1,
-        /// <summary>Kelp2 plant</summary>
-        Kelp2
-    }
-
-    /// <summary>
-    /// Grass foliage types
-    /// </summary>
-    public enum Grass : byte
-    {
-        /// <summary></summary>
-        Grass0 = 0,
-        /// <summary></summary>
-        Grass1,
-        /// <summary></summary>
-        Grass2,
-        /// <summary></summary>
-        Grass3,
-        /// <summary></summary>
-        Grass4,
-        /// <summary></summary>
-        Undergrowth1
-    }
-
-    /// <summary>
-    /// Action associated with clicking on an object
-    /// </summary>
-    public enum ClickAction : byte
-    {
-        /// <summary>Touch object</summary>
-        Touch = 0,
-        /// <summary>Sit on object</summary>
-        Sit = 1,
-        /// <summary>Purchase object or contents</summary>
-        Buy = 2,
-        /// <summary>Pay the object</summary>
-        Pay = 3,
-        /// <summary>Open task inventory</summary>
-        OpenTask = 4,
-        /// <summary>Play parcel media</summary>
-        PlayMedia = 5,
-        /// <summary>Open parcel media</summary>
-        OpenMedia = 6
     }
 
     /// <summary>
@@ -309,7 +124,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public Vector3 AngularVelocity;
         /// <summary></summary>
-        public LLObject.TextureEntry Textures;
+        public Primitive.TextureEntry Textures;
     }
 
     #endregion Structs
@@ -346,15 +161,16 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="simulator"></param>
-        /// <param name="properties"></param>
-        public delegate void ObjectPropertiesCallback(Simulator simulator, LLObject.ObjectProperties properties);
+        /// <param name="props"></param>
+        public delegate void ObjectPropertiesCallback(Simulator simulator, Primitive.ObjectProperties props);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="simulator"></param>
-        /// <param name="properties"></param>
-        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, 
-            LLObject.ObjectPropertiesFamily properties);
+        /// <param name="props"></param>
+        /// <param name="type"></param>
+        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, Primitive.ObjectProperties props,
+            ObjectPropertiesRequestType type);
         /// <summary>
         /// 
         /// </summary>
@@ -512,7 +328,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ImprovedTerseObjectUpdate, new NetworkManager.PacketCallback(TerseUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, new NetworkManager.PacketCallback(CompressedUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new NetworkManager.PacketCallback(CachedUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
+            Client.Network.RegisterCallback(PacketType.KiPrimitive, new NetworkManager.PacketCallback(KiPrimitiveHandler));
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, new NetworkManager.PacketCallback(ObjectPropertiesFamilyHandler));
             Client.Network.RegisterCallback(PacketType.ObjectProperties, new NetworkManager.PacketCallback(ObjectPropertiesHandler));
 
@@ -741,7 +557,7 @@ namespace OpenMetaverse
         /// follow up by moving the object after it has been created. This
         /// function will not set textures, light and flexible data, or other 
         /// extended primitive properties</remarks>
-        public void AddPrim(Simulator simulator, LLObject.ObjectData prim, UUID groupID, Vector3 position, 
+        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position, 
             Vector3 scale, Quaternion rotation)
         {
             ObjectAddPacket packet = new ObjectAddPacket();
@@ -751,7 +567,7 @@ namespace OpenMetaverse
             packet.AgentData.GroupID = groupID;
 
             packet.ObjectData.State = prim.State;
-            packet.ObjectData.AddFlags = (uint)LLObject.ObjectFlags.CreateSelected;
+            packet.ObjectData.AddFlags = (uint)PrimFlags.CreateSelected;
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
             packet.ObjectData.Material = (byte)prim.Material;
@@ -759,24 +575,24 @@ namespace OpenMetaverse
             packet.ObjectData.Rotation = rotation;
 
             packet.ObjectData.PathCurve = (byte)prim.PathCurve;
-            packet.ObjectData.PathBegin = LLObject.PackBeginCut(prim.PathBegin);
-            packet.ObjectData.PathEnd = LLObject.PackEndCut(prim.PathEnd);
-            packet.ObjectData.PathRadiusOffset = LLObject.PackPathTwist(prim.PathRadiusOffset);
-            packet.ObjectData.PathRevolutions = LLObject.PackPathRevolutions(prim.PathRevolutions);
-            packet.ObjectData.PathScaleX = LLObject.PackPathScale(prim.PathScaleX);
-            packet.ObjectData.PathScaleY = LLObject.PackPathScale(prim.PathScaleY);
-            packet.ObjectData.PathShearX = (byte)LLObject.PackPathShear(prim.PathShearX);
-            packet.ObjectData.PathShearY = (byte)LLObject.PackPathShear(prim.PathShearY);
-            packet.ObjectData.PathSkew = LLObject.PackPathTwist(prim.PathSkew);
-            packet.ObjectData.PathTaperX = LLObject.PackPathTaper(prim.PathTaperX);
-            packet.ObjectData.PathTaperY = LLObject.PackPathTaper(prim.PathTaperY);
-            packet.ObjectData.PathTwist = LLObject.PackPathTwist(prim.PathTwist);
-            packet.ObjectData.PathTwistBegin = LLObject.PackPathTwist(prim.PathTwistBegin);
+            packet.ObjectData.PathBegin = Primitive.PackBeginCut(prim.PathBegin);
+            packet.ObjectData.PathEnd = Primitive.PackEndCut(prim.PathEnd);
+            packet.ObjectData.PathRadiusOffset = Primitive.PackPathTwist(prim.PathRadiusOffset);
+            packet.ObjectData.PathRevolutions = Primitive.PackPathRevolutions(prim.PathRevolutions);
+            packet.ObjectData.PathScaleX = Primitive.PackPathScale(prim.PathScaleX);
+            packet.ObjectData.PathScaleY = Primitive.PackPathScale(prim.PathScaleY);
+            packet.ObjectData.PathShearX = (byte)Primitive.PackPathShear(prim.PathShearX);
+            packet.ObjectData.PathShearY = (byte)Primitive.PackPathShear(prim.PathShearY);
+            packet.ObjectData.PathSkew = Primitive.PackPathTwist(prim.PathSkew);
+            packet.ObjectData.PathTaperX = Primitive.PackPathTaper(prim.PathTaperX);
+            packet.ObjectData.PathTaperY = Primitive.PackPathTaper(prim.PathTaperY);
+            packet.ObjectData.PathTwist = Primitive.PackPathTwist(prim.PathTwist);
+            packet.ObjectData.PathTwistBegin = Primitive.PackPathTwist(prim.PathTwistBegin);
 
             packet.ObjectData.ProfileCurve = prim.profileCurve;
-            packet.ObjectData.ProfileBegin = LLObject.PackBeginCut(prim.ProfileBegin);
-            packet.ObjectData.ProfileEnd = LLObject.PackEndCut(prim.ProfileEnd);
-            packet.ObjectData.ProfileHollow = LLObject.PackProfileHollow(prim.ProfileHollow);
+            packet.ObjectData.ProfileBegin = Primitive.PackBeginCut(prim.ProfileBegin);
+            packet.ObjectData.ProfileEnd = Primitive.PackEndCut(prim.ProfileEnd);
+            packet.ObjectData.ProfileHollow = Primitive.PackProfileHollow(prim.ProfileHollow);
 
             packet.ObjectData.RayStart = position;
             packet.ObjectData.RayEnd = position;
@@ -858,7 +674,7 @@ namespace OpenMetaverse
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="textures">The texture data to apply</param>
-        public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures)
+        public void SetTextures(Simulator simulator, uint localID, Primitive.TextureEntry textures)
         {
             SetTextures(simulator, localID, textures, String.Empty);
         }
@@ -870,7 +686,7 @@ namespace OpenMetaverse
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="textures">The texture data to apply</param>
         /// <param name="mediaUrl">A media URL (not used)</param>
-        public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures, string mediaUrl)
+        public void SetTextures(Simulator simulator, uint localID, Primitive.TextureEntry textures, string mediaUrl)
         {
             ObjectImagePacket image = new ObjectImagePacket();
 
@@ -900,7 +716,7 @@ namespace OpenMetaverse
             extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
-            extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Light;
+            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Light;
             if (light.Intensity == 0.0f) 
             {
                 // Disables the light if intensity is 0
@@ -931,7 +747,7 @@ namespace OpenMetaverse
             extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
-            extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Flexible;
+            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Flexible;
             extra.ObjectData[0].ParamInUse = true;
             extra.ObjectData[0].ParamData = flexible.GetBytes();
             extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
@@ -955,7 +771,7 @@ namespace OpenMetaverse
             extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
-            extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Sculpt;
+            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Sculpt;
             extra.ObjectData[0].ParamInUse = true;
             extra.ObjectData[0].ParamData = sculpt.GetBytes();
             extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
@@ -984,7 +800,7 @@ namespace OpenMetaverse
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="type">The extra parameters to set</param>
-        public void SetExtraParamOff(Simulator simulator, uint localID, Primitive.ExtraParamType type)
+        public void SetExtraParamOff(Simulator simulator, uint localID, ExtraParamType type)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
 
@@ -1466,27 +1282,27 @@ namespace OpenMetaverse
                 #endregion NameValue parsing
 
                 #region Decode Object (primitive) parameters
-                LLObject.ObjectData data = new LLObject.ObjectData();
+                Primitive.ConstructionData data = new Primitive.ConstructionData();
                 data.State = block.State;
-                data.Material = (LLObject.MaterialType)block.Material;
-                data.PathCurve = (LLObject.PathCurve)block.PathCurve;
+                data.Material = (Material)block.Material;
+                data.PathCurve = (PathCurve)block.PathCurve;
                 data.profileCurve = block.ProfileCurve;
-                data.PathBegin = LLObject.UnpackBeginCut(block.PathBegin);
-                data.PathEnd = LLObject.UnpackEndCut(block.PathEnd);
-                data.PathScaleX = LLObject.UnpackPathScale(block.PathScaleX);
-                data.PathScaleY = LLObject.UnpackPathScale(block.PathScaleY);
-                data.PathShearX = LLObject.UnpackPathShear((sbyte)block.PathShearX);
-                data.PathShearY = LLObject.UnpackPathShear((sbyte)block.PathShearY);
-                data.PathTwist = LLObject.UnpackPathTwist(block.PathTwist);
-                data.PathTwistBegin = LLObject.UnpackPathTwist(block.PathTwistBegin);
-                data.PathRadiusOffset = LLObject.UnpackPathTwist(block.PathRadiusOffset);
-                data.PathTaperX = LLObject.UnpackPathTaper(block.PathTaperX);
-                data.PathTaperY = LLObject.UnpackPathTaper(block.PathTaperY);
-                data.PathRevolutions = LLObject.UnpackPathRevolutions(block.PathRevolutions);
-                data.PathSkew = LLObject.UnpackPathTwist(block.PathSkew);
-                data.ProfileBegin = LLObject.UnpackBeginCut(block.ProfileBegin);
-                data.ProfileEnd = LLObject.UnpackEndCut(block.ProfileEnd);
-                data.ProfileHollow = LLObject.UnpackProfileHollow(block.ProfileHollow);
+                data.PathBegin = Primitive.UnpackBeginCut(block.PathBegin);
+                data.PathEnd = Primitive.UnpackEndCut(block.PathEnd);
+                data.PathScaleX = Primitive.UnpackPathScale(block.PathScaleX);
+                data.PathScaleY = Primitive.UnpackPathScale(block.PathScaleY);
+                data.PathShearX = Primitive.UnpackPathShear((sbyte)block.PathShearX);
+                data.PathShearY = Primitive.UnpackPathShear((sbyte)block.PathShearY);
+                data.PathTwist = Primitive.UnpackPathTwist(block.PathTwist);
+                data.PathTwistBegin = Primitive.UnpackPathTwist(block.PathTwistBegin);
+                data.PathRadiusOffset = Primitive.UnpackPathTwist(block.PathRadiusOffset);
+                data.PathTaperX = Primitive.UnpackPathTaper(block.PathTaperX);
+                data.PathTaperY = Primitive.UnpackPathTaper(block.PathTaperY);
+                data.PathRevolutions = Primitive.UnpackPathRevolutions(block.PathRevolutions);
+                data.PathSkew = Primitive.UnpackPathTwist(block.PathSkew);
+                data.ProfileBegin = Primitive.UnpackBeginCut(block.ProfileBegin);
+                data.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
+                data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
                 data.PCode = pcode;
                 #endregion
 
@@ -1615,9 +1431,9 @@ namespace OpenMetaverse
                         Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
 
                         #region Update Prim Info with decoded data                            
-                        prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
+                        prim.Flags = (PrimFlags)block.UpdateFlags;
 
-                        if ((prim.Flags & LLObject.ObjectFlags.ZlibCompressed) != 0)
+                        if ((prim.Flags & PrimFlags.ZlibCompressed) != 0)
                         {
                             Logger.Log("Got a ZlibCompressed ObjectUpdate, implement me!", 
                                 Helpers.LogLevel.Warning, Client);
@@ -1625,7 +1441,7 @@ namespace OpenMetaverse
                         }
 
                         // Automatically request ObjectProperties for prim if it was rezzed selected.
-                        if ((prim.Flags & LLObject.ObjectFlags.CreateSelected) == LLObject.ObjectFlags.CreateSelected)
+                        if ((prim.Flags & PrimFlags.CreateSelected) == PrimFlags.CreateSelected)
                             SelectObject(simulator, prim.LocalID);
 
                         prim.NameValues = nameValues;
@@ -1647,15 +1463,15 @@ namespace OpenMetaverse
                         prim.SoundRadius = block.Radius;
 
                         // Joint information
-                        prim.Joint = (Primitive.JointType)block.JointType;
+                        prim.Joint = (JointType)block.JointType;
                         prim.JointPivot = block.JointPivot;
                         prim.JointAxisOrAnchor = block.JointAxisOrAnchor;
                         
                         // Object parameters
-                        prim.Data = data;
+                        prim.PrimData = data;
 
                         // Textures, texture animations, particle system, and extra params
-                        prim.Textures = new LLObject.TextureEntry(block.TextureEntry, 0,
+                        prim.Textures = new Primitive.TextureEntry(block.TextureEntry, 0,
                             block.TextureEntry.Length);
 
                         prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
@@ -1710,7 +1526,7 @@ namespace OpenMetaverse
                         #region Create an Avatar from the decoded data
 
                         Avatar avatar = GetAvatar(simulator, block.ID, block.FullID);
-                        uint oldSeatID = avatar.sittingOn;
+                        uint oldSeatID = avatar.ParentID;
 
                         avatar.ID = block.FullID;
                         avatar.LocalID = block.ID;
@@ -1721,14 +1537,11 @@ namespace OpenMetaverse
                         avatar.Rotation = rotation;
                         avatar.AngularVelocity = angularVelocity;
                         avatar.NameValues = nameValues;
-                        avatar.Data = data;
+                        avatar.PrimData = data;
                         avatar.GenericData = block.Data;
-                        avatar.sittingOn = block.ParentID;
+                        avatar.ParentID = block.ParentID;
 
                         SetAvatarSittingOn(simulator, avatar, block.ParentID, oldSeatID);
-
-                        // Set the current simulator for this avatar
-                        avatar.CurrentSim = simulator;
 
                         // Textures
                         avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, 
@@ -1867,13 +1680,13 @@ namespace OpenMetaverse
                     // Textures
                     // FIXME: Why are we ignoring the first four bytes here?
                     if (block.TextureEntry.Length != 0)
-                        update.Textures = new LLObject.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
+                        update.Textures = new Primitive.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
                     #endregion Decode update data
 
-                    LLObject obj = (update.Avatar) ?
-                        (LLObject)GetAvatar(simulator, update.LocalID, null):
-                        (LLObject)GetPrimitive(simulator, update.LocalID, null);
+                    Primitive obj = (update.Avatar) ?
+                        (Primitive)GetAvatar(simulator, update.LocalID, null):
+                        (Primitive)GetPrimitive(simulator, update.LocalID, null);
 
                     #region Update Client.Self
                     if (update.LocalID == Client.Self.localID)
@@ -1952,8 +1765,8 @@ namespace OpenMetaverse
 
                     prim.LocalID = LocalID;
                     prim.ID = FullID;
-                    prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
-                    prim.Data.PCode = pcode;
+                    prim.Flags = (PrimFlags)block.UpdateFlags;
+                    prim.PrimData.PCode = pcode;
 
                     switch (pcode)
                     {
@@ -1963,11 +1776,11 @@ namespace OpenMetaverse
                             #region Foliage Decoding
 
                             // State
-                            prim.Data.State = block.Data[i++];
+                            prim.PrimData.State = block.Data[i++];
                             // CRC
                             i += 4;
                             // Material
-                            prim.Data.Material = (LLObject.MaterialType)block.Data[i++];
+                            prim.PrimData.Material = (Material)block.Data[i++];
                             // Click action
                             prim.ClickAction = (ClickAction)block.Data[i++];
                             // Scale
@@ -1992,11 +1805,11 @@ namespace OpenMetaverse
                         case PCode.Prim:
                             #region Decode block and update Prim
                             // State
-                            prim.Data.State = block.Data[i++];
+                            prim.PrimData.State = block.Data[i++];
                             // CRC
                             i += 4;
                             // Material
-                            prim.Data.Material = (LLObject.MaterialType)block.Data[i++];
+                            prim.PrimData.Material = (Material)block.Data[i++];
                             // Click action
                             prim.ClickAction = (ClickAction)block.Data[i++];
                             // Scale
@@ -2144,35 +1957,35 @@ namespace OpenMetaverse
                                 }
                             }
 
-                            prim.Data.PathCurve = (LLObject.PathCurve)block.Data[i++];
+                            prim.PrimData.PathCurve = (PathCurve)block.Data[i++];
                             ushort pathBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.PathBegin = LLObject.UnpackBeginCut(pathBegin);
+                            prim.PrimData.PathBegin = Primitive.UnpackBeginCut(pathBegin);
                             ushort pathEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.PathEnd = LLObject.UnpackEndCut(pathEnd);
-                            prim.Data.PathScaleX = LLObject.UnpackPathScale(block.Data[i++]);
-                            prim.Data.PathScaleY = LLObject.UnpackPathScale(block.Data[i++]);
-                            prim.Data.PathShearX = LLObject.UnpackPathShear((sbyte)block.Data[i++]);
-                            prim.Data.PathShearY = LLObject.UnpackPathShear((sbyte)block.Data[i++]);
-                            prim.Data.PathTwist = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.Data.PathTwistBegin = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.Data.PathRadiusOffset = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.Data.PathTaperX = LLObject.UnpackPathTaper((sbyte)block.Data[i++]);
-                            prim.Data.PathTaperY = LLObject.UnpackPathTaper((sbyte)block.Data[i++]);
-                            prim.Data.PathRevolutions = LLObject.UnpackPathRevolutions(block.Data[i++]);
-                            prim.Data.PathSkew = LLObject.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.PrimData.PathEnd = Primitive.UnpackEndCut(pathEnd);
+                            prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.Data[i++]);
+                            prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.Data[i++]);
+                            prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
+                            prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
+                            prim.PrimData.PathTwist = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                            prim.PrimData.PathTaperX = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
+                            prim.PrimData.PathTaperY = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
+                            prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.Data[i++]);
+                            prim.PrimData.PathSkew = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
 
-                            prim.Data.profileCurve = block.Data[i++];
+                            prim.PrimData.profileCurve = block.Data[i++];
                             ushort profileBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileBegin = LLObject.UnpackBeginCut(profileBegin);
+                            prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(profileBegin);
                             ushort profileEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileEnd = LLObject.UnpackEndCut(profileEnd);
+                            prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(profileEnd);
                             ushort profileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileHollow = LLObject.UnpackProfileHollow(profileHollow);
+                            prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(profileHollow);
 
                             // TextureEntry
                             int textureEntryLength = (int)Helpers.BytesToUInt(block.Data, i);
                             i += 4;
-                            prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
+                            prim.Textures = new Primitive.TextureEntry(block.Data, i, textureEntryLength);
                             i += textureEntryLength;
 
                             // Texture animation
@@ -2238,11 +2051,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Handle KillObject packets from the simulator
+        /// Handle KiPrimitive packets from the simulator
         /// </summary>
         /// <param name="packet">The packet containing the object data</param>
         /// <param name="simulator">The simulator sending the data</param>
-        protected void KillObjectHandler(Packet packet, Simulator simulator)
+        protected void KiPrimitiveHandler(Packet packet, Simulator simulator)
         {
             KillObjectPacket kill = (KillObjectPacket)packet;
 
@@ -2322,15 +2135,16 @@ namespace OpenMetaverse
             for (int i = 0; i < datablocks.Length; ++i)
             {
                 ObjectPropertiesPacket.ObjectDataBlock objectData = datablocks[i];
-                LLObject.ObjectProperties props = new LLObject.ObjectProperties();
+                Primitive.ObjectProperties props = new Primitive.ObjectProperties();
 
+                props.ObjectID = objectData.ObjectID;
                 props.AggregatePerms = objectData.AggregatePerms;
                 props.AggregatePermTextures = objectData.AggregatePermTextures;
                 props.AggregatePermTexturesOwner = objectData.AggregatePermTexturesOwner;
                 props.Permissions = new Permissions(objectData.BaseMask, objectData.EveryoneMask, objectData.GroupMask,
                     objectData.NextOwnerMask, objectData.OwnerMask);
-                props.Category = objectData.Category;
-                props.CreationDate = objectData.CreationDate;
+                props.Category = (ObjectCategory)objectData.Category;
+                props.CreationDate = Utils.UnixTimeToDateTime((uint)objectData.CreationDate);
                 props.CreatorID = objectData.CreatorID;
                 props.Description = Utils.BytesToString(objectData.Description);
                 props.FolderID = objectData.FolderID;
@@ -2340,11 +2154,10 @@ namespace OpenMetaverse
                 props.ItemID = objectData.ItemID;
                 props.LastOwnerID = objectData.LastOwnerID;
                 props.Name = Utils.BytesToString(objectData.Name);
-                props.ObjectID = objectData.ObjectID;
                 props.OwnerID = objectData.OwnerID;
                 props.OwnershipCost = objectData.OwnershipCost;
                 props.SalePrice = objectData.SalePrice;
-                props.SaleType = objectData.SaleType;
+                props.SaleType = (SaleType)objectData.SaleType;
                 props.SitName = Utils.BytesToString(objectData.SitName);
                 props.TouchName = Utils.BytesToString(objectData.TouchName);
 
@@ -2375,19 +2188,20 @@ namespace OpenMetaverse
         protected void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
         {
             ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
-            LLObject.ObjectPropertiesFamily props = new LLObject.ObjectPropertiesFamily();
+            Primitive.ObjectProperties props = new Primitive.ObjectProperties();
 
-            props.RequestFlags = (LLObject.ObjectPropertiesFamily.RequestFlagsType)op.ObjectData.RequestFlags;
-            props.Category = op.ObjectData.Category;
+            ObjectPropertiesRequestType requestType = (ObjectPropertiesRequestType)op.ObjectData.RequestFlags;
+
+            props.ObjectID = op.ObjectData.ObjectID;
+            props.Category = (ObjectCategory)op.ObjectData.Category;
             props.Description = Utils.BytesToString(op.ObjectData.Description);
             props.GroupID = op.ObjectData.GroupID;
             props.LastOwnerID = op.ObjectData.LastOwnerID;
             props.Name = Utils.BytesToString(op.ObjectData.Name);
-            props.ObjectID = op.ObjectData.ObjectID;
             props.OwnerID = op.ObjectData.OwnerID;
             props.OwnershipCost = op.ObjectData.OwnershipCost;
             props.SalePrice = op.ObjectData.SalePrice;
-            props.SaleType = op.ObjectData.SaleType;
+            props.SaleType = (SaleType)op.ObjectData.SaleType;
             props.Permissions.BaseMask = (PermissionMask)op.ObjectData.BaseMask;
             props.Permissions.EveryoneMask = (PermissionMask)op.ObjectData.EveryoneMask;
             props.Permissions.GroupMask = (PermissionMask)op.ObjectData.GroupMask;
@@ -2397,19 +2211,19 @@ namespace OpenMetaverse
             if (Client.Settings.OBJECT_TRACKING)
             {
                 Primitive findPrim = sim.ObjectsPrimitives.Find(
-                        delegate(Primitive prim) { return prim.ID == props.ObjectID; });
+                        delegate(Primitive prim) { return prim.ID == op.ObjectData.ObjectID; });
 
                 if (findPrim != null)
                 {
                     lock (sim.ObjectsPrimitives.Dictionary)
                     {
                         if (sim.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
-                            sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].PropertiesFamily = props;
+                            sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties.SetFamilyProperties(props);
                     }
                 }
             }
 
-            FireOnObjectPropertiesFamily(sim, props);
+            FireOnObjectPropertiesFamily(sim, props, requestType);
         }
 
         #endregion Packet Handlers
@@ -2420,14 +2234,14 @@ namespace OpenMetaverse
         /// Setup the ObjectData parameters for a basic wooden cube prim
         /// </summary>
         /// <returns>ObjectData struct representing a basic wooden cube prim</returns>
-        public static LLObject.ObjectData BuildCube()
+        public static Primitive.ConstructionData BuildCube()
         {
-            LLObject.ObjectData prim = new LLObject.ObjectData();
+            Primitive.ConstructionData prim = new Primitive.ConstructionData();
 
             prim.PCode = PCode.Prim;
-            prim.Material = LLObject.MaterialType.Wood;
-            prim.ProfileCurve = LLObject.ProfileCurve.Square;
-            prim.PathCurve = LLObject.PathCurve.Line;
+            prim.Material = Material.Wood;
+            prim.ProfileCurve = ProfileCurve.Square;
+            prim.PathCurve = PathCurve.Line;
             prim.ProfileEnd = 1f;
             prim.PathEnd = 1f;
             prim.PathScaleX = 1f;
@@ -2447,9 +2261,8 @@ namespace OpenMetaverse
         protected void SetAvatarSittingOn(Simulator sim, Avatar av, uint localid, uint oldSeatID)
         {
             if (av.LocalID == Client.Self.localID) Client.Self.sittingOn = localid;
-            av.sittingOn = localid;
-                        
-
+            av.ParentID = localid;
+            
             if (OnAvatarSitChanged != null && oldSeatID != localid)
             {
                 try { OnAvatarSitChanged(sim, av, localid, oldSeatID); }
@@ -2471,12 +2284,7 @@ namespace OpenMetaverse
 
         #region Event Notification
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sim"></param>
-        /// <param name="props"></param>
-        protected void FireOnObjectProperties(Simulator sim, LLObject.ObjectProperties props)
+        protected void FireOnObjectProperties(Simulator sim, Primitive.ObjectProperties props)
         {
             if (OnObjectProperties != null)
             {
@@ -2485,25 +2293,16 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sim"></param>
-        /// <param name="props"></param>
-        protected void FireOnObjectPropertiesFamily(Simulator sim, LLObject.ObjectPropertiesFamily props)
+        protected void FireOnObjectPropertiesFamily(Simulator sim, Primitive.ObjectProperties props,
+            ObjectPropertiesRequestType type)
         {
             if (OnObjectPropertiesFamily != null)
             {
-                try { OnObjectPropertiesFamily(sim, props); }
+                try { OnObjectPropertiesFamily(sim, props, type); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="localid"></param>
         protected void FireOnObjectKilled(Simulator simulator, uint localid)
         {
             if (OnObjectKilled != null)
@@ -2513,13 +2312,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="prim"></param>
-        /// <param name="RegionHandle"></param>
-        /// <param name="TimeDilation"></param>
         protected void FireOnNewPrim(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewPrim != null)
@@ -2529,13 +2321,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="prim"></param>
-        /// <param name="RegionHandle"></param>
-        /// <param name="TimeDilation"></param>
         protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewFoliage != null)
@@ -2545,13 +2330,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="prim"></param>
-        /// <param name="RegionHandle"></param>
-        /// <param name="TimeDilation"></param>
         protected void FireOnNewAttachment(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewAttachment != null)
@@ -2561,13 +2339,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="avatar"></param>
-        /// <param name="RegionHandle"></param>
-        /// <param name="TimeDilation"></param>
         protected void FireOnNewAvatar(Simulator simulator, Avatar avatar, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewAvatar != null)
@@ -2577,13 +2348,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="update"></param>
-        /// <param name="RegionHandle"></param>
-        /// <param name="TimeDilation"></param>
         protected void FireOnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnObjectUpdated != null)
@@ -2702,7 +2466,7 @@ namespace OpenMetaverse
                         Client.Network.Simulators[i].ObjectsPrimitives.ForEach(
                             delegate(Primitive prim)
                             {
-                                if (prim.Joint == Primitive.JointType.Invalid)
+                                if (prim.Joint == JointType.Invalid)
                                 {
                                     #region Angular Velocity
                                     Vector3 angVel = prim.AngularVelocity;
@@ -2730,11 +2494,11 @@ namespace OpenMetaverse
                                     }
                                     #endregion Linear Motion
                                 }
-                                else if (prim.Joint == Primitive.JointType.Hinge)
+                                else if (prim.Joint == JointType.Hinge)
                                 {
                                     //FIXME: Hinge movement extrapolation
                                 }
-                                else if (prim.Joint == Primitive.JointType.Point)
+                                else if (prim.Joint == JointType.Point)
                                 {
                                     //FIXME: Point movement extrapolation
                                 }

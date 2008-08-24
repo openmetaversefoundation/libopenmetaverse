@@ -107,7 +107,7 @@ namespace OpenMetaverse.TestClient
                     Quaternion rootRotation = linkset.RootPrim.Rotation;
                     linkset.RootPrim.Rotation = Quaternion.Identity;
 
-                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.Data, GroupID,
+                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.PrimData, GroupID,
                         linkset.RootPrim.Position, linkset.RootPrim.Scale, linkset.RootPrim.Rotation);
 
                     if (!primDone.WaitOne(10000, false))
@@ -123,7 +123,7 @@ namespace OpenMetaverse.TestClient
                         currentPrim = prim;
                         currentPosition = prim.Position + linkset.RootPrim.Position;
 
-                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim.Data, GroupID, currentPosition,
+                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim.PrimData, GroupID, currentPosition,
                             prim.Scale, prim.Rotation);
 
                         if (!primDone.WaitOne(10000, false))
@@ -184,7 +184,7 @@ namespace OpenMetaverse.TestClient
 
         void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
-            if ((prim.Flags & LLObject.ObjectFlags.CreateSelected) == 0)
+            if ((prim.Flags & PrimFlags.CreateSelected) == 0)
                 return; // We received an update for an object we didn't create
 
             switch (state)

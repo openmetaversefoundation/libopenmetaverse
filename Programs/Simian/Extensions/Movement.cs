@@ -17,7 +17,7 @@ namespace Simian.Extensions
         const float SQRT_TWO = 1.41421356f;
 
         Simian server;
-        AvatarManager avatarManager;
+        AvatarManager Avatars;
         Timer updateTimer;
         long lastTick;
 
@@ -123,22 +123,22 @@ namespace Simian.Extensions
                         agent.Avatar.Acceleration = move * speed;
                         if (movingHorizontally)
                         {
-                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.FLY))
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.FLY))
                                 animsChanged = true;
                         }
                         else if (heldUp && !heldDown)
                         {
-                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
                                 animsChanged = true;
                         }
                         else if (heldDown && !heldUp)
                         {
-                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
                                 animsChanged = true;
                         }
                         else
                         {
-                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.HOVER))
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
                                 animsChanged = true;
                         }
                     }
@@ -146,7 +146,7 @@ namespace Simian.Extensions
                     {
                         agent.Avatar.Acceleration /= 1 + (seconds / SQRT_TWO);
 
-                        if (server.AvatarManager.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                        if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
                             animsChanged = true;
                     }
                     else //on the ground
@@ -156,34 +156,34 @@ namespace Simian.Extensions
                         {
                             if (heldDown)
                             {
-                                if (server.AvatarManager.SetDefaultAnimation(agent, Animations.CROUCHWALK))
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
                                     animsChanged = true;
                             }
                             else if (agent.Running)
                             {
-                                if (server.AvatarManager.SetDefaultAnimation(agent, Animations.RUN))
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.RUN))
                                     animsChanged = true;
                             }
                             else
                             {
-                                if (server.AvatarManager.SetDefaultAnimation(agent, Animations.WALK))
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.WALK))
                                     animsChanged = true;
                             }
                         }
                         else if (heldDown)
                         {
-                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.CROUCH))
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
                                 animsChanged = true;
                         }
                         else
                         {
-                            if (server.AvatarManager.SetDefaultAnimation(agent, Animations.STAND))
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.STAND))
                                 animsChanged = true;
                         }
                     }
 
                     if (animsChanged)
-                        server.AvatarManager.SendAnimations(agent);
+                        server.Avatars.SendAnimations(agent);
 
                     agent.Avatar.Velocity = agent.Avatar.Acceleration;
                     agent.Avatar.Position += agent.Avatar.Velocity;
@@ -207,9 +207,10 @@ namespace Simian.Extensions
             agent.Avatar.Rotation = update.AgentData.BodyRotation;
             agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
             agent.State = update.AgentData.State;
-            agent.Flags = (LLObject.ObjectFlags)update.AgentData.Flags;
+            agent.Flags = (PrimFlags)update.AgentData.Flags;
 
-            ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent, agent.Avatar, server.RegionHandle,
+            ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent.Avatar,
+                NameValue.NameValuesToString(agent.Avatar.NameValues), server.RegionHandle,
                 agent.State, agent.Flags);
 
             lock (server.Agents)
@@ -263,19 +264,20 @@ namespace Simian.Extensions
                 heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
         }
 
-        public static ObjectUpdatePacket BuildFullUpdate(Agent agent, LLObject obj, ulong regionHandle, byte state, LLObject.ObjectFlags flags)
+        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, string nameValues, ulong regionHandle,
+            byte state, PrimFlags flags)
         {
             byte[] objectData = new byte[60];
             int pos = 0;
-            agent.Avatar.Position.GetBytes().CopyTo(objectData, pos);
+            obj.Position.GetBytes().CopyTo(objectData, pos);
             pos += 12;
-            agent.Avatar.Velocity.GetBytes().CopyTo(objectData, pos);
+            obj.Velocity.GetBytes().CopyTo(objectData, pos);
             pos += 12;
-            agent.Avatar.Acceleration.GetBytes().CopyTo(objectData, pos);
+            obj.Acceleration.GetBytes().CopyTo(objectData, pos);
             pos += 12;
-            agent.Avatar.Rotation.GetBytes().CopyTo(objectData, pos);
+            obj.Rotation.GetBytes().CopyTo(objectData, pos);
             pos += 12;
-            agent.Avatar.AngularVelocity.GetBytes().CopyTo(objectData, pos);
+            obj.AngularVelocity.GetBytes().CopyTo(objectData, pos);
 
             ObjectUpdatePacket update = new ObjectUpdatePacket();
             update.RegionData.RegionHandle = regionHandle;
@@ -284,44 +286,44 @@ namespace Simian.Extensions
             update.ObjectData[0] = new ObjectUpdatePacket.ObjectDataBlock();
             update.ObjectData[0].ClickAction = (byte)0;
             update.ObjectData[0].CRC = 0;
-            update.ObjectData[0].ExtraParams = new byte[0];
-            update.ObjectData[0].Flags = 0;
+            update.ObjectData[0].ExtraParams = new byte[0]; //FIXME:
+            update.ObjectData[0].Flags = (byte)flags;
             update.ObjectData[0].FullID = obj.ID;
             update.ObjectData[0].Gain = 0;
             update.ObjectData[0].ID = obj.LocalID;
             update.ObjectData[0].JointAxisOrAnchor = Vector3.Zero;
             update.ObjectData[0].JointPivot = Vector3.Zero;
             update.ObjectData[0].JointType = (byte)0;
-            update.ObjectData[0].Material = (byte)LLObject.MaterialType.Flesh;
+            update.ObjectData[0].Material = (byte)obj.PrimData.Material;
             update.ObjectData[0].MediaURL = new byte[0];
-            update.ObjectData[0].NameValue = Utils.StringToBytes(NameValue.NameValuesToString(agent.Avatar.NameValues));
+            update.ObjectData[0].NameValue = Utils.StringToBytes(nameValues);
             update.ObjectData[0].ObjectData = objectData;
-            update.ObjectData[0].OwnerID = UUID.Zero;
-            update.ObjectData[0].ParentID = 0;
-            update.ObjectData[0].PathBegin = 0;
-            update.ObjectData[0].PathCurve = (byte)16;
-            update.ObjectData[0].PathEnd = 0;
-            update.ObjectData[0].PathRadiusOffset = (sbyte)0;
-            update.ObjectData[0].PathRevolutions = (byte)0;
-            update.ObjectData[0].PathScaleX = (byte)100;
-            update.ObjectData[0].PathScaleY = (byte)100;
-            update.ObjectData[0].PathShearX = (byte)0;
-            update.ObjectData[0].PathShearY = (byte)0;
-            update.ObjectData[0].PathSkew = (sbyte)0;
-            update.ObjectData[0].PathTaperX = (sbyte)0;
-            update.ObjectData[0].PathTaperY = (sbyte)0;
-            update.ObjectData[0].PathTwist = (sbyte)0;
-            update.ObjectData[0].PathTwistBegin = (sbyte)0;
-            update.ObjectData[0].PCode = (byte)PCode.Avatar;
-            update.ObjectData[0].ProfileBegin = 0;
-            update.ObjectData[0].ProfileCurve = (byte)1;
-            update.ObjectData[0].ProfileEnd = 0;
-            update.ObjectData[0].ProfileHollow = 0;
+            update.ObjectData[0].OwnerID = obj.Properties.OwnerID;
+            update.ObjectData[0].ParentID = obj.ParentID;
+            update.ObjectData[0].PathBegin = Primitive.PackBeginCut(obj.PrimData.PathBegin);
+            update.ObjectData[0].PathCurve = (byte)obj.PrimData.PathCurve;
+            update.ObjectData[0].PathEnd = Primitive.PackEndCut(obj.PrimData.PathEnd);
+            update.ObjectData[0].PathRadiusOffset = Primitive.PackPathTwist(obj.PrimData.PathRadiusOffset);
+            update.ObjectData[0].PathRevolutions = Primitive.PackPathRevolutions(obj.PrimData.PathRevolutions);
+            update.ObjectData[0].PathScaleX = Primitive.PackPathScale(obj.PrimData.PathScaleX);
+            update.ObjectData[0].PathScaleY = Primitive.PackPathScale(obj.PrimData.PathScaleY);
+            update.ObjectData[0].PathShearX = (byte)Primitive.PackPathShear(obj.PrimData.PathShearX);
+            update.ObjectData[0].PathShearY = (byte)Primitive.PackPathShear(obj.PrimData.PathShearY);
+            update.ObjectData[0].PathSkew = Primitive.PackPathTwist(obj.PrimData.PathSkew);
+            update.ObjectData[0].PathTaperX = Primitive.PackPathTaper(obj.PrimData.PathTaperX);
+            update.ObjectData[0].PathTaperY = Primitive.PackPathTaper(obj.PrimData.PathTaperY);
+            update.ObjectData[0].PathTwist = Primitive.PackPathTwist(obj.PrimData.PathTwist);
+            update.ObjectData[0].PathTwistBegin = Primitive.PackPathTwist(obj.PrimData.PathTwistBegin);
+            update.ObjectData[0].PCode = (byte)obj.PrimData.PCode;
+            update.ObjectData[0].ProfileBegin = Primitive.PackBeginCut(obj.PrimData.ProfileBegin);
+            update.ObjectData[0].ProfileCurve = (byte)obj.PrimData.ProfileCurve;
+            update.ObjectData[0].ProfileEnd = Primitive.PackEndCut(obj.PrimData.ProfileEnd);
+            update.ObjectData[0].ProfileHollow = Primitive.PackProfileHollow(obj.PrimData.ProfileHollow);
             update.ObjectData[0].PSBlock = new byte[0];
             update.ObjectData[0].TextColor = Vector3.Zero.GetBytes();
             update.ObjectData[0].TextureAnim = new byte[0];
             update.ObjectData[0].TextureEntry = obj.Textures.ToBytes();
-            update.ObjectData[0].Radius = 0f;
+            update.ObjectData[0].Radius = 0f; // Sound
             update.ObjectData[0].Scale = obj.Scale;
             update.ObjectData[0].Sound = UUID.Zero;
             update.ObjectData[0].State = state;

@@ -175,7 +175,7 @@ namespace OpenMetaverse
             /// objects</summary>
             CreateGroupObjects = 1 << 26,
             /// <summary>Allow all objects to enter this parcel</summary>
-            AllowAllObjectEntry = 1 << 27,
+            AllowAPrimitiveEntry = 1 << 27,
             /// <summary>Only allow group and owner objects to enter this parcel</summary>
             AllowGroupObjectEntry = 1 << 28,
             /// <summary>Voice Enabled on this parcel</summary>

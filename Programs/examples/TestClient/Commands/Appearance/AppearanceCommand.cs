@@ -23,7 +23,7 @@ namespace OpenMetaverse.TestClient
             // Register a handler for the appearance event
             AutoResetEvent appearanceEvent = new AutoResetEvent(false);
             AppearanceManager.AppearanceUpdatedCallback callback =
-                delegate(LLObject.TextureEntry te) { appearanceEvent.Set(); };
+                delegate(Primitive.TextureEntry te) { appearanceEvent.Set(); };
             Client.Appearance.OnAppearanceUpdated += callback;
 
             // Start the appearance setting process (with baking enabled or disabled)

@@ -306,7 +306,7 @@ namespace PrimWorkshop
                             data.Indices = face.Indices.ToArray();
 
                             // Texture transform for this face
-                            LLObject.TextureEntryFace teFace = prim.Textures.GetFace((uint)j);
+                            Primitive.TextureEntryFace teFace = prim.Textures.GetFace((uint)j);
                             Render.Plugin.TransformTexCoords(face.Vertices, face.Center, teFace);
 
                             // Texcoords for this face

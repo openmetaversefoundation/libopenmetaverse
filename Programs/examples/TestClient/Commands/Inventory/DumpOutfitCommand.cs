@@ -53,7 +53,7 @@ namespace OpenMetaverse.TestClient
 
                         for (int j = 0; j < targetAv.Textures.FaceTextures.Length; j++)
                         {
-                            LLObject.TextureEntryFace face = targetAv.Textures.FaceTextures[j];
+                            Primitive.TextureEntryFace face = targetAv.Textures.FaceTextures[j];
 
                             if (face != null)
                             {

@@ -41,8 +41,8 @@ namespace OpenMetaverse.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.UnpackBeginCut(i);
-                ushort result = LLObject.PackBeginCut(floatValue);
+                float floatValue = Primitive.UnpackBeginCut(i);
+                ushort result = Primitive.PackBeginCut(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                     ", and ended up with " + result);
@@ -54,8 +54,8 @@ namespace OpenMetaverse.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.UnpackEndCut(i);
-                ushort result = LLObject.PackEndCut(floatValue);
+                float floatValue = Primitive.UnpackEndCut(i);
+                ushort result = Primitive.PackEndCut(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                     ", and ended up with " + result);
@@ -67,8 +67,8 @@ namespace OpenMetaverse.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.UnpackPathRevolutions(i);
-                byte result = LLObject.PackPathRevolutions(floatValue);
+                float floatValue = Primitive.UnpackPathRevolutions(i);
+                byte result = Primitive.PackPathRevolutions(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                     ", and ended up with " + result);
@@ -80,8 +80,8 @@ namespace OpenMetaverse.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = LLObject.UnpackPathScale(i);
-                byte result = LLObject.PackPathScale(floatValue);
+                float floatValue = Primitive.UnpackPathScale(i);
+                byte result = Primitive.PackPathScale(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                     ", and ended up with " + result);
@@ -93,8 +93,8 @@ namespace OpenMetaverse.Tests
         //{
         //    for (byte i = 0; i < byte.MaxValue; i++)
         //    {
-        //        float floatValue = LLObject.UnpackPathShear(i);
-        //        byte result = LLObject.PackPathShear(floatValue);
+        //        float floatValue = Primitive.UnpackPathShear(i);
+        //        byte result = Primitive.PackPathShear(floatValue);
 
         //        Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
         //        ", and ended up with " + result);
@@ -106,8 +106,8 @@ namespace OpenMetaverse.Tests
         {
             for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
             {
-                float floatValue = LLObject.UnpackPathTaper(i);
-                sbyte result = LLObject.PackPathTaper(floatValue);
+                float floatValue = Primitive.UnpackPathTaper(i);
+                sbyte result = Primitive.PackPathTaper(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -132,8 +132,8 @@ namespace OpenMetaverse.Tests
         [Test]
         public void TextureEntry()
         {
-            LLObject.TextureEntry te = new LLObject.TextureEntry(UUID.Random());
-            LLObject.TextureEntryFace face = te.CreateFace(0);
+            Primitive.TextureEntry te = new Primitive.TextureEntry(UUID.Random());
+            Primitive.TextureEntryFace face = te.CreateFace(0);
             face.Bump = Bumpiness.Concrete;
             face.Fullbright = true;
             face.MediaFlags = true;
@@ -149,7 +149,7 @@ namespace OpenMetaverse.Tests
 
             byte[] teBytes = te.ToBytes();
 
-            LLObject.TextureEntry te2 = new LLObject.TextureEntry(teBytes, 0, teBytes.Length);
+            Primitive.TextureEntry te2 = new Primitive.TextureEntry(teBytes, 0, teBytes.Length);
 
             byte[] teBytes2 = te2.ToBytes();
 

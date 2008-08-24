@@ -90,7 +90,7 @@ namespace OpenMetaverse
         /// <param name="avatarID"></param>
         /// <param name="isTrial"></param>
         /// <param name="visualParams"></param>
-        public delegate void AvatarAppearanceCallback(UUID avatarID, bool isTrial, LLObject.TextureEntryFace defaultTexture, LLObject.TextureEntryFace[] faceTextures, List<byte> visualParams);
+        public delegate void AvatarAppearanceCallback(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams);
         /// <summary>
         /// Triggered when a UUIDNameReply is received
         /// </summary>
@@ -386,11 +386,11 @@ namespace OpenMetaverse
                             visualParams.Add(block.ParamValue);
                         }
 
-                        LLObject.TextureEntry textureEntry = new Primitive.TextureEntry(appearance.ObjectData.TextureEntry, 0,
+                        Primitive.TextureEntry textureEntry = new Primitive.TextureEntry(appearance.ObjectData.TextureEntry, 0,
                                 appearance.ObjectData.TextureEntry.Length);
 
-                        LLObject.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
-                        LLObject.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
+                        Primitive.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
+                        Primitive.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
 
                         try { OnAvatarAppearance(appearance.Sender.ID, appearance.Sender.IsTrial, defaultTexture, faceTextures, visualParams); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }

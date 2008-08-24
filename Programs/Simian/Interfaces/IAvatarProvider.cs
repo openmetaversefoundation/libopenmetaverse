@@ -3,7 +3,7 @@ using OpenMetaverse;
 
 namespace Simian
 {
-    public interface IAvatarManager
+    public interface IAvatarProvider
     {
         bool SetDefaultAnimation(Agent agent, UUID animID);
         bool AddAnimation(Agent agent, UUID animID);

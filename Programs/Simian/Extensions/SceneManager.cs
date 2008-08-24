@@ -42,9 +42,11 @@ namespace Simian.Extensions
             avatar.Position = new Vector3(128f, 128f, 25f);
             avatar.Rotation = Quaternion.Identity;
             avatar.Scale = new Vector3(0.45f, 0.6f, 1.9f);
+            avatar.PrimData.Material = Material.Flesh;
+            avatar.PrimData.PCode = PCode.Avatar;
 
             // Create a default outfit for the avatar
-            LLObject.TextureEntry te = new LLObject.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
+            Primitive.TextureEntry te = new Primitive.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
             avatar.Textures = te;
 
             // Set the avatar name
@@ -77,7 +79,8 @@ namespace Simian.Extensions
                 foreach (Agent otherAgent in server.Agents.Values)
                 {
                     // Send ObjectUpdate packets for this avatar
-                    ObjectUpdatePacket update = Movement.BuildFullUpdate(otherAgent, otherAgent.Avatar,
+                    ObjectUpdatePacket update = Movement.BuildFullUpdate(otherAgent.Avatar,
+                        NameValue.NameValuesToString(otherAgent.Avatar.NameValues),
                         server.RegionHandle, otherAgent.State, otherAgent.Flags);
                     agent.SendPacket(update);
 

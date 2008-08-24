@@ -100,7 +100,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="te"></param>
-        public delegate void AppearanceUpdatedCallback(LLObject.TextureEntry te);
+        public delegate void AppearanceUpdatedCallback(Primitive.TextureEntry te);
 
         /// <summary></summary>
         public event AgentWearablesCallback OnAgentWearables;
@@ -639,7 +639,7 @@ namespace OpenMetaverse
 
             #region Send Appearance
 
-            LLObject.TextureEntry te = null;
+            Primitive.TextureEntry te = null;
 
             ObjectManager.NewAvatarCallback updateCallback =
                 delegate(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
@@ -652,7 +652,7 @@ namespace OpenMetaverse
 
                             for (uint i = 0; i < AgentTextures.Length; i++)
                             {
-                                LLObject.TextureEntryFace face = avatar.Textures.FaceTextures[i];
+                                Primitive.TextureEntryFace face = avatar.Textures.FaceTextures[i];
 
                                 if (face == null)
                                 {
@@ -888,7 +888,7 @@ namespace OpenMetaverse
                 }
 
                 // Build the texture entry for our agent
-                LLObject.TextureEntry te = new LLObject.TextureEntry(DEFAULT_AVATAR_TEXTURE);
+                Primitive.TextureEntry te = new Primitive.TextureEntry(DEFAULT_AVATAR_TEXTURE);
 
                 // Put our AgentTextures array in to TextureEntry
                 lock (AgentTextures)
@@ -897,7 +897,7 @@ namespace OpenMetaverse
                     {
                         if (AgentTextures[i] != UUID.Zero)
                         {
-                            LLObject.TextureEntryFace face = te.CreateFace(i);
+                            Primitive.TextureEntryFace face = te.CreateFace(i);
                             face.TextureID = AgentTextures[i];
                         }
                     }
@@ -909,7 +909,7 @@ namespace OpenMetaverse
                     {
                         foreach (KeyValuePair<TextureIndex, UUID> texture in data.Asset.Textures)
                         {
-                            LLObject.TextureEntryFace face = te.CreateFace((uint)texture.Key);
+                            Primitive.TextureEntryFace face = te.CreateFace((uint)texture.Key);
                             face.TextureID = texture.Value;
 
                             Logger.DebugLog("Setting agent texture " + ((TextureIndex)texture.Key).ToString() + " to " +

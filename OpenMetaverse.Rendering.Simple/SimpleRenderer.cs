@@ -61,7 +61,7 @@ namespace OpenMetaverse.Rendering
             return mesh;
         }
 
-        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, LLObject.TextureEntryFace teFace)
+        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace)
         {
             // Lalala...
         }
@@ -132,7 +132,7 @@ namespace OpenMetaverse.Rendering
             return new List<ushort>(indices);
         }
 
-        private List<Face> GenerateFaces(LLObject.TextureEntry te)
+        private List<Face> GenerateFaces(Primitive.TextureEntry te)
         {
             Face face = new Face();
             face.Edge = new List<int>();

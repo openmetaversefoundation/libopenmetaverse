@@ -1074,5 +1074,15 @@ namespace OpenMetaverse
         }
 
         #endregion Operators
+
+        /// <summary>A 4x4 matrix containing all zeroes</summary>
+        public static readonly Matrix4 Zero = new Matrix4();
+
+        /// <summary>A 4x4 identity matrix</summary>
+        public static readonly Matrix4 Identity = new Matrix4(
+            1f, 0f, 0f, 0f,
+            0f, 1f, 0f, 0f,
+            0f, 0f, 1f, 0f,
+            0f, 0f, 0f, 1f);
     }
 }

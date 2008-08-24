@@ -145,7 +145,7 @@ namespace OpenMetaverse.Rendering
         public List<ushort> Indices;
         public List<int> Edge;
         public FaceMask Mask;
-        public LLObject.TextureEntryFace TextureFace;
+        public Primitive.TextureEntryFace TextureFace;
         public object UserData;
 
         public override string ToString()
@@ -189,7 +189,7 @@ namespace OpenMetaverse.Rendering
             }
             else
             {
-                return String.Format("{0} ({1})", Prim.LocalID, Prim.Data);
+                return String.Format("{0} ({1})", Prim.LocalID, Prim.PrimData);
             }
         }
     }

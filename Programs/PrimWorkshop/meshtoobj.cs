@@ -37,7 +37,7 @@ namespace PrimWorkshop
                     if (face.Vertices.Count > 2)
                     {
                         string mtlName = String.Format("material{0}-{1}", i, face.ID);
-                        LLObject.TextureEntryFace tex = face.TextureFace;
+                        Primitive.TextureEntryFace tex = face.TextureFace;
                         string texName = tex.TextureID.ToString() + ".tga";
 
                         // FIXME: Convert the source to TGA (if needed) and copy to the destination
@@ -65,7 +65,7 @@ namespace PrimWorkshop
                         mtl.AppendLine("Tr " + tex.RGBA.A);
                         mtl.AppendLine("Ns " + shiny);
                         mtl.AppendLine("illum 1");
-                        if (tex.TextureID != UUID.Zero && tex.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                        if (tex.TextureID != UUID.Zero && tex.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                             mtl.AppendLine("map_Kd ./" + texName);
                         mtl.AppendLine();
                         

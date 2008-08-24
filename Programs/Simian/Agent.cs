@@ -26,7 +26,7 @@ namespace Simian
         public byte[] VisualParams = new byte[218];
         // TODO: Replace byte with enum
         public byte State;
-        public LLObject.ObjectFlags Flags;
+        public PrimFlags Flags;
         public UUID InventoryRoot;
         public UUID InventoryLibRoot;
 

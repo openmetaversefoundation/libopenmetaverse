@@ -17,13 +17,13 @@ namespace Simian
 
         public HttpServer HttpServer;
         public UDPServer UDPServer;
-        public Dictionary<uint, Primitive> SceneObjects = new Dictionary<uint, Primitive>();
         public ulong RegionHandle;
         public float[] Heightmap = new float[65536];
         public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
         // Interfaces
-        public IAvatarManager AvatarManager;
+        public IAvatarProvider Avatars;
+        public IMeshingProvider Mesher;
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<IPEndPoint, Agent> Agents = new Dictionary<IPEndPoint, Agent>();
@@ -98,18 +98,26 @@ namespace Simian
 
         void TryAssignToInterface(ISimianExtension extension)
         {
-            if (extension is IAvatarManager)
+            if (extension is IAvatarProvider)
             {
-                IAvatarManager manager = (IAvatarManager)extension;
-                AvatarManager = manager;
+                Avatars = (IAvatarProvider)extension;
+            }
+            else if (extension is IMeshingProvider)
+            {
+                Mesher = (IMeshingProvider)extension;
             }
         }
 
         bool CheckInterfaces()
         {
-            if (AvatarManager == null)
+            if (Avatars == null)
             {
-                Logger.Log("No AvatarManager interface loaded", Helpers.LogLevel.Error);
+                Logger.Log("No IAvatarProvider interface loaded", Helpers.LogLevel.Error);
+                return false;
+            }
+            if (Mesher == null)
+            {
+                Logger.Log("No IMeshingProvider interface loaded", Helpers.LogLevel.Error);
                 return false;
             }
 
@@ -291,9 +299,9 @@ namespace Simian
             agent.CircuitCode = CreateAgentCircuit(agent);
             agent.InventoryRoot = UUID.Random();
             agent.InventoryLibRoot = UUID.Random();
-            agent.Flags = LLObject.ObjectFlags.Physics | LLObject.ObjectFlags.ObjectModify | LLObject.ObjectFlags.ObjectCopy |
-                LLObject.ObjectFlags.ObjectAnyOwner | LLObject.ObjectFlags.ObjectMove | LLObject.ObjectFlags.InventoryEmpty |
-                LLObject.ObjectFlags.ObjectTransfer | LLObject.ObjectFlags.ObjectOwnerModify | LLObject.ObjectFlags.ObjectYouOwner;
+            agent.Flags = PrimFlags.Physics | PrimFlags.ObjectModify | PrimFlags.ObjectCopy |
+                PrimFlags.ObjectAnyOwner | PrimFlags.ObjectMove | PrimFlags.InventoryEmpty |
+                PrimFlags.ObjectTransfer | PrimFlags.ObjectOwnerModify | PrimFlags.ObjectYouOwner;
 
             // Setup the agent inventory
             InventoryFolder rootFolder = new InventoryFolder();

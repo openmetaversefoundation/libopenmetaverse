@@ -351,8 +351,8 @@ namespace PrimWorkshop
                 {
                     for (int i = 0; i < prim.Textures.FaceTextures.Length; i++)
                     {
-                        LLObject.TextureEntryFace face = prim.Textures.FaceTextures[i];
-                        if (face != null && face.TextureID != UUID.Zero && face.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                        Primitive.TextureEntryFace face = prim.Textures.FaceTextures[i];
+                        if (face != null && face.TextureID != UUID.Zero && face.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                         {
                             if (!textureList.Contains(face.TextureID))
                                 textureList.Add(face.TextureID);
@@ -951,7 +951,7 @@ namespace PrimWorkshop
                 data.Indices = face.Indices.ToArray();
 
                 // Texture transform for this face
-                LLObject.TextureEntryFace teFace = prim.Textures.GetFace((uint)j);
+                Primitive.TextureEntryFace teFace = prim.Textures.GetFace((uint)j);
                 Render.Plugin.TransformTexCoords(face.Vertices, face.Center, teFace);
 
                 // Texcoords for this face
@@ -964,7 +964,7 @@ namespace PrimWorkshop
 
                 // Texture for this face
                 if (teFace.TextureID != UUID.Zero &&
-                    teFace.TextureID != LLObject.TextureEntry.WHITE_TEXTURE)
+                    teFace.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                 { 
                     lock (Textures)
                     {
@@ -1322,7 +1322,7 @@ StartRender:
                             }
                             else
                             {
-                                if (face.TextureFace.TextureID == LLObject.TextureEntry.WHITE_TEXTURE ||
+                                if (face.TextureFace.TextureID == Primitive.TextureEntry.WHITE_TEXTURE ||
                                     face.TextureFace.TextureID == UUID.Zero)
                                 {
                                     Gl.glPolygonMode(Gl.GL_FRONT, Gl.GL_FILL);

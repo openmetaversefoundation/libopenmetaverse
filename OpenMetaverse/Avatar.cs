@@ -35,22 +35,26 @@ namespace OpenMetaverse
     /// <summary>
     /// Represents an avatar (other than your own)
     /// </summary>
-    public class Avatar : LLObject
+    public class Avatar : Primitive
     {
+        #region Enums
+
         /// <summary>
         /// Avatar profile flags
         /// </summary>
         [Flags]
         public enum ProfileFlags
         {
-            ALLOW_PUBLISH = 1,
-            MATURE_PUBLISH = 2,
-            IDENTIFIED = 4,
-            TRANSACTED = 8,
-            ONLINE = 16
+            AllowPublish = 1,
+            MaturePublish = 2,
+            Identified = 4,
+            Transacted = 8,
+            Online = 16
         }
 
-        #region Avatar Structs
+        #endregion Enums
+
+        #region Subclasses
 
         /// <summary>
         /// Positive and negative ratings
@@ -105,96 +109,61 @@ namespace OpenMetaverse
             /// <summary>Should this profile be published on the web</summary>
             public bool AllowPublish
             {
-                get
-                {
-                    return ((Flags & ProfileFlags.ALLOW_PUBLISH) != 0);
-                }
+                get { return ((Flags & ProfileFlags.AllowPublish) != 0); }
                 set
                 {
                     if (value == true)
-                    {
-                        Flags |= ProfileFlags.ALLOW_PUBLISH;
-                    }
+                        Flags |= ProfileFlags.AllowPublish;
                     else
-                    {
-                        Flags &= ~ProfileFlags.ALLOW_PUBLISH;
-                    }
+                        Flags &= ~ProfileFlags.AllowPublish;
                 }
             }
             /// <summary>Avatar Online Status</summary>
             public bool Online
             {
-                get
-                {
-                    return ((Flags & ProfileFlags.ONLINE) != 0);
-                }
+                get { return ((Flags & ProfileFlags.Online) != 0); }
                 set
                 {
                     if (value == true)
-                    {
-                        Flags |= ProfileFlags.ONLINE;
-                    }
+                        Flags |= ProfileFlags.Online;
                     else
-                    {
-                        Flags &= ~ProfileFlags.ONLINE;
-                    }
+                        Flags &= ~ProfileFlags.Online;
                 }
             }
             /// <summary>Is this a mature profile</summary>
             public bool MaturePublish
             {
-                get
-                {
-                    return ((Flags & ProfileFlags.MATURE_PUBLISH) != 0);
-                }
+                get { return ((Flags & ProfileFlags.MaturePublish) != 0); }
                 set
                 {
                     if (value == true)
-                    {
-                        Flags |= ProfileFlags.MATURE_PUBLISH;
-                    }
+                        Flags |= ProfileFlags.MaturePublish;
                     else
-                    {
-                        Flags &= ~ProfileFlags.MATURE_PUBLISH;
-                    }
+                        Flags &= ~ProfileFlags.MaturePublish;
                 }
             }
             /// <summary></summary>
             public bool Identified
             {
-                get
-                {
-                    return ((Flags & ProfileFlags.IDENTIFIED) != 0);
-                }
+                get { return ((Flags & ProfileFlags.Identified) != 0); }
                 set
                 {
                     if (value == true)
-                    {
-                        Flags |= ProfileFlags.IDENTIFIED;
-                    }
+                        Flags |= ProfileFlags.Identified;
                     else
-                    {
-                        Flags &= ~ProfileFlags.IDENTIFIED;
-                    }
+                        Flags &= ~ProfileFlags.Identified;
                 }
             }
-            ///// <summary></summary>
+            /// <summary></summary>
             public bool Transacted
             {
-                get
-                {
-                    return ((Flags & ProfileFlags.TRANSACTED) != 0);
-                }
+                get { return ((Flags & ProfileFlags.Transacted) != 0); }
                 set
                 {
                     if (value == true)
-                    {
-                        Flags |= ProfileFlags.TRANSACTED;
-                    }
+                        Flags |= ProfileFlags.Transacted;
                     else
-                    {
-                        Flags &= ~ProfileFlags.TRANSACTED;
-                    }
+                        Flags &= ~ProfileFlags.Transacted;
                 }
             }
 
@@ -221,61 +190,68 @@ namespace OpenMetaverse
             public string WantToText;
         }
 
-        #endregion Avatar Structs
-
+        #endregion Subclasses
 
         #region Public Members
 
         /// <summary>Groups that this avatar is a member of</summary>
         public List<UUID> Groups = new List<UUID>();
         /// <summary>Positive and negative ratings</summary>
-        public Statistics ProfileStatistics = new Statistics();
+        public Statistics ProfileStatistics;
         /// <summary>Avatar properties including about text, profile URL, image IDs and 
         /// publishing settings</summary>
-        public AvatarProperties ProfileProperties = new AvatarProperties();
+        public AvatarProperties ProfileProperties;
         /// <summary>Avatar interests including spoken languages, skills, and "want to"
         /// choices</summary>
-        public Interests ProfileInterests = new Interests();
-        /// <summary>Simulator the avatar is in</summary>
-        public Simulator CurrentSim = null;
+        public Interests ProfileInterests;
 
         #endregion Public Members
 
+        protected string name;
+        protected string groupName;
+
+        #region Properties
 
         /// <summary>Full name</summary>
         public string Name
         {
             get
             {
-                if (name.Length > 0)
+                if (!String.IsNullOrEmpty(name))
                 {
                     return name;
                 }
-                else if (NameValues == null || NameValues.Length == 0)
-                {
-                    return String.Empty;
-                }
                 else
                 {
-                    string firstName = String.Empty;
-                    string lastName = String.Empty;
+                    lock (NameValues)
+                    {
+                        if (NameValues == null || NameValues.Length == 0)
+                        {
+                            return String.Empty;
+                        }
+                        else
+                        {
+                            string firstName = String.Empty;
+                            string lastName = String.Empty;
 
-                    for (int i = 0; i < NameValues.Length; i++)
-                    {
-                        if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
-                            firstName = (string)NameValues[i].Value;
-                        else if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
-                            lastName = (string)NameValues[i].Value;
-                    }
+                            for (int i = 0; i < NameValues.Length; i++)
+                            {
+                                if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
+                                    firstName = (string)NameValues[i].Value;
+                                else if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
+                                    lastName = (string)NameValues[i].Value;
+                            }
 
-                    if (firstName != String.Empty && lastName != String.Empty)
-                    {
-                        name = String.Format("{0} {1}", firstName, lastName);
-                        return name;
-                    }
-                    else
-                    {
-                        return String.Empty;
+                            if (firstName != String.Empty && lastName != String.Empty)
+                            {
+                                name = String.Format("{0} {1}", firstName, lastName);
+                                return name;
+                            }
+                            else
+                            {
+                                return String.Empty;
+                            }
+                        }
                     }
                 }
             }
@@ -286,39 +262,39 @@ namespace OpenMetaverse
         {
             get
             {
-                for (int i = 0; i < NameValues.Length; i++)
+                if (!String.IsNullOrEmpty(groupName))
                 {
-                    if (NameValues[i].Name == "Title" && NameValues[i].Type == NameValue.ValueType.String)
+                    return groupName;
+                }
+                else
+                {
+                    lock (NameValues)
                     {
-                        groupName = (string)NameValues[i].Value;
-                        break;
+                        if (NameValues == null || NameValues.Length == 0)
+                        {
+                            return String.Empty;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < NameValues.Length; i++)
+                            {
+                                if (NameValues[i].Name == "Title" && NameValues[i].Type == NameValue.ValueType.String)
+                                {
+                                    groupName = (string)NameValues[i].Value;
+                                    return groupName;
+                                }
+                            }
+
+                            return String.Empty;
+                        }
                     }
                 }
-
-                return groupName;
             }
         }
 
-        /// <summary>Gets the local ID of the prim the avatar is sitting on,
-        /// zero if the avatar is not currently sitting</summary>
-        public uint SittingOn { get { return sittingOn; } }
+        #endregion Properties
 
-
-        internal string name = String.Empty;
-        internal string groupName = String.Empty;
-        internal uint sittingOn
-        {
-            get
-            {
-                return ParentID;
-            }
- 
-            set
-            {
-                ParentID = value;
-            }
-        }
-
+        #region Constructors
 
         /// <summary>
         /// Default constructor
@@ -326,5 +302,7 @@ namespace OpenMetaverse
         public Avatar()
         {
         }
+
+        #endregion Constructors
     }
 }

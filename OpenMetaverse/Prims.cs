@@ -30,7 +30,7 @@ using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
-    public partial class Primitive : LLObject
+    public partial class Primitive : MetaverseObject
     {
         #region Enums
 
@@ -533,34 +533,34 @@ namespace OpenMetaverse
         public override string ToString()
         {
             return String.Format("ID: {0}, GroupID: {1}, ParentID: {2}, LocalID: {3}, Flags: {4}, " +
-                "State: {5}, PCode: {6}, Material: {7}", ID, GroupID, ParentID, LocalID, Flags, Data.State,
-                Data.PCode, Data.Material);
+                "State: {5}, PCode: {6}, Material: {7}", ID, GroupID, ParentID, LocalID, Flags, PrimData.State,
+                PrimData.PCode, PrimData.Material);
         }
 
         public LLSD GetLLSD()
         {
             LLSDMap path = new LLSDMap(14);
-            path["begin"] = LLSD.FromReal(Data.PathBegin);
-            path["curve"] = LLSD.FromInteger((int)Data.PathCurve);
-            path["end"] = LLSD.FromReal(Data.PathEnd);
-            path["radius_offset"] = LLSD.FromReal(Data.PathRadiusOffset);
-            path["revolutions"] = LLSD.FromReal(Data.PathRevolutions);
-            path["scale_x"] = LLSD.FromReal(Data.PathScaleX);
-            path["scale_y"] = LLSD.FromReal(Data.PathScaleY);
-            path["shear_x"] = LLSD.FromReal(Data.PathShearX);
-            path["shear_y"] = LLSD.FromReal(Data.PathShearY);
-            path["skew"] = LLSD.FromReal(Data.PathSkew);
-            path["taper_x"] = LLSD.FromReal(Data.PathTaperX);
-            path["taper_y"] = LLSD.FromReal(Data.PathTaperY);
-            path["twist"] = LLSD.FromReal(Data.PathTwist);
-            path["twist_begin"] = LLSD.FromReal(Data.PathTwistBegin);
+            path["begin"] = LLSD.FromReal(PrimData.PathBegin);
+            path["curve"] = LLSD.FromInteger((int)PrimData.PathCurve);
+            path["end"] = LLSD.FromReal(PrimData.PathEnd);
+            path["radius_offset"] = LLSD.FromReal(PrimData.PathRadiusOffset);
+            path["revolutions"] = LLSD.FromReal(PrimData.PathRevolutions);
+            path["scale_x"] = LLSD.FromReal(PrimData.PathScaleX);
+            path["scale_y"] = LLSD.FromReal(PrimData.PathScaleY);
+            path["shear_x"] = LLSD.FromReal(PrimData.PathShearX);
+            path["shear_y"] = LLSD.FromReal(PrimData.PathShearY);
+            path["skew"] = LLSD.FromReal(PrimData.PathSkew);
+            path["taper_x"] = LLSD.FromReal(PrimData.PathTaperX);
+            path["taper_y"] = LLSD.FromReal(PrimData.PathTaperY);
+            path["twist"] = LLSD.FromReal(PrimData.PathTwist);
+            path["twist_begin"] = LLSD.FromReal(PrimData.PathTwistBegin);
 
             LLSDMap profile = new LLSDMap(4);
-            profile["begin"] = LLSD.FromReal(Data.ProfileBegin);
-            profile["curve"] = LLSD.FromInteger((int)Data.ProfileCurve);
-            profile["hole"] = LLSD.FromInteger((int)Data.ProfileHole);
-            profile["end"] = LLSD.FromReal(Data.ProfileEnd);
-            profile["hollow"] = LLSD.FromReal(Data.ProfileHollow);
+            profile["begin"] = LLSD.FromReal(PrimData.ProfileBegin);
+            profile["curve"] = LLSD.FromInteger((int)PrimData.ProfileCurve);
+            profile["hole"] = LLSD.FromInteger((int)PrimData.ProfileHole);
+            profile["end"] = LLSD.FromReal(PrimData.ProfileEnd);
+            profile["hollow"] = LLSD.FromReal(PrimData.ProfileHollow);
 
             LLSDMap volume = new LLSDMap(2);
             volume["path"] = path;
@@ -574,7 +574,7 @@ namespace OpenMetaverse
             prim["position"] = LLSD.FromVector3(Position);
             prim["rotation"] = LLSD.FromQuaternion(Rotation);
             prim["scale"] = LLSD.FromVector3(Scale);
-            prim["material"] = LLSD.FromInteger((int)Data.Material);
+            prim["material"] = LLSD.FromInteger((int)PrimData.Material);
             prim["shadows"] = LLSD.FromBoolean(((Flags & ObjectFlags.CastShadows) != 0));
             prim["textures"] = Textures.GetLLSD();
             prim["volume"] = volume;
@@ -591,7 +591,7 @@ namespace OpenMetaverse
         public static Primitive FromLLSD(LLSD llsd)
         {
             Primitive prim = new Primitive();
-            LLObject.ObjectData data = new ObjectData();
+            MetaverseObject.ObjectData data = new ObjectData();
 
             LLSDMap map = (LLSDMap)llsd;
             LLSDMap volume = (LLSDMap)map["volume"];
@@ -623,7 +623,7 @@ namespace OpenMetaverse
 
             #endregion Path/Profile
 
-            prim.Data = data;
+            prim.PrimData = data;
             
             if (map["phantom"].AsBoolean())
                 prim.Flags |= ObjectFlags.Phantom;
@@ -638,7 +638,7 @@ namespace OpenMetaverse
             prim.Position = ((LLSDArray)map["position"]).AsVector3();
             prim.Rotation = ((LLSDArray)map["rotation"]).AsQuaternion();
             prim.Scale = ((LLSDArray)map["scale"]).AsVector3();
-            prim.Data.Material = (MaterialType)map["material"].AsInteger();
+            prim.PrimData.Material = (MaterialType)map["material"].AsInteger();
             prim.Flexible = FlexibleData.FromLLSD(map["flex"]);
             prim.Light = LightData.FromLLSD(map["light"]);
             prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);

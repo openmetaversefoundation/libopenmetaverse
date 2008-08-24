@@ -11,7 +11,7 @@ namespace OpenMetaverse.TestClient
     {
         List<UUID> Textures = new List<UUID>();
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
-        LLObject.ObjectPropertiesFamily Properties;
+        Primitive.ObjectProperties Properties;
         bool GotPermissions = false;
         UUID SelectedObject = UUID.Zero;
 
@@ -115,7 +115,7 @@ namespace OpenMetaverse.TestClient
                     {
                         Primitive prim = prims[i];
 
-                        if (prim.Textures.DefaultTexture.TextureID != LLObject.TextureEntry.WHITE_TEXTURE &&
+                        if (prim.Textures.DefaultTexture.TextureID != Primitive.TextureEntry.WHITE_TEXTURE &&
                             !Textures.Contains(prim.Textures.DefaultTexture.TextureID))
                         {
                             Textures.Add(prim.Textures.DefaultTexture.TextureID);
@@ -124,7 +124,7 @@ namespace OpenMetaverse.TestClient
                         for (int j = 0; j < prim.Textures.FaceTextures.Length; j++)
                         {
                             if (prim.Textures.FaceTextures[j] != null &&
-                                prim.Textures.FaceTextures[j].TextureID != LLObject.TextureEntry.WHITE_TEXTURE &&
+                                prim.Textures.FaceTextures[j].TextureID != Primitive.TextureEntry.WHITE_TEXTURE &&
                                 !Textures.Contains(prim.Textures.FaceTextures[j].TextureID))
                             {
                                 Textures.Add(prim.Textures.FaceTextures[j].TextureID);
@@ -216,14 +216,15 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Objects_OnObjectPropertiesFamily(Simulator simulator, LLObject.ObjectPropertiesFamily properties)
+        void Objects_OnObjectPropertiesFamily(Simulator simulator, Primitive.ObjectProperties properties,
+            ObjectPropertiesRequestType type)
         {
-            Properties = properties;
+            Properties.SetFamilyProperties(properties);
             GotPermissions = true;
             GotPermissionsEvent.Set();
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectProperties properties)
+        void Objects_OnObjectProperties(Simulator simulator, Primitive.ObjectProperties properties)
         {
             lock (PrimsWaiting)
             {
