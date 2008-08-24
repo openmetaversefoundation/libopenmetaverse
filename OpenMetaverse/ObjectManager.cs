@@ -328,7 +328,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ImprovedTerseObjectUpdate, new NetworkManager.PacketCallback(TerseUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, new NetworkManager.PacketCallback(CompressedUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new NetworkManager.PacketCallback(CachedUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.KiPrimitive, new NetworkManager.PacketCallback(KiPrimitiveHandler));
+            Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, new NetworkManager.PacketCallback(ObjectPropertiesFamilyHandler));
             Client.Network.RegisterCallback(PacketType.ObjectProperties, new NetworkManager.PacketCallback(ObjectPropertiesHandler));
 
@@ -2051,11 +2051,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Handle KiPrimitive packets from the simulator
+        /// Handle KillObject packets from the simulator
         /// </summary>
         /// <param name="packet">The packet containing the object data</param>
         /// <param name="simulator">The simulator sending the data</param>
-        protected void KiPrimitiveHandler(Packet packet, Simulator simulator)
+        protected void KillObjectHandler(Packet packet, Simulator simulator)
         {
             KillObjectPacket kill = (KillObjectPacket)packet;
 

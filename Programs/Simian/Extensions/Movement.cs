@@ -284,18 +284,18 @@ namespace Simian.Extensions
             update.RegionData.TimeDilation = UInt16.MaxValue;
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
             update.ObjectData[0] = new ObjectUpdatePacket.ObjectDataBlock();
-            update.ObjectData[0].ClickAction = (byte)0;
+            update.ObjectData[0].ClickAction = (byte)obj.ClickAction;
             update.ObjectData[0].CRC = 0;
-            update.ObjectData[0].ExtraParams = new byte[0]; //FIXME:
+            update.ObjectData[0].ExtraParams = new byte[0]; //FIXME: Need a serializer for ExtraParams
             update.ObjectData[0].Flags = (byte)flags;
             update.ObjectData[0].FullID = obj.ID;
-            update.ObjectData[0].Gain = 0;
+            update.ObjectData[0].Gain = obj.SoundGain;
             update.ObjectData[0].ID = obj.LocalID;
-            update.ObjectData[0].JointAxisOrAnchor = Vector3.Zero;
-            update.ObjectData[0].JointPivot = Vector3.Zero;
-            update.ObjectData[0].JointType = (byte)0;
+            update.ObjectData[0].JointAxisOrAnchor = obj.JointAxisOrAnchor;
+            update.ObjectData[0].JointPivot = obj.JointPivot;
+            update.ObjectData[0].JointType = (byte)obj.Joint;
             update.ObjectData[0].Material = (byte)obj.PrimData.Material;
-            update.ObjectData[0].MediaURL = new byte[0];
+            update.ObjectData[0].MediaURL = new byte[0]; // FIXME:
             update.ObjectData[0].NameValue = Utils.StringToBytes(nameValues);
             update.ObjectData[0].ObjectData = objectData;
             update.ObjectData[0].OwnerID = obj.Properties.OwnerID;
@@ -319,17 +319,17 @@ namespace Simian.Extensions
             update.ObjectData[0].ProfileCurve = (byte)obj.PrimData.ProfileCurve;
             update.ObjectData[0].ProfileEnd = Primitive.PackEndCut(obj.PrimData.ProfileEnd);
             update.ObjectData[0].ProfileHollow = Primitive.PackProfileHollow(obj.PrimData.ProfileHollow);
-            update.ObjectData[0].PSBlock = new byte[0];
-            update.ObjectData[0].TextColor = Vector3.Zero.GetBytes();
-            update.ObjectData[0].TextureAnim = new byte[0];
+            update.ObjectData[0].PSBlock = new byte[0]; // FIXME:
+            update.ObjectData[0].TextColor = obj.TextColor.GetBytes(true);
+            update.ObjectData[0].TextureAnim = obj.TextureAnim.GetBytes();
             update.ObjectData[0].TextureEntry = obj.Textures.ToBytes();
-            update.ObjectData[0].Radius = 0f; // Sound
+            update.ObjectData[0].Radius = obj.SoundRadius;
             update.ObjectData[0].Scale = obj.Scale;
-            update.ObjectData[0].Sound = UUID.Zero;
+            update.ObjectData[0].Sound = obj.Sound;
             update.ObjectData[0].State = state;
-            update.ObjectData[0].Text = new byte[0];
+            update.ObjectData[0].Text = Utils.StringToBytes(obj.Text);
             update.ObjectData[0].UpdateFlags = (uint)flags;
-            update.ObjectData[0].Data = new byte[0];
+            update.ObjectData[0].Data = new byte[0]; // FIXME:
 
             return update;
         }
