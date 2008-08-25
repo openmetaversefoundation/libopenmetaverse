@@ -120,9 +120,9 @@ namespace Simian.Extensions
                         agent.TickJump = 0;
 
                         //velocity falloff while flying
-                        agent.Avatar.Velocity.X *= 0.4f;
-                        agent.Avatar.Velocity.Y *= 0.4f;
-                        agent.Avatar.Velocity.Z *= 0.2f;
+                        agent.Avatar.Velocity.X *= 0.66f;
+                        agent.Avatar.Velocity.Y *= 0.66f;
+                        agent.Avatar.Velocity.Z *= 0.33f;
 
                         if (move.X != 0 || move.Y != 0)
                         { //flying horizontally
@@ -164,6 +164,9 @@ namespace Simian.Extensions
 
                             if (!jumping)
                             { //falling
+
+                                agent.Avatar.Velocity *= 0.99f;
+
                                 if (fallElapsed > FALL_DELAY)
                                 { //falling long enough to trigger the animation
                                     if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
@@ -248,12 +251,12 @@ namespace Simian.Extensions
                     if (animsChanged)
                         server.Avatars.SendAnimations(agent);
 
-                    // static acceleration when any control is held
+                    // static acceleration when any control is held, otherwise none
                     if (moving) agent.Avatar.Acceleration = move * speed; //FIXME
-                    // taper off speed when no controls are held                    
-                    else agent.Avatar.Acceleration *= 0.8f;
+                    else agent.Avatar.Acceleration  = Vector3.Zero;
 
-                    if (gravity > AVATAR_TERMINAL_VELOCITY) gravity = AVATAR_TERMINAL_VELOCITY;
+                    float maxVel = AVATAR_TERMINAL_VELOCITY * seconds;
+                    if (gravity > maxVel) gravity = maxVel;
                     agent.Avatar.Velocity += agent.Avatar.Acceleration - new Vector3(0f, 0f, gravity); 
 
                     agent.Avatar.Position += agent.Avatar.Velocity;
