@@ -10,12 +10,14 @@ namespace Simian.Extensions
     public class Movement : ISimianExtension
     {
         const int UPDATE_ITERATION = 100;
+        const float GRAVITY = 9.8f; //meters/sec
         const float WALK_SPEED = 3f; //meters/sec
-        const float RUN_SPEED = 6f; //meters/sec
-        const float FLY_SPEED = 12f; //meters/sec
+        const float RUN_SPEED = 5f; //meters/sec
+        const float FLY_SPEED = 10f; //meters/sec
         const float FALL_DELAY = 0.5f; //seconds before starting animation
         const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
-        const float JUMP_IMPULSE = 2.5f; //boots amount in meters/sec
+        const float JUMP_IMPULSE_VERTICAL = 8f; //boost amount in meters/sec
+        const float JUMP_IMPULSE_HORIZONTAL = 32f; //boost amount in meters/sec 
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float SQRT_TWO = 1.41421356f;
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
@@ -117,7 +119,10 @@ namespace Simian.Extensions
                         agent.TickFall = 0;
                         agent.TickJump = 0;
 
-                        agent.Avatar.Velocity *= 0.4f;
+                        //velocity falloff while flying
+                        agent.Avatar.Velocity.X *= 0.4f;
+                        agent.Avatar.Velocity.Y *= 0.4f;
+                        agent.Avatar.Velocity.Z *= 0.2f;
 
                         if (move.X != 0 || move.Y != 0)
                         { //flying horizontally
@@ -142,23 +147,28 @@ namespace Simian.Extensions
                     }
 
                     else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
-                    { //falling
+                    { //falling or landing from a jump
 
-                        agent.Avatar.Velocity *= 0.8f; 
+                        //override controls while drifting
+                        move = Vector3.Zero;
+                        float fallElapsed = (float)(Environment.TickCount - agent.TickFall) / 1000f;
 
-                        if (agent.TickFall == 0)
+                        if (agent.TickFall == 0 || (fallElapsed  >= FALL_DELAY && agent.Avatar.Velocity.Z >= 0f))
                         { //just started falling
                             agent.TickFall = Environment.TickCount;
                         }
                         else
                         {
                             //adjust acceleration to account for gravity
-                            gravity = 9.8f * seconds * ((float)(Environment.TickCount - agent.TickFall) / 1000f);
+                            gravity = GRAVITY * seconds * fallElapsed;
 
-                            if (Environment.TickCount - agent.TickFall > (FALL_DELAY * 1000))
-                            { //falling long enough to trigger the animation
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
-                                    animsChanged = true;
+                            if (!jumping)
+                            { //falling
+                                if (fallElapsed > FALL_DELAY)
+                                { //falling long enough to trigger the animation
+                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                        animsChanged = true;
+                                }
                             }
                         }
                     }
@@ -188,7 +198,9 @@ namespace Simian.Extensions
                                 if (server.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
                                     animsChanged = true;
 
-                                move.Z = JUMP_IMPULSE;
+                                agent.Avatar.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
+                                agent.Avatar.Velocity.X = agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL * seconds;
+                                agent.Avatar.Velocity.Y = agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL * seconds;
                             }
                             else move.Z = 0; //override Z control
                         }
