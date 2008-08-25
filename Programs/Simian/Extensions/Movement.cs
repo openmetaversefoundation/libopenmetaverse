@@ -17,8 +17,8 @@ namespace Simian.Extensions
         const float FLY_SPEED = 10f; //meters/sec
         const float FALL_DELAY = 0.33f; //seconds before starting animation
         const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
-        const float JUMP_IMPULSE_VERTICAL = 8f; //boost amount in meters/sec
-        const float JUMP_IMPULSE_HORIZONTAL = 40f; //boost amount in meters/sec 
+        const float JUMP_IMPULSE_VERTICAL = 8.5f; //boost amount in meters/sec
+        const float JUMP_IMPULSE_HORIZONTAL = 10f; //boost amount in meters/sec (no clue why this is so high) 
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
 
@@ -184,7 +184,7 @@ namespace Simian.Extensions
                             gravity = 0f;
                             agent.Avatar.Velocity *= 0.5f;
                             agent.Avatar.Velocity.Z = 0f;
-                            if (move.Z < 0) agent.Avatar.Position.Z = waterChestHeight;
+                            if (move.Z < 1) agent.Avatar.Position.Z = waterChestHeight;
 
                             if (move.Z > 0)
                             {
@@ -240,8 +240,8 @@ namespace Simian.Extensions
                                     animsChanged = true;
 
                                 agent.Avatar.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
-                                agent.Avatar.Velocity.X += agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL * seconds;
-                                agent.Avatar.Velocity.Y += agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL * seconds;
+                                agent.Avatar.Velocity.X += agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
+                                agent.Avatar.Velocity.Y += agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL;
                             }
                             else move.Z = 0; //override Z control
                         }
