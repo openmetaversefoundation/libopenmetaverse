@@ -45,6 +45,7 @@ namespace Simian.Extensions
                 if (asset == null)
                 {
                     Logger.Log("Failed to create asset from uploaded data", Helpers.LogLevel.Warning);
+                    return;
                 }
 
                 Logger.DebugLog(String.Format("Storing uploaded asset {0} ({1})", assetID, asset.AssetType));
@@ -324,6 +325,7 @@ namespace Simian.Extensions
                 case AssetType.Texture:
                     return new AssetTexture(assetID, data);
                 case AssetType.Animation:
+                    return new AssetAnimation(assetID, data);
                 case AssetType.CallingCard:
                 case AssetType.Folder:
                 case AssetType.Gesture:
@@ -336,6 +338,7 @@ namespace Simian.Extensions
                 case AssetType.Simstate:
                 case AssetType.SnapshotFolder:
                 case AssetType.Sound:
+                    return new AssetSound(assetID, data);
                 case AssetType.SoundWAV:
                 case AssetType.TextureTGA:
                 case AssetType.TrashFolder:

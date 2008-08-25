@@ -980,7 +980,7 @@ namespace GridProxy
                 {
                     // forward the XML-RPC request to the server
                     response = (XmlRpcResponse)request.Send(proxyConfig.remoteLoginUri.ToString(),
-                        60000); //added 60 second timeout -- Andrew
+                        30 * 1000); // 30 second timeout
                 }
                 catch (Exception e)
                 {
@@ -1041,7 +1041,7 @@ namespace GridProxy
         private void ProxyLoginLLSD(NetworkStream netStream, byte[] content)
         {
             lock (this) {
-                ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+                ServicePointManager.CertificatePolicy = new OpenMetaverse.AcceptAllCertificatePolicy();
                 AutoResetEvent remoteComplete = new AutoResetEvent(false);
                 //CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
                 CapsClient loginRequest = new CapsClient(new Uri("https://login1.aditi.lindenlab.com/cgi-bin/auth.cgi"));

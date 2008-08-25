@@ -134,6 +134,22 @@ namespace OpenMetaverse
         public abstract bool Decode();
     }
 
+    public class AssetAnimation : Asset
+    {
+        public override AssetType AssetType { get { return AssetType.Animation; } }
+
+        public AssetAnimation() { }
+
+        public AssetAnimation(UUID assetID, byte[] assetData)
+            : base(assetID, assetData)
+        {
+            AssetData = assetData;
+        }
+
+        public override void Encode() { }
+        public override bool Decode() { return false; }
+    }
+
     public class AssetNotecard : Asset
     {
         public override AssetType AssetType { get { return AssetType.Notecard; } }
@@ -201,18 +217,32 @@ namespace OpenMetaverse
     {
         public override AssetType AssetType { get { return AssetType.LSLBytecode; } }
 
-        public byte[] Bytecode;
-
         public AssetScriptBinary() { }
 
         public AssetScriptBinary(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            Bytecode = assetData;
+            AssetData = assetData;
         }
 
-        public override void Encode() { AssetData = Bytecode; }
-        public override bool Decode() { Bytecode = AssetData; return true; }
+        public override void Encode() { }
+        public override bool Decode() { return false; }
+    }
+
+    public class AssetSound : Asset
+    {
+        public override AssetType AssetType { get { return AssetType.Sound; } }
+
+        public AssetSound() { }
+
+        public AssetSound(UUID assetID, byte[] assetData)
+            : base(assetID, assetData)
+        {
+            AssetData = assetData;
+        }
+
+        public override void Encode() { }
+        public override bool Decode() { return false; }
     }
 
     public class AssetTexture : Asset
@@ -236,11 +266,7 @@ namespace OpenMetaverse
         /// </summary>
         public override void Encode()
         {
-#if PocketPC
-            throw new Exception("OpenJPEG encoding is not supported on the PocketPC");
-#else
             AssetData = OpenJPEG.Encode(Image);
-#endif
         }
         
         /// <summary>
@@ -250,11 +276,7 @@ namespace OpenMetaverse
         /// <returns>True if the decoding was successful, otherwise false</returns>
         public override bool Decode()
         {
-#if PocketPC
-            throw new Exception("OpenJPEG decoding is not supported on the PocketPC");
-#else
             return OpenJPEG.DecodeToImage(AssetData, out Image);
-#endif
         }
     }
 
@@ -264,17 +286,6 @@ namespace OpenMetaverse
 
         public AssetPrim() { }
 
-        public override void Encode() { }
-        public override bool Decode() { return false; }
-    }
-
-    public class AssetSound : Asset
-    {
-        public override AssetType AssetType { get { return AssetType.Sound; } }
-
-        public AssetSound() { }
-
-        // TODO: Sometime we could add OGG encoding/decoding?
         public override void Encode() { }
         public override bool Decode() { return false; }
     }

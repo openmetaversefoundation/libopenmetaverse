@@ -654,7 +654,7 @@ namespace OpenMetaverse
     #endregion Structs
 
     // TODO: Remove me when MONO can handle ServerCertificateValidationCallback
-    internal class AcceptAllCertificatePolicy : ICertificatePolicy
+    public class AcceptAllCertificatePolicy : ICertificatePolicy
     {
         public AcceptAllCertificatePolicy()
         {
