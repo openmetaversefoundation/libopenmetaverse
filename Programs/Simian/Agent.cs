@@ -7,7 +7,7 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public class Agent
+    public class Agent : IDisposable
     {
         public UUID AgentID;
         public UUID SessionID;
@@ -31,6 +31,9 @@ namespace Simian
         public PrimFlags Flags;
         public UUID InventoryRoot;
         public UUID InventoryLibRoot;
+
+        public bool Disposed { get { return disposed; } }
+        bool disposed = false;
 
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>
         internal Queue<uint> packetArchive = new Queue<uint>();
@@ -65,6 +68,7 @@ namespace Simian
 
         public void Dispose()
         {
+            disposed = true;
             ackTimer.Dispose();
             packetArchive.Clear();
             needAcks.Clear();
@@ -278,8 +282,11 @@ namespace Simian
 
         private void AckTimer_Elapsed(object obj)
         {
-            SendAcks();
-            ResendUnacked();
+            if (!this.Disposed)
+            {
+                SendAcks();
+                ResendUnacked();
+            }
         }
     }
 }

@@ -92,19 +92,21 @@ namespace Simian.Extensions
 
                     // is the avatar trying to move?
                     bool moving = move != Vector3.Zero;
+                    bool jumping = agent.TickJump > 0;
 
                     // 2-dimensional speed multipler
-                    float speed = seconds * (flying ? FLY_SPEED : agent.Running ? RUN_SPEED : WALK_SPEED);
+                    float speed = seconds * (flying ? FLY_SPEED : agent.Running && !jumping ? RUN_SPEED : WALK_SPEED);
                     if ((heldForward || heldBack) && (heldLeft || heldRight))
                         speed /= SQRT_TWO;
 
                     // adjust multiplier for Z dimension
                     float oldFloor = GetLandHeightAt(agent.Avatar.Position);
-                    float newFloor = GetLandHeightAt(agent.Avatar.Position + move);
+                    float newFloor = GetLandHeightAt(agent.Avatar.Position + (move * speed));
                     if (!flying && newFloor != oldFloor)
                         speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
 
                     // least possible distance from avatar to the ground
+                    // TODO: calculate to get rid of "bot squat"
                     float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
 
                     // Z acceleration resulting from gravity
@@ -115,7 +117,7 @@ namespace Simian.Extensions
                         agent.TickFall = 0;
                         agent.TickJump = 0;
 
-                        agent.Avatar.Velocity *= 0.5f;
+                        agent.Avatar.Velocity *= 0.4f;
 
                         if (move.X != 0 || move.Y != 0)
                         { //flying horizontally
@@ -141,9 +143,6 @@ namespace Simian.Extensions
 
                     else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
                     { //falling
-
-                        move.X = 0;
-                        move.Y = 0;
 
                         agent.Avatar.Velocity *= 0.8f; 
 
@@ -176,7 +175,7 @@ namespace Simian.Extensions
 
                         if (move.Z > 0)
                         { //jumping
-                            if (agent.TickJump == 0)
+                            if (!jumping)
                             { //begin prejump
                                 move.Z = 0; //override Z control
                                 if (server.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
