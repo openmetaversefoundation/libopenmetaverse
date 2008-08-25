@@ -9,21 +9,22 @@ namespace Simian.Extensions
 {
     public class Movement : ISimianExtension
     {
-        const int UPDATE_ITERATION = 100;
+        const int UPDATE_ITERATION = 100; //rate in milliseconds to send ObjectUpdate
+        const bool ENVIRONMENT_SOUNDS = true; //collision sounds, splashing, etc
         const float GRAVITY = 9.8f; //meters/sec
         const float WALK_SPEED = 3f; //meters/sec
         const float RUN_SPEED = 5f; //meters/sec
         const float FLY_SPEED = 10f; //meters/sec
-        const float FALL_DELAY = 0.5f; //seconds before starting animation
+        const float FALL_DELAY = 0.33f; //seconds before starting animation
         const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
         const float JUMP_IMPULSE_VERTICAL = 8f; //boost amount in meters/sec
-        const float JUMP_IMPULSE_HORIZONTAL = 32f; //boost amount in meters/sec 
+        const float JUMP_IMPULSE_HORIZONTAL = 40f; //boost amount in meters/sec 
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
-        const float SQRT_TWO = 1.41421356f;
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
 
+        const float SQRT_TWO = 1.41421356f;
+
         Simian server;
-        AvatarManager Avatars;
         Timer updateTimer;
         long lastTick;
 
@@ -114,6 +115,8 @@ namespace Simian.Extensions
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
 
+                    float waterChestHeight = server.WaterHeight - (agent.Avatar.Scale.Z * .33f);
+
                     if (flying)
                     {
                         agent.TickFall = 0;
@@ -146,33 +149,68 @@ namespace Simian.Extensions
                         }
                     }
 
-                    else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS)
+                    else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Position.Z <= waterChestHeight)
                     { //falling or landing from a jump
 
-                        //override controls while drifting
-                        move = Vector3.Zero;
-                        float fallElapsed = (float)(Environment.TickCount - agent.TickFall) / 1000f;
+                        if (agent.Avatar.Position.Z > server.WaterHeight)
+                        { //above water
 
-                        if (agent.TickFall == 0 || (fallElapsed  >= FALL_DELAY && agent.Avatar.Velocity.Z >= 0f))
-                        { //just started falling
-                            agent.TickFall = Environment.TickCount;
-                        }
-                        else
-                        {
-                            //adjust acceleration to account for gravity
-                            gravity = GRAVITY * seconds * fallElapsed;
+                            move = Vector3.Zero; //override controls while drifting
+                            agent.Avatar.Velocity *= 0.95f; //keep most of our inertia
 
-                            if (!jumping)
-                            { //falling
+                            float fallElapsed = (float)(Environment.TickCount - agent.TickFall) / 1000f;
 
-                                agent.Avatar.Velocity *= 0.99f;
+                            if (agent.TickFall == 0 || (fallElapsed > FALL_DELAY && agent.Avatar.Velocity.Z >= 0f))
+                            { //just started falling
+                                agent.TickFall = Environment.TickCount;
+                            }
+                            else
+                            {
+                                gravity = GRAVITY * fallElapsed * seconds; //normal gravity
 
-                                if (fallElapsed > FALL_DELAY)
-                                { //falling long enough to trigger the animation
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
-                                        animsChanged = true;
+                                if (!jumping)
+                                { //falling
+                                    if (fallElapsed > FALL_DELAY)
+                                    { //falling long enough to trigger the animation
+                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                            animsChanged = true;
+                                    }
                                 }
                             }
+                        }
+                        else if (agent.Avatar.Position.Z >= waterChestHeight)
+                        { //at the water line
+
+                            gravity = 0f;
+                            agent.Avatar.Velocity *= 0.5f;
+                            agent.Avatar.Velocity.Z = 0f;
+                            if (move.Z < 0) agent.Avatar.Position.Z = waterChestHeight;
+
+                            if (move.Z > 0)
+                            {
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                                    animsChanged = true;
+                            }
+                            else if (move.X != 0 || move.Y != 0)
+                            {
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.FLYSLOW))
+                                    animsChanged = true;
+                            }
+                            else
+                            {
+                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
+                                    animsChanged = true;
+                            }
+                        }
+                        else
+                        { //underwater
+
+                            gravity = 0f; //buoyant
+                            agent.Avatar.Velocity *= 0.5f * seconds;
+                            agent.Avatar.Velocity.Z += 1.0f * seconds;
+
+                            if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                animsChanged = true;
                         }
                     }
                     else
@@ -202,8 +240,8 @@ namespace Simian.Extensions
                                     animsChanged = true;
 
                                 agent.Avatar.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
-                                agent.Avatar.Velocity.X = agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL * seconds;
-                                agent.Avatar.Velocity.Y = agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL * seconds;
+                                agent.Avatar.Velocity.X += agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL * seconds;
+                                agent.Avatar.Velocity.Y += agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL * seconds;
                             }
                             else move.Z = 0; //override Z control
                         }

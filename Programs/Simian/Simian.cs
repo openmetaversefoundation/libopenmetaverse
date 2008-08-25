@@ -19,6 +19,7 @@ namespace Simian
         public UDPServer UDPServer;
         public ulong RegionHandle;
         public float[] Heightmap = new float[65536];
+        public float WaterHeight = 35.0f;
         public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
         // Interfaces
