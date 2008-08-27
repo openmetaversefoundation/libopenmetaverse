@@ -272,7 +272,7 @@ namespace OpenMetaverse
 
                         // inventory-skeleton
                         WriteXmlRpcArrayStart(writer, "inventory-skeleton");
-                        WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)InventoryType.RootCategory, InventoryRoot);
+                        WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)InventoryType.Category, InventoryRoot);
                         WriteXmlRpcArrayEnd(writer);
 
                         // buddy-list
@@ -298,7 +298,7 @@ namespace OpenMetaverse
 
                         // inventory-skel-lib
                         WriteXmlRpcArrayStart(writer, "inventory-skel-lib");
-                        WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)InventoryType.RootCategory, LibraryRoot);
+                        WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)InventoryType.Category, LibraryRoot);
                         WriteXmlRpcArrayEnd(writer);
 
                         // seed_capability

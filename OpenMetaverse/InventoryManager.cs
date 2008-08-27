@@ -123,12 +123,28 @@ namespace OpenMetaverse
     /// </summary>
     public enum DeRezDestination : byte
     {
+        /// <summary></summary>
+        AgentInventorySave = 0,
+        /// <summary>Copy from in-world to agent inventory</summary>
+        AgentInventoryCopy = 1,
         /// <summary>Derez to TaskInventory</summary>
         TaskInventory = 2,
+        /// <summary></summary>
+        Attachment = 3,
         /// <summary>Take Object</summary>
-        ObjectsFolder = 4,
+        AgentInventoryTake = 4,
+        /// <summary></summary>
+        ForceToGodInventory = 5,
         /// <summary>Delete Object</summary>
-        TrashFolder = 6
+        TrashFolder = 6,
+        /// <summary>Put an avatar attachment into agent inventory</summary>
+        AttachmentToInventory = 7,
+        /// <summary></summary>
+        AttachmentExists = 8,
+        /// <summary>Return an object back to the owner's inventory</summary>
+        ReturnToOwner = 9,
+        /// <summary>Return a deeded object back to the last owner's inventory</summary>
+        ReturnToLastOwner = 10
     }
 
     #endregion Enums
@@ -2013,7 +2029,7 @@ namespace OpenMetaverse
         /// <param name="objectLocalID">The simulator Local ID of the object</param>
         public void RequestDeRezToInventory(uint objectLocalID)
         {
-            RequestDeRezToInventory(objectLocalID, DeRezDestination.ObjectsFolder, 
+            RequestDeRezToInventory(objectLocalID, DeRezDestination.AgentInventoryTake, 
                 _Client.Inventory.FindFolderForType(AssetType.Object), UUID.Random());
         }
 

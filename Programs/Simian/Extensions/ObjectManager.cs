@@ -23,6 +23,7 @@ namespace Simian.Extensions
         {
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectAdd, new UDPServer.PacketCallback(ObjectAddHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectSelect, new UDPServer.PacketCallback(ObjectSelectHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.DeRezObject, new UDPServer.PacketCallback(DeRezObjectHandler));
         }
 
         public void Stop()
@@ -190,22 +191,22 @@ namespace Simian.Extensions
                 SimulationObject obj;
                 if (SceneObjects.TryGetValue(select.ObjectData[i].ObjectLocalID, out obj))
                 {
-                    properties.ObjectData[i].BaseMask = (uint)obj.Params.Properties.Permissions.BaseMask;
-                    properties.ObjectData[i].CreationDate = Utils.DateTimeToUnixTime(obj.Params.Properties.CreationDate);
-                    properties.ObjectData[i].CreatorID = obj.Params.Properties.CreatorID;
-                    properties.ObjectData[i].Description = Utils.StringToBytes(obj.Params.Properties.Description);
-                    properties.ObjectData[i].EveryoneMask = (uint)obj.Params.Properties.Permissions.EveryoneMask;
-                    properties.ObjectData[i].GroupID = obj.Params.Properties.GroupID;
-                    properties.ObjectData[i].GroupMask = (uint)obj.Params.Properties.Permissions.GroupMask;
-                    properties.ObjectData[i].LastOwnerID = obj.Params.Properties.LastOwnerID;
-                    properties.ObjectData[i].Name = Utils.StringToBytes(obj.Params.Properties.Name);
-                    properties.ObjectData[i].NextOwnerMask = (uint)obj.Params.Properties.Permissions.NextOwnerMask;
-                    properties.ObjectData[i].ObjectID = obj.Params.ID;
-                    properties.ObjectData[i].OwnerID = obj.Params.Properties.OwnerID;
-                    properties.ObjectData[i].OwnerMask = (uint)obj.Params.Properties.Permissions.OwnerMask;
-                    properties.ObjectData[i].OwnershipCost = obj.Params.Properties.OwnershipCost;
-                    properties.ObjectData[i].SalePrice = obj.Params.Properties.SalePrice;
-                    properties.ObjectData[i].SaleType = (byte)obj.Params.Properties.SaleType;
+                    properties.ObjectData[i].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                    properties.ObjectData[i].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
+                    properties.ObjectData[i].CreatorID = obj.Prim.Properties.CreatorID;
+                    properties.ObjectData[i].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                    properties.ObjectData[i].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                    properties.ObjectData[i].GroupID = obj.Prim.Properties.GroupID;
+                    properties.ObjectData[i].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                    properties.ObjectData[i].LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                    properties.ObjectData[i].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                    properties.ObjectData[i].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                    properties.ObjectData[i].ObjectID = obj.Prim.ID;
+                    properties.ObjectData[i].OwnerID = obj.Prim.Properties.OwnerID;
+                    properties.ObjectData[i].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                    properties.ObjectData[i].OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                    properties.ObjectData[i].SalePrice = obj.Prim.Properties.SalePrice;
+                    properties.ObjectData[i].SaleType = (byte)obj.Prim.Properties.SaleType;
                     properties.ObjectData[i].SitName = new byte[0];
                     properties.ObjectData[i].TextureID = new byte[0];
                     properties.ObjectData[i].TouchName = new byte[0];
@@ -213,6 +214,107 @@ namespace Simian.Extensions
             }
 
             agent.SendPacket(properties);
+        }
+
+        void DeRezObjectHandler(Packet packet, Agent agent)
+        {
+            DeRezObjectPacket derez = (DeRezObjectPacket)packet;
+            DeRezDestination destination = (DeRezDestination)derez.AgentBlock.Destination;
+            
+            // TODO: Check permissions
+
+            lock (SceneObjects.Dictionary)
+            {
+                for (int i = 0; i < derez.ObjectData.Length; i++)
+                {
+                    uint localID = derez.ObjectData[i].ObjectLocalID;
+
+                    SimulationObject obj;
+                    if (SceneObjects.Dictionary.TryGetValue(localID, out obj))
+                    {
+                        switch (destination)
+                        {
+                            case DeRezDestination.AgentInventorySave:
+                                Logger.Log("DeRezObject: Got an AgentInventorySave, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.AgentInventoryCopy:
+                                Logger.Log("DeRezObject: Got an AgentInventorySave, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.TaskInventory:
+                                Logger.Log("DeRezObject: Got a TaskInventory, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.Attachment:
+                                Logger.Log("DeRezObject: Got an Attachment, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.AgentInventoryTake:
+                                Logger.Log("DeRezObject: Got an AgentInventoryTake, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.ForceToGodInventory:
+                                Logger.Log("DeRezObject: Got a ForceToGodInventory, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.TrashFolder:
+                                InventoryObject invObj;
+                                if (agent.Inventory.TryGetValue(derez.AgentBlock.DestinationID, out invObj) && invObj is InventoryFolder)
+                                {
+                                    InventoryFolder trash = (InventoryFolder)invObj;
+                                    Server.Inventory.CreateItem(agent, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
+                                        AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
+                                        obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0);
+                                    KillObject(obj);
+
+                                    Logger.DebugLog(String.Format("Derezzed prim {0} to agent inventory trash", obj.Prim.LocalID));
+                                }
+                                else
+                                {
+                                    Logger.Log("DeRezObject: Got a TrashFolder with an invalid trash folder: " +
+                                        derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                }
+                                break;
+                            case DeRezDestination.AttachmentToInventory:
+                                Logger.Log("DeRezObject: Got an AttachmentToInventory, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.AttachmentExists:
+                                Logger.Log("DeRezObject: Got an AttachmentExists, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.ReturnToOwner:
+                                Logger.Log("DeRezObject: Got a ReturnToOwner, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                            case DeRezDestination.ReturnToLastOwner:
+                                Logger.Log("DeRezObject: Got a ReturnToLastOwner, DestID: " +
+                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        void KillObject(SimulationObject obj)
+        {
+            lock (SceneObjects)
+                SceneObjects.Dictionary.Remove(obj.Prim.LocalID);
+            lock (SceneObjectsByID)
+                SceneObjectsByID.Dictionary.Remove(obj.Prim.ID);
+
+            KillObjectPacket kill = new KillObjectPacket();
+            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+            kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+            lock (Server.Agents)
+            {
+                foreach (Agent recipient in Server.Agents.Values)
+                    recipient.SendPacket(kill);
+            }
         }
 
         Vector3 FullSceneCollisionTest(Vector3 rayStart, Vector3 rayEnd)
@@ -239,10 +341,10 @@ namespace Simian.Extensions
 
             // Get the mesh that has been transformed into world-space
             SimpleMesh mesh = null;
-            if (obj.Params.LocalID != 0)
+            if (obj.Prim.LocalID != 0)
             {
                 SimulationObject parent;
-                if (SceneObjects.TryGetValue(obj.Params.LocalID, out parent))
+                if (SceneObjects.TryGetValue(obj.Prim.LocalID, out parent))
                     mesh = obj.GetWorldMesh(DetailLevel.Low, parent);
             }
             else
@@ -279,12 +381,12 @@ namespace Simian.Extensions
         /// <summary>
         /// Adapted from http://www.cs.virginia.edu/~gfx/Courses/2003/ImageSynthesis/papers/Acceleration/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
         /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="direction"></param>
-        /// <param name="vert0"></param>
-        /// <param name="vert1"></param>
-        /// <param name="vert2"></param>
-        /// <returns></returns>
+        /// <param name="origin">Origin point of the ray</param>
+        /// <param name="direction">Unit vector representing the direction of the ray</param>
+        /// <param name="vert0">Position of the first triangle corner</param>
+        /// <param name="vert1">Position of the second triangle corner</param>
+        /// <param name="vert2">Position of the third triangle corner</param>
+        /// <returns>True if the ray passes through the triangle, otherwise false</returns>
         bool RayTriangleIntersection(Vector3 origin, Vector3 direction, Vector3 vert0, Vector3 vert1, Vector3 vert2)
         {
             const float EPSILON = 0.00001f;

@@ -24,6 +24,7 @@ namespace Simian
 
         // Interfaces
         public IAvatarProvider Avatars;
+        public IInventoryProvider Inventory;
         public IMeshingProvider Mesher;
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
@@ -103,6 +104,10 @@ namespace Simian
             {
                 Avatars = (IAvatarProvider)extension;
             }
+            else if (extension is IInventoryProvider)
+            {
+                Inventory = (IInventoryProvider)extension;
+            }
             else if (extension is IMeshingProvider)
             {
                 Mesher = (IMeshingProvider)extension;
@@ -114,6 +119,11 @@ namespace Simian
             if (Avatars == null)
             {
                 Logger.Log("No IAvatarProvider interface loaded", Helpers.LogLevel.Error);
+                return false;
+            }
+            if (Inventory == null)
+            {
+                Logger.Log("No IInventoryProvider interface loaded", Helpers.LogLevel.Error);
                 return false;
             }
             if (Mesher == null)

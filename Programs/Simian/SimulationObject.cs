@@ -7,7 +7,7 @@ namespace Simian
 {
     public class SimulationObject
     {
-        public Primitive Params;
+        public Primitive Prim;
 
         protected Simian Server;
         protected SimpleMesh[] Meshes = new SimpleMesh[4];
@@ -17,7 +17,7 @@ namespace Simian
 
         public SimulationObject(Primitive prim, Simian server)
         {
-            Params = prim;
+            Prim = prim;
             Server = server;
         }
 
@@ -31,17 +31,10 @@ namespace Simian
             }
             else
             {
-                if (Params is Primitive)
-                {
-                    Primitive prim = (Primitive)Params;
-                    SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(prim, lod);
-                    Meshes[i] = mesh;
-                    return mesh;
-                }
-                else
-                {
-                    throw new NotImplementedException("Avatar mesh generation is currently not supported");
-                }
+                Primitive prim = (Primitive)Prim;
+                SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(prim, lod);
+                Meshes[i] = mesh;
+                return mesh;
             }
         }
 
@@ -79,13 +72,13 @@ namespace Simian
                 if (parent != null)
                 {
                     // Apply parent rotation and translation first
-                    transform *= Matrix4.CreateFromQuaternion(parent.Params.Rotation);
-                    transform *= Matrix4.CreateTranslation(parent.Params.Position);
+                    transform *= Matrix4.CreateFromQuaternion(parent.Prim.Rotation);
+                    transform *= Matrix4.CreateTranslation(parent.Prim.Position);
                 }
 
-                transform *= Matrix4.CreateScale(this.Params.Scale);
-                transform *= Matrix4.CreateFromQuaternion(this.Params.Rotation);
-                transform *= Matrix4.CreateTranslation(this.Params.Position);
+                transform *= Matrix4.CreateScale(this.Prim.Scale);
+                transform *= Matrix4.CreateFromQuaternion(this.Prim.Rotation);
+                transform *= Matrix4.CreateTranslation(this.Prim.Position);
 
                 // Transform the mesh
                 for (int j = 0; j < transformedMesh.Vertices.Count; j++)
