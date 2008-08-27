@@ -41,8 +41,27 @@ namespace OpenMetaverse.Imaging
         /// <summary>TGA Header size</summary>
         public const int TGA_HEADER_SIZE = 32;
 
-        // This structure is used to marshal both encoded and decoded images
-        // MUST MATCH THE STRUCT IN dotnet.h!
+        /// <summary>
+        /// Defines the beginning and ending file positions of a layer in an
+        /// LRCP-progression JPEG2000 file
+        /// </summary>
+        public struct J2KLayerInfo
+        {
+            public int Start;
+            public int End;
+
+            public int Size { get { return End - Start; } }
+
+            public override string ToString()
+            {
+                return String.Format("Start: {0} End: {1} Size: {2}", Start, End, Size);
+            }
+        }
+
+        /// <summary>
+        /// This structure is used to marshal both encoded and decoded images.
+        /// MUST MATCH THE STRUCT IN dotnet.h!
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private struct MarshalledImage
         {
@@ -51,9 +70,33 @@ namespace OpenMetaverse.Imaging
             public int dummy;                  // padding for 64-bit alignment
 
             public IntPtr decoded;             // decoded image, contiguous components
+
             public int width;                  // width of decoded image
             public int height;                 // height of decoded image
+            public int layers;                 // layer count
+            public int resolutions;            // resolution count
             public int components;             // component count
+            public int packet_count;           // packet count
+            public IntPtr packets;             // pointer to the packets array
+        }
+
+        /// <summary>
+        /// Information about a single packet in a JPEG2000 stream
+        /// </summary>
+        private struct MarshalledPacket
+        {
+            /// <summary>Packet start position</summary>
+            public int start_pos;
+            /// <summary>Packet header end position</summary>
+            public int end_ph_pos;
+            /// <summary>Packet end position</summary>
+            public int end_pos;
+
+            public override string ToString()
+            {
+                return String.Format("start_pos: {0} end_ph_pos: {1} end_pos: {2}",
+                    start_pos, end_ph_pos, end_pos);
+            }
         }
 
         // allocate encoded buffer based on length field
@@ -80,6 +123,11 @@ namespace OpenMetaverse.Imaging
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool DotNetDecode(ref MarshalledImage image);
+
+        // decode jpeg2000 to raw, get jpeg2000 file info
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetDecodeWithInfo(ref MarshalledImage image);
         
         /// <summary>
         /// Encode a <seealso cref="ManagedImage"/> object into a byte array
@@ -251,6 +299,75 @@ namespace OpenMetaverse.Imaging
 
             DotNetFree(ref marshalled);
             return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="encoded"></param>
+        /// <param name="layerInfo"></param>
+        /// <returns></returns>
+        public static bool DecodeLayerBoundaries(byte[] encoded, out J2KLayerInfo[] layerInfo)
+        {
+            bool success = false;
+            layerInfo = null;
+            MarshalledImage marshalled = new MarshalledImage();
+
+            // Allocate and copy to input buffer
+            marshalled.length = encoded.Length;
+            DotNetAllocEncoded(ref marshalled);
+            Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
+
+            // Run the decode
+            if (DotNetDecodeWithInfo(ref marshalled))
+            {
+                // Sanity check
+                if (marshalled.layers * marshalled.resolutions * marshalled.components == marshalled.packet_count)
+                {
+                    // Manually marshal the array of opj_packet_info structs
+                    MarshalledPacket[] packets = new MarshalledPacket[marshalled.packet_count];
+                    int offset = 0;
+
+                    for (int i = 0; i < marshalled.packet_count; i++)
+                    {
+                        MarshalledPacket packet;
+                        packet.start_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                        offset += 4;
+                        packet.end_ph_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                        offset += 4;
+                        packet.end_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                        offset += 4;
+                        // Skip the distortion field. WARNING: It looks like there is alignment
+                        // padding in here as well, this needs to be tested on different platforms
+                        offset += 12;
+
+                        packets[i] = packet;
+                    }
+
+                    layerInfo = new J2KLayerInfo[marshalled.layers];
+
+                    for (int i = 0; i < marshalled.layers; i++)
+                    {
+                        int packetsPerLayer = marshalled.packet_count / marshalled.layers;
+                        MarshalledPacket startPacket = packets[packetsPerLayer * i];
+                        MarshalledPacket endPacket = packets[(packetsPerLayer * (i + 1)) - 1];
+                        layerInfo[i].Start = startPacket.start_pos;
+                        layerInfo[i].End = endPacket.end_pos;
+                    }
+
+                    success = true;
+                }
+                else
+                {
+                    Logger.Log(String.Format(
+                        "Packet count mismatch in JPEG2000 stream. layers={0} resolutions={1} components={2} packets={3}",
+                        marshalled.layers, marshalled.resolutions, marshalled.components, marshalled.packet_count),
+                        Helpers.LogLevel.Warning);
+                }
+            }
+
+            DotNetFree(ref marshalled);
+            return success;
         }
 
         /// <summary>
