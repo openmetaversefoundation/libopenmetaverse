@@ -452,7 +452,7 @@ namespace OpenMetaverse
         /// <returns>A null-terminated UTF8 byte array</returns>
         public static byte[] StringToBytes(string str)
         {
-            if (str.Length == 0) { return new byte[0]; }
+            if (String.IsNullOrEmpty(str)) { return new byte[0]; }
             if (!str.EndsWith("\0")) { str += "\0"; }
             return System.Text.UTF8Encoding.UTF8.GetBytes(str);
         }
@@ -464,6 +464,9 @@ namespace OpenMetaverse
         ///// <returns>The converted byte array</returns>
         public static byte[] HexStringToBytes(string hexString)
         {
+            if (String.IsNullOrEmpty(hexString))
+                return new byte[0];
+
             StringBuilder stripped = new StringBuilder(hexString.Length);
             char c;
 

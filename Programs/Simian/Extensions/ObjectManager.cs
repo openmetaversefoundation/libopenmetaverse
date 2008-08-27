@@ -67,6 +67,8 @@ namespace Simian.Extensions
                 }
             }
 
+            position.Z += scale.Z * 0.5f;
+
             #endregion Position Calculation
 
             #region Foliage Handling
