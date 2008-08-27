@@ -76,18 +76,19 @@ namespace GridProxy
             this.author = author;
         }
 
-        // ProxyConfig: construct a default proxy configuration, parsing command line arguments (try --proxy-help)
+        // ProxyConfig: construct a default proxy configuration, parsing command line arguments (try --help)
         public ProxyConfig(string userAgent, string author, string[] args)
             : this(userAgent, author)
         {
             Dictionary<string, ArgumentParser> argumentParsers = new Dictionary<string, ArgumentParser>();
+            argumentParsers["help"] = new ArgumentParser(ParseHelp);
             argumentParsers["proxy-help"] = new ArgumentParser(ParseHelp);
             argumentParsers["proxy-login-port"] = new ArgumentParser(ParseLoginPort);
             argumentParsers["proxy-client-facing-address"] = new ArgumentParser(ParseClientFacingAddress);
             argumentParsers["proxy-remote-facing-address"] = new ArgumentParser(ParseRemoteFacingAddress);
             argumentParsers["proxy-remote-login-uri"] = new ArgumentParser(ParseRemoteLoginUri);
-            argumentParsers["proxy-verbose"] = new ArgumentParser(ParseVerbose);
-            argumentParsers["proxy-quiet"] = new ArgumentParser(ParseQuiet);
+            argumentParsers["verbose"] = new ArgumentParser(ParseVerbose);
+            argumentParsers["quiet"] = new ArgumentParser(ParseQuiet);
 
             foreach (string arg in args)
                 foreach (string argument in argumentParsers.Keys)
@@ -118,13 +119,16 @@ namespace GridProxy
         private void ParseHelp(string value)
         {
             Console.WriteLine("Proxy command-line arguments:");
-            Console.WriteLine("  --proxy-help                        display this help");
+            Console.WriteLine("  --help                              display this help");
             Console.WriteLine("  --proxy-login-port=<port>           listen for logins on <port>");
             Console.WriteLine("  --proxy-client-facing-address=<IP>  communicate with client via <IP>");
             Console.WriteLine("  --proxy-remote-facing-address=<IP>  communicate with server via <IP>");
             Console.WriteLine("  --proxy-remote-login-uri=<URI>      use SL login server at <URI>");
-            Console.WriteLine("  --proxy-verbose                     display proxy notifications");
-            Console.WriteLine("  --proxy-quiet                       suppress proxy notifications");
+            Console.WriteLine("  --log-all                           log all packets by default in Analyst");
+            Console.WriteLine("  --log-whitelist=<file>              log packets listed in a file, one name per line");
+            Console.WriteLine("  --output=<logfile>                  log Analyst output to a file");
+            Console.WriteLine("  --verbose                           display proxy notifications");
+            Console.WriteLine("  --quiet                             suppress proxy notifications");
 
             Environment.Exit(1);
         }

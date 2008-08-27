@@ -51,11 +51,18 @@ public class Analyst : ProxyPlugin
     private string logGrep = null;
     private Dictionary<PacketType, Dictionary<BlockField, object>> modifiedPackets = new Dictionary<PacketType, Dictionary<BlockField, object>>();
     private Assembly openmvAssembly;
+    private StreamWriter output;
 
     public Analyst(ProxyFrame frame)
     {
         this.frame = frame;
         this.proxy = frame.proxy;
+    }
+
+    ~Analyst()
+    {
+        if (output != null)
+            output.Close();
     }
 
     public override void Init()
@@ -70,6 +77,10 @@ public class Analyst : ProxyPlugin
         foreach (string arg in frame.Args)
             if (arg == "--log-all")
                 LogAll();
+            else if (arg.Contains("--log-whitelist="))
+                LogWhitelist(arg.Substring(arg.IndexOf('=') + 1));
+            else if (arg.Contains("--output="))
+                SetOutput(arg.Substring(arg.IndexOf('=') + 1));
 
         Console.WriteLine("Analyst loaded");
     }
@@ -80,6 +91,8 @@ public class Analyst : ProxyPlugin
         frame.AddCommand("/log", new ProxyFrame.CommandDelegate(CmdLog));
         frame.AddCommand("/-log", new ProxyFrame.CommandDelegate(CmdNoLog));
         frame.AddCommand("/grep", new ProxyFrame.CommandDelegate(CmdGrep));
+        frame.AddCommand("/drop", new ProxyFrame.CommandDelegate(CmdDrop));
+        frame.AddCommand("/-drop", new ProxyFrame.CommandDelegate(CmdNoDrop));
         frame.AddCommand("/set", new ProxyFrame.CommandDelegate(CmdSet));
         frame.AddCommand("/-set", new ProxyFrame.CommandDelegate(CmdNoSet));
         frame.AddCommand("/inject", new ProxyFrame.CommandDelegate(CmdInject));
@@ -144,18 +157,32 @@ public class Analyst : ProxyPlugin
         }
     }
 
-    	// CmdGrep: handle a /grep command
-        private void CmdGrep(string[] words) {
-            if (words.Length == 1) {
-                logGrep = null;
-                SayToUser("stopped filtering logs");
-            } else {
-                string[] regexArray = new string[words.Length - 1];
-                Array.Copy(words, 1, regexArray, 0, words.Length - 1);
-                logGrep = String.Join(" ", regexArray);
-                SayToUser("filtering log with " + logGrep);
-            }
-	} 
+    // CmdGrep: handle a /grep command
+    private void CmdGrep(string[] words)
+    {
+        if (words.Length == 1)
+        {
+            logGrep = null;
+            SayToUser("stopped filtering logs");
+        }
+        else
+        {
+            string[] regexArray = new string[words.Length - 1];
+            Array.Copy(words, 1, regexArray, 0, words.Length - 1);
+            logGrep = String.Join(" ", regexArray);
+            SayToUser("filtering log with " + logGrep);
+        }
+    }
+
+    private void CmdDrop(string[] words)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void CmdNoDrop(string[] words)
+    {
+        throw new NotImplementedException();
+    }
 
     // CmdSet: handle a /set command
     private void CmdSet(string[] words)
@@ -200,7 +227,7 @@ public class Analyst : ProxyPlugin
 
             proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
             proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
-            
+
             SayToUser("setting " + words[1] + "." + words[2] + "." + words[3] + " = " + valueString);
         }
     }
@@ -542,7 +569,7 @@ public class Analyst : ProxyPlugin
             else if (fieldClass == typeof(Vector3))
             {
                 Vector3 result;
-                if(Vector3.TryParse(value, out result))
+                if (Vector3.TryParse(value, out result))
                     return result;
                 else
                     throw new Exception();
@@ -680,6 +707,55 @@ public class Analyst : ProxyPlugin
         }
     }
 
+    private void LogWhitelist(string whitelistFile)
+    {
+        try
+        {
+            string[] lines = File.ReadAllLines(whitelistFile);
+            int count = 0;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+                if (line.Length == 0)
+                    continue;
+
+                PacketType pType;
+
+                try
+                {
+                    pType = packetTypeFromName(line);
+                    proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
+                    proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketOut));
+                    ++count;
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine("Bad packet name: " + line);
+                }
+            }
+
+            Console.WriteLine(String.Format("Logging {0} packet types loaded from whitelist", count));
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Failed to load packet whitelist from " + whitelistFile);
+        }
+    }
+
+    private void SetOutput(string outputFile)
+    {
+        try
+        {
+            output = new StreamWriter(outputFile, false);
+            Console.WriteLine("Logging packets to " + outputFile);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine(String.Format("Failed to open {0} for logging", outputFile));
+        }
+    }
+
     // NoLogAll: unregister logging delegates for all packets
     private void NoLogAll()
     {
@@ -717,14 +793,19 @@ public class Analyst : ProxyPlugin
 
         if (logGrep == null || (logGrep != null && Regex.IsMatch(packetText, logGrep)))
         {
-            Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
-                     , direction == Direction.Incoming ? "<--" : "-->"
-                     , endPoint
-                     , packet.Header.Sequence
-                     , InterpretOptions(packet.Header.Flags)
-                     , Environment.NewLine
-                     , packetText
-                     );
+            string line = String.Format("{0} {1,21} {2,5} {3}{4}{5}"
+                , direction == Direction.Incoming ? "<--" : "-->"
+                , endPoint
+                , packet.Header.Sequence
+                , InterpretOptions(packet.Header.Flags)
+                , Environment.NewLine
+                , packetText
+                );
+
+            Console.WriteLine(line);
+
+            if (output != null)
+                output.WriteLine(line);
         }
     }
 
