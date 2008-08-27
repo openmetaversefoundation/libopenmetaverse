@@ -1,7 +1,8 @@
 
-
 #ifndef LIBSL_H
 #define LIBSL_H
+
+#include "../libopenjpeg/openjpeg.h"
 
 struct MarshalledImage
 {
@@ -12,7 +13,11 @@ struct MarshalledImage
 	unsigned char* decoded;
 	int width;
 	int height;
+	int layers;
+	int resolutions;
 	int components;
+	int packet_count;
+	opj_packet_info_t* packets;
 };
 
 #ifdef WIN32
@@ -24,6 +29,7 @@ struct MarshalledImage
 // uncompresed images are raw RGBA 8bit/channel
 DLLEXPORT bool DotNetEncode(MarshalledImage* image, bool lossless);
 DLLEXPORT bool DotNetDecode(MarshalledImage* image);
+DLLEXPORT bool DotNetDecodeWithInfo(MarshalledImage* image);
 DLLEXPORT bool DotNetAllocEncoded(MarshalledImage* image);
 DLLEXPORT bool DotNetAllocDecoded(MarshalledImage* image);
 DLLEXPORT void DotNetFree(MarshalledImage* image);
