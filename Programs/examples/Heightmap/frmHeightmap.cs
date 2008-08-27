@@ -37,7 +37,7 @@ namespace Heightmap
 
             // Build the picture boxes
             this.SuspendLayout();
-            for (int y = 0; y < 16; y++)
+            for (int y = 0; y < 16; y++) // Box 0,0 is on the top left
             {
                 for (int x = 0; x < 16; x++)
                 {
@@ -46,8 +46,8 @@ namespace Heightmap
                     ((System.ComponentModel.ISupportInitialize)(box)).BeginInit();
                     box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
                     box.Name = x + "," + y;
-                    box.Location = new System.Drawing.Point(x * 16, y * 16);
-                    box.Size = new System.Drawing.Size(16, 16);
+                    box.Location = new System.Drawing.Point(x * 18, y * 18);
+                    box.Size = new System.Drawing.Size(18, 18);
                     box.Visible = true;
                     box.MouseUp += new MouseEventHandler(box_MouseUp);
                     ((System.ComponentModel.ISupportInitialize)(box)).EndInit();
@@ -85,6 +85,11 @@ namespace Heightmap
             LoginParams loginParams = Client.Network.DefaultLoginParams(FirstName, LastName, Password, "Heightmap",
                 "1.0.0");
             Client.Network.BeginLogin(loginParams);
+
+            this.SetDesktopLocation(1600, 0);
+            // FIXME: This really should be modified in frmHeightmap.Designer.cs, but the Prebuild bug is
+            // preventing that right now
+            this.SetClientSizeCore(18 * 16, 18 * 16);
         }
 
         private void box_MouseUp(object sender, MouseEventArgs e)
@@ -99,7 +104,7 @@ namespace Heightmap
                         if (Client.Terrain.TerrainHeightAtPoint(Client.Network.CurrentSim.Handle,
                             x * 16 + e.X, y * 16 + e.Y, out height))
                         {
-                            MessageBox.Show(height.ToString());
+                            MessageBox.Show( string.Format("{0},{1}:{2}",x*16+e.X,255-(y*16+e.Y),height) );
                         }
                         else
                         {
@@ -140,21 +145,29 @@ namespace Heightmap
             {
                 for (int xp = 0; xp < 16; xp++)
                 {
-                    float height = data[yp * 16 + xp];
-                    int colorVal = Helpers.FloatToByte(height, 0.0f, 60.0f);
-                    int lesserVal = (int)((float)colorVal * 0.75f);
+                    float height = data[(15-yp) * 16 + xp]; // data[0] is south west
                     Color color;
-
                     if (height >= simulator.WaterHeight)
-                        color = Color.FromArgb(lesserVal, colorVal, lesserVal);
+                    {
+                        float maxVal = (float)Math.Log(Math.Abs(512+1-simulator.WaterHeight),2);
+                        float lgHeight = (float)Math.Log(Math.Abs(height + 1 - simulator.WaterHeight), 2);
+                        int colorVal1 = Helpers.FloatToByte(lgHeight, simulator.WaterHeight, maxVal);
+                        int colorVal2 = Helpers.FloatToByte(height, simulator.WaterHeight, 25.0f);
+                        color = Color.FromArgb(255, colorVal2, colorVal1);
+                    }
                     else
-                        color = Color.FromArgb(lesserVal, lesserVal, colorVal);
-
-                    patch.SetPixel(xp, yp, color);
+                    {
+                        const float minVal = -5.0f;
+                        float maxVal = simulator.WaterHeight;
+                        int colorVal1 = Helpers.FloatToByte(height, -5.0f, minVal+(maxVal-minVal)*1.5f);
+                        int colorVal2 = Helpers.FloatToByte(height, -5.0f, maxVal);
+                        color = Color.FromArgb(colorVal1, colorVal2, 255);
+                    }
+                    patch.SetPixel(xp, yp, color); // 0, 0 is top left
                 }
             }
 
-            Boxes[x, y].Image = (System.Drawing.Image)patch;
+            Boxes[x, 15-y].Image = (System.Drawing.Image)patch;
         }
 
         private void frmHeightmap_FormClosing(object sender, FormClosingEventArgs e)
