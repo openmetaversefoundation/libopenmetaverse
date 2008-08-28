@@ -24,6 +24,7 @@ namespace Simian.Extensions
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectAdd, new UDPServer.PacketCallback(ObjectAddHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectSelect, new UDPServer.PacketCallback(ObjectSelectHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectDeselect, new UDPServer.PacketCallback(ObjectDeselectHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.ObjectShape, new UDPServer.PacketCallback(ObjectShapeHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.DeRezObject, new UDPServer.PacketCallback(DeRezObjectHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new UDPServer.PacketCallback(MultipleObjectUpdateHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new UDPServer.PacketCallback(RequestObjectPropertiesFamilyHandler));
@@ -230,6 +231,53 @@ namespace Simian.Extensions
             ObjectDeselectPacket deselect = (ObjectDeselectPacket)packet;
 
             // TODO: Do we need this at all?
+        }
+
+        void ObjectShapeHandler(Packet packet, Agent agent)
+        {
+            ObjectShapePacket shape = (ObjectShapePacket)packet;
+
+            for (int i = 0; i < shape.ObjectData.Length; i++)
+            {
+                ObjectShapePacket.ObjectDataBlock block = shape.ObjectData[i];
+
+                SimulationObject obj;
+                if (SceneObjects.TryGetValue(block.ObjectLocalID, out obj))
+                {
+                    obj.Prim.PrimData.PathBegin = Primitive.UnpackBeginCut(block.PathBegin);
+                    obj.Prim.PrimData.PathCurve = (PathCurve)block.PathCurve;
+                    obj.Prim.PrimData.PathEnd = Primitive.UnpackEndCut(block.PathEnd);
+                    obj.Prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist(block.PathRadiusOffset);
+                    obj.Prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.PathRevolutions);
+                    obj.Prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.PathScaleX);
+                    obj.Prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.PathScaleY);
+                    obj.Prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.PathShearX);
+                    obj.Prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.PathShearY);
+                    obj.Prim.PrimData.PathSkew = Primitive.UnpackPathTwist(block.PathSkew);
+                    obj.Prim.PrimData.PathTaperX = Primitive.UnpackPathTaper(block.PathTaperX);
+                    obj.Prim.PrimData.PathTaperY = Primitive.UnpackPathTaper(block.PathTaperY);
+                    obj.Prim.PrimData.PathTwist = Primitive.UnpackPathTwist(block.PathTwist);
+                    obj.Prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist(block.PathTwistBegin);
+                    obj.Prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(block.ProfileBegin);
+                    obj.Prim.PrimData.profileCurve = block.ProfileCurve;
+                    obj.Prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
+                    obj.Prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
+
+                    // Send the update out to everyone
+                    ObjectUpdatePacket editedobj = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
+                        obj.Prim.Flags);
+                    lock (Server.Agents)
+                    {
+                        foreach (Agent recipient in Server.Agents.Values)
+                            recipient.SendPacket(editedobj);
+                    }
+                }
+                else
+                {
+                    Logger.Log("Got an ObjectShape packet for unknown object " + block.ObjectLocalID,
+                        Helpers.LogLevel.Warning);
+                }
+            }
         }
 
         void DeRezObjectHandler(Packet packet, Agent agent)

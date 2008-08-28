@@ -480,8 +480,7 @@ namespace OpenMetaverse
             private const byte HOLE_MASK = 0xF0;
 
             /// <summary></summary>
-            internal byte profileCurve;
-
+            public byte profileCurve;
             /// <summary></summary>
             public PathCurve PathCurve;
             /// <summary></summary>
