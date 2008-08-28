@@ -21,10 +21,10 @@ namespace Simian.Extensions
         {
             LoadDefaultAssets(Server.DataDir);
 
-            Server.UDPServer.RegisterPacketCallback(PacketType.AssetUploadRequest, new UDPServer.PacketCallback(AssetUploadRequestHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.SendXferPacket, new UDPServer.PacketCallback(SendXferPacketHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AbortXfer, new UDPServer.PacketCallback(AbortXferHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.TransferRequest, new UDPServer.PacketCallback(TransferRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AssetUploadRequest, new PacketCallback(AssetUploadRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.SendXferPacket, new PacketCallback(SendXferPacketHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AbortXfer, new PacketCallback(AbortXferHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.TransferRequest, new PacketCallback(TransferRequestHandler));
         }
 
         public void Stop()
@@ -59,7 +59,7 @@ namespace Simian.Extensions
                 complete.AssetBlock.Success = true;
                 complete.AssetBlock.Type = request.AssetBlock.Type;
                 complete.AssetBlock.UUID = request.AssetBlock.TransactionID;
-                agent.SendPacket(complete);
+                Server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Inventory);
             }
             else
             {
@@ -85,7 +85,7 @@ namespace Simian.Extensions
                 lock (CurrentUploads)
                     CurrentUploads[xfer.XferID.ID] = asset;
 
-                agent.SendPacket(xfer);
+                Server.UDP.SendPacket(agent.AgentID, xfer, PacketCategory.Inventory);
             }
         }
 
@@ -114,7 +114,7 @@ namespace Simian.Extensions
                     ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
                     confirm.XferID.ID = xfer.XferID.ID;
                     confirm.XferID.Packet = xfer.XferID.Packet;
-                    agent.SendPacket(confirm);
+                    Server.UDP.SendPacket(agent.AgentID, confirm, PacketCategory.Asset);
                 }
                 else
                 {
@@ -125,7 +125,7 @@ namespace Simian.Extensions
                     ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
                     confirm.XferID.ID = xfer.XferID.ID;
                     confirm.XferID.Packet = xfer.XferID.Packet;
-                    agent.SendPacket(confirm);
+                    Server.UDP.SendPacket(agent.AgentID, confirm, PacketCategory.Asset);
 
                     if ((xfer.XferID.Packet & (uint)0x80000000) != 0)
                     {
@@ -142,7 +142,7 @@ namespace Simian.Extensions
                         complete.AssetBlock.Success = true;
                         complete.AssetBlock.Type = (sbyte)asset.AssetType;
                         complete.AssetBlock.UUID = asset.AssetID;
-                        agent.SendPacket(complete);
+                        Server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Asset);
                     }
                 }
             }
@@ -218,7 +218,7 @@ namespace Simian.Extensions
                             response.TransferInfo.Status = (int)StatusCode.OK;
                             response.TransferInfo.TargetType = (int)TargetType.Unknown; // Doesn't seem to be used by the client
 
-                            agent.SendPacket(response);
+                            Server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Asset);
 
                             // Transfer system does not wait for ACKs, just sends all of the
                             // packets for this transfer out
@@ -242,7 +242,7 @@ namespace Simian.Extensions
                                 else
                                     transfer.TransferData.Status = (int)StatusCode.OK;
 
-                                agent.SendPacket(transfer);
+                                Server.UDP.SendPacket(agent.AgentID, transfer, PacketCategory.Asset);
                             }
                         }
                         else
@@ -259,7 +259,7 @@ namespace Simian.Extensions
                         response.TransferInfo.Status = (int)StatusCode.UnknownSource;
                         response.TransferInfo.TargetType = (int)TargetType.Unknown;
 
-                        agent.SendPacket(response);
+                        Server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Asset);
                     }
                 }
                 else if (source == SourceType.SimEstate)

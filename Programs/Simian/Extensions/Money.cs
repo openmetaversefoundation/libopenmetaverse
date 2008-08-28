@@ -17,8 +17,8 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.MoneyBalanceRequest, new UDPServer.PacketCallback(MoneyBalanceRequestHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.MoneyTransferRequest, new UDPServer.PacketCallback(MoneyTransferRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.MoneyBalanceRequest, new PacketCallback(MoneyBalanceRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.MoneyTransferRequest, new PacketCallback(MoneyTransferRequestHandler));
         }
 
         public void Stop()
@@ -33,7 +33,7 @@ namespace Simian.Extensions
             reply.MoneyData.TransactionID = transactionID;
             reply.MoneyData.Description = Utils.StringToBytes(message);
 
-            agent.SendPacket(reply);
+            Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
         }
 
         void MoneyBalanceRequestHandler(Packet packet, Agent agent)

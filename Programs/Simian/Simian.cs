@@ -13,30 +13,30 @@ namespace Simian
 {
     public partial class Simian
     {
+        public int UDPPort = 9000;
+        public int HttpPort = 9000;
         public string DataDir = "SimianData/";
 
         public HttpServer HttpServer;
-        public UDPServer UDPServer;
         public ulong RegionHandle;
         public float[] Heightmap = new float[65536];
         public float WaterHeight = 35.0f;
         public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
         // Interfaces
+        public IUDPProvider UDP;
         public IAvatarProvider Avatars;
         public IInventoryProvider Inventory;
         public IMeshingProvider Mesher;
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
-        public Dictionary<IPEndPoint, Agent> Agents = new Dictionary<IPEndPoint, Agent>();
+        public Dictionary<UUID, Agent> Agents = new Dictionary<UUID, Agent>();
 
         const uint regionX = 256000;
         const uint regionY = 256000;
 
         Dictionary<uint, Agent> unassociatedAgents;
         int currentCircuitCode;
-        int tcpPort;
-        int udpPort;
 
         public Simian()
         {
@@ -46,12 +46,10 @@ namespace Simian
 
         public void Start(int port, bool ssl)
         {
-            // Put UDP listening on the same port number as the HTTP server for simplicity
-            tcpPort = port;
-            udpPort = port;
+            HttpPort = port;
+            UDPPort = port;
 
-            InitUDPServer(udpPort);
-            InitHttpServer(tcpPort, ssl);
+            InitHttpServer(HttpPort, ssl);
 
             RegionHandle = Helpers.UIntsToLong(regionX, regionY);
 
@@ -60,11 +58,15 @@ namespace Simian
 
             foreach (ISimianExtension extension in ExtensionLoader.Extensions)
             {
-                Logger.DebugLog("Loading extension " + extension.GetType().Name);
-                extension.Start();
-
                 // Assign to an interface if possible
                 TryAssignToInterface(extension);
+            }
+
+            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            {
+                // Start the interfaces
+                Logger.DebugLog("Loading extension " + extension.GetType().Name);
+                extension.Start();
             }
 
             if (!CheckInterfaces())
@@ -79,8 +81,24 @@ namespace Simian
             foreach (ISimianExtension extension in ExtensionLoader.Extensions)
                 extension.Stop();
 
-            UDPServer.Stop();
             HttpServer.Stop();
+        }
+
+        public bool CompleteAgentConnection(uint circuitCode, out Agent agent)
+        {
+            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
+            {
+                lock (Agents)
+                    Agents[agent.AgentID] = agent;
+                lock (unassociatedAgents)
+                    unassociatedAgents.Remove(circuitCode);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public bool TryGetUnassociatedAgent(uint circuitCode, out Agent agent)
@@ -100,7 +118,11 @@ namespace Simian
 
         void TryAssignToInterface(ISimianExtension extension)
         {
-            if (extension is IAvatarProvider)
+            if (extension is IUDPProvider)
+            {
+                UDP = (IUDPProvider)extension;
+            }
+            else if (extension is IAvatarProvider)
             {
                 Avatars = (IAvatarProvider)extension;
             }
@@ -116,7 +138,12 @@ namespace Simian
 
         bool CheckInterfaces()
         {
-            if (Avatars == null)
+            if (UDP == null)
+            {
+                Logger.Log("No IUDPProvider interface loaded", Helpers.LogLevel.Error);
+                return false;
+            }
+            else if (Avatars == null)
             {
                 Logger.Log("No IAvatarProvider interface loaded", Helpers.LogLevel.Error);
                 return false;
@@ -135,14 +162,9 @@ namespace Simian
             return true;
         }
 
-        void InitUDPServer(int port)
-        {
-            UDPServer = new UDPServer(port, this);
-        }
-
         void InitHttpServer(int port, bool ssl)
         {
-            HttpServer = new HttpServer(tcpPort, ssl);
+            HttpServer = new HttpServer(HttpPort, ssl);
 
             // Login webpage HEAD request, used to check if the login webpage is alive
             HttpRequestSignature signature = new HttpRequestSignature();
@@ -301,7 +323,7 @@ namespace Simian
             uint regionX = 256000;
             uint regionY = 256000;
 
-            Agent agent = new Agent(UDPServer);
+            Agent agent = new Agent();
             agent.AgentID = UUID.Random();
             agent.FirstName = firstName;
             agent.LastName = lastName;
@@ -361,9 +383,9 @@ namespace Simian
             response.RegionY = regionY;
             response.SecondsSinceEpoch = DateTime.Now;
             // FIXME: Actually generate a seed capability
-            response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, tcpPort);
+            response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, HttpPort);
             response.SimIP = simIP;
-            response.SimPort = (ushort)udpPort;
+            response.SimPort = (ushort)UDPPort;
             response.StartLocation = "last";
             response.Success = true;
             

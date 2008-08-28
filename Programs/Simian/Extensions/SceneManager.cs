@@ -23,7 +23,7 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            server.UDPServer.RegisterPacketCallback(PacketType.CompleteAgentMovement, new UDPServer.PacketCallback(CompleteAgentMovementHandler));
+            server.UDP.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler));
             LoadTerrain(server.DataDir + "heightmap.tga");
         }
 
@@ -72,7 +72,7 @@ namespace Simian.Extensions
             complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
             complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
-            agent.SendPacket(complete);
+            server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Transaction);
 
             lock (server.Agents)
             {
@@ -82,11 +82,11 @@ namespace Simian.Extensions
                     ObjectUpdatePacket update = Movement.BuildFullUpdate(otherAgent.Avatar,
                         NameValue.NameValuesToString(otherAgent.Avatar.NameValues),
                         server.RegionHandle, otherAgent.State, otherAgent.Flags);
-                    agent.SendPacket(update);
+                    server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
 
                     // Send appearances for this avatar
                     AvatarAppearancePacket appearance = AvatarManager.BuildAppearancePacket(otherAgent);
-                    agent.SendPacket(appearance);
+                    server.UDP.SendPacket(agent.AgentID, appearance, PacketCategory.State);
                 }
             }
 
@@ -136,11 +136,10 @@ namespace Simian.Extensions
                         int[] patches = new int[1];
                         patches[0] = (y * 16) + x;
                         LayerDataPacket layer = TerrainCompressor.CreateLandPacket(server.Heightmap, patches);
-                        agent.SendPacket(layer);
+                        server.UDP.SendPacket(agent.AgentID, layer, PacketCategory.Terrain);
                     }
                 }
             }
         }
-
     }
 }

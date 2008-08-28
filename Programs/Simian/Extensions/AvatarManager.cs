@@ -19,13 +19,13 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.AvatarPropertiesRequest, new UDPServer.PacketCallback(AvatarPropertiesRequestHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentWearablesRequest, new UDPServer.PacketCallback(AgentWearablesRequestHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentIsNowWearing, new UDPServer.PacketCallback(AgentIsNowWearingHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentSetAppearance, new UDPServer.PacketCallback(AgentSetAppearanceHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.UUIDNameRequest, new UDPServer.PacketCallback(UUIDNameRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AvatarPropertiesRequest, new PacketCallback(AvatarPropertiesRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AgentWearablesRequest, new PacketCallback(AgentWearablesRequestHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, new PacketCallback(AgentIsNowWearingHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, new PacketCallback(AgentSetAppearanceHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
         }
 
         public void Stop()
@@ -67,11 +67,7 @@ namespace Simian.Extensions
                 sendAnim.AnimationList[i].AnimSequenceID = sequenceNums[i];
             }
 
-            lock (Server.Agents)
-            {
-                foreach (Agent recipient in Server.Agents.Values)
-                    recipient.SendPacket(sendAnim);
-            }
+            Server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
         }
 
         void AgentAnimationHandler(Packet packet, Agent agent)
@@ -106,12 +102,7 @@ namespace Simian.Extensions
             effect.AgentData.AgentID = UUID.Zero;
             effect.AgentData.SessionID = UUID.Zero;
 
-            // Broadcast this to everyone
-            lock (Server.Agents)
-            {
-                foreach (Agent recipient in Server.Agents.Values)
-                    recipient.SendPacket(effect);
-            }
+            Server.UDP.BroadcastPacket(effect, PacketCategory.State);
         }
 
         void AvatarPropertiesRequestHandler(Packet packet, Agent agent)
@@ -139,8 +130,7 @@ namespace Simian.Extensions
                         reply.PropertiesData.PartnerID = UUID.Zero;
                         reply.PropertiesData.ProfileURL = Utils.StringToBytes(String.Empty);
 
-                        agent.SendPacket(reply);
-
+                        Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
                         break;
                     }
                 }
@@ -182,7 +172,7 @@ namespace Simian.Extensions
             update.WearableData[4].ItemID = UUID.Random();
             update.WearableData[4].WearableType = (byte)WearableType.Skin;
 
-            agent.SendPacket(update);
+            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
         }
 
         void AgentIsNowWearingHandler(Packet packet, Agent agent)
@@ -218,19 +208,11 @@ namespace Simian.Extensions
             ObjectUpdatePacket update = Movement.BuildFullUpdate(agent.Avatar,
                 NameValue.NameValuesToString(agent.Avatar.NameValues), Server.RegionHandle,
                 agent.State, agent.Flags | PrimFlags.ObjectYouOwner);
-            agent.SendPacket(update);
+            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
 
             // Send out this appearance to all other connected avatars
             AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
-
-            lock (Server.Agents)
-            {
-                foreach (Agent recipient in Server.Agents.Values)
-                {
-                    if (recipient != agent)
-                        recipient.SendPacket(appearance);
-                }
-            }
+            Server.UDP.BroadcastPacket(appearance, PacketCategory.State);
         }
 
         void UUIDNameRequestHandler(Packet packet, Agent agent)
@@ -268,7 +250,7 @@ namespace Simian.Extensions
                     reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(kvp.Value.LastName);
                 }
 
-                agent.SendPacket(reply);
+                Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
             }
         }
 

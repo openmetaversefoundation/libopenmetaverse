@@ -15,9 +15,9 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            server.UDPServer.RegisterPacketCallback(PacketType.UseCircuitCode, new UDPServer.PacketCallback(UseCircuitCodeHandler));
-            server.UDPServer.RegisterPacketCallback(PacketType.StartPingCheck, new UDPServer.PacketCallback(StartPingCheckHandler));
-            server.UDPServer.RegisterPacketCallback(PacketType.LogoutRequest, new UDPServer.PacketCallback(LogoutRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, new PacketCallback(UseCircuitCodeHandler));
+            server.UDP.RegisterPacketCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
+            server.UDP.RegisterPacketCallback(PacketType.LogoutRequest, new PacketCallback(LogoutRequestHandler));
             
         }
 
@@ -54,7 +54,7 @@ namespace Simian.Extensions
             handshake.RegionInfo.TerrainStartHeight11 = 40f;
             handshake.RegionInfo2.RegionID = UUID.Random();
 
-            agent.SendPacket(handshake);
+            server.UDP.SendPacket(agent.AgentID, handshake, PacketCategory.Transaction);
         }
 
         void StartPingCheckHandler(Packet packet, Agent agent)
@@ -65,7 +65,7 @@ namespace Simian.Extensions
             complete.Header.Reliable = false;
             complete.PingID.PingID = start.PingID.PingID;
 
-            agent.SendPacket(complete);
+            server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Overhead);
         }
 
         void LogoutRequestHandler(Packet packet, Agent agent)
@@ -79,24 +79,24 @@ namespace Simian.Extensions
             reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
             reply.InventoryData[0].ItemID = UUID.Zero;
 
-            agent.SendPacket(reply);
+            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
 
             lock (server.Agents)
             {
-                if (server.Agents.ContainsKey(agent.Address))
+                if (server.Agents.ContainsKey(agent.AgentID))
                 {
                     KillObjectPacket kill = new KillObjectPacket();
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = agent.Avatar.LocalID;
 
-                    agent.Dispose();
-                    server.Agents.Remove(agent.Address);
+                    server.UDP.BroadcastPacket(kill, PacketCategory.State);
 
-                    foreach (Agent recipient in server.Agents.Values)
-                        recipient.SendPacket(kill);
+                    server.Agents.Remove(agent.AgentID);
                 }
             }
+
+            server.UDP.RemoveClient(agent);
         }
     }
 }

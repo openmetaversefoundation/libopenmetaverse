@@ -18,8 +18,8 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.ChatFromViewer, new UDPServer.PacketCallback(ChatFromViewerHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new UDPServer.PacketCallback(ImprovedInstantMessageHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, new PacketCallback(ChatFromViewerHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new PacketCallback(ImprovedInstantMessageHandler));
         }
 
         public void Stop()
@@ -44,11 +44,7 @@ namespace Simian.Extensions
             chat.ChatData.FromName = Utils.StringToBytes(agent.Avatar.Name);
             chat.ChatData.Message = viewerChat.ChatData.Message;
 
-            lock (Server.Agents)
-            {
-                foreach(Agent recipient in Server.Agents.Values)
-                    recipient.SendPacket(chat);
-            }
+            Server.UDP.BroadcastPacket(chat, PacketCategory.Transaction);
         }
 
         void ImprovedInstantMessageHandler(Packet packet, Agent agent)
@@ -76,8 +72,9 @@ namespace Simian.Extensions
                             sendIM.MessageBlock.Message = im.MessageBlock.Message;
                             sendIM.MessageBlock.BinaryBucket = new byte[0];
                             sendIM.MessageBlock.Timestamp = 0;
-                            sendIM.MessageBlock.Position = agent.Avatar.Position;                            
-                            recipient.SendPacket(sendIM);
+                            sendIM.MessageBlock.Position = agent.Avatar.Position;
+
+                            Server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
 
                             break;
                         }

@@ -18,14 +18,14 @@ namespace Simian
         private struct PacketCallbackWrapper
         {
             /// <summary>Callback to fire for this packet</summary>
-            public UDPServer.PacketCallback Callback;
+            public PacketCallback Callback;
             /// <summary>Reference to the agent that this packet came from</summary>
             public Agent Agent;
             /// <summary>The packet that needs to be processed</summary>
             public Packet Packet;
         }
 
-        private Dictionary<PacketType, UDPServer.PacketCallback> _EventTable = new Dictionary<PacketType, UDPServer.PacketCallback>();
+        private Dictionary<PacketType, PacketCallback> _EventTable = new Dictionary<PacketType, PacketCallback>();
         private WaitCallback _ThreadPoolCallback;
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Simian
         /// incoming packet</remarks>
         /// <param name="packetType">Packet type to register the handler for</param>
         /// <param name="eventHandler">Callback to be fired</param>
-        public void RegisterEvent(PacketType packetType, UDPServer.PacketCallback eventHandler)
+        public void RegisterEvent(PacketType packetType, PacketCallback eventHandler)
         {
             lock (_EventTable)
             {
@@ -59,7 +59,7 @@ namespace Simian
         /// </summary>
         /// <param name="packetType">Packet type to unregister the handler for</param>
         /// <param name="eventHandler">Callback to be unregistered</param>
-        public void UnregisterEvent(PacketType packetType, UDPServer.PacketCallback eventHandler)
+        public void UnregisterEvent(PacketType packetType, PacketCallback eventHandler)
         {
             lock (_EventTable)
             {
@@ -76,7 +76,7 @@ namespace Simian
         /// <param name="agent">Agent this packet was received from</param>
         internal void BeginRaiseEvent(PacketType packetType, Packet packet, Agent agent)
         {
-            UDPServer.PacketCallback callback;
+            PacketCallback callback;
             PacketCallbackWrapper wrapper;
 
             // Default handler first, if one exists

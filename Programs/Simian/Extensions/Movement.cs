@@ -41,9 +41,9 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            server.UDPServer.RegisterPacketCallback(PacketType.AgentUpdate, new UDPServer.PacketCallback(AgentUpdateHandler));
-            server.UDPServer.RegisterPacketCallback(PacketType.AgentHeightWidth, new UDPServer.PacketCallback(AgentHeightWidthHandler));
-            server.UDPServer.RegisterPacketCallback(PacketType.SetAlwaysRun, new UDPServer.PacketCallback(SetAlwaysRunHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, new PacketCallback(AgentUpdateHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentHeightWidth, new PacketCallback(AgentHeightWidthHandler));
+            server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, new PacketCallback(SetAlwaysRunHandler));
 
             updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             LastTick = Environment.TickCount;
@@ -324,11 +324,7 @@ namespace Simian.Extensions
                 NameValue.NameValuesToString(agent.Avatar.NameValues), server.RegionHandle,
                 agent.State, agent.Flags);
 
-            lock (server.Agents)
-            {
-                foreach (Agent recipient in server.Agents.Values)
-                    recipient.SendPacket(fullUpdate);
-            }
+            server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }
 
         void SetAlwaysRunHandler(Packet packet, Agent agent)

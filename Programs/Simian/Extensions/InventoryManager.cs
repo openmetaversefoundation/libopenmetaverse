@@ -16,10 +16,10 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.CreateInventoryItem, new UDPServer.PacketCallback(CreateInventoryItemHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.CreateInventoryFolder, new UDPServer.PacketCallback(CreateInventoryFolderHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.UpdateInventoryItem, new UDPServer.PacketCallback(UpdateInventoryItemHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new UDPServer.PacketCallback(FetchInventoryDescendentsHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.CreateInventoryItem, new PacketCallback(CreateInventoryItemHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.CreateInventoryFolder, new PacketCallback(CreateInventoryFolderHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.UpdateInventoryItem, new PacketCallback(UpdateInventoryItemHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new PacketCallback(FetchInventoryDescendentsHandler));
         }
 
         public void Stop()
@@ -275,7 +275,7 @@ namespace Simian.Extensions
                         }
                     }
 
-                    agent.SendPacket(descendents);
+                    Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
                 }
             }
             else
@@ -358,8 +358,7 @@ namespace Simian.Extensions
                     update.InventoryData[0].SaleType = (byte)item.SaleType;
                     update.InventoryData[0].Type = (sbyte)item.AssetType;
 
-                    agent.SendPacket(update);
-
+                    Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
                     return item.ID;
                 }
                 else

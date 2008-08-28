@@ -20,7 +20,7 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.RequestImage, new UDPServer.PacketCallback(RequestImageHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.RequestImage, new PacketCallback(RequestImageHandler));
 
             Bitmap defaultImage = new Bitmap(32, 32);
             Graphics gfx = Graphics.FromImage(defaultImage);
@@ -69,7 +69,7 @@ namespace Simian.Extensions
                 }
                 imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
 
-                agent.SendPacket(imageData);
+                Server.UDP.SendPacket(agent.AgentID, imageData, PacketCategory.Texture);
             }
         }
     }

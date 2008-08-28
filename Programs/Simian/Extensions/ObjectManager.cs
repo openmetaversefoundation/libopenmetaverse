@@ -21,13 +21,13 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            Server.UDPServer.RegisterPacketCallback(PacketType.ObjectAdd, new UDPServer.PacketCallback(ObjectAddHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.ObjectSelect, new UDPServer.PacketCallback(ObjectSelectHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.ObjectDeselect, new UDPServer.PacketCallback(ObjectDeselectHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.ObjectShape, new UDPServer.PacketCallback(ObjectShapeHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.DeRezObject, new UDPServer.PacketCallback(DeRezObjectHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new UDPServer.PacketCallback(MultipleObjectUpdateHandler));
-            Server.UDPServer.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new UDPServer.PacketCallback(RequestObjectPropertiesFamilyHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectAdd, new PacketCallback(ObjectAddHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectSelect, new PacketCallback(ObjectSelectHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectDeselect, new PacketCallback(ObjectDeselectHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectShape, new PacketCallback(ObjectShapeHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new PacketCallback(RequestObjectPropertiesFamilyHandler));
         }
 
         public void Stop()
@@ -172,7 +172,7 @@ namespace Simian.Extensions
             // Send an update out to the creator
             ObjectUpdatePacket updateToOwner = Movement.BuildFullUpdate(prim, String.Empty, prim.RegionHandle, 0,
                 prim.Flags | PrimFlags.CreateSelected | PrimFlags.ObjectYouOwner);
-            agent.SendPacket(updateToOwner);
+            Server.UDP.SendPacket(agent.AgentID, updateToOwner, PacketCategory.State);
 
             // Send an update out to everyone else
             ObjectUpdatePacket updateToOthers = Movement.BuildFullUpdate(prim, String.Empty, prim.RegionHandle, 0,
@@ -182,7 +182,7 @@ namespace Simian.Extensions
                 foreach (Agent recipient in Server.Agents.Values)
                 {
                     if (recipient != agent)
-                        recipient.SendPacket(updateToOthers);
+                        Server.UDP.SendPacket(recipient.AgentID, updateToOthers, PacketCategory.State);
                 }
             }
         }
@@ -223,7 +223,7 @@ namespace Simian.Extensions
                 }
             }
 
-            agent.SendPacket(properties);
+            Server.UDP.SendPacket(agent.AgentID, properties, PacketCategory.Transaction);
         }
 
         void ObjectDeselectHandler(Packet packet, Agent agent)
@@ -266,11 +266,7 @@ namespace Simian.Extensions
                     // Send the update out to everyone
                     ObjectUpdatePacket editedobj = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
                         obj.Prim.Flags);
-                    lock (Server.Agents)
-                    {
-                        foreach (Agent recipient in Server.Agents.Values)
-                            recipient.SendPacket(editedobj);
-                    }
+                    Server.UDP.BroadcastPacket(editedobj, PacketCategory.State);
                 }
                 else
                 {
@@ -408,11 +404,7 @@ namespace Simian.Extensions
                     // Send the update out to everyone
                     ObjectUpdatePacket editedobj = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
                         obj.Prim.Flags);
-                    lock (Server.Agents)
-                    {
-                        foreach (Agent recipient in Server.Agents.Values)
-                            recipient.SendPacket(editedobj);
-                    }
+                    Server.UDP.BroadcastPacket(editedobj, PacketCategory.State);
                 }
                 else
                 {
@@ -422,7 +414,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = block.ObjectLocalID;
-                    agent.SendPacket(kill);
+                    Server.UDP.SendPacket(agent.AgentID, kill, PacketCategory.State);
                 }
             }
         }
@@ -453,7 +445,7 @@ namespace Simian.Extensions
                 props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
                 props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
 
-                agent.SendPacket(props);
+                Server.UDP.SendPacket(agent.AgentID, props, PacketCategory.Transaction);
             }
             else
             {
@@ -474,11 +466,7 @@ namespace Simian.Extensions
             kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
             kill.ObjectData[0].ID = obj.Prim.LocalID;
 
-            lock (Server.Agents)
-            {
-                foreach (Agent recipient in Server.Agents.Values)
-                    recipient.SendPacket(kill);
-            }
+            Server.UDP.BroadcastPacket(kill, PacketCategory.State);
         }
 
         Vector3 FullSceneCollisionTest(Vector3 rayStart, Vector3 rayEnd)
