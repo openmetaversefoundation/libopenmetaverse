@@ -217,7 +217,7 @@ namespace OpenMetaverse.TestClient
         }
 
         void Objects_OnObjectPropertiesFamily(Simulator simulator, Primitive.ObjectProperties properties,
-            ObjectPropertiesRequestType type)
+            ReportType type)
         {
             Properties.SetFamilyProperties(properties);
             GotPermissions = true;

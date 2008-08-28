@@ -36,14 +36,18 @@ namespace OpenMetaverse
     /// <summary>
     /// 
     /// </summary>
-    public enum ObjectPropertiesRequestType
+    public enum ReportType : uint
     {
-        /// <summary></summary>
+        /// <summary>No report</summary>
         None = 0,
-        /// <summary></summary>
-        BugReportRequest = 1,
-        /// <summary></summary>
-        ComplaintReportRequest = 2
+        /// <summary>Unknown report type</summary>
+        Unknown = 1,
+        /// <summary>Bug report</summary>
+        Bug = 2,
+        /// <summary>Complaint report</summary>
+        Complaint = 3,
+        /// <summary>Customer service report</summary>
+        CustomerServiceRequest = 4
     }
 
     /// <summary>
@@ -83,15 +87,16 @@ namespace OpenMetaverse
     {
         /// <summary>None</summary>
         None = 0x00,
-        /// <summary>Change Position of prims</summary>
+        /// <summary>Change position of prims</summary>
         Position = 0x01,
-        /// <summary>Change Rotation of prims</summary>
+        /// <summary>Change rotation of prims</summary>
         Rotation = 0x02,
-        /// <summary>Change Size of Prims</summary>
+        /// <summary>Change size of prims</summary>
         Scale = 0x04,
         /// <summary>Perform operation on link set</summary>
         Linked = 0x08,
-        /// <summary>Scale prims uniformly, same as selecing ctrl+shift in viewer</summary>
+        /// <summary>Scale prims uniformly, same as selecing ctrl+shift in the
+        /// viewer. Used in conjunction with Scale</summary>
         Uniform = 0x10
     }
 
@@ -170,7 +175,7 @@ namespace OpenMetaverse
         /// <param name="props"></param>
         /// <param name="type"></param>
         public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, Primitive.ObjectProperties props,
-            ObjectPropertiesRequestType type);
+            ReportType type);
         /// <summary>
         /// 
         /// </summary>
@@ -2190,7 +2195,7 @@ namespace OpenMetaverse
             ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
             Primitive.ObjectProperties props = new Primitive.ObjectProperties();
 
-            ObjectPropertiesRequestType requestType = (ObjectPropertiesRequestType)op.ObjectData.RequestFlags;
+            ReportType requestType = (ReportType)op.ObjectData.RequestFlags;
 
             props.ObjectID = op.ObjectData.ObjectID;
             props.Category = (ObjectCategory)op.ObjectData.Category;
@@ -2294,7 +2299,7 @@ namespace OpenMetaverse
         }
 
         protected void FireOnObjectPropertiesFamily(Simulator sim, Primitive.ObjectProperties props,
-            ObjectPropertiesRequestType type)
+            ReportType type)
         {
             if (OnObjectPropertiesFamily != null)
             {

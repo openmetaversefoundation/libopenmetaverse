@@ -25,6 +25,7 @@ namespace Simian.Extensions
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentSetAppearance, new UDPServer.PacketCallback(AgentSetAppearanceHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.AgentAnimation, new UDPServer.PacketCallback(AgentAnimationHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.ViewerEffect, new UDPServer.PacketCallback(ViewerEffectHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.UUIDNameRequest, new UDPServer.PacketCallback(UUIDNameRequestHandler));
         }
 
         public void Stop()
@@ -229,6 +230,45 @@ namespace Simian.Extensions
                     if (recipient != agent)
                         recipient.SendPacket(appearance);
                 }
+            }
+        }
+
+        void UUIDNameRequestHandler(Packet packet, Agent agent)
+        {
+            UUIDNameRequestPacket request = (UUIDNameRequestPacket)packet;
+            Dictionary<UUID, Agent> replies = new Dictionary<UUID, Agent>(request.UUIDNameBlock.Length);
+
+            // FIXME: This is messy/slow until we get a proper ISceneProvider
+            for (int i = 0; i < request.UUIDNameBlock.Length; i++)
+            {
+                lock (Server.Agents)
+                {
+                    foreach (Agent curAgent in Server.Agents.Values)
+                    {
+                        if (curAgent.AgentID == request.UUIDNameBlock[i].ID)
+                        {
+                            replies[curAgent.AgentID] = curAgent;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (replies.Count > 0)
+            {
+                UUIDNameReplyPacket reply = new UUIDNameReplyPacket();
+                reply.UUIDNameBlock = new UUIDNameReplyPacket.UUIDNameBlockBlock[replies.Count];
+
+                int i = 0;
+                foreach (KeyValuePair<UUID, Agent> kvp in replies)
+                {
+                    reply.UUIDNameBlock[i] = new UUIDNameReplyPacket.UUIDNameBlockBlock();
+                    reply.UUIDNameBlock[i].ID = kvp.Key;
+                    reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(kvp.Value.FirstName);
+                    reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(kvp.Value.LastName);
+                }
+
+                agent.SendPacket(reply);
             }
         }
 

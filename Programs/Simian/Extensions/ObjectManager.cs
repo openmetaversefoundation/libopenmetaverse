@@ -23,7 +23,10 @@ namespace Simian.Extensions
         {
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectAdd, new UDPServer.PacketCallback(ObjectAddHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.ObjectSelect, new UDPServer.PacketCallback(ObjectSelectHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.ObjectDeselect, new UDPServer.PacketCallback(ObjectDeselectHandler));
             Server.UDPServer.RegisterPacketCallback(PacketType.DeRezObject, new UDPServer.PacketCallback(DeRezObjectHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new UDPServer.PacketCallback(MultipleObjectUpdateHandler));
+            Server.UDPServer.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new UDPServer.PacketCallback(RequestObjectPropertiesFamilyHandler));
         }
 
         public void Stop()
@@ -67,7 +70,11 @@ namespace Simian.Extensions
                 }
             }
 
-            position.Z += scale.Z * 0.5f;
+            // Position lies on the face of another surface, either terrain of an object.
+            // Back up along the ray so we are not colliding with the mesh.
+            // HACK: This is really cheesy and should be done by a collision system
+            Vector3 rayDir = Vector3.Normalize(add.ObjectData.RayEnd - add.ObjectData.RayStart);
+            position -= rayDir * scale;
 
             #endregion Position Calculation
 
@@ -218,6 +225,13 @@ namespace Simian.Extensions
             agent.SendPacket(properties);
         }
 
+        void ObjectDeselectHandler(Packet packet, Agent agent)
+        {
+            ObjectDeselectPacket deselect = (ObjectDeselectPacket)packet;
+
+            // TODO: Do we need this at all?
+        }
+
         void DeRezObjectHandler(Packet packet, Agent agent)
         {
             DeRezObjectPacket derez = (DeRezObjectPacket)packet;
@@ -264,6 +278,7 @@ namespace Simian.Extensions
                                 InventoryObject invObj;
                                 if (agent.Inventory.TryGetValue(derez.AgentBlock.DestinationID, out invObj) && invObj is InventoryFolder)
                                 {
+                                    // FIXME: Handle children
                                     InventoryFolder trash = (InventoryFolder)invObj;
                                     Server.Inventory.CreateItem(agent, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
                                         AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
@@ -297,6 +312,105 @@ namespace Simian.Extensions
                         }
                     }
                 }
+            }
+        }
+
+        void MultipleObjectUpdateHandler(Packet packet, Agent agent)
+        {
+            MultipleObjectUpdatePacket update = (MultipleObjectUpdatePacket)packet;
+
+            for (int i = 0; i < update.ObjectData.Length; i++)
+            {
+                MultipleObjectUpdatePacket.ObjectDataBlock block = update.ObjectData[i];
+
+                SimulationObject obj;
+                if (SceneObjects.Dictionary.TryGetValue(block.ObjectLocalID, out obj))
+                {
+                    UpdateType type = (UpdateType)block.Type;
+                    bool linked = ((type & UpdateType.Linked) != 0);
+                    int pos = 0;
+
+                    // FIXME: Handle linksets
+
+                    if ((type & UpdateType.Position) != 0)
+                    {
+                        Vector3 newpos = new Vector3(block.Data, pos);
+                        pos += 12;
+
+                        obj.Prim.Position = newpos;
+                    }
+                    if ((type & UpdateType.Rotation) != 0)
+                    {
+                        Quaternion newrot = new Quaternion(block.Data, pos, true);
+                        pos += 12;
+
+                        obj.Prim.Rotation = newrot;
+                    }
+                    if ((type & UpdateType.Scale) != 0)
+                    {
+                        Vector3 newscale = new Vector3(block.Data, pos);
+                        pos += 12;
+
+                        // TODO: Use this
+                        bool uniform = ((type & UpdateType.Uniform) != 0);
+
+                        obj.Prim.Scale = newscale;
+                    }
+
+                    // Send the update out to everyone
+                    ObjectUpdatePacket editedobj = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
+                        obj.Prim.Flags);
+                    lock (Server.Agents)
+                    {
+                        foreach (Agent recipient in Server.Agents.Values)
+                            recipient.SendPacket(editedobj);
+                    }
+                }
+                else
+                {
+                    // Ghosted prim, send a kill message to this agent
+                    // FIXME: Handle children
+                    KillObjectPacket kill = new KillObjectPacket();
+                    kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                    kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                    kill.ObjectData[0].ID = block.ObjectLocalID;
+                    agent.SendPacket(kill);
+                }
+            }
+        }
+
+        void RequestObjectPropertiesFamilyHandler(Packet packet, Agent agent)
+        {
+            RequestObjectPropertiesFamilyPacket request = (RequestObjectPropertiesFamilyPacket)packet;
+            ReportType type = (ReportType)request.ObjectData.RequestFlags;
+
+            SimulationObject obj;
+            if (SceneObjectsByID.TryGetValue(request.ObjectData.ObjectID, out obj))
+            {
+                ObjectPropertiesFamilyPacket props = new ObjectPropertiesFamilyPacket();
+                props.ObjectData.BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                props.ObjectData.Category = (uint)obj.Prim.Properties.Category;
+                props.ObjectData.Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                props.ObjectData.EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                props.ObjectData.GroupID = obj.Prim.Properties.GroupID;
+                props.ObjectData.GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                props.ObjectData.LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                props.ObjectData.Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                props.ObjectData.NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                props.ObjectData.ObjectID = obj.Prim.ID;
+                props.ObjectData.OwnerID = obj.Prim.Properties.OwnerID;
+                props.ObjectData.OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                props.ObjectData.OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                props.ObjectData.RequestFlags = (uint)type;
+                props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
+                props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
+
+                agent.SendPacket(props);
+            }
+            else
+            {
+                Logger.Log("RequestObjectPropertiesFamily sent for unknown object " +
+                    request.ObjectData.ObjectID.ToString(), Helpers.LogLevel.Warning);
             }
         }
 
@@ -334,7 +448,7 @@ namespace Simian.Extensions
 
             if (rayStart == rayEnd)
             {
-                Logger.DebugLog("RayStart is equal to RayEnd, rezzing from given location");
+                Logger.DebugLog("RayStart is equal to RayEnd, returning given location");
                 return closestPoint;
             }
 
@@ -343,10 +457,10 @@ namespace Simian.Extensions
 
             // Get the mesh that has been transformed into world-space
             SimpleMesh mesh = null;
-            if (obj.Prim.LocalID != 0)
+            if (obj.Prim.ParentID != 0)
             {
                 SimulationObject parent;
-                if (SceneObjects.TryGetValue(obj.Prim.LocalID, out parent))
+                if (SceneObjects.TryGetValue(obj.Prim.ParentID, out parent))
                     mesh = obj.GetWorldMesh(DetailLevel.Low, parent);
             }
             else
@@ -362,12 +476,15 @@ namespace Simian.Extensions
                 float closestDistance = Single.MaxValue;
                 for (int i = 0; i < mesh.Indices.Count; i += 3)
                 {
-                    if (RayTriangleIntersection(rayStart, direction, mesh.Vertices[i].Position,
-                        mesh.Vertices[i + 1].Position, mesh.Vertices[i + 2].Position))
+                    Vector3 point0 = mesh.Vertices[mesh.Indices[i + 0]].Position;
+                    Vector3 point1 = mesh.Vertices[mesh.Indices[i + 1]].Position;
+                    Vector3 point2 = mesh.Vertices[mesh.Indices[i + 2]].Position;
+
+                    if (RayTriangleIntersection(rayStart, direction, point0, point1, point2))
                     {
-                        // Find the barycenter of this triangle
-                        Vector3 center =
-                            (mesh.Vertices[i].Position + mesh.Vertices[i + 1].Position + mesh.Vertices[i + 2].Position) * OO_THREE;
+                        // HACK: Find the barycenter of this triangle. Would be better to have
+                        // RayTriangleIntersection return the exact collision point
+                        Vector3 center = (point0 + point1 + point2) * OO_THREE;
 
                         Logger.DebugLog("Collision hit with triangle at " + center);
 
