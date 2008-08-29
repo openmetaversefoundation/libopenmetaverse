@@ -19,8 +19,11 @@ namespace Simian.Extensions
         const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
         const float JUMP_IMPULSE_VERTICAL = 8.5f; //boost amount in meters/sec
         const float JUMP_IMPULSE_HORIZONTAL = 10f; //boost amount in meters/sec (no clue why this is so high) 
+        const float INITIAL_HOVER_IMPULSE = 2f; //boost amount in meters/sec
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
+
+        UUID BIG_SPLASH_SOUND = new UUID("486475b9-1460-4969-871e-fad973b38015");
 
         const float SQRT_TWO = 1.41421356f;
 
@@ -53,6 +56,23 @@ namespace Simian.Extensions
         public void Stop()
         {
             updateTimer.Dispose();
+        }
+
+        public void TriggerSound(Agent agent, UUID soundID)
+        {
+            SoundTriggerPacket sound = new SoundTriggerPacket();
+            sound.SoundData.Handle = server.RegionHandle;
+            sound.SoundData.ObjectID = agent.AgentID;
+            sound.SoundData.ParentID = agent.AgentID;
+            sound.SoundData.OwnerID = agent.AgentID;
+            sound.SoundData.Position = agent.Avatar.Position;
+            sound.SoundData.SoundID = soundID;
+
+            lock (server.Agents)
+            {
+                foreach (Agent recipient in server.Agents.Values)
+                    server.UDP.SendPacket(agent.AgentID, sound, PacketCategory.State);
+            }
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -127,6 +147,9 @@ namespace Simian.Extensions
                         agent.Avatar.Velocity.Y *= 0.66f;
                         agent.Avatar.Velocity.Z *= 0.33f;
 
+                        if (agent.Avatar.Position.Z == lowerLimit)
+                            agent.Avatar.Velocity.Z += INITIAL_HOVER_IMPULSE;
+
                         if (move.X != 0 || move.Y != 0)
                         { //flying horizontally
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.FLY))
@@ -150,7 +173,7 @@ namespace Simian.Extensions
                     }
 
                     else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Position.Z <= waterChestHeight)
-                    { //falling or landing from a jump
+                    { //falling, floating, or landing from a jump
 
                         if (agent.Avatar.Position.Z > server.WaterHeight)
                         { //above water
@@ -289,13 +312,25 @@ namespace Simian.Extensions
                     if (animsChanged)
                         server.Avatars.SendAnimations(agent);
 
-                    // static acceleration when any control is held, otherwise none
-                    if (moving) agent.Avatar.Acceleration = move * speed; //FIXME
-                    else agent.Avatar.Acceleration  = Vector3.Zero;
 
                     float maxVel = AVATAR_TERMINAL_VELOCITY * seconds;
-                    if (gravity > maxVel) gravity = maxVel;
-                    agent.Avatar.Velocity += agent.Avatar.Acceleration - new Vector3(0f, 0f, gravity); 
+
+                    // static acceleration when any control is held, otherwise none
+                    if (moving)
+                    {
+                        agent.Avatar.Acceleration = move * speed; //FIXME
+                        if (agent.Avatar.Acceleration.Z < -maxVel)
+                            agent.Avatar.Acceleration.Z = -maxVel;
+                        else if (agent.Avatar.Acceleration.Z > maxVel)
+                            agent.Avatar.Acceleration.Z = maxVel;
+                    }
+                    else agent.Avatar.Acceleration = Vector3.Zero;
+
+                    agent.Avatar.Velocity += agent.Avatar.Acceleration - new Vector3(0f, 0f, gravity);
+                    if (agent.Avatar.Velocity.Z < -maxVel)
+                        agent.Avatar.Velocity.Z = -maxVel;
+                    else if (agent.Avatar.Velocity.Z > maxVel)
+                        agent.Avatar.Velocity.Z = maxVel;
 
                     agent.Avatar.Position += agent.Avatar.Velocity;
 
