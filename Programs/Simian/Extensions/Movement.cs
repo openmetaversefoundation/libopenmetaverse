@@ -67,12 +67,9 @@ namespace Simian.Extensions
             sound.SoundData.OwnerID = agent.AgentID;
             sound.SoundData.Position = agent.Avatar.Position;
             sound.SoundData.SoundID = soundID;
+            sound.SoundData.Gain = 1f;
 
-            lock (server.Agents)
-            {
-                foreach (Agent recipient in server.Agents.Values)
-                    server.UDP.SendPacket(agent.AgentID, sound, PacketCategory.State);
-            }
+            server.UDP.BroadcastPacket(sound, PacketCategory.State);
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -318,7 +315,7 @@ namespace Simian.Extensions
                     // static acceleration when any control is held, otherwise none
                     if (moving)
                     {
-                        agent.Avatar.Acceleration = move * speed; //FIXME
+                        agent.Avatar.Acceleration = move * speed;
                         if (agent.Avatar.Acceleration.Z < -maxVel)
                             agent.Avatar.Acceleration.Z = -maxVel;
                         else if (agent.Avatar.Acceleration.Z > maxVel)
