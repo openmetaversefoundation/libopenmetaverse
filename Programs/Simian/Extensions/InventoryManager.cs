@@ -29,90 +29,27 @@ namespace Simian.Extensions
         void CreateInventoryItemHandler(Packet packet, Agent agent)
         {
             CreateInventoryItemPacket create = (CreateInventoryItemPacket)packet;
-            UUID assetID = UUID.Combine(create.InventoryBlock.TransactionID, agent.SecureSessionID);
+            UUID assetID;
+            if (create.InventoryBlock.TransactionID != UUID.Zero)
+                assetID = UUID.Combine(create.InventoryBlock.TransactionID, agent.SecureSessionID);
+            else
+                assetID = UUID.Random();
+
             UUID parentID = (create.InventoryBlock.FolderID != UUID.Zero) ? create.InventoryBlock.FolderID : agent.InventoryRoot;
+            AssetType assetType = (AssetType)create.InventoryBlock.Type;
 
-            CreateItem(agent, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
-                (InventoryType)create.InventoryBlock.InvType, (AssetType)create.InventoryBlock.Type, assetID,
-                parentID, PermissionMask.All, (PermissionMask)create.InventoryBlock.NextOwnerMask, agent.AgentID,
-                agent.AgentID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID);
-            
-            /*uint fullPerms = (uint)PermissionMask.All;
-            
-
-            lock (agent.Inventory)
+            switch (assetType)
             {
-                InventoryObject parent;
-                if (agent.Inventory.TryGetValue(parentID, out parent))
-                {
-                    InventoryFolder parentFolder = (InventoryFolder)parent;
+                case AssetType.Gesture:
+                    Logger.Log("Need to create a default gesture asset!", Helpers.LogLevel.Warning);
+                    break;
+            }
 
-                    // Create an item from the incoming request
-                    InventoryItem item = new InventoryItem();
-                    item.ID = UUID.Random();
-                    item.InventoryType = (InventoryType)create.InventoryBlock.InvType;
-                    item.ParentID = parentID;
-                    item.Parent = parentFolder;
-                    item.Name = Utils.BytesToString(create.InventoryBlock.Name);
-                    item.Permissions.OwnerMask = (PermissionMask)fullPerms;
-                    item.Permissions.NextOwnerMask = (PermissionMask)create.InventoryBlock.NextOwnerMask;
-                    item.AssetType = (AssetType)create.InventoryBlock.Type;
-                    item.OwnerID = agent.AgentID;
-                    item.CreatorID = agent.AgentID;
-                    item.CreationDate = DateTime.Now;
-
-                    Logger.DebugLog(String.Format("Creating inventory item {0} (InvType: {1}, AssetType: {2})", item.Name,
-                        item.InventoryType, item.AssetType));
-
-                    // Store the inventory item
-                    agent.Inventory[item.ID] = item;
-                    lock (parentFolder.Children.Dictionary)
-                        parentFolder.Children.Dictionary[item.ID] = item;
-
-                    // Send a success response
-                    UpdateCreateInventoryItemPacket update = new UpdateCreateInventoryItemPacket();
-                    update.AgentData.AgentID = agent.AgentID;
-                    update.AgentData.SimApproved = true;
-                    update.AgentData.TransactionID = create.InventoryBlock.TransactionID;
-                    update.InventoryData = new UpdateCreateInventoryItemPacket.InventoryDataBlock[1];
-                    update.InventoryData[0] = new UpdateCreateInventoryItemPacket.InventoryDataBlock();
-                    update.InventoryData[0].AssetID = assetID;
-                    update.InventoryData[0].BaseMask = fullPerms;
-                    update.InventoryData[0].CallbackID = create.InventoryBlock.CallbackID;
-                    update.InventoryData[0].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
-                    update.InventoryData[0].CRC =
-                        Helpers.InventoryCRC(update.InventoryData[0].CreationDate, (byte)item.SaleType,
-                        (sbyte)item.InventoryType, (sbyte)item.AssetType, item.AssetID, item.GroupID, item.SalePrice,
-                        item.OwnerID, item.CreatorID, item.ID, item.ParentID, (uint)item.Permissions.EveryoneMask,
-                        item.Flags, (uint)item.Permissions.NextOwnerMask, (uint)item.Permissions.GroupMask,
-                        (uint)item.Permissions.OwnerMask);
-                    update.InventoryData[0].CreatorID = item.CreatorID;
-                    update.InventoryData[0].Description = Utils.StringToBytes("Created in Simian");
-                    update.InventoryData[0].EveryoneMask = (uint)item.Permissions.EveryoneMask;
-                    update.InventoryData[0].Flags = item.Flags;
-                    update.InventoryData[0].FolderID = item.ParentID;
-                    update.InventoryData[0].GroupID = item.GroupID;
-                    update.InventoryData[0].GroupMask = (uint)item.Permissions.GroupMask;
-                    update.InventoryData[0].GroupOwned = item.GroupOwned;
-                    update.InventoryData[0].InvType = (sbyte)item.InventoryType;
-                    update.InventoryData[0].ItemID = item.ID;
-                    update.InventoryData[0].Name = Utils.StringToBytes(item.Name);
-                    update.InventoryData[0].NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
-                    update.InventoryData[0].OwnerID = item.OwnerID;
-                    update.InventoryData[0].OwnerMask = (uint)item.Permissions.OwnerMask;
-                    update.InventoryData[0].SalePrice = item.SalePrice;
-                    update.InventoryData[0].SaleType = (byte)item.SaleType;
-                    update.InventoryData[0].Type = (sbyte)item.AssetType;
-
-                    agent.SendPacket(update);
-                }
-                else
-                {
-                    Logger.Log(String.Format(
-                        "Cannot created new inventory item, folder {0} does not exist",
-                        parentID), Helpers.LogLevel.Warning);
-                }
-            }*/
+            // Create the inventory item
+            CreateItem(agent, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
+                (InventoryType)create.InventoryBlock.InvType, assetType, assetID, parentID,
+                PermissionMask.All, (PermissionMask)create.InventoryBlock.NextOwnerMask, agent.AgentID,
+                agent.AgentID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID);
         }
 
         void CreateInventoryFolderHandler(Packet packet, Agent agent)
@@ -163,18 +100,47 @@ namespace Simian.Extensions
         {
             UpdateInventoryItemPacket update = (UpdateInventoryItemPacket)packet;
 
-            // TODO: Are we supposed to send this here?
-            /*BulkUpdateInventoryPacket response = new BulkUpdateInventoryPacket();
-            response.AgentData.AgentID = agent.AgentID;
-            response.AgentData.TransactionID = update.InventoryData[0].TransactionID;
-            response.FolderData = new BulkUpdateInventoryPacket.FolderDataBlock();
-
-            response.ItemData = new BulkUpdateInventoryPacket.ItemDataBlock[update.InventoryData.Length];
+            // No packet is sent back to the client, we just need to update the
+            // inventory item locally
             for (int i = 0; i < update.InventoryData.Length; i++)
             {
-                response.ItemData[i] = new BulkUpdateInventoryPacket.ItemDataBlock();
-                response.ItemData[i].AssetID = ...;
-            }*/
+                UpdateInventoryItemPacket.InventoryDataBlock block = update.InventoryData[i];
+
+                InventoryObject obj;
+                if (agent.Inventory.TryGetValue(block.ItemID, out obj) && obj is InventoryItem)
+                {
+                    InventoryItem item = (InventoryItem)obj;
+
+                    //block.CRC;
+                    item.Permissions.BaseMask = (PermissionMask)block.BaseMask;
+                    item.CreationDate = Utils.UnixTimeToDateTime(block.CreationDate);
+                    item.CreatorID = block.CreatorID;
+                    item.Name = Utils.BytesToString(block.Description);
+                    item.Permissions.EveryoneMask = (PermissionMask)block.EveryoneMask;
+                    item.Flags = block.Flags;
+                    item.ParentID = block.FolderID;
+                    item.GroupID = block.GroupID;
+                    item.Permissions.GroupMask = (PermissionMask)block.GroupMask;
+                    item.GroupOwned = block.GroupOwned;
+                    item.InventoryType = (InventoryType)block.InvType;
+                    item.Name = Utils.BytesToString(block.Name);
+                    item.Permissions.NextOwnerMask = (PermissionMask)block.NextOwnerMask;
+                    item.OwnerID = block.OwnerID;
+                    item.Permissions.OwnerMask = (PermissionMask)block.OwnerMask;
+                    item.SalePrice = block.SalePrice;
+                    item.SaleType = (SaleType)block.SaleType;
+                    item.AssetType = (AssetType)block.Type;
+
+                    Logger.DebugLog(String.Format(
+                        "UpdateInventoryItem: CallbackID: {0}, TransactionID: {1}",
+                        block.CallbackID, block.TransactionID));
+                }
+                else
+                {
+                    Logger.Log("Received an UpdateInventoryItem packet for unknown inventory item " +
+                        block.ItemID.ToString(), Helpers.LogLevel.Warning);
+                }
+            }
         }
 
         void FetchInventoryDescendentsHandler(Packet packet, Agent agent)
@@ -327,7 +293,10 @@ namespace Simian.Extensions
                     UpdateCreateInventoryItemPacket update = new UpdateCreateInventoryItemPacket();
                     update.AgentData.AgentID = agent.AgentID;
                     update.AgentData.SimApproved = true;
-                    update.AgentData.TransactionID = transactionID;
+                    if (transactionID != UUID.Zero)
+                        update.AgentData.TransactionID = transactionID;
+                    else
+                        update.AgentData.TransactionID = UUID.Random();
                     update.InventoryData = new UpdateCreateInventoryItemPacket.InventoryDataBlock[1];
                     update.InventoryData[0] = new UpdateCreateInventoryItemPacket.InventoryDataBlock();
                     update.InventoryData[0].AssetID = assetID;
