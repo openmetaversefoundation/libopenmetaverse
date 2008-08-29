@@ -726,7 +726,7 @@ public class Analyst : ProxyPlugin
                 {
                     pType = packetTypeFromName(line);
                     proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
-                    proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketOut));
+                    proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(LogPacketOut));
                     ++count;
                 }
                 catch (ArgumentException)
