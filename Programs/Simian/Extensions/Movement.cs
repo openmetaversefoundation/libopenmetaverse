@@ -58,20 +58,6 @@ namespace Simian.Extensions
             updateTimer.Dispose();
         }
 
-        public void TriggerSound(Agent agent, UUID soundID)
-        {
-            SoundTriggerPacket sound = new SoundTriggerPacket();
-            sound.SoundData.Handle = server.RegionHandle;
-            sound.SoundData.ObjectID = agent.AgentID;
-            sound.SoundData.ParentID = agent.AgentID;
-            sound.SoundData.OwnerID = agent.AgentID;
-            sound.SoundData.Position = agent.Avatar.Position;
-            sound.SoundData.SoundID = soundID;
-            sound.SoundData.Gain = 1f;
-
-            server.UDP.BroadcastPacket(sound, PacketCategory.State);
-        }
-
         void UpdateTimer_Elapsed(object sender)
         {
             int tick = Environment.TickCount;

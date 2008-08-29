@@ -24,6 +24,7 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, new PacketCallback(AgentIsNowWearingHandler));
             Server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, new PacketCallback(AgentSetAppearanceHandler));
             Server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
             Server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
         }
@@ -68,6 +69,20 @@ namespace Simian.Extensions
             }
 
             Server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+        }
+
+        public void TriggerSound(Agent agent, UUID soundID, float gain)
+        {
+            SoundTriggerPacket sound = new SoundTriggerPacket();
+            sound.SoundData.Handle = Server.RegionHandle;
+            sound.SoundData.ObjectID = agent.AgentID;
+            sound.SoundData.ParentID = agent.AgentID;
+            sound.SoundData.OwnerID = agent.AgentID;
+            sound.SoundData.Position = agent.Avatar.Position;
+            sound.SoundData.SoundID = soundID;
+            sound.SoundData.Gain = gain;
+
+            Server.UDP.BroadcastPacket(sound, PacketCategory.State);
         }
 
         void AgentAnimationHandler(Packet packet, Agent agent)
@@ -213,6 +228,12 @@ namespace Simian.Extensions
             // Send out this appearance to all other connected avatars
             AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
             Server.UDP.BroadcastPacket(appearance, PacketCategory.State);
+        }
+
+        void SoundTriggerHandler(Packet packet, Agent agent)
+        {
+            SoundTriggerPacket trigger = (SoundTriggerPacket)packet;
+            TriggerSound(agent, trigger.SoundData.SoundID, trigger.SoundData.Gain);
         }
 
         void UUIDNameRequestHandler(Packet packet, Agent agent)
