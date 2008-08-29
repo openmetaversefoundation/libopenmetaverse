@@ -43,14 +43,10 @@ namespace OpenMetaverse
         /// <summary>W value</summary>
         public float W;
 
-        // Used for little to big endian conversion on big endian architectures
-        private byte[] conversionBuffer;
-
         #region Constructors
 
         public Vector4(float x, float y, float z, float w)
         {
-            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -59,7 +55,6 @@ namespace OpenMetaverse
 
         public Vector4(Vector2 value, float z, float w)
         {
-            conversionBuffer = null;
             X = value.X;
             Y = value.Y;
             Z = z;
@@ -68,7 +63,6 @@ namespace OpenMetaverse
 
         public Vector4(Vector3 value, float w)
         {
-            conversionBuffer = null;
             X = value.X;
             Y = value.Y;
             Z = value.Z;
@@ -77,7 +71,6 @@ namespace OpenMetaverse
 
         public Vector4(float value)
         {
-            conversionBuffer = null;
             X = value;
             Y = value;
             Z = value;
@@ -91,14 +84,12 @@ namespace OpenMetaverse
         /// <param name="pos">Beginning position in the byte array</param>
         public Vector4(byte[] byteArray, int pos)
         {
-            conversionBuffer = null;
             X = Y = Z = W = 0f;
             FromBytes(byteArray, pos);
         }
 
         public Vector4(Vector4 value)
         {
-            conversionBuffer = null;
             X = value.X;
             Y = value.Y;
             Z = value.Z;
@@ -165,8 +156,7 @@ namespace OpenMetaverse
             if (!BitConverter.IsLittleEndian)
             {
                 // Big endian architecture
-                if (conversionBuffer == null)
-                    conversionBuffer = new byte[16];
+                byte[] conversionBuffer = new byte[16];
 
                 Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 16);
 

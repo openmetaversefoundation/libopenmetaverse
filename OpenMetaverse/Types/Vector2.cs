@@ -42,28 +42,22 @@ namespace OpenMetaverse
         /// <summary>Y value</summary>
         public float Y;
 
-        // Used for little to big endian conversion on big endian architectures
-        private byte[] conversionBuffer;
-
         #region Constructors
 
         public Vector2(float x, float y)
         {
-            conversionBuffer = null;
             X = x;
             Y = y;
         }
 
         public Vector2(float value)
         {
-            conversionBuffer = null;
             X = value;
             Y = value;
         }
 
         public Vector2(Vector2 vector)
         {
-            conversionBuffer = null;
             X = vector.X;
             Y = vector.Y;
         }
@@ -113,8 +107,7 @@ namespace OpenMetaverse
             if (!BitConverter.IsLittleEndian)
             {
                 // Big endian architecture
-                if (conversionBuffer == null)
-                    conversionBuffer = new byte[8];
+                byte[] conversionBuffer = new byte[8];
 
                 Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 8);
 

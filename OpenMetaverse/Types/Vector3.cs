@@ -44,14 +44,10 @@ namespace OpenMetaverse
         /// <summary>Z value</summary>
         public float Z;
 
-        // Used for little to big endian conversion on big endian architectures
-        private byte[] conversionBuffer;
-
         #region Constructors
 
         public Vector3(float x, float y, float z)
         {
-            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -59,7 +55,6 @@ namespace OpenMetaverse
 
         public Vector3(float value)
         {
-            conversionBuffer = null;
             X = value;
             Y = value;
             Z = value;
@@ -67,7 +62,6 @@ namespace OpenMetaverse
 
         public Vector3(Vector2 value, float z)
         {
-            conversionBuffer = null;
             X = value.X;
             Y = value.Y;
             Z = z;
@@ -75,7 +69,6 @@ namespace OpenMetaverse
 
         public Vector3(Vector3d vector)
         {
-            conversionBuffer = null;
             X = (float)vector.X;
             Y = (float)vector.Y;
             Z = (float)vector.Z;
@@ -88,14 +81,12 @@ namespace OpenMetaverse
         /// <param name="pos">Beginning position in the byte array</param>
         public Vector3(byte[] byteArray, int pos)
         {
-            conversionBuffer = null;
             X = Y = Z = 0f;
             FromBytes(byteArray, pos);
         }
 
         public Vector3(Vector3 vector)
         {
-            conversionBuffer = null;
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
@@ -161,8 +152,7 @@ namespace OpenMetaverse
             if (!BitConverter.IsLittleEndian)
             {
                 // Big endian architecture
-                if (conversionBuffer == null)
-                    conversionBuffer = new byte[12];
+                byte[] conversionBuffer = new byte[12];
 
                 Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 12);
 
@@ -521,7 +511,6 @@ namespace OpenMetaverse
         public static Vector3 operator *(Vector3 vec, Quaternion rot)
         {
             Vector3 vec2;
-            vec2.conversionBuffer = null;
 
             vec2.X =
                      rot.W * rot.W * vec.X +

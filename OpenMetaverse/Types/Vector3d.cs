@@ -44,14 +44,10 @@ namespace OpenMetaverse
         /// <summary>Z value</summary>
         public double Z;
 
-        // Used for little to big endian conversion on big endian architectures
-        private byte[] conversionBuffer;
-
         #region Constructors
 
         public Vector3d(double x, double y, double z)
         {
-            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -59,7 +55,6 @@ namespace OpenMetaverse
 
         public Vector3d(double value)
         {
-            conversionBuffer = null;
             X = value;
             Y = value;
             Z = value;
@@ -72,14 +67,12 @@ namespace OpenMetaverse
         /// <param name="pos">Beginning position in the byte array</param>
         public Vector3d(byte[] byteArray, int pos)
         {
-            conversionBuffer = null;
             X = Y = Z = 0d;
             FromBytes(byteArray, pos);
         }
 
         public Vector3d(Vector3 vector)
         {
-            conversionBuffer = null;
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
@@ -87,7 +80,6 @@ namespace OpenMetaverse
 
         public Vector3d(Vector3d vector)
         {
-            conversionBuffer = null;
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
@@ -153,8 +145,7 @@ namespace OpenMetaverse
             if (!BitConverter.IsLittleEndian)
             {
                 // Big endian architecture
-                if (conversionBuffer == null)
-                    conversionBuffer = new byte[24];
+                byte[] conversionBuffer = new byte[24];
 
                 Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 24);
 

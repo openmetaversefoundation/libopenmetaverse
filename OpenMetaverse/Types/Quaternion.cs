@@ -43,14 +43,10 @@ namespace OpenMetaverse
         /// <summary>W value</summary>
         public float W;
 
-        // Used for little to big endian conversion on big endian architectures
-        private byte[] conversionBuffer;
-
         #region Constructors
 
         public Quaternion(float x, float y, float z, float w)
         {
-            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -59,7 +55,6 @@ namespace OpenMetaverse
 
         public Quaternion(Vector3 vectorPart, float scalarPart)
         {
-            conversionBuffer = null;
             X = vectorPart.X;
             Y = vectorPart.Y;
             Z = vectorPart.Z;
@@ -74,7 +69,6 @@ namespace OpenMetaverse
         /// <param name="z">Z value from -1.0 to 1.0</param>
         public Quaternion(float x, float y, float z)
         {
-            conversionBuffer = null;
             X = x;
             Y = y;
             Z = z;
@@ -93,14 +87,12 @@ namespace OpenMetaverse
         /// be read.</param>
         public Quaternion(byte[] byteArray, int pos, bool normalized)
         {
-            conversionBuffer = null;
             X = Y = Z = W = 0;
             FromBytes(byteArray, pos, normalized);
         }
 
         public Quaternion(Quaternion q)
         {
-            conversionBuffer = null;
             X = q.X;
             Y = q.Y;
             Z = q.Z;
@@ -144,8 +136,7 @@ namespace OpenMetaverse
                 if (!BitConverter.IsLittleEndian)
                 {
                     // Big endian architecture
-                    if (conversionBuffer == null)
-                        conversionBuffer = new byte[16];
+                    byte[] conversionBuffer = new byte[16];
 
                     Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 16);
 
@@ -173,8 +164,7 @@ namespace OpenMetaverse
                 if (!BitConverter.IsLittleEndian)
                 {
                     // Big endian architecture
-                    if (conversionBuffer == null)
-                        conversionBuffer = new byte[16];
+                    byte[] conversionBuffer = new byte[16];
 
                     Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 12);
 
@@ -360,7 +350,6 @@ namespace OpenMetaverse
             float c = (float)Math.Cos(angle);
             float s = (float)Math.Sin(angle);
 
-            q.conversionBuffer = null;
             q.X = axis.X * s;
             q.Y = axis.Y * s;
             q.Z = axis.Z * s;
@@ -413,7 +402,6 @@ namespace OpenMetaverse
         public static Quaternion CreateFromRotationMatrix(Matrix4 m)
         {
             Quaternion quat;
-            quat.conversionBuffer = null;
 
             float trace = m.Trace();
 
