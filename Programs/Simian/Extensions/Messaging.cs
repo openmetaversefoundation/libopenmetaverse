@@ -74,6 +74,8 @@ namespace Simian.Extensions
                             sendIM.MessageBlock.Timestamp = 0;
                             sendIM.MessageBlock.Position = agent.Avatar.Position;
 
+                            sendIM.AgentData.AgentID = agent.AgentID;
+
                             Server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
 
                             break;

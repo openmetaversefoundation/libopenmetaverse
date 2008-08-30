@@ -338,7 +338,7 @@ namespace Simian.Extensions
             agent.State = update.AgentData.State;
             agent.Flags = (PrimFlags)update.AgentData.Flags;
 
-            ObjectUpdatePacket fullUpdate = BuildFullUpdate(agent.Avatar,
+            ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
                 NameValue.NameValuesToString(agent.Avatar.NameValues), server.RegionHandle,
                 agent.State, agent.Flags);
 
@@ -389,74 +389,5 @@ namespace Simian.Extensions
                 heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
         }
 
-        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, string nameValues, ulong regionHandle,
-            byte state, PrimFlags flags)
-        {
-            byte[] objectData = new byte[60];
-            int pos = 0;
-            obj.Position.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            obj.Velocity.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            obj.Acceleration.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            obj.Rotation.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            obj.AngularVelocity.GetBytes().CopyTo(objectData, pos);
-
-            ObjectUpdatePacket update = new ObjectUpdatePacket();
-            update.RegionData.RegionHandle = regionHandle;
-            update.RegionData.TimeDilation = UInt16.MaxValue;
-            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-            update.ObjectData[0] = new ObjectUpdatePacket.ObjectDataBlock();
-            update.ObjectData[0].ClickAction = (byte)obj.ClickAction;
-            update.ObjectData[0].CRC = 0;
-            update.ObjectData[0].ExtraParams = new byte[0]; //FIXME: Need a serializer for ExtraParams
-            update.ObjectData[0].Flags = (byte)flags;
-            update.ObjectData[0].FullID = obj.ID;
-            update.ObjectData[0].Gain = obj.SoundGain;
-            update.ObjectData[0].ID = obj.LocalID;
-            update.ObjectData[0].JointAxisOrAnchor = obj.JointAxisOrAnchor;
-            update.ObjectData[0].JointPivot = obj.JointPivot;
-            update.ObjectData[0].JointType = (byte)obj.Joint;
-            update.ObjectData[0].Material = (byte)obj.PrimData.Material;
-            update.ObjectData[0].MediaURL = new byte[0]; // FIXME:
-            update.ObjectData[0].NameValue = Utils.StringToBytes(nameValues);
-            update.ObjectData[0].ObjectData = objectData;
-            update.ObjectData[0].OwnerID = obj.Properties.OwnerID;
-            update.ObjectData[0].ParentID = obj.ParentID;
-            update.ObjectData[0].PathBegin = Primitive.PackBeginCut(obj.PrimData.PathBegin);
-            update.ObjectData[0].PathCurve = (byte)obj.PrimData.PathCurve;
-            update.ObjectData[0].PathEnd = Primitive.PackEndCut(obj.PrimData.PathEnd);
-            update.ObjectData[0].PathRadiusOffset = Primitive.PackPathTwist(obj.PrimData.PathRadiusOffset);
-            update.ObjectData[0].PathRevolutions = Primitive.PackPathRevolutions(obj.PrimData.PathRevolutions);
-            update.ObjectData[0].PathScaleX = Primitive.PackPathScale(obj.PrimData.PathScaleX);
-            update.ObjectData[0].PathScaleY = Primitive.PackPathScale(obj.PrimData.PathScaleY);
-            update.ObjectData[0].PathShearX = (byte)Primitive.PackPathShear(obj.PrimData.PathShearX);
-            update.ObjectData[0].PathShearY = (byte)Primitive.PackPathShear(obj.PrimData.PathShearY);
-            update.ObjectData[0].PathSkew = Primitive.PackPathTwist(obj.PrimData.PathSkew);
-            update.ObjectData[0].PathTaperX = Primitive.PackPathTaper(obj.PrimData.PathTaperX);
-            update.ObjectData[0].PathTaperY = Primitive.PackPathTaper(obj.PrimData.PathTaperY);
-            update.ObjectData[0].PathTwist = Primitive.PackPathTwist(obj.PrimData.PathTwist);
-            update.ObjectData[0].PathTwistBegin = Primitive.PackPathTwist(obj.PrimData.PathTwistBegin);
-            update.ObjectData[0].PCode = (byte)obj.PrimData.PCode;
-            update.ObjectData[0].ProfileBegin = Primitive.PackBeginCut(obj.PrimData.ProfileBegin);
-            update.ObjectData[0].ProfileCurve = (byte)obj.PrimData.ProfileCurve;
-            update.ObjectData[0].ProfileEnd = Primitive.PackEndCut(obj.PrimData.ProfileEnd);
-            update.ObjectData[0].ProfileHollow = Primitive.PackProfileHollow(obj.PrimData.ProfileHollow);
-            update.ObjectData[0].PSBlock = new byte[0]; // FIXME:
-            update.ObjectData[0].TextColor = obj.TextColor.GetBytes(true);
-            update.ObjectData[0].TextureAnim = obj.TextureAnim.GetBytes();
-            update.ObjectData[0].TextureEntry = obj.Textures.ToBytes();
-            update.ObjectData[0].Radius = obj.SoundRadius;
-            update.ObjectData[0].Scale = obj.Scale;
-            update.ObjectData[0].Sound = obj.Sound;
-            update.ObjectData[0].State = state;
-            update.ObjectData[0].Text = Utils.StringToBytes(obj.Text);
-            update.ObjectData[0].UpdateFlags = (uint)flags;
-            update.ObjectData[0].Data = new byte[0]; // FIXME:
-
-            return update;
-        }
     }
 }

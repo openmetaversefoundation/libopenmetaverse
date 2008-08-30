@@ -375,6 +375,14 @@ namespace Simian
                                 UUID remove = client.Agent.AgentID;
                                 client.Shutdown();
                                 lock (server.Agents) server.Agents.Remove(remove);
+
+                                //HACK: Notify everyone when someone is disconnected
+                                OfflineNotificationPacket offline = new OfflineNotificationPacket();
+                                offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+                                offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+                                offline.AgentBlock[0].AgentID = client.Agent.AgentID;
+                                server.UDP.BroadcastPacket(offline, PacketCategory.State);
+
                                 return;
                             }
                         }

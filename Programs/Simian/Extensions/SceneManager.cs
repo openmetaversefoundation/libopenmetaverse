@@ -79,7 +79,7 @@ namespace Simian.Extensions
                 foreach (Agent otherAgent in server.Agents.Values)
                 {
                     // Send ObjectUpdate packets for this avatar
-                    ObjectUpdatePacket update = Movement.BuildFullUpdate(otherAgent.Avatar,
+                    ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(otherAgent.Avatar,
                         NameValue.NameValuesToString(otherAgent.Avatar.NameValues),
                         server.RegionHandle, otherAgent.State, otherAgent.Flags);
                     server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
@@ -92,6 +92,13 @@ namespace Simian.Extensions
 
             // Send terrain data
             SendLayerData(agent);
+
+            //HACK: Notify everyone when someone logs on to the simulator
+            OnlineNotificationPacket online = new OnlineNotificationPacket();
+            online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
+            online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
+            online.AgentBlock[0].AgentID = agent.AgentID;
+            server.UDP.BroadcastPacket(online, PacketCategory.State);
         }
 
         void LoadTerrain(string mapFile)

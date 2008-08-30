@@ -23,6 +23,8 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.ObjectAdd, new PacketCallback(ObjectAddHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectSelect, new PacketCallback(ObjectSelectHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectDeselect, new PacketCallback(ObjectDeselectHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectLink, new PacketCallback(ObjectLinkHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectDelink, new PacketCallback(ObjectDelinkHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectShape, new PacketCallback(ObjectShapeHandler));
             Server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
             Server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
@@ -40,7 +42,7 @@ namespace Simian.Extensions
             CompleteAgentMovementPacket complete = (CompleteAgentMovementPacket)packet;
             SceneObjects.ForEach(delegate(SimulationObject obj)
             {
-                ObjectUpdatePacket update = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0, obj.Prim.Flags);
+                ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0, obj.Prim.Flags);
                 Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
             });
         }
@@ -178,12 +180,12 @@ namespace Simian.Extensions
             SceneObjects.Add(prim.LocalID, prim.ID, simObj);
 
             // Send an update out to the creator
-            ObjectUpdatePacket updateToOwner = Movement.BuildFullUpdate(prim, String.Empty, prim.RegionHandle, 0,
+            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(prim, String.Empty, prim.RegionHandle, 0,
                 prim.Flags | PrimFlags.CreateSelected | PrimFlags.ObjectYouOwner);
             Server.UDP.SendPacket(agent.AgentID, updateToOwner, PacketCategory.State);
 
             // Send an update out to everyone else
-            ObjectUpdatePacket updateToOthers = Movement.BuildFullUpdate(prim, String.Empty, prim.RegionHandle, 0,
+            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(prim, String.Empty, prim.RegionHandle, 0,
                 prim.Flags);
             lock (Server.Agents)
             {
@@ -241,6 +243,62 @@ namespace Simian.Extensions
             // TODO: Do we need this at all?
         }
 
+        void ObjectLinkHandler(Packet packet, Agent agent)
+        {
+            ObjectLinkPacket link = (ObjectLinkPacket)packet;
+            List<SimulationObject> linkSet = new List<SimulationObject>();
+            for (int i=0; i<link.ObjectData.Length; i++)
+            {
+                SimulationObject obj;
+                if (!SceneObjects.TryGetValue(link.ObjectData[i].ObjectLocalID, out obj))
+                {
+                    //TODO: send an error message
+                    return;
+                }
+                else if (obj.Prim.OwnerID != agent.AgentID)
+                {
+                    //TODO: send an error message
+                    return;
+                }
+                else
+                {
+                    linkSet.Add(obj);
+                }
+            }
+
+            ObjectUpdatePacket update = new ObjectUpdatePacket();
+            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[linkSet.Count];
+            for (int i = 0; i < linkSet.Count; i++)
+            {
+                update.ObjectData[i] = new ObjectUpdatePacket.ObjectDataBlock();
+
+                linkSet[i].LinkNumber = i + 1;
+                update.ObjectData[i] = new ObjectUpdatePacket.ObjectDataBlock();
+                update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, String.Empty, Server.RegionHandle,
+                    linkSet[i].Prim.PrimData.State, linkSet[i].Prim.Flags);
+                update.RegionData.RegionHandle = Server.RegionHandle;
+                update.RegionData.TimeDilation = UInt16.MaxValue;
+
+                if (i == 0) update.ObjectData[i].ParentID = 0;
+                else
+                {
+                    update.ObjectData[i].ParentID = linkSet[0].Prim.LocalID;
+                    update.ObjectData[i].ObjectData = SimulationObject.BuildObjectData(
+                        linkSet[i].Prim.Position - linkSet[0].Prim.Position,
+                        linkSet[i].Prim.Rotation / linkSet[0].Prim.Rotation,
+                        Vector3.Zero, Vector3.Zero, Vector3.Zero);
+                }
+            }
+
+            Server.UDP.BroadcastPacket(update, PacketCategory.State);
+        }
+
+        void ObjectDelinkHandler(Packet packet, Agent agent)
+        {
+            ObjectDelinkPacket link = (ObjectDelinkPacket)packet;
+            //TODO: Delink objects
+        }         
+
         void ObjectShapeHandler(Packet packet, Agent agent)
         {
             ObjectShapePacket shape = (ObjectShapePacket)packet;
@@ -272,7 +330,7 @@ namespace Simian.Extensions
                     obj.Prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
                     // Send the update out to everyone
-                    ObjectUpdatePacket editedobj = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
+                    ObjectUpdatePacket editedobj = SimulationObject.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
                         obj.Prim.Flags);
                     Server.UDP.BroadcastPacket(editedobj, PacketCategory.State);
                 }
@@ -407,7 +465,7 @@ namespace Simian.Extensions
                     }
 
                     // Send the update out to everyone
-                    ObjectUpdatePacket editedobj = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
+                    ObjectUpdatePacket editedobj = SimulationObject.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0,
                         obj.Prim.Flags);
                     Server.UDP.BroadcastPacket(editedobj, PacketCategory.State);
                 }
@@ -586,5 +644,6 @@ namespace Simian.Extensions
 
             return true;
         }
+
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OpenMetaverse;
+using OpenMetaverse.Packets;
 using OpenMetaverse.Rendering;
 
 namespace Simian
@@ -8,6 +9,7 @@ namespace Simian
     public class SimulationObject
     {
         public Primitive Prim;
+        public int LinkNumber;
 
         protected Simian Server;
         protected SimpleMesh[] Meshes = new SimpleMesh[4];
@@ -92,5 +94,90 @@ namespace Simian
                 return transformedMesh;
             }
         }
+
+        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, string nameValues, ulong regionHandle,
+            byte state, PrimFlags flags)
+        {
+            ObjectUpdatePacket update = new ObjectUpdatePacket();
+            update.RegionData.RegionHandle = regionHandle;
+            update.RegionData.TimeDilation = UInt16.MaxValue;
+            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+            update.ObjectData[0] = BuildUpdateBlock(obj, nameValues, regionHandle, state, flags);
+
+            return update;
+        }
+
+        public static byte[] BuildObjectData(Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity)
+        {
+            byte[] objectData = new byte[60];
+            int pos = 0;
+            position.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            velocity.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            acceleration.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            rotation.GetBytes().CopyTo(objectData, pos);
+            pos += 12;
+            angularVelocity.GetBytes().CopyTo(objectData, pos);
+            return objectData;
+        }
+
+        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, string nameValues, ulong regionHandle,
+            byte state, PrimFlags flags)
+        {
+            byte[] objectData = BuildObjectData(obj.Position, obj.Rotation, obj.Velocity, obj.Acceleration, obj.AngularVelocity);
+
+            ObjectUpdatePacket.ObjectDataBlock update = new ObjectUpdatePacket.ObjectDataBlock();
+            update.ClickAction = (byte)obj.ClickAction;
+            update.CRC = 0;
+            update.ExtraParams = new byte[0]; //FIXME: Need a serializer for ExtraParams
+            update.Flags = (byte)flags;
+            update.FullID = obj.ID;
+            update.Gain = obj.SoundGain;
+            update.ID = obj.LocalID;
+            update.JointAxisOrAnchor = obj.JointAxisOrAnchor;
+            update.JointPivot = obj.JointPivot;
+            update.JointType = (byte)obj.Joint;
+            update.Material = (byte)obj.PrimData.Material;
+            update.MediaURL = new byte[0]; // FIXME:
+            update.NameValue = Utils.StringToBytes(nameValues);
+            update.ObjectData = objectData;
+            update.OwnerID = obj.Properties.OwnerID;
+            update.ParentID = obj.ParentID;
+            update.PathBegin = Primitive.PackBeginCut(obj.PrimData.PathBegin);
+            update.PathCurve = (byte)obj.PrimData.PathCurve;
+            update.PathEnd = Primitive.PackEndCut(obj.PrimData.PathEnd);
+            update.PathRadiusOffset = Primitive.PackPathTwist(obj.PrimData.PathRadiusOffset);
+            update.PathRevolutions = Primitive.PackPathRevolutions(obj.PrimData.PathRevolutions);
+            update.PathScaleX = Primitive.PackPathScale(obj.PrimData.PathScaleX);
+            update.PathScaleY = Primitive.PackPathScale(obj.PrimData.PathScaleY);
+            update.PathShearX = (byte)Primitive.PackPathShear(obj.PrimData.PathShearX);
+            update.PathShearY = (byte)Primitive.PackPathShear(obj.PrimData.PathShearY);
+            update.PathSkew = Primitive.PackPathTwist(obj.PrimData.PathSkew);
+            update.PathTaperX = Primitive.PackPathTaper(obj.PrimData.PathTaperX);
+            update.PathTaperY = Primitive.PackPathTaper(obj.PrimData.PathTaperY);
+            update.PathTwist = Primitive.PackPathTwist(obj.PrimData.PathTwist);
+            update.PathTwistBegin = Primitive.PackPathTwist(obj.PrimData.PathTwistBegin);
+            update.PCode = (byte)obj.PrimData.PCode;
+            update.ProfileBegin = Primitive.PackBeginCut(obj.PrimData.ProfileBegin);
+            update.ProfileCurve = (byte)obj.PrimData.ProfileCurve;
+            update.ProfileEnd = Primitive.PackEndCut(obj.PrimData.ProfileEnd);
+            update.ProfileHollow = Primitive.PackProfileHollow(obj.PrimData.ProfileHollow);
+            update.PSBlock = new byte[0]; // FIXME:
+            update.TextColor = obj.TextColor.GetBytes(true);
+            update.TextureAnim = obj.TextureAnim.GetBytes();
+            update.TextureEntry = obj.Textures.ToBytes();
+            update.Radius = obj.SoundRadius;
+            update.Scale = obj.Scale;
+            update.Sound = obj.Sound;
+            update.State = state;
+            update.Text = Utils.StringToBytes(obj.Text);
+            update.UpdateFlags = (uint)flags;
+            update.Data = new byte[0]; // FIXME:
+
+            return update;
+        }
+
     }
 }

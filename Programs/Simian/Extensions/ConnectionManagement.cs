@@ -97,6 +97,13 @@ namespace Simian.Extensions
             }
 
             server.UDP.RemoveClient(agent);
+
+            //HACK: Notify everyone when someone logs off
+            OfflineNotificationPacket offline = new OfflineNotificationPacket();
+            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+            offline.AgentBlock[0].AgentID = agent.AgentID;
+            server.UDP.BroadcastPacket(offline, PacketCategory.State);
         }
     }
 }
