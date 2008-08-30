@@ -335,6 +335,7 @@ namespace Simian
             agent.Flags = PrimFlags.Physics | PrimFlags.ObjectModify | PrimFlags.ObjectCopy |
                 PrimFlags.ObjectAnyOwner | PrimFlags.ObjectMove | PrimFlags.InventoryEmpty |
                 PrimFlags.ObjectTransfer | PrimFlags.ObjectOwnerModify | PrimFlags.ObjectYouOwner;
+            agent.TickLastPacketReceived = Environment.TickCount;
 
             // Setup the agent inventory
             InventoryFolder rootFolder = new InventoryFolder();

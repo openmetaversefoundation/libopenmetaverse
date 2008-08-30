@@ -35,7 +35,7 @@ namespace Simian
                 Settings.NETWORK_TICK_INTERVAL);
         }
 
-        public void Dispose()
+        public void Shutdown()
         {
             ackTimer.Dispose();
         }
@@ -288,7 +288,7 @@ namespace Simian
             lock (client.NeedAcks)
             {
                 foreach (uint ack in acks)
-                    client.NeedAcks.Remove(ack);
+                    client.NeedAcks.Remove(ack);                    
             }
         }
 
@@ -366,6 +366,17 @@ namespace Simian
                                 packet.Header.Sequence, packet.GetType(), packet.ResendCount), Helpers.LogLevel.Warning);
 
                             dropAck.Add(packet.Header.Sequence);
+
+                            //Disconnect an agent if no packets are received for some time
+                            //TODO: Send logout packet? Also, 10000 should be a setting somewhere.
+                            if (Environment.TickCount - client.Agent.TickLastPacketReceived > 10000)
+                            {
+                                Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name), Helpers.LogLevel.Warning);
+                                UUID remove = client.Agent.AgentID;
+                                client.Shutdown();
+                                lock (server.Agents) server.Agents.Remove(remove);
+                                return;
+                            }
                         }
                     }
                 }
@@ -441,6 +452,8 @@ namespace Simian
                     return;
                 }
             }
+
+            client.Agent.TickLastPacketReceived = Environment.TickCount;
 
             // Reliable handling
             if (packet.Header.Reliable)

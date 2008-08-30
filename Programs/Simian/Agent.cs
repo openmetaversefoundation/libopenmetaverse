@@ -20,6 +20,7 @@ namespace Simian
         public bool Running;
         public int TickFall;
         public int TickJump;
+        public int TickLastPacketReceived;
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
         public AnimationSet Animations = new AnimationSet();
         public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();
