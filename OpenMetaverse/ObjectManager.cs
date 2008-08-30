@@ -1446,8 +1446,11 @@ namespace OpenMetaverse
                         }
 
                         // Automatically request ObjectProperties for prim if it was rezzed selected.
-                        if ((prim.Flags & PrimFlags.CreateSelected) == PrimFlags.CreateSelected)
+                        if ((prim.Flags & PrimFlags.CreateSelected) != 0)
+                        {
+                            Logger.DebugLog("Received prim flagged CreateSelected, selecting...");
                             SelectObject(simulator, prim.LocalID);
+                        }
 
                         prim.NameValues = nameValues;
                         prim.LocalID = block.ID;
@@ -2236,23 +2239,85 @@ namespace OpenMetaverse
         #region Utility Functions
 
         /// <summary>
-        /// Setup the ObjectData parameters for a basic wooden cube prim
+        /// Setup construction data for a basic primitive shape
         /// </summary>
-        /// <returns>ObjectData struct representing a basic wooden cube prim</returns>
-        public static Primitive.ConstructionData BuildCube()
+        /// <param name="type">Primitive shape to construct</param>
+        /// <returns>Construction data that can be plugged into a <seealso cref="Primitive"/></returns>
+        public static Primitive.ConstructionData BuildBasicShape(PrimType type)
         {
             Primitive.ConstructionData prim = new Primitive.ConstructionData();
-
             prim.PCode = PCode.Prim;
             prim.Material = Material.Wood;
-            prim.ProfileCurve = ProfileCurve.Square;
-            prim.PathCurve = PathCurve.Line;
-            prim.ProfileEnd = 1f;
-            prim.PathEnd = 1f;
-            prim.PathScaleX = 1f;
-            prim.PathScaleY = 1f;
-            prim.PathRevolutions = 1f;
-            
+
+            switch (type)
+            {
+                case PrimType.Box:
+                    prim.ProfileCurve = ProfileCurve.Square;
+                    prim.PathCurve = PathCurve.Line;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 1f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                case PrimType.Cylinder:
+                    prim.ProfileCurve = ProfileCurve.Circle;
+                    prim.PathCurve = PathCurve.Line;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 1f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                case PrimType.Prism:
+                    prim.ProfileCurve = ProfileCurve.Square;
+                    prim.PathCurve = PathCurve.Line;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 0f;
+                    prim.PathScaleY = 0f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                case PrimType.Ring:
+                    prim.ProfileCurve = ProfileCurve.EqualTriangle;
+                    prim.PathCurve = PathCurve.Circle;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 0.25f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                case PrimType.Sphere:
+                    prim.ProfileCurve = ProfileCurve.HalfCircle;
+                    prim.PathCurve = PathCurve.Circle;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 1f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                case PrimType.Torus:
+                    prim.ProfileCurve = ProfileCurve.Circle;
+                    prim.PathCurve = PathCurve.Circle;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 0.25f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                case PrimType.Tube:
+                    prim.ProfileCurve = ProfileCurve.Square;
+                    prim.PathCurve = PathCurve.Circle;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 0.25f;
+                    prim.PathRevolutions = 1f;
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported shape: " + type.ToString());
+            }
+
             return prim;
         }
 
