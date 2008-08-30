@@ -27,10 +27,22 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
             Server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
             Server.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new PacketCallback(RequestObjectPropertiesFamilyHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler)); //HACK: show prims
         }
 
         public void Stop()
         {
+        }
+
+        //TODO: Add interest list instead of this hack
+        void CompleteAgentMovementHandler(Packet packet, Agent agent)
+        {
+            CompleteAgentMovementPacket complete = (CompleteAgentMovementPacket)packet;
+            SceneObjects.ForEach(delegate(SimulationObject obj)
+            {
+                ObjectUpdatePacket update = Movement.BuildFullUpdate(obj.Prim, String.Empty, obj.Prim.RegionHandle, 0, obj.Prim.Flags);
+                Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
+            });
         }
 
         void ObjectAddHandler(Packet packet, Agent agent)
