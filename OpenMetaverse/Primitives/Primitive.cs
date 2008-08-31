@@ -1070,6 +1070,11 @@ namespace OpenMetaverse
         /// </summary>
         public Primitive()
         {
+            // Default a few null property values to String.Empty
+            Properties.Name = String.Empty;
+            Properties.Description = String.Empty;
+            Properties.TouchName = String.Empty;
+            Properties.SitName = String.Empty;
         }
 
         #endregion Constructors
