@@ -267,27 +267,34 @@ namespace Simian.Extensions
             }
 
             ObjectUpdatePacket update = new ObjectUpdatePacket();
+
+            update.RegionData.RegionHandle = Server.RegionHandle;
+            update.RegionData.TimeDilation = UInt16.MaxValue;
+
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[linkSet.Count];
+
             for (int i = 0; i < linkSet.Count; i++)
             {
-                update.ObjectData[i] = new ObjectUpdatePacket.ObjectDataBlock();
-
                 linkSet[i].LinkNumber = i + 1;
-                update.ObjectData[i] = new ObjectUpdatePacket.ObjectDataBlock();
+
                 update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, String.Empty, Server.RegionHandle,
                     linkSet[i].Prim.PrimData.State, linkSet[i].Prim.Flags);
-                update.RegionData.RegionHandle = Server.RegionHandle;
-                update.RegionData.TimeDilation = UInt16.MaxValue;
 
-                if (i == 0) update.ObjectData[i].ParentID = 0;
-                else
+                if (i > 0)
                 {
+                    //subtract root prim orientation
+                    linkSet[i].Prim.Position -= linkSet[0].Prim.Position;
+                    linkSet[i].Prim.Rotation /= linkSet[0].Prim.Rotation;
+
+                    //set parent ID
                     update.ObjectData[i].ParentID = linkSet[0].Prim.LocalID;
-                    update.ObjectData[i].ObjectData = SimulationObject.BuildObjectData(
-                        linkSet[i].Prim.Position - linkSet[0].Prim.Position,
-                        linkSet[i].Prim.Rotation / linkSet[0].Prim.Rotation,
-                        Vector3.Zero, Vector3.Zero, Vector3.Zero);
                 }
+                else update.ObjectData[i].ParentID = 0;
+
+                update.ObjectData[i].ObjectData = SimulationObject.BuildObjectData(
+                                        linkSet[i].Prim.Position, linkSet[i].Prim.Rotation,
+                                        Vector3.Zero, Vector3.Zero, Vector3.Zero);
+
             }
 
             Server.UDP.BroadcastPacket(update, PacketCategory.State);
@@ -295,8 +302,57 @@ namespace Simian.Extensions
 
         void ObjectDelinkHandler(Packet packet, Agent agent)
         {
-            ObjectDelinkPacket link = (ObjectDelinkPacket)packet;
-            //TODO: Delink objects
+            ObjectDelinkPacket delink = (ObjectDelinkPacket)packet;
+
+            List<SimulationObject> linkSet = new List<SimulationObject>();
+            for (int i = 0; i < delink.ObjectData.Length; i++)
+            {
+                SimulationObject obj;
+                if (!SceneObjects.TryGetValue(delink.ObjectData[i].ObjectLocalID, out obj))
+                {
+                    //TODO: send an error message
+                    return;
+                }
+                else if (obj.Prim.OwnerID != agent.AgentID)
+                {
+                    //TODO: send an error message
+                    return;
+                }
+                else
+                {
+                    linkSet.Add(obj);
+                }
+            }
+
+            ObjectUpdatePacket update = new ObjectUpdatePacket();
+
+            update.RegionData.RegionHandle = Server.RegionHandle;
+            update.RegionData.TimeDilation = UInt16.MaxValue;
+
+            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[linkSet.Count];
+
+            for (int i = 0; i < linkSet.Count; i++)
+            {
+                update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, String.Empty,
+                        Server.RegionHandle, 0, linkSet[i].Prim.Flags);
+
+                update.ObjectData[i].ParentID = 0;
+                linkSet[i].LinkNumber = 0;
+
+                //add root prim orientation to child prims
+                if (i > 0)
+                {
+                    linkSet[i].Prim.Position += linkSet[0].Prim.Position;
+                    linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
+                }
+
+                update.ObjectData[i].ObjectData = SimulationObject.BuildObjectData(
+                                        linkSet[i].Prim.Position, linkSet[i].Prim.Rotation,
+                                        Vector3.Zero, Vector3.Zero, Vector3.Zero);
+
+            }
+
+            Server.UDP.BroadcastPacket(update, PacketCategory.State);
         }         
 
         void ObjectShapeHandler(Packet packet, Agent agent)
