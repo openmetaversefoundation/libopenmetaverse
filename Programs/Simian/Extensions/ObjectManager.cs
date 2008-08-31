@@ -280,6 +280,17 @@ namespace Simian.Extensions
                 update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, String.Empty, Server.RegionHandle,
                     linkSet[i].Prim.PrimData.State, linkSet[i].Prim.Flags);
 
+                if (linkSet[i].Prim.ParentID > 0)
+                {
+                    SimulationObject parent;
+                    if (SceneObjects.TryGetValue(linkSet[i].Prim.ParentID, out parent))
+                    {
+                        //re-add old root orientation
+                        linkSet[i].Prim.Position += parent.Prim.Position;
+                        linkSet[i].Prim.Rotation *= parent.Prim.Rotation;
+                    }
+                }
+
                 if (i > 0)
                 {
                     //subtract root prim orientation

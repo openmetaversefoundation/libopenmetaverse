@@ -145,7 +145,11 @@ namespace Simian
         {
             UDPClient client;
             if (clients.TryGetValue(agent.AgentID, out client))
+            {
+                client.Shutdown();
+                lock (server.Agents) server.Agents.Remove(agent.AgentID);
                 return clients.Remove(agent.AgentID, client.Address);
+            }
             else
                 return false;
         }
@@ -372,9 +376,7 @@ namespace Simian
                             if (Environment.TickCount - client.Agent.TickLastPacketReceived > 10000)
                             {
                                 Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name), Helpers.LogLevel.Warning);
-                                UUID remove = client.Agent.AgentID;
-                                client.Shutdown();
-                                lock (server.Agents) server.Agents.Remove(remove);
+                                server.UDP.RemoveClient(client.Agent);                                
 
                                 //HACK: Notify everyone when someone is disconnected
                                 OfflineNotificationPacket offline = new OfflineNotificationPacket();

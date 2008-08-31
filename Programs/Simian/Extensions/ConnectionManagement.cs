@@ -91,8 +91,6 @@ namespace Simian.Extensions
                     kill.ObjectData[0].ID = agent.Avatar.LocalID;
 
                     server.UDP.BroadcastPacket(kill, PacketCategory.State);
-
-                    server.Agents.Remove(agent.AgentID);
                 }
             }
 
