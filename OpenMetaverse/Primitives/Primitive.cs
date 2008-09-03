@@ -1272,11 +1272,19 @@ namespace OpenMetaverse
 
         public static bool operator ==(Primitive lhs, Primitive rhs)
         {
+	    if ((Object)lhs == null || (Object)rhs == null)
+	    {
+		return (Object)rhs == (Object)lhs;
+	    }
             return (lhs.ID == rhs.ID);
         }
 
         public static bool operator !=(Primitive lhs, Primitive rhs)
         {
+	    if ((Object)lhs == null || (Object)rhs == null)
+	    {
+		return (Object)rhs != (Object)lhs;
+	    }
             return !(lhs.ID == rhs.ID);
         }
 
