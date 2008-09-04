@@ -339,8 +339,7 @@ namespace Simian.Extensions
             agent.Flags = (PrimFlags)update.AgentData.Flags;
 
             ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
-                NameValue.NameValuesToString(agent.Avatar.NameValues), server.RegionHandle,
-                agent.State, agent.Flags);
+                server.RegionHandle, agent.State, agent.Flags);
 
             server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }

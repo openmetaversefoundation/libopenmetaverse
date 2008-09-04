@@ -221,8 +221,7 @@ namespace Simian.Extensions
             //TODO: What is WearableData used for?
 
             ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
-                NameValue.NameValuesToString(agent.Avatar.NameValues), Server.RegionHandle,
-                agent.State, agent.Flags | PrimFlags.ObjectYouOwner);
+                Server.RegionHandle, agent.State, agent.Flags | PrimFlags.ObjectYouOwner);
             Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
 
             // Send out this appearance to all other connected avatars

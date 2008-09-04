@@ -19,12 +19,13 @@ namespace Simian
 
         public HttpServer HttpServer;
         public ulong RegionHandle;
-        public float[] Heightmap = new float[65536];
+        public float[] Heightmap = new float[256 * 256];
         public float WaterHeight = 35.0f;
         public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
         // Interfaces
         public IUDPProvider UDP;
+        public ISceneProvider Scene;
         public IAvatarProvider Avatars;
         public IInventoryProvider Inventory;
         public IMeshingProvider Mesher;
@@ -119,21 +120,15 @@ namespace Simian
         void TryAssignToInterface(ISimianExtension extension)
         {
             if (extension is IUDPProvider)
-            {
                 UDP = (IUDPProvider)extension;
-            }
+            else if (extension is ISceneProvider)
+                Scene = (ISceneProvider)extension;
             else if (extension is IAvatarProvider)
-            {
                 Avatars = (IAvatarProvider)extension;
-            }
             else if (extension is IInventoryProvider)
-            {
                 Inventory = (IInventoryProvider)extension;
-            }
             else if (extension is IMeshingProvider)
-            {
                 Mesher = (IMeshingProvider)extension;
-            }
         }
 
         bool CheckInterfaces()
@@ -141,6 +136,11 @@ namespace Simian
             if (UDP == null)
             {
                 Logger.Log("No IUDPProvider interface loaded", Helpers.LogLevel.Error);
+                return false;
+            }
+            else if (Scene == null)
+            {
+                Logger.Log("No ISceneProvider interface loaded", Helpers.LogLevel.Error);
                 return false;
             }
             else if (Avatars == null)

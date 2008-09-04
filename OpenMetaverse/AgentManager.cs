@@ -889,16 +889,6 @@ namespace OpenMetaverse
         public delegate void AvatarSitResponseCallback(UUID objectID, bool autoPilot, Vector3 cameraAtOffset,
             Vector3 cameraEyeOffset, bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="agentPosition"></param>
-        /// <param name="regionHandle"></param>
-        /// <param name="agentLookAt"></param>
-        /// <param name="simVersion"></param>
-        public delegate void AgentMovementCallback(Vector3 agentPosition, ulong regionHandle,
-            Vector3 agentLookAt, string simVersion);
-
         #endregion Callbacks
 
         #region Events

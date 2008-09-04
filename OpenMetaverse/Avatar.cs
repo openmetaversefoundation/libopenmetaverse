@@ -204,6 +204,9 @@ namespace OpenMetaverse
         /// <summary>Avatar interests including spoken languages, skills, and "want to"
         /// choices</summary>
         public Interests ProfileInterests;
+        /// <summary>Movement control flags for avatars. Typically not set or used by
+        /// clients. To move your avatar, use Client.Self.Movement instead</summary>
+        public AgentManager.ControlFlags ControlFlags;
 
         #endregion Public Members
 

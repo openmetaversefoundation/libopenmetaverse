@@ -8,8 +8,13 @@ namespace Simian
 {
     public class SimulationObject
     {
+        /// <summary>Reference to the primitive object this class wraps</summary>
         public Primitive Prim;
+        /// <summary>Link number, if this object is part of a linkset</summary>
         public int LinkNumber;
+        /// <summary>True when an avatar grabs this object. Stops movement and
+        /// rotation</summary>
+        public bool Frozen;
 
         protected Simian Server;
         protected SimpleMesh[] Meshes = new SimpleMesh[4];
@@ -95,14 +100,14 @@ namespace Simian
             }
         }
 
-        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, string nameValues, ulong regionHandle,
+        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, ulong regionHandle,
             byte state, PrimFlags flags)
         {
             ObjectUpdatePacket update = new ObjectUpdatePacket();
             update.RegionData.RegionHandle = regionHandle;
             update.RegionData.TimeDilation = UInt16.MaxValue;
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-            update.ObjectData[0] = BuildUpdateBlock(obj, nameValues, regionHandle, state, flags);
+            update.ObjectData[0] = BuildUpdateBlock(obj, regionHandle, state, flags);
 
             return update;
         }
@@ -123,7 +128,7 @@ namespace Simian
             return objectData;
         }
 
-        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, string nameValues, ulong regionHandle,
+        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, ulong regionHandle,
             byte state, PrimFlags flags)
         {
             byte[] objectData = BuildObjectData(obj.Position, obj.Rotation, obj.Velocity, obj.Acceleration, obj.AngularVelocity);
@@ -141,7 +146,7 @@ namespace Simian
             update.JointType = (byte)obj.Joint;
             update.Material = (byte)obj.PrimData.Material;
             update.MediaURL = new byte[0]; // FIXME:
-            update.NameValue = Utils.StringToBytes(nameValues);
+            update.NameValue = Utils.StringToBytes(NameValue.NameValuesToString(obj.NameValues));
             update.ObjectData = objectData;
             update.OwnerID = obj.Properties.OwnerID;
             update.ParentID = obj.ParentID;

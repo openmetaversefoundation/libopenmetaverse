@@ -11,10 +11,15 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class SceneManager : ISimianExtension
+    public class SceneManager : ISimianExtension, ISceneProvider
     {
         Simian server;
-        int currentLocalID = 0;
+        DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
+        int currentLocalID = 1;
+
+        public event ObjectAddedCallback OnObjectAdded;
+        public event ObjectRemovedCallback OnObjectRemoved;
+        public event ObjectUpdatedCallback OnObjectUpdated;
 
         public SceneManager(Simian server)
         {
@@ -29,6 +34,63 @@ namespace Simian.Extensions
 
         public void Stop()
         {
+        }
+
+        public void AddObject(Agent creator, SimulationObject obj)
+        {
+            // Assign a unique LocalID to this object
+            obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+
+            // Add the object to the scene dictionary
+            sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
+
+            // Send an update out to the creator
+            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
+                obj.Prim.Flags | PrimFlags.CreateSelected | PrimFlags.ObjectYouOwner);
+            server.UDP.SendPacket(creator.AgentID, updateToOwner, PacketCategory.State);
+
+            // Send an update out to everyone else
+            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
+                obj.Prim.Flags);
+            lock (server.Agents)
+            {
+                foreach (Agent recipient in server.Agents.Values)
+                {
+                    if (recipient != creator)
+                        server.UDP.SendPacket(recipient.AgentID, updateToOthers, PacketCategory.State);
+                }
+            }
+        }
+
+        public void RemoveObject(SimulationObject obj)
+        {
+            sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
+
+            KillObjectPacket kill = new KillObjectPacket();
+            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+            kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+            server.UDP.BroadcastPacket(kill, PacketCategory.State);
+        }
+
+        public bool TryGetObject(uint localID, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(localID, out obj);
+        }
+
+        public bool TryGetObject(UUID id, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(id, out obj);
+        }
+
+        public void ObjectUpdate(SimulationObject obj, byte state, PrimFlags flags)
+        {
+            // Something changed, build an update
+            ObjectUpdatePacket update =
+                SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, state, flags);
+
+            server.UDP.BroadcastPacket(update, PacketCategory.State);
         }
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
@@ -74,13 +136,26 @@ namespace Simian.Extensions
 
             server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Transaction);
 
+            // Send updates and appearances for every avatar to this new avatar
+            SynchronizeStateTo(agent);
+
+            //HACK: Notify everyone when someone logs on to the simulator
+            OnlineNotificationPacket online = new OnlineNotificationPacket();
+            online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
+            online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
+            online.AgentBlock[0].AgentID = agent.AgentID;
+            server.UDP.BroadcastPacket(online, PacketCategory.State);
+        }
+
+        // HACK: The reduction provider will deprecate this at some point
+        void SynchronizeStateTo(Agent agent)
+        {
             lock (server.Agents)
             {
                 foreach (Agent otherAgent in server.Agents.Values)
                 {
                     // Send ObjectUpdate packets for this avatar
                     ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(otherAgent.Avatar,
-                        NameValue.NameValuesToString(otherAgent.Avatar.NameValues),
                         server.RegionHandle, otherAgent.State, otherAgent.Flags);
                     server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
 
@@ -90,15 +165,15 @@ namespace Simian.Extensions
                 }
             }
 
+            sceneObjects.ForEach(delegate(SimulationObject obj)
+            {
+                ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim,
+                    obj.Prim.RegionHandle, 0, obj.Prim.Flags);
+                server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
+            });
+
             // Send terrain data
             SendLayerData(agent);
-
-            //HACK: Notify everyone when someone logs on to the simulator
-            OnlineNotificationPacket online = new OnlineNotificationPacket();
-            online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
-            online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
-            online.AgentBlock[0].AgentID = agent.AgentID;
-            server.UDP.BroadcastPacket(online, PacketCategory.State);
         }
 
         void LoadTerrain(string mapFile)
