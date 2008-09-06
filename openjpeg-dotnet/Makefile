@@ -12,6 +12,15 @@ INCLUDE = -Ilibopenjpeg
 CC = gcc
 AR = ar
 
+OSNAME = $(shell uname -s)
+ifeq ($(OSNAME), Linux)
+  ARCH = $(shell uname -m)
+  ifeq ($(ARCH), x86_64)
+    ARCH=-x86_64
+  else
+    ARCH=
+  endif
+endif
 # Converts cr/lf to just lf
 DOS2UNIX = dos2unix
 
@@ -23,7 +32,7 @@ CPPMODULES = $(CPPSRCS:.cpp=.o)
 CFLAGS = $(COMPILERFLAGS) $(INCLUDE)
 
 TARGET  = openjpeg-dotnet
-SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).so
+SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR)$(ARCH).so
 LIBNAME = lib$(TARGET).so.$(VER_MAJOR)
 
 
