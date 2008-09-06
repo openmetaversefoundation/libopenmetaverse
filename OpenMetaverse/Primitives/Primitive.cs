@@ -60,7 +60,6 @@ namespace OpenMetaverse
     public enum PrimFlags : uint
     {
         /// <summary>Deprecated</summary>
-        [Obsolete]
         None = 0,
         /// <summary>Whether physics are enabled for this object</summary>
         Physics = 0x00000001,
@@ -93,7 +92,6 @@ namespace OpenMetaverse
         /// <summary></summary>
         JointLP2P = 0x00004000,
         /// <summary>Deprecated</summary>
-        [Obsolete]
         JointWheel = 0x00008000,
         /// <summary></summary>
         AllowInventoryDrop = 0x00010000,
@@ -102,7 +100,6 @@ namespace OpenMetaverse
         /// <summary></summary>
         ObjectGroupOwned = 0x00040000,
         /// <summary>Deprecated</summary>
-        [Obsolete]
         ObjectYouOfficer = 0x00080000,
         /// <summary></summary>
         CameraDecoupled = 0x00100000,
