@@ -751,6 +751,7 @@ namespace OpenMetaverse
 
         private GridClient Client;
 
+        private AutoResetEvent WaitForSimParcel;
         #region Public Methods
 
         /// <summary>
@@ -868,7 +869,7 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator to request parcels from (must be connected)</param>
         public void RequestAllSimParcels(Simulator simulator)
         {
-            RequestAllSimParcels(simulator, false, 200);
+            RequestAllSimParcels(simulator, false, 750);
         }
 
         /// <summary>
@@ -880,9 +881,21 @@ namespace OpenMetaverse
         /// <param name="msDelay">Number of milliseconds to pause in between each request</param>
         public void RequestAllSimParcels(Simulator simulator, bool refresh, int msDelay)
         {
+            if (simulator.DownloadingParcelMap)
+            {
+                Logger.Log("Already downloading parcels in " + simulator.Name, Helpers.LogLevel.Info, Client);
+                return;
+            }
+            else
+            {
+                simulator.DownloadingParcelMap = true;
+                WaitForSimParcel = new AutoResetEvent(false);
+            }
+
+            
+
             if (refresh)
             {
-                //lock (simulator.ParcelMap)
                     for (int y = 0; y < 64; y++)
                         for (int x = 0; x < 64; x++)
                             simulator.ParcelMap[y, x] = 0;
@@ -890,7 +903,7 @@ namespace OpenMetaverse
 
             Thread th = new Thread(delegate()
             {
-                int count = 0, y, x;
+                int count = 0, timeouts = 0, y, x;
 
                 for (y = 0; y < 64; y++)
                 {
@@ -903,23 +916,24 @@ namespace OpenMetaverse
                         {
                             Client.Parcels.PropertiesRequest(simulator,
                                                              (y + 1) * 4.0f, (x + 1) * 4.0f,
-                                                             y * 4.0f, x * 4.0f, 0, false);
+                                                             y * 4.0f, x * 4.0f, int.MaxValue, false);
 
-                            // Simulators can be sliced up in 4x4 chunks, but even the smallest
-                            // parcel is 16x16. There's no reason to send out 4096 packets. If
-                            // we sleep for a little while here it is likely the response 
-                            // packet will come back and nearby parcel information is filled in
-                            // so we can skip a lot of unnecessary sends
-                            Thread.Sleep(100);
-
-                            ++count;
+                            // Wait a reasonable amount of time for a reply before sending the next request
+                            if (!WaitForSimParcel.WaitOne(msDelay, false))
+                            {
+                                Logger.Log("Timeout Waiting for ParcelProperties Response, try increasing the delay between requests", Helpers.LogLevel.Debug, Client);
+                                timeouts++;
+                            }
+                            count++;
                         }
                     }
                 }
 
                 Logger.Log(String.Format(
-                    "Requested full simulator parcel information. Sent {0} parcel requests. Current outgoing queue: {1}",
-                    count, Client.Network.OutboxCount), Helpers.LogLevel.Info);
+                    "Full simulator parcel information retrieved. Sent {0} parcel requests. Current outgoing queue: {1}, Retry Count {2}",
+                    count, Client.Network.OutboxCount, timeouts), Helpers.LogLevel.Info, Client);
+
+                simulator.DownloadingParcelMap = false;
             });
 
             th.Start();
@@ -1225,7 +1239,8 @@ namespace OpenMetaverse
             land.ModifyBlock.Seconds = seconds;
             land.ModifyBlock.Height = height;
 
-            land.ParcelData[0] = new ModifyLandPacket.ParcelDataBlock(); 
+            land.ParcelData = new ModifyLandPacket.ParcelDataBlock[1];
+            land.ParcelData[0] = new ModifyLandPacket.ParcelDataBlock();
             land.ParcelData[0].LocalID = localID;
             land.ParcelData[0].West = west;
             land.ParcelData[0].South = south;
@@ -1448,6 +1463,9 @@ namespace OpenMetaverse
 
                 if (Client.Settings.PARCEL_TRACKING)
                 {
+                    if(parcel.SequenceID.Equals(int.MaxValue))
+                        WaitForSimParcel.Set();
+
                     lock (simulator.Parcels.Dictionary)
                         simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
 

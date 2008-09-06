@@ -403,6 +403,8 @@ namespace OpenMetaverse
         private Timer StatsTimer;
         // simulator <> parcel LocalID Map
         private int[,] _ParcelMap = new int[64, 64];
+        internal bool DownloadingParcelMap = false;
+
         #endregion Internal/Private Members
 
         /// <summary>
