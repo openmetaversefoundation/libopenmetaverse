@@ -1931,7 +1931,6 @@ namespace GridProxy
             IPEndPoint fakeSim = ProxySim(realSim);
 
             simPort = (ushort)fakeSim.Port;
-            int i = 0;
             byte[] bytes = fakeSim.Address.GetAddressBytes();
             simIP = Helpers.BytesToUInt(bytes);
             if (simCaps != null && simCaps.Length > 0)

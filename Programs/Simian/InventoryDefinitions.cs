@@ -74,6 +74,11 @@ namespace Simian
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
 
+        public override int GetHashCode()
+        {
+            return ID.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             if (!(obj is InventoryItem))
@@ -105,6 +110,11 @@ namespace Simian
         public int Version;
         /// <summary>Number of child items this folder contains</summary>
         public InternalDictionary<UUID, InventoryObject> Children = new InternalDictionary<UUID, InventoryObject>();
+
+        public override int GetHashCode()
+        {
+            return ID.GetHashCode();
+        }
 
         public override bool Equals(object obj)
         {

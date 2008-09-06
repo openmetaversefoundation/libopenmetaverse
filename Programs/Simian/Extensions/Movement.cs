@@ -361,18 +361,18 @@ namespace Simian.Extensions
             if (y > 255) y = 255;
             else if (y < 0) y = 0;
 
-            float center = server.Heightmap[y * 256 + x];
+            float center = server.Scene.Heightmap[y * 256 + x];
             float distX = position.X - (int)position.X;
             float distY = position.Y - (int)position.Y;
 
             float nearestX;
             float nearestY;
 
-            if (distX > 0) nearestX = server.Heightmap[y * 256 + x + (x < 255 ? 1 : 0)];
-            else nearestX = server.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
+            if (distX > 0) nearestX = server.Scene.Heightmap[y * 256 + x + (x < 255 ? 1 : 0)];
+            else nearestX = server.Scene.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
 
-            if (distY > 0) nearestY = server.Heightmap[(y + (y < 255 ? 1 : 0)) * 256 + x];
-            else nearestY = server.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
+            if (distY > 0) nearestY = server.Scene.Heightmap[(y + (y < 255 ? 1 : 0)) * 256 + x];
+            else nearestY = server.Scene.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
 
             float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
             float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));

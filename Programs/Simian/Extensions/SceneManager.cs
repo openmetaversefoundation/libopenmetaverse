@@ -16,10 +16,23 @@ namespace Simian.Extensions
         Simian server;
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
         int currentLocalID = 1;
+        float[] heightmap = new float[256 * 256];
 
         public event ObjectAddedCallback OnObjectAdded;
         public event ObjectRemovedCallback OnObjectRemoved;
         public event ObjectUpdatedCallback OnObjectUpdated;
+        public event TerrainUpdatedCallback OnTerrainUpdated;
+
+        public float[] Heightmap
+        {
+            get { return heightmap; }
+            set
+            {
+                if (value.Length != (256 * 256))
+                    throw new ArgumentException("Heightmap must be 256x256");
+                heightmap = value;
+            }
+        }
 
         public SceneManager(Simian server)
         {
@@ -36,7 +49,7 @@ namespace Simian.Extensions
         {
         }
 
-        public void AddObject(Agent creator, SimulationObject obj)
+        public void AddObject(object sender, Agent creator, SimulationObject obj)
         {
             // Assign a unique LocalID to this object
             obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
@@ -60,9 +73,14 @@ namespace Simian.Extensions
                         server.UDP.SendPacket(recipient.AgentID, updateToOthers, PacketCategory.State);
                 }
             }
+
+            if (OnObjectAdded != null)
+            {
+                OnObjectAdded(sender, obj);
+            }
         }
 
-        public void RemoveObject(SimulationObject obj)
+        public void RemoveObject(object sender, SimulationObject obj)
         {
             sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
 
@@ -72,6 +90,11 @@ namespace Simian.Extensions
             kill.ObjectData[0].ID = obj.Prim.LocalID;
 
             server.UDP.BroadcastPacket(kill, PacketCategory.State);
+
+            if (OnObjectRemoved != null)
+            {
+                OnObjectRemoved(sender, obj);
+            }
         }
 
         public bool TryGetObject(uint localID, out SimulationObject obj)
@@ -84,13 +107,19 @@ namespace Simian.Extensions
             return sceneObjects.TryGetValue(id, out obj);
         }
 
-        public void ObjectUpdate(SimulationObject obj, byte state, PrimFlags flags)
+        public void ObjectUpdate(object sender, SimulationObject obj, byte state, PrimFlags flags)
         {
             // Something changed, build an update
             ObjectUpdatePacket update =
                 SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, state, flags);
 
             server.UDP.BroadcastPacket(update, PacketCategory.State);
+
+            // Fire the callback
+            if (OnObjectUpdated != null)
+            {
+                OnObjectUpdated(sender, obj);
+            }
         }
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
@@ -180,7 +209,7 @@ namespace Simian.Extensions
         {
             if (File.Exists(mapFile))
             {
-                lock (server.Heightmap)
+                lock (heightmap)
                 {
                     Bitmap bmp = LoadTGAClass.LoadTGA(mapFile);
 
@@ -192,24 +221,26 @@ namespace Simian.Extensions
                     Marshal.Copy(ptr, rgbValues, 0, bytes);
                     bmp.UnlockBits(bmpData);
 
-                    server.Heightmap = new float[65536];
-                    for (int i = 1, pos = 0; i < server.Heightmap.Length; i++, pos += 3)
-                        server.Heightmap[i] = (float)rgbValues[pos];
+                    for (int i = 1, pos = 0; i < heightmap.Length; i++, pos += 3)
+                        heightmap[i] = (float)rgbValues[pos];
+
+                    if (OnTerrainUpdated != null)
+                        OnTerrainUpdated(this);
                 }
             }
             else
             {
                 Logger.Log("Map file " + mapFile + " not found, defaulting to 25m", Helpers.LogLevel.Info);
 
-                server.Heightmap = new float[65536];
-                for (int i = 0; i < server.Heightmap.Length; i++)
-                    server.Heightmap[i] = 25f;
+                server.Scene.Heightmap = new float[65536];
+                for (int i = 0; i < server.Scene.Heightmap.Length; i++)
+                    server.Scene.Heightmap[i] = 25f;
             }
         }
 
         void SendLayerData(Agent agent)
         {
-            lock (server.Heightmap)
+            lock (heightmap)
             {
                 for (int y = 0; y < 16; y++)
                 {
@@ -217,7 +248,7 @@ namespace Simian.Extensions
                     {
                         int[] patches = new int[1];
                         patches[0] = (y * 16) + x;
-                        LayerDataPacket layer = TerrainCompressor.CreateLandPacket(server.Heightmap, patches);
+                        LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap, patches);
                         server.UDP.SendPacket(agent.AgentID, layer, PacketCategory.Terrain);
                     }
                 }

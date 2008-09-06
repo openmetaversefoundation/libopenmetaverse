@@ -25,6 +25,7 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.ObjectLink, new PacketCallback(ObjectLinkHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectDelink, new PacketCallback(ObjectDelinkHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectShape, new PacketCallback(ObjectShapeHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectFlagUpdate, new PacketCallback(ObjectFlagUpdateHandler));
             Server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
             Server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
             Server.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new PacketCallback(RequestObjectPropertiesFamilyHandler));
@@ -76,6 +77,9 @@ namespace Simian.Extensions
             // HACK: This is really cheesy and should be done by a collision system
             Vector3 rayDir = Vector3.Normalize(add.ObjectData.RayEnd - add.ObjectData.RayStart);
             position -= rayDir * scale;
+
+            // HACK: Push the prim up a little to keep it from falling through the world
+            position.Z += 3.0f;
 
             #endregion Position Calculation
 
@@ -162,7 +166,7 @@ namespace Simian.Extensions
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, Server);
-            Server.Scene.AddObject(agent, simObj);
+            Server.Scene.AddObject(this, agent, simObj);
         }
 
         void ObjectSelectHandler(Packet packet, Agent agent)
@@ -381,16 +385,49 @@ namespace Simian.Extensions
                     obj.Prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
                     obj.Prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
-                    // Send the update out to everyone
-                    ObjectUpdatePacket editedobj = SimulationObject.BuildFullUpdate(obj.Prim, obj.Prim.RegionHandle, 0,
-                        obj.Prim.Flags);
-                    Server.UDP.BroadcastPacket(editedobj, PacketCategory.State);
+                    Server.Scene.ObjectUpdate(this, obj, 0, obj.Prim.Flags);
                 }
                 else
                 {
                     Logger.Log("Got an ObjectShape packet for unknown object " + block.ObjectLocalID,
                         Helpers.LogLevel.Warning);
                 }
+            }
+        }
+
+        void ObjectFlagUpdateHandler(Packet packet, Agent agent)
+        {
+            ObjectFlagUpdatePacket update = (ObjectFlagUpdatePacket)packet;
+
+            SimulationObject obj;
+            if (Server.Scene.TryGetObject(update.AgentData.ObjectLocalID, out obj))
+            {
+                if (update.AgentData.CastsShadows)
+                    obj.Prim.Flags |= PrimFlags.CastShadows;
+                else
+                    obj.Prim.Flags &= ~PrimFlags.CastShadows;
+
+                if (update.AgentData.IsPhantom)
+                    obj.Prim.Flags |= PrimFlags.Phantom;
+                else
+                    obj.Prim.Flags &= ~PrimFlags.Phantom;
+
+                if (update.AgentData.IsTemporary)
+                    obj.Prim.Flags |= PrimFlags.Temporary;
+                else
+                    obj.Prim.Flags &= ~PrimFlags.Temporary;
+
+                if (update.AgentData.UsePhysics)
+                    obj.Prim.Flags |= PrimFlags.Physics;
+                else
+                    obj.Prim.Flags &= ~PrimFlags.Physics;
+
+                Server.Scene.ObjectUpdate(this, obj, 0, obj.Prim.Flags);
+            }
+            else
+            {
+                Logger.Log("Got an ObjectFlagUpdate packet for unknown object " + update.AgentData.ObjectLocalID,
+                    Helpers.LogLevel.Warning);
             }
         }
 
@@ -443,7 +480,7 @@ namespace Simian.Extensions
                                 Server.Inventory.CreateItem(agent, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
                                     AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
                                     obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0);
-                                Server.Scene.RemoveObject(obj);
+                                Server.Scene.RemoveObject(this, obj);
 
                                 Logger.DebugLog(String.Format("Derezzed prim {0} to agent inventory trash", obj.Prim.LocalID));
                             }
@@ -489,8 +526,6 @@ namespace Simian.Extensions
                     bool linked = ((type & UpdateType.Linked) != 0);
                     int pos = 0;
 
-                    // FIXME: Handle linksets
-
                     if ((type & UpdateType.Position) != 0)
                     {
                         Vector3 newpos = new Vector3(block.Data, pos);
@@ -510,16 +545,16 @@ namespace Simian.Extensions
                         Vector3 newscale = new Vector3(block.Data, pos);
                         pos += 12;
 
-                        // TODO: Use this
+                        // FIXME: Use this in linksets
                         bool uniform = ((type & UpdateType.Uniform) != 0);
 
                         obj.Prim.Scale = newscale;
                     }
 
-                    // Send the update out to everyone
-                    ObjectUpdatePacket editedobj = SimulationObject.BuildFullUpdate(obj.Prim, obj.Prim.RegionHandle, 0,
-                        obj.Prim.Flags);
-                    Server.UDP.BroadcastPacket(editedobj, PacketCategory.State);
+                    // Although the object has already been modified, we need
+                    // to inform the scene manager of the changes so they are
+                    // sent to clients and propagated to other extensions
+                    Server.Scene.ObjectUpdate(this, obj, 0, obj.Prim.Flags);
                 }
                 else
                 {

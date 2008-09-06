@@ -95,6 +95,12 @@ namespace OpenMetaverse
                 BaseMask, EveryoneMask, GroupMask, NextOwnerMask, OwnerMask);
         }
 
+        public override int GetHashCode()
+        {
+            return BaseMask.GetHashCode() ^ EveryoneMask.GetHashCode() ^ GroupMask.GetHashCode() ^
+                NextOwnerMask.GetHashCode() ^ OwnerMask.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             return (obj is Permissions) ? this == (Permissions)obj : false;

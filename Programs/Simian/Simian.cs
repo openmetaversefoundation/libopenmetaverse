@@ -19,7 +19,6 @@ namespace Simian
 
         public HttpServer HttpServer;
         public ulong RegionHandle;
-        public float[] Heightmap = new float[256 * 256];
         public float WaterHeight = 35.0f;
         public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
