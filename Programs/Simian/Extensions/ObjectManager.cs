@@ -166,7 +166,7 @@ namespace Simian.Extensions
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, Server);
-            Server.Scene.AddObject(this, agent, simObj);
+            Server.Scene.ObjectAdd(this, agent, simObj);
         }
 
         void ObjectSelectHandler(Packet packet, Agent agent)
@@ -366,26 +366,28 @@ namespace Simian.Extensions
                 SimulationObject obj;
                 if (Server.Scene.TryGetObject(block.ObjectLocalID, out obj))
                 {
-                    obj.Prim.PrimData.PathBegin = Primitive.UnpackBeginCut(block.PathBegin);
-                    obj.Prim.PrimData.PathCurve = (PathCurve)block.PathCurve;
-                    obj.Prim.PrimData.PathEnd = Primitive.UnpackEndCut(block.PathEnd);
-                    obj.Prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist(block.PathRadiusOffset);
-                    obj.Prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.PathRevolutions);
-                    obj.Prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.PathScaleX);
-                    obj.Prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.PathScaleY);
-                    obj.Prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.PathShearX);
-                    obj.Prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.PathShearY);
-                    obj.Prim.PrimData.PathSkew = Primitive.UnpackPathTwist(block.PathSkew);
-                    obj.Prim.PrimData.PathTaperX = Primitive.UnpackPathTaper(block.PathTaperX);
-                    obj.Prim.PrimData.PathTaperY = Primitive.UnpackPathTaper(block.PathTaperY);
-                    obj.Prim.PrimData.PathTwist = Primitive.UnpackPathTwist(block.PathTwist);
-                    obj.Prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist(block.PathTwistBegin);
-                    obj.Prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(block.ProfileBegin);
-                    obj.Prim.PrimData.profileCurve = block.ProfileCurve;
-                    obj.Prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
-                    obj.Prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
+                    Primitive.ConstructionData data = obj.Prim.PrimData;
 
-                    Server.Scene.ObjectUpdate(this, obj, 0, obj.Prim.Flags);
+                    data.PathBegin = Primitive.UnpackBeginCut(block.PathBegin);
+                    data.PathCurve = (PathCurve)block.PathCurve;
+                    data.PathEnd = Primitive.UnpackEndCut(block.PathEnd);
+                    data.PathRadiusOffset = Primitive.UnpackPathTwist(block.PathRadiusOffset);
+                    data.PathRevolutions = Primitive.UnpackPathRevolutions(block.PathRevolutions);
+                    data.PathScaleX = Primitive.UnpackPathScale(block.PathScaleX);
+                    data.PathScaleY = Primitive.UnpackPathScale(block.PathScaleY);
+                    data.PathShearX = Primitive.UnpackPathShear((sbyte)block.PathShearX);
+                    data.PathShearY = Primitive.UnpackPathShear((sbyte)block.PathShearY);
+                    data.PathSkew = Primitive.UnpackPathTwist(block.PathSkew);
+                    data.PathTaperX = Primitive.UnpackPathTaper(block.PathTaperX);
+                    data.PathTaperY = Primitive.UnpackPathTaper(block.PathTaperY);
+                    data.PathTwist = Primitive.UnpackPathTwist(block.PathTwist);
+                    data.PathTwistBegin = Primitive.UnpackPathTwist(block.PathTwistBegin);
+                    data.ProfileBegin = Primitive.UnpackBeginCut(block.ProfileBegin);
+                    data.profileCurve = block.ProfileCurve;
+                    data.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
+                    data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
+
+                    Server.Scene.ObjectModify(this, obj, data);
                 }
                 else
                 {
@@ -402,27 +404,29 @@ namespace Simian.Extensions
             SimulationObject obj;
             if (Server.Scene.TryGetObject(update.AgentData.ObjectLocalID, out obj))
             {
+                PrimFlags flags = obj.Prim.Flags;
+
                 if (update.AgentData.CastsShadows)
-                    obj.Prim.Flags |= PrimFlags.CastShadows;
+                    flags |= PrimFlags.CastShadows;
                 else
-                    obj.Prim.Flags &= ~PrimFlags.CastShadows;
+                    flags &= ~PrimFlags.CastShadows;
 
                 if (update.AgentData.IsPhantom)
-                    obj.Prim.Flags |= PrimFlags.Phantom;
+                    flags |= PrimFlags.Phantom;
                 else
-                    obj.Prim.Flags &= ~PrimFlags.Phantom;
+                    flags &= ~PrimFlags.Phantom;
 
                 if (update.AgentData.IsTemporary)
-                    obj.Prim.Flags |= PrimFlags.Temporary;
+                    flags |= PrimFlags.Temporary;
                 else
-                    obj.Prim.Flags &= ~PrimFlags.Temporary;
+                    flags &= ~PrimFlags.Temporary;
 
                 if (update.AgentData.UsePhysics)
-                    obj.Prim.Flags |= PrimFlags.Physics;
+                    flags |= PrimFlags.Physics;
                 else
-                    obj.Prim.Flags &= ~PrimFlags.Physics;
+                    flags &= ~PrimFlags.Physics;
 
-                Server.Scene.ObjectUpdate(this, obj, 0, obj.Prim.Flags);
+                Server.Scene.ObjectFlags(this, obj, flags);
             }
             else
             {
@@ -480,7 +484,7 @@ namespace Simian.Extensions
                                 Server.Inventory.CreateItem(agent, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
                                     AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
                                     obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0);
-                                Server.Scene.RemoveObject(this, obj);
+                                Server.Scene.ObjectRemove(this, obj);
 
                                 Logger.DebugLog(String.Format("Derezzed prim {0} to agent inventory trash", obj.Prim.LocalID));
                             }
@@ -525,36 +529,35 @@ namespace Simian.Extensions
                     UpdateType type = (UpdateType)block.Type;
                     bool linked = ((type & UpdateType.Linked) != 0);
                     int pos = 0;
+                    Vector3 position = obj.Prim.Position;
+                    Quaternion rotation = obj.Prim.Rotation;
+                    Vector3 scale = obj.Prim.Scale;
 
                     if ((type & UpdateType.Position) != 0)
                     {
-                        Vector3 newpos = new Vector3(block.Data, pos);
+                        position = new Vector3(block.Data, pos);
                         pos += 12;
-
-                        obj.Prim.Position = newpos;
                     }
                     if ((type & UpdateType.Rotation) != 0)
                     {
-                        Quaternion newrot = new Quaternion(block.Data, pos, true);
+                        rotation = new Quaternion(block.Data, pos, true);
                         pos += 12;
-
-                        obj.Prim.Rotation = newrot;
                     }
                     if ((type & UpdateType.Scale) != 0)
                     {
-                        Vector3 newscale = new Vector3(block.Data, pos);
+                        scale = new Vector3(block.Data, pos);
                         pos += 12;
 
                         // FIXME: Use this in linksets
                         bool uniform = ((type & UpdateType.Uniform) != 0);
-
-                        obj.Prim.Scale = newscale;
                     }
 
                     // Although the object has already been modified, we need
                     // to inform the scene manager of the changes so they are
                     // sent to clients and propagated to other extensions
-                    Server.Scene.ObjectUpdate(this, obj, 0, obj.Prim.Flags);
+                    Server.Scene.ObjectTransform(this, obj, position, rotation, 
+                        obj.Prim.Velocity, obj.Prim.Acceleration, obj.Prim.AngularVelocity,
+                        scale);
                 }
                 else
                 {

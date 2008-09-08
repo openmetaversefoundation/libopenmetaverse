@@ -19,8 +19,15 @@ namespace Simian
         protected Simian Server;
         protected SimpleMesh[] Meshes = new SimpleMesh[4];
         protected SimpleMesh[] WorldTransformedMeshes = new SimpleMesh[4];
-        protected Matrix4 WorldTransformation = Matrix4.Identity;
-        protected bool WorldTransformationSet = false;
+
+        public SimulationObject(SimulationObject obj)
+        {
+            Prim = new Primitive(obj.Prim);
+            Server = obj.Server;
+            LinkNumber = obj.LinkNumber;
+            Frozen = obj.Frozen;
+            // Skip everything else because it can be lazily reconstructed
+        }
 
         public SimulationObject(Primitive prim, Simian server)
         {
@@ -112,7 +119,8 @@ namespace Simian
             return update;
         }
 
-        public static byte[] BuildObjectData(Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity)
+        public static byte[] BuildObjectData(Vector3 position, Quaternion rotation, Vector3 velocity,
+            Vector3 acceleration, Vector3 angularVelocity)
         {
             byte[] objectData = new byte[60];
             int pos = 0;
@@ -131,7 +139,8 @@ namespace Simian
         public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, ulong regionHandle,
             byte state, PrimFlags flags)
         {
-            byte[] objectData = BuildObjectData(obj.Position, obj.Rotation, obj.Velocity, obj.Acceleration, obj.AngularVelocity);
+            byte[] objectData = BuildObjectData(obj.Position, obj.Rotation, obj.Velocity,
+                obj.Acceleration, obj.AngularVelocity);
 
             ObjectUpdatePacket.ObjectDataBlock update = new ObjectUpdatePacket.ObjectDataBlock();
             update.ClickAction = (byte)obj.ClickAction;
@@ -183,6 +192,5 @@ namespace Simian
 
             return update;
         }
-
     }
 }

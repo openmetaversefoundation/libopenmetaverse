@@ -1045,11 +1045,11 @@ namespace OpenMetaverse
         /// <summary></summary>
         public float SoundRadius;
         /// <summary></summary>
-        public string Text = String.Empty;
+        public string Text;
         /// <summary></summary>
         public Color4 TextColor;
         /// <summary></summary>
-        public string MediaURL = String.Empty;
+        public string MediaURL;
         /// <summary></summary>
         public JointType Joint;
         /// <summary></summary>
@@ -1073,10 +1073,66 @@ namespace OpenMetaverse
         public Primitive()
         {
             // Default a few null property values to String.Empty
+            Text = String.Empty;
+            MediaURL = String.Empty;
             Properties.Name = String.Empty;
             Properties.Description = String.Empty;
             Properties.TouchName = String.Empty;
             Properties.SitName = String.Empty;
+        }
+
+        public Primitive(Primitive prim)
+        {
+            ID = prim.ID;
+            GroupID = prim.GroupID;
+            LocalID = prim.LocalID;
+            ParentID = prim.ParentID;
+            RegionHandle = prim.RegionHandle;
+            Flags = prim.Flags;
+            if (prim.GenericData != null)
+                Buffer.BlockCopy(prim.GenericData, 0, GenericData, 0, prim.GenericData.Length);
+            else
+                GenericData = null;
+            Position = prim.Position;
+            Scale = prim.Scale;
+            Rotation = prim.Rotation;
+            Velocity = prim.Velocity;
+            AngularVelocity = prim.AngularVelocity;
+            Acceleration = prim.Acceleration;
+            CollisionPlane = prim.CollisionPlane;
+            Flexible = prim.Flexible;
+            Light = prim.Light;
+            Sculpt = prim.Sculpt;
+            ClickAction = prim.ClickAction;
+            Sound = prim.Sound;
+            OwnerID = prim.OwnerID;
+            SoundFlags = prim.SoundFlags;
+            SoundGain = prim.SoundGain;
+            SoundRadius = prim.SoundRadius;
+            Text = prim.Text;
+            TextColor = prim.TextColor;
+            MediaURL = prim.MediaURL;
+            Joint = prim.Joint;
+            JointPivot = prim.JointPivot;
+            JointAxisOrAnchor = prim.JointAxisOrAnchor;
+            if (prim.NameValues != null)
+                Array.Copy(prim.NameValues, NameValues, prim.NameValues.Length);
+            else
+                NameValues = null;
+            PrimData = prim.PrimData;
+            Properties = prim.Properties;
+            // FIXME: Get a real copy constructor for TextureEntry instead of serializing to bytes and back
+            if (prim.Textures != null)
+            {
+                byte[] textureBytes = prim.Textures.ToBytes();
+                Textures = new TextureEntry(textureBytes, 0, textureBytes.Length);
+            }
+            else
+            {
+                Textures = null;
+            }
+            TextureAnim = prim.TextureAnim;
+            ParticleSys = prim.ParticleSys;
         }
 
         #endregion Constructors

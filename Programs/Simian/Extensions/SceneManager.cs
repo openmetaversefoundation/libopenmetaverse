@@ -18,9 +18,11 @@ namespace Simian.Extensions
         int currentLocalID = 1;
         float[] heightmap = new float[256 * 256];
 
-        public event ObjectAddedCallback OnObjectAdded;
-        public event ObjectRemovedCallback OnObjectRemoved;
-        public event ObjectUpdatedCallback OnObjectUpdated;
+        public event ObjectAddCallback OnObjectAdd;
+        public event ObjectRemoveCallback OnObjectRemove;
+        public event ObjectTransformCallback OnObjectTransform;
+        public event ObjectFlagsCallback OnObjectFlags;
+        public event ObjectModifyCallback OnObjectModify;
         public event TerrainUpdatedCallback OnTerrainUpdated;
 
         public float[] Heightmap
@@ -49,10 +51,15 @@ namespace Simian.Extensions
         {
         }
 
-        public void AddObject(object sender, Agent creator, SimulationObject obj)
+        public bool ObjectAdd(object sender, Agent creator, SimulationObject obj)
         {
             // Assign a unique LocalID to this object
             obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+
+            if (OnObjectAdd != null)
+            {
+                OnObjectAdd(sender, creator, obj);
+            }
 
             // Add the object to the scene dictionary
             sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
@@ -74,14 +81,16 @@ namespace Simian.Extensions
                 }
             }
 
-            if (OnObjectAdded != null)
-            {
-                OnObjectAdded(sender, obj);
-            }
+            return true;
         }
 
-        public void RemoveObject(object sender, SimulationObject obj)
+        public bool ObjectRemove(object sender, SimulationObject obj)
         {
+            if (OnObjectRemove != null)
+            {
+                OnObjectRemove(sender, obj);
+            }
+
             sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
 
             KillObjectPacket kill = new KillObjectPacket();
@@ -91,10 +100,57 @@ namespace Simian.Extensions
 
             server.UDP.BroadcastPacket(kill, PacketCategory.State);
 
-            if (OnObjectRemoved != null)
+            return true;
+        }
+
+        public void ObjectTransform(object sender, SimulationObject obj, Vector3 position,
+            Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity,
+            Vector3 scale)
+        {
+            if (OnObjectTransform != null)
             {
-                OnObjectRemoved(sender, obj);
+                OnObjectTransform(sender, obj, position, rotation, velocity,
+                    acceleration, angularVelocity, scale);
             }
+
+            // Update the object
+            obj.Prim.Position = position;
+            obj.Prim.Rotation = rotation;
+            obj.Prim.Velocity = velocity;
+            obj.Prim.Acceleration = acceleration;
+            obj.Prim.AngularVelocity = angularVelocity;
+            obj.Prim.Scale = scale;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj);
+        }
+
+        public void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags)
+        {
+            if (OnObjectFlags != null)
+            {
+                OnObjectFlags(sender, obj, flags);
+            }
+
+            // Update the object
+            obj.Prim.Flags = flags;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj);
+        }
+
+        public void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
+        {
+            if (OnObjectModify != null)
+            {
+                OnObjectModify(sender, obj, data);
+            }
+
+            // Update the object
+            obj.Prim.PrimData = data;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj);
         }
 
         public bool TryGetObject(uint localID, out SimulationObject obj)
@@ -107,19 +163,12 @@ namespace Simian.Extensions
             return sceneObjects.TryGetValue(id, out obj);
         }
 
-        public void ObjectUpdate(object sender, SimulationObject obj, byte state, PrimFlags flags)
+        void BroadcastObjectUpdate(SimulationObject obj)
         {
-            // Something changed, build an update
             ObjectUpdatePacket update =
-                SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, state, flags);
+                SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0, obj.Prim.Flags);
 
             server.UDP.BroadcastPacket(update, PacketCategory.State);
-
-            // Fire the callback
-            if (OnObjectUpdated != null)
-            {
-                OnObjectUpdated(sender, obj);
-            }
         }
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)

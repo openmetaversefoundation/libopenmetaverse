@@ -3,24 +3,37 @@ using OpenMetaverse;
 
 namespace Simian
 {
-    public delegate bool ObjectAddedCallback(object sender, SimulationObject obj);
-    public delegate bool ObjectRemovedCallback(object sender, SimulationObject obj);
-    public delegate void ObjectUpdatedCallback(object sender, SimulationObject obj);
+    public delegate void ObjectAddCallback(object sender, Agent creator, SimulationObject obj);
+    public delegate void ObjectRemoveCallback(object sender, SimulationObject obj);
+    public delegate void ObjectTransformCallback(object sender, SimulationObject obj,
+        Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration,
+        Vector3 angularVelocity, Vector3 scale);
+    public delegate void ObjectFlagsCallback(object sender, SimulationObject obj, PrimFlags flags);
+    public delegate void ObjectModifyCallback(object sender, SimulationObject obj,
+        Primitive.ConstructionData data);
+    // TODO: Convert terrain to a patch-based system
     public delegate void TerrainUpdatedCallback(object sender);
-    // TODO: ObjectImpulseAppliedCallback
 
     public interface ISceneProvider
     {
-        event ObjectAddedCallback OnObjectAdded;
-        event ObjectRemovedCallback OnObjectRemoved;
-        event ObjectUpdatedCallback OnObjectUpdated;
+        event ObjectAddCallback OnObjectAdd;
+        event ObjectRemoveCallback OnObjectRemove;
+        event ObjectTransformCallback OnObjectTransform;
+        event ObjectFlagsCallback OnObjectFlags;
+        event ObjectModifyCallback OnObjectModify;
         event TerrainUpdatedCallback OnTerrainUpdated;
 
+        // TODO: Convert to a patch-based system, and expose terrain editing
+        // through functions instead of a property
         float[] Heightmap { get; set; }
 
-        void AddObject(object sender, Agent creator, SimulationObject obj);
-        void RemoveObject(object sender, SimulationObject obj);
-        void ObjectUpdate(object sender, SimulationObject obj, byte state, PrimFlags flags);
+        bool ObjectAdd(object sender, Agent creator, SimulationObject obj);
+        bool ObjectRemove(object sender, SimulationObject obj);
+        void ObjectTransform(object sender, SimulationObject obj, Vector3 position,
+            Quaternion rotation, Vector3 velocity, Vector3 acceleration,
+            Vector3 angularVelocity, Vector3 scale);
+        void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags);
+        void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data);
         bool TryGetObject(uint localID, out SimulationObject obj);
         bool TryGetObject(UUID id, out SimulationObject obj);
     }
