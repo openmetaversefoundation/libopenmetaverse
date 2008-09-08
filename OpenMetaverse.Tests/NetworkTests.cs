@@ -39,14 +39,11 @@ namespace OpenMetaverse.Tests
         GridClient Client;
 
         ulong CurrentRegionHandle = 0;
-      //  ulong AhernRegionHandle = 1096213093149184;
-      //  ulong MorrisRegionHandle = 1096213093149183;
-        ulong DoreRegionHandle = 1095113581521408;
-        ulong HooperRegionHandle = 1106108697797888;
+        //ulong AhernRegionHandle = 1096213093149184;
+        //ulong MorrisRegionHandle = 1096213093149183;
+        //ulong DoreRegionHandle = 1095113581521408;
+        //ulong HooperRegionHandle = 1106108697797888;
         bool DetectedObject = false;
-
-        UUID LookupKey1 = new UUID("25472683cb324516904a6cd0ecabf128");
-        //string LookupName1 = "Bot Ringo";
 
         public NetworkTests()
         {
@@ -74,8 +71,8 @@ namespace OpenMetaverse.Tests
 
             int start = Environment.TickCount;
 
-            Assert.AreEqual("hooper", Client.Network.CurrentSim.Name.ToLower(), "Logged in to sim " + 
-                Client.Network.CurrentSim.Name + " instead of hooper");
+            //Assert.AreEqual("hooper", Client.Network.CurrentSim.Name.ToLower(), "Logged in to sim " + 
+            //    Client.Network.CurrentSim.Name + " instead of hooper");
         }
 
         [Test]
@@ -103,13 +100,11 @@ namespace OpenMetaverse.Tests
                 }
             }
 
-            Assert.IsTrue(CurrentRegionHandle == DoreRegionHandle, "Current region is " +
-                CurrentRegionHandle + " (" + Client.Network.CurrentSim.Name + ")" + " when we were expecting " + DoreRegionHandle + " (Dore), possible endian issue");
+            //Assert.IsTrue(CurrentRegionHandle == DoreRegionHandle, "Current region is " +
+            //    CurrentRegionHandle + " (" + Client.Network.CurrentSim.Name + ")" + " when we were expecting " + DoreRegionHandle + " (Dore), possible endian issue");
         }
 
- 
-
-        [Test]
+        /*[Test]
         public void Teleport()
         {
             // test in-sim teleports
@@ -140,8 +135,7 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual("hooper", Client.Network.CurrentSim.Name.ToLower(),
                 "Expected to teleport to Hooper, ended up in " + Client.Network.CurrentSim.Name +
                 ". Possibly region full or offline?");
-
-        }
+        }*/
 
         [Test]
         public void CapsQueue()
@@ -187,6 +181,7 @@ namespace OpenMetaverse.Tests
         [TearDown]
         public void Shutdown()
         {
+            Client.Network.Logout();
         }
     }
 }
