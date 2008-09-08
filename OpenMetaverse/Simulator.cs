@@ -391,7 +391,7 @@ namespace OpenMetaverse
         /// (for duplicate checking)</summary>
         internal Queue<uint> PacketArchive;
         /// <summary>Packets we sent out that need ACKs from the simulator</summary>
-        internal Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
+        internal Dictionary<uint, NetworkManager.OutgoingPacket> NeedAck = new Dictionary<uint, NetworkManager.OutgoingPacket>();
 
         private NetworkManager Network;
         private Queue<ulong> InBytes, OutBytes;
@@ -608,9 +608,7 @@ namespace OpenMetaverse
             byte[] buffer;
             int bytes;
 
-            // Keep track of when this packet was sent out
-            packet.TickCount = Environment.TickCount;
-
+            // Set sequence implies that this is not a resent packet
             if (setSequence)
             {
                 // Reset to zero if we've hit the upper sequence number limit
@@ -620,10 +618,15 @@ namespace OpenMetaverse
 
                 if (packet.Header.Reliable)
                 {
+                    // Wrap this packet in a struct to track timeouts and resends
+                    NetworkManager.OutgoingPacket outgoing = new NetworkManager.OutgoingPacket(this, packet, true);
+                    // Keep track of when this packet was first sent out (right now)
+                    outgoing.TickCount = Environment.TickCount;
+
                     // Add this packet to the list of ACK responses we are waiting on from the server
                     lock (NeedAck)
                     {
-                        NeedAck[packet.Header.Sequence] = packet;
+                        NeedAck[packet.Header.Sequence] = outgoing;
                     }
 
                     if (packet.Header.Resent)
@@ -649,6 +652,9 @@ namespace OpenMetaverse
                             packet.Header.AppendedAcks = false;
                             packet.Header.AckList = new uint[0];
                         }
+
+                        // Update the sent time for this packet
+                        SetResentTime(packet.Header.Sequence);
                     }
                     else
                     {
@@ -890,6 +896,13 @@ namespace OpenMetaverse
         {
         }
 
+        private void SetResentTime(uint sequence)
+        {
+            NetworkManager.OutgoingPacket outgoing;
+            if (NeedAck.TryGetValue(sequence, out outgoing))
+                outgoing.SetTickCount();
+        }
+
         /// <summary>
         /// Sends out pending acknowledgements
         /// </summary>
@@ -933,26 +946,26 @@ namespace OpenMetaverse
                 int now = Environment.TickCount;
 
                 // Resend packets
-                foreach (Packet packet in NeedAck.Values)
+                foreach (NetworkManager.OutgoingPacket outgoing in NeedAck.Values)
                 {
-                    if (packet.TickCount != 0 && now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
+                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
-                        if (packet.ResendCount < Client.Settings.MAX_RESEND_COUNT)
+                        if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                         {
                             try
                             {
                                 if (Client.Settings.LOG_RESENDS)
                                 {
                                     Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                        packet.Header.Sequence, packet.GetType(), now - packet.TickCount), Client);
+                                        outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount), Client);
                                 }
 
-                                packet.TickCount = 0;
-                                packet.Header.Resent = true;
+                                outgoing.ZeroTickCount();
+                                outgoing.Packet.Header.Resent = true;
                                 ++Stats.ResentPackets;
-                                ++packet.ResendCount;
+                                outgoing.IncrementResendCount();
 
-                                SendPacket(packet, false);
+                                SendPacket(outgoing.Packet, false);
                             }
                             catch (Exception ex)
                             {
@@ -964,10 +977,10 @@ namespace OpenMetaverse
                             if (Client.Settings.LOG_RESENDS)
                             {
                                 Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
-                                    packet.Header.Sequence, packet.GetType(), packet.ResendCount));
+                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount));
                             }
 
-                            dropAck.Add(packet.Header.Sequence);
+                            dropAck.Add(outgoing.Packet.Header.Sequence);
                         }
                     }
                 }

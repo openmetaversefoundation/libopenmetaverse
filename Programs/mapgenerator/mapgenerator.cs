@@ -813,20 +813,6 @@ namespace mapgenerator
                     writer.WriteLine("        " + packet.Name + " = " + (0x30000 | packet.ID) + ",");
             writer.WriteLine("    }" + Environment.NewLine);
 
-
-            // Write all of the XmlInclude statements for the Packet class to allow packet serialization
-            //writer.WriteLine("#if PACKETSERIALIZE");
-            //foreach (MapPacket packet in protocol.LowMaps)
-            //    if (packet != null)
-            //        writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
-            //foreach (MapPacket packet in protocol.MediumMaps)
-            //    if (packet != null)
-            //        writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
-            //foreach (MapPacket packet in protocol.HighMaps)
-            //    if (packet != null)
-            //        writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
-            //writer.WriteLine("#endif");
-
             // Write the base Packet class
             writer.WriteLine(
                 "    public abstract partial class Packet" + Environment.NewLine + "    {" + Environment.NewLine + 
@@ -834,14 +820,7 @@ namespace mapgenerator
                 "        public abstract PacketType Type { get; }" + Environment.NewLine +
                 "        public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine + 
                 "        public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +
-                "        public int ResendCount;" + Environment.NewLine +
-                "        public int TickCount;" + Environment.NewLine + Environment.NewLine +
-                "        public abstract byte[] ToBytes();" //+ Environment.NewLine + Environment.NewLine +
-                //"        public void ToXml(XmlWriter xmlWriter)" + Environment.NewLine +
-                //"        {" + Environment.NewLine +
-                //"            XmlSerializer serializer = new XmlSerializer(typeof(Packet));" + Environment.NewLine +
-                //"            serializer.Serialize(xmlWriter, this);" + Environment.NewLine +
-                //"        }");
+                "        public abstract byte[] ToBytes();"
             );
 
 
@@ -875,31 +854,6 @@ namespace mapgenerator
                 "                    break;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
                 "            return PacketType.Default;" + Environment.NewLine + "        }" + Environment.NewLine);
             
-            // TODO: Not sure if this function is useful to anyone, but if it is it needs to be
-            // rewritten to not overwrite passed in pointers and decode the entire packet just
-            // to read the header
-
-            // Write the Packet.GetType() function
-            //writer.WriteLine(
-            //    "        public static PacketType GetType(byte[] bytes, int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
-            //    "        {" + Environment.NewLine + "            ushort id; PacketFrequency freq;" + Environment.NewLine + 
-            //    "            int i = 0, end = packetEnd;" + Environment.NewLine +
-            //    "            Header header = Header.BuildHeader(bytes, ref i, ref end);" + Environment.NewLine +
-            //    "            if (header.Zerocoded)" + Environment.NewLine + "            {" + Environment.NewLine +
-            //    "                end = Helpers.ZeroDecode(bytes, end + 1, zeroBuffer) - 1;" + Environment.NewLine +
-            //    "                bytes = zeroBuffer;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
-            //    "            if (bytes[6] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
-            //    "                if (bytes[7] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
-            //    "                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;" + Environment.NewLine +
-            //    "                }" + Environment.NewLine + 
-            //    "                else" + Environment.NewLine +
-            //    "                {" + Environment.NewLine + "                    id = (ushort)bytes[7];  freq = PacketFrequency.Medium;" +
-            //    Environment.NewLine + "                }" + Environment.NewLine + "            }" + Environment.NewLine +
-            //    "            else" + Environment.NewLine + "            {" + Environment.NewLine +
-            //    "                id = (ushort)bytes[6];  freq = PacketFrequency.High;" + Environment.NewLine +
-            //    "            }" + Environment.NewLine +
-            //    "            return GetType(id, freq);" + Environment.NewLine +
-            //    "        }" + Environment.NewLine);
 
             // Write the Packet.BuildPacket(PacketType) function
             writer.WriteLine("        public static Packet BuildPacket(PacketType type)");

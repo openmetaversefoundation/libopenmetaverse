@@ -101,12 +101,33 @@ namespace OpenMetaverse
             public Packet Packet;
             /// <summary>True if the sequence number needs to be set, otherwise false</summary>
             public bool SetSequence;
+            /// <summary>Number of times this packet has been resent</summary>
+            public int ResendCount;
+            /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
+            public int TickCount;
 
             public OutgoingPacket(Simulator simulator, Packet packet, bool setSequence)
             {
                 Simulator = simulator;
                 Packet = packet;
                 SetSequence = setSequence;
+                ResendCount = 0;
+                TickCount = 0;
+            }
+
+            public void IncrementResendCount()
+            {
+                ++ResendCount;
+            }
+
+            public void SetTickCount()
+            {
+                TickCount = Environment.TickCount;
+            }
+
+            public void ZeroTickCount()
+            {
+                TickCount = 0;
             }
         }
 

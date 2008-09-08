@@ -918,13 +918,11 @@ namespace OpenMetaverse
                                                              (y + 1) * 4.0f, (x + 1) * 4.0f,
                                                              y * 4.0f, x * 4.0f, int.MaxValue, false);
 
-                            // Wait a reasonable amount of time for a reply before sending the next request
+                            // Wait the given amount of time for a reply before sending the next request
                             if (!WaitForSimParcel.WaitOne(msDelay, false))
-                            {
-                                Logger.Log("Timeout Waiting for ParcelProperties Response, try increasing the delay between requests", Helpers.LogLevel.Debug, Client);
-                                timeouts++;
-                            }
-                            count++;
+                                ++timeouts;
+
+                            ++count;
                         }
                     }
                 }

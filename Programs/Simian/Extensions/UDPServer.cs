@@ -8,6 +8,45 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
+    public struct IncomingPacket
+    {
+        public UDPClient Client;
+        public Packet Packet;
+    }
+
+    public struct OutgoingPacket
+    {
+        public UDPClient Client;
+        public Packet Packet;
+        /// <summary>Number of times this packet has been resent</summary>
+        public int ResendCount;
+        /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
+        public int TickCount;
+
+        public OutgoingPacket(UDPClient client, Packet packet)
+        {
+            Client = client;
+            Packet = packet;
+            ResendCount = 0;
+            TickCount = 0;
+        }
+
+        public void IncrementResendCount()
+        {
+            ++ResendCount;
+        }
+
+        public void SetTickCount()
+        {
+            TickCount = Environment.TickCount;
+        }
+
+        public void ZeroTickCount()
+        {
+            TickCount = 0;
+        }
+    }
+
     public class UDPClient
     {
         /// <summary></summary>
@@ -17,7 +56,7 @@ namespace Simian
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>
         public Queue<uint> PacketArchive = new Queue<uint>();
         /// <summary>Packets we have sent that need to be ACKed by the client</summary>
-        public Dictionary<uint, Packet> NeedAcks = new Dictionary<uint, Packet>();
+        public Dictionary<uint, OutgoingPacket> NeedAcks = new Dictionary<uint, OutgoingPacket>();
         /// <summary>ACKs that are queued up, waiting to be sent to the client</summary>
         public SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
         /// <summary>Current packet sequence number</summary>
@@ -45,12 +84,6 @@ namespace Simian
             udpServer.SendAcks(this);
             udpServer.ResendUnacked(this);
         }
-    }
-
-    public struct IncomingPacket
-    {
-        public UDPClient Client;
-        public Packet Packet;
     }
 
     public class UDPManager : ISimianExtension, IUDPProvider
@@ -184,9 +217,7 @@ namespace Simian
             byte[] buffer;
             int bytes;
 
-            // Keep track of when this packet was sent out
-            packet.TickCount = Environment.TickCount;
-
+            // Set sequence implies that this is not a resent packet
             if (setSequence)
             {
                 // Reset to zero if we've hit the upper sequence number limit
@@ -197,9 +228,14 @@ namespace Simian
 
                 if (packet.Header.Reliable)
                 {
+                    // Wrap this packet in a struct to track timeouts and resends
+                    OutgoingPacket outgoing = new OutgoingPacket(null, packet);
+                    // Keep track of when this packet was sent out (right now)
+                    outgoing.TickCount = Environment.TickCount;
+
                     // Add this packet to the list of ACK responses we are waiting on from this client
                     lock (client.NeedAcks)
-                        client.NeedAcks[sequence] = packet;
+                        client.NeedAcks[sequence] = outgoing;
 
                     if (packet.Header.Resent)
                     {
@@ -224,6 +260,9 @@ namespace Simian
                             packet.Header.AppendedAcks = false;
                             packet.Header.AckList = new uint[0];
                         }
+
+                        // Update the sent time for this packet
+                        SetResentTime(client, packet.Header.Sequence);
                     }
                     else
                     {
@@ -340,6 +379,13 @@ namespace Simian
                 SendPacket(client, acks, PacketCategory.Overhead, true);
         }
 
+        void SetResentTime(UDPClient client, uint sequence)
+        {
+            OutgoingPacket outgoing;
+            if (client.NeedAcks.TryGetValue(sequence, out outgoing))
+                outgoing.SetTickCount();
+        }
+
         public void ResendUnacked(UDPClient client)
         {
             lock (client.NeedAcks)
@@ -348,28 +394,28 @@ namespace Simian
                 int now = Environment.TickCount;
 
                 // Resend packets
-                foreach (Packet packet in client.NeedAcks.Values)
+                foreach (OutgoingPacket outgoing in client.NeedAcks.Values)
                 {
-                    if (packet.TickCount != 0 && now - packet.TickCount > 4000)
+                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > 4000)
                     {
-                        if (packet.ResendCount < 3)
+                        if (outgoing.ResendCount < 3)
                         {
                             Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                    packet.Header.Sequence, packet.GetType(), now - packet.TickCount));
+                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount));
 
-                            packet.TickCount = 0;
-                            packet.Header.Resent = true;
+                            outgoing.ZeroTickCount();
+                            outgoing.Packet.Header.Resent = true;
                             //++Stats.ResentPackets;
-                            ++packet.ResendCount;
+                            outgoing.IncrementResendCount();
 
-                            SendPacket(client, packet, PacketCategory.Overhead, false);
+                            SendPacket(client, outgoing.Packet, PacketCategory.Overhead, false);
                         }
                         else
                         {
                             Logger.Log(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
-                                packet.Header.Sequence, packet.GetType(), packet.ResendCount), Helpers.LogLevel.Warning);
+                                outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount), Helpers.LogLevel.Warning);
 
-                            dropAck.Add(packet.Header.Sequence);
+                            dropAck.Add(outgoing.Packet.Header.Sequence);
 
                             //Disconnect an agent if no packets are received for some time
                             //TODO: Send logout packet? Also, 10000 should be a setting somewhere.
