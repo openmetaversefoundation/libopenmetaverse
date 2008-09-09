@@ -232,10 +232,19 @@ namespace OpenMetaverse
         {
             if (OwnerID == UUID.Zero || AttachmentID == UUID.Zero)
                 return new byte[0];
+            
+            OpenMetaverse.StructuredData.LLSDMap att = new OpenMetaverse.StructuredData.LLSDMap();
+            att.Add("item_id", OpenMetaverse.StructuredData.LLSD.FromUUID(AttachmentID));
+            att.Add("owner_id", OpenMetaverse.StructuredData.LLSD.FromUUID(OwnerID));
+
+            return OpenMetaverse.StructuredData.LLSDParser.SerializeXmlBytes(att);
+
+            /*
             //I guess this is how this works, no gaurentees
             string lsd = "<llsd><item_id>" + AttachmentID.ToString() + "</item_id><owner_id>"
                 + OwnerID.ToString() + "</owner_id></llsd>";
             return Utils.StringToBytes(lsd);
+             */
         }
     }
 
@@ -244,17 +253,16 @@ namespace OpenMetaverse
     /// </summary>
     public struct ChatSessionMember
     {
+        /// <summary>The <see cref="UUID"/> of the Avatar</summary>
         public UUID AvatarKey;
+        /// <summary>True if user has voice chat enabled</summary>
         public bool CanVoiceChat;
+        /// <summary>True of Avatar has moderator abilities</summary>
         public bool IsModerator;
+        /// <summary>True if a moderator has muted this avatars chat</summary>
         public bool MuteText;
+        /// <summary>True if a moderator has muted this avatars voice</summary>
         public bool MuteVoice;
-
-        public override string ToString()
-        {
-            return String.Format("Avatar={0} CanVoiceChat={1} IsModerator={2} MuteText={3} MuteVoice={4}",
-                AvatarKey, CanVoiceChat, IsModerator, MuteText, MuteVoice);
-        }
     }
 
     #endregion Structs
@@ -266,11 +274,17 @@ namespace OpenMetaverse
     /// </summary>
     public enum GroupRoleUpdate : uint
     {
+        /// <summary></summary>
         NoUpdate,
+        /// <summary></summary>
         UpdateData,
+        /// <summary></summary>
         UpdatePowers,
+        /// <summary></summary>
         UpdateAll,
+        /// <summary></summary>
         Create,
+        /// <summary></summary>
         Delete
     }
 
@@ -389,66 +403,84 @@ namespace OpenMetaverse
         /// <summary>
         /// Callback for the list of groups the avatar is currently a member of
         /// </summary>
-        /// <param name="groups"></param>
+        /// <param name="groups">A dictionary containing the groups an avatar is a member of,
+        /// where the Key is the group <seealso cref="UUID"/>, and the values are the groups</param>
         public delegate void CurrentGroupsCallback(Dictionary<UUID, Group> groups);
+
         /// <summary>
         /// Callback for a list of group names
         /// </summary>
-        /// <param name="groupNames"></param>
+        /// <param name="groupNames">A dictionary containing the the group names requested
+        /// where the Key is the group <seealso cref="UUID"/>, and the values are the names</param>
         public delegate void GroupNamesCallback(Dictionary<UUID, string> groupNames);
+
         /// <summary>
         /// Callback for the profile of a group
         /// </summary>
-        /// <param name="group"></param>
+        /// <param name="group">The group profile</param>
         public delegate void GroupProfileCallback(Group group);
+
         /// <summary>
         /// Callback for the member list of a group
         /// </summary>
-        /// <param name="members"></param>
+        /// <param name="members">A dictionary containing the members of a group
+        /// where the Key is the group <seealso cref="UUID"/>, and the values are the members</param>
         public delegate void GroupMembersCallback(Dictionary<UUID, GroupMember> members);
+
         /// <summary>
         /// Callback for the role list of a group
         /// </summary>
-        /// <param name="roles"></param>
+        /// <param name="roles">A dictionary containing the roles of a group
+        /// where the Key is the group <seealso cref="UUID"/>, and the values are the roles</param>
         public delegate void GroupRolesCallback(Dictionary<UUID, GroupRole> roles);
+
         /// <summary>
         /// Callback for a pairing of roles to members
         /// </summary>
-        /// <param name="rolesMembers"></param>
+        /// <param name="rolesMembers">A List of Keyvalue pairs containing the role ID and the members assigned to 
+        /// that role</param>
         public delegate void GroupRolesMembersCallback(List<KeyValuePair<UUID, UUID>> rolesMembers);
+
         /// <summary>
         /// Callback for the title list of a group
         /// </summary>
-        /// <param name="titles"></param>
+        /// <param name="titles">A dictionary containing the titles of a group
+        /// where the Key is the group <seealso cref="UUID"/>, and the values are the title details</param>
         public delegate void GroupTitlesCallback(Dictionary<UUID, GroupTitle> titles);
+
         /// <summary>
-        /// 
+        /// Callback fired when group account summary information is received
         /// </summary>
-        /// <param name="summary"></param>
+        /// <param name="summary">The group account summary information</param>
         public delegate void GroupAccountSummaryCallback(GroupAccountSummary summary);
+
         /// <summary>
-        /// 
+        /// Callback fired after an attempt to create a group
         /// </summary>
-        /// <param name="groupID"></param>
-        /// <param name="success"></param>
-        /// <param name="message"></param>
+        /// <param name="groupID">The new groups <seealso cref="UUID"/></param>
+        /// <param name="success">True of creation was successful</param>
+        /// <param name="message">A string, containing a message from the simulator</param>
         public delegate void GroupCreatedCallback(UUID groupID, bool success, string message);
+
         /// <summary>
-        /// 
+        /// Callback fired when the avatar has joined a group
         /// </summary>
-        /// <param name="groupID"></param>
-        /// <param name="success"></param>
+        /// <param name="groupID">The <see cref="UUID"/> of the group joined</param>
+        /// <param name="success">True if the join was successful</param>
         public delegate void GroupJoinedCallback(UUID groupID, bool success);
+
         /// <summary>
-        /// 
+        /// Callback fired when the avatar leaves a group
         /// </summary>
-        /// <param name="groupID"></param>
-        /// <param name="success"></param>
+        /// <param name="groupID">The <see cref="UUID"/> of the group joined</param>
+        /// <param name="success">True if the part was successful</param>
         public delegate void GroupLeftCallback(UUID groupID, bool success);
+
         /// <summary>
-        /// 
+        /// Fired when a group is dropped, likely because it did not keep the required (2) avatar
+        /// minimum
         /// </summary>
-        /// <param name="groupID"></param>
+        /// <param name="groupID">The <see cref="UUID"/> of the group which was dropped</param>
         public delegate void GroupDroppedCallback(UUID groupID);
 
         /// <summary>
@@ -825,11 +857,10 @@ namespace OpenMetaverse
         public void RequestCreateGroup(Group group)
         {
             OpenMetaverse.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
-            //Fill in agent data
             cgrp.AgentData = new CreateGroupRequestPacket.AgentDataBlock();
             cgrp.AgentData.AgentID = Client.Self.AgentID;
             cgrp.AgentData.SessionID = Client.Self.SessionID;
-            //Fill in group data
+
             cgrp.GroupData = new CreateGroupRequestPacket.GroupDataBlock();
             cgrp.GroupData.AllowPublish = group.AllowPublish;
             cgrp.GroupData.Charter = Utils.StringToBytes(group.Charter);
@@ -839,7 +870,7 @@ namespace OpenMetaverse
             cgrp.GroupData.Name = Utils.StringToBytes(group.Name);
             cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
             cgrp.GroupData.ShowInList = group.ShowInList;
-            //Send it
+
             Client.Network.SendPacket(cgrp);
         }
 
@@ -849,11 +880,10 @@ namespace OpenMetaverse
         public void UpdateGroup(UUID id, Group group)
         {
             OpenMetaverse.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
-            //Fill in agent data
             cgrp.AgentData = new UpdateGroupInfoPacket.AgentDataBlock();
             cgrp.AgentData.AgentID = Client.Self.AgentID;
             cgrp.AgentData.SessionID = Client.Self.SessionID;
-            //Fill in group data
+            
             cgrp.GroupData = new UpdateGroupInfoPacket.GroupDataBlock();
             cgrp.GroupData.GroupID = id;
             cgrp.GroupData.AllowPublish = group.AllowPublish;
@@ -863,7 +893,7 @@ namespace OpenMetaverse
             cgrp.GroupData.MembershipFee = group.MembershipFee;
             cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
             cgrp.GroupData.ShowInList = group.ShowInList;
-            //Send it
+            
             Client.Network.SendPacket(cgrp);
         }
 
@@ -876,14 +906,14 @@ namespace OpenMetaverse
             eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
             eject.AgentData.AgentID = Client.Self.AgentID;
             eject.AgentData.SessionID = Client.Self.SessionID;
-            //Group
+            
             eject.GroupData = new EjectGroupMemberRequestPacket.GroupDataBlock();
             eject.GroupData.GroupID = group;
-            //People to eject
+            
             eject.EjectData = new EjectGroupMemberRequestPacket.EjectDataBlock[1];
             eject.EjectData[0] = new EjectGroupMemberRequestPacket.EjectDataBlock();
             eject.EjectData[0].EjecteeID = member;
-            //send it
+            
             Client.Network.SendPacket(eject);
         }
 
@@ -938,7 +968,7 @@ namespace OpenMetaverse
             //Add to members and role
             grc.RoleChange[0].MemberID = member;
             grc.RoleChange[0].RoleID = role;
-            //1 = Remove From Role
+            //1 = Remove From Role TODO: this should be in an enum
             grc.RoleChange[0].Change = 1;
             Client.Network.SendPacket(grc);
         }
@@ -958,7 +988,7 @@ namespace OpenMetaverse
             //Add to members and role
             grc.RoleChange[0].MemberID = member;
             grc.RoleChange[0].RoleID = role;
-            //0 = Add to Role
+            //0 = Add to Role TODO: this should be in an enum
             grc.RoleChange[0].Change = 0;
             Client.Network.SendPacket(grc);
         }
