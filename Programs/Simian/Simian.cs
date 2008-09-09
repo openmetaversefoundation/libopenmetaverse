@@ -20,11 +20,11 @@ namespace Simian
         public HttpServer HttpServer;
         public ulong RegionHandle;
         public float WaterHeight = 35.0f;
-        public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
 
         // Interfaces
         public IUDPProvider UDP;
         public ISceneProvider Scene;
+        public IAssetProvider Assets;
         public IAvatarProvider Avatars;
         public IInventoryProvider Inventory;
         public IMeshingProvider Mesher;
@@ -122,6 +122,8 @@ namespace Simian
                 UDP = (IUDPProvider)extension;
             else if (extension is ISceneProvider)
                 Scene = (ISceneProvider)extension;
+            else if (extension is IAssetProvider)
+                Assets = (IAssetProvider)extension;
             else if (extension is IAvatarProvider)
                 Avatars = (IAvatarProvider)extension;
             else if (extension is IInventoryProvider)
@@ -133,32 +135,21 @@ namespace Simian
         bool CheckInterfaces()
         {
             if (UDP == null)
-            {
                 Logger.Log("No IUDPProvider interface loaded", Helpers.LogLevel.Error);
-                return false;
-            }
             else if (Scene == null)
-            {
                 Logger.Log("No ISceneProvider interface loaded", Helpers.LogLevel.Error);
-                return false;
-            }
+            else if (Assets == null)
+                Logger.Log("No IAssetProvider interface loaded", Helpers.LogLevel.Error);
             else if (Avatars == null)
-            {
                 Logger.Log("No IAvatarProvider interface loaded", Helpers.LogLevel.Error);
-                return false;
-            }
-            if (Inventory == null)
-            {
+            else if (Inventory == null)
                 Logger.Log("No IInventoryProvider interface loaded", Helpers.LogLevel.Error);
-                return false;
-            }
-            if (Mesher == null)
-            {
+            else if (Mesher == null)
                 Logger.Log("No IMeshingProvider interface loaded", Helpers.LogLevel.Error);
-                return false;
-            }
+            else
+                return true;
 
-            return true;
+            return false;
         }
 
         void InitHttpServer(int port, bool ssl)

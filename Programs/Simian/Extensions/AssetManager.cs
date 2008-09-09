@@ -7,9 +7,10 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class AssetManager : ISimianExtension
+    public class AssetManager : ISimianExtension, IAssetProvider
     {
         Simian Server;
+        public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
 
         public AssetManager(Simian server)
@@ -29,6 +30,39 @@ namespace Simian.Extensions
 
         public void Stop()
         {
+        }
+
+        public void StoreAsset(Asset asset)
+        {
+            if (asset.Decode())
+            {
+                lock (AssetStore)
+                    AssetStore[asset.AssetID] = asset;
+            }
+            else
+            {
+                Logger.Log(String.Format("Failed to decode {0} asset {1}", asset.AssetType, asset.AssetID),
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        public void StoreTexture(AssetTexture texture)
+        {
+            if (texture.DecodeLayerBoundaries())
+            {
+                lock (AssetStore)
+                    AssetStore[texture.AssetID] = texture;
+            }
+            else
+            {
+                Logger.Log(String.Format("Failed to decoded layer boundaries on texture {0}", texture.AssetID),
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        public bool TryGetAsset(UUID id, out Asset asset)
+        {
+            return AssetStore.TryGetValue(id, out asset);
         }
 
         #region Xfer System
@@ -51,8 +85,7 @@ namespace Simian.Extensions
                 Logger.DebugLog(String.Format("Storing uploaded asset {0} ({1})", assetID, asset.AssetType));
 
                 // Store the asset
-                lock (Server.AssetStore)
-                    Server.AssetStore[assetID] = asset;
+                StoreAsset(asset);
 
                 // Send a success response
                 AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
@@ -135,8 +168,7 @@ namespace Simian.Extensions
                         lock (CurrentUploads)
                             CurrentUploads.Remove(xfer.XferID.ID);
 
-                        lock (Server.AssetStore)
-                            Server.AssetStore[asset.AssetID] = asset;
+                        StoreAsset(asset);
 
                         AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
                         complete.AssetBlock.Success = true;
@@ -207,7 +239,7 @@ namespace Simian.Extensions
 
                     // Check if we have this asset
                     Asset asset;
-                    if (Server.AssetStore.TryGetValue(assetID, out asset))
+                    if (AssetStore.TryGetValue(assetID, out asset))
                     {
                         if (asset.AssetType == type)
                         {
@@ -358,25 +390,22 @@ namespace Simian.Extensions
             for (int i = 0; i < textures.Length; i++)
             {
                 UUID assetID = ParseUUIDFromFilename(textures[i]);
-                AssetTexture item = new AssetTexture(assetID, File.ReadAllBytes(textures[i]));
-                Server.AssetStore[assetID] = item;
+                StoreTexture(new AssetTexture(assetID, File.ReadAllBytes(textures[i])));
             }
 
             for (int i = 0; i < clothing.Length; i++)
             {
                 UUID assetID = ParseUUIDFromFilename(clothing[i]);
-                AssetClothing item = new AssetClothing(assetID, File.ReadAllBytes(clothing[i]));
-                item.Decode();
-                Server.AssetStore[assetID] = item;
+                StoreAsset(new AssetClothing(assetID, File.ReadAllBytes(clothing[i])));
             }
 
             for (int i = 0; i < bodyparts.Length; i++)
             {
                 UUID assetID = ParseUUIDFromFilename(bodyparts[i]);
-                AssetBodypart item = new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i]));
-                item.Decode();
-                Server.AssetStore[assetID] = item;
+                StoreAsset(new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i])));
             }
+
+            Logger.DebugLog(String.Format("Loaded {0} assets", AssetStore.Count));
         }
 
         static UUID ParseUUIDFromFilename(string filename)

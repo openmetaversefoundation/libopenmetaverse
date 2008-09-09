@@ -10,8 +10,8 @@ namespace Simian.Extensions
     public class ImageDelivery : ISimianExtension
     {
         Simian Server;
-        byte[] DefaultJP2;
-        byte[] DefaultBakedJP2;
+        AssetTexture defaultJP2;
+        AssetTexture defaultBakedJP2;
 
         public ImageDelivery(Simian server)
         {
@@ -22,6 +22,7 @@ namespace Simian.Extensions
         {
             Server.UDP.RegisterPacketCallback(PacketType.RequestImage, new PacketCallback(RequestImageHandler));
 
+            // Create default textures for missing images and missing bakes
             Bitmap defaultImage = new Bitmap(32, 32);
             Graphics gfx = Graphics.FromImage(defaultImage);
             gfx.Clear(Color.White);
@@ -36,8 +37,8 @@ namespace Simian.Extensions
             defaultBaked.Alpha = defaultBaked.Red;
             defaultBaked.Bump = defaultBaked.Red;
 
-            DefaultJP2 = OpenJPEG.Encode(defaultManaged, true);
-            DefaultBakedJP2 = OpenJPEG.Encode(defaultBaked, true);
+            defaultJP2 = new AssetTexture(UUID.Zero, OpenJPEG.Encode(defaultManaged, true));
+            defaultBakedJP2 = new AssetTexture(UUID.Zero, OpenJPEG.Encode(defaultBaked, true)); 
         }
 
         public void Stop()
@@ -60,12 +61,12 @@ namespace Simian.Extensions
                 if (bake)
                 {
                     Logger.DebugLog(String.Format("Sending default bake texture for {0}", block.Image));
-                    imageData.ImageData.Data = DefaultBakedJP2;
+                    imageData.ImageData.Data = defaultBakedJP2.AssetData;
                 }
                 else
                 {
                     Logger.DebugLog(String.Format("Sending default texture for {0}", block.Image));
-                    imageData.ImageData.Data = DefaultJP2;
+                    imageData.ImageData.Data = defaultJP2.AssetData;
                 }
                 imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
 
