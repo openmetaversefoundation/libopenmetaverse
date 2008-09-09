@@ -239,6 +239,7 @@ namespace OpenMetaverse
         /// <param name="id">The avatar key to retrieve a name for</param>
         public void RequestAvatarName(UUID id)
         {
+            Console.WriteLine("AvatarManager requesting UUID for {0}", id);
             UUIDNameRequestPacket request = new UUIDNameRequestPacket();
             request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[1];
             request.UUIDNameBlock[0] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
@@ -253,16 +254,25 @@ namespace OpenMetaverse
         /// <param name="ids">The avatar keys to retrieve names for</param>
         public void RequestAvatarNames(List<UUID> ids)
         {
-            UUIDNameRequestPacket request = new UUIDNameRequestPacket();
-            request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[ids.Count];
-
-            for (int i = 0; i < ids.Count; i++)
+            Console.WriteLine("AvatarManager requesting UUIDs count {0}", ids.Count);
+            if (ids.Count > 0)
             {
-                request.UUIDNameBlock[i] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
-                request.UUIDNameBlock[i].ID = ids[i];
+                UUIDNameRequestPacket request = new UUIDNameRequestPacket();
+                request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[ids.Count];
+
+                for (int i = 0; i < ids.Count; i++)
+                {
+                    request.UUIDNameBlock[i] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
+                    request.UUIDNameBlock[i].ID = ids[i];
+                }
+
+                Client.Network.SendPacket(request);
+            }
+            else
+            {
+                // not sending request, no ids!
             }
 
-            Client.Network.SendPacket(request);
         }
 
         /// <summary>

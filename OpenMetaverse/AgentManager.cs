@@ -36,295 +36,295 @@ using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
 {
-	#region Enums
-	
-	/// <summary>
+    #region Enums
+
+    /// <summary>
     /// Permission request flags, asked when a script wants to control an Avatar
     /// </summary>
     [Flags]
     public enum ScriptPermission : int
     {
-		/// <summary>Placeholder for empty values, shouldn't ever see this</summary>
-		None = 0,
-		/// <summary>Script wants ability to take money from you</summary>
-		Debit = 1 << 1,
-		/// <summary>Script wants to take camera controls for you</summary>
-		TakeControls = 1 << 2,
-		/// <summary>Script wants to remap avatars controls</summary>
-		RemapControls = 1 << 3,
-		/// <summary>Script wants to trigger avatar animations</summary>
+        /// <summary>Placeholder for empty values, shouldn't ever see this</summary>
+        None = 0,
+        /// <summary>Script wants ability to take money from you</summary>
+        Debit = 1 << 1,
+        /// <summary>Script wants to take camera controls for you</summary>
+        TakeControls = 1 << 2,
+        /// <summary>Script wants to remap avatars controls</summary>
+        RemapControls = 1 << 3,
+        /// <summary>Script wants to trigger avatar animations</summary>
         /// <remarks>This function is not implemented on the grid</remarks>
-		TriggerAnimation = 1 << 4,
-		/// <summary>Script wants to attach or detach the prim or primset to your avatar</summary>
-		Attach = 1 << 5,
-		/// <summary>Script wants permission to release ownership</summary>
+        TriggerAnimation = 1 << 4,
+        /// <summary>Script wants to attach or detach the prim or primset to your avatar</summary>
+        Attach = 1 << 5,
+        /// <summary>Script wants permission to release ownership</summary>
         /// <remarks>This function is not implemented on the grid
         /// The concept of "public" objects does not exist anymore.</remarks>
-		ReleaseOwnership = 1 << 6,
-		/// <summary>Script wants ability to link/delink with other prims</summary>
-		ChangeLinks = 1 << 7,
-		/// <summary>Script wants permission to change joints</summary>
+        ReleaseOwnership = 1 << 6,
+        /// <summary>Script wants ability to link/delink with other prims</summary>
+        ChangeLinks = 1 << 7,
+        /// <summary>Script wants permission to change joints</summary>
         /// <remarks>This function is not implemented on the grid</remarks>
-		ChangeJoints = 1 << 8,
-		/// <summary>Script wants permissions to change permissions</summary>
+        ChangeJoints = 1 << 8,
+        /// <summary>Script wants permissions to change permissions</summary>
         /// <remarks>This function is not implemented on the grid</remarks>
-		ChangePermissions = 1 << 9,
-		/// <summary>Script wants to track avatars camera position and rotation </summary>
-		TrackCamera = 1 << 10,
-		/// <summary>Script wants to control your camera</summary>
-		ControlCamera = 1 << 11
+        ChangePermissions = 1 << 9,
+        /// <summary>Script wants to track avatars camera position and rotation </summary>
+        TrackCamera = 1 << 10,
+        /// <summary>Script wants to control your camera</summary>
+        ControlCamera = 1 << 11
     }
-    
+
     /// <summary>
-	/// Special commands used in Instant Messages
-	/// </summary>
-	public enum InstantMessageDialog : byte
-	{
-		/// <summary>Indicates a regular IM from another agent</summary>
-		MessageFromAgent = 0,
-		/// <summary>Simple notification box with an OK button</summary>
-		MessageBox = 1,
-		// <summary>Used to show a countdown notification with an OK
-		// button, deprecated now</summary>
+    /// Special commands used in Instant Messages
+    /// </summary>
+    public enum InstantMessageDialog : byte
+    {
+        /// <summary>Indicates a regular IM from another agent</summary>
+        MessageFromAgent = 0,
+        /// <summary>Simple notification box with an OK button</summary>
+        MessageBox = 1,
+        // <summary>Used to show a countdown notification with an OK
+        // button, deprecated now</summary>
         //[Obsolete]
         //MessageBoxCountdown = 2,
-		/// <summary>You've been invited to join a group.</summary>
-		GroupInvitation = 3,
-		/// <summary>Inventory offer</summary>
-		InventoryOffered = 4,
-		/// <summary>Accepted inventory offer</summary>
-		InventoryAccepted = 5,
-		/// <summary>Declined inventory offer</summary>
-		InventoryDeclined = 6,
-		/// <summary>Group vote</summary>
-		GroupVote = 7,
-		// <summary>A message to everyone in the agent's group, no longer
-		// used</summary>
+        /// <summary>You've been invited to join a group.</summary>
+        GroupInvitation = 3,
+        /// <summary>Inventory offer</summary>
+        InventoryOffered = 4,
+        /// <summary>Accepted inventory offer</summary>
+        InventoryAccepted = 5,
+        /// <summary>Declined inventory offer</summary>
+        InventoryDeclined = 6,
+        /// <summary>Group vote</summary>
+        GroupVote = 7,
+        // <summary>A message to everyone in the agent's group, no longer
+        // used</summary>
         //[Obsolete]
         //DeprecatedGroupMessage = 8,
-		/// <summary>An object is offering its inventory</summary>
-		TaskInventoryOffered = 9,
-		/// <summary>Accept an inventory offer from an object</summary>
-		TaskInventoryAccepted = 10,
-		/// <summary>Decline an inventory offer from an object</summary>
-		TaskInventoryDeclined = 11,
-		/// <summary>Unknown</summary>
-		NewUserDefault = 12,
-		/// <summary>Start a session, or add users to a session</summary>
-		SessionAdd = 13,
-		/// <summary>Start a session, but don't prune offline users</summary>
-		SessionOfflineAdd = 14,
-		/// <summary>Start a session with your group</summary>
-		SessionGroupStart = 15,
-		/// <summary>Start a session without a calling card (finder or objects)</summary>
-		SessionCardlessStart = 16,
-		/// <summary>Send a message to a session</summary>
-		SessionSend = 17,
-		/// <summary>Leave a session</summary>
-		SessionDrop = 18,
-		/// <summary>Indicates that the IM is from an object</summary>
-		MessageFromObject = 19,
-		/// <summary>Sent an IM to a busy user, this is the auto response</summary>
-		BusyAutoResponse = 20,
-		/// <summary>Shows the message in the console and chat history</summary>
-		ConsoleAndChatHistory = 21,
-		/// <summary>Send a teleport lure</summary>
-		RequestTeleport = 22,
-		/// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
-		AcceptTeleport = 23,
-		/// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
-		DenyTeleport = 24,
-		/// <summary>Only useful if you have Linden permissions</summary>
-		GodLikeRequestTeleport = 25,
-		/// <summary>A placeholder type for future expansion, currently not
-		/// used</summary>
-		CurrentlyUnused = 26,
-		// <summary>Notification of a new group election, this is 
-		// deprecated</summary>
+        /// <summary>An object is offering its inventory</summary>
+        TaskInventoryOffered = 9,
+        /// <summary>Accept an inventory offer from an object</summary>
+        TaskInventoryAccepted = 10,
+        /// <summary>Decline an inventory offer from an object</summary>
+        TaskInventoryDeclined = 11,
+        /// <summary>Unknown</summary>
+        NewUserDefault = 12,
+        /// <summary>Start a session, or add users to a session</summary>
+        SessionAdd = 13,
+        /// <summary>Start a session, but don't prune offline users</summary>
+        SessionOfflineAdd = 14,
+        /// <summary>Start a session with your group</summary>
+        SessionGroupStart = 15,
+        /// <summary>Start a session without a calling card (finder or objects)</summary>
+        SessionCardlessStart = 16,
+        /// <summary>Send a message to a session</summary>
+        SessionSend = 17,
+        /// <summary>Leave a session</summary>
+        SessionDrop = 18,
+        /// <summary>Indicates that the IM is from an object</summary>
+        MessageFromObject = 19,
+        /// <summary>Sent an IM to a busy user, this is the auto response</summary>
+        BusyAutoResponse = 20,
+        /// <summary>Shows the message in the console and chat history</summary>
+        ConsoleAndChatHistory = 21,
+        /// <summary>Send a teleport lure</summary>
+        RequestTeleport = 22,
+        /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+        AcceptTeleport = 23,
+        /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+        DenyTeleport = 24,
+        /// <summary>Only useful if you have Linden permissions</summary>
+        GodLikeRequestTeleport = 25,
+        /// <summary>A placeholder type for future expansion, currently not
+        /// used</summary>
+        CurrentlyUnused = 26,
+        // <summary>Notification of a new group election, this is 
+        // deprecated</summary>
         //[Obsolete]
         //DeprecatedGroupElection = 27,
-		/// <summary>IM to tell the user to go to an URL</summary>
-		GotoUrl = 28,
-		/// <summary>IM for help</summary>
-		Session911Start = 29,
-		/// <summary>IM sent automatically on call for help, sends a lure 
-		/// to each Helper reached</summary>
-		Lure911 = 30,
-		/// <summary>Like an IM but won't go to email</summary>
-		FromTaskAsAlert = 31,
-		/// <summary>IM from a group officer to all group members</summary>
-		GroupNotice = 32,
-		/// <summary>Unknown</summary>
-		GroupNoticeInventoryAccepted = 33,
-		/// <summary>Unknown</summary>
-		GroupNoticeInventoryDeclined = 34,
-		/// <summary>Accept a group invitation</summary>
-		GroupInvitationAccept = 35,
-		/// <summary>Decline a group invitation</summary>
-		GroupInvitationDecline = 36,
-		/// <summary>Unknown</summary>
-		GroupNoticeRequested = 37,
-		/// <summary>An avatar is offering you friendship</summary>
-		FriendshipOffered = 38,
-		/// <summary>An avatar has accepted your friendship offer</summary>
-		FriendshipAccepted = 39,
-		/// <summary>An avatar has declined your friendship offer</summary>
-		FriendshipDeclined = 40,
-		/// <summary>Indicates that a user has started typing</summary>
-		StartTyping = 41,
-		/// <summary>Indicates that a user has stopped typing</summary>
-		StopTyping = 42
+        /// <summary>IM to tell the user to go to an URL</summary>
+        GotoUrl = 28,
+        /// <summary>IM for help</summary>
+        Session911Start = 29,
+        /// <summary>IM sent automatically on call for help, sends a lure 
+        /// to each Helper reached</summary>
+        Lure911 = 30,
+        /// <summary>Like an IM but won't go to email</summary>
+        FromTaskAsAlert = 31,
+        /// <summary>IM from a group officer to all group members</summary>
+        GroupNotice = 32,
+        /// <summary>Unknown</summary>
+        GroupNoticeInventoryAccepted = 33,
+        /// <summary>Unknown</summary>
+        GroupNoticeInventoryDeclined = 34,
+        /// <summary>Accept a group invitation</summary>
+        GroupInvitationAccept = 35,
+        /// <summary>Decline a group invitation</summary>
+        GroupInvitationDecline = 36,
+        /// <summary>Unknown</summary>
+        GroupNoticeRequested = 37,
+        /// <summary>An avatar is offering you friendship</summary>
+        FriendshipOffered = 38,
+        /// <summary>An avatar has accepted your friendship offer</summary>
+        FriendshipAccepted = 39,
+        /// <summary>An avatar has declined your friendship offer</summary>
+        FriendshipDeclined = 40,
+        /// <summary>Indicates that a user has started typing</summary>
+        StartTyping = 41,
+        /// <summary>Indicates that a user has stopped typing</summary>
+        StopTyping = 42
     }
 
-	/// <summary>
-	/// Flag in Instant Messages, whether the IM should be delivered to
-	/// offline avatars as well
-	/// </summary>
-	public enum InstantMessageOnline
-	{
-		/// <summary>Only deliver to online avatars</summary>
-		Online = 0,
-		/// <summary>If the avatar is offline the message will be held until
-		/// they login next, and possibly forwarded to their e-mail account</summary>
-		Offline = 1
-	}
+    /// <summary>
+    /// Flag in Instant Messages, whether the IM should be delivered to
+    /// offline avatars as well
+    /// </summary>
+    public enum InstantMessageOnline
+    {
+        /// <summary>Only deliver to online avatars</summary>
+        Online = 0,
+        /// <summary>If the avatar is offline the message will be held until
+        /// they login next, and possibly forwarded to their e-mail account</summary>
+        Offline = 1
+    }
 
-	/// <summary>
-	/// Conversion type to denote Chat Packet types in an easier-to-understand format
-	/// </summary>
-	public enum ChatType : byte
-	{
-		/// <summary>Whisper (5m radius)</summary>
-		Whisper = 0,
-		/// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
-		Normal = 1,
-		/// <summary>Shouting! (100m radius)</summary>
-		Shout = 2,
-		// <summary>Say chat (10/20m radius) - The official viewer will 
-		// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
+    /// <summary>
+    /// Conversion type to denote Chat Packet types in an easier-to-understand format
+    /// </summary>
+    public enum ChatType : byte
+    {
+        /// <summary>Whisper (5m radius)</summary>
+        Whisper = 0,
+        /// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
+        Normal = 1,
+        /// <summary>Shouting! (100m radius)</summary>
+        Shout = 2,
+        // <summary>Say chat (10/20m radius) - The official viewer will 
+        // print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
         //[Obsolete]
         //Say = 3,
-		/// <summary>Event message when an Avatar has begun to type</summary>
-		StartTyping = 4,
-		/// <summary>Event message when an Avatar has stopped typing</summary>
-		StopTyping = 5,
-		/// <summary>Unknown</summary>
-		Debug = 6,
+        /// <summary>Event message when an Avatar has begun to type</summary>
+        StartTyping = 4,
+        /// <summary>Event message when an Avatar has stopped typing</summary>
+        StopTyping = 5,
+        /// <summary>Unknown</summary>
+        Debug = 6,
         /// <summary>Event message when an object uses llOwnerSay</summary>
-        OwnerSay = 8 
-	}
+        OwnerSay = 8
+    }
 
-	/// <summary>
-	/// Identifies the source of a chat message
-	/// </summary>
-	public enum ChatSourceType : byte
-	{
-		/// <summary>Chat from the grid or simulator</summary>
-		System = 0,
-		/// <summary>Chat from another avatar</summary>
-		Agent = 1,
-		/// <summary>Chat from an object</summary>
-		Object = 2
-	}
+    /// <summary>
+    /// Identifies the source of a chat message
+    /// </summary>
+    public enum ChatSourceType : byte
+    {
+        /// <summary>Chat from the grid or simulator</summary>
+        System = 0,
+        /// <summary>Chat from another avatar</summary>
+        Agent = 1,
+        /// <summary>Chat from an object</summary>
+        Object = 2
+    }
 
-	/// <summary>
-	/// 
-	/// </summary>
-	public enum ChatAudibleLevel : sbyte
-	{
-		/// <summary></summary>
-		Not = -1,
-		/// <summary></summary>
-		Barely = 0,
-		/// <summary></summary>
-		Fully = 1
-	}
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum ChatAudibleLevel : sbyte
+    {
+        /// <summary></summary>
+        Not = -1,
+        /// <summary></summary>
+        Barely = 0,
+        /// <summary></summary>
+        Fully = 1
+    }
 
-	/// <summary>
-	/// Effect type used in ViewerEffect packets
-	/// </summary>
-	public enum EffectType : byte
-	{
-		/// <summary></summary>
-		Text = 0,
-		/// <summary></summary>
-		Icon,
-		/// <summary></summary>
-		Connector,
-		/// <summary></summary>
-		FlexibleObject,
-		/// <summary></summary>
-		AnimalControls,
-		/// <summary></summary>
-		AnimationObject,
-		/// <summary></summary>
-		Cloth,
-		/// <summary>Project a beam from a source to a destination, such as
-		/// the one used when editing an object</summary>
-		Beam,
-		/// <summary></summary>
-		Glow,
-		/// <summary></summary>
-		Point,
-		/// <summary></summary>
-		Trail,
-		/// <summary>Create a swirl of particles around an object</summary>
-		Sphere,
-		/// <summary></summary>
-		Spiral,
-		/// <summary></summary>
-		Edit,
-		/// <summary>Cause an avatar to look at an object</summary>
-		LookAt,
-		/// <summary>Cause an avatar to point at an object</summary>
-		PointAt
-	}
+    /// <summary>
+    /// Effect type used in ViewerEffect packets
+    /// </summary>
+    public enum EffectType : byte
+    {
+        /// <summary></summary>
+        Text = 0,
+        /// <summary></summary>
+        Icon,
+        /// <summary></summary>
+        Connector,
+        /// <summary></summary>
+        FlexibleObject,
+        /// <summary></summary>
+        AnimalControls,
+        /// <summary></summary>
+        AnimationObject,
+        /// <summary></summary>
+        Cloth,
+        /// <summary>Project a beam from a source to a destination, such as
+        /// the one used when editing an object</summary>
+        Beam,
+        /// <summary></summary>
+        Glow,
+        /// <summary></summary>
+        Point,
+        /// <summary></summary>
+        Trail,
+        /// <summary>Create a swirl of particles around an object</summary>
+        Sphere,
+        /// <summary></summary>
+        Spiral,
+        /// <summary></summary>
+        Edit,
+        /// <summary>Cause an avatar to look at an object</summary>
+        LookAt,
+        /// <summary>Cause an avatar to point at an object</summary>
+        PointAt
+    }
 
-	/// <summary>
-	/// The action an avatar is doing when looking at something, used in 
-	/// ViewerEffect packets for the LookAt effect
-	/// </summary>
-	public enum LookAtType : byte
-	{
-		/// <summary></summary>
-		None,
-		/// <summary></summary>
-		Idle,
-		/// <summary></summary>
-		AutoListen,
-		/// <summary></summary>
-		FreeLook,
-		/// <summary></summary>
-		Respond,
-		/// <summary></summary>
-		Hover,
-		/// <summary>Deprecated</summary>
+    /// <summary>
+    /// The action an avatar is doing when looking at something, used in 
+    /// ViewerEffect packets for the LookAt effect
+    /// </summary>
+    public enum LookAtType : byte
+    {
+        /// <summary></summary>
+        None,
+        /// <summary></summary>
+        Idle,
+        /// <summary></summary>
+        AutoListen,
+        /// <summary></summary>
+        FreeLook,
+        /// <summary></summary>
+        Respond,
+        /// <summary></summary>
+        Hover,
+        /// <summary>Deprecated</summary>
         [Obsolete]
-		Conversation,
-		/// <summary></summary>
-		Select,
-		/// <summary></summary>
-		Focus,
-		/// <summary></summary>
-		Mouselook,
-		/// <summary></summary>
-		Clear
-	}
+        Conversation,
+        /// <summary></summary>
+        Select,
+        /// <summary></summary>
+        Focus,
+        /// <summary></summary>
+        Mouselook,
+        /// <summary></summary>
+        Clear
+    }
 
-	/// <summary>
-	/// The action an avatar is doing when pointing at something, used in
-	/// ViewerEffect packets for the PointAt effect
-	/// </summary>
-	public enum PointAtType : byte
-	{
-		/// <summary></summary>
-		None,
-		/// <summary></summary>
-		Select,
-		/// <summary></summary>
-		Grab,
-		/// <summary></summary>
-		Clear
+    /// <summary>
+    /// The action an avatar is doing when pointing at something, used in
+    /// ViewerEffect packets for the PointAt effect
+    /// </summary>
+    public enum PointAtType : byte
+    {
+        /// <summary></summary>
+        None,
+        /// <summary></summary>
+        Select,
+        /// <summary></summary>
+        Grab,
+        /// <summary></summary>
+        Clear
     }
 
     /// <summary>
@@ -502,17 +502,17 @@ namespace OpenMetaverse
         MouseLookLeftButton = 1073741824
     }
     #endregion Enums
-    
+
     #region Structs
-	
-	/// <summary>
-	/// Instant Message
-	/// </summary>
-	public struct InstantMessage
-	{
-		/// <summary>Key of sender</summary>
-		public UUID FromAgentID;
-		/// <summary>Name of sender</summary>
+
+    /// <summary>
+    /// Instant Message
+    /// </summary>
+    public struct InstantMessage
+    {
+        /// <summary>Key of sender</summary>
+        public UUID FromAgentID;
+        /// <summary>Name of sender</summary>
         public string FromAgentName;
         /// <summary>Key of destination avatar</summary>
         public UUID ToAgentID;
@@ -536,21 +536,23 @@ namespace OpenMetaverse
         public InstantMessageOnline Offline;
         /// <summary>Context specific packed data</summary>
         public byte[] BinaryBucket;
-		//Print the contents of a message
-		public override string ToString(){
-			string result="";
-			Type imType = this.GetType();
-			FieldInfo[] fields = imType.GetFields(); 
-			foreach (FieldInfo field in fields){
-				result += (field.Name + " = " + field.GetValue(this) + " "); 
-			}
-			return result;
+        //Print the contents of a message
+        public override string ToString()
+        {
+            string result = "";
+            Type imType = this.GetType();
+            FieldInfo[] fields = imType.GetFields();
+            foreach (FieldInfo field in fields)
+            {
+                result += (field.Name + " = " + field.GetValue(this) + " ");
+            }
+            return result;
 
-		}
-	}
-	
-	#endregion Structs
-	
+        }
+    }
+
+    #endregion Structs
+
     /// <summary>
     /// Manager class for our own avatar
     /// </summary>
@@ -611,39 +613,39 @@ namespace OpenMetaverse
         public enum TeleportFlags : uint
         {
             /// <summary>No flags set, or teleport failed</summary>
-            Default         =      0,
+            Default = 0,
             /// <summary>Set when newbie leaves help island for first time</summary>
             SetHomeToTarget = 1 << 0,
             /// <summary></summary>
             SetLastToTarget = 1 << 1,
             /// <summary>Via Lure</summary>
-            ViaLure         = 1 << 2,
+            ViaLure = 1 << 2,
             /// <summary>Via Landmark</summary>
-            ViaLandmark     = 1 << 3,
+            ViaLandmark = 1 << 3,
             /// <summary>Via Location</summary>
-            ViaLocation     = 1 << 4,
+            ViaLocation = 1 << 4,
             /// <summary>Via Home</summary>
-            ViaHome         = 1 << 5,
+            ViaHome = 1 << 5,
             /// <summary>Via Telehub</summary>
-            ViaTelehub      = 1 << 6,
+            ViaTelehub = 1 << 6,
             /// <summary>Via Login</summary>
-            ViaLogin        = 1 << 7,
+            ViaLogin = 1 << 7,
             /// <summary>Linden Summoned</summary>
-            ViaGodlikeLure  = 1 << 8,
+            ViaGodlikeLure = 1 << 8,
             /// <summary>Linden Forced me</summary>
-            Godlike         = 1 << 9,
+            Godlike = 1 << 9,
             /// <summary></summary>
-            NineOneOne      = 1 << 10,
+            NineOneOne = 1 << 10,
             /// <summary>Agent Teleported Home via Script</summary>
-            DisableCancel   = 1 << 11,
+            DisableCancel = 1 << 11,
             /// <summary></summary>
-            ViaRegionID     = 1 << 12,
+            ViaRegionID = 1 << 12,
             /// <summary></summary>
-            IsFlying        = 1 << 13,
+            IsFlying = 1 << 13,
             /// <summary></summary>
-            ResetHome       = 1 << 14,
+            ResetHome = 1 << 14,
             /// <summary>forced to new location for example when avatar is banned or ejected</summary>
-            ForceRedirect   = 1 << 15,
+            ForceRedirect = 1 << 15,
             /// <summary>Teleport Finished via a Lure</summary>
             FinishedViaLure = 1 << 26,
             /// <summary>Finished, Sim Changed</summary>
@@ -697,7 +699,7 @@ namespace OpenMetaverse
         /// <param name="id">Key of source</param>
         /// <param name="ownerid">Key of the sender</param>
         /// <param name="position">Senders position</param>
-        public delegate void ChatCallback(string message, ChatAudibleLevel audible, ChatType type, 
+        public delegate void ChatCallback(string message, ChatAudibleLevel audible, ChatType type,
             ChatSourceType sourceType, string fromName, UUID id, UUID ownerid, Vector3 position);
 
         /// <summary>
@@ -734,7 +736,7 @@ namespace OpenMetaverse
         /// <param name="ownerIsGroup">Whether or not ownerID is a group</param>
         /// <param name="message">Message displayed along with URL</param>
         /// <param name="URL">Offered URL</param>
-        public delegate void LoadURLCallback( string objectName, UUID objectID, UUID ownerID, bool ownerIsGroup, string message, string URL);
+        public delegate void LoadURLCallback(string objectName, UUID objectID, UUID ownerID, bool ownerIsGroup, string message, string URL);
 
         /// <summary>
         /// Triggered when the L$ account balance for this avatar changes
@@ -797,7 +799,7 @@ namespace OpenMetaverse
         /// <param name="groupTitle">Avatars Active Title</param>
         /// <param name="groupPowers">Powers Avatar has in group</param>
         /// <param name="groupName">Name of the Group</param>
-        public delegate void AgentDataCallback(string firstName, string lastName, UUID activeGroupID, 
+        public delegate void AgentDataCallback(string firstName, string lastName, UUID activeGroupID,
             string groupTitle, GroupPowers groupPowers, string groupName);
 
         /// <summary>
@@ -832,17 +834,17 @@ namespace OpenMetaverse
         /// <param name="tmpSessionID">Temporary session Key</param>
         /// <param name="success"><see langword="true"/> if session start successful, 
         /// <see langword="false"/> otherwise</param>
-        public delegate void GroupChatJoined(UUID groupChatSessionID, UUID tmpSessionID, bool success);
+        public delegate void GroupChatJoinedCallback(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success);
 
         /// <summary>Fired when agent group chat session terminated</summary>
         /// <param name="groupchatSessionID">Key of Session (groups UUID)</param>
-        public delegate void GroupChatLeft(UUID groupchatSessionID);
+        public delegate void GroupChatLeftCallback(UUID groupchatSessionID);
 
         /// <summary>
         /// Fired when alert message received from simulator
         /// </summary>
         /// <param name="message">the message sent from the grid to our avatar.</param>
-        public delegate void AlertMessage(string message);
+        public delegate void AlertMessageCallback(string message);
 
         /// <summary>
         /// Fired when a script wants to give or release controls.
@@ -889,6 +891,19 @@ namespace OpenMetaverse
         public delegate void AvatarSitResponseCallback(UUID objectID, bool autoPilot, Vector3 cameraAtOffset,
             Vector3 cameraEyeOffset, bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation);
 
+        /// <summary>
+        /// Fired when a new member joins a Group chat session
+        /// </summary>
+        /// <param name="sessionID">the ID of the session</param>
+        /// <param name="agent_key">the ID of the avatar that joined</param>
+        public delegate void ChatSessionMemberAddedCallback(UUID sessionID, UUID agent_key);
+        /// <summary>
+        /// Fired when a member of a Group chat leaves the session
+        /// </summary>
+        /// <param name="sessionID">the ID of the session</param>
+        /// <param name="agent_key">the ID of the avatar that joined</param>
+        public delegate void ChatSessionMemberLeftCallback(UUID sessionID, UUID agent_key);
+
         #endregion Callbacks
 
         #region Events
@@ -927,11 +942,11 @@ namespace OpenMetaverse
         /// <summary>Callback for the agent moving in to a neighboring sim</summary>
         public event RegionCrossedCallback OnRegionCrossed;
         /// <summary>Callback for when agent is confirmed joined group chat session.</summary>
-        public event GroupChatJoined OnGroupChatJoin;
+        public event GroupChatJoinedCallback OnGroupChatJoin;
         /// <summary>Callback for when agent is confirmed to have left group chat session.</summary>
-        public event GroupChatLeft OnGroupChatLeft;
+        public event GroupChatLeftCallback OnGroupChatLeft;
         /// <summary>Alert messages sent to client from simulator</summary>
-        public event AlertMessage OnAlertMessage;
+        public event AlertMessageCallback OnAlertMessage;
         /// <summary>Fired when a script wants to take or release control of your avatar.</summary>
         public event ScriptControlCallback OnScriptControlChange;
         /// <summary>Fired when our avatar camera reaches the maximum possible point</summary>
@@ -940,6 +955,10 @@ namespace OpenMetaverse
         public event ScriptSensorReplyCallback OnScriptSensorReply;
         /// <summary>Fired in response to a sit request</summary>
         public event AvatarSitResponseCallback OnAvatarSitResponse;
+        /// <summary>Fired when a new member joins an active ChatterBoxSession session</summary>
+        public event ChatSessionMemberAddedCallback OnChatSessionMemberAdded;
+        /// <summary>Fired when a member of an active ChatterBoxSession leaves the session</summary>
+        public event ChatSessionMemberLeftCallback OnChatSessionMemberLeft;
 
         #endregion Events
 
@@ -954,7 +973,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Dictionary containing current Group Chat sessions and members
         /// </summary>
-        public InternalDictionary<UUID, List<UUID>> GroupChatSessions = new InternalDictionary<UUID, List<UUID>>();
+        public InternalDictionary<UUID, List<ChatSessionMember>> GroupChatSessions = new InternalDictionary<UUID, List<ChatSessionMember>>();
 
         #region Properties
 
@@ -1027,7 +1046,7 @@ namespace OpenMetaverse
                 if (sittingOn != 0)
                 {
                     Primitive parent;
-                    if(Client.Network.CurrentSim != null && Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out parent))
+                    if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out parent))
                     {
                         return parent.Position + relativePosition;
                     }
@@ -1122,7 +1141,7 @@ namespace OpenMetaverse
         private uint heightWidthGenCounter;
         private float health;
         private int balance;
-		private UUID activeGroup;
+        private UUID activeGroup;
         #endregion Private Members
 
         /// <summary>
@@ -1162,15 +1181,15 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.HealthMessage, new NetworkManager.PacketCallback(HealthHandler));
             // Money callback
             Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
-			//Agent update callback
-			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
+            //Agent update callback
+            Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
             // Animation callback
             Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
             // Object colliding into our agent callback
             Client.Network.RegisterCallback(PacketType.MeanCollisionAlert, new NetworkManager.PacketCallback(MeanCollisionAlertHandler));
             // Region Crossing
             Client.Network.RegisterCallback(PacketType.CrossedRegion, new NetworkManager.PacketCallback(CrossedRegionHandler));
-	        // CAPS callbacks
+            // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
             // Incoming Group Chat
             Client.Network.RegisterEventCallback("ChatterBoxInvitation", new Caps.EventQueueCallback(ChatterBoxInvitationHandler));
@@ -1254,9 +1273,9 @@ namespace OpenMetaverse
         /// <param name="message">Text message being sent</param>
         /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
         /// <param name="conferenceIDs">IDs of sessions for a conference</param>
-		public void InstantMessage(string fromName, UUID target, string message, UUID imSessionID, 
+        public void InstantMessage(string fromName, UUID target, string message, UUID imSessionID,
             UUID[] conferenceIDs)
-		{
+        {
             byte[] binaryBucket;
 
             if (conferenceIDs != null && conferenceIDs.Length > 0)
@@ -1270,9 +1289,9 @@ namespace OpenMetaverse
                 binaryBucket = new byte[0];
             }
 
-			InstantMessage(fromName, target, message, imSessionID, InstantMessageDialog.MessageFromAgent, 
+            InstantMessage(fromName, target, message, imSessionID, InstantMessageDialog.MessageFromAgent,
                 InstantMessageOnline.Offline, Vector3.Zero, UUID.Zero, binaryBucket);
-		}
+        }
 
         /// <summary>
         /// Send an Instant Message
@@ -1287,8 +1306,8 @@ namespace OpenMetaverse
         /// <param name="regionID">RegionID Sender is In</param>
         /// <param name="binaryBucket">Packed binary data that is specific to
         /// the dialog type</param>
-        public void InstantMessage(string fromName, UUID target, string message, UUID imSessionID, 
-            InstantMessageDialog dialog, InstantMessageOnline offline, Vector3 position, UUID regionID, 
+        public void InstantMessage(string fromName, UUID target, string message, UUID imSessionID,
+            InstantMessageDialog dialog, InstantMessageOnline offline, Vector3 position, UUID regionID,
             byte[] binaryBucket)
         {
             if (target != UUID.Zero)
@@ -1365,12 +1384,12 @@ namespace OpenMetaverse
                     im.MessageBlock.Position = Vector3.Zero;
                     im.MessageBlock.RegionID = UUID.Zero;
                     im.MessageBlock.BinaryBucket = Utils.StringToBytes("\0");
-                    
+
                     Client.Network.SendPacket(im);
                 }
                 else
                 {
-                    Logger.Log("No Active group chat session appears to exist, use RequestJoinGroupChat() to join one", 
+                    Logger.Log("No Active group chat session appears to exist, use RequestJoinGroupChat() to join one",
                         Helpers.LogLevel.Error, Client);
                 }
         }
@@ -1389,11 +1408,12 @@ namespace OpenMetaverse
             im.MessageBlock.FromAgentName = Utils.StringToBytes(Client.Self.Name);
             im.MessageBlock.FromGroup = false;
             im.MessageBlock.Message = new byte[0];
+            im.MessageBlock.ParentEstateID = 0;
             im.MessageBlock.Offline = 0;
             im.MessageBlock.ID = groupID;
             im.MessageBlock.ToAgentID = groupID;
             im.MessageBlock.BinaryBucket = new byte[0];
-            im.MessageBlock.Position = Vector3.Zero;
+            im.MessageBlock.Position = Client.Self.SimPosition;
             im.MessageBlock.RegionID = UUID.Zero;
 
             Client.Network.SendPacket(im);
@@ -1462,7 +1482,7 @@ namespace OpenMetaverse
             UUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
-            
+
             effect.AgentData.AgentID = Client.Self.AgentID;
             effect.AgentData.SessionID = Client.Self.SessionID;
 
@@ -1563,7 +1583,7 @@ namespace OpenMetaverse
         /// <param name="color"><seealso cref="Color4"/>Color values of beam</param>
         /// <param name="duration">a float representing the duration the beam will last</param>
         /// <param name="effectID"><seealso cref="UUID"/> of the Effect</param>
-        public void BeamEffect(UUID sourceAvatar, UUID targetObject, Vector3d globalOffset, Color4 color, 
+        public void BeamEffect(UUID sourceAvatar, UUID targetObject, Vector3d globalOffset, Color4 color,
             float duration, UUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
@@ -1913,7 +1933,7 @@ namespace OpenMetaverse
         /// </summary>
         public void PayUploadFee()
         {
-            GiveMoney(UUID.Zero, Client.Settings.UPLOAD_COST, String.Empty, MoneyTransactionType.UploadCharge, 
+            GiveMoney(UUID.Zero, Client.Settings.UPLOAD_COST, String.Empty, MoneyTransactionType.UploadCharge,
                 TransactionFlags.None);
         }
 
@@ -1923,7 +1943,7 @@ namespace OpenMetaverse
         /// <param name="description">description of the transaction</param>
         public void PayUploadFee(string description)
         {
-            GiveMoney(UUID.Zero, Client.Settings.UPLOAD_COST, description, MoneyTransactionType.UploadCharge, 
+            GiveMoney(UUID.Zero, Client.Settings.UPLOAD_COST, description, MoneyTransactionType.UploadCharge,
                 TransactionFlags.None);
         }
 
@@ -2025,21 +2045,21 @@ namespace OpenMetaverse
             return Teleport(UUID.Zero);
         }
 
-		/// <summary>
-		/// Teleport agent to a landmark
-		/// </summary>
-		/// <param name="landmark"><seealso cref="UUID"/> of the landmark to teleport agent to</param>
-		/// <returns>true on success, false on failure</returns>
-		public bool Teleport(UUID landmark)
-		{
-			teleportStat = TeleportStatus.None;
+        /// <summary>
+        /// Teleport agent to a landmark
+        /// </summary>
+        /// <param name="landmark"><seealso cref="UUID"/> of the landmark to teleport agent to</param>
+        /// <returns>true on success, false on failure</returns>
+        public bool Teleport(UUID landmark)
+        {
+            teleportStat = TeleportStatus.None;
             teleportEvent.Reset();
-			TeleportLandmarkRequestPacket p = new TeleportLandmarkRequestPacket();
-			p.Info = new TeleportLandmarkRequestPacket.InfoBlock();
-			p.Info.AgentID = Client.Self.AgentID;
-			p.Info.SessionID = Client.Self.SessionID;
-			p.Info.LandmarkID = landmark;
-			Client.Network.SendPacket(p);
+            TeleportLandmarkRequestPacket p = new TeleportLandmarkRequestPacket();
+            p.Info = new TeleportLandmarkRequestPacket.InfoBlock();
+            p.Info.AgentID = Client.Self.AgentID;
+            p.Info.SessionID = Client.Self.SessionID;
+            p.Info.LandmarkID = landmark;
+            Client.Network.SendPacket(p);
 
             teleportEvent.WaitOne(Client.Settings.TELEPORT_TIMEOUT, false);
 
@@ -2052,7 +2072,7 @@ namespace OpenMetaverse
             }
 
             return (teleportStat == TeleportStatus.Finished);
-		}
+        }
 
         /// <summary>
         /// Attempt to look up a simulator name and teleport to the discovered
@@ -2233,7 +2253,7 @@ namespace OpenMetaverse
         /// <param name="accept">true to accept the lure, false to decline it</param>
         public void TeleportLureRespond(UUID requesterID, bool accept)
         {
-            InstantMessage(Name, requesterID, String.Empty, UUID.Random(), 
+            InstantMessage(Name, requesterID, String.Empty, UUID.Random(),
                 accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
                 InstantMessageOnline.Offline, this.SimPosition, UUID.Zero, new byte[0]);
 
@@ -2437,23 +2457,23 @@ namespace OpenMetaverse
 
                 if (OnInstantMessage != null)
                 {
-                	InstantMessage message;
-                	message.FromAgentID = im.AgentData.AgentID;
-                	message.FromAgentName = Utils.BytesToString(im.MessageBlock.FromAgentName);
-                	message.ToAgentID = im.MessageBlock.ToAgentID;
-                	message.ParentEstateID = im.MessageBlock.ParentEstateID;
-                	message.RegionID = im.MessageBlock.RegionID;
-                	message.Position = im.MessageBlock.Position;
-                	message.Dialog = (InstantMessageDialog)im.MessageBlock.Dialog;
-                	message.GroupIM = im.MessageBlock.FromGroup;
-                	message.IMSessionID = im.MessageBlock.ID;
-                	message.Timestamp = new DateTime(im.MessageBlock.Timestamp);
-                	message.Message = Utils.BytesToString(im.MessageBlock.Message);
-                	message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
-                	message.BinaryBucket = im.MessageBlock.BinaryBucket;
+                    InstantMessage message;
+                    message.FromAgentID = im.AgentData.AgentID;
+                    message.FromAgentName = Utils.BytesToString(im.MessageBlock.FromAgentName);
+                    message.ToAgentID = im.MessageBlock.ToAgentID;
+                    message.ParentEstateID = im.MessageBlock.ParentEstateID;
+                    message.RegionID = im.MessageBlock.RegionID;
+                    message.Position = im.MessageBlock.Position;
+                    message.Dialog = (InstantMessageDialog)im.MessageBlock.Dialog;
+                    message.GroupIM = im.MessageBlock.FromGroup;
+                    message.IMSessionID = im.MessageBlock.ID;
+                    message.Timestamp = new DateTime(im.MessageBlock.Timestamp);
+                    message.Message = Utils.BytesToString(im.MessageBlock.Message);
+                    message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
+                    message.BinaryBucket = im.MessageBlock.BinaryBucket;
 
-                	try { OnInstantMessage(message, simulator); }
-                	catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    try { OnInstantMessage(message, simulator); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
         }
@@ -2567,7 +2587,8 @@ namespace OpenMetaverse
             LoadURLPacket loadURL = (LoadURLPacket)packet;
             if (OnLoadURL != null)
             {
-                try {
+                try
+                {
                     OnLoadURL(
                         Utils.BytesToString(loadURL.Data.ObjectName),
                         loadURL.Data.ObjectID,
@@ -2647,10 +2668,13 @@ namespace OpenMetaverse
 
                 if (OnMoneyBalanceReplyReceived != null)
                 {
-                    try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
-                        mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
-                        mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
-                        Utils.BytesToString(mbrp.MoneyData.Description)); }
+                    try
+                    {
+                        OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID,
+                      mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance,
+                      mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted,
+                      Utils.BytesToString(mbrp.MoneyData.Description));
+                    }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
@@ -2700,7 +2724,7 @@ namespace OpenMetaverse
         {
             bool finished = false;
             TeleportFlags flags = TeleportFlags.Default;
-            
+
             if (packet.Type == PacketType.TeleportStart)
             {
                 TeleportStartPacket start = (TeleportStartPacket)packet;
@@ -2962,27 +2986,25 @@ namespace OpenMetaverse
             LLSDMap map = (LLSDMap)llsd;
             UUID sessionID = map["session_id"].AsUUID();
             UUID tmpSessionID = map["temp_session_id"].AsUUID();
+            
+            string sessionName = String.Empty;
+
             bool success = map["success"].AsBoolean();
 
             if (success)
             {
-                LLSDArray agentlist = (LLSDArray)map["agents"];
-                List<UUID> agents = new List<UUID>();
-                foreach (LLSD id in agentlist)
-                    agents.Add(id.AsUUID());
-
-                lock (GroupChatSessions.Dictionary)
-                {
-                    if (GroupChatSessions.ContainsKey(sessionID))
-                        GroupChatSessions.Dictionary[sessionID] = agents;
-                    else
-                        GroupChatSessions.Add(sessionID, agents);
-                }
+                LLSDMap sessionInfo = (LLSDMap)map["session_info"];
+                sessionName = sessionInfo["session_name"].AsString();
+                
+                /* Parameters we do not currently use for anything */
+                // sessionInfo["type"].AsInteger();
+                // sessionInfo["voice_enabled"}.AsBoolean();
+                // sessionInfo["moderated_mode"] -> ["voice"].AsBoolean()
             }
 
             if (OnGroupChatJoin != null)
             {
-                try { OnGroupChatJoin(sessionID, tmpSessionID, success); }
+                try { OnGroupChatJoin(sessionID, sessionName, tmpSessionID, success); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -2995,40 +3017,171 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         private void ChatterBoxSessionAgentListReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
+            // parse the LLSD 
             LLSDMap map = (LLSDMap)llsd;
-            UUID sessionID = map["session_id"].AsUUID();
-            LLSDMap update = (LLSDMap)map["updates"];
-            string errormsg = map["error"].AsString();
-            
-            //if (errormsg.Equals("already in session"))
-            //  return;
 
-            foreach (KeyValuePair<string, LLSD> kvp in update)
+            // verify sessions exists, if not add it
+            UUID sessionID;
+            if (map.ContainsKey("session_id"))
             {
-                if (kvp.Value.Equals("ENTER"))
+                sessionID = map["session_id"].AsUUID();
+                lock (GroupChatSessions)
+                    if (!GroupChatSessions.ContainsKey(sessionID))
+                        GroupChatSessions.Add(sessionID, new List<ChatSessionMember>());
+            }
+            else
+            {
+                return;
+            }
+
+
+            //string errormsg = map["error"].AsString();
+            LLSDMap updates = (LLSDMap)map["updates"];
+
+            // Handle any agent data updates
+            LLSDMap agent_updates = (LLSDMap)map["agent_updates"];
+
+            foreach (KeyValuePair<string, LLSD> kvp in agent_updates)
+            {
+                UUID agent_key = kvp.Key;
+                LLSDMap record = (LLSDMap)kvp.Value;
+
+                // handle joins/parts first
+                if (record.ContainsKey("transition"))
                 {
+                    // find existing record if any
+                    ChatSessionMember fndMbr;
                     lock (GroupChatSessions.Dictionary)
                     {
-                        if (!GroupChatSessions.Dictionary[sessionID].Contains((UUID)kvp.Key))
-                            GroupChatSessions.Dictionary[sessionID].Add((UUID)kvp.Key);
+                        fndMbr = GroupChatSessions[sessionID].Find(delegate(ChatSessionMember member)
+                           {
+                               return member.AvatarKey == agent_key;
+                           });
+                    }
+
+                    // handle joins
+                    if (record["transition"].AsString().Equals("ENTER"))
+                    {
+                        if (fndMbr.AvatarKey == null)
+                        {
+                            fndMbr = new ChatSessionMember();
+                            fndMbr.AvatarKey = agent_key;
+
+                            lock (GroupChatSessions.Dictionary)
+                                GroupChatSessions[sessionID].Add(fndMbr);
+
+                            if (OnChatSessionMemberAdded != null)
+                            {
+                                try { OnChatSessionMemberAdded(sessionID, agent_key); }
+                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            }
+                        }
+
+                    }
+                    // handle parts
+                    else if (record["transition"].AsString().Equals("LEAVE"))
+                    {
+                        if (fndMbr.AvatarKey != null)
+                            lock (GroupChatSessions.Dictionary)
+                                GroupChatSessions[sessionID].Remove(fndMbr);
+
+                        if (OnChatSessionMemberLeft != null)
+                        {
+                            try { OnChatSessionMemberLeft(sessionID, agent_key); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        }
+                        // no need to process anything else in this record
+                        continue;
+                    }
+                    // this should only fire if LL adds a new transition but doesn't tell anyone
+                    else
+                    {
+                        Logger.Log("Unknown transition action " + record["transition"], Helpers.LogLevel.Warning, Client);
                     }
                 }
-                else if (kvp.Value.Equals("LEAVE"))
-                {
-                    lock (GroupChatSessions.Dictionary)
-                    {
-                        if (GroupChatSessions.Dictionary[sessionID].Contains((UUID)kvp.Key))
-                            GroupChatSessions.Dictionary[sessionID].Remove((UUID)kvp.Key);
 
-                        // we left session, remove from dictionary
-                        if (kvp.Key.Equals(Client.Self.id) && OnGroupChatLeft != null)
+
+                // Handle any updates
+                
+                // search for member to update
+                ChatSessionMember update_member = GroupChatSessions.Dictionary[sessionID].Find(delegate(ChatSessionMember m)
+                {
+                    return m.AvatarKey == agent_key;
+                });
+
+                LLSDMap record_info = (LLSDMap)record["info"];
+
+                lock (GroupChatSessions.Dictionary)
+                {
+
+                    if (record_info.ContainsKey("mutes"))
+                    {
+                        LLSDMap mutes = (LLSDMap)record_info["mutes"];
+                        foreach (KeyValuePair<string, LLSD> muteEntry in mutes)
                         {
-                            GroupChatSessions.Dictionary.Remove(sessionID);
-                            OnGroupChatLeft(sessionID);
+                            if (muteEntry.Key == "text")
+                            {
+                                update_member.MuteText = muteEntry.Value.AsBoolean();
+                            }
+                            else if (muteEntry.Key == "voice")
+                            {
+                                update_member.MuteVoice = muteEntry.Value.AsBoolean();
+                            }
                         }
                     }
+
+                    if (record_info.ContainsKey("can_voice_chat"))
+                    {
+                        update_member.CanVoiceChat = record_info["can_voice_chat"].AsBoolean();
+                    }
+
+                    if (record_info.ContainsKey("is_moderator"))
+                    {
+                        update_member.IsModerator = record_info["is_moderator"].AsBoolean();
+                    }
                 }
+
+                // replace existing member record
+                lock (GroupChatSessions.Dictionary)
+                {
+                    int found = GroupChatSessions.Dictionary[sessionID].FindIndex(delegate(ChatSessionMember m)
+                    {
+                        return m.AvatarKey == agent_key;
+                    });
+
+                    if (found >= 0)
+                        GroupChatSessions.Dictionary[sessionID][found] = update_member;
+                }
+
             }
+
+            
+            //foreach (KeyValuePair<string, LLSD> kvp in updates)
+            //{
+            //    if (kvp.Value.Equals("ENTER"))
+            //    {
+            //        lock (GroupChatSessions.Dictionary)
+            //        {
+            //            if (!GroupChatSessions.Dictionary[sessionID].Contains((UUID)kvp.Key))
+            //                GroupChatSessions.Dictionary[sessionID].Add((UUID)kvp.Key);
+            //        }
+            //    }
+            //    else if (kvp.Value.Equals("LEAVE"))
+            //    {
+            //        lock (GroupChatSessions.Dictionary)
+            //        {
+            //            if (GroupChatSessions.Dictionary[sessionID].Contains((UUID)kvp.Key))
+            //                GroupChatSessions.Dictionary[sessionID].Remove((UUID)kvp.Key);
+
+            //            // we left session, remove from dictionary
+            //            if (kvp.Key.Equals(Client.Self.id) && OnGroupChatLeft != null)
+            //            {
+            //                GroupChatSessions.Dictionary.Remove(sessionID);
+            //                OnGroupChatLeft(sessionID);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>
@@ -3038,34 +3191,75 @@ namespace OpenMetaverse
         /// <param name="llsd">LLSD Map containing invitation</param>
         /// <param name="simulator">Originating Simulator</param>
         private void ChatterBoxInvitationHandler(string capsKey, LLSD llsd, Simulator simulator)
-        {       
-                if (OnInstantMessage != null)
-                {
-                    LLSDMap map = (LLSDMap)llsd;
-                    LLSDMap im = (LLSDMap)map["instantmessage"];
-                    LLSDMap agent = (LLSDMap)im["agent_params"];
-                    LLSDMap msg = (LLSDMap)im["message_params"];
-                    LLSDMap msgdata = (LLSDMap)msg["data"];
+        {
+            if (OnInstantMessage != null)
+            {
+                LLSDMap map = (LLSDMap)llsd;
+                LLSDMap im = (LLSDMap)map["instantmessage"];
+                LLSDMap agent = (LLSDMap)im["agent_params"];
+                LLSDMap msg = (LLSDMap)im["message_params"];
+                LLSDMap msgdata = (LLSDMap)msg["data"];
 
-                    InstantMessage message = new InstantMessage();
-                    
-                    message.FromAgentID = map["from_id"].AsUUID();
-                    message.FromAgentName = map["from_name"].AsString();
-                    message.ToAgentID = msg["to_id"].AsString();
-                    message.ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
-                    message.RegionID = msg["region_id"].AsUUID();
-                    message.Position = ((LLSDArray)msg["position"]).AsVector3();
-                    message.Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
-                    message.GroupIM = true;
-                    message.IMSessionID = map["session_id"].AsUUID();
-                    message.Timestamp = new DateTime(msgdata["timestamp"].AsInteger());
-                    message.Message = msg["message"].AsString();
-                    message.Offline = (InstantMessageOnline)msg["offline"].AsInteger();
-                    message.BinaryBucket = msg["binary_bucket"].AsBinary();
+                InstantMessage message = new InstantMessage();
 
-                    try { OnInstantMessage(message, simulator); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }             
+                message.FromAgentID = map["from_id"].AsUUID();
+                message.FromAgentName = map["from_name"].AsString();
+                message.ToAgentID = msg["to_id"].AsString();
+                message.ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
+                message.RegionID = msg["region_id"].AsUUID();
+                message.Position = ((LLSDArray)msg["position"]).AsVector3();
+                message.Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
+                message.GroupIM = true;
+                message.IMSessionID = map["session_id"].AsUUID();
+                message.Timestamp = new DateTime(msgdata["timestamp"].AsInteger());
+                message.Message = msg["message"].AsString();
+                message.Offline = (InstantMessageOnline)msg["offline"].AsInteger();
+                message.BinaryBucket = msg["binary_bucket"].AsBinary();
+
+                try { OnInstantMessage(message, simulator); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+
+        /// <summary>
+        /// Moderate a chat session
+        /// </summary>
+        /// <param name="sessionID">the <see cref="UUID"/> of the session to moderate, for group chats this will be the groups UUID</param>
+        /// <param name="memberID">the <see cref="UUID"/> of the avatar to moderate</param>
+        /// <param name="moderateText">true to moderate (silence user), false to allow avatar to speak</param>
+        public void ModerateChatSessions(UUID sessionID, UUID memberID, bool moderateText)
+        {
+            if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
+                throw new Exception("ChatSessionRequest capability is not currently available");
+
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("ChatSessionRequest");
+
+            if (url != null)
+            {
+                LLSDMap req = new LLSDMap();
+                req.Add("method", LLSD.FromString("mute update"));
+                
+                LLSDMap mute_info = new LLSDMap();
+                mute_info.Add("text", LLSD.FromBoolean(moderateText));
+
+                LLSDMap parameters = new LLSDMap();
+                parameters["agent_id"] = LLSD.FromUUID(memberID);
+                parameters["mute_info"] = mute_info;
+
+                req["params"] = parameters;
+                
+                req.Add("session-id", LLSD.FromUUID(sessionID));
+                
+                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(req);
+
+                CapsClient request = new CapsClient(url);
+                request.StartRequest(postData);
+            }
+            else
+            {
+                throw new Exception("ChatSessionRequest capability is not currently available");
+            }
         }
 
         /// <summary>
@@ -3116,13 +3310,16 @@ namespace OpenMetaverse
                 {
                     ScriptSensorReplyPacket.SensedDataBlock block = reply.SensedData[i];
                     ScriptSensorReplyPacket.RequesterBlock requestor = reply.Requester;
-                    
-                    try { OnScriptSensorReply(requestor.SourceID, block.GroupID, Utils.BytesToString(block.Name),
-                        block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity); }
+
+                    try
+                    {
+                        OnScriptSensorReply(requestor.SourceID, block.GroupID, Utils.BytesToString(block.Name),
+                      block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity);
+                    }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
-            
+
         }
 
         /// <summary>

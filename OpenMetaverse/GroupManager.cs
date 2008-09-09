@@ -239,6 +239,24 @@ namespace OpenMetaverse
         }
     }
 
+    /// <summary>
+    /// Struct representing a member of a group chat session and their settings
+    /// </summary>
+    public struct ChatSessionMember
+    {
+        public UUID AvatarKey;
+        public bool CanVoiceChat;
+        public bool IsModerator;
+        public bool MuteText;
+        public bool MuteVoice;
+
+        public override string ToString()
+        {
+            return String.Format("Avatar={0} CanVoiceChat={1} IsModerator={2} MuteText={3} MuteVoice={4}",
+                AvatarKey, CanVoiceChat, IsModerator, MuteText, MuteVoice);
+        }
+    }
+
     #endregion Structs
 
     #region Enums
@@ -260,100 +278,102 @@ namespace OpenMetaverse
     /// Group role powers flags
     /// </summary>
     [Flags]
-    public enum GroupRolePowers : long
+    public enum GroupPowers : long
     {
+        /// <summary></summary>
         None = 0,
+        /// <summary>Can send invitations to groups default role</summary>
         Invite = 1 << 1,
+        /// <summary>Can eject members from group</summary>
         Eject = 1 << 2,
+        /// <summary>Can toggle 'Open Enrollment' and change 'Signup fee'</summary>
         ChangeOptions = 1 << 3,
+        /// <summary>Can create new roles</summary>
         CreateRole = 1 << 4,
+        /// <summary>Can delete existing roles</summary>
         DeleteRole = 1 << 5,
+        /// <summary>Can change Role names, titles and descriptions</summary>
         RoleProperties = 1 << 6,
+        /// <summary>Can assign other members to assigners role</summary>
         AssignMemberLimited = 1 << 7,
+        /// <summary>Can assign other members to any role</summary>
         AssignMember = 1 << 8,
+        /// <summary>Can remove members from roles</summary>
         RemoveMember = 1 << 9,
+        /// <summary>Can assign and remove abilities in roles</summary>
         ChangeActions = 1 << 10,
+        /// <summary>Can change group Charter, Insignia, 'Publish on the web' and which
+        /// members are publicly visible in group member listings</summary>
         ChangeIdentity = 1 << 11,
+        /// <summary>Can buy land or deed land to group</summary>
         LandDeed = 1 << 12,
+        /// <summary>Can abandon group owned land to Governor Linden on mainland, or Estate owner for
+        /// private estates</summary>
         LandRelease = 1 << 13,
+        /// <summary>Can set land for-sale information on group owned parcels</summary>
         LandSetSale = 1 << 14,
-        LandDevideJoin = 1 << 15,
+        /// <summary>Can subdivide and join parcels</summary>
+        LandDivideJoin = 1 << 15,
+        /// <summary>Can join group chat sessions</summary>
+        JoinChat = 1 << 16,
+        /// <summary>Can toggle "Show in Find Places" and set search category</summary>
         FindPlaces = 1 << 17,
+        /// <summary>Can change parcel name, description, and 'Publish on web' settings</summary>
         LandChangeIdentity = 1 << 18,
+        /// <summary>Can set the landing point and teleport routing on group land</summary>
         SetLandingPoint = 1 << 19,
+        /// <summary>Can change music and media settings</summary>
         ChangeMedia = 1 << 20,
+        /// <summary>Can toggle 'Edit Terrain' option in Land settings</summary>
         LandEdit = 1 << 21,
+        /// <summary>Can toggle various About Land > Options settings</summary>
         LandOptions = 1 << 22,
+        /// <summary>Can always terraform land, even if parcel settings have it turned off</summary>
         AllowEditLand = 1 << 23,
+        /// <summary>Can always fly while over group owned land</summary>
         AllowFly = 1 << 24,
+        /// <summary>Can always rez objects on group owned land</summary>
         AllowRez = 1 << 25,
+        /// <summary>Can always create landmarks for group owned parcels</summary>
         AllowLandmark = 1 << 26,
+        /// <summary>Can use voice chat in Group Chat sessions</summary>
+        AllowVoiceChat = 1 << 27,
+        /// <summary>Can set home location on any group owned parcel</summary>
         AllowSetHome = 1 << 28,
+        /// <summary>Can modify public access settings for group owned parcels</summary>
         LandManageAllowed = 1 << 29,
+        /// <summary>Can manager parcel ban lists on group owned land</summary>
         LandManageBanned = 1 << 30,
+        /// <summary>Can manage pass list sales information</summary>
         LandManagePasses = 1 << 31,
+        /// <summary>Can eject and freeze other avatars on group owned land</summary>
         LandEjectAndFreeze = 1 << 32,
-        ReturnGroupOwned = 1 << 48,
+        /// <summary>Can return objects set to group</summary>
         ReturnGroupSet = 1 << 33,
+        /// <summary>Can return non-group owned/set objects</summary>
         ReturnNonGroup = 1 << 34,
+        /// <summary>Can landscape using Linden plants</summary>
         LandGardening = 1 << 35,
+        /// <summary>Can deed objects to group</summary>
         DeedObject = 1 << 36,
+        /// <summary>Can moderate group chat sessions</summary>
+        ModerateChat = 1 << 37,
+        /// <summary>Can move group owned objects</summary>
         ObjectManipulate = 1 << 38,
+        /// <summary>Can set group owned objects for-sale</summary>
         ObjectSetForSale = 1 << 39,
+        /// <summary>Pay group liabilities and receive group dividends</summary>
         Accountable = 1 << 40,
+        /// <summary>Can send group notices</summary>
         SendNotices = 1 << 42,
+        /// <summary>Can receive group notices</summary>
         ReceiveNotices = 1 << 43,
+        /// <summary>Can create group proposals</summary>
         StartProposal = 1 << 44,
-        VoteOnProposal = 1 << 45
-    }
-
-    [Flags]
-    public enum GroupPowers : ulong
-    {
-        MemberInvite = 2,
-        MemberEject = 4,
-        MemberOptions = 8,
-        MemberVisibleInDir = 140737488355328,
-        RoleCreate = 16,
-        RoleDelete = 32,
-        RoleProperties = 64,
-        RoleAssignMemberLimited = 128,
-        RoleAssignMember = 256,
-        RoleRemoveMember = 512,
-        RoleChangeActions = 1024,
-        GroupChangeIdentity = 2048,
-        LandDeed = 4096,
-        LandRelease = 8192,
-        LandSetSaleInfo = 16384,
-        LandDivideJoin = 32768,
-        LandFindPlaces = 131072,
-        LandChangeIdentity = 262144,
-        LandSetLandingPoint = 524288,
-        LandChangeMedia = 1048576,
-        LandEdit = 2097152,
-        LandOptions = 4194304,
-        LandAllowEditLand = 8388608,
-        LandAllowFly = 16777216,
-        LandAllowCreate = 33554432,
-        LandAllowLandmark = 67108864,
-        LandAllowSetHome = 268435456,
-        LandManageAllowed = 536870912,
-        LandManageBanned = 1073741824,
-        LandManagePasses = 2147483648,
-        LandAdmin = 4294967296,
-        LandReturnGroupOwned = 281474976710656,
-        LandReturnGroupSet = 8589934592,
-        LandReturnNonGroup = 17179869184,
-        LandReturn = LandReturnGroupOwned | LandReturnGroupSet | LandReturnNonGroup,
-        LandGardening = 34359738368,
-        ObjectDeed = 68719476736,
-        ObjectManipulate = 274877906944,
-        ObjectSetSale = 549755813888,
-        AccountingAccountable = 1099511627776,
-        NoticesSend = 4398046511104,
-        NoticesReceive = 8796093022208,
-        ProposalStart = 17592186044416,
-        ProposalVote = 35184372088832
+        /// <summary>Can vote on group proposals</summary>
+        VoteOnProposal = 1 << 45,
+        /// <summary>Can return group owned objects</summary>
+        ReturnGroupOwned = 1 << 48
     }
 
     #endregion Enums

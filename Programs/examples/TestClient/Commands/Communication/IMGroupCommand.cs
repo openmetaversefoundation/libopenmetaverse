@@ -33,7 +33,7 @@ namespace OpenMetaverse.TestClient
                 message = message.TrimEnd();
                 if (message.Length > 1023) message = message.Remove(1023);
 
-                Client.Self.OnGroupChatJoin += new AgentManager.GroupChatJoined(Self_OnGroupChatJoin);
+                Client.Self.OnGroupChatJoin += new AgentManager.GroupChatJoinedCallback(Self_OnGroupChatJoin);
                 if (!Client.Self.GroupChatSessions.ContainsKey(ToGroupID))
                 {
                     WaitForSessionStart.Reset();
@@ -44,7 +44,7 @@ namespace OpenMetaverse.TestClient
                     WaitForSessionStart.Set();
                 }
                 
-                if (WaitForSessionStart.WaitOne(10000, false))
+                if (WaitForSessionStart.WaitOne(20000, false))
                 {
                     Client.Self.InstantMessageGroup(ToGroupID, message);
                 }
@@ -53,7 +53,7 @@ namespace OpenMetaverse.TestClient
                     return "Timeout waiting for group session start";
                 }
                 
-                Client.Self.OnGroupChatJoin -= new AgentManager.GroupChatJoined(Self_OnGroupChatJoin);
+                Client.Self.OnGroupChatJoin -= new AgentManager.GroupChatJoinedCallback(Self_OnGroupChatJoin);
                 return "Instant Messaged group " + ToGroupID.ToString() + " with message: " + message;
             }
             else
@@ -62,11 +62,11 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Self_OnGroupChatJoin(UUID groupChatSessionID, UUID tmpSessionID, bool success)
+        void Self_OnGroupChatJoin(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success)
         {
             if (success)
             {
-                Console.WriteLine("Join Group Chat Success!");
+                Console.WriteLine("Joined {0} Group Chat Success!", sessionName);
                 WaitForSessionStart.Set();
             }
             else
