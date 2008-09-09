@@ -147,7 +147,7 @@ namespace OpenMetaverse
         }
 
         public override void Encode() { }
-        public override bool Decode() { return false; }
+        public override bool Decode() { return true; }
     }
 
     public class AssetNotecard : Asset
@@ -226,7 +226,7 @@ namespace OpenMetaverse
         }
 
         public override void Encode() { }
-        public override bool Decode() { return false; }
+        public override bool Decode() { return true; }
     }
 
     public class AssetSound : Asset
@@ -242,7 +242,7 @@ namespace OpenMetaverse
         }
 
         public override void Encode() { }
-        public override bool Decode() { return false; }
+        public override bool Decode() { return true; }
     }
 
     public class AssetTexture : Asset
@@ -250,6 +250,7 @@ namespace OpenMetaverse
         public override AssetType AssetType { get { return AssetType.Texture; } }
 
         public ManagedImage Image;
+        public OpenJPEG.J2KLayerInfo[] LayerInfo;
         
         public AssetTexture() { }
 
@@ -261,8 +262,8 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Populates the <code>AssetData</code> byte array with a JPEG2000
-        /// encoded image created from the data in <code>Image</code>
+        /// Populates the <seealso cref="AssetData"/> byte array with a JPEG2000
+        /// encoded image created from the data in <seealso cref="Image"/>
         /// </summary>
         public override void Encode()
         {
@@ -271,12 +272,22 @@ namespace OpenMetaverse
         
         /// <summary>
         /// Decodes the JPEG2000 data in <code>AssetData</code> to the
-        /// <code>ManagedImage</code> object <code>Image</code>
+        /// <seealso cref="ManagedImage"/> object <seealso cref="Image"/>
         /// </summary>
         /// <returns>True if the decoding was successful, otherwise false</returns>
         public override bool Decode()
         {
             return OpenJPEG.DecodeToImage(AssetData, out Image);
+        }
+
+        /// <summary>
+        /// Decodes the begin and end byte positions for each quality layer in
+        /// the image
+        /// </summary>
+        /// <returns></returns>
+        public bool DecodeLayerBoundaries()
+        {
+            return OpenJPEG.DecodeLayerBoundaries(AssetData, out LayerInfo);
         }
     }
 
@@ -287,7 +298,7 @@ namespace OpenMetaverse
         public AssetPrim() { }
 
         public override void Encode() { }
-        public override bool Decode() { return false; }
+        public override bool Decode() { return true; }
     }
 
     public abstract class AssetWearable : Asset
