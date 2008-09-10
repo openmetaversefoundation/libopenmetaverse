@@ -345,7 +345,7 @@ namespace OpenMetaverse
         /// <param name="val">A UUID in string form. Case insensitive, 
         /// hyphenated or non-hyphenated</param>
         /// <returns>A UUID built from the string representation</returns>
-        public static implicit operator UUID(string val)
+        public static explicit operator UUID(string val)
         {
             return new UUID(val);
         }

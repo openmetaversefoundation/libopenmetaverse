@@ -1693,8 +1693,8 @@ namespace OpenMetaverse
                     #endregion Decode update data
 
                     Primitive obj = (update.Avatar) ?
-                        (Primitive)GetAvatar(simulator, update.LocalID, null):
-                        (Primitive)GetPrimitive(simulator, update.LocalID, null);
+                        (Primitive)GetAvatar(simulator, update.LocalID, UUID.Zero):
+                        (Primitive)GetPrimitive(simulator, update.LocalID, UUID.Zero);
 
                     #region Update Client.Self
                     if (update.LocalID == Client.Self.localID)

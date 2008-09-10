@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse;
 
-namespace System.Collections
+namespace OpenMetaverse
 {
     /// <summary>
     /// Same as Queue except Dequeue function blocks until there is an object to return.

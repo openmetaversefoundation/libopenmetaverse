@@ -177,6 +177,21 @@ namespace OpenMetaverse
         Baked = 1
     }
 
+    /// <summary>
+    /// Image file format
+    /// </summary>
+    public enum ImageCodec : byte
+    {
+        Invalid = 0,
+        RGB = 1,
+        J2C = 2,
+        BMP = 3,
+        TGA = 4,
+        JPEG = 5,
+        DXT = 6,
+        PNG = 7
+    }
+
     public enum TransferError : int
     {
         None = 0,
@@ -294,7 +309,7 @@ namespace OpenMetaverse
     public class ImageDownload : Transfer
     {
         public ushort PacketCount;
-        public int Codec;
+        public ImageCodec Codec;
         public bool NotFound;
         public Simulator Simulator;
         public SortedList<ushort, ushort> PacketsSeen;
@@ -1303,7 +1318,7 @@ namespace OpenMetaverse
                             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
 
-                        transfer.Codec = data.ImageID.Codec;
+                        transfer.Codec = (ImageCodec)data.ImageID.Codec;
                         transfer.PacketCount = data.ImageID.Packets;
                         transfer.Size = (int)data.ImageID.Size;
                         transfer.AssetData = new byte[transfer.Size];

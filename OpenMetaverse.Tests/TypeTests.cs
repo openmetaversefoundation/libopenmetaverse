@@ -71,7 +71,7 @@ namespace OpenMetaverse.Tests
             one = a.ToString();
             two = b.ToString();
             Assert.IsTrue(a == b);
-            Assert.IsTrue(a == zeroonetwo);
+            Assert.IsTrue(a == (UUID)zeroonetwo);
 
             // TODO: CRC test
         }
