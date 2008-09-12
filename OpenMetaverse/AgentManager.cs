@@ -3044,7 +3044,7 @@ namespace OpenMetaverse
 
             foreach (KeyValuePair<string, LLSD> kvp in agent_updates)
             {
-                UUID agent_key = UUID.Parse(kvp.Key); //= new UUID(kvp.Key);
+                UUID agent_key = UUID.Parse(kvp.Key);
                 LLSDMap record = (LLSDMap)kvp.Value;
 
                 // handle joins/parts first
@@ -3212,7 +3212,7 @@ namespace OpenMetaverse
 
                 message.FromAgentID = map["from_id"].AsUUID();
                 message.FromAgentName = map["from_name"].AsString();
-                message.ToAgentID = msg["to_id"].AsString();
+                message.ToAgentID = msg["to_id"].AsUUID();
                 message.ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
                 message.RegionID = msg["region_id"].AsUUID();
                 message.Position = ((LLSDArray)msg["position"]).AsVector3();
