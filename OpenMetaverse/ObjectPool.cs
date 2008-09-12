@@ -9,7 +9,7 @@ namespace OpenMetaverse
     public class UDPPacketBuffer
     {
         /// <summary>Size of the byte array used to store raw packet data</summary>
-        public const int BUFFER_SIZE = 2048;
+        public const int BUFFER_SIZE = 4096;
         /// <summary>Size of the temporary buffer for zerodecoding and 
         /// zeroencoding this packet</summary>
         public const int ZERO_BUFFER_SIZE = 4096;
