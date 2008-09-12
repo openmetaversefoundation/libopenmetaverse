@@ -3222,7 +3222,7 @@ namespace OpenMetaverse
                 message.Timestamp = new DateTime(msgdata["timestamp"].AsInteger());
                 message.Message = msg["message"].AsString();
                 message.Offline = (InstantMessageOnline)msg["offline"].AsInteger();
-                message.BinaryBucket = msg["binary_bucket"].AsBinary();
+                message.BinaryBucket = msgdata["binary_bucket"].AsBinary();
 
                 try { OnInstantMessage(message, simulator); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
