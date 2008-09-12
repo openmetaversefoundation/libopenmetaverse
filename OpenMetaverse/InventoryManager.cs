@@ -51,11 +51,13 @@ namespace OpenMetaverse
         CallingCard = 2,
         /// <summary>Landmark</summary>
         Landmark = 3,
+        /*
         /// <summary>Script</summary>
         //[Obsolete("See LSL")] Script = 4,
         /// <summary>Clothing</summary>
         //[Obsolete("See Wearable")] Clothing = 5,
         /// <summary>Object, both single and coalesced</summary>
+         */
         Object = 6,
         /// <summary>Notecard</summary>
         Notecard = 7,
@@ -67,6 +69,7 @@ namespace OpenMetaverse
         RootCategory = 9,
         /// <summary>an LSL Script</summary>
         LSL = 10,
+        /*
         /// <summary></summary>
         //[Obsolete("See LSL")] LSLBytecode = 11,
         /// <summary></summary>
@@ -75,10 +78,13 @@ namespace OpenMetaverse
         //[Obsolete] Bodypart = 13,
         /// <summary></summary>
         //[Obsolete] Trash = 14,
+         */
         /// <summary></summary>
         Snapshot = 15,
+        /*
         /// <summary></summary>
         //[Obsolete] LostAndFound = 16,
+         */
         /// <summary></summary>
         Attachment = 17,
         /// <summary></summary>
@@ -670,7 +676,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="items"></param>
+        /// <param name="item"></param>
         public delegate void ItemCopiedCallback(InventoryBase item);
 
         /// <summary>
@@ -702,10 +708,11 @@ namespace OpenMetaverse
         /// the ItemID, as in ObjectOfferedCallback it is null when received
         /// from a task.
         /// </summary>
-        /// <param name="ItemID"></param>
-        /// <param name="FolderID"></param>
-        /// <param name="CreatorID"></param>
-        /// <param name="AssetID"></param>
+        /// <param name="itemID"></param>
+        /// <param name="folderID"></param>
+        /// <param name="creatorID"></param>
+        /// <param name="assetID"></param>
+        /// <param name="type"></param>
         public delegate void TaskItemReceivedCallback(UUID itemID, UUID folderID, UUID creatorID, 
             UUID assetID, InventoryType type);
 
@@ -1594,10 +1601,18 @@ namespace OpenMetaverse
         #endregion Remove
 
         #region Create
+        
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="parentFolder"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="type"></param>
         /// <param name="assetTransactionID">Proper use is to upload the inventory's asset first, then provide the Asset's TransactionID here.</param>
+        /// <param name="invType"></param>
+        /// <param name="nextOwnerMask"></param>
+        /// <param name="callback"></param>
         public void RequestCreateItem(UUID parentFolder, string name, string description, AssetType type, UUID assetTransactionID,
             InventoryType invType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
         {
@@ -1609,7 +1624,15 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="parentFolder"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="type"></param>
         /// <param name="assetTransactionID">Proper use is to upload the inventory's asset first, then provide the Asset's TransactionID here.</param>
+        /// <param name="invType"></param>
+        /// <param name="wearableType"></param>
+        /// <param name="nextOwnerMask"></param>
+        /// <param name="callback"></param>
         public void RequestCreateItem(UUID parentFolder, string name, string description, AssetType type, UUID assetTransactionID,
             InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
         {

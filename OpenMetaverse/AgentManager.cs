@@ -832,6 +832,7 @@ namespace OpenMetaverse
         /// Fired when group chat session confirmed joined</summary>
         /// <param name="groupChatSessionID">Key of Session (groups UUID)</param>
         /// <param name="tmpSessionID">Temporary session Key</param>
+        /// <param name="sessionName">A string representation of the session name</param>
         /// <param name="success"><see langword="true"/> if session start successful, 
         /// <see langword="false"/> otherwise</param>
         public delegate void GroupChatJoinedCallback(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success);
@@ -3043,7 +3044,7 @@ namespace OpenMetaverse
 
             foreach (KeyValuePair<string, LLSD> kvp in agent_updates)
             {
-                UUID agent_key = kvp.Key;
+                UUID agent_key = UUID.Parse(kvp.Key); //= new UUID(kvp.Key);
                 LLSDMap record = (LLSDMap)kvp.Value;
 
                 // handle joins/parts first
@@ -3090,6 +3091,13 @@ namespace OpenMetaverse
                             try { OnChatSessionMemberLeft(sessionID, agent_key); }
                             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
+
+                        if (agent_key == Client.Self.AgentID)
+                        {
+                            try { OnGroupChatLeft(sessionID); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        }
+
                         // no need to process anything else in this record
                         continue;
                     }
