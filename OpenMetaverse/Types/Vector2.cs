@@ -185,7 +185,9 @@ namespace OpenMetaverse
 
         public static float DistanceSquared(Vector2 value1, Vector2 value2)
         {
-            return DistanceSquared(value1, value2);
+            return
+                (value1.X - value2.X) * (value1.X - value2.X) +
+                (value1.Y - value2.Y) * (value1.Y - value2.Y);
         }
 
         public static Vector2 Divide(Vector2 value1, Vector2 value2)
