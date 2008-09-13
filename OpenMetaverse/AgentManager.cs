@@ -3063,7 +3063,7 @@ namespace OpenMetaverse
                     // handle joins
                     if (record["transition"].AsString().Equals("ENTER"))
                     {
-                        if (fndMbr.AvatarKey == null)
+                        if (fndMbr.AvatarKey == UUID.Zero)
                         {
                             fndMbr = new ChatSessionMember();
                             fndMbr.AvatarKey = agent_key;
