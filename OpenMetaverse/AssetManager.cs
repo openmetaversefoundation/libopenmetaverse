@@ -888,6 +888,9 @@ namespace OpenMetaverse
                 case AssetType.Bodypart:
                     asset = new AssetBodypart();
                     break;
+                case AssetType.Animation:
+                    asset = new AssetAnimation();
+                    break;
                 default:
                     Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
                     return null;
