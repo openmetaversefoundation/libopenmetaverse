@@ -42,21 +42,21 @@ namespace OpenMetaverse.Tests
         //ulong AhernRegionHandle = 1096213093149184;
         //ulong MorrisRegionHandle = 1096213093149183;
         //ulong DoreRegionHandle = 1095113581521408;
-        //ulong HooperRegionHandle = 1106108697797888;
+        ulong HooperRegionHandle = 1106108697797888;
         bool DetectedObject = false;
 
         public NetworkTests()
         {
             Client = new GridClient();
-
+            Client.Self.Movement.Fly = true;
             // Register callbacks
             Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(ObjectUpdateHandler));
             //Client.Self.OnTeleport += new MainAvatar.TeleportCallback(OnTeleportHandler);
 
             // Connect to the grid
             string startLoc = NetworkManager.StartLocation("Hooper", 179, 18, 32);
-            Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", startLoc,
-                "contact@OpenMetaverse.org");
+            Assert.IsTrue(Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", startLoc,
+                "contact@OpenMetaverse.org"));
         }
 
         ~NetworkTests()
@@ -71,8 +71,8 @@ namespace OpenMetaverse.Tests
 
             int start = Environment.TickCount;
 
-            //Assert.AreEqual("hooper", Client.Network.CurrentSim.Name.ToLower(), "Logged in to sim " + 
-            //    Client.Network.CurrentSim.Name + " instead of hooper");
+            Assert.AreEqual("hooper", Client.Network.CurrentSim.Name.ToLower(), "Logged in to sim " + 
+                Client.Network.CurrentSim.Name + " instead of hooper");
         }
 
         [Test]
@@ -88,6 +88,7 @@ namespace OpenMetaverse.Tests
             }
         }
 
+        /*
         [Test]
         public void U64Receive()
         {
@@ -100,10 +101,10 @@ namespace OpenMetaverse.Tests
                 }
             }
 
-            //Assert.IsTrue(CurrentRegionHandle == DoreRegionHandle, "Current region is " +
-            //    CurrentRegionHandle + " (" + Client.Network.CurrentSim.Name + ")" + " when we were expecting " + DoreRegionHandle + " (Dore), possible endian issue");
+            Assert.IsTrue(CurrentRegionHandle == HooperRegionHandle, "Current region is " +
+                CurrentRegionHandle + " (" + Client.Network.CurrentSim.Name + ")" + " when we were expecting " + HooperRegionHandle + " (Dore), possible endian issue");
         }
-
+        */
         /*[Test]
         public void Teleport()
         {
