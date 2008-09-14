@@ -51,14 +51,14 @@ namespace Simian.Extensions
         {
         }
 
-        public bool ObjectAdd(object sender, Agent creator, SimulationObject obj)
+        public bool ObjectAdd(object sender, Agent creator, SimulationObject obj, PrimFlags creatorFlags)
         {
             // Assign a unique LocalID to this object
             obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
 
             if (OnObjectAdd != null)
             {
-                OnObjectAdd(sender, creator, obj);
+                OnObjectAdd(sender, creator, obj, creatorFlags);
             }
 
             // Add the object to the scene dictionary
@@ -66,7 +66,7 @@ namespace Simian.Extensions
 
             // Send an update out to the creator
             ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
-                obj.Prim.Flags | PrimFlags.CreateSelected | PrimFlags.ObjectYouOwner);
+                obj.Prim.Flags | creatorFlags);
             server.UDP.SendPacket(creator.AgentID, updateToOwner, PacketCategory.State);
 
             // Send an update out to everyone else

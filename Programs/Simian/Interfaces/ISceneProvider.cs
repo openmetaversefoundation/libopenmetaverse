@@ -3,7 +3,7 @@ using OpenMetaverse;
 
 namespace Simian
 {
-    public delegate void ObjectAddCallback(object sender, Agent creator, SimulationObject obj);
+    public delegate void ObjectAddCallback(object sender, Agent creator, SimulationObject obj, PrimFlags creatorFlags);
     public delegate void ObjectRemoveCallback(object sender, SimulationObject obj);
     public delegate void ObjectTransformCallback(object sender, SimulationObject obj,
         Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration,
@@ -27,7 +27,7 @@ namespace Simian
         // through functions instead of a property
         float[] Heightmap { get; set; }
 
-        bool ObjectAdd(object sender, Agent creator, SimulationObject obj);
+        bool ObjectAdd(object sender, Agent creator, SimulationObject obj, PrimFlags creatorFlags);
         bool ObjectRemove(object sender, SimulationObject obj);
         void ObjectTransform(object sender, SimulationObject obj, Vector3 position,
             Quaternion rotation, Vector3 velocity, Vector3 acceleration,
