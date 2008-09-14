@@ -1031,6 +1031,8 @@ namespace OpenMetaverse
         public uint SittingOn { get { return sittingOn; } }
         /// <summary>Gets the <seealso cref="UUID"/> of the agents active group.</summary>
         public UUID ActiveGroup { get { return activeGroup; } }
+        /// <summary>Gets the Agents powers in the currently active group</summary>
+        public GroupPowers ActiveGroupPowers { get { return activeGroupPowers; } }
         /// <summary>Current status message for teleporting</summary>
         public string TeleportMessage { get { return teleportMessage; } }
         /// <summary>Current position of the agent as a relative offset from
@@ -1143,6 +1145,7 @@ namespace OpenMetaverse
         private float health;
         private int balance;
         private UUID activeGroup;
+        private GroupPowers activeGroupPowers;
         #endregion Private Members
 
         /// <summary>
@@ -2638,6 +2641,7 @@ namespace OpenMetaverse
                 firstName = Utils.BytesToString(p.AgentData.FirstName);
                 lastName = Utils.BytesToString(p.AgentData.LastName);
                 activeGroup = p.AgentData.ActiveGroupID;
+                activeGroupPowers = (GroupPowers)p.AgentData.GroupPowers;
 
                 if (OnAgentDataUpdated != null)
                 {

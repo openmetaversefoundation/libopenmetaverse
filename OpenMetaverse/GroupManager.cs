@@ -543,14 +543,13 @@ namespace OpenMetaverse
         /// <summary>A reference to the current <seealso cref="GridClient"/> instance</summary>
         private GridClient Client;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
-        private Dictionary<UUID, Dictionary<UUID, GroupMember>> GroupMembersCaches;
+        public InternalDictionary<UUID, Dictionary<UUID, GroupMember>> GroupMembersCaches;
         /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
-        private Dictionary<UUID, Dictionary<UUID, GroupRole>> GroupRolesCaches;
+        public InternalDictionary<UUID, Dictionary<UUID, GroupRole>> GroupRolesCaches;
         /// <summary>A list of all the role to member mappings</summary>
-        private Dictionary<UUID, List<KeyValuePair<UUID, UUID>>> GroupRolesMembersCaches;
+        public InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>> GroupRolesMembersCaches;
         /// <summary>Caches group name lookups</summary>
         public InternalDictionary<UUID, string> GroupName2KeyCache;
-
         /// <summary>
         /// Group Management Routines, Methods and Packet Handlers
         /// </summary>
@@ -559,9 +558,9 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            GroupMembersCaches = new Dictionary<UUID, Dictionary<UUID, GroupMember>>();
-            GroupRolesCaches = new Dictionary<UUID, Dictionary<UUID, GroupRole>>();
-            GroupRolesMembersCaches = new Dictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
+            GroupMembersCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupMember>>();
+            GroupRolesCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupRole>>();
+            GroupRolesMembersCaches = new InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
             Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(GroupDataHandler));
