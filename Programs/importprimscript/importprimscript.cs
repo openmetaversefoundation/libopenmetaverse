@@ -71,7 +71,6 @@ namespace importprimscript
             Client.Self.Movement.Camera.Far = 64f;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
-            Client.Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.ALWAYS_DECODE_OBJECTS = true;

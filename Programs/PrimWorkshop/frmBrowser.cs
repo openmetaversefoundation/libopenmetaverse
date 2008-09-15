@@ -146,7 +146,6 @@ namespace PrimWorkshop
             Client.Settings.ALWAYS_DECODE_OBJECTS = true;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.SEND_AGENT_UPDATES = true;
-            Client.Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
             Client.Settings.USE_TEXTURE_CACHE = true;
             Client.Settings.TEXTURE_CACHE_DIR = Application.StartupPath + System.IO.Path.DirectorySeparatorChar + "cache";
             Client.Settings.ALWAYS_REQUEST_PARCEL_ACL = false;
