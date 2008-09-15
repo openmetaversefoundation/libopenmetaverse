@@ -380,11 +380,9 @@ namespace OpenMetaverse
             /// <summary>The current value of the agent control flags</summary>
             public uint AgentControls
             {
-                get
-                {
-                    return agentControls;
-                }
+                get { return agentControls; }
             }
+
             /// <summary>Gets or sets the interval in milliseconds at which
             /// AgentUpdate packets are sent to the current simulator. Setting
             /// this to a non-zero value will also enable the packet sending if
@@ -462,7 +460,7 @@ namespace OpenMetaverse
             /// <summary>Timer for sending AgentUpdate packets</summary>
             private Timer updateTimer;
             private int updateInterval;
-            private bool autoResetControls = true;
+            private bool autoResetControls;
 
             /// <summary>Default constructor</summary>
             public AgentMovement(GridClient client)

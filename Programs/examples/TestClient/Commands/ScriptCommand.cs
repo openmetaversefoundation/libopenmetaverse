@@ -19,8 +19,8 @@ namespace OpenMetaverse.TestClient
                 return "Usage: script [filename]";
 
             // Load the file
-            string[] lines = null;
-            try { File.ReadAllLines(args[0]); }
+            string[] lines;
+            try { lines = File.ReadAllLines(args[0]); }
             catch (Exception e) { return e.Message; }
 
             // Execute all of the commands
