@@ -10,7 +10,7 @@ namespace Simian.Extensions
     public class AssetManager : ISimianExtension, IAssetProvider
     {
         Simian Server;
-        public Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
+        Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
 
         public AssetManager(Simian server)
@@ -34,29 +34,33 @@ namespace Simian.Extensions
 
         public void StoreAsset(Asset asset)
         {
-            if (asset.Decode())
+            if (asset is AssetTexture)
             {
-                lock (AssetStore)
-                    AssetStore[asset.AssetID] = asset;
-            }
-            else
-            {
-                Logger.Log(String.Format("Failed to decode {0} asset {1}", asset.AssetType, asset.AssetID),
-                    Helpers.LogLevel.Warning);
-            }
-        }
+                AssetTexture texture = (AssetTexture)asset;
 
-        public void StoreTexture(AssetTexture texture)
-        {
-            if (texture.DecodeLayerBoundaries())
-            {
-                lock (AssetStore)
-                    AssetStore[texture.AssetID] = texture;
+                if (texture.DecodeLayerBoundaries())
+                {
+                    lock (AssetStore)
+                        AssetStore[asset.AssetID] = asset;
+                }
+                else
+                {
+                    Logger.Log(String.Format("Failed to decoded layer boundaries on texture {0}", texture.AssetID),
+                        Helpers.LogLevel.Warning);
+                }
             }
             else
             {
-                Logger.Log(String.Format("Failed to decoded layer boundaries on texture {0}", texture.AssetID),
-                    Helpers.LogLevel.Warning);
+                if (asset.Decode())
+                {
+                    lock (AssetStore)
+                        AssetStore[asset.AssetID] = asset;
+                }
+                else
+                {
+                    Logger.Log(String.Format("Failed to decode {0} asset {1}", asset.AssetType, asset.AssetID),
+                        Helpers.LogLevel.Warning);
+                }
             }
         }
 
@@ -390,7 +394,7 @@ namespace Simian.Extensions
             for (int i = 0; i < textures.Length; i++)
             {
                 UUID assetID = ParseUUIDFromFilename(textures[i]);
-                StoreTexture(new AssetTexture(assetID, File.ReadAllBytes(textures[i])));
+                StoreAsset(new AssetTexture(assetID, File.ReadAllBytes(textures[i])));
             }
 
             for (int i = 0; i < clothing.Length; i++)

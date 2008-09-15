@@ -203,6 +203,7 @@ namespace Simian.Extensions
             // Give testers a provisionary balance of 1000L
             agent.Balance = 1000;
 
+            // Send a response back to the client
             AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
             complete.AgentData.AgentID = agent.AgentID;
             complete.AgentData.SessionID = agent.SessionID;
@@ -213,6 +214,9 @@ namespace Simian.Extensions
             complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
             server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Transaction);
+
+            // Add this avatar as an object in the scene
+            ObjectAdd(this, agent, new SimulationObject(agent.Avatar, server), PrimFlags.None);
 
             // Send updates and appearances for every avatar to this new avatar
             SynchronizeStateTo(agent);
@@ -228,27 +232,27 @@ namespace Simian.Extensions
         // HACK: The reduction provider will deprecate this at some point
         void SynchronizeStateTo(Agent agent)
         {
-            lock (server.Agents)
-            {
-                foreach (Agent otherAgent in server.Agents.Values)
-                {
-                    // Send ObjectUpdate packets for this avatar
-                    ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(otherAgent.Avatar,
-                        server.RegionHandle, otherAgent.State, otherAgent.Flags);
-                    server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
-
-                    // Send appearances for this avatar
-                    AvatarAppearancePacket appearance = AvatarManager.BuildAppearancePacket(otherAgent);
-                    server.UDP.SendPacket(agent.AgentID, appearance, PacketCategory.State);
-                }
-            }
-
+            // Send object updates for objects and avatars
             sceneObjects.ForEach(delegate(SimulationObject obj)
             {
                 ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim,
                     obj.Prim.RegionHandle, 0, obj.Prim.Flags);
                 server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
             });
+
+            // Send appearances for all avatars
+            lock (server.Agents)
+            {
+                foreach (Agent otherAgent in server.Agents.Values)
+                {
+                    if (otherAgent != agent)
+                    {
+                        // Send appearances for this avatar
+                        AvatarAppearancePacket appearance = AvatarManager.BuildAppearancePacket(otherAgent);
+                        server.UDP.SendPacket(agent.AgentID, appearance, PacketCategory.State);
+                    }
+                }
+            }
 
             // Send terrain data
             SendLayerData(agent);

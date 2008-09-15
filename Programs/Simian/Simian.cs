@@ -319,6 +319,7 @@ namespace Simian
             agent.LastName = lastName;
             agent.SessionID = UUID.Random();
             agent.SecureSessionID = UUID.Random();
+            // Assign a circuit code and insert the agent into the unassociatedAgents dictionary
             agent.CircuitCode = CreateAgentCircuit(agent);
             agent.InventoryRoot = UUID.Random();
             agent.InventoryLibRoot = UUID.Random();
