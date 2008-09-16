@@ -315,6 +315,7 @@ namespace OpenMetaverse
         public SortedList<ushort, ushort> PacketsSeen;
         public ImageType ImageType;
         public int DiscardLevel;
+        public float Priority;
 
         internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
@@ -456,29 +457,42 @@ namespace OpenMetaverse
                         ImageDownload download = (ImageDownload)transfer;
 
                         uint packet = 0;
-                        lock (download.PacketsSeen)
+                        
+                        if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
                         {
-                            if (download.PacketsSeen.Count > 0)
+                            lock (download.PacketsSeen)
                             {
-                                // Initially set this to the earliest packet received in the transfer
-                                packet = download.PacketsSeen[0];
-
-                                for (int i = 0; i < download.PacketsSeen.Count; i++)
+                                bool first = true;
+                                foreach (KeyValuePair<ushort, ushort> packetSeen in download.PacketsSeen)
                                 {
-                                    ++packet;
+                                    if (first)
+                                    {
+                                        // Initially set this to the earliest packet received in the transfer
+                                        packet = packetSeen.Value;
+                                        first = false;
+                                    }
+                                    else
+                                    {
+                                        ++packet;
 
-                                    // If there is a missing packet in the list, break and request the download
-                                    // resume here
-                                    if (download.PacketsSeen[(ushort)i] != packet)
-                                        break;
+                                        // If there is a missing packet in the list, break and request the download
+                                        // resume here
+                                        if (packetSeen.Value != packet)
+                                        {
+                                            --packet;
+                                            break;
+                                        }
+                                    }
                                 }
+
+                                ++packet;
                             }
                         }
 
                         if (download.TimeSinceLastPacket > 5000)
                         {
                             download.TimeSinceLastPacket = 0;
-                            RequestImage(download.ID, download.ImageType, 1013010.0f, download.DiscardLevel, packet);
+                            RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
                         }
                     }
                 }
@@ -694,6 +708,7 @@ namespace OpenMetaverse
                     transfer.Simulator = currentSim;
                     transfer.ImageType = type;
                     transfer.DiscardLevel = discardLevel;
+                    transfer.Priority = priority;
 
                     // Add this transfer to the dictionary
                     lock (Transfers) Transfers[transfer.ID] = transfer;
@@ -704,7 +719,7 @@ namespace OpenMetaverse
                 {
                     // Already downloading, just updating the priority
                     Transfer transfer = Transfers[imageID];
-                    float percentComplete = (float)transfer.Transferred / (float)transfer.Size;
+                    float percentComplete = ((float)transfer.Transferred / (float)transfer.Size) * 100f;
                     if (Single.IsNaN(percentComplete))
                         percentComplete = 0f;
 
@@ -775,6 +790,7 @@ namespace OpenMetaverse
                     transfer.Simulator = Client.Network.CurrentSim;
                     transfer.ImageType = Images[iru].Type;
                     transfer.DiscardLevel = Images[iru].DiscardLevel;
+                    transfer.Priority = Images[iru].Priority;
 
                     // Add this transfer to the dictionary
                     lock (Transfers) Transfers[transfer.ID] = transfer;
