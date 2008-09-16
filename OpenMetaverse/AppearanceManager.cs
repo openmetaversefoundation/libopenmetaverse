@@ -1206,7 +1206,7 @@ namespace OpenMetaverse
                     foreach (UUID image in imgKeys)
                     {
                         // Download all the images we need for baking
-                        Assets.RequestImage(image, ImageType.Normal, 1013000.0f, 0);
+                        Assets.RequestImage(image, ImageType.Normal, 1013000.0f, 0, 0);
                     }
                 }
             }

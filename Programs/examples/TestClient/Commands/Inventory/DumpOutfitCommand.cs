@@ -71,7 +71,7 @@ namespace OpenMetaverse.TestClient
                                 }
 
                                 OutfitAssets.Add(face.TextureID);
-                                Client.Assets.RequestImage(face.TextureID, type, 100000.0f, 0);
+                                Client.Assets.RequestImage(face.TextureID, type, 100000.0f, 0, 0);
 
                                 output.Append(((AppearanceManager.TextureIndex)j).ToString());
                                 output.Append(" ");

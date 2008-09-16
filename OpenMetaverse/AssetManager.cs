@@ -313,6 +313,8 @@ namespace OpenMetaverse
         public bool NotFound;
         public Simulator Simulator;
         public SortedList<ushort, ushort> PacketsSeen;
+        public ImageType ImageType;
+        public int DiscardLevel;
 
         internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
@@ -453,11 +455,30 @@ namespace OpenMetaverse
                     {
                         ImageDownload download = (ImageDownload)transfer;
 
+                        uint packet = 0;
+                        lock (download.PacketsSeen)
+                        {
+                            if (download.PacketsSeen.Count > 0)
+                            {
+                                // Initially set this to the earliest packet received in the transfer
+                                packet = download.PacketsSeen[0];
+
+                                for (int i = 0; i < download.PacketsSeen.Count; i++)
+                                {
+                                    ++packet;
+
+                                    // If there is a missing packet in the list, break and request the download
+                                    // resume here
+                                    if (download.PacketsSeen[(ushort)i] != packet)
+                                        break;
+                                }
+                            }
+                        }
+
                         if (download.TimeSinceLastPacket > 5000)
                         {
-                            // FIXME: This will probably break on baked textures and doesn't preserve the originally requested discardlevel
                             download.TimeSinceLastPacket = 0;
-                            RequestImage(download.ID, ImageType.Normal, 1013010.0f, 0);
+                            RequestImage(download.ID, download.ImageType, 1013010.0f, download.DiscardLevel, packet);
                         }
                     }
                 }
@@ -607,7 +628,7 @@ namespace OpenMetaverse
         /// avatar texture or a normal texture</param>
         public void RequestImage(UUID imageID, ImageType type)
         {
-            RequestImage(imageID, type, 1013000.0f, 0);
+            RequestImage(imageID, type, 1013000.0f, 0, 0);
         }
 
         /// <summary>
@@ -618,14 +639,18 @@ namespace OpenMetaverse
         /// avatar texture or a normal texture</param>
         /// <param name="priority">Priority level of the download. Default is
         /// <c>1,013,000.0f</c></param>
-        /// <param name="discardLevel">Number of quality layers to discard</param>
-        /// <remarks>Sending a priority of 0, and a discardlevel of -1 aborts
+        /// <param name="discardLevel">Number of quality layers to discard.
+        /// This controls the end marker of the data sent</param>
+        /// <param name="packetNum">Packet number to start the download at.
+        /// This controls the start marker of the data sent</param>
+        /// <remarks>Sending a priority of 0 and a discardlevel of -1 aborts
         /// download</remarks>
-        public void RequestImage(UUID imageID, ImageType type, float priority, int discardLevel)
+        public void RequestImage(UUID imageID, ImageType type, float priority, int discardLevel, uint packetNum)
         {
             if (Cache.HasImage(imageID))
             {
                 ImageDownload transfer = Cache.GetCachedImage(imageID);
+                transfer.ImageType = type;
 
                 if (null != transfer)
                 {
@@ -665,9 +690,10 @@ namespace OpenMetaverse
                 {
                     // New download
                     ImageDownload transfer = new ImageDownload();
-                    //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
                     transfer.ID = imageID;
                     transfer.Simulator = currentSim;
+                    transfer.ImageType = type;
+                    transfer.DiscardLevel = discardLevel;
 
                     // Add this transfer to the dictionary
                     lock (Transfers) Transfers[transfer.ID] = transfer;
@@ -694,7 +720,7 @@ namespace OpenMetaverse
                 request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
                 request.RequestImage[0].DiscardLevel = (sbyte)discardLevel;
                 request.RequestImage[0].DownloadPriority = priority;
-                request.RequestImage[0].Packet = 0;
+                request.RequestImage[0].Packet = packetNum;
                 request.RequestImage[0].Image = imageID;
                 request.RequestImage[0].Type = (byte)type;
 
@@ -747,6 +773,8 @@ namespace OpenMetaverse
                     //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
                     transfer.ID = Images[iru].ImageID;
                     transfer.Simulator = Client.Network.CurrentSim;
+                    transfer.ImageType = Images[iru].Type;
+                    transfer.DiscardLevel = Images[iru].DiscardLevel;
 
                     // Add this transfer to the dictionary
                     lock (Transfers) Transfers[transfer.ID] = transfer;
@@ -1388,13 +1416,16 @@ namespace OpenMetaverse
 
                     // The header is downloaded, we can insert this data in to the proper position
                     // Only insert if we haven't seen this packet before
-                    if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
+                    lock (transfer.PacketsSeen)
                     {
-                        transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
-                        Array.Copy(image.ImageData.Data, 0, transfer.AssetData,
-                            transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
-                            image.ImageData.Data.Length);
-                        transfer.Transferred += image.ImageData.Data.Length;
+                        if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
+                        {
+                            transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
+                            Array.Copy(image.ImageData.Data, 0, transfer.AssetData,
+                                transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
+                                image.ImageData.Data.Length);
+                            transfer.Transferred += image.ImageData.Data.Length;
+                        }
                     }
 
                     //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +

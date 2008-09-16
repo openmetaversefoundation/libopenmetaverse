@@ -73,7 +73,7 @@ namespace groupmanager
             Profile = profile;
 
             if (Group.InsigniaID != UUID.Zero)
-                Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0);
+                Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0, 0);
 
             if (this.InvokeRequired)
                 this.BeginInvoke(new MethodInvoker(UpdateProfile));
