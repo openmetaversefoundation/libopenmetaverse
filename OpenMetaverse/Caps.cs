@@ -147,10 +147,10 @@ namespace OpenMetaverse
             req.Add("StartGroupProposal");
             req.Add("UpdateGestureAgentInventory");
             req.Add("UpdateNotecardAgentInventory");
-            req.Add("UpdateScriptAgentInventory");
+            req.Add("UpdateScriptAgent");
             req.Add("UpdateGestureTaskInventory");
             req.Add("UpdateNotecardTaskInventory");
-            req.Add("UpdateScriptTaskInventory");
+            req.Add("UpdateScriptTask");
             req.Add("ViewerStartAuction");
             req.Add("UntrustedSimulatorMessage");
             req.Add("ViewerStats");
