@@ -3,7 +3,6 @@ using OpenMetaverse.Packets;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 
 namespace Simian.Extensions
 {
@@ -67,7 +66,7 @@ namespace Simian.Extensions
                             sendIM.MessageBlock.FromGroup = false;
                             sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.Avatar.Name);
                             sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
-                            sendIM.MessageBlock.Dialog = (byte)InstantMessageDialog.MessageFromAgent;
+                            sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
                             sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
                             sendIM.MessageBlock.ID = agent.AgentID;
                             sendIM.MessageBlock.Message = im.MessageBlock.Message;

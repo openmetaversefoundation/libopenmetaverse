@@ -268,6 +268,7 @@ namespace Simian.Extensions
                     reply.UUIDNameBlock[i].ID = kvp.Key;
                     reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(kvp.Value.FirstName);
                     reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(kvp.Value.LastName);
+                    i++;
                 }
 
                 Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);

@@ -418,8 +418,8 @@ namespace Simian
                             dropAck.Add(outgoing.Packet.Header.Sequence);
 
                             //Disconnect an agent if no packets are received for some time
-                            //TODO: Send logout packet? Also, 10000 should be a setting somewhere.
-                            if (Environment.TickCount - client.Agent.TickLastPacketReceived > 10000)
+                            //TODO: Send logout packet? Also, 60000 should be a setting somewhere.
+                            if (Environment.TickCount - client.Agent.TickLastPacketReceived > 60000)
                             {
                                 Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name), Helpers.LogLevel.Warning);
                                 server.UDP.RemoveClient(client.Agent);                                
