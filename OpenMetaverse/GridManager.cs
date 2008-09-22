@@ -35,8 +35,10 @@ using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
 {
+    #region Enums
+
     /// <summary>
-    /// 
+    /// Map layer request type
     /// </summary>
     public enum GridLayerType : uint
     {
@@ -49,20 +51,31 @@ namespace OpenMetaverse
     }
 
     /// <summary>
-    /// 
+    /// Type of grid item, such as telehub, event, populator location, etc.
     /// </summary>
     public enum GridItemType : uint
     {
+        /// <summary>Telehub</summary>
         Telehub = 1,
+        /// <summary>PG rated event</summary>
         PgEvent = 2,
+        /// <summary>Mature rated event</summary>
         MatureEvent = 3,
+        /// <summary>Popular location</summary>
         Popular = 4,
+        /// <summary>Location belonging to the current agent</summary>
         AgentLocations = 6,
+        /// <summary>Land for sale</summary>
         LandForSale = 7,
+        /// <summary>Classified ad</summary>
         Classified = 8
     }
 
-	/// <summary>
+    #endregion Enums
+
+    #region Structs
+
+    /// <summary>
 	/// Information about a region on the grid map
 	/// </summary>
 	public struct GridRegion
@@ -74,9 +87,9 @@ namespace OpenMetaverse
         /// <summary>Sim Name (NOTE: In lowercase!)</summary>
 		public string Name;
         /// <summary></summary>
-		public Simulator.SimAccess Access;
+		public SimAccess Access;
         /// <summary>Appears to always be zero (None)</summary>
-        public Simulator.RegionFlags RegionFlags;
+        public RegionFlags RegionFlags;
         /// <summary>Sim's defined Water Height</summary>
 		public byte WaterHeight;
         /// <summary></summary>
@@ -152,6 +165,10 @@ namespace OpenMetaverse
         }
     }
 
+    #endregion Structs
+
+    #region Grid Item Classes
+
     public abstract class GridItem
     {
     }
@@ -172,11 +189,15 @@ namespace OpenMetaverse
         }
     }
 
-	/// <summary>
+    #endregion Grid Item Classes
+
+    /// <summary>
 	/// Manages grid-wide tasks such as the world map
 	/// </summary>
 	public class GridManager
-	{
+    {
+        #region Delegates
+
         /// <summary>
         /// 
         /// </summary>
@@ -205,6 +226,10 @@ namespace OpenMetaverse
         /// <param name="regionHandle"></param>
         public delegate void RegionHandleReplyCallback(UUID regionID, ulong regionHandle);
 
+        #endregion Delegates
+
+        #region Events
+
         /// <summary>Triggered when coarse locations (minimap dots) are updated by the simulator</summary>
         public event CoarseLocationUpdateCallback OnCoarseLocationUpdate;
         /// <summary>Triggered when a new region is discovered through GridManager</summary>
@@ -215,6 +240,8 @@ namespace OpenMetaverse
         public event GridItemsCallback OnGridItems;
         /// <summary></summary>
         public event RegionHandleReplyCallback OnRegionHandleReply;
+
+        #endregion Events
 
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
@@ -497,10 +524,10 @@ namespace OpenMetaverse
                     region.Y = block.Y;
                     region.Name = Utils.BytesToString(block.Name);
                     // RegionFlags seems to always be zero here?
-                    region.RegionFlags = (Simulator.RegionFlags)block.RegionFlags;
+                    region.RegionFlags = (RegionFlags)block.RegionFlags;
                     region.WaterHeight = block.WaterHeight;
                     region.Agents = block.Agents;
-                    region.Access = (Simulator.SimAccess)block.Access;
+                    region.Access = (SimAccess)block.Access;
                     region.MapImageID = block.MapImageID;
                     region.RegionHandle = Helpers.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
 

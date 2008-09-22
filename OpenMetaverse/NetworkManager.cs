@@ -1079,9 +1079,9 @@ namespace OpenMetaverse
             simulator.TerrainStartHeight10 = handshake.RegionInfo.TerrainStartHeight10;
             simulator.TerrainStartHeight11 = handshake.RegionInfo.TerrainStartHeight11;
             simulator.WaterHeight = handshake.RegionInfo.WaterHeight;
-            simulator.Flags = (Simulator.RegionFlags)handshake.RegionInfo.RegionFlags;
+            simulator.Flags = (RegionFlags)handshake.RegionInfo.RegionFlags;
             simulator.BillableFactor = handshake.RegionInfo.BillableFactor;
-            simulator.Access = (Simulator.SimAccess)handshake.RegionInfo.SimAccess;
+            simulator.Access = (SimAccess)handshake.RegionInfo.SimAccess;
 
             Logger.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info, Client);
 

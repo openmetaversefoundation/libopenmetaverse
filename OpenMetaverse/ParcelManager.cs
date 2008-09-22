@@ -169,6 +169,12 @@ namespace OpenMetaverse
     /// coloring which is why it is a single integer instead of a set of
     /// flags
     /// </summary>
+    /// <remarks>These values seem to be poorly thought out. The first three
+    /// bits represent a single value, not flags. For example Auction (0x05) is
+    /// not a combination of OwnedByOther (0x01) and ForSale(0x04). However,
+    /// the BorderWest and BorderSouth values are bit flags that get attached
+    /// to the value stored in the first three bits. Bits four, five, and six
+    /// are unused</remarks>
     public enum ParcelOverlayType : byte
     {
         /// <summary>Public land</summary>
@@ -1559,7 +1565,7 @@ namespace OpenMetaverse
                 parcel.Area = properties.ParcelData.Area;
                 parcel.AuctionID = properties.ParcelData.AuctionID;
                 parcel.AuthBuyerID = properties.ParcelData.AuthBuyerID;
-                parcel.Bitmap = properties.ParcelData.Bitmap;
+                parcel.Bitmap = Utils.CopyBytes(properties.ParcelData.Bitmap);
                 parcel.Category = (Parcel.ParcelCategory)(sbyte)properties.ParcelData.Category;
                 parcel.ClaimDate = Utils.UnixTimeToDateTime((uint)properties.ParcelData.ClaimDate);
                 // ClaimPrice seems to always be zero?

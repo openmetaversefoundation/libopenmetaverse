@@ -326,6 +326,21 @@ namespace OpenMetaverse
         #region Conversion
 
         /// <summary>
+        /// Copy a byte array
+        /// </summary>
+        /// <param name="bytes">Byte array to copy</param>
+        /// <returns>A copy of the given byte array</returns>
+        public static byte[] CopyBytes(byte[] bytes)
+        {
+            if (bytes == null)
+                return null;
+
+            byte[] newBytes = new byte[bytes.Length];
+            Buffer.BlockCopy(bytes, 0, newBytes, 0, bytes.Length);
+            return newBytes;
+        }
+
+        /// <summary>
         /// Convert four bytes in little endian ordering to a floating point
         /// value
         /// </summary>
