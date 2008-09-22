@@ -27,6 +27,7 @@ namespace Simian
         public IAssetProvider Assets;
         public IAvatarProvider Avatars;
         public IInventoryProvider Inventory;
+        public IParcelProvider Parcels;
         public IMeshingProvider Mesher;
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
@@ -44,7 +45,7 @@ namespace Simian
             currentCircuitCode = 0;
         }
 
-        public void Start(int port, bool ssl)
+        public bool Start(int port, bool ssl)
         {
             HttpPort = port;
             UDPPort = port;
@@ -73,6 +74,11 @@ namespace Simian
             {
                 Logger.Log("Missing interfaces, shutting down", Helpers.LogLevel.Error);
                 Stop();
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -128,6 +134,8 @@ namespace Simian
                 Avatars = (IAvatarProvider)extension;
             else if (extension is IInventoryProvider)
                 Inventory = (IInventoryProvider)extension;
+            else if (extension is IParcelProvider)
+                Parcels = (IParcelProvider)extension;
             else if (extension is IMeshingProvider)
                 Mesher = (IMeshingProvider)extension;
         }
@@ -144,6 +152,8 @@ namespace Simian
                 Logger.Log("No IAvatarProvider interface loaded", Helpers.LogLevel.Error);
             else if (Inventory == null)
                 Logger.Log("No IInventoryProvider interface loaded", Helpers.LogLevel.Error);
+            else if (Parcels == null)
+                Logger.Log("No IParcelProvider interface loaded", Helpers.LogLevel.Error);
             else if (Mesher == null)
                 Logger.Log("No IMeshingProvider interface loaded", Helpers.LogLevel.Error);
             else

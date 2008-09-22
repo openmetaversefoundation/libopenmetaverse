@@ -232,6 +232,9 @@ namespace Simian.Extensions
         // HACK: The reduction provider will deprecate this at some point
         void SynchronizeStateTo(Agent agent)
         {
+            // Send the parcel overlay
+            server.Parcels.SendParcelOverlay(agent);
+
             // Send object updates for objects and avatars
             sceneObjects.ForEach(delegate(SimulationObject obj)
             {

@@ -31,9 +31,11 @@ namespace Simian.Extensions
             handshake.RegionInfo.BillableFactor = 0f;
             handshake.RegionInfo.CacheID = UUID.Random();
             handshake.RegionInfo.IsEstateManager = false;
-            handshake.RegionInfo.RegionFlags = 1;
+            handshake.RegionInfo.RegionFlags = (uint)(RegionFlags.AllowDirectTeleport | RegionFlags.AllowLandmark |
+                RegionFlags.AllowParcelChanges | RegionFlags.AllowSetHome | RegionFlags.AllowVoice | RegionFlags.PublicAllowed |
+                RegionFlags.Sandbox | RegionFlags.TaxFree);
             handshake.RegionInfo.SimOwner = UUID.Random();
-            handshake.RegionInfo.SimAccess = 1;
+            handshake.RegionInfo.SimAccess = (byte)SimAccess.Min;
             handshake.RegionInfo.SimName = Utils.StringToBytes("Simian");
             handshake.RegionInfo.WaterHeight = server.WaterHeight;
             handshake.RegionInfo.TerrainBase0 = UUID.Zero;
