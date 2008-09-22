@@ -47,6 +47,7 @@ namespace Simian.Extensions
             parcels[parcel.LocalID] = parcel;
 
             server.UDP.RegisterPacketCallback(PacketType.ParcelPropertiesRequest, ParcelPropertiesRequestHandler);
+            server.UDP.RegisterPacketCallback(PacketType.ParcelPropertiesUpdate, ParcelPropertiesUpdateHandler);
         }
 
         public void Stop()
@@ -257,6 +258,44 @@ namespace Simian.Extensions
 
             for (int i = 0; i < parcels.Count; i++)
                 SendParcelProperties(parcels[i], request.ParcelData.SequenceID, request.ParcelData.SnapSelection, result, agent);
+        }
+
+        void ParcelPropertiesUpdateHandler(Packet packet, Agent agent)
+        {
+            ParcelPropertiesUpdatePacket update = (ParcelPropertiesUpdatePacket)packet;
+
+            Parcel parcel;
+            if (parcels.TryGetValue(update.ParcelData.LocalID, out parcel))
+            {
+                parcel.AuthBuyerID = update.ParcelData.AuthBuyerID;
+                parcel.Category = (Parcel.ParcelCategory)update.ParcelData.Category;
+                parcel.Desc = Utils.BytesToString(update.ParcelData.Desc);
+                parcel.Flags = (Parcel.ParcelFlags)update.ParcelData.ParcelFlags;
+                parcel.GroupID = update.ParcelData.GroupID;
+                parcel.Landing = (Parcel.LandingType)update.ParcelData.LandingType;
+                parcel.Media.MediaAutoScale = update.ParcelData.MediaAutoScale;
+                parcel.Media.MediaID = update.ParcelData.MediaID;
+                parcel.Media.MediaURL = Utils.BytesToString(update.ParcelData.MediaURL);
+                parcel.MusicURL = Utils.BytesToString(update.ParcelData.MusicURL);
+                parcel.Name = Utils.BytesToString(update.ParcelData.Name);
+                parcel.PassHours = update.ParcelData.PassHours;
+                parcel.PassPrice = update.ParcelData.PassPrice;
+                parcel.SalePrice = update.ParcelData.SalePrice;
+                parcel.SnapshotID = update.ParcelData.SnapshotID;
+                parcel.UserLocation = update.ParcelData.UserLocation;
+                parcel.UserLookAt = update.ParcelData.UserLookAt;
+
+                lock (parcels)
+                    parcels[parcel.LocalID] = parcel;
+
+                if (update.ParcelData.Flags != 0)
+                    SendParcelProperties(parcel.LocalID, 0, false, ParcelResult.Single, agent);
+            }
+            else
+            {
+                Logger.Log("Got a ParcelPropertiesUpdate for an unknown parcel " + update.ParcelData.LocalID,
+                    Helpers.LogLevel.Warning);
+            }
         }
     }
 }

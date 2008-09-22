@@ -118,7 +118,7 @@ namespace Simian.Extensions
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
 
-                    float waterChestHeight = server.WaterHeight - (agent.Avatar.Scale.Z * .33f);
+                    float waterChestHeight = server.Scene.WaterHeight - (agent.Avatar.Scale.Z * .33f);
 
                     if (flying)
                     {
@@ -158,7 +158,7 @@ namespace Simian.Extensions
                     else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Position.Z <= waterChestHeight)
                     { //falling, floating, or landing from a jump
 
-                        if (agent.Avatar.Position.Z > server.WaterHeight)
+                        if (agent.Avatar.Position.Z > server.Scene.WaterHeight)
                         { //above water
 
                             move = Vector3.Zero; //override controls while drifting
@@ -213,7 +213,7 @@ namespace Simian.Extensions
 
                             gravity = 0f; //buoyant
                             agent.Avatar.Velocity *= 0.5f * seconds;
-                            agent.Avatar.Velocity.Z += 1.0f * seconds;
+                            agent.Avatar.Velocity.Z += 0.75f * seconds;
 
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
                                 animsChanged = true;
@@ -384,8 +384,9 @@ namespace Simian.Extensions
         {
             AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
 
-            Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
-                heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
+            // TODO: These are the screen size dimensions. Useful when we start doing frustum culling
+            //Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
+            //    heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
         }
 
     }

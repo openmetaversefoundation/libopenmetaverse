@@ -37,7 +37,7 @@ namespace Simian.Extensions
             handshake.RegionInfo.SimOwner = UUID.Random();
             handshake.RegionInfo.SimAccess = (byte)SimAccess.Min;
             handshake.RegionInfo.SimName = Utils.StringToBytes("Simian");
-            handshake.RegionInfo.WaterHeight = server.WaterHeight;
+            handshake.RegionInfo.WaterHeight = server.Scene.WaterHeight;
             handshake.RegionInfo.TerrainBase0 = UUID.Zero;
             handshake.RegionInfo.TerrainBase1 = UUID.Zero;
             handshake.RegionInfo.TerrainBase2 = UUID.Zero;

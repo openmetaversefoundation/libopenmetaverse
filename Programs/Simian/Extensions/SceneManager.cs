@@ -36,6 +36,8 @@ namespace Simian.Extensions
             }
         }
 
+        public float WaterHeight { get { return 35f; } }
+
         public SceneManager(Simian server)
         {
             this.server = server;

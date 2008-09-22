@@ -19,7 +19,6 @@ namespace Simian
 
         public HttpServer HttpServer;
         public ulong RegionHandle;
-        public float WaterHeight = 35.0f;
 
         // Interfaces
         public IUDPProvider UDP;

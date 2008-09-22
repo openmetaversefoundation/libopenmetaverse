@@ -26,6 +26,7 @@ namespace Simian
         // TODO: Convert to a patch-based system, and expose terrain editing
         // through functions instead of a property
         float[] Heightmap { get; set; }
+        float WaterHeight { get; }
 
         bool ObjectAdd(object sender, Agent creator, SimulationObject obj, PrimFlags creatorFlags);
         bool ObjectRemove(object sender, SimulationObject obj);

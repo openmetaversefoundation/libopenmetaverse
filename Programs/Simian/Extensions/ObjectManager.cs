@@ -79,9 +79,6 @@ namespace Simian.Extensions
             Vector3 rayDir = Vector3.Normalize(add.ObjectData.RayEnd - add.ObjectData.RayStart);
             position -= rayDir * scale;
 
-            // HACK: Push the prim up a little to keep it from falling through the world
-            position.Z += 3.0f;
-
             #endregion Position Calculation
 
             #region Foliage Handling
