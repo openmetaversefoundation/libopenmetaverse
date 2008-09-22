@@ -95,6 +95,7 @@ namespace OpenMetaverse
         /// <summary>A string which contains the mime type of the media</summary>
         public string MediaType;
     }
+
     #endregion Structs
 
     #region Parcel Class
@@ -238,6 +239,20 @@ namespace OpenMetaverse
             Any = -1
         }
 
+        /// <summary>
+        /// Type of teleport landing for a parcel
+        /// </summary>
+        public enum LandingType : byte
+        {
+            /// <summary>Unset, simulator default</summary>
+            None = 0,
+            /// <summary>Specific landing point set for this parcel</summary>
+            LandingPoint = 1,
+            /// <summary>No landing point set, direct teleports enabled for
+            /// this parcel</summary>
+            Direct = 2
+        }
+
         #endregion Enums
 
         /// <summary></summary>
@@ -333,7 +348,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public Vector3 UserLookAt;
         /// <summary></summary>
-        public byte LandingType;
+        public LandingType Landing;
         /// <summary></summary>
         public float Dwell;
         /// <summary></summary>
@@ -418,7 +433,7 @@ namespace OpenMetaverse
             SnapshotID = UUID.Zero;
             UserLocation = Vector3.Zero;
             UserLookAt = Vector3.Zero;
-            LandingType = 0x0;
+            Landing = LandingType.None;
             Dwell = 0;
             RegionDenyAnonymous = false;
             RegionPushOverride = false;
@@ -447,7 +462,7 @@ namespace OpenMetaverse
             request.ParcelData.Category = (byte)this.Category;
             request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
             request.ParcelData.GroupID = this.GroupID;
-            request.ParcelData.LandingType = this.LandingType;
+            request.ParcelData.LandingType = (byte)this.Landing;
 
             request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
             request.ParcelData.MediaID = this.Media.MediaID;
@@ -1386,10 +1401,8 @@ namespace OpenMetaverse
         /// <param name="simulator">Object representing simulator</param>
         private void ParcelPropertiesReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
-
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
-
                 LLSDMap map = (LLSDMap)llsd;
                 LLSDMap parcelDataBlock = (LLSDMap)(((LLSDArray)map["ParcelData"])[0]);
                 LLSDMap ageVerifyBlock = (LLSDMap)(((LLSDArray)map["AgeVerificationBlock"])[0]);
@@ -1416,7 +1429,7 @@ namespace OpenMetaverse
                 parcel.GroupID = parcelDataBlock["GroupID"].AsUUID();
                 parcel.GroupPrims = parcelDataBlock["GroupPrims"].AsInteger();
                 parcel.IsGroupOwned = parcelDataBlock["IsGroupOwned"].AsBoolean();
-                parcel.LandingType = (byte)parcelDataBlock["LandingType"].AsInteger();
+                parcel.Landing = (Parcel.LandingType)(byte)parcelDataBlock["LandingType"].AsInteger();
                 parcel.LocalID = parcelDataBlock["LocalID"].AsInteger();
                 parcel.MaxPrims = parcelDataBlock["MaxPrims"].AsInteger();
                 parcel.Media.MediaAutoScale = (byte)parcelDataBlock["MediaAutoScale"].AsInteger(); 
@@ -1542,7 +1555,7 @@ namespace OpenMetaverse
                 parcel.GroupID = properties.ParcelData.GroupID;
                 parcel.GroupPrims = properties.ParcelData.GroupPrims;
                 parcel.IsGroupOwned = properties.ParcelData.IsGroupOwned;
-                parcel.LandingType = properties.ParcelData.LandingType;
+                parcel.Landing = (Parcel.LandingType)properties.ParcelData.LandingType;
                 parcel.MaxPrims = properties.ParcelData.MaxPrims;
                 parcel.Media.MediaAutoScale = properties.ParcelData.MediaAutoScale;
                 parcel.Media.MediaID = properties.ParcelData.MediaID;
