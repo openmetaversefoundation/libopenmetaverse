@@ -244,7 +244,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public string Name = String.Empty;
         /// <summary></summary>
-        public byte[] ParcelOverlay = new byte[4096];
+        public ParcelOverlayType[] ParcelOverlay = new ParcelOverlayType[4096];
         /// <summary></summary>
         public int ParcelOverlaysReceived;
         /// <summary></summary>

@@ -297,7 +297,6 @@ namespace OpenMetaverse
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
             RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
-            RegisterCallback(PacketType.ParcelOverlay, new PacketCallback(ParcelOverlayHandler));
             RegisterCallback(PacketType.EnableSimulator, new PacketCallback(EnableSimulatorHandler));
             RegisterCallback(PacketType.DisableSimulator, new PacketCallback(DisableSimulatorHandler));
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
@@ -1096,29 +1095,6 @@ namespace OpenMetaverse
             // We're officially connected to this sim
             simulator.connected = true;
             simulator.ConnectedEvent.Set();
-        }
-
-        private void ParcelOverlayHandler(Packet packet, Simulator simulator)
-        {
-            ParcelOverlayPacket overlay = (ParcelOverlayPacket)packet;
-
-            if (overlay.ParcelData.SequenceID >= 0 && overlay.ParcelData.SequenceID <= 3)
-            {
-                Buffer.BlockCopy(overlay.ParcelData.Data, 0, simulator.ParcelOverlay, 
-                    overlay.ParcelData.SequenceID * 1024, 1024);
-                simulator.ParcelOverlaysReceived++;
-
-                if (simulator.ParcelOverlaysReceived > 3)
-                {
-                    // TODO: ParcelOverlaysReceived should become internal, and reset to zero every 
-                    // time it hits four. Also need a callback here
-                }
-            }
-            else
-            {
-                Logger.Log("Parcel overlay with sequence ID of " + overlay.ParcelData.SequenceID +
-                    " received from " + simulator.ToString(), Helpers.LogLevel.Warning, Client);
-            }
         }
 
         private void EnableSimulatorHandler(Packet packet, Simulator simulator)

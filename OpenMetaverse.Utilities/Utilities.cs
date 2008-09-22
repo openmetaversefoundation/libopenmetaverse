@@ -526,14 +526,14 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        private void Parcels_OnParcelProperties(Parcel parcel, ParcelManager.ParcelResult result, int sequenceID,
-            bool snapSelection)
+        private void Parcels_OnParcelProperties(Simulator simulator, Parcel parcel, ParcelResult result,
+            int selectedPrims, int sequenceID, bool snapSelection)
         {
             // Check if this is for a simulator we're concerned with
-            if (!active_sims.Contains(parcel.Simulator)) return;
+            if (!active_sims.Contains(simulator)) return;
 
             // Warn about parcel property request errors and bail out
-            if (result == ParcelManager.ParcelResult.NoData)
+            if (result == ParcelResult.NoData)
             {
                 Logger.Log("ParcelDownloader received a NoData response, sequenceID " + sequenceID,
                     Helpers.LogLevel.Warning, Client);
@@ -541,24 +541,24 @@ namespace OpenMetaverse.Utilities
             }
 
             // Warn about unexpected data and bail out
-            if (!ParcelMarked.ContainsKey(parcel.Simulator))
+            if (!ParcelMarked.ContainsKey(simulator))
             {
-                Logger.Log("ParcelDownloader received unexpected parcel data for " + parcel.Simulator,
+                Logger.Log("ParcelDownloader received unexpected parcel data for " + simulator,
                     Helpers.LogLevel.Warning, Client);
                 return;
             }
 
             int x, y, index, bit;
-            int[,] markers = ParcelMarked[parcel.Simulator];
+            int[,] markers = ParcelMarked[simulator];
 
             // Add this parcel to the dictionary of LocalID -> Parcel mappings
-            lock (Parcels[parcel.Simulator])
-                if (!Parcels[parcel.Simulator].ContainsKey(parcel.LocalID))
-                    Parcels[parcel.Simulator][parcel.LocalID] = parcel;
+            lock (Parcels[simulator])
+                if (!Parcels[simulator].ContainsKey(parcel.LocalID))
+                    Parcels[simulator][parcel.LocalID] = parcel;
 
             // Request the access list for this parcel
-            Client.Parcels.AccessListRequest(parcel.Simulator, parcel.LocalID, 
-                ParcelManager.AccessList.Both, 0);
+            Client.Parcels.AccessListRequest(simulator, parcel.LocalID, 
+                AccessList.Both, 0);
 
             // Mark this area as downloaded
             for (y = 0; y < 64; y++)
@@ -584,10 +584,9 @@ namespace OpenMetaverse.Utilities
                 {
                     if (markers[y, x] == 0)
                     {
-                        Client.Parcels.PropertiesRequest(parcel.Simulator,
+                        Client.Parcels.PropertiesRequest(simulator,
                                                          (y + 1) * 4.0f, (x + 1) * 4.0f,
                                                          y * 4.0f, x * 4.0f, 0, false);
-
                         return;
                     }
                 }
@@ -596,12 +595,12 @@ namespace OpenMetaverse.Utilities
             // If we get here, there are no more zeroes in the markers map
             lock (active_sims)
             {
-                active_sims.Remove(parcel.Simulator);
+                active_sims.Remove(simulator);
 
                 if (OnParcelsDownloaded != null)
                 {
                     // This map is complete, fire callback
-                    try { OnParcelsDownloaded(parcel.Simulator, Parcels[parcel.Simulator], markers); }
+                    try { OnParcelsDownloaded(simulator, Parcels[simulator], markers); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }

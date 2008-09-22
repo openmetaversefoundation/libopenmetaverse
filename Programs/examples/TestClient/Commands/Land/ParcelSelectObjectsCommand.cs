@@ -44,7 +44,7 @@ namespace OpenMetaverse.TestClient
                 };
 
                 Client.Parcels.OnParcelSelectedObjects += callback;
-                Client.Parcels.SelectObjects(parcelID, (ParcelManager.ObjectReturnType)16, ownerUUID);
+                Client.Parcels.SelectObjects(parcelID, (ObjectReturnType)16, ownerUUID);
                 
 
                 Client.Parcels.ObjectOwnersRequest(Client.Network.CurrentSim, parcelID);
