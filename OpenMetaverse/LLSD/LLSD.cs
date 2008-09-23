@@ -27,6 +27,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace OpenMetaverse.StructuredData
@@ -164,7 +165,7 @@ namespace OpenMetaverse.StructuredData
             if (value == null) { return new LLSD(); }
             else if (value is bool) { return new LLSDBoolean((bool)value); }
             else if (value is int) { return new LLSDInteger((int)value); }
-            else if (value is uint) { return new LLSDInteger((int)(uint)value); }
+            else if (value is uint) { return new LLSDBinary((uint)value); }
             else if (value is short) { return new LLSDInteger((int)(short)value); }
             else if (value is ushort) { return new LLSDInteger((int)(ushort)value); }
             else if (value is sbyte) { return new LLSDInteger((int)(sbyte)value); }
@@ -185,6 +186,149 @@ namespace OpenMetaverse.StructuredData
             else if (value is Quaternion) { return FromQuaternion((Quaternion)value); }
             else if (value is Color4) { return FromColor4((Color4)value); }
             else return new LLSD();
+        }
+
+        public static object ToObject(Type type, LLSD value)
+        {
+            if (type == typeof(ulong))
+            {
+                if (value.Type == LLSDType.Binary)
+                {
+                    byte[] bytes = value.AsBinary();
+                    return Helpers.BytesToUInt64(bytes);
+                }
+                else
+                {
+                    return (ulong)value.AsInteger();
+                }
+            }
+            else if (type == typeof(uint))
+            {
+                if (value.Type == LLSDType.Binary)
+                {
+                    byte[] bytes = value.AsBinary();
+                    return Helpers.BytesToUInt(bytes);
+                }
+                else
+                {
+                    return (uint)value.AsInteger();
+                }
+            }
+            else if (type == typeof(ushort))
+            {
+                return (ushort)value.AsInteger();
+            }
+            else if (type == typeof(byte))
+            {
+                return (byte)value.AsInteger();
+            }
+            else if (type == typeof(short))
+            {
+                return (short)value.AsInteger();
+            }
+            else if (type == typeof(string))
+            {
+                return value.AsString();
+            }
+            else if (type == typeof(bool))
+            {
+                return value.AsBoolean();
+            }
+            else if (type == typeof(float))
+            {
+                return (float)value.AsReal();
+            }
+            else if (type == typeof(double))
+            {
+                return value.AsReal();
+            }
+            else if (type == typeof(int))
+            {
+                return value.AsInteger();
+            }
+            else if (type == typeof(UUID))
+            {
+                return value.AsUUID();
+            }
+            else if (type == typeof(Vector3))
+            {
+                if (value.Type == LLSDType.Array)
+                    return ((LLSDArray)value).AsVector3();
+                else
+                    return Vector3.Zero;
+            }
+            else if (type == typeof(Vector4))
+            {
+                if (value.Type == LLSDType.Array)
+                    return ((LLSDArray)value).AsVector4();
+                else
+                    return Vector4.Zero;
+            }
+            else if (type == typeof(Quaternion))
+            {
+                if (value.Type == LLSDType.Array)
+                    return ((LLSDArray)value).AsQuaternion();
+                else
+                    return Quaternion.Identity;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Uses reflection to create an LLSDMap from all of the LLSD
+        /// serializable types in an object
+        /// </summary>
+        /// <param name="obj">Class or struct containing serializable types</param>
+        /// <returns>An LLSDMap holding the serialized values from the
+        /// container object</returns>
+        public static LLSDMap SerializeMembers(object obj)
+        {
+            Type t = obj.GetType();
+            FieldInfo[] fields = t.GetFields();
+
+            LLSDMap map = new LLSDMap(fields.Length);
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                FieldInfo field = fields[i];
+                if (!Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
+                {
+                    LLSD serializedField = LLSD.FromObject(field.GetValue(obj));
+
+                    if (serializedField.Type != LLSDType.Unknown || field.FieldType == typeof(string) || field.FieldType == typeof(byte[]))
+                        map.Add(field.Name, serializedField);
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Uses reflection to deserialize member variables in an object from
+        /// an LLSDMap
+        /// </summary>
+        /// <param name="obj">Reference to an object to fill with deserialized
+        /// values</param>
+        /// <param name="serialized">Serialized values to put in the target
+        /// object</param>
+        public static void DeserializeMembers(ref object obj, LLSDMap serialized)
+        {
+            Type t = obj.GetType();
+            FieldInfo[] fields = t.GetFields();
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                FieldInfo field = fields[i];
+                if (!Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
+                {
+                    LLSD serializedField;
+                    if (serialized.TryGetValue(field.Name, out serializedField))
+                        field.SetValue(obj, ToObject(field.FieldType, serializedField));
+                }
+            }
         }
     }
 
@@ -460,9 +604,7 @@ namespace OpenMetaverse.StructuredData
 
         public override string ToString()
         {
-            // TODO: ToString() is only meant for friendly display, a hex string would
-            // be more friendly then a base64 string
-            return AsString();
+            return Utils.BytesToHexString(value, null);
         }
     }
 

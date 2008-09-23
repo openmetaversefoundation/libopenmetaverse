@@ -451,9 +451,12 @@ namespace OpenMetaverse
                 for (int j = 0; j < 16; j++)
                 {
                     if ((i + j) < length)
-                        output.Append(String.Format("{0:X2} ", bytes[i + j]));
-                    else
-                        output.Append("   ");
+                    {
+                        if (j != 0)
+                            output.Append(' ');
+
+                        output.Append(String.Format("{0:X2}", bytes[i + j]));
+                    }
                 }
             }
 
