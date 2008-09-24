@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse;
+using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
@@ -190,18 +191,107 @@ namespace Simian.Extensions
             Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
         }
 
+        void ClearWearables(Agent agent)
+        {
+            agent.ShapeItem = UUID.Zero;
+            agent.ShapeAsset = UUID.Zero;
+            agent.SkinItem = UUID.Zero;
+            agent.SkinAsset = UUID.Zero;
+            agent.HairItem = UUID.Zero;
+            agent.HairAsset = UUID.Zero;
+            agent.EyesItem = UUID.Zero;
+            agent.EyesAsset = UUID.Zero;
+            agent.ShirtItem = UUID.Zero;
+            agent.ShirtAsset = UUID.Zero;
+            agent.PantsItem = UUID.Zero;
+            agent.PantsAsset = UUID.Zero;
+            agent.ShoesItem = UUID.Zero;
+            agent.ShoesAsset = UUID.Zero;
+            agent.SocksItem = UUID.Zero;
+            agent.SocksAsset = UUID.Zero;
+            agent.JacketItem = UUID.Zero;
+            agent.JacketAsset = UUID.Zero;
+            agent.GlovesItem = UUID.Zero;
+            agent.GlovesAsset = UUID.Zero;
+            agent.UndershirtItem = UUID.Zero;
+            agent.UndershirtAsset = UUID.Zero;
+            agent.UnderpantsItem = UUID.Zero;
+            agent.UnderpantsAsset = UUID.Zero;
+            agent.SkirtItem = UUID.Zero;
+            agent.SkirtAsset = UUID.Zero;
+        }
+
         void AgentIsNowWearingHandler(Packet packet, Agent agent)
         {
             AgentIsNowWearingPacket wearing = (AgentIsNowWearingPacket)packet;
 
             Logger.DebugLog("Updating agent wearables");
+            ClearWearables(agent);
 
-            lock (agent.Wearables)
+            for (int i = 0; i < wearing.WearableData.Length; i++)
             {
-                agent.Wearables.Clear();
+                UUID assetID = UUID.Zero;
+                UUID itemID = wearing.WearableData[i].ItemID;
 
-                for (int i = 0; i < wearing.WearableData.Length; i++)
-                    agent.Wearables[(WearableType)wearing.WearableData[i].WearableType] = wearing.WearableData[i].ItemID;
+                InventoryObject invObj;
+                if (agent.Inventory.TryGetValue(itemID, out invObj) && invObj is InventoryItem)
+                    assetID = ((InventoryItem)invObj).AssetID;
+
+                switch ((WearableType)wearing.WearableData[i].WearableType)
+                {
+                    case WearableType.Shape:
+                        agent.ShapeAsset = assetID;
+                        agent.ShapeItem = itemID;
+                        break;
+                    case WearableType.Skin:
+                        agent.SkinAsset = assetID;
+                        agent.SkinItem = itemID;
+                        break;
+                    case WearableType.Hair:
+                        agent.HairAsset = assetID;
+                        agent.HairItem = itemID;
+                        break;
+                    case WearableType.Eyes:
+                        agent.EyesAsset = assetID;
+                        agent.EyesItem = itemID;
+                        break;
+                    case WearableType.Shirt:
+                        agent.ShirtAsset = assetID;
+                        agent.ShirtItem = itemID;
+                        break;
+                    case WearableType.Pants:
+                        agent.PantsAsset = assetID;
+                        agent.PantsItem = itemID;
+                        break;
+                    case WearableType.Shoes:
+                        agent.ShoesAsset = assetID;
+                        agent.ShoesItem = itemID;
+                        break;
+                    case WearableType.Socks:
+                        agent.SocksAsset = assetID;
+                        agent.SocksItem = itemID;
+                        break;
+                    case WearableType.Jacket:
+                        agent.JacketAsset = assetID;
+                        agent.JacketItem = itemID;
+                        break;
+                    case WearableType.Gloves:
+                        agent.GlovesAsset = assetID;
+                        agent.GlovesItem = itemID;
+                        break;
+                    case WearableType.Undershirt:
+                        agent.UndershirtAsset = assetID;
+                        agent.UndershirtItem = itemID;
+                        break;
+                    case WearableType.Underpants:
+                        agent.UnderpantsAsset = assetID;
+                        agent.UnderpantsItem = itemID;
+                        break;
+                    case WearableType.Skirt:
+                        agent.SkirtAsset = assetID;
+                        agent.SkirtItem = itemID;
+                        break;
+                }
             }
         }
 
@@ -215,6 +305,9 @@ namespace Simian.Extensions
                 set.ObjectData.TextureEntry.Length);
 
             // Update agent visual params
+            if (agent.VisualParams == null)
+                agent.VisualParams = new byte[set.VisualParam.Length];
+
             for (int i = 0; i < set.VisualParam.Length; i++)
                 agent.VisualParams[i] = set.VisualParam[i].ParamValue;
 

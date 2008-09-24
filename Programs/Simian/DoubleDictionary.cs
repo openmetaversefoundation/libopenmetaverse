@@ -39,6 +39,20 @@ namespace Simian
             }
         }
 
+        public void Clear()
+        {
+            lock (syncObject)
+            {
+                Dictionary1.Clear();
+                Dictionary2.Clear();
+            }
+        }
+
+        public int Count
+        {
+            get { return Dictionary1.Count; }
+        }
+
         public bool TryGetValue(TKey1 key, out TValue value)
         {
             return Dictionary1.TryGetValue(key, out value);

@@ -123,6 +123,11 @@ namespace Simian
             return udpServer.RemoveClient(agent, endpoint);
         }
 
+        public uint CreateCircuit(Agent agent)
+        {
+            return udpServer.CreateCircuit(agent);
+        }
+
         public void SendPacket(UUID agentID, Packet packet, PacketCategory category)
         {
             udpServer.SendPacket(agentID, packet, category);
@@ -150,6 +155,10 @@ namespace Simian
         BlockingQueue<IncomingPacket> packetInbox = new BlockingQueue<IncomingPacket>(Settings.PACKET_INBOX_SIZE);
         /// <summary></summary>
         DoubleDictionary<UUID, IPEndPoint, UDPClient> clients = new DoubleDictionary<UUID, IPEndPoint, UDPClient>();
+        /// <summary></summary>
+        Dictionary<uint, Agent> unassociatedAgents = new Dictionary<uint, Agent>();
+        /// <summary></summary>
+        int currentCircuitCode = 0;
 
         public UDPServer(int port, Simian server)
             : base(port)
@@ -190,6 +199,19 @@ namespace Simian
         public bool RemoveClient(Agent agent, IPEndPoint endpoint)
         {
             return clients.Remove(agent.AgentID, endpoint);
+        }
+
+        public uint CreateCircuit(Agent agent)
+        {
+            uint circuitCode = (uint)Interlocked.Increment(ref currentCircuitCode);
+
+            // Put this client in the list of clients that have not been associated with an IPEndPoint yet
+            lock (unassociatedAgents)
+                unassociatedAgents[circuitCode] = agent;
+
+            Logger.Log("Created a circuit for " + agent.FirstName, Helpers.LogLevel.Info);
+
+            return circuitCode;
         }
 
         public void BroadcastPacket(Packet packet, PacketCategory category)
@@ -478,7 +500,7 @@ namespace Simian
                 UseCircuitCodePacket useCircuitCode = (UseCircuitCodePacket)packet;
 
                 Agent agent;
-                if (server.CompleteAgentConnection(useCircuitCode.CircuitCode.Code, out agent))
+                if (CompleteAgentConnection(useCircuitCode.CircuitCode.Code, out agent))
                 {
                     AddClient(agent, address);
                     if (clients.TryGetValue(agent.AgentID, out client))
@@ -532,7 +554,7 @@ namespace Simian
         {
         }
 
-        private void IncomingPacketHandler()
+        void IncomingPacketHandler()
         {
             IncomingPacket incomingPacket = new IncomingPacket();
             Packet packet = null;
@@ -614,6 +636,38 @@ namespace Simian
                         packetEvents.BeginRaiseEvent(packet.Type, packet, client.Agent);
                     }
                 }
+            }
+        }
+
+        bool TryGetUnassociatedAgent(uint circuitCode, out Agent agent)
+        {
+            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
+            {
+                lock (unassociatedAgents)
+                    unassociatedAgents.Remove(circuitCode);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bool CompleteAgentConnection(uint circuitCode, out Agent agent)
+        {
+            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
+            {
+                lock (server.Agents)
+                    server.Agents[agent.AgentID] = agent;
+                lock (unassociatedAgents)
+                    unassociatedAgents.Remove(circuitCode);
+
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

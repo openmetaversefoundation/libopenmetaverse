@@ -37,9 +37,9 @@ namespace Simian
         void AddClient(Agent agent, IPEndPoint endpoint);
         bool RemoveClient(Agent agent);
         bool RemoveClient(Agent agent, IPEndPoint endpoint);
+        uint CreateCircuit(Agent agent);
 
         void SendPacket(UUID agentID, Packet packet, PacketCategory category);
-
         void BroadcastPacket(Packet packet, PacketCategory category);
 
         void RegisterPacketCallback(PacketType type, PacketCallback callback);
