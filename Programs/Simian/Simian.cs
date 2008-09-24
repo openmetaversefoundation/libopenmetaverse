@@ -13,6 +13,10 @@ namespace Simian
 {
     public partial class Simian
     {
+        // TODO: Don't hard-code these
+        public const uint REGION_X = 256000;
+        public const uint REGION_Y = 256000;
+
         public int UDPPort = 9000;
         public int HttpPort = 9000;
         public string DataDir = "SimianData/";
@@ -21,6 +25,8 @@ namespace Simian
         public ulong RegionHandle;
 
         // Interfaces
+        public IAuthenticationProvider Authentication;
+        public IAccountProvider Accounts;
         public IUDPProvider UDP;
         public ISceneProvider Scene;
         public IAssetProvider Assets;
@@ -32,16 +38,10 @@ namespace Simian
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<UUID, Agent> Agents = new Dictionary<UUID, Agent>();
 
-        const uint regionX = 256000;
-        const uint regionY = 256000;
-
-        Dictionary<uint, Agent> unassociatedAgents;
-        int currentCircuitCode;
-
         public Simian()
         {
-            unassociatedAgents = new Dictionary<uint, Agent>();
-            currentCircuitCode = 0;
+            Agent lol = new Agent();
+            OpenMetaverse.StructuredData.LLSD.SerializeMembers(lol);
         }
 
         public bool Start(int port, bool ssl)
@@ -51,7 +51,7 @@ namespace Simian
 
             InitHttpServer(HttpPort, ssl);
 
-            RegionHandle = Helpers.UIntsToLong(regionX, regionY);
+            RegionHandle = Helpers.UIntsToLong(REGION_X, REGION_Y);
 
             // Load all of the extensions
             ExtensionLoader.LoadAllExtensions(AppDomain.CurrentDomain.BaseDirectory, this);
@@ -89,41 +89,13 @@ namespace Simian
             HttpServer.Stop();
         }
 
-        public bool CompleteAgentConnection(uint circuitCode, out Agent agent)
-        {
-            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
-            {
-                lock (Agents)
-                    Agents[agent.AgentID] = agent;
-                lock (unassociatedAgents)
-                    unassociatedAgents.Remove(circuitCode);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool TryGetUnassociatedAgent(uint circuitCode, out Agent agent)
-        {
-            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
-            {
-                lock (unassociatedAgents)
-                    unassociatedAgents.Remove(circuitCode);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         void TryAssignToInterface(ISimianExtension extension)
         {
-            if (extension is IUDPProvider)
+            if (extension is IAuthenticationProvider)
+                Authentication = (IAuthenticationProvider)extension;
+            else if (extension is IAccountProvider)
+                Accounts = (IAccountProvider)extension;
+            else if (extension is IUDPProvider)
                 UDP = (IUDPProvider)extension;
             else if (extension is ISceneProvider)
                 Scene = (ISceneProvider)extension;
@@ -141,7 +113,11 @@ namespace Simian
 
         bool CheckInterfaces()
         {
-            if (UDP == null)
+            if (Authentication == null)
+                Logger.Log("No IAuthenticationProvider interface loaded", Helpers.LogLevel.Error);
+            else if (Accounts == null)
+                Logger.Log("No IAccountProvider interface loaded", Helpers.LogLevel.Error);
+            else if (UDP == null)
                 Logger.Log("No IUDPProvider interface loaded", Helpers.LogLevel.Error);
             else if (Scene == null)
                 Logger.Log("No ISceneProvider interface loaded", Helpers.LogLevel.Error);
@@ -319,91 +295,83 @@ namespace Simian
 
         LoginResponseData HandleLogin(string firstName, string lastName, string password, string start, string version, string channel)
         {
-            uint regionX = 256000;
-            uint regionY = 256000;
+            LoginResponseData response = new LoginResponseData();
+            Agent agent;
 
-            Agent agent = new Agent();
-            agent.AgentID = UUID.Random();
-            agent.FirstName = firstName;
-            agent.LastName = lastName;
-            agent.SessionID = UUID.Random();
-            agent.SecureSessionID = UUID.Random();
-            // Assign a circuit code and insert the agent into the unassociatedAgents dictionary
-            agent.CircuitCode = CreateAgentCircuit(agent);
-            agent.InventoryRoot = UUID.Random();
-            agent.InventoryLibRoot = UUID.Random();
-            agent.Flags = PrimFlags.Physics | PrimFlags.ObjectModify | PrimFlags.ObjectCopy |
-                PrimFlags.ObjectAnyOwner | PrimFlags.ObjectMove | PrimFlags.InventoryEmpty |
-                PrimFlags.ObjectTransfer | PrimFlags.ObjectOwnerModify | PrimFlags.ObjectYouOwner;
-            agent.TickLastPacketReceived = Environment.TickCount;
+            UUID agentID = Authentication.Authenticate(firstName, lastName, password);
+            if (agentID != UUID.Zero)
+            {
+                // Authentication successful, create a login instance of this agent
+                agent = Accounts.CreateInstance(agentID);
 
-            // Setup the agent inventory
-            InventoryFolder rootFolder = new InventoryFolder();
-            rootFolder.ID = agent.InventoryRoot;
-            rootFolder.Name = "Inventory";
-            rootFolder.OwnerID = agent.AgentID;
-            rootFolder.PreferredType = AssetType.RootFolder;
-            rootFolder.Version = 1;
-            agent.Inventory[rootFolder.ID] = rootFolder;
+                if (agent != null)
+                {
+                    // Assign a circuit code and insert the agent into the unassociatedAgents dictionary
+                    agent.CircuitCode = UDP.CreateCircuit(agent);
 
-            // Setup the default library
-            InventoryFolder libRootFolder = new InventoryFolder();
-            libRootFolder.ID = agent.InventoryLibRoot;
-            libRootFolder.Name = "Library";
-            libRootFolder.OwnerID = agent.AgentID;
-            libRootFolder.PreferredType = AssetType.RootFolder;
-            libRootFolder.Version = 1;
-            agent.Library[libRootFolder.ID] = libRootFolder;
+                    agent.TickLastPacketReceived = Environment.TickCount;
+                    agent.LastLoginTime = Utils.DateTimeToUnixTime(DateTime.Now);
 
-            IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
-            IPAddress simIP = addresses.AddressList.Length > 0 ? addresses.AddressList[0] : IPAddress.Loopback;
+                    // Get this machine's IP address
+                    IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
+                    IPAddress simIP = addresses.AddressList.Length > 0 ? addresses.AddressList[0] : IPAddress.Loopback;
 
-            // Setup default login response values
-            LoginResponseData response;
+                    response.AgentID = agent.AgentID;
+                    response.SecureSessionID = agent.SecureSessionID;
+                    response.SessionID = agent.SessionID;
+                    response.CircuitCode = agent.CircuitCode;
+                    response.AgentAccess = agent.AccessLevel;
+                    response.BuddyList = null; // FIXME:
+                    response.FirstName = agent.FirstName;
+                    response.HomeLookAt = agent.HomeLookAt;
+                    response.HomePosition = agent.HomePosition;
+                    response.HomeRegion = agent.HomeRegionHandle;
+                    response.InventoryRoot = agent.InventoryRoot;
+                    response.InventorySkeleton = null; // FIXME:
+                    response.LastName = agent.LastName;
+                    response.LibraryOwner = agent.InventoryLibraryOwner;
+                    response.LibraryRoot = agent.InventoryLibraryRoot;
+                    response.LibrarySkeleton = null; // FIXME:
+                    response.LookAt = agent.CurrentLookAt;
+                    response.Message = "Welcome to Simian";
+                    response.Reason = String.Empty;
 
-            response.AgentID = agent.AgentID;
-            response.SecureSessionID = agent.SecureSessionID;
-            response.SessionID = agent.SessionID;
-            response.CircuitCode = agent.CircuitCode;
-            response.AgentAccess = "M";
-            response.BuddyList = null;
-            response.FirstName = agent.FirstName;
-            response.HomeLookAt = Vector3.UnitX;
-            response.HomePosition = new Vector3(128f, 128f, 25f);
-            response.HomeRegion = Helpers.UIntsToLong(regionX, regionY);
-            response.InventoryRoot = agent.InventoryRoot;
-            response.InventorySkeleton = null;
-            response.LastName = agent.LastName;
-            response.LibraryOwner = response.AgentID;
-            response.LibraryRoot = agent.InventoryLibRoot;
-            response.LibrarySkeleton = null;
-            response.LookAt = Vector3.UnitX;
-            response.Message = "Welcome to Simian";
-            response.Reason = String.Empty;
-            response.RegionX = regionX;
-            response.RegionY = regionY;
-            response.SecondsSinceEpoch = DateTime.Now;
-            // FIXME: Actually generate a seed capability
-            response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, HttpPort);
-            response.SimIP = simIP;
-            response.SimPort = (ushort)UDPPort;
-            response.StartLocation = "last";
-            response.Success = true;
-            
+                    uint regionX, regionY;
+                    Helpers.LongToUInts(agent.CurrentRegionHandle, out regionX, out regionY);
+                    response.RegionX = regionX;
+                    response.RegionY = regionY;
+
+                    response.SecondsSinceEpoch = DateTime.Now;
+                    // FIXME: Actually generate a seed capability
+                    response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, HttpPort);
+                    response.SimIP = simIP;
+                    response.SimPort = (ushort)UDPPort;
+                    response.StartLocation = "last"; // FIXME:
+                    response.Success = true;
+                }
+                else
+                {
+                    // Something went wrong creating an agent instance, return a fail response
+                    response.AgentID = agentID;
+                    response.FirstName = firstName;
+                    response.LastName = lastName;
+                    response.Message = "Failed to create an account instance";
+                    response.Reason = "account";
+                    response.Success = false;
+                }
+            }
+            else
+            {
+                // Authentication failed, return a fail response
+                response.AgentID = agentID;
+                response.FirstName = firstName;
+                response.LastName = lastName;
+                response.Message = "Authentication failed";
+                response.Reason = "key";
+                response.Success = false;
+            }
+
             return response;
-        }
-
-        uint CreateAgentCircuit(Agent agent)
-        {
-            uint circuitCode = (uint)Interlocked.Increment(ref currentCircuitCode);
-
-            // Put this client in the list of clients that have not been associated with an IPEndPoint yet
-            lock (unassociatedAgents)
-                unassociatedAgents[circuitCode] = agent;
-
-            Logger.Log("Created a circuit for " + agent.FirstName, Helpers.LogLevel.Info);
-
-            return circuitCode;
         }
     }
 }
