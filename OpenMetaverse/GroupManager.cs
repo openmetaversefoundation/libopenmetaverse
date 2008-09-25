@@ -680,7 +680,8 @@ namespace OpenMetaverse
         /// <summary>Request a list of group members.</summary>
         /// <remarks>Subscribe to <code>OnGroupMembers</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupMembers(UUID group)
+        /// <returns>UUID of the request, use to index into cache</returns>
+        public UUID RequestGroupMembers(UUID group)
         {
             UUID requestID = UUID.Random();
             lock (GroupMembersCaches) GroupMembersCaches[requestID] = new Dictionary<UUID, GroupMember>();
@@ -693,12 +694,14 @@ namespace OpenMetaverse
             request.GroupData.RequestID = requestID;
 
             Client.Network.SendPacket(request);
+            return requestID;
         }
 
         /// <summary>Request group roles</summary>
         /// <remarks>Subscribe to <code>OnGroupRoles</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupRoles(UUID group)
+        /// <returns>UUID of the request, use to index into cache</returns>
+        public UUID RequestGroupRoles(UUID group)
         {
             UUID requestID = UUID.Random();
             lock (GroupRolesCaches) GroupRolesCaches[requestID] = new Dictionary<UUID, GroupRole>();
@@ -711,12 +714,14 @@ namespace OpenMetaverse
             request.GroupData.RequestID = requestID;
 
             Client.Network.SendPacket(request);
+            return requestID;
         }
 
         /// <summary>Request members (members,role) role mapping for a group.</summary>
         /// <remarks>Subscribe to <code>OnGroupRolesMembers</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupRoleMembers(UUID group)
+        /// <returns>UUID of the request, use to index into cache</returns>
+        public UUID RequestGroupRoleMembers(UUID group)
         {
             UUID requestID = UUID.Random();
             lock (GroupRolesMembersCaches)
@@ -730,12 +735,14 @@ namespace OpenMetaverse
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
             Client.Network.SendPacket(request);
+            return requestID;
         }
 
         /// <summary>Request a groups Titles</summary>
         /// <remarks>Subscribe to <code>OnGroupTitles</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
-        public void RequestGroupTitles(UUID group)
+        /// <returns>UUID of the request, use to index into cache</returns>
+        public UUID RequestGroupTitles(UUID group)
         {
             UUID requestID = UUID.Random();
 
@@ -747,6 +754,7 @@ namespace OpenMetaverse
             request.AgentData.RequestID = requestID;
 
             Client.Network.SendPacket(request);
+            return requestID;
         }
 
         /// <summary>Begin to get the group account summary</summary>
