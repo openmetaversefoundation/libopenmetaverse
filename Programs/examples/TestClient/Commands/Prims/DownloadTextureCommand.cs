@@ -82,7 +82,8 @@ namespace OpenMetaverse.TestClient
 
         private void Assets_OnImageReceiveProgress(UUID image, int recieved, int total)
         {
-            Console.WriteLine(String.Format("Texture {0}: Received {1} / {2}", image, recieved, total));
+            if (image == TextureID)
+                Console.WriteLine(String.Format("Texture {0}: Received {1} / {2}", image, recieved, total));
         }
     }
 }
