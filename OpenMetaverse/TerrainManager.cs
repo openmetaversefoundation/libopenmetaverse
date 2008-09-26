@@ -46,6 +46,7 @@ namespace OpenMetaverse
         public event LandPatchCallback OnLandPatch;
 
         public InternalDictionary<ulong, TerrainPatch[]> SimPatches = new InternalDictionary<ulong, TerrainPatch[]>();
+        public Vector2[] WindSpeeds = new Vector2[256];
 
         private GridClient Client;
 
@@ -150,12 +151,34 @@ namespace OpenMetaverse
 
         private void DecompressWind(Simulator simulator, BitPack bitpack, TerrainPatch.GroupHeader group)
         {
-            ;
+            int[] patches = new int[32 * 32];
+
+            // Ignore the simulator stride value
+            group.Stride = group.PatchSize;
+
+            // Each wind packet contains the wind speeds and direction for the entire simulator
+            // stored as two float arrays. The first array is the X value of the wind speed at
+            // each 16x16m block, second is the Y value.
+            // wind_speed = distance(x,y to 0,0)
+            // wind_direction = vec2(x,y)
+
+            // X values
+            TerrainPatch.Header header = TerrainCompressor.DecodePatchHeader(bitpack);
+            TerrainCompressor.DecodePatch(patches, bitpack, header, group.PatchSize);
+            float[] xvalues = TerrainCompressor.DecompressPatch(patches, header, group);
+
+            // Y values
+            header = TerrainCompressor.DecodePatchHeader(bitpack);
+            TerrainCompressor.DecodePatch(patches, bitpack, header, group.PatchSize);
+            float[] yvalues = TerrainCompressor.DecompressPatch(patches, header, group);
+
+            for (int i = 0; i < 256; i++)
+                WindSpeeds[i] = new Vector2(xvalues[i], yvalues[i]);
         }
 
         private void DecompressCloud(Simulator simulator, BitPack bitpack, TerrainPatch.GroupHeader group)
         {
-            ;
+            // FIXME:
         }
 
         private void LayerDataHandler(Packet packet, Simulator simulator)

@@ -40,8 +40,6 @@ namespace Simian
 
         public Simian()
         {
-            Agent lol = new Agent();
-            OpenMetaverse.StructuredData.LLSD.SerializeMembers(lol);
         }
 
         public bool Start(int port, bool ssl)

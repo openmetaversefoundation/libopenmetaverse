@@ -243,8 +243,9 @@ namespace OpenMetaverse
         public string SimVersion = String.Empty;
         /// <summary></summary>
         public string Name = String.Empty;
-        /// <summary></summary>
-        public ParcelOverlayType[] ParcelOverlay = new ParcelOverlayType[4096];
+        /// <summary>A 64x64 grid of parcel coloring values. The values stored 
+        /// in this array are of the <seealso cref="ParcelArrayType"/> type</summary>
+        public byte[] ParcelOverlay = new byte[4096];
         /// <summary></summary>
         public int ParcelOverlaysReceived;
         /// <summary></summary>
