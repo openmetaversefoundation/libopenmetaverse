@@ -93,13 +93,14 @@ namespace OpenMetaverse
             header.PatchSize = 16;
             header.Type = type;
 
-            byte[] data = new byte[patches.Length];
+            // Should be enough to fit even the most poorly packed data
+            byte[] data = new byte[patches.Length * 16 * 16 * 2];
             BitPack bitpack = new BitPack(data, 0);
             bitpack.PackBits(header.Stride, 16);
             bitpack.PackBits(header.PatchSize, 8);
             bitpack.PackBits((int)header.Type, 8);
 
-            for (int i = 0; i < patches.Rank; i++)
+            for (int i = 0; i < patches.Length; i++)
                 CreatePatch(bitpack, patches[i].Data, patches[i].X, patches[i].Y);
 
             bitpack.PackBits(END_OF_PATCHES, 8);
