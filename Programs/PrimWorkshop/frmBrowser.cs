@@ -218,7 +218,7 @@ namespace PrimWorkshop
                 for (int x = 0; x < 16; x++)
                 {
                     Heightmap[y, x] = new TerrainPatch();
-                    Heightmap[y, x].Heightmap = new float[16 * 16];
+                    Heightmap[y, x].Data = new float[16 * 16];
                 }
             }
 
@@ -596,7 +596,7 @@ namespace PrimWorkshop
                                 int xOff = x - (xBlock * 16);
                                 int yOff = y - (yBlock * 16);
 
-                                float t = Heightmap[yBlock, xBlock].Heightmap[yOff * 16 + xOff];
+                                float t = Heightmap[yBlock, xBlock].Data[yOff * 16 + xOff];
                                 //float min = Single.MaxValue;
                                 int index = 0;
 
@@ -1011,7 +1011,7 @@ namespace PrimWorkshop
         {
             if (Client != null && Client.Network.CurrentSim == simulator)
             {
-                Heightmap[y, x].Heightmap = data;
+                Heightmap[y, x].Data = data;
             }
 
             // Find the new max height
@@ -1190,7 +1190,7 @@ namespace PrimWorkshop
                             for (int x = 0; x < 15; x++)
                             {
                                 // Vertex 0
-                                float height = Heightmap[hy, hx].Heightmap[y * 16 + x];
+                                float height = Heightmap[hy, hx].Data[y * 16 + x];
                                 float color = height / MaxHeight;
                                 float red = (selected) ? 1f : color;
 
@@ -1199,7 +1199,7 @@ namespace PrimWorkshop
                                 Gl.glVertex3f(hx * 16 + x, hy * 16 + y, height);
 
                                 // Vertex 1
-                                height = Heightmap[hy, hx].Heightmap[y * 16 + (x + 1)];
+                                height = Heightmap[hy, hx].Data[y * 16 + (x + 1)];
                                 color = height / MaxHeight;
                                 red = (selected) ? 1f : color;
 
@@ -1208,7 +1208,7 @@ namespace PrimWorkshop
                                 Gl.glVertex3f(hx * 16 + x + 1, hy * 16 + y, height);
 
                                 // Vertex 2
-                                height = Heightmap[hy, hx].Heightmap[(y + 1) * 16 + x];
+                                height = Heightmap[hy, hx].Data[(y + 1) * 16 + x];
                                 color = height / MaxHeight;
                                 red = (selected) ? 1f : color;
 
@@ -1217,7 +1217,7 @@ namespace PrimWorkshop
                                 Gl.glVertex3f(hx * 16 + x, hy * 16 + y + 1, height);
 
                                 // Vertex 3
-                                height = Heightmap[hy, hx].Heightmap[(y + 1) * 16 + (x + 1)];
+                                height = Heightmap[hy, hx].Data[(y + 1) * 16 + (x + 1)];
                                 color = height / MaxHeight;
                                 red = (selected) ? 1f : color;
 

@@ -5,7 +5,7 @@ namespace OpenMetaverse
 {
     public class TerrainPatch
     {
-        public float[] Heightmap;
+        #region Enums and Structs
 
         public enum LayerType : byte
         {
@@ -29,7 +29,28 @@ namespace OpenMetaverse
             public int QuantWBits;
             public int PatchIDs;
             public uint WordBits;
+
+            public int X
+            {
+                get { return PatchIDs >> 5; }
+                set { PatchIDs += (value << 5); }
+            }
+
+            public int Y
+            {
+                get { return PatchIDs & 0x1F; }
+                set { PatchIDs |= value & 0x1F; }
+            }
         }
+
+        #endregion Enums and Structs
+
+        /// <summary>X position of this patch</summary>
+        public int X;
+        /// <summary>Y position of this patch</summary>
+        public int Y;
+        /// <summary>A 16x16 array of floats holding decompressed layer data</summary>
+        public float[] Data;
     }
 
     public static class TerrainCompressor
@@ -62,6 +83,33 @@ namespace OpenMetaverse
             BuildQuantizeTable16();
         }
 
+        public static LayerDataPacket CreateLayerDataPacket(TerrainPatch[] patches, TerrainPatch.LayerType type)
+        {
+            LayerDataPacket layer = new LayerDataPacket();
+            layer.LayerID.Type = (byte)type;
+
+            TerrainPatch.GroupHeader header = new TerrainPatch.GroupHeader();
+            header.Stride = STRIDE;
+            header.PatchSize = 16;
+            header.Type = type;
+
+            byte[] data = new byte[patches.Length];
+            BitPack bitpack = new BitPack(data, 0);
+            bitpack.PackBits(header.Stride, 16);
+            bitpack.PackBits(header.PatchSize, 8);
+            bitpack.PackBits((int)header.Type, 8);
+
+            for (int i = 0; i < patches.Rank; i++)
+                CreatePatch(bitpack, patches[i].Data, patches[i].X, patches[i].Y);
+
+            bitpack.PackBits(END_OF_PATCHES, 8);
+
+            layer.LayerData.Data = new byte[bitpack.BytePos + 1];
+            Buffer.BlockCopy(bitpack.Data, 0, layer.LayerData.Data, 0, bitpack.BytePos + 1);
+
+            return layer;
+        }
+
         /// <summary>
         /// Creates a LayerData packet for compressed land data given a full
         /// simulator heightmap and an array of indices of patches to compress
@@ -89,9 +137,7 @@ namespace OpenMetaverse
             bitpack.PackBits((int)header.Type, 8);
 
             for (int i = 0; i < patches.Length; i++)
-            {
-                CreatePatch(bitpack, heightmap, patches[i] % 16, (patches[i] - (patches[i] % 16)) / 16);
-            }
+                CreatePatchFromHeightmap(bitpack, heightmap, patches[i] % 16, (patches[i] - (patches[i] % 16)) / 16);
 
             bitpack.PackBits(END_OF_PATCHES, 8);
 
@@ -99,6 +145,22 @@ namespace OpenMetaverse
             Buffer.BlockCopy(bitpack.Data, 0, layer.LayerData.Data, 0, bitpack.BytePos + 1);
 
             return layer;
+        }
+
+        public static void CreatePatch(BitPack output, float[] patchData, int x, int y)
+        {
+            if (patchData.Length != 16 * 16)
+                throw new ArgumentException("Patch data must be a 16x16 array");
+
+            TerrainPatch.Header header = PrescanPatch(patchData);
+            header.QuantWBits = 136;
+            header.PatchIDs = (y & 0x1F);
+            header.PatchIDs += (x << 5);
+
+            // NOTE: No idea what prequant and postquant should be or what they do
+            int[] patch = CompressPatch(patchData, header, 10);
+            int wbits = EncodePatchHeader(output, header, patch);
+            EncodePatch(output, patch, 0, wbits);
         }
 
         /// <summary>
@@ -111,32 +173,45 @@ namespace OpenMetaverse
         /// from 0 to 15</param>
         /// <param name="y">Y offset of the patch to create, valid values are
         /// from 0 to 15</param>
-        public static void CreatePatch(BitPack output, float[] heightmap, int x, int y)
+        public static void CreatePatchFromHeightmap(BitPack output, float[] heightmap, int x, int y)
         {
             if (heightmap.Length != 256 * 256)
-            {
-                Logger.Log("Invalid heightmap value of " + heightmap.Length + " passed to CreatePatch()",
-                    Helpers.LogLevel.Error);
-                return;
-            }
+                throw new ArgumentException("Heightmap data must be 256x256");
 
             if (x < 0 || x > 15 || y < 0 || y > 15)
-            {
-                Logger.Log("Invalid x or y patch offset passed to CreatePatch(), x=" + x + ", y=" + y,
-                    Helpers.LogLevel.Error);
-                return;
-            }
+                throw new ArgumentException("X and Y patch offsets must be from 0 to 15");
 
             TerrainPatch.Header header = PrescanPatch(heightmap, x, y);
             header.QuantWBits = 136;
             header.PatchIDs = (y & 0x1F);
             header.PatchIDs += (x << 5);
 
-            // TODO: What is prequant?
+            // NOTE: No idea what prequant and postquant should be or what they do
             int[] patch = CompressPatch(heightmap, x, y, header, 10);
             int wbits = EncodePatchHeader(output, header, patch);
-            // TODO: What is postquant?
             EncodePatch(output, patch, 0, wbits);
+        }
+
+        private static TerrainPatch.Header PrescanPatch(float[] patch)
+        {
+            TerrainPatch.Header header = new TerrainPatch.Header();
+            float zmax = -99999999.0f;
+            float zmin = 99999999.0f;
+
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    float val = patch[j * 16 + i];
+                    if (val > zmax) zmax = val;
+                    if (val < zmin) zmin = val;
+                }
+            }
+
+            header.DCOffset = zmin;
+            header.Range = (int)((zmax - zmin) + 1.0f);
+
+            return header;
         }
 
         private static TerrainPatch.Header PrescanPatch(float[] heightmap, int patchX, int patchY)
@@ -149,8 +224,9 @@ namespace OpenMetaverse
             {
                 for (int i = patchX * 16; i < (patchX + 1) * 16; i++)
                 {
-                    if (heightmap[j * 256 + i] > zmax) zmax = heightmap[j * 256 + i];
-                    if (heightmap[j * 256 + i] < zmin) zmin = heightmap[j * 256 + i];
+                    float val = heightmap[j * 256 + i];
+                    if (val > zmax) zmax = val;
+                    if (val < zmin) zmin = val;
                 }
             }
 
@@ -472,6 +548,36 @@ namespace OpenMetaverse
             return output;
         }
 
+        private static int[] CompressPatch(float[] patchData, TerrainPatch.Header header, int prequant)
+        {
+            float[] block = new float[16 * 16];
+            int wordsize = prequant;
+            float oozrange = 1.0f / (float)header.Range;
+            float range = (float)(1 << prequant);
+            float premult = oozrange * range;
+            float sub = (float)(1 << (prequant - 1)) + header.DCOffset * premult;
+
+            header.QuantWBits = wordsize - 2;
+            header.QuantWBits |= (prequant - 2) << 4;
+
+            int k = 0;
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                    block[k++] = patchData[j * 16 + i] * premult - sub;
+            }
+
+            float[] ftemp = new float[16 * 16];
+            int[] itemp = new int[16 * 16];
+
+            for (int o = 0; o < 16; o++)
+                DCTLine16(block, ftemp, o);
+            for (int o = 0; o < 16; o++)
+                DCTColumn16(ftemp, itemp, o);
+
+            return itemp;
+        }
+
         private static int[] CompressPatch(float[] heightmap, int patchX, int patchY, TerrainPatch.Header header, int prequant)
         {
             float[] block = new float[16 * 16];
@@ -488,9 +594,7 @@ namespace OpenMetaverse
             for (int j = patchY * 16; j < (patchY + 1) * 16; j++)
             {
                 for (int i = patchX * 16; i < (patchX + 1) * 16; i++)
-                {
                     block[k++] = heightmap[j * 256 + i] * premult - sub;
-                }
             }
 
             float[] ftemp = new float[16 * 16];

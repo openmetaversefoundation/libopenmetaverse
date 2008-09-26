@@ -84,7 +84,7 @@ namespace OpenMetaverse
 
                         if (SimPatches[regionHandle][patchY * 16 + patchX] != null)
                         {
-                            height = SimPatches[regionHandle][patchY * 16 + patchX].Heightmap[y * 16 + x];
+                            height = SimPatches[regionHandle][patchY * 16 + patchX].Data[y * 16 + x];
                             return true;
                         }
                     }
@@ -109,8 +109,8 @@ namespace OpenMetaverse
                 if (header.QuantWBits == TerrainCompressor.END_OF_PATCHES)
                     break;
 
-                x = header.PatchIDs >> 5;
-                y = header.PatchIDs & 0x1F;
+                x = header.X;
+                y = header.Y;
 
                 if (x >= TerrainCompressor.PATCHES_PER_EDGE || y >= TerrainCompressor.PATCHES_PER_EDGE)
                 {
@@ -142,8 +142,12 @@ namespace OpenMetaverse
                         if (!SimPatches.ContainsKey(simulator.Handle))
                             SimPatches.Add(simulator.Handle, new TerrainPatch[16 * 16]);
 
-                        SimPatches[simulator.Handle][y * 16 + x] = new TerrainPatch();
-                        SimPatches[simulator.Handle][y * 16 + x].Heightmap = heightmap;
+                        TerrainPatch patch = new TerrainPatch();
+                        patch.Data = heightmap;
+                        patch.X = x;
+                        patch.Y = y;
+
+                        SimPatches[simulator.Handle][y * 16 + x] = patch;
                     }
                 }
             }
