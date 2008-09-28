@@ -18,7 +18,6 @@ namespace Simian.Extensions
             server.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, new PacketCallback(UseCircuitCodeHandler));
             server.UDP.RegisterPacketCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
             server.UDP.RegisterPacketCallback(PacketType.LogoutRequest, new PacketCallback(LogoutRequestHandler));
-            
         }
 
         public void Stop()
@@ -74,15 +73,6 @@ namespace Simian.Extensions
         {
             LogoutRequestPacket request = (LogoutRequestPacket)packet;
 
-            LogoutReplyPacket reply = new LogoutReplyPacket();
-            reply.AgentData.AgentID = agent.AgentID;
-            reply.AgentData.SessionID = agent.SessionID;
-            reply.InventoryData = new LogoutReplyPacket.InventoryDataBlock[1];
-            reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
-            reply.InventoryData[0].ItemID = UUID.Zero;
-
-            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
-
             lock (server.Agents)
             {
                 if (server.Agents.ContainsKey(agent.AgentID))
@@ -96,7 +86,24 @@ namespace Simian.Extensions
                 }
             }
 
+            // Remove the avatar from the scene
+            SimulationObject obj;
+            if (server.Scene.TryGetObject(agent.AgentID, out obj))
+                server.Scene.ObjectRemove(this, obj);
+            else
+                Logger.Log("Logout request from an agent that is not in the scene", Helpers.LogLevel.Warning);
+
+            // Remove the UDP client
             server.UDP.RemoveClient(agent);
+
+            LogoutReplyPacket reply = new LogoutReplyPacket();
+            reply.AgentData.AgentID = agent.AgentID;
+            reply.AgentData.SessionID = agent.SessionID;
+            reply.InventoryData = new LogoutReplyPacket.InventoryDataBlock[1];
+            reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
+            reply.InventoryData[0].ItemID = UUID.Zero;
+
+            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
 
             //HACK: Notify everyone when someone logs off
             OfflineNotificationPacket offline = new OfflineNotificationPacket();

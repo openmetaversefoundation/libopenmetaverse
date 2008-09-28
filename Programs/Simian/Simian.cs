@@ -35,6 +35,9 @@ namespace Simian
         public IParcelProvider Parcels;
         public IMeshingProvider Mesher;
 
+        // Persistent extensions
+        public List<IPersistable> PersistentExtensions = new List<IPersistable>();
+
         /// <summary>All of the agents currently connected to this UDP server</summary>
         public Dictionary<UUID, Agent> Agents = new Dictionary<UUID, Agent>();
 
@@ -62,9 +65,22 @@ namespace Simian
 
             foreach (ISimianExtension extension in ExtensionLoader.Extensions)
             {
-                // Start the interfaces
-                Logger.DebugLog("Loading extension " + extension.GetType().Name);
-                extension.Start();
+                // Start persistance providers after all other extensions
+                if (!(extension is IPersistenceProvider))
+                {
+                    Logger.DebugLog("Loading extension " + extension.GetType().Name);
+                    extension.Start();
+                }
+            }
+
+            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            {
+                // Start the persistance provider(s)
+                if (extension is IPersistenceProvider)
+                {
+                    Logger.DebugLog("Loading persistance provider " + extension.GetType().Name);
+                    extension.Start();
+                }
             }
 
             if (!CheckInterfaces())
@@ -82,7 +98,18 @@ namespace Simian
         public void Stop()
         {
             foreach (ISimianExtension extension in ExtensionLoader.Extensions)
-                extension.Stop();
+            {
+                // Stop persistance providers first
+                if (extension is IPersistenceProvider)
+                    extension.Stop();
+            }
+
+            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            {
+                // Stop all other extensions
+                if (!(extension is IPersistenceProvider))
+                    extension.Stop();
+            }
 
             HttpServer.Stop();
         }
@@ -107,6 +134,10 @@ namespace Simian
                 Parcels = (IParcelProvider)extension;
             else if (extension is IMeshingProvider)
                 Mesher = (IMeshingProvider)extension;
+
+            // Track all of the extensions with persistence
+            if (extension is IPersistable)
+                PersistentExtensions.Add((IPersistable)extension);
         }
 
         bool CheckInterfaces()

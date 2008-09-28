@@ -53,6 +53,16 @@ namespace Simian
             get { return Dictionary1.Count; }
         }
 
+        public bool ContainsKey(TKey1 key)
+        {
+            return Dictionary1.ContainsKey(key);
+        }
+
+        public bool ContainsKey(TKey2 key)
+        {
+            return Dictionary2.ContainsKey(key);
+        }
+
         public bool TryGetValue(TKey1 key, out TValue value)
         {
             return Dictionary1.TryGetValue(key, out value);

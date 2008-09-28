@@ -27,6 +27,8 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.ObjectDelink, new PacketCallback(ObjectDelinkHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectShape, new PacketCallback(ObjectShapeHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ObjectFlagUpdate, new PacketCallback(ObjectFlagUpdateHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectExtraParams, new PacketCallback(ObjectExtraParamsHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.ObjectImage, new PacketCallback(ObjectImageHandler));
             Server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
             Server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
             Server.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new PacketCallback(RequestObjectPropertiesFamilyHandler));
@@ -479,6 +481,27 @@ namespace Simian.Extensions
                 Logger.Log("Got an ObjectFlagUpdate packet for unknown object " + update.AgentData.ObjectLocalID,
                     Helpers.LogLevel.Warning);
             }
+        }
+
+        void ObjectExtraParamsHandler(Packet packet, Agent agent)
+        {
+            ObjectExtraParamsPacket extra = (ObjectExtraParamsPacket)packet;
+
+            for (int i = 0; i < extra.ObjectData.Length; i++)
+            {
+                ObjectExtraParamsPacket.ObjectDataBlock block = extra.ObjectData[i];
+
+                SimulationObject obj;
+                if (Server.Scene.TryGetObject(block.ObjectLocalID, out obj))
+                {
+                    ExtraParamType type = (ExtraParamType)block.ParamType;
+                }
+                
+            }
+        }
+
+        void ObjectImageHandler(Packet packet, Agent agent)
+        {
         }
 
         void DeRezObjectHandler(Packet packet, Agent agent)

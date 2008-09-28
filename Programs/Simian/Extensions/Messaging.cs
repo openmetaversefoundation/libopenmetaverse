@@ -30,7 +30,8 @@ namespace Simian.Extensions
             ChatFromViewerPacket viewerChat = (ChatFromViewerPacket)packet;
 
             string message = Utils.BytesToString(viewerChat.ChatData.Message);
-            if (viewerChat.ChatData.Channel != 0 || message.Substring(0, 1) == "/") return; //not public chat
+            if (viewerChat.ChatData.Channel != 0 || (message.Length > 0 && message.Substring(0, 1) == "/"))
+                return; //not public chat
 
             //TODO: add distance constraints to AudibleLevel and Message 
 

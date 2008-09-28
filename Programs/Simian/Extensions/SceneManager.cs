@@ -55,6 +55,14 @@ namespace Simian.Extensions
 
         public bool ObjectAdd(object sender, Agent creator, SimulationObject obj, PrimFlags creatorFlags)
         {
+            // Check if the object already exists in the scene
+            if (sceneObjects.ContainsKey(obj.Prim.ID))
+            {
+                Logger.Log(String.Format("Attempting to add duplicate object {0} to the scene",
+                    obj.Prim.ID), Helpers.LogLevel.Warning);
+                return false;
+            }
+
             // Assign a unique LocalID to this object
             obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
 
@@ -205,30 +213,36 @@ namespace Simian.Extensions
             // Give testers a provisionary balance of 1000L
             agent.Balance = 1000;
 
-            // Send a response back to the client
-            AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
-            complete.AgentData.AgentID = agent.AgentID;
-            complete.AgentData.SessionID = agent.SessionID;
-            complete.Data.LookAt = Vector3.UnitX;
-            complete.Data.Position = avatar.Position;
-            complete.Data.RegionHandle = server.RegionHandle;
-            complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
-            complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
-
-            server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Transaction);
-
             // Add this avatar as an object in the scene
-            ObjectAdd(this, agent, new SimulationObject(agent.Avatar, server), PrimFlags.None);
+            if (ObjectAdd(this, agent, new SimulationObject(agent.Avatar, server), PrimFlags.None))
+            {
+                // Send a response back to the client
+                AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
+                complete.AgentData.AgentID = agent.AgentID;
+                complete.AgentData.SessionID = agent.SessionID;
+                complete.Data.LookAt = Vector3.UnitX;
+                complete.Data.Position = avatar.Position;
+                complete.Data.RegionHandle = server.RegionHandle;
+                complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
+                complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
-            // Send updates and appearances for every avatar to this new avatar
-            SynchronizeStateTo(agent);
+                server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Transaction);
 
-            //HACK: Notify everyone when someone logs on to the simulator
-            OnlineNotificationPacket online = new OnlineNotificationPacket();
-            online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
-            online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
-            online.AgentBlock[0].AgentID = agent.AgentID;
-            server.UDP.BroadcastPacket(online, PacketCategory.State);
+                // Send updates and appearances for every avatar to this new avatar
+                SynchronizeStateTo(agent);
+
+                //HACK: Notify everyone when someone logs on to the simulator
+                OnlineNotificationPacket online = new OnlineNotificationPacket();
+                online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
+                online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
+                online.AgentBlock[0].AgentID = agent.AgentID;
+                server.UDP.BroadcastPacket(online, PacketCategory.State);
+            }
+            else
+            {
+                Logger.Log("Received a CompleteAgentMovement from an avatar already in the scene, " +
+                    agent.FullName, Helpers.LogLevel.Warning);
+            }
         }
 
         // HACK: The reduction provider will deprecate this at some point
