@@ -126,6 +126,25 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Clamp a given value between a range
+        /// </summary>
+        /// <param name="value">Value to clamp</param>
+        /// <param name="min">Minimum allowable value</param>
+        /// <param name="max">Maximum allowable value</param>
+        /// <returns>A value inclusively between lower and upper</returns>
+        public static int Clamp(int value, int min, int max)
+        {
+            // First we check to see if we're greater than the max
+            value = (value > max) ? max : value;
+
+            // Then we check to see if we're less than the min.
+            value = (value < min) ? min : value;
+
+            // There's no check to see if min > max.
+            return value;
+        }
+
+        /// <summary>
         /// Round a floating-point value to the nearest integer
         /// </summary>
         /// <param name="val">Floating point number to round</param>

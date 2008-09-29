@@ -25,8 +25,8 @@ namespace OpenMetaverse.TestClient
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            if (args.Length != 1)
-                return "Usage: downloadtexture [texture-uuid]";
+            if (args.Length != 1 && args.Length != 2)
+                return "Usage: downloadtexture [texture-uuid] [discardlevel]";
 
             TextureID = UUID.Zero;
             DownloadHandle.Reset();
@@ -35,7 +35,16 @@ namespace OpenMetaverse.TestClient
 
             if (UUID.TryParse(args[0], out TextureID))
             {
-                Client.Assets.RequestImage(TextureID, ImageType.Normal);
+                int discardLevel = 0;
+
+                if (args.Length > 1)
+                {
+                    if (!Int32.TryParse(args[1], out discardLevel))
+                        return "Usage: downloadtexture [texture-uuid] [discardlevel]";
+                }
+
+                Client.Assets.RequestImage(TextureID, ImageType.Normal, 1000000.0f, discardLevel, 0);
+
                 if (DownloadHandle.WaitOne(120 * 1000, false))
                 {
                     if (Image != null && Image.Success)
@@ -80,10 +89,10 @@ namespace OpenMetaverse.TestClient
             DownloadHandle.Set();
         }
 
-        private void Assets_OnImageReceiveProgress(UUID image, int recieved, int total)
+        private void Assets_OnImageReceiveProgress(UUID image, int lastPacket, int recieved, int total)
         {
             if (image == TextureID)
-                Console.WriteLine(String.Format("Texture {0}: Received {1} / {2}", image, recieved, total));
+                Console.WriteLine(String.Format("Texture {0}: Received {1} / {2} (Packet: {3})", image, recieved, total, lastPacket));
         }
     }
 }

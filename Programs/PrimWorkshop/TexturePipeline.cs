@@ -332,7 +332,7 @@ namespace PrimWorkshop
             }
         }
 
-        private void Assets_OnImageReceiveProgress(UUID image, int recieved, int total)
+        private void Assets_OnImageReceiveProgress(UUID image, int lastPacket, int recieved, int total)
         {
             if (OnDownloadProgress != null)
             {

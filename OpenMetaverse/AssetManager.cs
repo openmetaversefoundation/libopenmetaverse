@@ -374,7 +374,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        public delegate void ImageReceiveProgressCallback(UUID image, int recieved, int total);
+        public delegate void ImageReceiveProgressCallback(UUID image, int lastPacket, int recieved, int total);
         /// <summary>
         /// 
         /// </summary>
@@ -491,6 +491,7 @@ namespace OpenMetaverse
 
                         if (download.TimeSinceLastPacket > 5000)
                         {
+                            --download.DiscardLevel;
                             download.TimeSinceLastPacket = 0;
                             RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
                         }
@@ -1346,6 +1347,8 @@ namespace OpenMetaverse
             ImageDataPacket data = (ImageDataPacket)packet;
             ImageDownload transfer = null;
 
+            Logger.DebugLog(String.Format("ImageData: Size={0}, Packets={1}", data.ImageID.Size, data.ImageID.Packets));
+
             lock (Transfers)
             {
                 if (Transfers.ContainsKey(data.ImageID.ID))
@@ -1361,7 +1364,7 @@ namespace OpenMetaverse
 
                         if (OnImageReceiveProgress != null)
                         {
-                            try { OnImageReceiveProgress(data.ImageID.ID, data.ImageData.Data.Length, transfer.Size); }
+                            try { OnImageReceiveProgress(data.ImageID.ID, 0, data.ImageData.Data.Length, transfer.Size); }
                             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
 
@@ -1437,7 +1440,7 @@ namespace OpenMetaverse
                         if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
                         {
                             transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
-                            Array.Copy(image.ImageData.Data, 0, transfer.AssetData,
+                            Buffer.BlockCopy(image.ImageData.Data, 0, transfer.AssetData,
                                 transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
                                 image.ImageData.Data.Length);
                             transfer.Transferred += image.ImageData.Data.Length;
@@ -1451,7 +1454,7 @@ namespace OpenMetaverse
                     
                     if (OnImageReceiveProgress != null)
                     {
-                        try { OnImageReceiveProgress(image.ImageID.ID, transfer.Transferred, transfer.Size); }
+                        try { OnImageReceiveProgress(image.ImageID.ID, image.ImageID.Packet, transfer.Transferred, transfer.Size); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
 
