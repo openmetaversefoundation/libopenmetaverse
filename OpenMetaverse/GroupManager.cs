@@ -249,6 +249,26 @@ namespace OpenMetaverse
     }
 
     /// <summary>
+    /// Struct representing a group notice list entry
+    /// </summary>
+    public struct GroupNoticeList
+    {
+        /// <summary>Notice ID</summary>
+        public UUID NoticeID;
+        /// <summary>Creation timestamp of notice</summary>
+        public uint Timestamp;
+        /// <summary>Agent name who created notice</summary>
+        public string FromName;
+        /// <summary>Notice subject</summary>
+        public string Subject;
+        /// <summary>Is there an attachment?</summary>
+        public bool HasAttachment;
+        /// <summary>Attachment Type</summary>
+        public AssetType AssetType;
+
+    }
+
+    /// <summary>
     /// Struct representing a member of a group chat session and their settings
     /// </summary>
     public struct ChatSessionMember
@@ -492,6 +512,13 @@ namespace OpenMetaverse
         /// <param name="success">true of member was successfully ejected</param>
         public delegate void GroupMemberEjectedCallback(UUID groupID, bool success);
 
+        /// <summary>
+        /// Fired when the list of group notices is recievied
+        /// </summary>
+        /// <param name="groupID">The <see cref="UUID"/> of the group for which the notice list entry was recievied</param>
+        /// <param name="notice">The Notice list entry</param>
+        public delegate void GroupNoticesListCallback(UUID groupID, GroupNoticeList notice);
+
         #endregion Delegates
 
         #region Events
@@ -537,6 +564,8 @@ namespace OpenMetaverse
         /// <summary>Fired when a GroupMemberEjected packet is received,
         /// indicates a member of a group has been ejected</summary>
         public event GroupMemberEjectedCallback OnGroupMemberEjected;
+        /// <summary>Fired when the list of group notices is recievied</summary>
+        public event GroupNoticesListCallback OnGroupNoticesList;
 
         #endregion Events
 
@@ -578,6 +607,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
             Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
+            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, new NetworkManager.PacketCallback(GroupNoticesListReplyHandler));
         }
 
         /// <summary>
@@ -998,6 +1028,51 @@ namespace OpenMetaverse
             //0 = Add to Role TODO: this should be in an enum
             grc.RoleChange[0].Change = 0;
             Client.Network.SendPacket(grc);
+        }
+
+        /// <summary>Request the group notices list</summary>
+        /// <param name="group">Group ID to fetch notices for</param>
+        public void RequestGroupNoticeList(UUID group)
+        {
+            OpenMetaverse.Packets.GroupNoticesListRequestPacket gnl = new GroupNoticesListRequestPacket();
+            gnl.AgentData.AgentID = Client.Self.AgentID;
+            gnl.AgentData.SessionID = Client.Self.SessionID;
+            gnl.Data.GroupID = group;
+            Client.Network.SendPacket(gnl);
+        }
+
+        /// <summary>Request a group notice by key</summary>
+        /// <param name="noticeID">ID of group notice</param>
+        public void RequestGroupNotice(UUID noticeID)
+        {
+            OpenMetaverse.Packets.GroupNoticeRequestPacket gnr = new GroupNoticeRequestPacket();
+            gnr.AgentData.AgentID = Client.Self.AgentID;
+            gnr.AgentData.SessionID = Client.Self.SessionID;
+            gnr.Data.GroupNoticeID = noticeID;
+            Client.Network.SendPacket(gnr);
+        }
+
+
+        private void GroupNoticesListReplyHandler(Packet packet, Simulator simulator)
+        {
+            GroupNoticesListReplyPacket reply = (GroupNoticesListReplyPacket)packet;
+           
+            foreach (GroupNoticesListReplyPacket.DataBlock entry in reply.Data)
+            {
+                GroupNoticeList notice = new GroupNoticeList();
+                notice.FromName = Utils.BytesToString(entry.FromName);
+                notice.Subject = Utils.BytesToString(entry.Subject);
+                notice.NoticeID = entry.NoticeID;
+                notice.Timestamp = entry.Timestamp;
+                notice.HasAttachment = entry.HasAttachment;
+                notice.AssetType = (AssetType)entry.AssetType;
+
+                if (OnGroupNoticesList != null)
+                {
+                    try { OnGroupNoticesList(reply.AgentData.GroupID, notice); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                } 
+            } 
         }
 
         /// <summary>Send out a group notice</summary>
