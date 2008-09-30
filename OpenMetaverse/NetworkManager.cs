@@ -33,6 +33,7 @@ using System.Net.Sockets;
 using System.Globalization;
 using System.IO;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -294,10 +295,13 @@ namespace OpenMetaverse
             PacketEvents = new PacketEventDictionary(client);
             CapsEvents = new CapsEventDictionary(client);
 
+            // Register internal CAPS callbacks
+            RegisterEventCallback("EnableSimulator", new Caps.EventQueueCallback(EnableSimulatorHandler));
+
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
             RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
-            RegisterCallback(PacketType.EnableSimulator, new PacketCallback(EnableSimulatorHandler));
+            
             RegisterCallback(PacketType.DisableSimulator, new PacketCallback(DisableSimulatorHandler));
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
@@ -1097,22 +1101,34 @@ namespace OpenMetaverse
             simulator.ConnectedEvent.Set();
         }
 
-        private void EnableSimulatorHandler(Packet packet, Simulator simulator)
+        /// <summary>
+        /// Handler for EnableSimulator packet
+        /// </summary>
+        /// <param name="capsKey">the Capabilities Key, "EnableSimulator"</param>
+        /// <param name="llsd">the LLSD Encoded packet</param>
+        /// <param name="simulator">The simulator the packet was sent from</param>
+        private void EnableSimulatorHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
             if (!Client.Settings.MULTIPLE_SIMS) return;
+            LLSDMap map = (LLSDMap)llsd;
+            LLSDArray connectInfo = (LLSDArray)map["SimulatorInfo"];
 
-            EnableSimulatorPacket p = (EnableSimulatorPacket)packet;
-            IPEndPoint endPoint = new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port);
-
-            // First, check to see if we've already started connecting to this sim
-            if (FindSimulator(endPoint) != null) return;
-
-            IPAddress address = new IPAddress(p.SimulatorInfo.IP);
-            if (Connect(address, p.SimulatorInfo.Port, p.SimulatorInfo.Handle, false, LoginSeedCapability) == null)
+            for(int i = 0; i < connectInfo.Count; i++)
             {
-                Logger.Log("Unabled to connect to new sim " + address + ":" + p.SimulatorInfo.Port, 
-                    Helpers.LogLevel.Error, Client);
-                return;
+                IPAddress ip = new IPAddress(((LLSDMap)connectInfo[i])["IP"].AsBinary());
+                ushort port = (ushort)((LLSDMap)connectInfo[i])["Port"].AsInteger();
+                ulong rh = (ulong)((LLSDMap)connectInfo[i])["Handle"].AsInteger();
+
+                IPEndPoint endPoint = new IPEndPoint(ip, port);
+                
+                // don't reconnect if we're already connected or attempting to connect
+                if (FindSimulator(endPoint) != null) return;
+
+                if (Connect(ip, port, rh, false, LoginSeedCapability) == null)
+                {
+                    Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
+                        Helpers.LogLevel.Error, Client);
+                }
             }
         }
 
