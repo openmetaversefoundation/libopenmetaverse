@@ -39,12 +39,15 @@ namespace Simian
         public int ProfileWantDo;
         public string ProfileAboutText;
         public string ProfileFirstText;
+        public string ProfileBornOn;
+        public string ProfileURL;
         public UUID ProfileImage;
         public UUID ProfileFirstImage;
+        public ProfileFlags ProfileFlags;
 
         // Appearance
         public byte[] VisualParams;
-        public byte[] Texture;
+        //public byte[] Texture;
         public float Height;
         public UUID ShapeItem;
         public UUID ShapeAsset;

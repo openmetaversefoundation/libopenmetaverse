@@ -41,14 +41,58 @@ namespace Simian.Extensions
                 agent.HomeLookAt = agent.CurrentLookAt;
                 agent.HomePosition = agent.CurrentPosition;
                 agent.HomeRegionHandle = agent.CurrentRegionHandle;
-                agent.InventoryLibraryOwner = UUID.Random(); // FIXME:
-                agent.InventoryLibraryRoot = UUID.Random(); // FIXME:
-                agent.InventoryRoot = UUID.Random(); // FIXME:
                 agent.LastName = lastName;
                 agent.PasswordHash = password;
-                // FIXME: Give new avatars a default appearance
-                //agent.VisualParams;
-                //agent.Texture;
+
+                // Create a very basic inventory skeleton
+                UUID rootFolder = UUID.Random();
+                server.Inventory.CreateRootFolder(agent, rootFolder, "Inventory", agent.AgentID);
+                UUID libraryRootFolder = UUID.Random();
+                server.Inventory.CreateRootFolder(agent, libraryRootFolder, "Library", agent.AgentID);
+
+                agent.InventoryRoot = rootFolder;
+                agent.InventoryLibraryOwner = agent.AgentID;
+                agent.InventoryLibraryRoot = libraryRootFolder;
+
+                // Create some inventory items for appearance
+                UUID clothingFolder = UUID.Random();
+                server.Inventory.CreateFolder(agent, clothingFolder, "Clothing", AssetType.Clothing,
+                    UUID.Zero, agent.AgentID);
+                UUID defaultOutfitFolder = UUID.Random();
+                server.Inventory.CreateFolder(agent, defaultOutfitFolder, "Default Outfit", AssetType.Unknown,
+                    clothingFolder, agent.AgentID);
+
+                UUID hairAsset = new UUID("dc675529-7ba5-4976-b91d-dcb9e5e36188");
+                UUID hairItem = server.Inventory.CreateItem(agent, "Default Hair", "Default Hair",
+                    InventoryType.Wearable, AssetType.Bodypart, hairAsset, defaultOutfitFolder,
+                    PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
+                UUID pantsAsset = new UUID("3e8ee2d6-4f21-4a55-832d-77daa505edff");
+                UUID pantsItem = server.Inventory.CreateItem(agent, "Default Pants", "Default Pants",
+                    InventoryType.Wearable, AssetType.Clothing, pantsAsset, defaultOutfitFolder,
+                    PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
+                UUID shapeAsset = new UUID("530a2614-052e-49a2-af0e-534bb3c05af0");
+                UUID shapeItem = server.Inventory.CreateItem(agent, "Default Shape", "Default Shape",
+                    InventoryType.Wearable, AssetType.Clothing, shapeAsset, defaultOutfitFolder,
+                    PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
+                UUID shirtAsset = new UUID("6a714f37-fe53-4230-b46f-8db384465981");
+                UUID shirtItem = server.Inventory.CreateItem(agent, "Default Shirt", "Default Shirt",
+                    InventoryType.Wearable, AssetType.Clothing, shirtAsset, defaultOutfitFolder,
+                    PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
+                UUID skinAsset = new UUID("5f787f25-f761-4a35-9764-6418ee4774c4");
+                UUID skinItem = server.Inventory.CreateItem(agent, "Default Skin", "Default Skin",
+                    InventoryType.Wearable, AssetType.Clothing, skinAsset, defaultOutfitFolder,
+                    PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
+
+                agent.HairAsset = hairAsset;
+                agent.HairItem = hairItem;
+                agent.PantsAsset = pantsAsset;
+                agent.PantsItem = pantsItem;
+                agent.ShapeAsset = shapeAsset;
+                agent.ShapeItem = shapeItem;
+                agent.ShirtAsset = shirtAsset;
+                agent.ShirtItem = shirtItem;
+                agent.SkinAsset = skinAsset;
+                agent.SkinItem = skinItem;
 
                 server.Accounts.AddAccount(agent);
 

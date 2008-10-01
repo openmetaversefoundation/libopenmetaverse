@@ -20,6 +20,7 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.CreateInventoryFolder, new PacketCallback(CreateInventoryFolderHandler));
             Server.UDP.RegisterPacketCallback(PacketType.UpdateInventoryItem, new PacketCallback(UpdateInventoryItemHandler));
             Server.UDP.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new PacketCallback(FetchInventoryDescendentsHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.FetchInventory, new PacketCallback(FetchInventoryHandler));
         }
 
         public void Stop()
@@ -56,44 +57,8 @@ namespace Simian.Extensions
         {
             CreateInventoryFolderPacket create = (CreateInventoryFolderPacket)packet;
 
-            lock (agent.Inventory)
-            {
-                InventoryObject parent;
-                if (agent.Inventory.TryGetValue(create.FolderData.ParentID, out parent))
-                {
-                    InventoryFolder parentFolder = (InventoryFolder)parent;
-
-                    if (!agent.Inventory.ContainsKey(create.FolderData.FolderID))
-                    {
-                        InventoryFolder folder = new InventoryFolder();
-                        folder.Name = Utils.BytesToString(create.FolderData.Name);
-                        folder.OwnerID = agent.AgentID;
-                        folder.ParentID = create.FolderData.ParentID;
-                        folder.Parent = parentFolder;
-                        folder.PreferredType = (AssetType)create.FolderData.Type;
-                        folder.ID = create.FolderData.FolderID;
-                        folder.Version = 1;
-
-                        Logger.DebugLog(String.Format("Creating inventory folder {0}", folder.Name));
-
-                        agent.Inventory[folder.ID] = folder;
-                        lock (parentFolder.Children.Dictionary)
-                            parentFolder.Children.Dictionary[folder.ID] = folder;
-                    }
-                    else
-                    {
-                        Logger.Log(String.Format(
-                            "Cannot create new inventory folder, item {0} already exists",
-                            create.FolderData.FolderID), Helpers.LogLevel.Warning);
-                    }
-                }
-                else
-                {
-                    Logger.Log(String.Format(
-                        "Cannot create new inventory folder, parent folder {0} does not exist",
-                        create.FolderData.ParentID), Helpers.LogLevel.Warning);
-                }
-            }
+            CreateFolder(agent, create.FolderData.FolderID, Utils.BytesToString(create.FolderData.Name),
+                (AssetType)create.FolderData.Type, create.FolderData.ParentID, agent.AgentID);
         }
 
         void UpdateInventoryItemHandler(Packet packet, Agent agent)
@@ -246,10 +211,148 @@ namespace Simian.Extensions
             }
             else
             {
-                Logger.Log(String.Format(
-                    "FetchInventoryDescendents called for an unknown folder {0}",
-                    fetch.InventoryData.FolderID), Helpers.LogLevel.Warning);
+                Logger.Log("FetchInventoryDescendents called for an unknown folder " + fetch.InventoryData.FolderID,
+                    Helpers.LogLevel.Warning);
             }
+        }
+
+        void FetchInventoryHandler(Packet packet, Agent agent)
+        {
+            FetchInventoryPacket fetch = (FetchInventoryPacket)packet;
+
+            FetchInventoryReplyPacket reply = new FetchInventoryReplyPacket();
+            reply.AgentData.AgentID = agent.AgentID;
+            reply.InventoryData = new FetchInventoryReplyPacket.InventoryDataBlock[fetch.InventoryData.Length];
+
+            for (int i = 0; i < fetch.InventoryData.Length; i++)
+            {
+                UUID itemID = fetch.InventoryData[i].ItemID;
+
+                reply.InventoryData[i] = new FetchInventoryReplyPacket.InventoryDataBlock();
+                reply.InventoryData[i].ItemID = itemID;
+
+                InventoryObject obj;
+                if (agent.Inventory.TryGetValue(itemID, out obj) && obj is InventoryItem)
+                {
+                    InventoryItem item = (InventoryItem)obj;
+
+                    reply.InventoryData[i].AssetID = item.AssetID;
+                    reply.InventoryData[i].BaseMask = (uint)item.Permissions.BaseMask;
+                    reply.InventoryData[i].CRC = Helpers.InventoryCRC((int)Utils.DateTimeToUnixTime(item.CreationDate),
+                        (byte)item.SaleType, (sbyte)item.InventoryType, (sbyte)item.AssetType, item.AssetID, item.GroupID,
+                        item.SalePrice, item.OwnerID, item.CreatorID, item.ID, item.ParentID,
+                        (uint)item.Permissions.EveryoneMask, item.Flags, (uint)item.Permissions.NextOwnerMask,
+                        (uint)item.Permissions.GroupMask, (uint)item.Permissions.OwnerMask);
+                    reply.InventoryData[i].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
+                    reply.InventoryData[i].CreatorID = item.CreatorID;
+                    reply.InventoryData[i].Description = Utils.StringToBytes(item.Description);
+                    reply.InventoryData[i].EveryoneMask = (uint)item.Permissions.EveryoneMask;
+                    reply.InventoryData[i].Flags = item.Flags;
+                    reply.InventoryData[i].FolderID = item.ParentID;
+                    reply.InventoryData[i].GroupID = item.GroupID;
+                    reply.InventoryData[i].GroupMask = (uint)item.Permissions.GroupMask;
+                    reply.InventoryData[i].GroupOwned = item.GroupOwned;
+                    reply.InventoryData[i].InvType = (sbyte)item.InventoryType;
+                    reply.InventoryData[i].Name = Utils.StringToBytes(item.Name);
+                    reply.InventoryData[i].NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+                    reply.InventoryData[i].OwnerID = item.OwnerID;
+                    reply.InventoryData[i].OwnerMask = (uint)item.Permissions.OwnerMask;
+                    reply.InventoryData[i].SalePrice = item.SalePrice;
+                    reply.InventoryData[i].SaleType = (byte)item.SaleType;
+                    reply.InventoryData[i].Type = (sbyte)item.AssetType;
+                }
+                else
+                {
+                    Logger.Log("FetchInventory called for an unknown item " + itemID.ToString(),
+                        Helpers.LogLevel.Warning);
+
+                    reply.InventoryData[i].Name = new byte[0];
+                    reply.InventoryData[i].Description = new byte[0];
+                }
+            }
+
+            Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+        }
+
+        public bool CreateRootFolder(Agent agent, UUID folderID, string name, UUID ownerID)
+        {
+            lock (agent.Inventory)
+            {
+                if (!agent.Inventory.ContainsKey(folderID))
+                {
+                    InventoryFolder folder = new InventoryFolder();
+                    folder.Name = name;
+                    folder.OwnerID = agent.AgentID;
+                    folder.ParentID = UUID.Zero;
+                    folder.Parent = null;
+                    folder.PreferredType = AssetType.Folder;
+                    folder.ID = folderID;
+                    folder.Version = 1;
+
+                    Logger.DebugLog("Creating root inventory folder " + folder.Name);
+
+                    agent.Inventory[folder.ID] = folder;
+                    return true;
+                }
+                else
+                {
+                    Logger.Log(String.Format(
+                        "Cannot create root inventory folder, item {0} already exists", folderID),
+                        Helpers.LogLevel.Warning);
+                }
+            }
+
+            return false;
+        }
+
+        public bool CreateFolder(Agent agent, UUID folderID, string name, AssetType preferredType,
+            UUID parentID, UUID ownerID)
+        {
+            if (parentID == UUID.Zero)
+                parentID = agent.InventoryRoot;
+
+            lock (agent.Inventory)
+            {
+                InventoryObject parent;
+                if (agent.Inventory.TryGetValue(parentID, out parent) && parent is InventoryFolder)
+                {
+                    InventoryFolder parentFolder = (InventoryFolder)parent;
+
+                    if (!agent.Inventory.ContainsKey(folderID))
+                    {
+                        InventoryFolder folder = new InventoryFolder();
+                        folder.Name = name;
+                        folder.OwnerID = agent.AgentID;
+                        folder.ParentID = parentID;
+                        folder.Parent = parentFolder;
+                        folder.PreferredType = preferredType;
+                        folder.ID = folderID;
+                        folder.Version = 1;
+
+                        Logger.DebugLog("Creating inventory folder " + folder.Name);
+
+                        agent.Inventory[folder.ID] = folder;
+                        lock (parentFolder.Children.Dictionary)
+                            parentFolder.Children.Dictionary[folder.ID] = folder;
+
+                        return true;
+                    }
+                    else
+                    {
+                        Logger.Log(String.Format(
+                            "Cannot create new inventory folder, item {0} already exists", folderID),
+                            Helpers.LogLevel.Warning);
+                    }
+                }
+                else
+                {
+                    Logger.Log(String.Format(
+                        "Cannot create new inventory folder, parent folder {0} does not exist", parentID),
+                        Helpers.LogLevel.Warning);
+                }
+            }
+
+            return false;
         }
 
         public UUID CreateItem(Agent agent, string name, string description, InventoryType invType, AssetType type,
@@ -277,6 +380,7 @@ namespace Simian.Extensions
                     item.Permissions.OwnerMask = ownerMask;
                     item.Permissions.NextOwnerMask = nextOwnerMask;
                     item.AssetType = type;
+                    item.AssetID = assetID;
                     item.OwnerID = agent.AgentID;
                     item.CreatorID = agent.AgentID;
                     item.CreationDate = DateTime.Now;
@@ -333,7 +437,7 @@ namespace Simian.Extensions
                 else
                 {
                     Logger.Log(String.Format(
-                        "Cannot created new inventory item, folder {0} does not exist",
+                        "Cannot create new inventory item, folder {0} does not exist",
                         parentID), Helpers.LogLevel.Warning);
 
                     return UUID.Zero;

@@ -73,29 +73,6 @@ namespace Simian.Extensions
         {
             LogoutRequestPacket request = (LogoutRequestPacket)packet;
 
-            lock (server.Agents)
-            {
-                if (server.Agents.ContainsKey(agent.AgentID))
-                {
-                    KillObjectPacket kill = new KillObjectPacket();
-                    kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                    kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                    kill.ObjectData[0].ID = agent.Avatar.LocalID;
-
-                    server.UDP.BroadcastPacket(kill, PacketCategory.State);
-                }
-            }
-
-            // Remove the avatar from the scene
-            SimulationObject obj;
-            if (server.Scene.TryGetObject(agent.AgentID, out obj))
-                server.Scene.ObjectRemove(this, obj);
-            else
-                Logger.Log("Logout request from an agent that is not in the scene", Helpers.LogLevel.Warning);
-
-            // Remove the UDP client
-            server.UDP.RemoveClient(agent);
-
             LogoutReplyPacket reply = new LogoutReplyPacket();
             reply.AgentData.AgentID = agent.AgentID;
             reply.AgentData.SessionID = agent.SessionID;
@@ -105,12 +82,7 @@ namespace Simian.Extensions
 
             server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
 
-            //HACK: Notify everyone when someone logs off
-            OfflineNotificationPacket offline = new OfflineNotificationPacket();
-            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
-            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-            offline.AgentBlock[0].AgentID = agent.AgentID;
-            server.UDP.BroadcastPacket(offline, PacketCategory.State);
+            server.DisconnectClient(agent);
         }
     }
 }

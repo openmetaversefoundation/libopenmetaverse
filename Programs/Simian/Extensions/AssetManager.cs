@@ -41,7 +41,7 @@ namespace Simian.Extensions
                 if (texture.DecodeLayerBoundaries())
                 {
                     lock (AssetStore)
-                        AssetStore[asset.AssetID] = asset;
+                        AssetStore[asset.AssetID] = texture;
                 }
                 else
                 {
@@ -285,11 +285,14 @@ namespace Simian.Extensions
                         {
                             Logger.Log(String.Format(
                                 "Request for asset {0} with type {1} does not match actual asset type {2}",
-                                asset.AssetID, type, asset.AssetType), Helpers.LogLevel.Warning);
+                                assetID, type, asset.AssetType), Helpers.LogLevel.Warning);
                         }
                     }
                     else
                     {
+                        Logger.Log(String.Format("Request for missing asset {0} with type {1}",
+                            assetID, type), Helpers.LogLevel.Warning);
+
                         // Asset not found
                         response.TransferInfo.Size = 0;
                         response.TransferInfo.Status = (int)StatusCode.UnknownSource;

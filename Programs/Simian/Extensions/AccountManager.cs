@@ -53,26 +53,6 @@ namespace Simian.Extensions
                     PrimFlags.ObjectAnyOwner | PrimFlags.ObjectMove | PrimFlags.InventoryEmpty |
                     PrimFlags.ObjectTransfer | PrimFlags.ObjectOwnerModify | PrimFlags.ObjectYouOwner;
 
-                // HACK: FIXME: These should point to actual inventories, not random UUIDs
-
-                // Agent inventory
-                InventoryFolder rootFolder = new InventoryFolder();
-                rootFolder.ID = agent.InventoryRoot;
-                rootFolder.Name = "Inventory";
-                rootFolder.OwnerID = agent.AgentID;
-                rootFolder.PreferredType = AssetType.RootFolder;
-                rootFolder.Version = 1;
-                agent.Inventory[rootFolder.ID] = rootFolder;
-
-                // Default library
-                InventoryFolder libRootFolder = new InventoryFolder();
-                libRootFolder.ID = agent.InventoryLibraryRoot;
-                libRootFolder.Name = "Library";
-                libRootFolder.OwnerID = agent.AgentID;
-                libRootFolder.PreferredType = AssetType.RootFolder;
-                libRootFolder.Version = 1;
-                agent.Library[libRootFolder.ID] = libRootFolder;
-
                 return agent;
             }
             else

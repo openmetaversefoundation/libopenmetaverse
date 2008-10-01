@@ -114,6 +114,26 @@ namespace Simian
             HttpServer.Stop();
         }
 
+        public void DisconnectClient(Agent agent)
+        {
+            // Remove the avatar from the scene
+            SimulationObject obj;
+            if (Scene.TryGetObject(agent.AgentID, out obj))
+                Scene.ObjectRemove(this, obj);
+            else
+                Logger.Log("Disconnecting an agent that is not in the scene", Helpers.LogLevel.Warning);
+
+            // Remove the UDP client
+            UDP.RemoveClient(agent);
+
+            // HACK: Notify everyone when someone disconnects
+            OfflineNotificationPacket offline = new OfflineNotificationPacket();
+            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+            offline.AgentBlock[0].AgentID = agent.AgentID;
+            UDP.BroadcastPacket(offline, PacketCategory.State);
+        }
+
         void TryAssignToInterface(ISimianExtension extension)
         {
             if (extension is IAuthenticationProvider)
