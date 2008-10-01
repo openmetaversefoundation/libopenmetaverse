@@ -438,7 +438,7 @@ namespace OpenMetaverse
                 } else {
                     properties.CharterMember = Utils.BytesToString(reply.PropertiesData.CharterMember);
                 }
-                properties.Flags = (Avatar.ProfileFlags)reply.PropertiesData.Flags;
+                properties.Flags = (ProfileFlags)reply.PropertiesData.Flags;
                 properties.ProfileURL = Utils.BytesToString(reply.PropertiesData.ProfileURL);
 
                 OnAvatarProperties(reply.AgentData.AvatarID, properties);

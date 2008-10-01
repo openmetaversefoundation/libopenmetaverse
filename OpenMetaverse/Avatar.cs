@@ -32,28 +32,28 @@ using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
 {
+    #region Enums
+
+    /// <summary>
+    /// Avatar profile flags
+    /// </summary>
+    [Flags]
+    public enum ProfileFlags : uint
+    {
+        AllowPublish = 1,
+        MaturePublish = 2,
+        Identified = 4,
+        Transacted = 8,
+        Online = 16
+    }
+
+    #endregion Enums
+
     /// <summary>
     /// Represents an avatar (other than your own)
     /// </summary>
     public class Avatar : Primitive
     {
-        #region Enums
-
-        /// <summary>
-        /// Avatar profile flags
-        /// </summary>
-        [Flags]
-        public enum ProfileFlags
-        {
-            AllowPublish = 1,
-            MaturePublish = 2,
-            Identified = 4,
-            Transacted = 8,
-            Online = 16
-        }
-
-        #endregion Enums
-
         #region Subclasses
 
         /// <summary>
