@@ -8,7 +8,7 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public struct ImageDownload
+    public class ImageDownload
     {
         public const int FIRST_IMAGE_PACKET_SIZE = 600;
         public const int IMAGE_PACKET_SIZE = 1000;
@@ -16,60 +16,68 @@ namespace Simian.Extensions
         public AssetTexture Texture;
         public int DiscardLevel;
         public float Priority;
-        public int Packet;
+        public int CurrentPacket;
+        public int StopPacket;
 
-        public ImageDownload(AssetTexture texture, int discardLevel, float priority)
+        public ImageDownload(AssetTexture texture, int discardLevel, float priority, int packet)
         {
             Texture = texture;
-            DiscardLevel = discardLevel;
+            Update(discardLevel, priority, packet);
+        }
+
+        /// <summary>
+        /// Updates an image transfer with new information and recalculates
+        /// offsets
+        /// </summary>
+        /// <param name="discardLevel">New requested discard level</param>
+        /// <param name="priority">New requested priority</param>
+        /// <param name="packet">New requested packet offset</param>
+        public void Update(int discardLevel, float priority, int packet)
+        {
             Priority = priority;
-            Packet = 0;
+            DiscardLevel = Utils.Clamp(discardLevel, 0, Texture.LayerInfo.Length - 1);
+            StopPacket = GetPacketForBytePosition(Texture.LayerInfo[(Texture.LayerInfo.Length - 1) - DiscardLevel].End);
+            CurrentPacket = Utils.Clamp(packet, 1, TexturePacketCount());
         }
 
-        public int GetRemainingBytes()
+        /// <summary>
+        /// Returns the total number of packets needed to transfer this texture,
+        /// including the first packet of size FIRST_IMAGE_PACKET_SIZE
+        /// </summary>
+        /// <returns>Total number of packets needed to transfer this texture</returns>
+        public int TexturePacketCount()
         {
-            return GetEndPosition() - GetBytesSent();
+            return ((Texture.AssetData.Length - FIRST_IMAGE_PACKET_SIZE + IMAGE_PACKET_SIZE - 1) / IMAGE_PACKET_SIZE) + 1;
         }
 
-        public int GetPacketCount()
+        /// <summary>
+        /// Returns the current byte offset for this transfer, calculated from
+        /// the CurrentPacket
+        /// </summary>
+        /// <returns>Current byte offset for this transfer</returns>
+        public int CurrentBytePosition()
         {
-            int length = GetRemainingBytes();
-            return ((length - FIRST_IMAGE_PACKET_SIZE + IMAGE_PACKET_SIZE - 1) / IMAGE_PACKET_SIZE) + 1;
+            return FIRST_IMAGE_PACKET_SIZE + (CurrentPacket - 1) * IMAGE_PACKET_SIZE;
         }
 
-        public int GetBytesSent()
+        /// <summary>
+        /// Returns the size, in bytes, of the last packet. This will be somewhere
+        /// between 1 and IMAGE_PACKET_SIZE bytes
+        /// </summary>
+        /// <returns>Size of the last packet in the transfer</returns>
+        public int LastPacketSize()
         {
-            if (Packet < 1)
-                return 0;
-            else
-                return FIRST_IMAGE_PACKET_SIZE + ((Packet - 1) * IMAGE_PACKET_SIZE);
+            return Texture.AssetData.Length - (FIRST_IMAGE_PACKET_SIZE + ((TexturePacketCount() - 2) * IMAGE_PACKET_SIZE));
         }
 
-        public int GetEndPosition()
+        /// <summary>
+        /// Find the packet number that contains a given byte position
+        /// </summary>
+        /// <param name="bytePosition">Byte position</param>
+        /// <returns>Packet number that contains the given byte position</returns>
+        int GetPacketForBytePosition(int bytePosition)
         {
-            if (Texture == null || Texture.LayerInfo == null || Texture.AssetData == null)
-                throw new InvalidOperationException("Cannot get end position while texture information is null");
-
-            int layerCount = Texture.LayerInfo.Length;
-            int requestedLayer = layerCount + DiscardLevel;
-
-            if (requestedLayer == layerCount)
-            {
-                // No discard, go to the end of the image data
-                return Texture.AssetData.Length - 1;
-            }
-            else if (requestedLayer >= 0 && requestedLayer < layerCount)
-            {
-                return Texture.LayerInfo[requestedLayer].End;
-            }
-            else
-            {
-                Logger.Log(String.Format(
-                    "DiscardLevel {0} is out of range for texture {1}, which has {2} decoded layer boundaries",
-                    DiscardLevel, Texture.AssetID, Texture.LayerInfo.Length), Helpers.LogLevel.Error);
-
-                return Texture.AssetData.Length - 1;
-            }
+            return ((bytePosition - FIRST_IMAGE_PACKET_SIZE + IMAGE_PACKET_SIZE - 1) / IMAGE_PACKET_SIZE);
         }
     }
 
@@ -120,115 +128,146 @@ namespace Simian.Extensions
             for (int i = 0; i < request.RequestImage.Length; i++)
             {
                 RequestImagePacket.RequestImageBlock block = request.RequestImage[i];
-                bool bake = ((ImageType)block.Type == ImageType.Baked);
 
-                // Check if we have this image
-                Asset asset;
                 ImageDownload download;
-                if (Server.Assets.TryGetAsset(block.Image, out asset) && asset is AssetTexture)
+                bool downloadFound = CurrentDownloads.TryGetValue(block.Image, out download);
+
+                if (downloadFound)
                 {
-                    if (block.DiscardLevel == -1 && block.DownloadPriority == 0.0f)
+                    lock (download)
                     {
-                        // FIXME: Cancel download
-                        Logger.Log("Canceling image download " + block.Image, Helpers.LogLevel.Info);
-                    }
-                    else
-                    {
-                        lock (CurrentDownloads)
+                        if (block.DiscardLevel == -1 && block.DownloadPriority == 0.0f)
                         {
-                            if (CurrentDownloads.TryGetValue(block.Image, out download))
-                            {
-                                // Modifying existing download
-                                if (block.DiscardLevel < download.DiscardLevel)
-                                {
-                                    // FIXME: Do we need to do something here?
-                                    Logger.Log(String.Format("Image download {0} is changing from DiscardLevel {1} to {2}",
-                                        block.Image, download.DiscardLevel, block.DiscardLevel), Helpers.LogLevel.Info);
-                                    download.DiscardLevel = block.DiscardLevel;
-                                }
-
-                                download.Priority = block.DownloadPriority;
-
-                                if (block.Packet > 0 && block.Packet < download.Packet)
-                                {
-                                    Logger.Log(String.Format("Rolling back image download {0} from packet {1} to {2}",
-                                        block.Image, download.Packet, block.Packet), Helpers.LogLevel.Warning);
-                                    download.Packet = (int)block.Packet;
-                                }
-
-                                // Re-insert this download into the dictionary
-                                CurrentDownloads[block.Image] = download;
-                            }
-                            else
-                            {
-                                // New download
-                                download = new ImageDownload((AssetTexture)asset, block.DiscardLevel, block.DownloadPriority);
-                                download.Packet = (int)block.Packet;
-
-                                // Send initial data
-                                ImageDataPacket data = new ImageDataPacket();
-                                data.ImageID.Codec = (byte)ImageCodec.J2C;
-                                data.ImageID.ID = download.Texture.AssetID;
-                                data.ImageID.Packets = (ushort)download.GetPacketCount();
-                                data.ImageID.Size = (uint)download.GetRemainingBytes();
-                                // The Linden Lab servers actually prepend two bytes in this data with the
-                                // size of the following data. It is redundant and ignored by every client,
-                                // so we skip it
-                                data.ImageData = new ImageDataPacket.ImageDataBlock();
-
-                                if (data.ImageID.Packets == 1)
-                                {
-                                    // Single packet image
-                                    data.ImageData.Data = new byte[download.Texture.AssetData.Length];
-                                    Buffer.BlockCopy(download.Texture.AssetData, download.GetBytesSent(),
-                                        data.ImageData.Data, 0, (int)data.ImageID.Size);
-                                }
-                                else
-                                {
-                                    // Multi-packet image
-                                    data.ImageData.Data = new byte[ImageDownload.FIRST_IMAGE_PACKET_SIZE];
-                                    Buffer.BlockCopy(download.Texture.AssetData, download.GetBytesSent(),
-                                        data.ImageData.Data, 0, ImageDownload.FIRST_IMAGE_PACKET_SIZE);
-
-                                    // Insert this download into the dictionary
-                                    CurrentDownloads[block.Image] = download;
-
-                                    // Send all of the remaining packets
-                                    ThreadPool.QueueUserWorkItem(
-                                        delegate(object obj)
-                                        {
-                                            ImagePacketPacket transfer = new ImagePacketPacket();
-                                            transfer.ImageID.ID = block.Image;
-                                            //transfer.ImageID.Packet = 
-                                        }
-                                    );
-                                }
-
-                                Server.UDP.SendPacket(agent.AgentID, data, PacketCategory.Texture);
-                            }
+                            Logger.DebugLog(String.Format("Image download {0} is aborting", block.Image));
                         }
+                        else
+                        {
+                            if (block.DiscardLevel < download.DiscardLevel)
+                                Logger.DebugLog(String.Format("Image download {0} is changing from DiscardLevel {1} to {2}",
+                                    block.Image, download.DiscardLevel, block.DiscardLevel));
+
+                            if (block.DownloadPriority != download.Priority)
+                                Logger.DebugLog(String.Format("Image download {0} is changing from Priority {1} to {2}",
+                                    block.Image, download.Priority, block.DownloadPriority));
+
+                            if (block.Packet != download.CurrentPacket)
+                                Logger.DebugLog(String.Format("Image download {0} is changing from Packet {1} to {2}",
+                                    block.Image, download.CurrentPacket, block.Packet));
+                        }
+
+                        // Update download
+                        download.Update(block.DiscardLevel, block.DownloadPriority, (int)block.Packet);
                     }
+                }
+                else if (block.DiscardLevel == -1 && block.DownloadPriority == 0.0f)
+                {
+                    // Aborting a download we are not tracking, ignore
+                    Logger.DebugLog(String.Format("Aborting an image download for untracked image " + block.Image.ToString()));
                 }
                 else
                 {
-                    // TODO: Technically we should return ImageNotInDatabasePacket, but for now return a default texture
-                    ImageDataPacket imageData = new ImageDataPacket();
-                    imageData.ImageID.ID = block.Image;
-                    imageData.ImageID.Codec = 1;
-                    imageData.ImageID.Packets = 1;
-                    if (bake)
+                    bool bake = ((ImageType)block.Type == ImageType.Baked);
+
+                    // New download, check if we have this image
+                    Asset asset;
+                    if (Server.Assets.TryGetAsset(block.Image, out asset) && asset is AssetTexture)
                     {
-                        Logger.DebugLog(String.Format("Sending default bake texture for {0}", block.Image));
-                        imageData.ImageData.Data = defaultBakedJP2.AssetData;
+                        download = new ImageDownload((AssetTexture)asset, block.DiscardLevel, block.DownloadPriority,
+                            (int)block.Packet);
+
+                        Logger.DebugLog(String.Format(
+                            "Starting new download for {0}, DiscardLevel: {1}, Priority: {2}, Start: {3}, End: {4}, Total: {5}",
+                            block.Image, block.DiscardLevel, block.DownloadPriority, download.CurrentPacket, download.StopPacket,
+                            download.TexturePacketCount()));
+
+                        // Send initial data
+                        ImageDataPacket data = new ImageDataPacket();
+                        data.ImageID.Codec = (byte)ImageCodec.J2C;
+                        data.ImageID.ID = download.Texture.AssetID;
+                        data.ImageID.Packets = (ushort)download.TexturePacketCount();
+                        data.ImageID.Size = (uint)download.Texture.AssetData.Length;
+
+                        // The first bytes of the image are always sent in the ImageData packet
+                        data.ImageData = new ImageDataPacket.ImageDataBlock();
+                        int imageDataSize = (download.Texture.AssetData.Length >= ImageDownload.FIRST_IMAGE_PACKET_SIZE) ?
+                            ImageDownload.FIRST_IMAGE_PACKET_SIZE : download.Texture.AssetData.Length;
+                        data.ImageData.Data = new byte[imageDataSize];
+                        Buffer.BlockCopy(download.Texture.AssetData, 0, data.ImageData.Data, 0, imageDataSize);
+
+                        Server.UDP.SendPacket(agent.AgentID, data, PacketCategory.Texture);
+
+                        // Check if ImagePacket packets need to be sent to complete this transfer
+                        if (download.CurrentPacket <= download.StopPacket)
+                        {
+                            // Insert this download into the dictionary
+                            lock (CurrentDownloads)
+                                CurrentDownloads[block.Image] = download;
+
+                            // Send all of the remaining packets
+                            ThreadPool.QueueUserWorkItem(
+                                delegate(object obj)
+                                {
+                                    while (download.CurrentPacket <= download.StopPacket)
+                                    {
+                                        if (download.Priority == 0.0f && download.DiscardLevel == -1)
+                                            break;
+
+                                        lock (download)
+                                        {
+                                            int imagePacketSize = (download.CurrentPacket == download.TexturePacketCount() - 1) ?
+                                                download.LastPacketSize() : ImageDownload.IMAGE_PACKET_SIZE;
+
+                                            ImagePacketPacket transfer = new ImagePacketPacket();
+                                            transfer.ImageID.ID = block.Image;
+                                            transfer.ImageID.Packet = (ushort)download.CurrentPacket;
+                                            transfer.ImageData.Data = new byte[imagePacketSize];
+                                            Buffer.BlockCopy(download.Texture.AssetData, download.CurrentBytePosition(),
+                                                transfer.ImageData.Data, 0, imagePacketSize);
+
+                                            Server.UDP.SendPacket(agent.AgentID, transfer, PacketCategory.Texture);
+
+                                            ++download.CurrentPacket;
+                                        }
+                                    }
+
+                                    Logger.DebugLog("Completed image transfer for " + block.Image.ToString());
+
+                                    // Transfer is complete, remove the reference
+                                    lock (CurrentDownloads)
+                                        CurrentDownloads.Remove(block.Image);
+                                }
+                            );
+                        }
                     }
                     else
                     {
-                        Logger.DebugLog(String.Format("Sending default texture for {0}", block.Image));
-                        imageData.ImageData.Data = defaultJP2.AssetData;
-                    }
-                    imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
+                        Logger.Log("Request for a missing texture " + block.Image.ToString(), Helpers.LogLevel.Warning);
 
-                    Server.UDP.SendPacket(agent.AgentID, imageData, PacketCategory.Texture);
+                        ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
+                        notfound.ImageID.ID = block.Image;
+                        Server.UDP.SendPacket(agent.AgentID, notfound, PacketCategory.Texture);
+
+                        /*
+                        // TODO: Technically we should return ImageNotInDatabasePacket, but for now return a default texture
+                        ImageDataPacket imageData = new ImageDataPacket();
+                        imageData.ImageID.ID = block.Image;
+                        imageData.ImageID.Codec = 1;
+                        imageData.ImageID.Packets = 1;
+                        if (bake)
+                        {
+                            Logger.DebugLog(String.Format("Sending default bake texture for {0}", block.Image));
+                            imageData.ImageData.Data = defaultBakedJP2.AssetData;
+                        }
+                        else
+                        {
+                            Logger.DebugLog(String.Format("Sending default texture for {0}", block.Image));
+                            imageData.ImageData.Data = defaultJP2.AssetData;
+                        }
+                        imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
+
+                        Server.UDP.SendPacket(agent.AgentID, imageData, PacketCategory.Texture);
+                        */
+                    }
                 }
             }
         }
