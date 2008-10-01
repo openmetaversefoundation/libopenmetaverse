@@ -3,14 +3,14 @@ Default Shape
 
 	permissions 0
 	{
-		base_mask	00000000
-		owner_mask	00000000
-		group_mask	00000000
-		everyone_mask	00000000
-		next_owner_mask	00000000
-		creator_id	00000000-0000-0000-0000-000000000000
-		owner_id	00000000-0000-0000-0000-000000000000
-		last_owner_id	00000000-0000-0000-0000-000000000000
+		base_mask	7fffffff
+		owner_mask	7fffffff
+		group_mask	7fffffff
+		everyone_mask	7fffffff
+		next_owner_mask	7fffffff
+		creator_id	00000000-0000-0000-0000-000000000001
+		owner_id	00000000-0000-0000-0000-000000000001
+		last_owner_id	00000000-0000-0000-0000-000000000001
 		group_id	00000000-0000-0000-0000-000000000000
 	}
 	sale_info	0
