@@ -24,6 +24,7 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.AgentWearablesRequest, new PacketCallback(AgentWearablesRequestHandler));
             Server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, new PacketCallback(AgentIsNowWearingHandler));
             Server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, new PacketCallback(AgentSetAppearanceHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.AgentCachedTexture, new PacketCallback(AgentCachedTextureHandler));
             Server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
             Server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
             Server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
@@ -125,70 +126,184 @@ namespace Simian.Extensions
         {
             AvatarPropertiesRequestPacket request = (AvatarPropertiesRequestPacket)packet;
 
-            lock (Server.Agents)
+            Agent foundAgent;
+            if (Server.Agents.TryGetValue(request.AgentData.AvatarID, out foundAgent))
             {
-                foreach (Agent agt in Server.Agents.Values)
-                {
-                    if (agent.AgentID == request.AgentData.AvatarID)
-                    {
-                        AvatarPropertiesReplyPacket reply = new AvatarPropertiesReplyPacket();
-                        reply.AgentData.AgentID = agt.AgentID;
-                        reply.AgentData.AvatarID = request.AgentData.AvatarID;
-                        reply.PropertiesData.AboutText = Utils.StringToBytes("Profile info unavailable");
-                        reply.PropertiesData.BornOn = Utils.StringToBytes("Unknown");
-                        reply.PropertiesData.CharterMember = Utils.StringToBytes("Test User");
-                        reply.PropertiesData.FLAboutText = Utils.StringToBytes("First life info unavailable");
-                        reply.PropertiesData.Flags = 0;
-                        //TODO: at least generate static image uuids based on name.
-                        //this will prevent re-caching the default image for the same av name.
-                        reply.PropertiesData.FLImageID = agent.AgentID; //temporary hack
-                        reply.PropertiesData.ImageID = agent.AgentID; //temporary hack
-                        reply.PropertiesData.PartnerID = UUID.Zero;
-                        reply.PropertiesData.ProfileURL = Utils.StringToBytes(String.Empty);
+                AvatarPropertiesReplyPacket reply = new AvatarPropertiesReplyPacket();
+                reply.AgentData.AgentID = agent.AgentID;
+                reply.AgentData.AvatarID = request.AgentData.AvatarID;
+                reply.PropertiesData.AboutText = Utils.StringToBytes(foundAgent.ProfileAboutText);
+                reply.PropertiesData.BornOn = Utils.StringToBytes(foundAgent.ProfileBornOn);
+                reply.PropertiesData.CharterMember = new byte[1];
+                reply.PropertiesData.FLAboutText = Utils.StringToBytes(foundAgent.ProfileFirstText);
+                reply.PropertiesData.Flags = (uint)foundAgent.ProfileFlags;
+                reply.PropertiesData.FLImageID = foundAgent.ProfileFirstImage;
+                reply.PropertiesData.ImageID = foundAgent.ProfileImage;
+                reply.PropertiesData.PartnerID = foundAgent.PartnerID;
+                reply.PropertiesData.ProfileURL = Utils.StringToBytes(foundAgent.ProfileURL);
 
-                        Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
-                        break;
-                    }
-                }
+                Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
             }
+            else
+            {
+                Logger.Log("AvatarPropertiesRequest for unknown agent " + request.AgentData.AvatarID.ToString(),
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        int CountWearables(Agent agent)
+        {
+            int wearables = 0;
+
+            if (agent.ShapeAsset != UUID.Zero) ++wearables;
+            if (agent.SkinAsset != UUID.Zero) ++wearables;
+            if (agent.HairAsset != UUID.Zero) ++wearables;
+            if (agent.EyesAsset != UUID.Zero) ++wearables;
+            if (agent.ShirtAsset != UUID.Zero) ++wearables;
+            if (agent.PantsAsset != UUID.Zero) ++wearables;
+            if (agent.ShoesAsset != UUID.Zero) ++wearables;
+            if (agent.SocksAsset != UUID.Zero) ++wearables;
+            if (agent.JacketAsset != UUID.Zero) ++wearables;
+            if (agent.GlovesAsset != UUID.Zero) ++wearables;
+            if (agent.UndershirtAsset != UUID.Zero) ++wearables;
+            if (agent.UnderpantsAsset != UUID.Zero) ++wearables;
+            if (agent.SkirtAsset != UUID.Zero) ++wearables;
+
+            return wearables;
+        }
+
+        void SendWearables(Agent agent)
+        {
+            AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
+            update.AgentData.AgentID = agent.AgentID;
+
+            // Count the number of WearableData blocks needed
+            int wearableCount = CountWearables(agent);
+            int i = 0;
+
+            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[wearableCount];
+
+            #region WearableData Blocks
+
+            if (agent.ShapeAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.ShapeAsset;
+                update.WearableData[i].ItemID = agent.ShapeItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Shape;
+                ++i;
+            }
+            if (agent.SkinAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.SkinAsset;
+                update.WearableData[i].ItemID = agent.SkinItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Skin;
+                ++i;
+            }
+            if (agent.HairAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.HairAsset;
+                update.WearableData[i].ItemID = agent.HairItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Hair;
+                ++i;
+            }
+            if (agent.EyesAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.EyesAsset;
+                update.WearableData[i].ItemID = agent.EyesItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Eyes;
+                ++i;
+            }
+            if (agent.ShirtAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.ShirtAsset;
+                update.WearableData[i].ItemID = agent.ShirtItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Shirt;
+                ++i;
+            }
+            if (agent.PantsAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.PantsAsset;
+                update.WearableData[i].ItemID = agent.PantsItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Pants;
+                ++i;
+            }
+            if (agent.ShoesAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.ShoesAsset;
+                update.WearableData[i].ItemID = agent.ShoesItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Shoes;
+                ++i;
+            }
+            if (agent.SocksAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.SocksAsset;
+                update.WearableData[i].ItemID = agent.SocksItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Socks;
+                ++i;
+            }
+            if (agent.JacketAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.JacketAsset;
+                update.WearableData[i].ItemID = agent.JacketItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Jacket;
+                ++i;
+            }
+            if (agent.GlovesAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.GlovesAsset;
+                update.WearableData[i].ItemID = agent.GlovesItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Gloves;
+                ++i;
+            }
+            if (agent.UndershirtAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.UndershirtAsset;
+                update.WearableData[i].ItemID = agent.UndershirtItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Undershirt;
+                ++i;
+            }
+            if (agent.UnderpantsAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.UnderpantsAsset;
+                update.WearableData[i].ItemID = agent.UnderpantsItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Underpants;
+                ++i;
+            }
+            if (agent.SkirtAsset != UUID.Zero)
+            {
+                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                update.WearableData[i].AssetID = agent.SkirtAsset;
+                update.WearableData[i].ItemID = agent.SkirtItem;
+                update.WearableData[i].WearableType = (byte)WearableType.Skirt;
+                ++i;
+            }
+
+            #endregion WearableData Blocks
+
+            // Technically this should be per-agent, but if the only requirement is that it
+            // increments this is easier
+            update.AgentData.SerialNum = (uint)Interlocked.Increment(ref currentWearablesSerialNum);
+
+            Logger.DebugLog(String.Format("Sending info about {0} wearables", wearableCount));
+
+            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
         }
 
         void AgentWearablesRequestHandler(Packet packet, Agent agent)
         {
-            AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
-            update.AgentData.AgentID = agent.AgentID;
-            // Technically this should be per-agent, but if the only requirement is that it
-            // increments this is easier
-            update.AgentData.SerialNum = (uint)Interlocked.Increment(ref currentWearablesSerialNum);
-            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[5];
-
-            // TODO: These are hardcoded in for now, should change that
-            update.WearableData[0] = new AgentWearablesUpdatePacket.WearableDataBlock();
-            update.WearableData[0].AssetID = new UUID("dc675529-7ba5-4976-b91d-dcb9e5e36188");
-            update.WearableData[0].ItemID = UUID.Random();
-            update.WearableData[0].WearableType = (byte)WearableType.Hair;
-
-            update.WearableData[1] = new AgentWearablesUpdatePacket.WearableDataBlock();
-            update.WearableData[1].AssetID = new UUID("3e8ee2d6-4f21-4a55-832d-77daa505edff");
-            update.WearableData[1].ItemID = UUID.Random();
-            update.WearableData[1].WearableType = (byte)WearableType.Pants;
-
-            update.WearableData[2] = new AgentWearablesUpdatePacket.WearableDataBlock();
-            update.WearableData[2].AssetID = new UUID("530a2614-052e-49a2-af0e-534bb3c05af0");
-            update.WearableData[2].ItemID = UUID.Random();
-            update.WearableData[2].WearableType = (byte)WearableType.Shape;
-
-            update.WearableData[3] = new AgentWearablesUpdatePacket.WearableDataBlock();
-            update.WearableData[3].AssetID = new UUID("6a714f37-fe53-4230-b46f-8db384465981");
-            update.WearableData[3].ItemID = UUID.Random();
-            update.WearableData[3].WearableType = (byte)WearableType.Shirt;
-
-            update.WearableData[4] = new AgentWearablesUpdatePacket.WearableDataBlock();
-            update.WearableData[4].AssetID = new UUID("5f787f25-f761-4a35-9764-6418ee4774c4");
-            update.WearableData[4].ItemID = UUID.Random();
-            update.WearableData[4].WearableType = (byte)WearableType.Skin;
-
-            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
+            SendWearables(agent);
         }
 
         void ClearWearables(Agent agent)
@@ -225,7 +340,6 @@ namespace Simian.Extensions
         {
             AgentIsNowWearingPacket wearing = (AgentIsNowWearingPacket)packet;
 
-            Logger.DebugLog("Updating agent wearables");
             ClearWearables(agent);
 
             for (int i = 0; i < wearing.WearableData.Length; i++)
@@ -236,6 +350,8 @@ namespace Simian.Extensions
                 InventoryObject invObj;
                 if (agent.Inventory.TryGetValue(itemID, out invObj) && invObj is InventoryItem)
                     assetID = ((InventoryItem)invObj).AssetID;
+
+                #region Update Wearables
 
                 switch ((WearableType)wearing.WearableData[i].WearableType)
                 {
@@ -292,7 +408,11 @@ namespace Simian.Extensions
                         agent.SkirtItem = itemID;
                         break;
                 }
+
+                #endregion Update Wearables
             }
+
+            Logger.DebugLog("Updated agent wearables, new count: " + CountWearables(agent));
         }
 
         void AgentSetAppearanceHandler(Packet packet, Agent agent)
@@ -311,7 +431,14 @@ namespace Simian.Extensions
             for (int i = 0; i < set.VisualParam.Length; i++)
                 agent.VisualParams[i] = set.VisualParam[i].ParamValue;
 
-            //TODO: What is WearableData used for?
+            //TODO: Store this for cached bake responses
+            for (int i = 0; i < set.WearableData.Length; i++)
+            {
+                AppearanceManager.TextureIndex index = (AppearanceManager.TextureIndex)set.WearableData[i].TextureIndex;
+                UUID cacheID = set.WearableData[i].CacheID;
+
+                Logger.DebugLog(String.Format("WearableData: {0} is now {1}", index, cacheID));
+            }
 
             ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
                 Server.RegionHandle, agent.State, agent.Flags | PrimFlags.ObjectYouOwner);
@@ -319,7 +446,38 @@ namespace Simian.Extensions
 
             // Send out this appearance to all other connected avatars
             AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
-            Server.UDP.BroadcastPacket(appearance, PacketCategory.State);
+            lock (Server.Agents)
+            {
+                foreach (Agent recipient in Server.Agents.Values)
+                {
+                    if (recipient != agent)
+                        Server.UDP.SendPacket(recipient.AgentID, appearance, PacketCategory.State);
+                }
+            }
+        }
+
+        void AgentCachedTextureHandler(Packet packet, Agent agent)
+        {
+            AgentCachedTexturePacket cached = (AgentCachedTexturePacket)packet;
+
+            AgentCachedTextureResponsePacket response = new AgentCachedTextureResponsePacket();
+            response.AgentData.AgentID = agent.AgentID;
+            response.AgentData.SerialNum = cached.AgentData.SerialNum;
+
+            response.WearableData = new AgentCachedTextureResponsePacket.WearableDataBlock[cached.WearableData.Length];
+
+            // TODO: Respond back with actual cache entries if we have them
+            for (int i = 0; i < cached.WearableData.Length; i++)
+            {
+                response.WearableData[i] = new AgentCachedTextureResponsePacket.WearableDataBlock();
+                response.WearableData[i].TextureIndex = cached.WearableData[i].TextureIndex;
+                response.WearableData[i].TextureID = UUID.Zero;
+                response.WearableData[i].HostName = new byte[0];
+            }
+
+            response.Header.Zerocoded = true;
+
+            Server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Transaction);
         }
 
         void SoundTriggerHandler(Packet packet, Agent agent)
@@ -331,41 +489,31 @@ namespace Simian.Extensions
         void UUIDNameRequestHandler(Packet packet, Agent agent)
         {
             UUIDNameRequestPacket request = (UUIDNameRequestPacket)packet;
-            Dictionary<UUID, Agent> replies = new Dictionary<UUID, Agent>(request.UUIDNameBlock.Length);
 
-            // FIXME: This is messy/slow until we get a proper ISceneProvider
+            UUIDNameReplyPacket reply = new UUIDNameReplyPacket();
+            reply.UUIDNameBlock = new UUIDNameReplyPacket.UUIDNameBlockBlock[request.UUIDNameBlock.Length];
+
             for (int i = 0; i < request.UUIDNameBlock.Length; i++)
             {
-                lock (Server.Agents)
+                UUID id = request.UUIDNameBlock[i].ID;
+
+                reply.UUIDNameBlock[i] = new UUIDNameReplyPacket.UUIDNameBlockBlock();
+                reply.UUIDNameBlock[i].ID = id;
+
+                Agent foundAgent;
+                if (Server.Agents.TryGetValue(id, out foundAgent))
                 {
-                    foreach (Agent curAgent in Server.Agents.Values)
-                    {
-                        if (curAgent.AgentID == request.UUIDNameBlock[i].ID)
-                        {
-                            replies[curAgent.AgentID] = curAgent;
-                            break;
-                        }
-                    }
+                    reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(foundAgent.FirstName);
+                    reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(foundAgent.LastName);
+                }
+                else
+                {
+                    reply.UUIDNameBlock[i].FirstName = new byte[0];
+                    reply.UUIDNameBlock[i].LastName = new byte[0];
                 }
             }
 
-            if (replies.Count > 0)
-            {
-                UUIDNameReplyPacket reply = new UUIDNameReplyPacket();
-                reply.UUIDNameBlock = new UUIDNameReplyPacket.UUIDNameBlockBlock[replies.Count];
-
-                int i = 0;
-                foreach (KeyValuePair<UUID, Agent> kvp in replies)
-                {
-                    reply.UUIDNameBlock[i] = new UUIDNameReplyPacket.UUIDNameBlockBlock();
-                    reply.UUIDNameBlock[i].ID = kvp.Key;
-                    reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(kvp.Value.FirstName);
-                    reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(kvp.Value.LastName);
-                    i++;
-                }
-
-                Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
-            }
+            Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
         }
 
         public static AvatarAppearancePacket BuildAppearancePacket(Agent agent)

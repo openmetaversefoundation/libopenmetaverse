@@ -14,36 +14,17 @@ namespace Simian
         public Packet Packet;
     }
 
-    public struct OutgoingPacket
+    public class OutgoingPacket
     {
-        public UDPClient Client;
         public Packet Packet;
         /// <summary>Number of times this packet has been resent</summary>
         public int ResendCount;
         /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
         public int TickCount;
 
-        public OutgoingPacket(UDPClient client, Packet packet)
+        public OutgoingPacket(Packet packet)
         {
-            Client = client;
             Packet = packet;
-            ResendCount = 0;
-            TickCount = 0;
-        }
-
-        public void IncrementResendCount()
-        {
-            ++ResendCount;
-        }
-
-        public void SetTickCount()
-        {
-            TickCount = Environment.TickCount;
-        }
-
-        public void ZeroTickCount()
-        {
-            TickCount = 0;
         }
     }
 
@@ -250,16 +231,9 @@ namespace Simian
 
                 if (packet.Header.Reliable)
                 {
-                    // Wrap this packet in a struct to track timeouts and resends
-                    OutgoingPacket outgoing = new OutgoingPacket(null, packet);
-                    // Keep track of when this packet was sent out (right now)
-                    outgoing.TickCount = Environment.TickCount;
+                    OutgoingPacket outgoing;
 
-                    // Add this packet to the list of ACK responses we are waiting on from this client
-                    lock (client.NeedAcks)
-                        client.NeedAcks[sequence] = outgoing;
-
-                    if (packet.Header.Resent)
+                    if (packet.Header.Resent && client.NeedAcks.TryGetValue(packet.Header.Sequence, out outgoing))
                     {
                         // This packet has already been sent out once, strip any appended ACKs
                         // off it and reinsert them into the outgoing ACK queue under the 
@@ -282,12 +256,16 @@ namespace Simian
                             packet.Header.AppendedAcks = false;
                             packet.Header.AckList = new uint[0];
                         }
-
-                        // Update the sent time for this packet
-                        SetResentTime(client, packet.Header.Sequence);
                     }
                     else
                     {
+                        // Wrap this packet in a struct to track timeouts and resends
+                        outgoing = new OutgoingPacket(packet);
+
+                        // Add this packet to the list of ACK responses we are waiting on from this client
+                        lock (client.NeedAcks)
+                            client.NeedAcks[sequence] = outgoing;
+
                         // This packet is not a resend, check if the conditions are favorable
                         // to ACK appending
                         if (packet.Type != PacketType.PacketAck)
@@ -310,6 +288,9 @@ namespace Simian
                             }
                         }
                     }
+
+                    // Update the sent time for this packet
+                    outgoing.TickCount = Environment.TickCount;
                 }
                 else if (packet.Header.AckList.Length > 0)
                 {
@@ -401,13 +382,6 @@ namespace Simian
                 SendPacket(client, acks, PacketCategory.Overhead, true);
         }
 
-        void SetResentTime(UDPClient client, uint sequence)
-        {
-            OutgoingPacket outgoing;
-            if (client.NeedAcks.TryGetValue(sequence, out outgoing))
-                outgoing.SetTickCount();
-        }
-
         public void ResendUnacked(UDPClient client)
         {
             lock (client.NeedAcks)
@@ -425,34 +399,29 @@ namespace Simian
                             Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
                                     outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount));
 
-                            outgoing.ZeroTickCount();
+                            outgoing.TickCount = 0;
                             outgoing.Packet.Header.Resent = true;
+                            ++outgoing.ResendCount;
                             //++Stats.ResentPackets;
-                            outgoing.IncrementResendCount();
 
                             SendPacket(client, outgoing.Packet, PacketCategory.Overhead, false);
                         }
                         else
                         {
                             Logger.Log(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
-                                outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount), Helpers.LogLevel.Warning);
+                                outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount),
+                                Helpers.LogLevel.Warning);
 
                             dropAck.Add(outgoing.Packet.Header.Sequence);
 
                             //Disconnect an agent if no packets are received for some time
-                            //TODO: Send logout packet? Also, 60000 should be a setting somewhere.
+                            //TODO: 60000 should be a setting somewhere.
                             if (Environment.TickCount - client.Agent.TickLastPacketReceived > 60000)
                             {
-                                Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name), Helpers.LogLevel.Warning);
-                                server.UDP.RemoveClient(client.Agent);                                
+                                Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name),
+                                    Helpers.LogLevel.Warning);
 
-                                //HACK: Notify everyone when someone is disconnected
-                                OfflineNotificationPacket offline = new OfflineNotificationPacket();
-                                offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
-                                offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-                                offline.AgentBlock[0].AgentID = client.Agent.AgentID;
-                                server.UDP.BroadcastPacket(offline, PacketCategory.State);
-
+                                server.DisconnectClient(client.Agent);
                                 return;
                             }
                         }
