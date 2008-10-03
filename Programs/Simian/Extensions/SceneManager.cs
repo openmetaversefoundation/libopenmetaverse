@@ -22,6 +22,7 @@ namespace Simian.Extensions
         public event ObjectRemoveCallback OnObjectRemove;
         public event ObjectTransformCallback OnObjectTransform;
         public event ObjectFlagsCallback OnObjectFlags;
+        public event ObjectImageCallback OnObjectImage;
         public event ObjectModifyCallback OnObjectModify;
         public event TerrainUpdatedCallback OnTerrainUpdated;
 
@@ -144,6 +145,21 @@ namespace Simian.Extensions
 
             // Update the object
             obj.Prim.Flags = flags;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj);
+        }
+
+        public void ObjectImage(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry)
+        {
+            if (OnObjectImage != null)
+            {
+                OnObjectImage(sender, obj, mediaURL, textureEntry);
+            }
+
+            // Update the object
+            obj.Prim.Textures = textureEntry;
+            obj.Prim.MediaURL = mediaURL;
 
             // Inform clients
             BroadcastObjectUpdate(obj);

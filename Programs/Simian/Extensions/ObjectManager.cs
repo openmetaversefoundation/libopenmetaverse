@@ -502,6 +502,16 @@ namespace Simian.Extensions
 
         void ObjectImageHandler(Packet packet, Agent agent)
         {
+            ObjectImagePacket image = (ObjectImagePacket)packet;
+
+            for (int i = 0; i < image.ObjectData.Length; i++)
+            {
+                SimulationObject obj;
+                if (Server.Scene.TryGetObject(image.ObjectData[i].ObjectLocalID, out obj))
+                    Server.Scene.ObjectImage(this, obj,
+                        Utils.BytesToString(image.ObjectData[i].MediaURL),
+                        new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length));
+            }
         }
 
         void DeRezObjectHandler(Packet packet, Agent agent)
