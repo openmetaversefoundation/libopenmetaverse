@@ -154,7 +154,7 @@ namespace Simian
             update.JointPivot = obj.JointPivot;
             update.JointType = (byte)obj.Joint;
             update.Material = (byte)obj.PrimData.Material;
-            update.MediaURL = new byte[0]; // FIXME:
+            update.MediaURL = Utils.StringToBytes(obj.MediaURL);
             update.NameValue = Utils.StringToBytes(NameValue.NameValuesToString(obj.NameValues));
             update.ObjectData = objectData;
             update.OwnerID = obj.Properties.OwnerID;
@@ -181,7 +181,7 @@ namespace Simian
             update.PSBlock = new byte[0]; // FIXME:
             update.TextColor = obj.TextColor.GetBytes(true);
             update.TextureAnim = obj.TextureAnim.GetBytes();
-            update.TextureEntry = obj.Textures.ToBytes();
+            update.TextureEntry = obj.Textures == null ? new byte[0] : obj.Textures.ToBytes();
             update.Radius = obj.SoundRadius;
             update.Scale = obj.Scale;
             update.Sound = obj.Sound;

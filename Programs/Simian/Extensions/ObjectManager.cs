@@ -207,48 +207,49 @@ namespace Simian.Extensions
         {
             ObjectSelectPacket select = (ObjectSelectPacket)packet;
 
-            ObjectPropertiesPacket properties = new ObjectPropertiesPacket();
-            properties.ObjectData = new ObjectPropertiesPacket.ObjectDataBlock[select.ObjectData.Length];
-
             for (int i = 0; i < select.ObjectData.Length; i++)
             {
-                properties.ObjectData[i] = new ObjectPropertiesPacket.ObjectDataBlock();
+                ObjectPropertiesPacket properties = new ObjectPropertiesPacket();
+                properties.ObjectData = new ObjectPropertiesPacket.ObjectDataBlock[1];
+                properties.ObjectData[0] = new ObjectPropertiesPacket.ObjectDataBlock();
 
                 SimulationObject obj;
                 if (Server.Scene.TryGetObject(select.ObjectData[i].ObjectLocalID, out obj))
                 {
                     //Logger.DebugLog("Selecting object " + obj.Prim.LocalID);
 
-                    properties.ObjectData[i].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
-                    properties.ObjectData[i].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
-                    properties.ObjectData[i].CreatorID = obj.Prim.Properties.CreatorID;
-                    properties.ObjectData[i].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
-                    properties.ObjectData[i].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
-                    properties.ObjectData[i].GroupID = obj.Prim.Properties.GroupID;
-                    properties.ObjectData[i].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
-                    properties.ObjectData[i].LastOwnerID = obj.Prim.Properties.LastOwnerID;
-                    properties.ObjectData[i].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
-                    properties.ObjectData[i].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
-                    properties.ObjectData[i].ObjectID = obj.Prim.ID;
-                    properties.ObjectData[i].OwnerID = obj.Prim.Properties.OwnerID;
-                    properties.ObjectData[i].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
-                    properties.ObjectData[i].OwnershipCost = obj.Prim.Properties.OwnershipCost;
-                    properties.ObjectData[i].SalePrice = obj.Prim.Properties.SalePrice;
-                    properties.ObjectData[i].SaleType = (byte)obj.Prim.Properties.SaleType;
-                    properties.ObjectData[i].SitName = new byte[0];
-                    properties.ObjectData[i].TextureID = new byte[0];
-                    properties.ObjectData[i].TouchName = new byte[0];
+                    properties.ObjectData[0].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                    properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
+                    properties.ObjectData[0].CreatorID = obj.Prim.Properties.CreatorID;
+                    properties.ObjectData[0].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                    properties.ObjectData[0].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                    properties.ObjectData[0].GroupID = obj.Prim.Properties.GroupID;
+                    properties.ObjectData[0].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                    properties.ObjectData[0].LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                    properties.ObjectData[0].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                    properties.ObjectData[0].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                    properties.ObjectData[0].ObjectID = obj.Prim.ID;
+                    properties.ObjectData[0].OwnerID = obj.Prim.Properties.OwnerID;
+                    properties.ObjectData[0].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                    properties.ObjectData[0].OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                    properties.ObjectData[0].SalePrice = obj.Prim.Properties.SalePrice;
+                    properties.ObjectData[0].SaleType = (byte)obj.Prim.Properties.SaleType;
+                    properties.ObjectData[0].SitName = new byte[0];
+                    properties.ObjectData[0].TextureID = new byte[0];
+                    properties.ObjectData[0].TouchName = new byte[0];
+
+                    Server.UDP.SendPacket(agent.AgentID, properties, PacketCategory.Transaction);
                 }
                 else
                 {
                     Logger.Log("ObjectSelect sent for missing object " + select.ObjectData[i].ObjectLocalID,
                         Helpers.LogLevel.Warning);
 
-                    properties.ObjectData[i].Description = new byte[0];
-                    properties.ObjectData[i].Name = new byte[0];
-                    properties.ObjectData[i].SitName = new byte[0];
-                    properties.ObjectData[i].TextureID = new byte[0];
-                    properties.ObjectData[i].TouchName = new byte[0];
+                    properties.ObjectData[0].Description = new byte[0];
+                    properties.ObjectData[0].Name = new byte[0];
+                    properties.ObjectData[0].SitName = new byte[0];
+                    properties.ObjectData[0].TextureID = new byte[0];
+                    properties.ObjectData[0].TouchName = new byte[0];
 
                     KillObjectPacket kill = new KillObjectPacket();
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
@@ -257,8 +258,7 @@ namespace Simian.Extensions
                     Server.UDP.SendPacket(agent.AgentID, kill, PacketCategory.State);
                 }
             }
-
-            Server.UDP.SendPacket(agent.AgentID, properties, PacketCategory.Transaction);
+            
         }
 
         void ObjectDeselectHandler(Packet packet, Agent agent)
@@ -302,18 +302,18 @@ namespace Simian.Extensions
                 }
             }
 
-            ObjectUpdatePacket update = new ObjectUpdatePacket();
-
-            update.RegionData.RegionHandle = Server.RegionHandle;
-            update.RegionData.TimeDilation = UInt16.MaxValue;
-
-            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[linkSet.Count];
-
             for (int i = 0; i < linkSet.Count; i++)
             {
                 linkSet[i].LinkNumber = i + 1;
 
-                update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, Server.RegionHandle,
+                ObjectUpdatePacket update = new ObjectUpdatePacket();
+
+                update.RegionData.RegionHandle = Server.RegionHandle;
+                update.RegionData.TimeDilation = UInt16.MaxValue;               
+
+                update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+
+                update.ObjectData[0] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, Server.RegionHandle,
                     linkSet[i].Prim.PrimData.State, linkSet[i].Prim.Flags);
 
                 if (linkSet[i].Prim.ParentID > 0)
@@ -334,19 +334,20 @@ namespace Simian.Extensions
                     linkSet[i].Prim.Rotation /= linkSet[0].Prim.Rotation;
 
                     //set parent ID
-                    update.ObjectData[i].ParentID = linkSet[0].Prim.LocalID;
+                    update.ObjectData[0].ParentID = linkSet[0].Prim.LocalID;
                 }
                 else
                 {
-                    update.ObjectData[i].ParentID = 0;
+                    update.ObjectData[0].ParentID = 0;
                 }
 
-                update.ObjectData[i].ObjectData = SimulationObject.BuildObjectData(
+                update.ObjectData[0].ObjectData = SimulationObject.BuildObjectData(
                     linkSet[i].Prim.Position, linkSet[i].Prim.Rotation,
                     Vector3.Zero, Vector3.Zero, Vector3.Zero);
+
+                Server.UDP.BroadcastPacket(update, PacketCategory.State);
             }
 
-            Server.UDP.BroadcastPacket(update, PacketCategory.State);
         }
 
         void ObjectDelinkHandler(Packet packet, Agent agent)
