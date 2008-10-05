@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
 
 namespace Simian.Extensions
 {
-    public class RenderingPluginMesher : ISimianExtension, IMeshingProvider
+    public class RenderingPluginMesher : IExtension, IMeshingProvider
     {
         Simian Server;
         IRendering Renderer;

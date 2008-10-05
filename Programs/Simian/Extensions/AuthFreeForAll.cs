@@ -1,9 +1,10 @@
 using System;
+using ExtensionLoader;
 using OpenMetaverse;
 
 namespace Simian.Extensions
 {
-    public class AuthFreeForAll : ISimianExtension, IAuthenticationProvider
+    public class AuthFreeForAll : IExtension, IAuthenticationProvider
     {
         Simian server;
 

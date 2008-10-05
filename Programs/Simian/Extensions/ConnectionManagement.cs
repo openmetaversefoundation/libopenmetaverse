@@ -1,10 +1,11 @@
 using System;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class ConnectionManagement : ISimianExtension
+    public class ConnectionManagement : IExtension
     {
         Simian server;
 

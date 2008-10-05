@@ -5,13 +5,14 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class SceneManager : ISimianExtension, ISceneProvider
+    public class SceneManager : IExtension, ISceneProvider
     {
         Simian server;
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();

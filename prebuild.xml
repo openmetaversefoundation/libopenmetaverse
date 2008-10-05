@@ -137,6 +137,25 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
+    
+    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
     <Project name="GridProxy" path="Programs/GridProxy" type="Library">
       <Configuration name="Debug">
@@ -680,6 +699,7 @@
       <Reference name="System"/>
       <Reference name="System.Drawing"/>
       <Reference name="System.Xml"/>
+      <Reference name="ExtensionLoader"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
 

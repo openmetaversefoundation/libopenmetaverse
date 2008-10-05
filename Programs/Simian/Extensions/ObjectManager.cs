@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class ObjectManager : ISimianExtension
+    public class ObjectManager : IExtension
     {
         Simian Server;
         

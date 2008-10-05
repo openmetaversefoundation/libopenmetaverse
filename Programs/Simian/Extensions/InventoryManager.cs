@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class InventoryManager : ISimianExtension, IInventoryProvider
+    public class InventoryManager : IExtension, IInventoryProvider
     {
         Simian Server;
 

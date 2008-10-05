@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
 namespace Simian.Extensions
 {
-    public class XMLPersistence : ISimianExtension, IPersistenceProvider
+    public class XMLPersistence : IExtension, IPersistenceProvider
     {
         Simian server;
 

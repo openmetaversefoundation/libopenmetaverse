@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
 namespace Simian.Extensions
 {
-    public class AccountManager : ISimianExtension, IAccountProvider, IPersistable
+    public class AccountManager : IExtension, IAccountProvider, IPersistable
     {
         public string StoreName { get { return "Accounts"; } }
 

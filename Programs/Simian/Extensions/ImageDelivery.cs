@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
@@ -81,7 +82,7 @@ namespace Simian.Extensions
         }
     }
 
-    public class ImageDelivery : ISimianExtension
+    public class ImageDelivery : IExtension
     {
         Simian Server;
         AssetTexture defaultJP2;

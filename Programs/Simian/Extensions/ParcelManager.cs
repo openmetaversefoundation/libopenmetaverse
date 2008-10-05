@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class ParcelManager : ISimianExtension, IParcelProvider
+    public class ParcelManager : IExtension, IParcelProvider
     {
         Simian server;
         Dictionary<int, Parcel> parcels = new Dictionary<int, Parcel>();

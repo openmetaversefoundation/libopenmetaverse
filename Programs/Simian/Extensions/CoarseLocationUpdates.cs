@@ -1,5 +1,6 @@
 using OpenMetaverse;
 using OpenMetaverse.Packets;
+using ExtensionLoader;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Threading;
 
 namespace Simian.Extensions
 {
-    public class CoarseLocationUpdates : ISimianExtension
+    public class CoarseLocationUpdates : IExtension
     {
         Simian Server;
         Timer CoarseLocationTimer;

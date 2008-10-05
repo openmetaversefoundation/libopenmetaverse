@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    class AvatarManager : ISimianExtension, IAvatarProvider
+    class AvatarManager : IExtension, IAvatarProvider
     {
         Simian Server;
         int currentWearablesSerialNum = -1;

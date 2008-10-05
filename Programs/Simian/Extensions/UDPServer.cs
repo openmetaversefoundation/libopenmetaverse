@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
@@ -67,7 +68,7 @@ namespace Simian
         }
     }
 
-    public class UDPManager : ISimianExtension, IUDPProvider
+    public class UDPManager : IExtension, IUDPProvider
     {
         Simian Server;
         UDPServer udpServer;

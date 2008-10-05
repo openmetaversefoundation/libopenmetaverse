@@ -5,6 +5,8 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Threading;
+using System.Reflection;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.Packets;
@@ -54,16 +56,35 @@ namespace Simian
 
             RegionHandle = Helpers.UIntsToLong(REGION_X, REGION_Y);
 
-            // Load all of the extensions
-            ExtensionLoader.LoadAllExtensions(AppDomain.CurrentDomain.BaseDirectory, this);
-
-            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            try
             {
-                // Assign to an interface if possible
-                TryAssignToInterface(extension);
+                // Load all of the extensions
+                List<string> references = new List<string>();
+                references.Add("OpenMetaverseTypes.dll");
+                references.Add("OpenMetaverse.dll");
+                references.Add("Simian.exe");
+
+                Dictionary<Type, FieldInfo> assignables = GetInterfaces();
+
+                ExtensionLoader<Simian>.LoadAllExtensions(Assembly.GetExecutingAssembly(),
+                    AppDomain.CurrentDomain.BaseDirectory, this, references,
+                    "Simian.*.dll", "Simian.*.cs", this, assignables);
+            }
+            catch (ExtensionException ex)
+            {
+                Logger.Log("Interface loading failed, shutting down: " + ex.Message, Helpers.LogLevel.Error);
+                Stop();
+                return false;
             }
 
-            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            {
+                // Track all of the extensions with persistence
+                if (extension is IPersistable)
+                    PersistentExtensions.Add((IPersistable)extension);
+            }
+
+            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Start persistance providers after all other extensions
                 if (!(extension is IPersistenceProvider))
@@ -73,7 +94,7 @@ namespace Simian
                 }
             }
 
-            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Start the persistance provider(s)
                 if (extension is IPersistenceProvider)
@@ -83,28 +104,19 @@ namespace Simian
                 }
             }
 
-            if (!CheckInterfaces())
-            {
-                Logger.Log("Missing interfaces, shutting down", Helpers.LogLevel.Error);
-                Stop();
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         public void Stop()
         {
-            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Stop persistance providers first
                 if (extension is IPersistenceProvider)
                     extension.Stop();
             }
 
-            foreach (ISimianExtension extension in ExtensionLoader.Extensions)
+            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Stop all other extensions
                 if (!(extension is IPersistenceProvider))
@@ -134,56 +146,17 @@ namespace Simian
             UDP.BroadcastPacket(offline, PacketCategory.State);
         }
 
-        void TryAssignToInterface(ISimianExtension extension)
+        Dictionary<Type, FieldInfo> GetInterfaces()
         {
-            if (extension is IAuthenticationProvider)
-                Authentication = (IAuthenticationProvider)extension;
-            else if (extension is IAccountProvider)
-                Accounts = (IAccountProvider)extension;
-            else if (extension is IUDPProvider)
-                UDP = (IUDPProvider)extension;
-            else if (extension is ISceneProvider)
-                Scene = (ISceneProvider)extension;
-            else if (extension is IAssetProvider)
-                Assets = (IAssetProvider)extension;
-            else if (extension is IAvatarProvider)
-                Avatars = (IAvatarProvider)extension;
-            else if (extension is IInventoryProvider)
-                Inventory = (IInventoryProvider)extension;
-            else if (extension is IParcelProvider)
-                Parcels = (IParcelProvider)extension;
-            else if (extension is IMeshingProvider)
-                Mesher = (IMeshingProvider)extension;
+            Dictionary<Type, FieldInfo> interfaces = new Dictionary<Type, FieldInfo>();
 
-            // Track all of the extensions with persistence
-            if (extension is IPersistable)
-                PersistentExtensions.Add((IPersistable)extension);
-        }
+            foreach (FieldInfo field in this.GetType().GetFields())
+            {
+                if (field.FieldType.IsInterface)
+                    interfaces.Add(field.FieldType, field);
+            }
 
-        bool CheckInterfaces()
-        {
-            if (Authentication == null)
-                Logger.Log("No IAuthenticationProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Accounts == null)
-                Logger.Log("No IAccountProvider interface loaded", Helpers.LogLevel.Error);
-            else if (UDP == null)
-                Logger.Log("No IUDPProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Scene == null)
-                Logger.Log("No ISceneProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Assets == null)
-                Logger.Log("No IAssetProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Avatars == null)
-                Logger.Log("No IAvatarProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Inventory == null)
-                Logger.Log("No IInventoryProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Parcels == null)
-                Logger.Log("No IParcelProvider interface loaded", Helpers.LogLevel.Error);
-            else if (Mesher == null)
-                Logger.Log("No IMeshingProvider interface loaded", Helpers.LogLevel.Error);
-            else
-                return true;
-
-            return false;
+            return interfaces;
         }
 
         void InitHttpServer(int port, bool ssl)

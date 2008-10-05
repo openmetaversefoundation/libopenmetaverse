@@ -1,12 +1,12 @@
-using OpenMetaverse;
-using OpenMetaverse.Packets;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using ExtensionLoader;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class Messaging : ISimianExtension
+    public class Messaging : IExtension
     {
         Simian Server;
 

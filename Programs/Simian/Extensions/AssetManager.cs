@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class AssetManager : ISimianExtension, IAssetProvider
+    public class AssetManager : IExtension, IAssetProvider
     {
         Simian Server;
         Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();

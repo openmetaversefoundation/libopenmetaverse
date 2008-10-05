@@ -1,13 +1,13 @@
-using OpenMetaverse;
-using OpenMetaverse.Packets;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
+using ExtensionLoader;
+using OpenMetaverse;
+using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class Movement : ISimianExtension
+    public class Movement : IExtension
     {
         const int UPDATE_ITERATION = 100; //rate in milliseconds to send ObjectUpdate
         const bool ENVIRONMENT_SOUNDS = true; //collision sounds, splashing, etc
