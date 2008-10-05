@@ -254,7 +254,7 @@ namespace OpenMetaverse
         /// <param name="ids">The avatar keys to retrieve names for</param>
         public void RequestAvatarNames(List<UUID> ids)
         {
-            Console.WriteLine("AvatarManager requesting UUIDs count {0}", ids.Count);
+            Logger.Log("AvatarManager requesting UUIDs count " + ids.Count, Helpers.LogLevel.Debug);
             if (ids.Count > 0)
             {
                 UUIDNameRequestPacket request = new UUIDNameRequestPacket();
