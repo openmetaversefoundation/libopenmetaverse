@@ -22,6 +22,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
+ * 
+ * 
+ * This code comes from the OpenSim project. Meshmerizer is written by dahlia
+ * <dahliatrimble@gmail.com>
  */
 
 using System;
@@ -159,7 +163,7 @@ namespace OpenMetaverse.Rendering
                 {
                     primMesh.ExtrudeLinear();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return null;
                 }
@@ -185,8 +189,6 @@ namespace OpenMetaverse.Rendering
                     return null;
                 }
             }
-
-            primMesh.Scale(prim.Scale.X, prim.Scale.Y, prim.Scale.Z);
 
             int numCoords = primMesh.coords.Count;
             int numFaces = primMesh.faces.Count;

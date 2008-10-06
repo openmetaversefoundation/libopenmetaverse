@@ -22,6 +22,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
+ * 
+ * 
+ * This code comes from the OpenSim project. Meshmerizer is written by dahlia
+ * <dahliatrimble@gmail.com>
  */
 
 using System;
