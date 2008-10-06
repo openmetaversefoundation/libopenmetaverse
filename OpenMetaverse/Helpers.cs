@@ -307,8 +307,17 @@ namespace OpenMetaverse
         /// <returns>Single precision value</returns>
         public static float BytesToFloat(byte[] bytes, int pos)
         {
-            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, pos, 4);
-            return BitConverter.ToSingle(bytes, pos);
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] newBytes = new byte[4];
+                Buffer.BlockCopy(bytes, pos, newBytes, 0, 4);
+                Array.Reverse(newBytes, pos, 4);
+                return BitConverter.ToSingle(newBytes, 0);
+            }
+            else
+            {
+                return BitConverter.ToSingle(bytes, pos);
+            }
         }
 
         /// <summary>
@@ -325,6 +334,58 @@ namespace OpenMetaverse
                 Array.Reverse(bytes);
             return bytes;
         }
+
+        public static double BytesToDouble(byte[] bytes, int pos)
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] newBytes = new byte[8];
+                Buffer.BlockCopy(bytes, pos, newBytes, 0, 8);
+                Array.Reverse(newBytes, pos, 8);
+                return BitConverter.ToDouble(newBytes, 0);
+            }
+            else
+            {
+                return BitConverter.ToDouble(bytes, pos);
+            }
+        }
+
+        public static byte[] DoubleToBytes(double value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            return bytes;
+        }
+
+        public static byte[] IntToBytes(int value)
+        {
+            byte[] bytes = new byte[4];
+            bytes[0] = (byte)(value % 256);
+            bytes[1] = (byte)((value >> 8) % 256);
+            bytes[2] = (byte)((value >> 16) % 256);
+            bytes[3] = (byte)((value >> 24) % 256);
+            return bytes;
+        }
+
+        public static byte[] UInt16ToBytes(int value)
+        {
+            byte[] bytes = new byte[2];
+            bytes[0] = (byte)(value % 256);
+            bytes[1] = (byte)((value >> 8) % 256);
+            return bytes;
+        }
+
+        public static byte[] UIntToBytes(uint value)
+        {
+            byte[] bytes = new byte[4];
+            bytes[0] = (byte)(value % 256);
+            bytes[1] = (byte)((value >> 8) % 256);
+            bytes[2] = (byte)((value >> 16) % 256);
+            bytes[3] = (byte)((value >> 24) % 256);
+            return bytes;
+        }
+
 
         /// <summary>
         /// Converts a floating point number to a terse string format used for

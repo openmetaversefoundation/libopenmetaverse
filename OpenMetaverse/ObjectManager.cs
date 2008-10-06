@@ -1923,16 +1923,10 @@ namespace OpenMetaverse
                                 prim.Sound = new UUID(block.Data, i);
                                 i += 16;
 
-                                if (!BitConverter.IsLittleEndian)
-                                {
-                                    Array.Reverse(block.Data, i, 4);
-                                    Array.Reverse(block.Data, i + 5, 4);
-                                }
-
-                                prim.SoundGain = BitConverter.ToSingle(block.Data, i);
+                                prim.SoundGain = Helpers.BytesToFloat(block.Data, i);
                                 i += 4;
                                 prim.SoundFlags = block.Data[i++];
-                                prim.SoundRadius = BitConverter.ToSingle(block.Data, i);
+                                prim.SoundRadius = Helpers.BytesToFloat(block.Data, i);
                                 i += 4;
                             }
 

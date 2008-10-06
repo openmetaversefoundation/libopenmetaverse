@@ -370,7 +370,8 @@ namespace OpenMetaverse
         /// <returns>Single precision value</returns>
         public static float BytesToFloat(byte[] bytes, int pos)
         {
-            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, pos, 4);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes, pos, 4);
             return BitConverter.ToSingle(bytes, pos);
         }
 

@@ -161,18 +161,30 @@ namespace OpenMetaverse
         /// never send a throttle packet to the client</remarks>
         public AgentThrottle(byte[] data, int pos)
         {
-            int i;
-            if (!BitConverter.IsLittleEndian)
-                for (i = 0; i < 7; i++)
-                    Array.Reverse(data, pos + i * 4, 4);
+            byte[] adjData;
 
-            Resend = BitConverter.ToSingle(data, pos); pos += 4;
-            Land = BitConverter.ToSingle(data, pos); pos += 4;
-            Wind = BitConverter.ToSingle(data, pos); pos += 4;
-            Cloud = BitConverter.ToSingle(data, pos); pos += 4;
-            Task = BitConverter.ToSingle(data, pos); pos += 4;
-            Texture = BitConverter.ToSingle(data, pos); pos += 4;
-            Asset = BitConverter.ToSingle(data, pos);
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] newData = new byte[7 * 4];
+                Buffer.BlockCopy(data, pos, newData, 0, 7 * 4);
+
+                for (int i = 0; i < 7; i++)
+                    Array.Reverse(newData, i * 4, 4);
+
+                adjData = newData;
+            }
+            else
+            {
+                adjData = data;
+            }
+
+            Resend = BitConverter.ToSingle(adjData, pos); pos += 4;
+            Land = BitConverter.ToSingle(adjData, pos); pos += 4;
+            Wind = BitConverter.ToSingle(adjData, pos); pos += 4;
+            Cloud = BitConverter.ToSingle(adjData, pos); pos += 4;
+            Task = BitConverter.ToSingle(adjData, pos); pos += 4;
+            Texture = BitConverter.ToSingle(adjData, pos); pos += 4;
+            Asset = BitConverter.ToSingle(adjData, pos);
         }
 
         /// <summary>
@@ -210,17 +222,13 @@ namespace OpenMetaverse
             byte[] data = new byte[7 * 4];
             int i = 0;
 
-            BitConverter.GetBytes(Resend).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Land).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Wind).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Cloud).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Task).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Texture).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Asset).CopyTo(data, i); i += 4;
-
-            if (!BitConverter.IsLittleEndian)
-                for (i = 0; i < 7; i++)
-                    Array.Reverse(data, i * 4, 4);
+            Buffer.BlockCopy(Helpers.FloatToBytes(Resend), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Helpers.FloatToBytes(Land), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Helpers.FloatToBytes(Wind), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Helpers.FloatToBytes(Cloud), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Helpers.FloatToBytes(Task), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Helpers.FloatToBytes(Texture), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Helpers.FloatToBytes(Asset), 0, data, i, 4); i += 4;
 
             return data;
         }

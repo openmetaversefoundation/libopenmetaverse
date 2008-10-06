@@ -375,15 +375,9 @@ namespace OpenMetaverse.StructuredData
         public override bool AsBoolean() { return value != 0; }
         public override int AsInteger() { return value; }
         public override double AsReal() { return (double)value; }
-    
         public override string AsString() { return value.ToString(); }
+        public override byte[] AsBinary() { return Helpers.IntToBytes(value); }
         
-         public override byte[] AsBinary() {
-            int bigEndInt = System.Net.IPAddress.HostToNetworkOrder( value );
-            byte[] binary = BitConverter.GetBytes(bigEndInt);
-            return binary;
-        }
-                
         public override string ToString() { return AsString(); }        
     }
     
@@ -587,6 +581,11 @@ namespace OpenMetaverse.StructuredData
                 this.value = value;
             else
                 this.value = new byte[0];
+        }
+
+        public LLSDBinary(uint value)
+        {
+            this.value = BitConverter.GetBytes(value);
         }
 
         public LLSDBinary(long value)
