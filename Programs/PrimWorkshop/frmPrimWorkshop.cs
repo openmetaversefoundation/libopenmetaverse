@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using Tao.OpenGl;
 using Tao.Platform.Windows;
+using ICSharpCode.SharpZipLib.Zip;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Imaging;
@@ -42,6 +43,7 @@ namespace PrimWorkshop
         bool DraggingTexture = false;
         bool Wireframe = true;
         int[] TexturePointers = new int[1];
+        Dictionary<UUID, Image> Textures = new Dictionary<UUID, Image>();
 
         #endregion Form Globals
 
@@ -140,18 +142,9 @@ namespace PrimWorkshop
                     // sim-relative ones
                     if (Prims[i].Prim.ParentID != 0)
                     {
-                        Gl.glTranslatef(prim.Position.X, prim.Position.Y, prim.Position.Z);
-
-                        // Prim rotation
-                        // Using euler angles because I have no clue what I'm doing
-                        float roll, pitch, yaw;
-
-                        Matrix4 rotation = Matrix4.CreateFromQuaternion(prim.Rotation);
-                        rotation.GetEulerAngles(out roll, out pitch, out yaw);
-
-                        Gl.glRotatef(roll * 57.2957795f, 1f, 0f, 0f);
-                        Gl.glRotatef(pitch * 57.2957795f, 0f, 1f, 0f);
-                        Gl.glRotatef(yaw * 57.2957795f, 0f, 0f, 1f);
+                        // Apply prim translation and rotation
+                        Gl.glMultMatrixf(Math3D.CreateTranslationMatrix(prim.Position));
+                        Gl.glMultMatrixf(Math3D.CreateRotationMatrix(prim.Rotation));
                     }
 
                     // Prim scaling
@@ -212,24 +205,6 @@ namespace PrimWorkshop
                     Gl.glPopMatrix();
                 }
             }
-            /*else if (CurrentMesh != null)
-            {
-                Gl.glColor3f(1f, 1f, 1f);
-
-                GLMesh glmesh = CurrentMesh.Value;
-                LLMesh llmesh = glmesh.Mesh;
-
-                Gl.glRotatef(llmesh.RotationAngles.X, 1f, 0f, 0f);
-                Gl.glRotatef(llmesh.RotationAngles.Y, 0f, 1f, 0f);
-                Gl.glRotatef(llmesh.RotationAngles.Z, 0f, 0f, 1f);
-
-                Gl.glScalef(llmesh.Scale.X, llmesh.Scale.Y, llmesh.Scale.Z);
-
-                // Push the mesh data
-                Gl.glTexCoordPointer(2, Gl.GL_FLOAT, 0, glmesh.TexCoords);
-                Gl.glVertexPointer(3, Gl.GL_FLOAT, 0, glmesh.Vertices);
-                Gl.glDrawElements(Gl.GL_TRIANGLES, glmesh.Indices.Length, Gl.GL_UNSIGNED_SHORT, glmesh.Indices);
-            }*/
 
             // Pop the world matrix
             Gl.glPopMatrix();
@@ -264,12 +239,38 @@ namespace PrimWorkshop
         {
             Prims = null;
             OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "Prim Package (*.zip)|*.zip";
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
+                string tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                    System.IO.Path.GetRandomFileName());
+
+                try
+                {
+                    // Create a temporary directory
+                    Directory.CreateDirectory(tempPath);
+
+                    FastZip fastzip = new FastZip();
+                    fastzip.ExtractZip(dialog.FileName, tempPath, String.Empty);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
+
+                // Check for the prims.xml file
+                string primsFile = System.IO.Path.Combine(tempPath, "prims.xml");
+                if (!File.Exists(primsFile))
+                {
+                    MessageBox.Show("prims.xml not found in the archive");
+                    return;
+                }
+
                 LLSD llsd = null;
 
-                try { llsd = LLSDParser.DeserializeXml(File.ReadAllText(dialog.FileName)); }
+                try { llsd = LLSDParser.DeserializeXml(File.ReadAllText(primsFile)); }
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
 
                 if (llsd != null && llsd.Type == LLSDType.Map)
@@ -318,7 +319,7 @@ namespace PrimWorkshop
                             }
 
                             // Texture for this face
-                            if (LoadTexture(System.IO.Path.GetDirectoryName(dialog.FileName), teFace.TextureID, ref data.Texture))
+                            if (LoadTexture(tempPath, teFace.TextureID, ref data.Texture))
                             {
                                 Bitmap bitmap = new Bitmap(data.Texture);
                                 bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -357,18 +358,43 @@ namespace PrimWorkshop
                 {
                     MessageBox.Show("Failed to load LLSD formatted primitive data from " + dialog.FileName);
                 }
+
+                Directory.Delete(tempPath);
             }
         }
 
         private bool LoadTexture(string basePath, UUID textureID, ref System.Drawing.Image texture)
         {
-            if (File.Exists(textureID.ToString() + ".tga"))
+            if (Textures.ContainsKey(textureID))
+            {
+                texture = Textures[textureID];
+                return true;
+            }
+
+            string texturePath = System.IO.Path.Combine(basePath, textureID.ToString());
+
+            if (File.Exists(texturePath + ".tga"))
             {
                 try
                 {
-                    texture = (Image)LoadTGAClass.LoadTGA(
-                        basePath + System.IO.Path.DirectorySeparatorChar + textureID.ToString() + ".tga");
+                    texture = (Image)LoadTGAClass.LoadTGA(texturePath + ".tga");
+                    Textures[textureID] = texture;
                     return true;
+                }
+                catch (Exception)
+                {
+                }
+            }
+            else if (File.Exists(texturePath + ".jp2"))
+            {
+                try
+                {
+                    ManagedImage managedImage;
+                    if (OpenJPEG.DecodeToImage(File.ReadAllBytes(texturePath + ".jp2"), out managedImage, out texture))
+                    {
+                        Textures[textureID] = texture;
+                        return true;
+                    }
                 }
                 catch (Exception)
                 {

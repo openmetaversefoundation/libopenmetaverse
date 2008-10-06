@@ -66,7 +66,7 @@ namespace PrimWorkshop
         private Dictionary<UUID, ImageDownload> RenderReady;
 
         // maximum allowed concurrent requests at once
-        const int MAX_TEXTURE_REQUESTS = 3;
+        const int MAX_TEXTURE_REQUESTS = 10;
 
         /// <summary>
         /// 
