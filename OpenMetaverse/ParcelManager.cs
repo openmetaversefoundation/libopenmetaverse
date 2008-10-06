@@ -682,6 +682,8 @@ namespace OpenMetaverse
             public int Count;
             /// <summary>true of OwnerID is currently online and is not a group</summary>
             public bool OnlineStatus;
+            /// <summary>The date of the most recent prim left by OwnerID</summary>
+            public DateTime NewestPrim;
         }
 
         
@@ -802,13 +804,11 @@ namespace OpenMetaverse
             Client = client;
             // Setup the callbacks
             Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new NetworkManager.PacketCallback(ParcelInfoReplyHandler));
-            // UDP packet handler
-            Client.Network.RegisterCallback(PacketType.ParcelProperties, new NetworkManager.PacketCallback(ParcelPropertiesHandler));
+            Client.Network.RegisterEventCallback("ParcelObjectOwnersReply", new Caps.EventQueueCallback(ParcelObjectOwnersReplyHandler));
             // CAPS packet handler, to allow for Media Data not contained in the message template
             Client.Network.RegisterEventCallback("ParcelProperties", new Caps.EventQueueCallback(ParcelPropertiesReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new NetworkManager.PacketCallback(ParcelDwellReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
-            Client.Network.RegisterCallback(PacketType.ParcelObjectOwnersReply, new NetworkManager.PacketCallback(ParcelObjectOwnersReplyHandler));
             Client.Network.RegisterCallback(PacketType.ForceObjectSelect, new NetworkManager.PacketCallback(SelectParcelObjectsReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelMediaUpdate, new NetworkManager.PacketCallback(ParcelMediaUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ParcelOverlay, new NetworkManager.PacketCallback(ParcelOverlayHandler));
@@ -1548,118 +1548,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Parcel Properties reply handler for data that comes in over udp (deprecated)
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void ParcelPropertiesHandler(Packet packet, Simulator simulator)
-        {
-            if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
-            {
-                ParcelPropertiesPacket properties = (ParcelPropertiesPacket)packet;
-
-                Parcel parcel = new Parcel(properties.ParcelData.LocalID);
-
-                parcel.AABBMax = properties.ParcelData.AABBMax;
-                parcel.AABBMin = properties.ParcelData.AABBMin;
-                parcel.Area = properties.ParcelData.Area;
-                parcel.AuctionID = properties.ParcelData.AuctionID;
-                parcel.AuthBuyerID = properties.ParcelData.AuthBuyerID;
-                parcel.Bitmap = Utils.CopyBytes(properties.ParcelData.Bitmap);
-                parcel.Category = (Parcel.ParcelCategory)(sbyte)properties.ParcelData.Category;
-                parcel.ClaimDate = Utils.UnixTimeToDateTime((uint)properties.ParcelData.ClaimDate);
-                // ClaimPrice seems to always be zero?
-                parcel.ClaimPrice = properties.ParcelData.ClaimPrice;
-                parcel.Desc = Utils.BytesToString(properties.ParcelData.Desc);
-                parcel.GroupID = properties.ParcelData.GroupID;
-                parcel.GroupPrims = properties.ParcelData.GroupPrims;
-                parcel.IsGroupOwned = properties.ParcelData.IsGroupOwned;
-                parcel.Landing = (Parcel.LandingType)properties.ParcelData.LandingType;
-                parcel.MaxPrims = properties.ParcelData.MaxPrims;
-                parcel.Media.MediaAutoScale = properties.ParcelData.MediaAutoScale;
-                parcel.Media.MediaID = properties.ParcelData.MediaID;
-                parcel.Media.MediaURL = Utils.BytesToString(properties.ParcelData.MediaURL);
-                parcel.MusicURL = Utils.BytesToString(properties.ParcelData.MusicURL);
-                parcel.Name = Utils.BytesToString(properties.ParcelData.Name);
-                parcel.OtherCleanTime = properties.ParcelData.OtherCleanTime;
-                parcel.OtherCount = properties.ParcelData.OtherCount;
-                parcel.OtherPrims = properties.ParcelData.OtherPrims;
-                parcel.OwnerID = properties.ParcelData.OwnerID;
-                parcel.OwnerPrims = properties.ParcelData.OwnerPrims;
-                parcel.Flags = (Parcel.ParcelFlags)properties.ParcelData.ParcelFlags;
-                parcel.ParcelPrimBonus = properties.ParcelData.ParcelPrimBonus;
-                parcel.PassHours = properties.ParcelData.PassHours;
-                parcel.PassPrice = properties.ParcelData.PassPrice;
-                parcel.PublicCount = properties.ParcelData.PublicCount;
-                parcel.RegionDenyAnonymous = properties.ParcelData.RegionDenyAnonymous;
-                parcel.RegionPushOverride = properties.ParcelData.RegionPushOverride;
-                parcel.RentPrice = properties.ParcelData.RentPrice;
-                parcel.SalePrice = properties.ParcelData.SalePrice;
-                int selectedPrims = properties.ParcelData.SelectedPrims;
-                parcel.SelfCount = properties.ParcelData.SelfCount;
-                parcel.SimWideMaxPrims = properties.ParcelData.SimWideMaxPrims;
-                parcel.SimWideTotalPrims = properties.ParcelData.SimWideTotalPrims;
-                parcel.SnapshotID = properties.ParcelData.SnapshotID;
-                parcel.Status = (Parcel.ParcelStatus)(sbyte)properties.ParcelData.Status;
-                parcel.TotalPrims = properties.ParcelData.TotalPrims;
-                parcel.UserLocation = properties.ParcelData.UserLocation;
-                parcel.UserLookAt = properties.ParcelData.UserLookAt;
-                parcel.RegionDenyAgeUnverified = properties.AgeVerificationBlock.RegionDenyAgeUnverified;
-
-                // store parcel in dictionary
-                if (Client.Settings.PARCEL_TRACKING)
-                {
-                    lock (simulator.Parcels.Dictionary)
-                        simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
-
-                    int y, x, index, bit;
-                    for (y = 0; y < simulator.ParcelMap.GetLength(0); y++)
-                    {
-                        for (x = 0; x < simulator.ParcelMap.GetLength(1); x++)
-                        {
-                            if (simulator.ParcelMap[y, x] == 0)
-                            {
-                                index = (y * 64) + x;
-                                bit = index % 8;
-                                index >>= 3;
-
-                                if ((parcel.Bitmap[index] & (1 << bit)) != 0)
-                                    simulator.ParcelMap[y, x] = parcel.LocalID;
-                            }
-                        }
-                    }
-                }
-
-                // auto request acl, will be stored in parcel tracking dictionary if enabled
-                if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
-                    Client.Parcels.AccessListRequest(simulator, properties.ParcelData.LocalID,
-                        AccessList.Both, properties.ParcelData.SequenceID);
-
-                // auto request dwell, will be stored in parcel tracking dictionary if enables
-                if (Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL)
-                    Client.Parcels.DwellRequest(simulator, properties.ParcelData.LocalID);
-
-                // Fire the callback for parcel properties being received
-                if (OnParcelProperties != null)
-                {
-                    try
-                    {
-                        OnParcelProperties(simulator, parcel, (ParcelResult)properties.ParcelData.RequestResult,
-                            selectedPrims, properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
-                    }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
-
-                // Check if all of the simulator parcels have been retrieved, if so fire another callback
-                if (OnSimParcelsDownloaded != null && simulator.IsParcelMapFull())
-                {
-                    try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
-            }
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="packet"></param>
@@ -1703,29 +1591,61 @@ namespace OpenMetaverse
             }
         }
 
-        private void ParcelObjectOwnersReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="capsKey"></param>
+        /// <param name="llsd"></param>
+        /// <param name="simulator"></param>
+        private void ParcelObjectOwnersReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
         {
             if (OnPrimOwnersListReply != null)
             {
-                ParcelObjectOwnersReplyPacket reply = (ParcelObjectOwnersReplyPacket)packet;
+
+                LLSDMap map = (LLSDMap)llsd;
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
-                for (int i = 0; i < reply.Data.Length; i++)
+                    if (map.ContainsKey("Data"))
+                    {
+                        LLSDArray dataBlock = (LLSDArray)map["Data"];
+                        LLSDArray dataExtendedBlock = (LLSDArray)map["DataExtended"];
+
+                        for (int i = 0; i < dataBlock.Count; i++)
+                        {
+                            ParcelPrimOwners poe = new ParcelPrimOwners();
+                            poe.OwnerID = ((LLSDMap)dataBlock[i])["OwnerID"].AsUUID();
+                            poe.Count = ((LLSDMap)dataBlock[i])["Count"].AsInteger();
+                            poe.IsGroupOwned = ((LLSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
+                            poe.OnlineStatus = ((LLSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
+                            if (((LLSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
+                            {
+                                byte[] bytes = (((LLSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
+                                
+                                if (BitConverter.IsLittleEndian)
+                                    Array.Reverse(bytes);
+
+                                uint value = Helpers.BytesToUInt(bytes);
+
+                                poe.NewestPrim = Utils.UnixTimeToDateTime(value);
+                            }
+
+                            primOwners.Add(poe);
+                        }
+                    }
+
+                if (OnPrimOwnersListReply != null)
                 {
-                    ParcelPrimOwners poe = new ParcelPrimOwners();
-
-                    poe.OwnerID = reply.Data[i].OwnerID;
-                    poe.IsGroupOwned = reply.Data[i].IsGroupOwned;
-                    poe.Count = reply.Data[i].Count;
-                    poe.OnlineStatus = reply.Data[i].OnlineStatus;
-                    primOwners.Add(poe);
+                    try { OnPrimOwnersListReply(simulator, primOwners); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
-                try { OnPrimOwnersListReply(simulator, primOwners); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
-
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void SelectParcelObjectsReplyHandler(Packet packet, Simulator simulator)
         {
             ForceObjectSelectPacket reply = (ForceObjectSelectPacket)packet;
