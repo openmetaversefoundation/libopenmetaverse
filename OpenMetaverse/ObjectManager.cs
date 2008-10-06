@@ -1448,7 +1448,6 @@ namespace OpenMetaverse
                         // Automatically request ObjectProperties for prim if it was rezzed selected.
                         if ((prim.Flags & PrimFlags.CreateSelected) != 0)
                         {
-                            Logger.DebugLog("Received prim flagged CreateSelected, selecting...");
                             SelectObject(simulator, prim.LocalID);
                         }
 

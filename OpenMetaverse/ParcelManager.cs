@@ -1605,33 +1605,41 @@ namespace OpenMetaverse
                 LLSDMap map = (LLSDMap)llsd;
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
-                    if (map.ContainsKey("Data"))
+                if (map.ContainsKey("Data") && map.ContainsKey("DataExtended"))
+                {
+
+                    LLSDArray dataBlock = (LLSDArray)map["Data"];
+                    LLSDArray dataExtendedBlock = (LLSDArray)map["DataExtended"];
+
+                    for (int i = 0; i < dataBlock.Count; i++)
                     {
-                        LLSDArray dataBlock = (LLSDArray)map["Data"];
-                        LLSDArray dataExtendedBlock = (LLSDArray)map["DataExtended"];
-
-                        for (int i = 0; i < dataBlock.Count; i++)
+                        ParcelPrimOwners poe = new ParcelPrimOwners();
+                        poe.OwnerID = ((LLSDMap)dataBlock[i])["OwnerID"].AsUUID();
+                        poe.Count = ((LLSDMap)dataBlock[i])["Count"].AsInteger();
+                        poe.IsGroupOwned = ((LLSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
+                        poe.OnlineStatus = ((LLSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
+                        if (((LLSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
                         {
-                            ParcelPrimOwners poe = new ParcelPrimOwners();
-                            poe.OwnerID = ((LLSDMap)dataBlock[i])["OwnerID"].AsUUID();
-                            poe.Count = ((LLSDMap)dataBlock[i])["Count"].AsInteger();
-                            poe.IsGroupOwned = ((LLSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
-                            poe.OnlineStatus = ((LLSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
-                            if (((LLSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
-                            {
-                                byte[] bytes = (((LLSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
-                                
-                                if (BitConverter.IsLittleEndian)
-                                    Array.Reverse(bytes);
+                            byte[] bytes = (((LLSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
 
-                                uint value = Helpers.BytesToUInt(bytes);
+                            if (BitConverter.IsLittleEndian)
+                                Array.Reverse(bytes);
 
-                                poe.NewestPrim = Utils.UnixTimeToDateTime(value);
-                            }
+                            uint value = Helpers.BytesToUInt(bytes);
 
-                            primOwners.Add(poe);
+                            poe.NewestPrim = Utils.UnixTimeToDateTime(value);
                         }
+
+                        primOwners.Add(poe);
                     }
+
+                   
+                }
+                else
+                {
+                    // the server will send back a response even when there are no prims
+                    primOwners.Add(new ParcelPrimOwners());    
+                }
 
                 if (OnPrimOwnersListReply != null)
                 {
