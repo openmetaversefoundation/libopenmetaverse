@@ -185,7 +185,7 @@ namespace OpenMetaverse
 
         public ulong RegionHandle
         {
-            get { return Helpers.UIntsToLong((uint)(GlobalX - (GlobalX % 256)), (uint)(GlobalY - (GlobalY % 256))); }
+            get { return Utils.UIntsToLong((uint)(GlobalX - (GlobalX % 256)), (uint)(GlobalY - (GlobalY % 256))); }
         }
     }
 
@@ -529,7 +529,7 @@ namespace OpenMetaverse
                     region.Agents = block.Agents;
                     region.Access = (SimAccess)block.Access;
                     region.MapImageID = block.MapImageID;
-                    region.RegionHandle = Helpers.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
+                    region.RegionHandle = Utils.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
 
                     lock (Regions)
                     {

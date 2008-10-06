@@ -25,6 +25,7 @@
  */
 
 using System;
+using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -87,6 +88,36 @@ namespace OpenMetaverse
             GroupMask = (PermissionMask)groupMask;
             NextOwnerMask = (PermissionMask)nextOwnerMask;
             OwnerMask = (PermissionMask)ownerMask;
+        }
+
+        public LLSD GetLLSD()
+        {
+            LLSDMap permissions = new LLSDMap(5);
+            permissions["BaseMask"] = LLSD.FromUInteger((uint)BaseMask);
+            permissions["EveryoneMask"] = LLSD.FromUInteger((uint)EveryoneMask);
+            permissions["GroupMask"] = LLSD.FromUInteger((uint)GroupMask);
+            permissions["NextOwnerMask"] = LLSD.FromUInteger((uint)NextOwnerMask);
+            permissions["OwnerMask"] = LLSD.FromUInteger((uint)OwnerMask);
+            return permissions;
+        }
+
+        public static Permissions FromLLSD(LLSD llsd)
+        {
+            Permissions permissions = new Permissions();
+            LLSDMap map = (LLSDMap)llsd;
+
+            byte[] bytes = map["BaseMask"].AsBinary();
+            permissions.BaseMask = (PermissionMask)Utils.BytesToUInt(bytes);
+            bytes = map["EveryoneMask"].AsBinary();
+            permissions.EveryoneMask = (PermissionMask)Utils.BytesToUInt(bytes);
+            bytes = map["GroupMask"].AsBinary();
+            permissions.GroupMask = (PermissionMask)Utils.BytesToUInt(bytes);
+            bytes = map["NextOwnerMask"].AsBinary();
+            permissions.NextOwnerMask = (PermissionMask)Utils.BytesToUInt(bytes);
+            bytes = map["OwnerMask"].AsBinary();
+            permissions.OwnerMask = (PermissionMask)Utils.BytesToUInt(bytes);
+
+            return permissions;
         }
 
         public override string ToString()

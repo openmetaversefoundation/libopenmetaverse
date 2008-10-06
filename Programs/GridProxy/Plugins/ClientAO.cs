@@ -504,7 +504,7 @@ public class ClientAO : ProxyPlugin
         Buffer.BlockCopy(UUID.Zero.GetBytes(), 0, paramField, 48, 16);
         Buffer.BlockCopy(item.UUID.GetBytes(), 0, paramField, 64, 16);
         Buffer.BlockCopy(item.AssetUUID.GetBytes(), 0, paramField, 80, 16);
-        Buffer.BlockCopy(Helpers.IntToBytes((int)item.AssetType), 0, paramField, 96, 4);
+        Buffer.BlockCopy(Utils.IntToBytes((int)item.AssetType), 0, paramField, 96, 4);
         request.TransferInfo.Params = paramField;
 
         // add a delegate to monitor configuration notecards download

@@ -1350,34 +1350,34 @@ namespace OpenMetaverse
 
                         // Position
                         position = new Vector3(
-                            Helpers.UInt16ToFloat(block.ObjectData, pos, -0.5f * 256.0f, 1.5f * 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -0.5f * 256.0f, 1.5f * 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 3.0f * 256.0f));
+                            Utils.UInt16ToFloat(block.ObjectData, pos, -0.5f * 256.0f, 1.5f * 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 2, -0.5f * 256.0f, 1.5f * 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 3.0f * 256.0f));
                         pos += 6;
                         // Velocity
                         velocity = new Vector3(
-                            Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
+                            Utils.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
                         pos += 6;
                         // Acceleration
                         acceleration = new Vector3(
-                            Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
+                            Utils.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
                         pos += 6;
                         // Rotation (theta)
                         rotation = new Quaternion(
-                            Helpers.UInt16ToFloat(block.ObjectData, pos, -1.0f, 1.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -1.0f, 1.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 6, -1.0f, 1.0f));
+                            Utils.UInt16ToFloat(block.ObjectData, pos, -1.0f, 1.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 4, -1.0f, 1.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 6, -1.0f, 1.0f));
                         pos += 8;
                         // Angular velocity (omega)
                         angularVelocity = new Vector3(
-                            Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
-                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
+                            Utils.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
+                            Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
                         pos += 6;
 
                         break;
@@ -1386,34 +1386,34 @@ namespace OpenMetaverse
 
                         // Position
                         position = new Vector3(
-                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                            Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
                         // Velocity
                         velocity = new Vector3(
-                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                            Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
                         // Accleration
                         acceleration = new Vector3(
-                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                            Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
                         // Rotation
                         rotation = new Quaternion(
-                            Helpers.ByteToFloat(block.ObjectData, pos, -1.0f, 1.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -1.0f, 1.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 3, -1.0f, 1.0f));
+                            Utils.ByteToFloat(block.ObjectData, pos, -1.0f, 1.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 1, -1.0f, 1.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 3, -1.0f, 1.0f));
                         pos += 4;
                         // Angular Velocity
                         angularVelocity = new Vector3(
-                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                            Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
 
                         break;
@@ -1633,7 +1633,7 @@ namespace OpenMetaverse
                 try
                 {
                     int pos = 4;
-                    uint localid = Helpers.BytesToUInt(block.Data, 0);
+                    uint localid = Utils.BytesToUInt(block.Data, 0);
 
                     // Check if we are interested in this update
                     if (!Client.Settings.ALWAYS_DECODE_OBJECTS && localid != Client.Self.localID && OnObjectUpdated == null)
@@ -1660,28 +1660,28 @@ namespace OpenMetaverse
                     pos += 12;
                     // Velocity
                     update.Velocity = new Vector3(
-                        Helpers.UInt16ToFloat(block.Data, pos, -128.0f, 128.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 2, -128.0f, 128.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 4, -128.0f, 128.0f));
+                        Utils.UInt16ToFloat(block.Data, pos, -128.0f, 128.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 2, -128.0f, 128.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 4, -128.0f, 128.0f));
                     pos += 6;
                     // Acceleration
                     update.Acceleration = new Vector3(
-                        Helpers.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
+                        Utils.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
                     pos += 6;
                     // Rotation (theta)
                     update.Rotation = new Quaternion(
-                        Helpers.UInt16ToFloat(block.Data, pos, -1.0f, 1.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 2, -1.0f, 1.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 4, -1.0f, 1.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 6, -1.0f, 1.0f));
+                        Utils.UInt16ToFloat(block.Data, pos, -1.0f, 1.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 2, -1.0f, 1.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 4, -1.0f, 1.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 6, -1.0f, 1.0f));
                     pos += 8;
                     // Angular velocity
                     update.AngularVelocity = new Vector3(
-                        Helpers.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
+                        Utils.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
+                        Utils.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
                     pos += 6;
 
                     // Textures
@@ -1829,7 +1829,7 @@ namespace OpenMetaverse
                             prim.Rotation = new Quaternion(block.Data, i, true);
                             i += 12;
                             // Compressed flags
-                            CompressedFlags flags = (CompressedFlags)Helpers.BytesToUInt(block.Data, i);
+                            CompressedFlags flags = (CompressedFlags)Utils.BytesToUInt(block.Data, i);
                             i += 4;
 
                             prim.OwnerID = new UUID(block.Data, i);
@@ -1923,10 +1923,10 @@ namespace OpenMetaverse
                                 prim.Sound = new UUID(block.Data, i);
                                 i += 16;
 
-                                prim.SoundGain = Helpers.BytesToFloat(block.Data, i);
+                                prim.SoundGain = Utils.BytesToFloat(block.Data, i);
                                 i += 4;
                                 prim.SoundFlags = block.Data[i++];
-                                prim.SoundRadius = Helpers.BytesToFloat(block.Data, i);
+                                prim.SoundRadius = Utils.BytesToFloat(block.Data, i);
                                 i += 4;
                             }
 
@@ -1959,9 +1959,9 @@ namespace OpenMetaverse
                             }
 
                             prim.PrimData.PathCurve = (PathCurve)block.Data[i++];
-                            ushort pathBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            ushort pathBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
                             prim.PrimData.PathBegin = Primitive.UnpackBeginCut(pathBegin);
-                            ushort pathEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            ushort pathEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
                             prim.PrimData.PathEnd = Primitive.UnpackEndCut(pathEnd);
                             prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.Data[i++]);
                             prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.Data[i++]);
@@ -1976,15 +1976,15 @@ namespace OpenMetaverse
                             prim.PrimData.PathSkew = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
 
                             prim.PrimData.profileCurve = block.Data[i++];
-                            ushort profileBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            ushort profileBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
                             prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(profileBegin);
-                            ushort profileEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            ushort profileEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
                             prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(profileEnd);
-                            ushort profileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            ushort profileHollow = Utils.BytesToUInt16(block.Data, i); i += 2;
                             prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(profileHollow);
 
                             // TextureEntry
-                            int textureEntryLength = (int)Helpers.BytesToUInt(block.Data, i);
+                            int textureEntryLength = (int)Utils.BytesToUInt(block.Data, i);
                             i += 4;
                             prim.Textures = new Primitive.TextureEntry(block.Data, i, textureEntryLength);
                             i += textureEntryLength;
@@ -1992,7 +1992,7 @@ namespace OpenMetaverse
                             // Texture animation
                             if ((flags & CompressedFlags.TextureAnimation) != 0)
                             {
-                                //int textureAnimLength = (int)Helpers.BytesToUIntBig(block.Data, i);
+                                //int textureAnimLength = (int)Utils.BytesToUIntBig(block.Data, i);
                                 i += 4;
                                 prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
                             }

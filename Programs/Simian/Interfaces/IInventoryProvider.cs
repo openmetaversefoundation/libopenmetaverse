@@ -11,5 +11,6 @@ namespace Simian
         bool CreateFolder(Agent agent, UUID folderID, string name, AssetType preferredType, UUID parentID,
             UUID ownerID);
         bool CreateRootFolder(Agent agent, UUID folderID, string name, UUID ownerID);
+        bool TryGetInventory(UUID agentID, UUID objectID, out InventoryObject obj);
     }
 }

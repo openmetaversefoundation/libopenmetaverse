@@ -1625,7 +1625,7 @@ namespace OpenMetaverse
                             if (BitConverter.IsLittleEndian)
                                 Array.Reverse(bytes);
 
-                            uint value = Helpers.BytesToUInt(bytes);
+                            uint value = Utils.BytesToUInt(bytes);
 
                             poe.NewestPrim = Utils.UnixTimeToDateTime(value);
                         }

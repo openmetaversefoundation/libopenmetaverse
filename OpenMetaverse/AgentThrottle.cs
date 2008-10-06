@@ -222,13 +222,13 @@ namespace OpenMetaverse
             byte[] data = new byte[7 * 4];
             int i = 0;
 
-            Buffer.BlockCopy(Helpers.FloatToBytes(Resend), 0, data, i, 4); i += 4;
-            Buffer.BlockCopy(Helpers.FloatToBytes(Land), 0, data, i, 4); i += 4;
-            Buffer.BlockCopy(Helpers.FloatToBytes(Wind), 0, data, i, 4); i += 4;
-            Buffer.BlockCopy(Helpers.FloatToBytes(Cloud), 0, data, i, 4); i += 4;
-            Buffer.BlockCopy(Helpers.FloatToBytes(Task), 0, data, i, 4); i += 4;
-            Buffer.BlockCopy(Helpers.FloatToBytes(Texture), 0, data, i, 4); i += 4;
-            Buffer.BlockCopy(Helpers.FloatToBytes(Asset), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Resend), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Land), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Wind), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Cloud), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Task), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Texture), 0, data, i, 4); i += 4;
+            Buffer.BlockCopy(Utils.FloatToBytes(Asset), 0, data, i, 4); i += 4;
 
             return data;
         }

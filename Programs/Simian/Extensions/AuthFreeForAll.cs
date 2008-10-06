@@ -36,7 +36,7 @@ namespace Simian.Extensions
                 agent.CreationTime = Utils.DateTimeToUnixTime(DateTime.Now);
                 agent.CurrentLookAt = Vector3.Zero;
                 agent.CurrentPosition = new Vector3(128f, 128f, 25f);
-                agent.CurrentRegionHandle = Helpers.UIntsToLong(Simian.REGION_X, Simian.REGION_Y);
+                agent.CurrentRegionHandle = Utils.UIntsToLong(Simian.REGION_X, Simian.REGION_Y);
                 agent.FirstName = firstName;
                 agent.GodLevel = 0;
                 agent.HomeLookAt = agent.CurrentLookAt;

@@ -143,7 +143,7 @@ namespace Simian.Extensions
                         return;
                     }
 
-                    uint size = Helpers.BytesToUInt(xfer.DataPacket.Data);
+                    uint size = Utils.BytesToUInt(xfer.DataPacket.Data);
                     asset.AssetData = new byte[size];
 
                     Buffer.BlockCopy(xfer.DataPacket.Data, 4, asset.AssetData, 0, xfer.DataPacket.Data.Length - 4);
@@ -232,7 +232,7 @@ namespace Simian.Extensions
                 {
                     // Parse the request
                     UUID assetID = new UUID(request.TransferInfo.Params, 0);
-                    AssetType type = (AssetType)(sbyte)Helpers.BytesToInt(request.TransferInfo.Params, 16);
+                    AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 16);
 
                     // Set the response channel type
                     response.TransferInfo.ChannelType = (int)ChannelType.Asset;
@@ -240,7 +240,7 @@ namespace Simian.Extensions
                     // Params
                     response.TransferInfo.Params = new byte[20];
                     Buffer.BlockCopy(assetID.GetBytes(), 0, response.TransferInfo.Params, 0, 16);
-                    Buffer.BlockCopy(Helpers.IntToBytes((int)type), 0, response.TransferInfo.Params, 16, 4);
+                    Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, response.TransferInfo.Params, 16, 4);
 
                     // Check if we have this asset
                     Asset asset;
@@ -306,7 +306,7 @@ namespace Simian.Extensions
                 {
                     UUID agentID = new UUID(request.TransferInfo.Params, 0);
                     UUID sessionID = new UUID(request.TransferInfo.Params, 16);
-                    EstateAssetType type = (EstateAssetType)Helpers.BytesToInt(request.TransferInfo.Params, 32);
+                    EstateAssetType type = (EstateAssetType)Utils.BytesToInt(request.TransferInfo.Params, 32);
 
                     Logger.Log("Please implement estate asset transfers", Helpers.LogLevel.Warning);
                 }
@@ -318,7 +318,7 @@ namespace Simian.Extensions
                     UUID taskID = new UUID(request.TransferInfo.Params, 48);
                     UUID itemID = new UUID(request.TransferInfo.Params, 64);
                     UUID assetID = new UUID(request.TransferInfo.Params, 80);
-                    AssetType type = (AssetType)(sbyte)Helpers.BytesToInt(request.TransferInfo.Params, 96);
+                    AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 96);
 
                     if (taskID != UUID.Zero)
                     {

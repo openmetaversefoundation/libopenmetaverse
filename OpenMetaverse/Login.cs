@@ -160,7 +160,7 @@ namespace OpenMetaverse
                 {
                     LLSDArray homeArray = (LLSDArray)homeRegion;
                     if (homeArray.Count == 2)
-                        HomeRegion = Helpers.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
+                        HomeRegion = Utils.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
                     else
                         HomeRegion = 0;
                 }
@@ -342,7 +342,7 @@ namespace OpenMetaverse
 
                         LLSDArray homeRegionHandle = new LLSDArray(2);
                         uint homeRegionX, homeRegionY;
-                        Helpers.LongToUInts(HomeRegion, out homeRegionX, out homeRegionY);
+                        Utils.LongToUInts(HomeRegion, out homeRegionX, out homeRegionY);
                         homeRegionHandle.Add(LLSD.FromReal((double)homeRegionX));
                         homeRegionHandle.Add(LLSD.FromReal((double)homeRegionY));
 
@@ -1046,7 +1046,7 @@ namespace OpenMetaverse
 
                             UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
 
-                            ulong handle = Helpers.UIntsToLong(data.RegionX, data.RegionY);
+                            ulong handle = Utils.UIntsToLong(data.RegionX, data.RegionY);
 
                             if (data.SimIP != null && data.SimPort != 0)
                             {

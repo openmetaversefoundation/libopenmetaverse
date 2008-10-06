@@ -174,14 +174,14 @@ namespace OpenMetaverse.Packets
                     {
                         // ulongs come in as a byte array, convert it manually here
                         byte[] bytes = blockData[field.Name].AsBinary();
-                        ulong value = Helpers.BytesToUInt64(bytes);
+                        ulong value = Utils.BytesToUInt64(bytes);
                         field.SetValue(block, value);
                     }
                     else if (fieldType == typeof(uint))
                     {
                         // uints come in as a byte array, convert it manually here
                         byte[] bytes = blockData[field.Name].AsBinary();
-                        uint value = Helpers.BytesToUInt(bytes);
+                        uint value = Utils.BytesToUInt(bytes);
                         field.SetValue(block, value);
                     }
                     else if (fieldType == typeof(ushort))

@@ -349,7 +349,7 @@ namespace Simian.Extensions
                 UUID itemID = wearing.WearableData[i].ItemID;
 
                 InventoryObject invObj;
-                if (agent.Inventory.TryGetValue(itemID, out invObj) && invObj is InventoryItem)
+                if (Server.Inventory.TryGetInventory(agent.AgentID, itemID, out invObj) && invObj is InventoryItem)
                     assetID = ((InventoryItem)invObj).AssetID;
 
                 #region Update Wearables

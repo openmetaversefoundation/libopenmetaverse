@@ -852,7 +852,7 @@ namespace OpenMetaverse
                         {
                             if (data.Asset != null && data.Asset.Params.ContainsKey(vp.ParamID))
                             {
-                                set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], vp.MinValue, vp.MaxValue);
+                                set.VisualParam[vpIndex].ParamValue = Utils.FloatToByte(data.Asset.Params[vp.ParamID], vp.MinValue, vp.MaxValue);
                                 count++;
 
                                 switch (vp.ParamID)
@@ -924,7 +924,7 @@ namespace OpenMetaverse
 
             // FIXME: Our hackish algorithm is making squished avatars. See
             // http://www.OpenMetaverse.org/wiki/Agent_Size for discussion of the correct algorithm
-            //float height = Helpers.ByteToFloat(set.VisualParam[33].ParamValue, VisualParams.Params[33].MinValue,
+            //float height = Utils.ByteToFloat(set.VisualParam[33].ParamValue, VisualParams.Params[33].MinValue,
             //    VisualParams.Params[33].MaxValue);
 
             // Takes into account the Shoe Heel/Platform offsets but not the Head Size Offset.  But seems to work.

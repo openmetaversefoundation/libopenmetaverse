@@ -67,7 +67,7 @@ namespace OpenMetaverse.GUITestClient
                 for (int xp = 0; xp < 16; xp++)
                 {
                     float height = data[yp * 16 + xp];
-                    int colorVal = Helpers.FloatToByte(height, 0.0f, 60.0f);
+                    int colorVal = Utils.FloatToByte(height, 0.0f, 60.0f);
                     int lesserVal = (int)((float)colorVal * 0.75f);
                     Color color;
 

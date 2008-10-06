@@ -19,7 +19,7 @@ namespace OpenMetaverse.TestClient.Commands.Movement
                 return "Usage: moveto x y z";
 
             uint regionX, regionY;
-            Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out regionX, out regionY);
+            Utils.LongToUInts(Client.Network.CurrentSim.Handle, out regionX, out regionY);
 
             double x, y, z;
             if (!Double.TryParse(args[0], out x) ||

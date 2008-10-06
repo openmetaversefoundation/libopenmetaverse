@@ -530,7 +530,7 @@ namespace OpenMetaverse
 
             byte[] paramField = new byte[20];
             Array.Copy(assetID.GetBytes(), 0, paramField, 0, 16);
-            Array.Copy(Helpers.IntToBytes((int)type), 0, paramField, 16, 4);
+            Array.Copy(Utils.IntToBytes((int)type), 0, paramField, 16, 4);
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);
@@ -618,7 +618,7 @@ namespace OpenMetaverse
             Buffer.BlockCopy(taskID.GetBytes(), 0, paramField, 48, 16);
             Buffer.BlockCopy(itemID.GetBytes(), 0, paramField, 64, 16);
             Buffer.BlockCopy(assetID.GetBytes(), 0, paramField, 80, 16);
-            Buffer.BlockCopy(Helpers.IntToBytes((int)type), 0, paramField, 96, 4);
+            Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, paramField, 96, 4);
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);
@@ -964,7 +964,7 @@ namespace OpenMetaverse
                 // The first packet reserves the first four bytes of the data for the
                 // total length of the asset and appends 1000 bytes of data after that
                 send.DataPacket.Data = new byte[1004];
-                Buffer.BlockCopy(Helpers.IntToBytes(upload.Size), 0, send.DataPacket.Data, 0, 4);
+                Buffer.BlockCopy(Utils.IntToBytes(upload.Size), 0, send.DataPacket.Data, 0, 4);
                 Buffer.BlockCopy(upload.AssetData, 0, send.DataPacket.Data, 4, 1000);
                 upload.Transferred += 1000;
 

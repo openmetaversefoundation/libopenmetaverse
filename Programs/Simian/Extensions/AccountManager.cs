@@ -8,8 +8,6 @@ namespace Simian.Extensions
 {
     public class AccountManager : IExtension, IAccountProvider, IPersistable
     {
-        public string StoreName { get { return "Accounts"; } }
-
         Simian server;
         DoubleDictionary<string, UUID, Agent> accounts = new DoubleDictionary<string, UUID, Agent>();
 

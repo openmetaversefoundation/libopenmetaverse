@@ -718,12 +718,12 @@ namespace OpenMetaverse
                 #endregion Color
 
                 #region RepeatU
-                DefaultTexture.RepeatU = Helpers.BytesToFloat(data, i);
+                DefaultTexture.RepeatU = Utils.BytesToFloat(data, i);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    float tmpFloat = Helpers.BytesToFloat(data, i);
+                    float tmpFloat = Utils.BytesToFloat(data, i);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
@@ -733,12 +733,12 @@ namespace OpenMetaverse
                 #endregion RepeatU
 
                 #region RepeatV
-                DefaultTexture.RepeatV = Helpers.BytesToFloat(data, i);
+                DefaultTexture.RepeatV = Utils.BytesToFloat(data, i);
                 i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    float tmpFloat = Helpers.BytesToFloat(data, i);
+                    float tmpFloat = Utils.BytesToFloat(data, i);
                     i += 4;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
@@ -1173,9 +1173,9 @@ namespace OpenMetaverse
                     SizeX = (uint)data[pos++];
                     SizeY = (uint)data[pos++];
 
-                    Start = Helpers.BytesToFloat(data, pos);
-                    Length = Helpers.BytesToFloat(data, pos + 4);
-                    Rate = Helpers.BytesToFloat(data, pos + 8);
+                    Start = Utils.BytesToFloat(data, pos);
+                    Length = Utils.BytesToFloat(data, pos + 4);
+                    Rate = Utils.BytesToFloat(data, pos + 8);
                 }
                 else
                 {
@@ -1204,9 +1204,9 @@ namespace OpenMetaverse
                 data[pos++] = (byte)SizeX;
                 data[pos++] = (byte)SizeY;
 
-                Helpers.FloatToBytes(Start).CopyTo(data, pos);
-                Helpers.FloatToBytes(Length).CopyTo(data, pos + 4);
-                Helpers.FloatToBytes(Rate).CopyTo(data, pos + 4);
+                Utils.FloatToBytes(Start).CopyTo(data, pos);
+                Utils.FloatToBytes(Length).CopyTo(data, pos + 4);
+                Utils.FloatToBytes(Rate).CopyTo(data, pos + 4);
 
                 return data;
             }

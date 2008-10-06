@@ -783,9 +783,9 @@ namespace OpenMetaverse
                 if (data.Length - pos >= 16)
                 {
                     Color = new Color4(data, pos, false);
-                    Radius = Helpers.BytesToFloat(data, pos + 4);
-                    Cutoff = Helpers.BytesToFloat(data, pos + 8);
-                    Falloff = Helpers.BytesToFloat(data, pos + 12);
+                    Radius = Utils.BytesToFloat(data, pos + 4);
+                    Cutoff = Utils.BytesToFloat(data, pos + 8);
+                    Falloff = Utils.BytesToFloat(data, pos + 12);
 
                     // Alpha in color is actually intensity
                     Intensity = Color.A;
@@ -813,9 +813,9 @@ namespace OpenMetaverse
                 Color4 tmpColor = Color;
                 tmpColor.A = Intensity;
                 tmpColor.GetBytes().CopyTo(data, 0);
-                Helpers.FloatToBytes(Radius).CopyTo(data, 4);
-                Helpers.FloatToBytes(Cutoff).CopyTo(data, 8);
-                Helpers.FloatToBytes(Falloff).CopyTo(data, 12);
+                Utils.FloatToBytes(Radius).CopyTo(data, 4);
+                Utils.FloatToBytes(Cutoff).CopyTo(data, 8);
+                Utils.FloatToBytes(Falloff).CopyTo(data, 12);
 
                 return data;
             }
@@ -1274,10 +1274,10 @@ namespace OpenMetaverse
 
             for (int k = 0; k < extraParamCount; k++)
             {
-                ExtraParamType type = (ExtraParamType)Helpers.BytesToUInt16(data, i);
+                ExtraParamType type = (ExtraParamType)Utils.BytesToUInt16(data, i);
                 i += 2;
 
-                uint paramLength = Helpers.BytesToUInt(data, i);
+                uint paramLength = Utils.BytesToUInt(data, i);
                 i += 4;
 
                 if (type == ExtraParamType.Flexible)

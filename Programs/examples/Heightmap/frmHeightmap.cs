@@ -151,16 +151,16 @@ namespace Heightmap
                     {
                         float maxVal = (float)Math.Log(Math.Abs(512+1-simulator.WaterHeight),2);
                         float lgHeight = (float)Math.Log(Math.Abs(height + 1 - simulator.WaterHeight), 2);
-                        int colorVal1 = Helpers.FloatToByte(lgHeight, simulator.WaterHeight, maxVal);
-                        int colorVal2 = Helpers.FloatToByte(height, simulator.WaterHeight, 25.0f);
+                        int colorVal1 = Utils.FloatToByte(lgHeight, simulator.WaterHeight, maxVal);
+                        int colorVal2 = Utils.FloatToByte(height, simulator.WaterHeight, 25.0f);
                         color = Color.FromArgb(255, colorVal2, colorVal1);
                     }
                     else
                     {
                         const float minVal = -5.0f;
                         float maxVal = simulator.WaterHeight;
-                        int colorVal1 = Helpers.FloatToByte(height, -5.0f, minVal+(maxVal-minVal)*1.5f);
-                        int colorVal2 = Helpers.FloatToByte(height, -5.0f, maxVal);
+                        int colorVal1 = Utils.FloatToByte(height, -5.0f, minVal + (maxVal - minVal) * 1.5f);
+                        int colorVal2 = Utils.FloatToByte(height, -5.0f, maxVal);
                         color = Color.FromArgb(colorVal1, colorVal2, 255);
                     }
                     patch.SetPixel(xp, yp, color); // 0, 0 is top left

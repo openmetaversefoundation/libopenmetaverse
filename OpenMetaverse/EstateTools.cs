@@ -232,7 +232,7 @@ namespace OpenMetaverse
             {
                 string estateName = Utils.BytesToString(message.ParamList[0].Parameter);
                 UUID estateOwner = new UUID(Utils.BytesToString(message.ParamList[1].Parameter));
-                estateID = Helpers.BytesToUInt(message.ParamList[2].Parameter);
+                estateID = Utils.BytesToUInt(message.ParamList[2].Parameter);
                 /*
                 foreach (EstateOwnerMessagePacket.ParamListBlock param in message.ParamList)
                 {
@@ -240,7 +240,7 @@ namespace OpenMetaverse
                 }
                 */
                 bool denyNoPaymentInfo;
-                if (Helpers.BytesToUInt(message.ParamList[8].Parameter) == 0) denyNoPaymentInfo = true;
+                if (Utils.BytesToUInt(message.ParamList[8].Parameter) == 0) denyNoPaymentInfo = true;
                 else denyNoPaymentInfo = false;
 
                 if (OnGetEstateUpdateInfo != null)
@@ -256,16 +256,16 @@ namespace OpenMetaverse
             else if (method == "setaccess")
             {
                 int count;
-                estateID = Helpers.BytesToUInt(message.ParamList[0].Parameter);
+                estateID = Utils.BytesToUInt(message.ParamList[0].Parameter);
                 if (message.ParamList.Length > 1)
                 {
-                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)Helpers.BytesToUInt(message.ParamList[1].Parameter);
+                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)Utils.BytesToUInt(message.ParamList[1].Parameter);
                     switch (accessType)
                     {
                         case EstateAccessReplyDelta.EstateManagers:
                             if (OnGetEstateManagers != null)
                             {
-                                count = (int)Helpers.BytesToUInt(message.ParamList[3].Parameter);
+                                count = (int)Utils.BytesToUInt(message.ParamList[3].Parameter);
                                 List<UUID> managers = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
@@ -286,7 +286,7 @@ namespace OpenMetaverse
                         case EstateAccessReplyDelta.EstateBans:
                             if (OnGetEstateBans != null)
                             {
-                                count = (int)Helpers.BytesToUInt(message.ParamList[4].Parameter);
+                                count = (int)Utils.BytesToUInt(message.ParamList[4].Parameter);
                                 List<UUID> bannedUsers = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
@@ -307,7 +307,7 @@ namespace OpenMetaverse
                         case EstateAccessReplyDelta.AllowedUsers:
                             if (OnGetAllowedUsers != null)
                             {
-                                count = (int)Helpers.BytesToUInt(message.ParamList[2].Parameter);
+                                count = (int)Utils.BytesToUInt(message.ParamList[2].Parameter);
                                 List<UUID> allowedUsers = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
@@ -328,7 +328,7 @@ namespace OpenMetaverse
                         case EstateAccessReplyDelta.AllowedGroups:
                             if (OnGetAllowedGroups != null)
                             {
-                                count = (int)Helpers.BytesToUInt(message.ParamList[3].Parameter);
+                                count = (int)Utils.BytesToUInt(message.ParamList[3].Parameter);
                                 List<UUID> allowedGroups = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
@@ -351,7 +351,7 @@ namespace OpenMetaverse
                     {
                         if (OnGetEstateManagers != null)
                         {
-                            count = (int)Helpers.BytesToUInt(message.ParamList[5].Parameter);
+                            count = (int)Utils.BytesToUInt(message.ParamList[5].Parameter);
                             List<UUID> managers = new List<UUID>();
 
                             for (int i = 5; i < message.ParamList.Length; i++)

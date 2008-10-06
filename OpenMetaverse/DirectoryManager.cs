@@ -824,7 +824,7 @@ namespace OpenMetaverse
                 evinfo.Name = Utils.BytesToString(eventReply.EventData.Name);
                 evinfo.Desc = Utils.BytesToString(eventReply.EventData.Desc);
                 evinfo.Amount = eventReply.EventData.Amount;
-                evinfo.Category = (EventCategories)Helpers.BytesToUInt(eventReply.EventData.Category);
+                evinfo.Category = (EventCategories)Utils.BytesToUInt(eventReply.EventData.Category);
                 evinfo.Cover = eventReply.EventData.Cover;
                 evinfo.Creator = (UUID)Utils.BytesToString(eventReply.EventData.Creator);
                 evinfo.Date = Utils.BytesToString(eventReply.EventData.Date);

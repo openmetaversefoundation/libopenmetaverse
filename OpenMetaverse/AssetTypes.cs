@@ -465,11 +465,11 @@ namespace OpenMetaverse
             StringBuilder data = new StringBuilder("LLWearable version 22\n");
             data.Append(Name); data.Append(NL); data.Append(NL);
             data.Append("\tpermissions 0\n\t{\n");
-            data.Append("\t\tbase_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.BaseMask)); data.Append(NL);
-            data.Append("\t\towner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.OwnerMask)); data.Append(NL);
-            data.Append("\t\tgroup_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.GroupMask)); data.Append(NL);
-            data.Append("\t\teveryone_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append(NL);
-            data.Append("\t\tnext_owner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append(NL);
+            data.Append("\t\tbase_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.BaseMask)); data.Append(NL);
+            data.Append("\t\towner_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.OwnerMask)); data.Append(NL);
+            data.Append("\t\tgroup_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.GroupMask)); data.Append(NL);
+            data.Append("\t\teveryone_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append(NL);
+            data.Append("\t\tnext_owner_mask\t"); data.Append(Utils.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append(NL);
             data.Append("\t\tcreator_id\t"); data.Append(Creator.ToString()); data.Append(NL);
             data.Append("\t\towner_id\t"); data.Append(Owner.ToString()); data.Append(NL);
             data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToString()); data.Append(NL);

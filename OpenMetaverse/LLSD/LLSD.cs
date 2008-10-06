@@ -94,6 +94,7 @@ namespace OpenMetaverse.StructuredData
         public static LLSD FromInteger(ushort value) { return new LLSDInteger((int)value); }
         public static LLSD FromInteger(sbyte value) { return new LLSDInteger((int)value); }
         public static LLSD FromInteger(byte value) { return new LLSDInteger((int)value); }
+        public static LLSD FromUInteger(uint value) { return new LLSDBinary(value); }
         public static LLSD FromReal(double value) { return new LLSDReal(value); }
         public static LLSD FromReal(float value) { return new LLSDReal((double)value); }
         public static LLSD FromString(string value) { return new LLSDString(value); }
@@ -195,7 +196,7 @@ namespace OpenMetaverse.StructuredData
                 if (value.Type == LLSDType.Binary)
                 {
                     byte[] bytes = value.AsBinary();
-                    return Helpers.BytesToUInt64(bytes);
+                    return Utils.BytesToUInt64(bytes);
                 }
                 else
                 {
@@ -207,7 +208,7 @@ namespace OpenMetaverse.StructuredData
                 if (value.Type == LLSDType.Binary)
                 {
                     byte[] bytes = value.AsBinary();
-                    return Helpers.BytesToUInt(bytes);
+                    return Utils.BytesToUInt(bytes);
                 }
                 else
                 {
@@ -376,7 +377,7 @@ namespace OpenMetaverse.StructuredData
         public override int AsInteger() { return value; }
         public override double AsReal() { return (double)value; }
         public override string AsString() { return value.ToString(); }
-        public override byte[] AsBinary() { return Helpers.IntToBytes(value); }
+        public override byte[] AsBinary() { return Utils.IntToBytes(value); }
         
         public override string ToString() { return AsString(); }        
     }
@@ -408,14 +409,7 @@ namespace OpenMetaverse.StructuredData
  
         public override double AsReal() { return value; }
         public override string AsString() { return value.ToString(Helpers.EnUsCulture); }
-        
-        public override byte[] AsBinary() {
-            byte[] bytesHostEnd = BitConverter.GetBytes( value );
-            long longHostEnd = BitConverter.ToInt64( bytesHostEnd, 0 );
-            long longNetEnd = System.Net.IPAddress.HostToNetworkOrder( longHostEnd );
-            byte[] bytesNetEnd = BitConverter.GetBytes( longNetEnd );
-            return bytesNetEnd;
-        }
+        public override byte[] AsBinary() { return Utils.DoubleToBytes(value); }
         public override string ToString() { return AsString(); }
     }
 
@@ -532,14 +526,10 @@ namespace OpenMetaverse.StructuredData
             return value.ToUniversalTime().ToString( format );        
         }
         
-         public override byte[] AsBinary() {
+         public override byte[] AsBinary()
+         {
             TimeSpan ts = value.ToUniversalTime() - new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc );
-            double timestamp =  (double)ts.TotalSeconds;
-            byte[] bytesHostEnd = BitConverter.GetBytes( timestamp );
-            long longHostEnd = BitConverter.ToInt64( bytesHostEnd, 0 );
-            long longNetEnd = System.Net.IPAddress.HostToNetworkOrder( longHostEnd );
-            byte[] bytesNetEnd = BitConverter.GetBytes( longNetEnd );
-            return bytesNetEnd;
+            return Utils.DoubleToBytes(ts.TotalSeconds);
         }
 
         public override DateTime AsDate() { return value; }
@@ -585,17 +575,17 @@ namespace OpenMetaverse.StructuredData
 
         public LLSDBinary(uint value)
         {
-            this.value = BitConverter.GetBytes(value);
+            this.value = Utils.UIntToBytes(value);
         }
 
         public LLSDBinary(long value)
         {
-            this.value = BitConverter.GetBytes(value);
+            this.value = Utils.Int64ToBytes(value);
         }
 
         public LLSDBinary(ulong value)
         {
-            this.value = BitConverter.GetBytes(value);
+            this.value = Utils.UInt64ToBytes(value);
         }
 
         public override string AsString() { return Convert.ToBase64String(value); }

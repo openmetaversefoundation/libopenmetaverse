@@ -1101,7 +1101,7 @@ namespace OpenMetaverse
                 if (Client.Network.CurrentSim != null)
                 {
                     uint globalX, globalY;
-                    Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out globalX, out globalY);
+                    Utils.LongToUInts(Client.Network.CurrentSim.Handle, out globalX, out globalY);
                     Vector3 pos = SimPosition;
 
                     return new Vector3d(
@@ -1774,7 +1774,7 @@ namespace OpenMetaverse
         public void AutoPilotLocal(int localX, int localY, float z)
         {
             uint x, y;
-            Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);
+            Utils.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 

@@ -558,7 +558,8 @@ namespace Simian.Extensions
                             break;
                         case DeRezDestination.TrashFolder:
                             InventoryObject invObj;
-                            if (agent.Inventory.TryGetValue(derez.AgentBlock.DestinationID, out invObj) && invObj is InventoryFolder)
+                            if (Server.Inventory.TryGetInventory(agent.AgentID, derez.AgentBlock.DestinationID, out invObj) &&
+                                invObj is InventoryFolder)
                             {
                                 // FIXME: Handle children
                                 InventoryFolder trash = (InventoryFolder)invObj;

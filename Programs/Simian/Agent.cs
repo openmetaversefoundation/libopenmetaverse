@@ -97,10 +97,6 @@ namespace Simian
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
         [NonSerialized]
         public AnimationSet Animations = new AnimationSet();
-        [NonSerialized]
-        public Dictionary<UUID, InventoryObject> Inventory = new Dictionary<UUID, InventoryObject>();
-        [NonSerialized]
-        public Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
         // TODO: Replace byte with enum
         [NonSerialized]
         public byte State;

@@ -428,7 +428,7 @@ namespace OpenMetaverse
                 properties.FirstLifeText = Utils.BytesToString(reply.PropertiesData.FLAboutText);
                 properties.BornOn = Utils.BytesToString(reply.PropertiesData.BornOn);
                 //properties.CharterMember = Utils.BytesToString(reply.PropertiesData.CharterMember);
-                uint charter = Helpers.BytesToUInt(reply.PropertiesData.CharterMember);
+                uint charter = Utils.BytesToUInt(reply.PropertiesData.CharterMember);
                 if ( charter == 0 ) {
                     properties.CharterMember = "Resident";
                 } else if ( charter == 2 ) {

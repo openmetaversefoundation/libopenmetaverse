@@ -54,7 +54,7 @@ namespace Simian
 
             InitHttpServer(HttpPort, ssl);
 
-            RegionHandle = Helpers.UIntsToLong(REGION_X, REGION_Y);
+            RegionHandle = Utils.UIntsToLong(REGION_X, REGION_Y);
 
             try
             {
@@ -359,7 +359,7 @@ namespace Simian
                     response.Reason = String.Empty;
 
                     uint regionX, regionY;
-                    Helpers.LongToUInts(agent.CurrentRegionHandle, out regionX, out regionY);
+                    Utils.LongToUInts(agent.CurrentRegionHandle, out regionX, out regionY);
                     response.RegionX = regionX;
                     response.RegionY = regionY;
 

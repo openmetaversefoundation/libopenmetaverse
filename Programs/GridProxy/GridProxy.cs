@@ -918,7 +918,7 @@ namespace GridProxy
                     else
                         info = (LLSDMap)(((LLSDArray)body["RegionData"])[0]);
                     byte[] bytes = info["SimIP"].AsBinary();
-                    uint simIP = Helpers.BytesToUInt(bytes);
+                    uint simIP = Utils.BytesToUInt(bytes);
                     ushort simPort = (ushort)info["SimPort"].AsInteger();
                     string capsURL = info["SeedCapability"].AsString();
 
@@ -937,7 +937,7 @@ namespace GridProxy
                     string ipAndPort = body["sim-ip-and-port"].AsString();
                     string[] pieces = ipAndPort.Split(':');
                     byte[] bytes = IPAddress.Parse(pieces[0]).GetAddressBytes();
-                    uint simIP = Helpers.BytesToUInt(bytes);
+                    uint simIP = Utils.BytesToUInt(bytes);
                     ushort simPort = (ushort)Convert.ToInt32(pieces[1]);
 
                     string capsURL = body["seed-capability"].AsString();
@@ -1932,7 +1932,7 @@ namespace GridProxy
 
             simPort = (ushort)fakeSim.Port;
             byte[] bytes = fakeSim.Address.GetAddressBytes();
-            simIP = Helpers.BytesToUInt(bytes);
+            simIP = Utils.BytesToUInt(bytes);
             if (simCaps != null && simCaps.Length > 0)
             {
                 CapInfo info = new CapInfo(simCaps, realSim, "SeedCapability");

@@ -134,7 +134,7 @@ namespace OpenMetaverse.TestClient
                         if (distance > DISTANCE_BUFFER)
                         {
                             uint regionX, regionY;
-                            Helpers.LongToUInts(Client.Network.Simulators[i].Handle, out regionX, out regionY);
+                            Utils.LongToUInts(Client.Network.Simulators[i].Handle, out regionX, out regionY);
 
                             double xTarget = (double)targetAv.Position.X + (double)regionX;
                             double yTarget = (double)targetAv.Position.Y + (double)regionY;
