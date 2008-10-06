@@ -35,7 +35,7 @@ namespace OpenMetaverse
     /// </summary>
     public class AgentThrottle
     {
-        /// <summary>Maximum bytes per second for resending unacknowledged packets</summary>
+        /// <summary>Maximum bits per second for resending unacknowledged packets</summary>
         public float Resend
         {
             get { return resend; }
@@ -46,7 +46,7 @@ namespace OpenMetaverse
                 else resend = value;
             }
         }
-        /// <summary>Maximum bytes per second for LayerData terrain</summary>
+        /// <summary>Maximum bits per second for LayerData terrain</summary>
         public float Land
         {
             get { return land; }
@@ -57,7 +57,7 @@ namespace OpenMetaverse
                 else land = value;
             }
         }
-        /// <summary>Maximum bytes per second for LayerData wind data</summary>
+        /// <summary>Maximum bits per second for LayerData wind data</summary>
         public float Wind
         {
             get { return wind; }
@@ -68,7 +68,7 @@ namespace OpenMetaverse
                 else wind = value;
             }
         }
-        /// <summary>Maximum bytes per second for LayerData clouds</summary>
+        /// <summary>Maximum bits per second for LayerData clouds</summary>
         public float Cloud
         {
             get { return cloud; }
@@ -90,7 +90,7 @@ namespace OpenMetaverse
                 else task = value;
             }
         }
-        /// <summary>Maximum bytes per second for textures</summary>
+        /// <summary>Maximum bits per second for textures</summary>
         public float Texture
         {
             get { return texture; }
@@ -101,7 +101,7 @@ namespace OpenMetaverse
                 else texture = value;
             }
         }
-        /// <summary>Maximum bytes per second for downloaded assets</summary>
+        /// <summary>Maximum bits per second for downloaded assets</summary>
         public float Asset
         {
             get { return asset; }
@@ -113,7 +113,7 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Maximum bytes per second the entire connection, divided up
+        /// <summary>Maximum bits per second the entire connection, divided up
         /// between invidiual streams using default multipliers</summary>
         public float Total
         {

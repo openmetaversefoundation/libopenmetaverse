@@ -11,7 +11,7 @@ namespace Simian.Extensions
         Simian server;
         Dictionary<int, Parcel> parcels = new Dictionary<int, Parcel>();
         /// <summary>X,Y ordered 2D array of the parcelIDs for each sq. meter of a simulator</summary>
-        int[] parcelOverlay = new int[256 * 256];
+        int[] parcelOverlay = new int[64 * 64];
 
         public ParcelManager(Simian server)
         {
@@ -70,7 +70,7 @@ namespace Simian.Extensions
                     byte tempByte = 0; // The flags for the current 4x4m parcel square
 
                     Parcel parcel;
-                    if (parcels.TryGetValue(parcelOverlay[y * 4 * 64 + x * 4], out parcel))
+                    if (parcels.TryGetValue(parcelOverlay[y * 64 + x], out parcel))
                     {
                         // Set the ownership/sale flag
                         if (parcel.OwnerID == agent.AgentID)
@@ -89,13 +89,13 @@ namespace Simian.Extensions
                         // Set the border flags
                         if (x == 0)
                             tempByte |= (byte)ParcelOverlayType.BorderWest;
-                        else if (parcelOverlay[y * 4 * 64 + (x - 1) * 4] != parcel.LocalID)
+                        else if (parcelOverlay[y * 64 + (x - 1)] != parcel.LocalID)
                             // Parcel to the west is different from the current parcel
                             tempByte |= (byte)ParcelOverlayType.BorderWest;
 
                         if (y == 0)
                             tempByte |= (byte)ParcelOverlayType.BorderSouth;
-                        else if (parcelOverlay[(y - 1) * 4 * 64 + x * 4] != parcel.LocalID)
+                        else if (parcelOverlay[(y - 1) * 64 + x] != parcel.LocalID)
                             // Parcel to the south is different from the current parcel
                             tempByte |= (byte)ParcelOverlayType.BorderSouth;
 
@@ -115,7 +115,7 @@ namespace Simian.Extensions
                     }
                     else
                     {
-                        Logger.Log("Parcel overlay references missing parcel " + parcelOverlay[y * 4 * 64 + x * 4],
+                        Logger.Log("Parcel overlay references missing parcel " + parcelOverlay[y * 64 + x],
                             Helpers.LogLevel.Warning);
                     }
                 }
@@ -130,17 +130,20 @@ namespace Simian.Extensions
             int maxY = 0;
             int area = 0;
 
-            for (int y = 0; y < 256; y++)
+            for (int y = 0; y < 64; y++)
             {
-                for (int x = 0; x < 256; x++)
+                for (int x = 0; x < 64; x++)
                 {
-                    if (parcelOverlay[y * 256 + x] == parcel.LocalID)
+                    if (parcelOverlay[y * 64 + x] == parcel.LocalID)
                     {
-                        if (minX > x) minX = x;
-                        if (minY > y) minY = y;
-                        if (maxX < x) maxX = x;
-                        if (maxX < y) maxY = y;
-                        area += 1;
+                        int x4 = x * 4;
+                        int y4 = y * 4;
+
+                        if (minX > x4) minX = x4;
+                        if (minY > y4) minY = y4;
+                        if (maxX < x4) maxX = x4;
+                        if (maxX < y4) maxY = y4;
+                        area += 16;
                     }
                 }
             }
@@ -229,10 +232,10 @@ namespace Simian.Extensions
             List<int> parcels = new List<int>();
 
             // Convert the boundaries to integers
-            int north = (int)Math.Round(request.ParcelData.North);
-            int east = (int)Math.Round(request.ParcelData.East);
-            int south = (int)Math.Round(request.ParcelData.South);
-            int west = (int)Math.Round(request.ParcelData.West);
+            int north = (int)Math.Round(request.ParcelData.North) / 4;
+            int east = (int)Math.Round(request.ParcelData.East) / 4;
+            int south = (int)Math.Round(request.ParcelData.South) / 4;
+            int west = (int)Math.Round(request.ParcelData.West) / 4;
 
             // Find all of the parcels within the given boundaries
             int xLen = east - west;
@@ -242,9 +245,9 @@ namespace Simian.Extensions
             {
                 for (int y = 0; y < yLen; y++)
                 {
-                    if (west + x < 256 && south + y < 256)
+                    if (west + x < 64 && south + y < 64)
                     {
-                        int currentParcelID = parcelOverlay[(south + y) * 256 + (west + x)];
+                        int currentParcelID = parcelOverlay[(south + y) * 64 + (west + x)];
                         if (!parcels.Contains(currentParcelID))
                             parcels.Add(currentParcelID);
                     }
