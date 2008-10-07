@@ -116,7 +116,7 @@ namespace ExtensionLoader
                 // Check for unassigned interfaces
                 foreach (KeyValuePair<Type, FieldInfo> kvp in assignableInterfaces)
                 {
-                    if (kvp.Value == null)
+                    if (kvp.Value.GetValue(assignablesParent) == null)
                         throw new ExtensionException("Unassigned interface " + kvp.Key.Name);
                 }
             }

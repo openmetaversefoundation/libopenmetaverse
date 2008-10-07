@@ -86,7 +86,7 @@ namespace Simian
 
             foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
             {
-                // Start persistance providers after all other extensions
+                // Start all extensions except for persistence providers
                 if (!(extension is IPersistenceProvider))
                 {
                     Logger.DebugLog("Loading extension " + extension.GetType().Name);
@@ -96,7 +96,7 @@ namespace Simian
 
             foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
             {
-                // Start the persistance provider(s)
+                // Start the persistance provider(s) after all other extensions are loaded
                 if (extension is IPersistenceProvider)
                 {
                     Logger.DebugLog("Loading persistance provider " + extension.GetType().Name);
