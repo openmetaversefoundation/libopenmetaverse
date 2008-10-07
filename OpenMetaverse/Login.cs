@@ -243,7 +243,7 @@ namespace OpenMetaverse
 
                         // event_categories (TODO)
                         WriteXmlRpcArrayStart(writer, "event_categories");
-                        WriteXmlRpcCategory(writer, "Default", 20);
+                        WriteXmlRpcCategory(writer, "Default Event Category", 20);
                         WriteXmlRpcArrayEnd(writer);
 
                         // tutorial_setting (TODO)
@@ -253,7 +253,7 @@ namespace OpenMetaverse
 
                         // classified_categories (TODO)
                         WriteXmlRpcArrayStart(writer, "classified_categories");
-                        WriteXmlRpcCategory(writer, "Default", 1);
+                        WriteXmlRpcCategory(writer, "Default Classified Category", 1);
                         WriteXmlRpcArrayEnd(writer);
 
                         // inventory-root
@@ -285,7 +285,15 @@ namespace OpenMetaverse
 
                         // buddy-list
                         WriteXmlRpcArrayStart(writer, "buddy-list");
-                        WriteXmlRpcBuddy(writer, 0, 0, UUID.Random());
+                        if (BuddyList != null)
+                        {
+                            foreach (FriendInfo friend in BuddyList)
+                                WriteXmlRpcBuddy(writer, (uint)friend.MyFriendRights, (uint)friend.TheirFriendRights, friend.UUID);
+                        }
+                        else
+                        {
+                            //WriteXmlRpcBuddy(writer, 0, 0, UUID.Random());
+                        }
                         WriteXmlRpcArrayEnd(writer);
 
                         // first_name
@@ -306,7 +314,15 @@ namespace OpenMetaverse
 
                         // inventory-skel-lib
                         WriteXmlRpcArrayStart(writer, "inventory-skel-lib");
-                        WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)InventoryType.Category, LibraryRoot);
+                        if (LibrarySkeleton != null)
+                        {
+                            foreach (InventoryFolder folder in LibrarySkeleton)
+                                WriteXmlRpcInventoryItem(writer, folder.Name, folder.ParentUUID, (uint)folder.Version, (uint)folder.PreferredType, folder.UUID);
+                        }
+                        else
+                        {
+                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)InventoryType.Category, LibraryRoot);
+                        }
                         WriteXmlRpcArrayEnd(writer);
 
                         // seed_capability
@@ -346,14 +362,13 @@ namespace OpenMetaverse
                         WriteXmlRpcStringMember(writer, false, "inventory_host", IPAddress.Loopback.ToString());
 
                         // home
-                        LLSDMap home = new LLSDMap(3);
-
                         LLSDArray homeRegionHandle = new LLSDArray(2);
                         uint homeRegionX, homeRegionY;
                         Utils.LongToUInts(HomeRegion, out homeRegionX, out homeRegionY);
                         homeRegionHandle.Add(LLSD.FromReal((double)homeRegionX));
                         homeRegionHandle.Add(LLSD.FromReal((double)homeRegionY));
 
+                        LLSDMap home = new LLSDMap(3);
                         home["region_handle"] = homeRegionHandle;
                         home["position"] = LLSD.FromVector3(HomePosition);
                         home["look_at"] = LLSD.FromVector3(HomeLookAt);

@@ -400,7 +400,7 @@ namespace Simian
                             Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
                                     outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount));
 
-                            outgoing.TickCount = 0;
+                            outgoing.TickCount = Environment.TickCount;
                             outgoing.Packet.Header.Resent = true;
                             ++outgoing.ResendCount;
                             //++Stats.ResentPackets;

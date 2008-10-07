@@ -108,22 +108,28 @@ namespace Simian.Extensions
                 {
                     InventoryItem item = (InventoryItem)obj;
 
+                    //item.Permissions.BaseMask = (PermissionMask)block.BaseMask;
+                    item.Permissions.BaseMask = PermissionMask.All;
+                    //item.Permissions.EveryoneMask = (PermissionMask)block.EveryoneMask;
+                    item.Permissions.EveryoneMask = PermissionMask.All;
+                    //item.Permissions.GroupMask = (PermissionMask)block.GroupMask;
+                    item.Permissions.GroupMask = PermissionMask.All;
+                    //item.Permissions.NextOwnerMask = (PermissionMask)block.NextOwnerMask;
+                    item.Permissions.NextOwnerMask = PermissionMask.All;
+                    //item.Permissions.OwnerMask = (PermissionMask)block.OwnerMask;
+                    item.Permissions.OwnerMask = PermissionMask.All;
+
                     //block.CRC;
-                    item.Permissions.BaseMask = (PermissionMask)block.BaseMask;
                     item.CreationDate = Utils.UnixTimeToDateTime(block.CreationDate);
                     item.CreatorID = block.CreatorID;
                     item.Name = Utils.BytesToString(block.Description);
-                    item.Permissions.EveryoneMask = (PermissionMask)block.EveryoneMask;
                     item.Flags = block.Flags;
                     item.ParentID = block.FolderID;
                     item.GroupID = block.GroupID;
-                    item.Permissions.GroupMask = (PermissionMask)block.GroupMask;
                     item.GroupOwned = block.GroupOwned;
                     item.InventoryType = (InventoryType)block.InvType;
                     item.Name = Utils.BytesToString(block.Name);
-                    item.Permissions.NextOwnerMask = (PermissionMask)block.NextOwnerMask;
                     item.OwnerID = block.OwnerID;
-                    item.Permissions.OwnerMask = (PermissionMask)block.OwnerMask;
                     item.SalePrice = block.SalePrice;
                     item.SaleType = (SaleType)block.SaleType;
                     item.AssetType = (AssetType)block.Type;
@@ -412,8 +418,13 @@ namespace Simian.Extensions
                     item.Parent = parentFolder;
                     item.Name = name;
                     item.Description = description;
-                    item.Permissions.OwnerMask = ownerMask;
-                    item.Permissions.NextOwnerMask = nextOwnerMask;
+                    item.Permissions.BaseMask = PermissionMask.All;
+                    item.Permissions.EveryoneMask = PermissionMask.All;
+                    item.Permissions.GroupMask = PermissionMask.All;
+                    //item.Permissions.OwnerMask = ownerMask;
+                    //item.Permissions.NextOwnerMask = nextOwnerMask;
+                    item.Permissions.OwnerMask = PermissionMask.All;
+                    item.Permissions.NextOwnerMask = PermissionMask.All;
                     item.AssetType = type;
                     item.AssetID = assetID;
                     item.OwnerID = agentID;
