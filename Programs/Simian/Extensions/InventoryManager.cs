@@ -29,6 +29,9 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.UpdateInventoryItem, new PacketCallback(UpdateInventoryItemHandler));
             Server.UDP.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new PacketCallback(FetchInventoryDescendentsHandler));
             Server.UDP.RegisterPacketCallback(PacketType.FetchInventory, new PacketCallback(FetchInventoryHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.MoveInventoryItem, new PacketCallback(MoveInventoryItemHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.MoveInventoryFolder, new PacketCallback(MoveInventoryFolderHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.PurgeInventoryDescendents, new PacketCallback(PurgeInventoryDescendentsHandler));
         }
 
         public void Stop()
@@ -313,6 +316,120 @@ namespace Simian.Extensions
             }
 
             Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+        }
+
+        void MoveInventoryItemHandler(Packet packet, Agent agent)
+        {
+            MoveInventoryItemPacket move = (MoveInventoryItemPacket)packet;
+            // TODO: What is move.AgentData.Stamp for?
+
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+
+            for (int i = 0; i < move.InventoryData.Length; i++)
+            {
+                MoveInventoryItemPacket.InventoryDataBlock block = move.InventoryData[i];
+                UUID newFolderID = block.FolderID;
+                if (newFolderID == UUID.Zero)
+                    newFolderID = agent.InventoryRoot;
+                MoveInventory(agentInventory, block.ItemID, newFolderID, Utils.BytesToString(block.NewName));
+            }
+        }
+
+        void MoveInventoryFolderHandler(Packet packet, Agent agent)
+        {
+            MoveInventoryFolderPacket move = (MoveInventoryFolderPacket)packet;
+            // TODO: What is move.AgentData.Stamp for?
+
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+
+            for (int i = 0; i < move.InventoryData.Length; i++)
+            {
+                MoveInventoryFolderPacket.InventoryDataBlock block = move.InventoryData[i];
+                UUID newFolderID = block.ParentID;
+                if (newFolderID == UUID.Zero)
+                    newFolderID = agent.InventoryRoot;
+                MoveInventory(agentInventory, block.FolderID, newFolderID, null);
+            }
+        }
+
+        void MoveInventory(Dictionary<UUID, InventoryObject> agentInventory, UUID objectID, UUID newFolderID, string newName)
+        {
+            InventoryObject obj;
+            if (agentInventory.TryGetValue(objectID, out obj))
+            {
+                lock (agentInventory)
+                {
+                    InventoryObject newParentObj;
+                    if (agentInventory.TryGetValue(newFolderID, out newParentObj) && newParentObj is InventoryFolder)
+                    {
+                        // Remove this item from the current parent
+                        if (obj.Parent != null)
+                        {
+                            InventoryFolder parent = (InventoryFolder)obj.Parent;
+                            lock (parent.Children.Dictionary)
+                                parent.Children.Dictionary.Remove(obj.ID);
+                        }
+
+                        // Update the new parent
+                        InventoryFolder newParent = (InventoryFolder)newParentObj;
+                        newParent.Children.Dictionary[obj.ID] = obj;
+
+                        // Update the object
+                        obj.ParentID = newParent.ID;
+                        obj.Parent = newParent;
+                        if (!String.IsNullOrEmpty(newName))
+                            obj.Name = newName;
+                    }
+                    else
+                    {
+                        Logger.Log("MoveInventory called with an unknown destination folder " + newFolderID,
+                            Helpers.LogLevel.Warning);
+                    }
+                }
+            }
+            else
+            {
+                Logger.Log("MoveInventory called for an unknown object " + objectID,
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        void PurgeInventoryDescendentsHandler(Packet packet, Agent agent)
+        {
+            PurgeInventoryDescendentsPacket purge = (PurgeInventoryDescendentsPacket)packet;
+
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+
+            InventoryObject obj;
+            if (agentInventory.TryGetValue(purge.InventoryData.FolderID, out obj) && obj is InventoryFolder)
+            {
+                lock (agentInventory)
+                    PurgeFolder(agentInventory, (InventoryFolder)obj);
+            }
+            else
+            {
+                Logger.Log("PurgeInventoryDescendents called on a missing folder " + purge.InventoryData.FolderID,
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        void PurgeFolder(Dictionary<UUID, InventoryObject> inventory, InventoryFolder folder)
+        {
+            folder.Children.ForEach(
+                delegate(InventoryObject child)
+                {
+                    inventory.Remove(child.ID);
+
+                    if (child is InventoryFolder)
+                    {
+                        InventoryFolder childFolder = (InventoryFolder)child;
+                        PurgeFolder(inventory, childFolder);
+                    }
+                }
+            );
+
+            lock (folder.Children.Dictionary)
+                folder.Children.Dictionary.Clear();
         }
 
         public bool CreateRootFolder(UUID agentID, UUID folderID, string name, UUID ownerID)
