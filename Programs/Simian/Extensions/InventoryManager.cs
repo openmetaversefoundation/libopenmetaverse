@@ -70,8 +70,11 @@ namespace Simian.Extensions
                     break;
             }
 
+            if (parentID == UUID.Zero)
+                parentID = agent.InventoryRoot;
+
             // Create the inventory item
-            CreateItem(agent, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
+            CreateItem(agent.AgentID, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
                 (InventoryType)create.InventoryBlock.InvType, assetType, assetID, parentID,
                 PermissionMask.All, (PermissionMask)create.InventoryBlock.NextOwnerMask, agent.AgentID,
                 agent.AgentID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID);
@@ -81,7 +84,11 @@ namespace Simian.Extensions
         {
             CreateInventoryFolderPacket create = (CreateInventoryFolderPacket)packet;
 
-            CreateFolder(agent, create.FolderData.FolderID, Utils.BytesToString(create.FolderData.Name),
+            UUID folderID = create.FolderData.FolderID;
+            if (folderID == UUID.Zero)
+                folderID = agent.InventoryRoot;
+
+            CreateFolder(agent.AgentID, folderID, Utils.BytesToString(create.FolderData.Name),
                 (AssetType)create.FolderData.Type, create.FolderData.ParentID, agent.AgentID);
         }
 
@@ -302,9 +309,9 @@ namespace Simian.Extensions
             Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
         }
 
-        public bool CreateRootFolder(Agent agent, UUID folderID, string name, UUID ownerID)
+        public bool CreateRootFolder(UUID agentID, UUID folderID, string name, UUID ownerID)
         {
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
             lock (agentInventory)
             {
@@ -312,7 +319,7 @@ namespace Simian.Extensions
                 {
                     InventoryFolder folder = new InventoryFolder();
                     folder.Name = name;
-                    folder.OwnerID = agent.AgentID;
+                    folder.OwnerID = agentID;
                     folder.ParentID = UUID.Zero;
                     folder.Parent = null;
                     folder.PreferredType = AssetType.Folder;
@@ -335,13 +342,10 @@ namespace Simian.Extensions
             return false;
         }
 
-        public bool CreateFolder(Agent agent, UUID folderID, string name, AssetType preferredType,
+        public bool CreateFolder(UUID agentID, UUID folderID, string name, AssetType preferredType,
             UUID parentID, UUID ownerID)
         {
-            if (parentID == UUID.Zero)
-                parentID = agent.InventoryRoot;
-
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
             lock (agentInventory)
             {
@@ -354,7 +358,7 @@ namespace Simian.Extensions
                     {
                         InventoryFolder folder = new InventoryFolder();
                         folder.Name = name;
-                        folder.OwnerID = agent.AgentID;
+                        folder.OwnerID = agentID;
                         folder.ParentID = parentID;
                         folder.Parent = parentFolder;
                         folder.PreferredType = preferredType;
@@ -387,14 +391,11 @@ namespace Simian.Extensions
             return false;
         }
 
-        public UUID CreateItem(Agent agent, string name, string description, InventoryType invType, AssetType type,
+        public UUID CreateItem(UUID agentID, string name, string description, InventoryType invType, AssetType type,
             UUID assetID, UUID parentID, PermissionMask ownerMask, PermissionMask nextOwnerMask, UUID ownerID,
             UUID creatorID, UUID transactionID, uint callbackID)
         {
-            if (parentID == UUID.Zero)
-                parentID = agent.InventoryRoot;
-
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
             lock (agentInventory)
             {
@@ -415,8 +416,8 @@ namespace Simian.Extensions
                     item.Permissions.NextOwnerMask = nextOwnerMask;
                     item.AssetType = type;
                     item.AssetID = assetID;
-                    item.OwnerID = agent.AgentID;
-                    item.CreatorID = agent.AgentID;
+                    item.OwnerID = agentID;
+                    item.CreatorID = agentID;
                     item.CreationDate = DateTime.Now;
 
                     Logger.DebugLog(String.Format("Creating inventory item {0} (InvType: {1}, AssetType: {2})", item.Name,
@@ -429,7 +430,7 @@ namespace Simian.Extensions
 
                     // Send a success response
                     UpdateCreateInventoryItemPacket update = new UpdateCreateInventoryItemPacket();
-                    update.AgentData.AgentID = agent.AgentID;
+                    update.AgentData.AgentID = agentID;
                     update.AgentData.SimApproved = true;
                     if (transactionID != UUID.Zero)
                         update.AgentData.TransactionID = transactionID;
@@ -465,7 +466,7 @@ namespace Simian.Extensions
                     update.InventoryData[0].SaleType = (byte)item.SaleType;
                     update.InventoryData[0].Type = (sbyte)item.AssetType;
 
-                    Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
+                    Server.UDP.SendPacket(agentID, update, PacketCategory.Inventory);
                     return item.ID;
                 }
                 else
@@ -493,9 +494,50 @@ namespace Simian.Extensions
             return false;
         }
 
+        public OpenMetaverse.InventoryFolder[] CreateInventorySkeleton(UUID agentID)
+        {
+            Dictionary<UUID, InventoryObject> inventory;
+            if (Inventory.TryGetValue(agentID, out inventory))
+            {
+                List<InventoryFolder> folderList = new List<InventoryFolder>();
+
+                lock (inventory)
+                {
+                    foreach (InventoryObject obj in inventory.Values)
+                    {
+                        if (obj is InventoryFolder)
+                            folderList.Add((InventoryFolder)obj);
+                    }
+                }
+
+                OpenMetaverse.InventoryFolder[] folders = new OpenMetaverse.InventoryFolder[folderList.Count];
+
+                for (int i = 0; i < folderList.Count; i++)
+                {
+                    InventoryFolder folder = folderList[i];
+
+                    folders[i] = new OpenMetaverse.InventoryFolder(folder.ID);
+                    folders[i].DescendentCount = folder.Children.Count;
+                    folders[i].Name = folder.Name;
+                    folders[i].OwnerID = folder.OwnerID;
+                    folders[i].ParentUUID = folder.ParentID;
+                    folders[i].PreferredType = folder.PreferredType;
+                    folders[i].Version = folder.Version;
+                }
+
+                return folders;
+            }
+            else
+            {
+                Logger.Log("CreateInventorySkeleton() called with an unknown agent " + agentID.ToString(),
+                    Helpers.LogLevel.Warning);
+                return null;
+            }
+        }
+
         #region Persistance
 
-        LLSDMap SerializeInventoryItem(InventoryItem item)
+        LLSDMap SerializeItem(InventoryItem item)
         {
             LLSDMap itemMap = new LLSDMap(16);
             itemMap.Add("ID", LLSD.FromUUID(item.ID));
@@ -517,7 +559,7 @@ namespace Simian.Extensions
             return itemMap;
         }
 
-        LLSDMap SerializeInventoryFolder(InventoryFolder folder)
+        LLSDMap SerializeFolder(InventoryFolder folder)
         {
             LLSDMap folderMap = new LLSDMap(6);
             folderMap.Add("ID", LLSD.FromUUID(folder.ID));
@@ -533,7 +575,16 @@ namespace Simian.Extensions
         {
             LLSDMap map = new LLSDMap(agentInventory.Count);
 
-            // FIXME:
+            foreach (KeyValuePair<UUID, InventoryObject> kvp in agentInventory)
+            {
+                LLSD value;
+                if (kvp.Value is InventoryItem)
+                    value = SerializeItem((InventoryItem)kvp.Value);
+                else
+                    value = SerializeFolder((InventoryFolder)kvp.Value);
+
+                map.Add(kvp.Key.ToString(), value);
+            }
 
             return map;
         }
@@ -543,10 +594,13 @@ namespace Simian.Extensions
             LLSDMap map = new LLSDMap(Inventory.Count);
             int itemCount = 0;
 
-            foreach (KeyValuePair<UUID, Dictionary<UUID, InventoryObject>> kvp in Inventory)
+            lock (Inventory)
             {
-                map.Add(kvp.Key.ToString(), SerializeInventory(kvp.Value));
-                itemCount += kvp.Value.Count;
+                foreach (KeyValuePair<UUID, Dictionary<UUID, InventoryObject>> kvp in Inventory)
+                {
+                    map.Add(kvp.Key.ToString(), SerializeInventory(kvp.Value));
+                    itemCount += kvp.Value.Count;
+                }
             }
 
             Logger.Log(String.Format("Serializing the inventory store with {0} items", itemCount),
@@ -555,24 +609,105 @@ namespace Simian.Extensions
             return map;
         }
 
+        InventoryItem DeserializeItem(LLSDMap itemMap)
+        {
+            InventoryItem item = new InventoryItem();
+            item.ID = itemMap["ID"].AsUUID();
+            item.ParentID = itemMap["ParentID"].AsUUID();
+            item.Name = itemMap["Name"].AsString();
+            item.OwnerID = itemMap["OwnerID"].AsUUID();
+            item.AssetID = itemMap["AssetID"].AsUUID();
+            item.AssetType = (AssetType)itemMap["AssetType"].AsInteger();
+            item.InventoryType = (InventoryType)itemMap["InventoryType"].AsInteger();
+            item.CreatorID = itemMap["CreatorID"].AsUUID();
+            item.GroupID = itemMap["GroupID"].AsUUID();
+            item.Description = itemMap["Description"].AsString();
+            item.GroupOwned = itemMap["GroupOwned"].AsBoolean();
+            item.Permissions = Permissions.FromLLSD(itemMap["Permissions"]);
+            item.SalePrice = itemMap["SalePrice"].AsInteger();
+            item.SaleType = (SaleType)itemMap["SaleType"].AsInteger();
+            item.Flags = Utils.BytesToUInt(itemMap["Flags"].AsBinary());
+            item.CreationDate = itemMap["CreationDate"].AsDate();
+            return item;
+        }
+
+        InventoryFolder DeserializeFolder(LLSDMap folderMap)
+        {
+            InventoryFolder folder = new InventoryFolder();
+            folder.ID = folderMap["ID"].AsUUID();
+            folder.ParentID = folderMap["ParentID"].AsUUID();
+            folder.Name = folderMap["Name"].AsString();
+            folder.OwnerID = folderMap["OwnerID"].AsUUID();
+            folder.PreferredType = (AssetType)folderMap["PreferredType"].AsInteger();
+            folder.Version = folderMap["Version"].AsInteger();
+            return folder;
+        }
+
+        Dictionary<UUID, InventoryObject> DeserializeInventory(LLSDMap map)
+        {
+            Dictionary<UUID, InventoryObject> inventory = new Dictionary<UUID, InventoryObject>();
+
+            foreach (KeyValuePair<string, LLSD> kvp in map)
+            {
+                UUID objectID = (UUID)kvp.Key;
+                LLSDMap objectMap = (LLSDMap)kvp.Value;
+                InventoryObject obj;
+
+                if (objectMap.ContainsKey("AssetID"))
+                    obj = DeserializeItem(objectMap);
+                else
+                    obj = DeserializeFolder(objectMap);
+
+                inventory[objectID] = obj;
+            }
+
+            return inventory;
+        }
+
         public void Deserialize(LLSD serialized)
         {
-            //accounts.Clear();
+            int itemCount = 0;
+            LLSDMap map = (LLSDMap)serialized;
 
-            //LLSDArray array = (LLSDArray)serialized;
+            lock (Inventory)
+            {
+                Inventory.Clear();
 
-            //for (int i = 0; i < array.Count; i++)
-            //{
-            //    Agent agent = new Agent();
-            //    object agentRef = (object)agent;
-            //    LLSD.DeserializeMembers(ref agentRef, (LLSDMap)array[i]);
-            //    agent = (Agent)agentRef;
+                foreach (KeyValuePair<string, LLSD> kvp in map)
+                {
+                    UUID agentID = (UUID)kvp.Key;
+                    Dictionary<UUID, InventoryObject> agentInventory = DeserializeInventory((LLSDMap)kvp.Value);
+                    itemCount += agentInventory.Count;
 
-            //    accounts.Add(agent.FullName, agent.AgentID, agent);
-            //}
+                    Inventory[agentID] = agentInventory;
+                }
 
-            //Logger.Log(String.Format("Deserialized the agent store with {0} entries", accounts.Count),
-            //    Helpers.LogLevel.Info);
+                // Iterate over the inventory objects and connect them to each other
+                foreach (Dictionary<UUID, InventoryObject> inventory in Inventory.Values)
+                {
+                    foreach (InventoryObject obj in inventory.Values)
+                    {
+                        if (obj.ParentID != UUID.Zero)
+                        {
+                            InventoryObject parentObj;
+                            if (inventory.TryGetValue(obj.ParentID, out parentObj) && parentObj is InventoryFolder)
+                            {
+                                InventoryFolder parent = (InventoryFolder)parentObj;
+                                obj.Parent = parent;
+                                parent.Children.Dictionary[obj.ID] = obj;
+                            }
+                            else
+                            {
+                                Logger.Log(String.Format("Cannot find parent folder {0} for inventory item {1}",
+                                    obj.ParentID, obj.ID), Helpers.LogLevel.Warning);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Logger.Log(String.Format("Deserialized the inventory store with {0} items", itemCount),
+                Helpers.LogLevel.Info);
         }
 
         #endregion Persistance

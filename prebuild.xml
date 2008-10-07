@@ -81,6 +81,7 @@
           <Exclude name="Quaternion.cs"/>
           <Exclude name="Ray.cs"/>
           <Exclude name="Utils.cs"/>
+          <Exclude name="UtilsConversions.cs"/>
           <Exclude name="UUID.cs"/>
           <Exclude name="Vector2.cs"/>
           <Exclude name="Vector3.cs"/>

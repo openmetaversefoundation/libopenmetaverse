@@ -272,7 +272,15 @@ namespace OpenMetaverse
 
                         // inventory-skeleton
                         WriteXmlRpcArrayStart(writer, "inventory-skeleton");
-                        WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)InventoryType.Category, InventoryRoot);
+                        if (InventorySkeleton != null)
+                        {
+                            foreach (InventoryFolder folder in InventorySkeleton)
+                                WriteXmlRpcInventoryItem(writer, folder.Name, folder.ParentUUID, (uint)folder.Version, (uint)folder.PreferredType, folder.UUID);
+                        }
+                        else
+                        {
+                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)InventoryType.Category, InventoryRoot);
+                        }
                         WriteXmlRpcArrayEnd(writer);
 
                         // buddy-list

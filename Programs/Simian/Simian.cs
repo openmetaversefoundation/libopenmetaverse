@@ -293,6 +293,7 @@ namespace Simian
                 reader.Close();
 
                 LoginResponseData responseData = HandleLogin(firstName, lastName, password, start, version, channel);
+                responseData.InventorySkeleton = Inventory.CreateInventorySkeleton(responseData.AgentID);
                 XmlWriter writer = XmlWriter.Create(context.Response.OutputStream);
                 responseData.ToXmlRpc(writer);
                 writer.Close();
