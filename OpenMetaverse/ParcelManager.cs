@@ -539,7 +539,6 @@ namespace OpenMetaverse
         /// <summary>
         /// Defalt constructor
         /// </summary>
-        /// <param name="simulator">Simulator this parcel resides in</param>
         /// <param name="localID">Local ID of this parcel</param>
         public Parcel(int localID)
         {
@@ -1160,7 +1159,7 @@ namespace OpenMetaverse
         /// Get a parcels LocalID
         /// </summary>
         /// <param name="simulator">Simulator parcel is in</param>
-        /// <param name="position">llVector3 position in simulator (Z not used)</param>
+        /// <param name="position">Vector3 position in simulator (Z not used)</param>
         /// <returns>0 on failure, or parcel LocalID on success.</returns>
         /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map and
         /// dictionary.</remarks>

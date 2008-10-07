@@ -248,7 +248,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Convert a 64-bit integer to a byte array in little endian format
         /// </summary>
-        /// <param name="x">The value to convert</param>
+        /// <param name="value">The value to convert</param>
         /// <returns>An 8 byte little endian array</returns>
         public static byte[] Int64ToBytes(long value)
         {
@@ -269,7 +269,7 @@ namespace OpenMetaverse
         /// Convert a 64-bit unsigned integer to a byte array in little endian
         /// format
         /// </summary>
-        /// <param name="x">The value to convert</param>
+        /// <param name="value">The value to convert</param>
         /// <returns>An 8 byte little endian array</returns>
         public static byte[] UInt64ToBytes(ulong value)
         {
