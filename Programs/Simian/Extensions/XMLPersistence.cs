@@ -74,6 +74,7 @@ namespace Simian.Extensions
             try
             {
                 XmlTextWriter writer = new XmlTextWriter(server.DataDir + "simiandata.xml", System.Text.Encoding.UTF8);
+                writer.Formatting = Formatting.Indented;
                 writer.WriteStartElement("llsd");
                 LLSDParser.SerializeXmlElement(writer, dictionary);
                 writer.WriteEndElement();

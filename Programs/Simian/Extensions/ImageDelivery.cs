@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading;
 using ExtensionLoader;
 using OpenMetaverse;
@@ -85,8 +84,6 @@ namespace Simian.Extensions
     public class ImageDelivery : IExtension
     {
         Simian Server;
-        AssetTexture defaultJP2;
-        AssetTexture defaultBakedJP2;
         Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
         BlockingQueue<ImageDownload> CurrentDownloadQueue = new BlockingQueue<ImageDownload>();
 
@@ -98,24 +95,6 @@ namespace Simian.Extensions
         public void Start()
         {
             Server.UDP.RegisterPacketCallback(PacketType.RequestImage, new PacketCallback(RequestImageHandler));
-
-            // Create default textures for missing images and missing bakes
-            Bitmap defaultImage = new Bitmap(32, 32);
-            Graphics gfx = Graphics.FromImage(defaultImage);
-            gfx.Clear(Color.White);
-            gfx.FillRectangles(Brushes.LightGray, new Rectangle[] { new Rectangle(16, 16, 16, 16), new Rectangle(0, 0, 16, 16) });
-            gfx.DrawImage(defaultImage, 0, 0, 32, 32);
-
-            ManagedImage defaultManaged = new ManagedImage(defaultImage);
-
-            ManagedImage defaultBaked = new ManagedImage(defaultImage);
-            defaultBaked.Channels = ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha |
-                ManagedImage.ImageChannels.Bump;
-            defaultBaked.Alpha = defaultBaked.Red;
-            defaultBaked.Bump = defaultBaked.Red;
-
-            defaultJP2 = new AssetTexture(UUID.Zero, OpenJPEG.Encode(defaultManaged, true));
-            defaultBakedJP2 = new AssetTexture(UUID.Zero, OpenJPEG.Encode(defaultBaked, true)); 
         }
 
         public void Stop()
@@ -247,27 +226,6 @@ namespace Simian.Extensions
                         ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
                         notfound.ImageID.ID = block.Image;
                         Server.UDP.SendPacket(agent.AgentID, notfound, PacketCategory.Texture);
-
-                        /*
-                        // TODO: Technically we should return ImageNotInDatabasePacket, but for now return a default texture
-                        ImageDataPacket imageData = new ImageDataPacket();
-                        imageData.ImageID.ID = block.Image;
-                        imageData.ImageID.Codec = 1;
-                        imageData.ImageID.Packets = 1;
-                        if (bake)
-                        {
-                            Logger.DebugLog(String.Format("Sending default bake texture for {0}", block.Image));
-                            imageData.ImageData.Data = defaultBakedJP2.AssetData;
-                        }
-                        else
-                        {
-                            Logger.DebugLog(String.Format("Sending default texture for {0}", block.Image));
-                            imageData.ImageData.Data = defaultJP2.AssetData;
-                        }
-                        imageData.ImageID.Size = (uint)imageData.ImageData.Data.Length;
-
-                        Server.UDP.SendPacket(agent.AgentID, imageData, PacketCategory.Texture);
-                        */
                     }
                 }
             }

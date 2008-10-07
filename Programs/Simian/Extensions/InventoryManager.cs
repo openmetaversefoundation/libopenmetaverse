@@ -29,6 +29,7 @@ namespace Simian.Extensions
             Server.UDP.RegisterPacketCallback(PacketType.UpdateInventoryItem, new PacketCallback(UpdateInventoryItemHandler));
             Server.UDP.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new PacketCallback(FetchInventoryDescendentsHandler));
             Server.UDP.RegisterPacketCallback(PacketType.FetchInventory, new PacketCallback(FetchInventoryHandler));
+            Server.UDP.RegisterPacketCallback(PacketType.CopyInventoryItem, new PacketCallback(CopyInventoryItemHandler));
             Server.UDP.RegisterPacketCallback(PacketType.MoveInventoryItem, new PacketCallback(MoveInventoryItemHandler));
             Server.UDP.RegisterPacketCallback(PacketType.MoveInventoryFolder, new PacketCallback(MoveInventoryFolderHandler));
             Server.UDP.RegisterPacketCallback(PacketType.PurgeInventoryDescendents, new PacketCallback(PurgeInventoryDescendentsHandler));
@@ -316,6 +317,53 @@ namespace Simian.Extensions
             }
 
             Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+        }
+
+        void CopyInventoryItemHandler(Packet packet, Agent agent)
+        {
+            CopyInventoryItemPacket copy = (CopyInventoryItemPacket)packet;
+
+            for (int i = 0; i < copy.InventoryData.Length; i++)
+            {
+                CopyInventoryItemPacket.InventoryDataBlock block = copy.InventoryData[i];
+
+                // TODO: This allows someone to copy objects from another
+                // agent's inventory. Should we allow that, or do any 
+                // permission checks?
+                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(block.OldAgentID);
+
+                // Get the original object
+                InventoryObject obj;
+                if (agentInventory.TryGetValue(block.OldItemID, out obj) && obj is InventoryItem)
+                {
+                    InventoryItem item = (InventoryItem)obj;
+
+                    // Get the new folder
+                    InventoryObject folderObj;
+                    if (agentInventory.TryGetValue(block.NewFolderID, out folderObj) && folderObj is InventoryFolder)
+                    {
+                        string newName = Utils.BytesToString(block.NewName);
+                        if (String.IsNullOrEmpty(newName))
+                            newName = item.Name;
+
+                        // Create the copy
+                        CreateItem(agent.AgentID, newName, item.Description, item.InventoryType, item.AssetType,
+                            item.AssetID, folderObj.ID, item.Permissions.OwnerMask, item.Permissions.NextOwnerMask,
+                            agent.AgentID, item.CreatorID, UUID.Zero, block.CallbackID);
+                    }
+                    else
+                    {
+                        Logger.Log("CopyInventoryItem called with an unknown target folder " + block.NewFolderID,
+                            Helpers.LogLevel.Warning);
+                    }
+                    
+                }
+                else
+                {
+                    Logger.Log("CopyInventoryItem called for an unknown item " + block.OldItemID,
+                        Helpers.LogLevel.Warning);
+                }
+            }
         }
 
         void MoveInventoryItemHandler(Packet packet, Agent agent)
@@ -663,7 +711,7 @@ namespace Simian.Extensions
             }
         }
 
-        #region Persistance
+        #region Persistence
 
         LLSDMap SerializeItem(InventoryItem item)
         {
@@ -838,6 +886,6 @@ namespace Simian.Extensions
                 Helpers.LogLevel.Info);
         }
 
-        #endregion Persistance
+        #endregion Persistence
     }
 }
