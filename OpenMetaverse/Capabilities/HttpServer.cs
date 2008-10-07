@@ -157,11 +157,21 @@ namespace OpenMetaverse.Capabilities
                             }
                             catch (Exception e)
                             {
-                                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                                context.Response.StatusDescription = e.ToString();
+                                try
+                                {
+                                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                                    context.Response.StatusDescription = e.ToString();
+                                }
+                                catch (Exception)
+                                {
+                                    Logger.Log(e.ToString(), Helpers.LogLevel.Error);
+                                }
+                            }
+                            finally
+                            {
+                                context.Response.Close();
                             }
 
-                            context.Response.Close();
                             return;
                         }
                     }
