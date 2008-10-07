@@ -31,117 +31,7 @@ namespace OpenMetaverse
 {
     public static partial class Utils
     {
-        #region Conversion
-
-        /// <summary>
-        /// Copy a byte array
-        /// </summary>
-        /// <param name="bytes">Byte array to copy</param>
-        /// <returns>A copy of the given byte array</returns>
-        public static byte[] CopyBytes(byte[] bytes)
-        {
-            if (bytes == null)
-                return null;
-
-            byte[] newBytes = new byte[bytes.Length];
-            Buffer.BlockCopy(bytes, 0, newBytes, 0, bytes.Length);
-            return newBytes;
-        }
-
-        /// <summary>
-        /// Convert a floating point value to four bytes in little endian
-        /// ordering
-        /// </summary>
-        /// <param name="value">A floating point value</param>
-        /// <returns>A four byte array containing the value in little endian
-        /// ordering</returns>
-        public static byte[] FloatToBytes(float value)
-        {
-            byte[] bytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-            return bytes;
-        }
-
-        /// <summary>
-        /// Converts an unsigned integer to a hexadecimal string
-        /// </summary>
-        /// <param name="i">An unsigned integer to convert to a string</param>
-        /// <returns>A hexadecimal string 10 characters long</returns>
-        /// <example>0x7fffffff</example>
-        public static string UIntToHexString(uint i)
-        {
-            return string.Format("{0:x8}", i);
-        }
-
-        /// <summary>
-        /// Packs to 32-bit unsigned integers in to a 64-bit unsigned integer
-        /// </summary>
-        /// <param name="a">The left-hand (or X) value</param>
-        /// <param name="b">The right-hand (or Y) value</param>
-        /// <returns>A 64-bit integer containing the two 32-bit input values</returns>
-        public static ulong UIntsToLong(uint a, uint b)
-        {
-            return ((ulong)a << 32) | (ulong)b;
-        }
-
-        /// <summary>
-        /// Unpacks two 32-bit unsigned integers from a 64-bit unsigned integer
-        /// </summary>
-        /// <param name="a">The 64-bit input integer</param>
-        /// <param name="b">The left-hand (or X) output value</param>
-        /// <param name="c">The right-hand (or Y) output value</param>
-        public static void LongToUInts(ulong a, out uint b, out uint c)
-        {
-            b = (uint)(a >> 32);
-            c = (uint)(a & 0x00000000FFFFFFFF);
-        }
-
-        /// <summary>
-        /// Convert an integer to a byte array in little endian format
-        /// </summary>
-        /// <param name="x">The integer to convert</param>
-        /// <returns>A four byte little endian array</returns>
-        public static byte[] IntToBytes(int x)
-        {
-            byte[] bytes = new byte[4];
-
-            bytes[0] = (byte)(x % 256);
-            bytes[1] = (byte)((x >> 8) % 256);
-            bytes[2] = (byte)((x >> 16) % 256);
-            bytes[3] = (byte)((x >> 24) % 256);
-
-            return bytes;
-        }
-
-        /// <summary>
-        /// Convert a 64-bit integer to a byte array in little endian format
-        /// </summary>
-        /// <param name="x">The value to convert</param>
-        /// <returns>An 8 byte little endian array</returns>
-        public static byte[] Int64ToBytes(long value)
-        {
-            byte[] bytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-
-            return bytes;
-        }
-
-        /// <summary>
-        /// Convert a 64-bit unsigned integer to a byte array in little endian
-        /// format
-        /// </summary>
-        /// <param name="x">The value to convert</param>
-        /// <returns>An 8 byte little endian array</returns>
-        public static byte[] UInt64ToBytes(ulong value)
-        {
-            byte[] bytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-
-            return bytes;
-        }
+        #region BytesTo
 
         /// <summary>
         /// Convert the first four bytes starting at the given position in
@@ -280,20 +170,61 @@ namespace OpenMetaverse
             }
         }
 
-        public static byte[] DoubleToBytes(double value)
-        {
-            byte[] bytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-            return bytes;
-        }
+        #endregion BytesTo
 
-        public static byte[] UInt16ToBytes(int value)
+        #region ToBytes
+
+        public static byte[] Int16ToBytes(short value)
         {
             byte[] bytes = new byte[2];
             bytes[0] = (byte)(value % 256);
             bytes[1] = (byte)((value >> 8) % 256);
             return bytes;
+        }
+
+        public static void Int16ToBytes(short value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)(value % 256);
+            dest[pos + 1] = (byte)((value >> 8) % 256);
+        }
+
+        public static byte[] UInt16ToBytes(ushort value)
+        {
+            byte[] bytes = new byte[2];
+            bytes[0] = (byte)(value % 256);
+            bytes[1] = (byte)((value >> 8) % 256);
+            return bytes;
+        }
+
+        public static void UInt16ToBytes(ushort value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)(value % 256);
+            dest[pos + 1] = (byte)((value >> 8) % 256);
+        }
+
+        /// <summary>
+        /// Convert an integer to a byte array in little endian format
+        /// </summary>
+        /// <param name="value">The integer to convert</param>
+        /// <returns>A four byte little endian array</returns>
+        public static byte[] IntToBytes(int value)
+        {
+            byte[] bytes = new byte[4];
+
+            bytes[0] = (byte)(value % 256);
+            bytes[1] = (byte)((value >> 8) % 256);
+            bytes[2] = (byte)((value >> 16) % 256);
+            bytes[3] = (byte)((value >> 24) % 256);
+
+            return bytes;
+        }
+
+        public static void IntToBytes(int value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)(value % 256);
+            dest[pos + 1] = (byte)((value >> 8) % 256);
+            dest[pos + 2] = (byte)((value >> 16) % 256);
+            dest[pos + 3] = (byte)((value >> 24) % 256);
         }
 
         public static byte[] UIntToBytes(uint value)
@@ -306,93 +237,103 @@ namespace OpenMetaverse
             return bytes;
         }
 
-        /// <summary>
-        /// Convert a float value to a byte given a minimum and maximum range
-        /// </summary>
-        /// <param name="val">Value to convert to a byte</param>
-        /// <param name="lower">Minimum value range</param>
-        /// <param name="upper">Maximum value range</param>
-        /// <returns>A single byte representing the original float value</returns>
-        public static byte FloatToByte(float val, float lower, float upper)
+        public static void UIntToBytes(uint value, byte[] dest, int pos)
         {
-            val = Utils.Clamp(val, lower, upper);
-            // Normalize the value
-            val -= lower;
-            val /= (upper - lower);
-
-            return (byte)Math.Floor(val * (float)byte.MaxValue);
+            dest[pos] = (byte)(value % 256);
+            dest[pos + 1] = (byte)((value >> 8) % 256);
+            dest[pos + 2] = (byte)((value >> 16) % 256);
+            dest[pos + 3] = (byte)((value >> 24) % 256);
         }
 
         /// <summary>
-        /// Convert a byte to a float value given a minimum and maximum range
+        /// Convert a 64-bit integer to a byte array in little endian format
         /// </summary>
-        /// <param name="bytes">Byte array to get the byte from</param>
-        /// <param name="pos">Position in the byte array the desired byte is at</param>
-        /// <param name="lower">Minimum value range</param>
-        /// <param name="upper">Maximum value range</param>
-        /// <returns>A float value inclusively between lower and upper</returns>
-        public static float ByteToFloat(byte[] bytes, int pos, float lower, float upper)
+        /// <param name="x">The value to convert</param>
+        /// <returns>An 8 byte little endian array</returns>
+        public static byte[] Int64ToBytes(long value)
         {
-            if (bytes.Length <= pos) return 0;
-            return ByteToFloat(bytes[pos], lower, upper);
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
+            return bytes;
+        }
+
+        public static void Int64ToBytes(long value, byte[] dest, int pos)
+        {
+            byte[] bytes = Int64ToBytes(value);
+            Buffer.BlockCopy(bytes, 0, dest, pos, 8);
         }
 
         /// <summary>
-        /// Convert a byte to a float value given a minimum and maximum range
+        /// Convert a 64-bit unsigned integer to a byte array in little endian
+        /// format
         /// </summary>
-        /// <param name="val">Byte to convert to a float value</param>
-        /// <param name="lower">Minimum value range</param>
-        /// <param name="upper">Maximum value range</param>
-        /// <returns>A float value inclusively between lower and upper</returns>
-        public static float ByteToFloat(byte val, float lower, float upper)
+        /// <param name="x">The value to convert</param>
+        /// <returns>An 8 byte little endian array</returns>
+        public static byte[] UInt64ToBytes(ulong value)
         {
-            const float ONE_OVER_BYTEMAX = 1.0f / (float)byte.MaxValue;
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
 
-            float fval = (float)val * ONE_OVER_BYTEMAX;
-            float delta = (upper - lower);
-            fval *= delta;
-            fval += lower;
-
-            // Test for values very close to zero
-            float error = delta * ONE_OVER_BYTEMAX;
-            if (Math.Abs(fval) < error)
-                fval = 0.0f;
-
-            return fval;
+            return bytes;
         }
 
-        public static float UInt16ToFloat(byte[] bytes, int pos, float lower, float upper)
+        public static void UInt64ToBytes(ulong value, byte[] dest, int pos)
         {
-            ushort val = BytesToUInt16(bytes, pos);
-            return UInt16ToFloat(val, lower, upper);
-        }
-
-        public static float UInt16ToFloat(ushort val, float lower, float upper)
-        {
-            const float ONE_OVER_U16_MAX = 1.0f / (float)UInt16.MaxValue;
-
-            float fval = (float)val * ONE_OVER_U16_MAX;
-            float delta = upper - lower;
-            fval *= delta;
-            fval += lower;
-
-            // Make sure zeroes come through as zero
-            float maxError = delta * ONE_OVER_U16_MAX;
-            if (Math.Abs(fval) < maxError)
-                fval = 0.0f;
-
-            return fval;
+            byte[] bytes = UInt64ToBytes(value);
+            Buffer.BlockCopy(bytes, 0, dest, pos, 8);
         }
 
         /// <summary>
-        /// Convert an IP address object to an unsigned 32-bit integer
+        /// Convert a floating point value to four bytes in little endian
+        /// ordering
         /// </summary>
-        /// <param name="address">IP address to convert</param>
-        /// <returns>32-bit unsigned integer holding the IP address bits</returns>
-        public static uint IPToUInt(System.Net.IPAddress address)
+        /// <param name="value">A floating point value</param>
+        /// <returns>A four byte array containing the value in little endian
+        /// ordering</returns>
+        public static byte[] FloatToBytes(float value)
         {
-            byte[] bytes = address.GetAddressBytes();
-            return (uint)((bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]);
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            return bytes;
+        }
+
+        public static void FloatToBytes(float value, byte[] dest, int pos)
+        {
+            byte[] bytes = FloatToBytes(value);
+            Buffer.BlockCopy(bytes, 0, dest, pos, 4);
+        }
+
+        public static byte[] DoubleToBytes(double value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            return bytes;
+        }
+
+        public static void DoubleToBytes(double value, byte[] dest, int pos)
+        {
+            byte[] bytes = DoubleToBytes(value);
+            Buffer.BlockCopy(bytes, 0, dest, pos, 8);
+        }
+
+        #endregion ToBytes
+
+        #region Strings
+
+        /// <summary>
+        /// Converts an unsigned integer to a hexadecimal string
+        /// </summary>
+        /// <param name="i">An unsigned integer to convert to a string</param>
+        /// <returns>A hexadecimal string 10 characters long</returns>
+        /// <example>0x7fffffff</example>
+        public static string UIntToHexString(uint i)
+        {
+            return string.Format("{0:x8}", i);
         }
 
         /// <summary>
@@ -552,6 +493,180 @@ namespace OpenMetaverse
             return newByte;
         }
 
+        #endregion Strings
+
+        #region Packed Values
+
+        /// <summary>
+        /// Convert a float value to a byte given a minimum and maximum range
+        /// </summary>
+        /// <param name="val">Value to convert to a byte</param>
+        /// <param name="lower">Minimum value range</param>
+        /// <param name="upper">Maximum value range</param>
+        /// <returns>A single byte representing the original float value</returns>
+        public static byte FloatToByte(float val, float lower, float upper)
+        {
+            val = Utils.Clamp(val, lower, upper);
+            // Normalize the value
+            val -= lower;
+            val /= (upper - lower);
+
+            return (byte)Math.Floor(val * (float)byte.MaxValue);
+        }
+
+        /// <summary>
+        /// Convert a byte to a float value given a minimum and maximum range
+        /// </summary>
+        /// <param name="bytes">Byte array to get the byte from</param>
+        /// <param name="pos">Position in the byte array the desired byte is at</param>
+        /// <param name="lower">Minimum value range</param>
+        /// <param name="upper">Maximum value range</param>
+        /// <returns>A float value inclusively between lower and upper</returns>
+        public static float ByteToFloat(byte[] bytes, int pos, float lower, float upper)
+        {
+            if (bytes.Length <= pos) return 0;
+            return ByteToFloat(bytes[pos], lower, upper);
+        }
+
+        /// <summary>
+        /// Convert a byte to a float value given a minimum and maximum range
+        /// </summary>
+        /// <param name="val">Byte to convert to a float value</param>
+        /// <param name="lower">Minimum value range</param>
+        /// <param name="upper">Maximum value range</param>
+        /// <returns>A float value inclusively between lower and upper</returns>
+        public static float ByteToFloat(byte val, float lower, float upper)
+        {
+            const float ONE_OVER_BYTEMAX = 1.0f / (float)byte.MaxValue;
+
+            float fval = (float)val * ONE_OVER_BYTEMAX;
+            float delta = (upper - lower);
+            fval *= delta;
+            fval += lower;
+
+            // Test for values very close to zero
+            float error = delta * ONE_OVER_BYTEMAX;
+            if (Math.Abs(fval) < error)
+                fval = 0.0f;
+
+            return fval;
+        }
+
+        public static float UInt16ToFloat(byte[] bytes, int pos, float lower, float upper)
+        {
+            ushort val = BytesToUInt16(bytes, pos);
+            return UInt16ToFloat(val, lower, upper);
+        }
+
+        public static float UInt16ToFloat(ushort val, float lower, float upper)
+        {
+            const float ONE_OVER_U16_MAX = 1.0f / (float)UInt16.MaxValue;
+
+            float fval = (float)val * ONE_OVER_U16_MAX;
+            float delta = upper - lower;
+            fval *= delta;
+            fval += lower;
+
+            // Make sure zeroes come through as zero
+            float maxError = delta * ONE_OVER_U16_MAX;
+            if (Math.Abs(fval) < maxError)
+                fval = 0.0f;
+
+            return fval;
+        }
+
+        #endregion Packed Values
+
+        #region TryParse
+
+        /// <summary>
+        /// Attempts to parse a floating point value from a string, using an
+        /// EN-US number format
+        /// </summary>
+        /// <param name="s">String to parse</param>
+        /// <param name="result">Resulting floating point number</param>
+        /// <returns>True if the parse was successful, otherwise false</returns>
+        public static bool TryParseSingle(string s, out float result)
+        {
+            return Single.TryParse(s, System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat, out result);
+        }
+
+        /// <summary>
+        /// Attempts to parse a floating point value from a string, using an
+        /// EN-US number format
+        /// </summary>
+        /// <param name="s">String to parse</param>
+        /// <param name="result">Resulting floating point number</param>
+        /// <returns>True if the parse was successful, otherwise false</returns>
+        public static bool TryParseDouble(string s, out double result)
+        {
+            return Double.TryParse(s, System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat, out result);
+        }
+
+        /// <summary>
+        /// Tries to parse an unsigned 32-bit integer from a hexadecimal string
+        /// </summary>
+        /// <param name="s">String to parse</param>
+        /// <param name="result">Resulting integer</param>
+        /// <returns>True if the parse was successful, otherwise false</returns>
+        public static bool TryParseHex(string s, out uint result)
+        {
+            return UInt32.TryParse(s, System.Globalization.NumberStyles.HexNumber, EnUsCulture.NumberFormat, out result);
+        }
+
+        #endregion TryParse
+
+        #region Miscellaneous
+
+        /// <summary>
+        /// Copy a byte array
+        /// </summary>
+        /// <param name="bytes">Byte array to copy</param>
+        /// <returns>A copy of the given byte array</returns>
+        public static byte[] CopyBytes(byte[] bytes)
+        {
+            if (bytes == null)
+                return null;
+
+            byte[] newBytes = new byte[bytes.Length];
+            Buffer.BlockCopy(bytes, 0, newBytes, 0, bytes.Length);
+            return newBytes;
+        }
+
+        /// <summary>
+        /// Packs to 32-bit unsigned integers in to a 64-bit unsigned integer
+        /// </summary>
+        /// <param name="a">The left-hand (or X) value</param>
+        /// <param name="b">The right-hand (or Y) value</param>
+        /// <returns>A 64-bit integer containing the two 32-bit input values</returns>
+        public static ulong UIntsToLong(uint a, uint b)
+        {
+            return ((ulong)a << 32) | (ulong)b;
+        }
+
+        /// <summary>
+        /// Unpacks two 32-bit unsigned integers from a 64-bit unsigned integer
+        /// </summary>
+        /// <param name="a">The 64-bit input integer</param>
+        /// <param name="b">The left-hand (or X) output value</param>
+        /// <param name="c">The right-hand (or Y) output value</param>
+        public static void LongToUInts(ulong a, out uint b, out uint c)
+        {
+            b = (uint)(a >> 32);
+            c = (uint)(a & 0x00000000FFFFFFFF);
+        }
+
+        /// <summary>
+        /// Convert an IP address object to an unsigned 32-bit integer
+        /// </summary>
+        /// <param name="address">IP address to convert</param>
+        /// <returns>32-bit unsigned integer holding the IP address bits</returns>
+        public static uint IPToUInt(System.Net.IPAddress address)
+        {
+            byte[] bytes = address.GetAddressBytes();
+            return (uint)((bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]);
+        }
+
         /// <summary>
         /// Gets a unix timestamp for the current time
         /// </summary>
@@ -615,41 +730,6 @@ namespace OpenMetaverse
             rhs = temp;
         }
 
-        /// <summary>
-        /// Attempts to parse a floating point value from a string, using an
-        /// EN-US number format
-        /// </summary>
-        /// <param name="s">String to parse</param>
-        /// <param name="result">Resulting floating point number</param>
-        /// <returns>True if the parse was successful, otherwise false</returns>
-        public static bool TryParseSingle(string s, out float result)
-        {
-            return Single.TryParse(s, System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat, out result);
-        }
-
-        /// <summary>
-        /// Attempts to parse a floating point value from a string, using an
-        /// EN-US number format
-        /// </summary>
-        /// <param name="s">String to parse</param>
-        /// <param name="result">Resulting floating point number</param>
-        /// <returns>True if the parse was successful, otherwise false</returns>
-        public static bool TryParseDouble(string s, out double result)
-        {
-            return Double.TryParse(s, System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat, out result);
-        }
-
-        /// <summary>
-        /// Tries to parse an unsigned 32-bit integer from a hexadecimal string
-        /// </summary>
-        /// <param name="s">String to parse</param>
-        /// <param name="result">Resulting integer</param>
-        /// <returns>True if the parse was successful, otherwise false</returns>
-        public static bool TryParseHex(string s, out uint result)
-        {
-            return UInt32.TryParse(s, System.Globalization.NumberStyles.HexNumber, EnUsCulture.NumberFormat, out result);
-        }
-
-        #endregion Conversion
+        #endregion Miscellaneous
     }
 }

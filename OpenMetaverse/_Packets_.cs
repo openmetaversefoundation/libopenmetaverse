@@ -2065,10 +2065,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Test1 % 256);
-                bytes[i++] = (byte)((Test1 >> 8) % 256);
-                bytes[i++] = (byte)((Test1 >> 16) % 256);
-                bytes[i++] = (byte)((Test1 >> 24) % 256);
+                Utils.UIntToBytes(Test1, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -2117,18 +2114,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Test0 % 256);
-                bytes[i++] = (byte)((Test0 >> 8) % 256);
-                bytes[i++] = (byte)((Test0 >> 16) % 256);
-                bytes[i++] = (byte)((Test0 >> 24) % 256);
-                bytes[i++] = (byte)(Test1 % 256);
-                bytes[i++] = (byte)((Test1 >> 8) % 256);
-                bytes[i++] = (byte)((Test1 >> 16) % 256);
-                bytes[i++] = (byte)((Test1 >> 24) % 256);
-                bytes[i++] = (byte)(Test2 % 256);
-                bytes[i++] = (byte)((Test2 >> 8) % 256);
-                bytes[i++] = (byte)((Test2 >> 16) % 256);
-                bytes[i++] = (byte)((Test2 >> 24) % 256);
+                Utils.UIntToBytes(Test0, bytes, i); i += 4;
+                Utils.UIntToBytes(Test1, bytes, i); i += 4;
+                Utils.UIntToBytes(Test2, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -2272,10 +2260,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Code % 256);
-                bytes[i++] = (byte)((Code >> 8) % 256);
-                bytes[i++] = (byte)((Code >> 16) % 256);
-                bytes[i++] = (byte)((Code >> 24) % 256);
+                Utils.UIntToBytes(Code, bytes, i); i += 4;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
@@ -2691,19 +2676,14 @@ namespace OpenMetaverse.Packets
                     PricePublicObjectDecay = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     PricePublicObjectDelete = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     PriceParcelClaim = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    PriceParcelClaimFactor = BitConverter.ToSingle(bytes, i); i += 4;
+                    PriceParcelClaimFactor = Utils.BytesToFloat(bytes, i); i += 4;
                     PriceUpload = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     PriceRentLight = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TeleportMinPrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TeleportPriceExponent = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    EnergyEfficiency = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    PriceObjectRent = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    PriceObjectScaleFactor = BitConverter.ToSingle(bytes, i); i += 4;
+                    TeleportPriceExponent = Utils.BytesToFloat(bytes, i); i += 4;
+                    EnergyEfficiency = Utils.BytesToFloat(bytes, i); i += 4;
+                    PriceObjectRent = Utils.BytesToFloat(bytes, i); i += 4;
+                    PriceObjectScaleFactor = Utils.BytesToFloat(bytes, i); i += 4;
                     PriceParcelRent = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     PriceGroupCreate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -2715,70 +2695,23 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(ObjectCapacity % 256);
-                bytes[i++] = (byte)((ObjectCapacity >> 8) % 256);
-                bytes[i++] = (byte)((ObjectCapacity >> 16) % 256);
-                bytes[i++] = (byte)((ObjectCapacity >> 24) % 256);
-                bytes[i++] = (byte)(ObjectCount % 256);
-                bytes[i++] = (byte)((ObjectCount >> 8) % 256);
-                bytes[i++] = (byte)((ObjectCount >> 16) % 256);
-                bytes[i++] = (byte)((ObjectCount >> 24) % 256);
-                bytes[i++] = (byte)(PriceEnergyUnit % 256);
-                bytes[i++] = (byte)((PriceEnergyUnit >> 8) % 256);
-                bytes[i++] = (byte)((PriceEnergyUnit >> 16) % 256);
-                bytes[i++] = (byte)((PriceEnergyUnit >> 24) % 256);
-                bytes[i++] = (byte)(PriceObjectClaim % 256);
-                bytes[i++] = (byte)((PriceObjectClaim >> 8) % 256);
-                bytes[i++] = (byte)((PriceObjectClaim >> 16) % 256);
-                bytes[i++] = (byte)((PriceObjectClaim >> 24) % 256);
-                bytes[i++] = (byte)(PricePublicObjectDecay % 256);
-                bytes[i++] = (byte)((PricePublicObjectDecay >> 8) % 256);
-                bytes[i++] = (byte)((PricePublicObjectDecay >> 16) % 256);
-                bytes[i++] = (byte)((PricePublicObjectDecay >> 24) % 256);
-                bytes[i++] = (byte)(PricePublicObjectDelete % 256);
-                bytes[i++] = (byte)((PricePublicObjectDelete >> 8) % 256);
-                bytes[i++] = (byte)((PricePublicObjectDelete >> 16) % 256);
-                bytes[i++] = (byte)((PricePublicObjectDelete >> 24) % 256);
-                bytes[i++] = (byte)(PriceParcelClaim % 256);
-                bytes[i++] = (byte)((PriceParcelClaim >> 8) % 256);
-                bytes[i++] = (byte)((PriceParcelClaim >> 16) % 256);
-                bytes[i++] = (byte)((PriceParcelClaim >> 24) % 256);
-                ba = BitConverter.GetBytes(PriceParcelClaimFactor);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(PriceUpload % 256);
-                bytes[i++] = (byte)((PriceUpload >> 8) % 256);
-                bytes[i++] = (byte)((PriceUpload >> 16) % 256);
-                bytes[i++] = (byte)((PriceUpload >> 24) % 256);
-                bytes[i++] = (byte)(PriceRentLight % 256);
-                bytes[i++] = (byte)((PriceRentLight >> 8) % 256);
-                bytes[i++] = (byte)((PriceRentLight >> 16) % 256);
-                bytes[i++] = (byte)((PriceRentLight >> 24) % 256);
-                bytes[i++] = (byte)(TeleportMinPrice % 256);
-                bytes[i++] = (byte)((TeleportMinPrice >> 8) % 256);
-                bytes[i++] = (byte)((TeleportMinPrice >> 16) % 256);
-                bytes[i++] = (byte)((TeleportMinPrice >> 24) % 256);
-                ba = BitConverter.GetBytes(TeleportPriceExponent);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(EnergyEfficiency);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(PriceObjectRent);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(PriceObjectScaleFactor);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(PriceParcelRent % 256);
-                bytes[i++] = (byte)((PriceParcelRent >> 8) % 256);
-                bytes[i++] = (byte)((PriceParcelRent >> 16) % 256);
-                bytes[i++] = (byte)((PriceParcelRent >> 24) % 256);
-                bytes[i++] = (byte)(PriceGroupCreate % 256);
-                bytes[i++] = (byte)((PriceGroupCreate >> 8) % 256);
-                bytes[i++] = (byte)((PriceGroupCreate >> 16) % 256);
-                bytes[i++] = (byte)((PriceGroupCreate >> 24) % 256);
+                Utils.IntToBytes(ObjectCapacity, bytes, i); i += 4;
+                Utils.IntToBytes(ObjectCount, bytes, i); i += 4;
+                Utils.IntToBytes(PriceEnergyUnit, bytes, i); i += 4;
+                Utils.IntToBytes(PriceObjectClaim, bytes, i); i += 4;
+                Utils.IntToBytes(PricePublicObjectDecay, bytes, i); i += 4;
+                Utils.IntToBytes(PricePublicObjectDelete, bytes, i); i += 4;
+                Utils.IntToBytes(PriceParcelClaim, bytes, i); i += 4;
+                Utils.FloatToBytes(PriceParcelClaimFactor, bytes, i); i += 4;
+                Utils.IntToBytes(PriceUpload, bytes, i); i += 4;
+                Utils.IntToBytes(PriceRentLight, bytes, i); i += 4;
+                Utils.IntToBytes(TeleportMinPrice, bytes, i); i += 4;
+                Utils.FloatToBytes(TeleportPriceExponent, bytes, i); i += 4;
+                Utils.FloatToBytes(EnergyEfficiency, bytes, i); i += 4;
+                Utils.FloatToBytes(PriceObjectRent, bytes, i); i += 4;
+                Utils.FloatToBytes(PriceObjectScaleFactor, bytes, i); i += 4;
+                Utils.IntToBytes(PriceParcelRent, bytes, i); i += 4;
+                Utils.IntToBytes(PriceGroupCreate, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -3471,10 +3404,7 @@ namespace OpenMetaverse.Packets
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
                 bytes[i++] = (byte)Category;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
@@ -3753,18 +3683,14 @@ namespace OpenMetaverse.Packets
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     BillableArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Flags = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    GlobalX = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    GlobalY = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    GlobalZ = BitConverter.ToSingle(bytes, i); i += 4;
+                    GlobalX = Utils.BytesToFloat(bytes, i); i += 4;
+                    GlobalY = Utils.BytesToFloat(bytes, i); i += 4;
+                    GlobalZ = Utils.BytesToFloat(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
                     Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     SnapshotID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Dwell = BitConverter.ToSingle(bytes, i); i += 4;
+                    Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                     Price = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -3775,7 +3701,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
@@ -3783,35 +3708,18 @@ namespace OpenMetaverse.Packets
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Desc.Length;
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                bytes[i++] = (byte)(ActualArea % 256);
-                bytes[i++] = (byte)((ActualArea >> 8) % 256);
-                bytes[i++] = (byte)((ActualArea >> 16) % 256);
-                bytes[i++] = (byte)((ActualArea >> 24) % 256);
-                bytes[i++] = (byte)(BillableArea % 256);
-                bytes[i++] = (byte)((BillableArea >> 8) % 256);
-                bytes[i++] = (byte)((BillableArea >> 16) % 256);
-                bytes[i++] = (byte)((BillableArea >> 24) % 256);
+                Utils.IntToBytes(ActualArea, bytes, i); i += 4;
+                Utils.IntToBytes(BillableArea, bytes, i); i += 4;
                 bytes[i++] = Flags;
-                ba = BitConverter.GetBytes(GlobalX);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(GlobalY);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(GlobalZ);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(GlobalX, bytes, i); i += 4;
+                Utils.FloatToBytes(GlobalY, bytes, i); i += 4;
+                Utils.FloatToBytes(GlobalZ, bytes, i); i += 4;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(Dwell);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(Price % 256);
-                bytes[i++] = (byte)((Price >> 8) % 256);
-                bytes[i++] = (byte)((Price >> 16) % 256);
-                bytes[i++] = (byte)((Price >> 24) % 256);
+                Utils.FloatToBytes(Dwell, bytes, i); i += 4;
+                Utils.IntToBytes(Price, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -4048,14 +3956,8 @@ namespace OpenMetaverse.Packets
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
-                bytes[i++] = (byte)(QueryStart % 256);
-                bytes[i++] = (byte)((QueryStart >> 8) % 256);
-                bytes[i++] = (byte)((QueryStart >> 16) % 256);
-                bytes[i++] = (byte)((QueryStart >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
+                Utils.IntToBytes(QueryStart, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -4274,18 +4176,12 @@ namespace OpenMetaverse.Packets
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
                 bytes[i++] = (byte)Category;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                bytes[i++] = (byte)(QueryStart % 256);
-                bytes[i++] = (byte)((QueryStart >> 8) % 256);
-                bytes[i++] = (byte)((QueryStart >> 16) % 256);
-                bytes[i++] = (byte)((QueryStart >> 24) % 256);
+                Utils.IntToBytes(QueryStart, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -4519,8 +4415,7 @@ namespace OpenMetaverse.Packets
                     Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ForSale = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     Auction = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Dwell = BitConverter.ToSingle(bytes, i); i += 4;
+                    Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -4530,16 +4425,13 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)((ForSale) ? 1 : 0);
                 bytes[i++] = (byte)((Auction) ? 1 : 0);
-                ba = BitConverter.GetBytes(Dwell);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Dwell, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -4862,10 +4754,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)Group.Length;
                 Buffer.BlockCopy(Group, 0, bytes, i, Group.Length); i += Group.Length;
                 bytes[i++] = (byte)((Online) ? 1 : 0);
-                bytes[i++] = (byte)(Reputation % 256);
-                bytes[i++] = (byte)((Reputation >> 8) % 256);
-                bytes[i++] = (byte)((Reputation >> 16) % 256);
-                bytes[i++] = (byte)((Reputation >> 24) % 256);
+                Utils.IntToBytes(Reputation, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -5153,21 +5042,12 @@ namespace OpenMetaverse.Packets
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
                 if(Date == null) { Console.WriteLine("Warning: Date is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Date.Length;
                 Buffer.BlockCopy(Date, 0, bytes, i, Date.Length); i += Date.Length;
-                bytes[i++] = (byte)(UnixTime % 256);
-                bytes[i++] = (byte)((UnixTime >> 8) % 256);
-                bytes[i++] = (byte)((UnixTime >> 16) % 256);
-                bytes[i++] = (byte)((UnixTime >> 24) % 256);
-                bytes[i++] = (byte)(EventFlags % 256);
-                bytes[i++] = (byte)((EventFlags >> 8) % 256);
-                bytes[i++] = (byte)((EventFlags >> 16) % 256);
-                bytes[i++] = (byte)((EventFlags >> 24) % 256);
+                Utils.UIntToBytes(UnixTime, bytes, i); i += 4;
+                Utils.UIntToBytes(EventFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -5423,8 +5303,7 @@ namespace OpenMetaverse.Packets
                     _groupname = new byte[length];
                     Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
                     Members = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    SearchOrder = BitConverter.ToSingle(bytes, i); i += 4;
+                    SearchOrder = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -5434,18 +5313,12 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
-                bytes[i++] = (byte)(Members % 256);
-                bytes[i++] = (byte)((Members >> 8) % 256);
-                bytes[i++] = (byte)((Members >> 16) % 256);
-                bytes[i++] = (byte)((Members >> 24) % 256);
-                ba = BitConverter.GetBytes(SearchOrder);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(Members, bytes, i); i += 4;
+                Utils.FloatToBytes(SearchOrder, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -5673,18 +5546,9 @@ namespace OpenMetaverse.Packets
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
-                bytes[i++] = (byte)(Category % 256);
-                bytes[i++] = (byte)((Category >> 8) % 256);
-                bytes[i++] = (byte)((Category >> 16) % 256);
-                bytes[i++] = (byte)((Category >> 24) % 256);
-                bytes[i++] = (byte)(QueryStart % 256);
-                bytes[i++] = (byte)((QueryStart >> 8) % 256);
-                bytes[i++] = (byte)((QueryStart >> 16) % 256);
-                bytes[i++] = (byte)((QueryStart >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(Category, bytes, i); i += 4;
+                Utils.IntToBytes(QueryStart, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -5933,18 +5797,9 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = ClassifiedFlags;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(ExpirationDate % 256);
-                bytes[i++] = (byte)((ExpirationDate >> 8) % 256);
-                bytes[i++] = (byte)((ExpirationDate >> 16) % 256);
-                bytes[i++] = (byte)((ExpirationDate >> 24) % 256);
-                bytes[i++] = (byte)(PriceForListing % 256);
-                bytes[i++] = (byte)((PriceForListing >> 8) % 256);
-                bytes[i++] = (byte)((PriceForListing >> 16) % 256);
-                bytes[i++] = (byte)((PriceForListing >> 24) % 256);
+                Utils.UIntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(ExpirationDate, bytes, i); i += 4;
+                Utils.IntToBytes(PriceForListing, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -6611,18 +6466,9 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(ExpirationDate % 256);
-                bytes[i++] = (byte)((ExpirationDate >> 8) % 256);
-                bytes[i++] = (byte)((ExpirationDate >> 16) % 256);
-                bytes[i++] = (byte)((ExpirationDate >> 24) % 256);
-                bytes[i++] = (byte)(Category % 256);
-                bytes[i++] = (byte)((Category >> 8) % 256);
-                bytes[i++] = (byte)((Category >> 16) % 256);
-                bytes[i++] = (byte)((Category >> 24) % 256);
+                Utils.UIntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(ExpirationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(Category, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -6631,10 +6477,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ParentEstate % 256);
-                bytes[i++] = (byte)((ParentEstate >> 8) % 256);
-                bytes[i++] = (byte)((ParentEstate >> 16) % 256);
-                bytes[i++] = (byte)((ParentEstate >> 24) % 256);
+                Utils.UIntToBytes(ParentEstate, bytes, i); i += 4;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
@@ -6644,10 +6487,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)ParcelName.Length;
                 Buffer.BlockCopy(ParcelName, 0, bytes, i, ParcelName.Length); i += ParcelName.Length;
                 bytes[i++] = ClassifiedFlags;
-                bytes[i++] = (byte)(PriceForListing % 256);
-                bytes[i++] = (byte)((PriceForListing >> 8) % 256);
-                bytes[i++] = (byte)((PriceForListing >> 16) % 256);
-                bytes[i++] = (byte)((PriceForListing >> 24) % 256);
+                Utils.IntToBytes(PriceForListing, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -6884,10 +6724,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Category % 256);
-                bytes[i++] = (byte)((Category >> 8) % 256);
-                bytes[i++] = (byte)((Category >> 16) % 256);
-                bytes[i++] = (byte)((Category >> 24) % 256);
+                Utils.UIntToBytes(Category, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -6896,17 +6733,11 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ParentEstate % 256);
-                bytes[i++] = (byte)((ParentEstate >> 8) % 256);
-                bytes[i++] = (byte)((ParentEstate >> 16) % 256);
-                bytes[i++] = (byte)((ParentEstate >> 24) % 256);
+                Utils.UIntToBytes(ParentEstate, bytes, i); i += 4;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 bytes[i++] = ClassifiedFlags;
-                bytes[i++] = (byte)(PriceForListing % 256);
-                bytes[i++] = (byte)((PriceForListing >> 8) % 256);
-                bytes[i++] = (byte)((PriceForListing >> 16) % 256);
-                bytes[i++] = (byte)((PriceForListing >> 24) % 256);
+                Utils.IntToBytes(PriceForListing, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -7448,26 +7279,11 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
-                bytes[i++] = (byte)(SearchType % 256);
-                bytes[i++] = (byte)((SearchType >> 8) % 256);
-                bytes[i++] = (byte)((SearchType >> 16) % 256);
-                bytes[i++] = (byte)((SearchType >> 24) % 256);
-                bytes[i++] = (byte)(Price % 256);
-                bytes[i++] = (byte)((Price >> 8) % 256);
-                bytes[i++] = (byte)((Price >> 16) % 256);
-                bytes[i++] = (byte)((Price >> 24) % 256);
-                bytes[i++] = (byte)(Area % 256);
-                bytes[i++] = (byte)((Area >> 8) % 256);
-                bytes[i++] = (byte)((Area >> 16) % 256);
-                bytes[i++] = (byte)((Area >> 24) % 256);
-                bytes[i++] = (byte)(QueryStart % 256);
-                bytes[i++] = (byte)((QueryStart >> 8) % 256);
-                bytes[i++] = (byte)((QueryStart >> 16) % 256);
-                bytes[i++] = (byte)((QueryStart >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(SearchType, bytes, i); i += 4;
+                Utils.IntToBytes(Price, bytes, i); i += 4;
+                Utils.IntToBytes(Area, bytes, i); i += 4;
+                Utils.IntToBytes(QueryStart, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -7717,14 +7533,8 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)((Auction) ? 1 : 0);
                 bytes[i++] = (byte)((ForSale) ? 1 : 0);
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                bytes[i++] = (byte)(ActualArea % 256);
-                bytes[i++] = (byte)((ActualArea >> 8) % 256);
-                bytes[i++] = (byte)((ActualArea >> 16) % 256);
-                bytes[i++] = (byte)((ActualArea >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
+                Utils.IntToBytes(ActualArea, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -7930,10 +7740,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -8157,8 +7964,7 @@ namespace OpenMetaverse.Packets
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
                     Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Dwell = BitConverter.ToSingle(bytes, i); i += 4;
+                    Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -8168,14 +7974,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                ba = BitConverter.GetBytes(Dwell);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Dwell, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -8593,18 +8396,14 @@ namespace OpenMetaverse.Packets
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     BillableArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Flags = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    GlobalX = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    GlobalY = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    GlobalZ = BitConverter.ToSingle(bytes, i); i += 4;
+                    GlobalX = Utils.BytesToFloat(bytes, i); i += 4;
+                    GlobalY = Utils.BytesToFloat(bytes, i); i += 4;
+                    GlobalZ = Utils.BytesToFloat(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
                     Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     SnapshotID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Dwell = BitConverter.ToSingle(bytes, i); i += 4;
+                    Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     AuctionID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -8616,7 +8415,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
@@ -8625,39 +8423,19 @@ namespace OpenMetaverse.Packets
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Desc.Length;
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                bytes[i++] = (byte)(ActualArea % 256);
-                bytes[i++] = (byte)((ActualArea >> 8) % 256);
-                bytes[i++] = (byte)((ActualArea >> 16) % 256);
-                bytes[i++] = (byte)((ActualArea >> 24) % 256);
-                bytes[i++] = (byte)(BillableArea % 256);
-                bytes[i++] = (byte)((BillableArea >> 8) % 256);
-                bytes[i++] = (byte)((BillableArea >> 16) % 256);
-                bytes[i++] = (byte)((BillableArea >> 24) % 256);
+                Utils.IntToBytes(ActualArea, bytes, i); i += 4;
+                Utils.IntToBytes(BillableArea, bytes, i); i += 4;
                 bytes[i++] = Flags;
-                ba = BitConverter.GetBytes(GlobalX);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(GlobalY);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(GlobalZ);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(GlobalX, bytes, i); i += 4;
+                Utils.FloatToBytes(GlobalY, bytes, i); i += 4;
+                Utils.FloatToBytes(GlobalZ, bytes, i); i += 4;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(Dwell);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                bytes[i++] = (byte)(AuctionID % 256);
-                bytes[i++] = (byte)((AuctionID >> 8) % 256);
-                bytes[i++] = (byte)((AuctionID >> 16) % 256);
-                bytes[i++] = (byte)((AuctionID >> 24) % 256);
+                Utils.FloatToBytes(Dwell, bytes, i); i += 4;
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
+                Utils.IntToBytes(AuctionID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -8847,10 +8625,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -8981,10 +8756,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                bytes[i++] = (byte)(Count % 256);
-                bytes[i++] = (byte)((Count >> 8) % 256);
-                bytes[i++] = (byte)((Count >> 16) % 256);
-                bytes[i++] = (byte)((Count >> 24) % 256);
+                Utils.IntToBytes(Count, bytes, i); i += 4;
                 bytes[i++] = (byte)((OnlineStatus) ? 1 : 0);
             }
 
@@ -9384,10 +9156,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(NoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Timestamp % 256);
-                bytes[i++] = (byte)((Timestamp >> 8) % 256);
-                bytes[i++] = (byte)((Timestamp >> 16) % 256);
-                bytes[i++] = (byte)((Timestamp >> 24) % 256);
+                Utils.UIntToBytes(Timestamp, bytes, i); i += 4;
                 if(FromName == null) { Console.WriteLine("Warning: FromName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(FromName.Length % 256);
                 bytes[i++] = (byte)((FromName.Length >> 8) % 256);
@@ -9950,14 +9719,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
             }
@@ -10093,16 +9855,10 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(LocationID % 256);
-                bytes[i++] = (byte)((LocationID >> 8) % 256);
-                bytes[i++] = (byte)((LocationID >> 16) % 256);
-                bytes[i++] = (byte)((LocationID >> 24) % 256);
+                Utils.UIntToBytes(LocationID, bytes, i); i += 4;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(TeleportFlags % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
+                Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -10411,10 +10167,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(TeleportFlags % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
+                Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
@@ -10571,33 +10324,17 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(LocationID % 256);
-                bytes[i++] = (byte)((LocationID >> 8) % 256);
-                bytes[i++] = (byte)((LocationID >> 16) % 256);
-                bytes[i++] = (byte)((LocationID >> 24) % 256);
-                bytes[i++] = (byte)(SimIP % 256);
-                bytes[i++] = (byte)((SimIP >> 8) % 256);
-                bytes[i++] = (byte)((SimIP >> 16) % 256);
-                bytes[i++] = (byte)((SimIP >> 24) % 256);
+                Utils.UIntToBytes(LocationID, bytes, i); i += 4;
+                Utils.UIntToBytes(SimIP, bytes, i); i += 4;
                 bytes[i++] = (byte)((SimPort >> 8) % 256);
                 bytes[i++] = (byte)(SimPort % 256);
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 if(SeedCapability == null) { Console.WriteLine("Warning: SeedCapability is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(SeedCapability.Length % 256);
                 bytes[i++] = (byte)((SeedCapability.Length >> 8) % 256);
                 Buffer.BlockCopy(SeedCapability, 0, bytes, i, SeedCapability.Length); i += SeedCapability.Length;
                 bytes[i++] = SimAccess;
-                bytes[i++] = (byte)(TeleportFlags % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
+                Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -10993,10 +10730,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(LureID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(TeleportFlags % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
+                Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -11237,10 +10971,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(TeleportFlags % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
-                bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
+                Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12010,10 +11741,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SerialNum % 256);
-                bytes[i++] = (byte)((SerialNum >> 8) % 256);
-                bytes[i++] = (byte)((SerialNum >> 16) % 256);
-                bytes[i++] = (byte)((SerialNum >> 24) % 256);
+                Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12138,10 +11866,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SerialNum % 256);
-                bytes[i++] = (byte)((SerialNum >> 8) % 256);
-                bytes[i++] = (byte)((SerialNum >> 16) % 256);
-                bytes[i++] = (byte)((SerialNum >> 24) % 256);
+                Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12333,10 +12058,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = Type;
-                bytes[i++] = (byte)(Channel % 256);
-                bytes[i++] = (byte)((Channel >> 8) % 256);
-                bytes[i++] = (byte)((Channel >> 16) % 256);
-                bytes[i++] = (byte)((Channel >> 24) % 256);
+                Utils.IntToBytes(Channel, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12469,10 +12191,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CircuitCode % 256);
-                bytes[i++] = (byte)((CircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 24) % 256);
+                Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12536,10 +12255,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(GenCounter % 256);
-                bytes[i++] = (byte)((GenCounter >> 8) % 256);
-                bytes[i++] = (byte)((GenCounter >> 16) % 256);
-                bytes[i++] = (byte)((GenCounter >> 24) % 256);
+                Utils.UIntToBytes(GenCounter, bytes, i); i += 4;
                 if(Throttles == null) { Console.WriteLine("Warning: Throttles is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Throttles.Length;
                 Buffer.BlockCopy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
@@ -12673,10 +12389,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CircuitCode % 256);
-                bytes[i++] = (byte)((CircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 24) % 256);
+                Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12715,8 +12428,7 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     GenCounter = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    VerticalAngle = BitConverter.ToSingle(bytes, i); i += 4;
+                    VerticalAngle = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -12726,14 +12438,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(GenCounter % 256);
-                bytes[i++] = (byte)((GenCounter >> 8) % 256);
-                bytes[i++] = (byte)((GenCounter >> 16) % 256);
-                bytes[i++] = (byte)((GenCounter >> 24) % 256);
-                ba = BitConverter.GetBytes(VerticalAngle);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.UIntToBytes(GenCounter, bytes, i); i += 4;
+                Utils.FloatToBytes(VerticalAngle, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12863,10 +12569,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CircuitCode % 256);
-                bytes[i++] = (byte)((CircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 24) % 256);
+                Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -12917,10 +12620,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(GenCounter % 256);
-                bytes[i++] = (byte)((GenCounter >> 8) % 256);
-                bytes[i++] = (byte)((GenCounter >> 16) % 256);
-                bytes[i++] = (byte)((GenCounter >> 24) % 256);
+                Utils.UIntToBytes(GenCounter, bytes, i); i += 4;
                 bytes[i++] = (byte)(Height % 256);
                 bytes[i++] = (byte)((Height >> 8) % 256);
                 bytes[i++] = (byte)(Width % 256);
@@ -13057,10 +12757,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SerialNum % 256);
-                bytes[i++] = (byte)((SerialNum >> 8) % 256);
-                bytes[i++] = (byte)((SerialNum >> 16) % 256);
-                bytes[i++] = (byte)((SerialNum >> 24) % 256);
+                Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
                 Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -13442,10 +13139,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ViewerCircuitCode % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 24) % 256);
+                Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -13980,10 +13674,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -14181,10 +13872,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(DuplicateFlags % 256);
-                bytes[i++] = (byte)((DuplicateFlags >> 8) % 256);
-                bytes[i++] = (byte)((DuplicateFlags >> 16) % 256);
-                bytes[i++] = (byte)((DuplicateFlags >> 24) % 256);
+                Utils.UIntToBytes(DuplicateFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -14230,10 +13918,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -14411,10 +14096,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((CopyCenters) ? 1 : 0);
                 bytes[i++] = (byte)((CopyRotates) ? 1 : 0);
                 Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(DuplicateFlags % 256);
-                bytes[i++] = (byte)((DuplicateFlags >> 8) % 256);
-                bytes[i++] = (byte)((DuplicateFlags >> 16) % 256);
-                bytes[i++] = (byte)((DuplicateFlags >> 24) % 256);
+                Utils.UIntToBytes(DuplicateFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -14469,10 +14151,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -14665,10 +14344,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -14863,10 +14539,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -15024,10 +14697,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = (byte)((UsePhysics) ? 1 : 0);
                 bytes[i++] = (byte)((IsTemporary) ? 1 : 0);
                 bytes[i++] = (byte)((IsPhantom) ? 1 : 0);
@@ -15206,10 +14876,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = ClickAction;
             }
 
@@ -15434,10 +15101,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
                 Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
@@ -15640,10 +15304,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = Material;
             }
 
@@ -15872,10 +15533,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = PathCurve;
                 bytes[i++] = ProfileCurve;
                 bytes[i++] = (byte)(PathBegin % 256);
@@ -16130,17 +15788,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = (byte)(ParamType % 256);
                 bytes[i++] = (byte)((ParamType >> 8) % 256);
                 bytes[i++] = (byte)((ParamInUse) ? 1 : 0);
-                bytes[i++] = (byte)(ParamSize % 256);
-                bytes[i++] = (byte)((ParamSize >> 8) % 256);
-                bytes[i++] = (byte)((ParamSize >> 16) % 256);
-                bytes[i++] = (byte)((ParamSize >> 24) % 256);
+                Utils.UIntToBytes(ParamSize, bytes, i); i += 4;
                 if(ParamData == null) { Console.WriteLine("Warning: ParamData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ParamData.Length;
                 Buffer.BlockCopy(ParamData, 0, bytes, i, ParamData.Length); i += ParamData.Length;
@@ -16391,10 +16043,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -16595,10 +16244,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -16801,15 +16447,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -17356,16 +16996,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = Field;
                 bytes[i++] = Set;
-                bytes[i++] = (byte)(Mask % 256);
-                bytes[i++] = (byte)((Mask >> 8) % 256);
-                bytes[i++] = (byte)((Mask >> 16) % 256);
-                bytes[i++] = (byte)((Mask >> 24) % 256);
+                Utils.UIntToBytes(Mask, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -17569,15 +17203,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -17787,10 +17415,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -18002,10 +17627,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
@@ -18202,14 +17824,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                bytes[i++] = (byte)(Category % 256);
-                bytes[i++] = (byte)((Category >> 8) % 256);
-                bytes[i++] = (byte)((Category >> 16) % 256);
-                bytes[i++] = (byte)((Category >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
+                Utils.UIntToBytes(Category, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -18401,10 +18017,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -18595,10 +18208,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -18795,10 +18405,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -18991,10 +18598,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -19184,10 +18788,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -19377,10 +18978,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -19570,10 +19168,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -19765,10 +19360,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(GrabOffset.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -19827,10 +19419,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(FaceIndex % 256);
-                bytes[i++] = (byte)((FaceIndex >> 8) % 256);
-                bytes[i++] = (byte)((FaceIndex >> 16) % 256);
-                bytes[i++] = (byte)((FaceIndex >> 24) % 256);
+                Utils.IntToBytes(FaceIndex, bytes, i); i += 4;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -20044,10 +19633,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GrabOffsetInitial.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(GrabPosition.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(TimeSinceLast % 256);
-                bytes[i++] = (byte)((TimeSinceLast >> 8) % 256);
-                bytes[i++] = (byte)((TimeSinceLast >> 16) % 256);
-                bytes[i++] = (byte)((TimeSinceLast >> 24) % 256);
+                Utils.UIntToBytes(TimeSinceLast, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -20107,10 +19693,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(FaceIndex % 256);
-                bytes[i++] = (byte)((FaceIndex >> 8) % 256);
-                bytes[i++] = (byte)((FaceIndex >> 16) % 256);
-                bytes[i++] = (byte)((FaceIndex >> 24) % 256);
+                Utils.IntToBytes(FaceIndex, bytes, i); i += 4;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -20315,10 +19898,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -20375,10 +19955,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(FaceIndex % 256);
-                bytes[i++] = (byte)((FaceIndex >> 8) % 256);
-                bytes[i++] = (byte)((FaceIndex >> 16) % 256);
-                bytes[i++] = (byte)((FaceIndex >> 24) % 256);
+                Utils.IntToBytes(FaceIndex, bytes, i); i += 4;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -21296,10 +20873,8 @@ namespace OpenMetaverse.Packets
                 {
                     Action = (byte)bytes[i++];
                     BrushSize = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Seconds = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Height = BitConverter.ToSingle(bytes, i); i += 4;
+                    Seconds = Utils.BytesToFloat(bytes, i); i += 4;
+                    Height = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -21309,15 +20884,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 bytes[i++] = Action;
                 bytes[i++] = BrushSize;
-                ba = BitConverter.GetBytes(Seconds);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(Height);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Seconds, bytes, i); i += 4;
+                Utils.FloatToBytes(Height, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -21360,14 +20930,10 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     LocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    West = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    South = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    East = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    North = BitConverter.ToSingle(bytes, i); i += 4;
+                    West = Utils.BytesToFloat(bytes, i); i += 4;
+                    South = Utils.BytesToFloat(bytes, i); i += 4;
+                    East = Utils.BytesToFloat(bytes, i); i += 4;
+                    North = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -21377,23 +20943,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                ba = BitConverter.GetBytes(West);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(South);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(East);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(North);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
+                Utils.FloatToBytes(West, bytes, i); i += 4;
+                Utils.FloatToBytes(South, bytes, i); i += 4;
+                Utils.FloatToBytes(East, bytes, i); i += 4;
+                Utils.FloatToBytes(North, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -21978,14 +21532,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(PID % 256);
-                bytes[i++] = (byte)((PID >> 8) % 256);
-                bytes[i++] = (byte)((PID >> 16) % 256);
-                bytes[i++] = (byte)((PID >> 24) % 256);
-                bytes[i++] = (byte)(Status % 256);
-                bytes[i++] = (byte)((Status >> 8) % 256);
-                bytes[i++] = (byte)((Status >> 16) % 256);
-                bytes[i++] = (byte)((Status >> 24) % 256);
+                Utils.IntToBytes(PID, bytes, i); i += 4;
+                Utils.IntToBytes(Status, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -22155,10 +21703,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -22497,17 +22042,12 @@ namespace OpenMetaverse.Packets
                     SessionID.FromBytes(bytes, i); i += 16;
                     IP = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     StartTime = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    RunTime = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    SimFPS = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    FPS = BitConverter.ToSingle(bytes, i); i += 4;
+                    RunTime = Utils.BytesToFloat(bytes, i); i += 4;
+                    SimFPS = Utils.BytesToFloat(bytes, i); i += 4;
+                    FPS = Utils.BytesToFloat(bytes, i); i += 4;
                     AgentsInView = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Ping = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 8);
-                    MetersTraveled = BitConverter.ToDouble(bytes, i); i += 8;
+                    Ping = Utils.BytesToFloat(bytes, i); i += 4;
+                    MetersTraveled = Utils.BytesToDouble(bytes, i); i += 8;
                     RegionsVisited = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SysRAM = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
@@ -22528,41 +22068,18 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IP % 256);
-                bytes[i++] = (byte)((IP >> 8) % 256);
-                bytes[i++] = (byte)((IP >> 16) % 256);
-                bytes[i++] = (byte)((IP >> 24) % 256);
-                bytes[i++] = (byte)(StartTime % 256);
-                bytes[i++] = (byte)((StartTime >> 8) % 256);
-                bytes[i++] = (byte)((StartTime >> 16) % 256);
-                bytes[i++] = (byte)((StartTime >> 24) % 256);
-                ba = BitConverter.GetBytes(RunTime);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(SimFPS);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(FPS);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.UIntToBytes(IP, bytes, i); i += 4;
+                Utils.UIntToBytes(StartTime, bytes, i); i += 4;
+                Utils.FloatToBytes(RunTime, bytes, i); i += 4;
+                Utils.FloatToBytes(SimFPS, bytes, i); i += 4;
+                Utils.FloatToBytes(FPS, bytes, i); i += 4;
                 bytes[i++] = AgentsInView;
-                ba = BitConverter.GetBytes(Ping);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(MetersTraveled);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
-                bytes[i++] = (byte)(RegionsVisited % 256);
-                bytes[i++] = (byte)((RegionsVisited >> 8) % 256);
-                bytes[i++] = (byte)((RegionsVisited >> 16) % 256);
-                bytes[i++] = (byte)((RegionsVisited >> 24) % 256);
-                bytes[i++] = (byte)(SysRAM % 256);
-                bytes[i++] = (byte)((SysRAM >> 8) % 256);
-                bytes[i++] = (byte)((SysRAM >> 16) % 256);
-                bytes[i++] = (byte)((SysRAM >> 24) % 256);
+                Utils.FloatToBytes(Ping, bytes, i); i += 4;
+                Utils.DoubleToBytes(MetersTraveled, bytes, i); i += 8;
+                Utils.IntToBytes(RegionsVisited, bytes, i); i += 4;
+                Utils.UIntToBytes(SysRAM, bytes, i); i += 4;
                 if(SysOS == null) { Console.WriteLine("Warning: SysOS is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SysOS.Length;
                 Buffer.BlockCopy(SysOS, 0, bytes, i, SysOS.Length); i += SysOS.Length;
@@ -22636,18 +22153,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(World % 256);
-                bytes[i++] = (byte)((World >> 8) % 256);
-                bytes[i++] = (byte)((World >> 16) % 256);
-                bytes[i++] = (byte)((World >> 24) % 256);
-                bytes[i++] = (byte)(Objects % 256);
-                bytes[i++] = (byte)((Objects >> 8) % 256);
-                bytes[i++] = (byte)((Objects >> 16) % 256);
-                bytes[i++] = (byte)((Objects >> 24) % 256);
-                bytes[i++] = (byte)(Textures % 256);
-                bytes[i++] = (byte)((Textures >> 8) % 256);
-                bytes[i++] = (byte)((Textures >> 16) % 256);
-                bytes[i++] = (byte)((Textures >> 24) % 256);
+                Utils.UIntToBytes(World, bytes, i); i += 4;
+                Utils.UIntToBytes(Objects, bytes, i); i += 4;
+                Utils.UIntToBytes(Textures, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -22700,22 +22208,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Bytes % 256);
-                bytes[i++] = (byte)((Bytes >> 8) % 256);
-                bytes[i++] = (byte)((Bytes >> 16) % 256);
-                bytes[i++] = (byte)((Bytes >> 24) % 256);
-                bytes[i++] = (byte)(Packets % 256);
-                bytes[i++] = (byte)((Packets >> 8) % 256);
-                bytes[i++] = (byte)((Packets >> 16) % 256);
-                bytes[i++] = (byte)((Packets >> 24) % 256);
-                bytes[i++] = (byte)(Compressed % 256);
-                bytes[i++] = (byte)((Compressed >> 8) % 256);
-                bytes[i++] = (byte)((Compressed >> 16) % 256);
-                bytes[i++] = (byte)((Compressed >> 24) % 256);
-                bytes[i++] = (byte)(Savings % 256);
-                bytes[i++] = (byte)((Savings >> 8) % 256);
-                bytes[i++] = (byte)((Savings >> 16) % 256);
-                bytes[i++] = (byte)((Savings >> 24) % 256);
+                Utils.UIntToBytes(Bytes, bytes, i); i += 4;
+                Utils.UIntToBytes(Packets, bytes, i); i += 4;
+                Utils.UIntToBytes(Compressed, bytes, i); i += 4;
+                Utils.UIntToBytes(Savings, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -22773,30 +22269,12 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(SendPacket % 256);
-                bytes[i++] = (byte)((SendPacket >> 8) % 256);
-                bytes[i++] = (byte)((SendPacket >> 16) % 256);
-                bytes[i++] = (byte)((SendPacket >> 24) % 256);
-                bytes[i++] = (byte)(Dropped % 256);
-                bytes[i++] = (byte)((Dropped >> 8) % 256);
-                bytes[i++] = (byte)((Dropped >> 16) % 256);
-                bytes[i++] = (byte)((Dropped >> 24) % 256);
-                bytes[i++] = (byte)(Resent % 256);
-                bytes[i++] = (byte)((Resent >> 8) % 256);
-                bytes[i++] = (byte)((Resent >> 16) % 256);
-                bytes[i++] = (byte)((Resent >> 24) % 256);
-                bytes[i++] = (byte)(FailedResends % 256);
-                bytes[i++] = (byte)((FailedResends >> 8) % 256);
-                bytes[i++] = (byte)((FailedResends >> 16) % 256);
-                bytes[i++] = (byte)((FailedResends >> 24) % 256);
-                bytes[i++] = (byte)(OffCircuit % 256);
-                bytes[i++] = (byte)((OffCircuit >> 8) % 256);
-                bytes[i++] = (byte)((OffCircuit >> 16) % 256);
-                bytes[i++] = (byte)((OffCircuit >> 24) % 256);
-                bytes[i++] = (byte)(Invalid % 256);
-                bytes[i++] = (byte)((Invalid >> 8) % 256);
-                bytes[i++] = (byte)((Invalid >> 16) % 256);
-                bytes[i++] = (byte)((Invalid >> 24) % 256);
+                Utils.UIntToBytes(SendPacket, bytes, i); i += 4;
+                Utils.UIntToBytes(Dropped, bytes, i); i += 4;
+                Utils.UIntToBytes(Resent, bytes, i); i += 4;
+                Utils.UIntToBytes(FailedResends, bytes, i); i += 4;
+                Utils.UIntToBytes(OffCircuit, bytes, i); i += 4;
+                Utils.UIntToBytes(Invalid, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -22838,8 +22316,7 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     Type = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 8);
-                    Value = BitConverter.ToDouble(bytes, i); i += 8;
+                    Value = Utils.BytesToDouble(bytes, i); i += 8;
                 }
                 catch (Exception)
                 {
@@ -22849,14 +22326,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(Type % 256);
-                bytes[i++] = (byte)((Type >> 8) % 256);
-                bytes[i++] = (byte)((Type >> 16) % 256);
-                bytes[i++] = (byte)((Type >> 24) % 256);
-                ba = BitConverter.GetBytes(Value);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
+                Utils.UIntToBytes(Type, bytes, i); i += 4;
+                Utils.DoubleToBytes(Value, bytes, i); i += 8;
             }
 
             public override string ToString()
@@ -23086,10 +22557,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Questions % 256);
-                bytes[i++] = (byte)((Questions >> 8) % 256);
-                bytes[i++] = (byte)((Questions >> 16) % 256);
-                bytes[i++] = (byte)((Questions >> 24) % 256);
+                Utils.IntToBytes(Questions, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -23817,8 +23285,7 @@ namespace OpenMetaverse.Packets
                     Victim.FromBytes(bytes, i); i += 16;
                     Perp.FromBytes(bytes, i); i += 16;
                     Time = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Mag = BitConverter.ToSingle(bytes, i); i += 4;
+                    Mag = Utils.BytesToFloat(bytes, i); i += 4;
                     Type = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -23829,16 +23296,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(Victim.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(Perp.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Time % 256);
-                bytes[i++] = (byte)((Time >> 8) % 256);
-                bytes[i++] = (byte)((Time >> 16) % 256);
-                bytes[i++] = (byte)((Time >> 24) % 256);
-                ba = BitConverter.GetBytes(Mag);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.UIntToBytes(Time, bytes, i); i += 4;
+                Utils.FloatToBytes(Mag, bytes, i); i += 4;
                 bytes[i++] = Type;
             }
 
@@ -24086,8 +23547,7 @@ namespace OpenMetaverse.Packets
             {
                 try
                 {
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Health = BitConverter.ToSingle(bytes, i); i += 4;
+                    Health = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -24097,10 +23557,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                ba = BitConverter.GetBytes(Health);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Health, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -24403,22 +23860,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionX % 256);
-                bytes[i++] = (byte)((RegionX >> 8) % 256);
-                bytes[i++] = (byte)((RegionX >> 16) % 256);
-                bytes[i++] = (byte)((RegionX >> 24) % 256);
-                bytes[i++] = (byte)(RegionY % 256);
-                bytes[i++] = (byte)((RegionY >> 8) % 256);
-                bytes[i++] = (byte)((RegionY >> 16) % 256);
-                bytes[i++] = (byte)((RegionY >> 24) % 256);
-                bytes[i++] = (byte)(RegionFlags % 256);
-                bytes[i++] = (byte)((RegionFlags >> 8) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 16) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 24) % 256);
-                bytes[i++] = (byte)(ObjectCapacity % 256);
-                bytes[i++] = (byte)((ObjectCapacity >> 8) % 256);
-                bytes[i++] = (byte)((ObjectCapacity >> 16) % 256);
-                bytes[i++] = (byte)((ObjectCapacity >> 24) % 256);
+                Utils.UIntToBytes(RegionX, bytes, i); i += 4;
+                Utils.UIntToBytes(RegionY, bytes, i); i += 4;
+                Utils.UIntToBytes(RegionFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(ObjectCapacity, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -24458,8 +23903,7 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     StatID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    StatValue = BitConverter.ToSingle(bytes, i); i += 4;
+                    StatValue = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -24469,14 +23913,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(StatID % 256);
-                bytes[i++] = (byte)((StatID >> 8) % 256);
-                bytes[i++] = (byte)((StatID >> 16) % 256);
-                bytes[i++] = (byte)((StatID >> 24) % 256);
-                ba = BitConverter.GetBytes(StatValue);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.UIntToBytes(StatID, bytes, i); i += 4;
+                Utils.FloatToBytes(StatValue, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -24522,10 +23960,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(PID % 256);
-                bytes[i++] = (byte)((PID >> 8) % 256);
-                bytes[i++] = (byte)((PID >> 16) % 256);
-                bytes[i++] = (byte)((PID >> 24) % 256);
+                Utils.IntToBytes(PID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -24868,22 +24303,16 @@ namespace OpenMetaverse.Packets
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SimAccess = (byte)bytes[i++];
                     MaxAgents = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    BillableFactor = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    ObjectBonusFactor = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    WaterHeight = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainRaiseLimit = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainLowerLimit = BitConverter.ToSingle(bytes, i); i += 4;
+                    BillableFactor = Utils.BytesToFloat(bytes, i); i += 4;
+                    ObjectBonusFactor = Utils.BytesToFloat(bytes, i); i += 4;
+                    WaterHeight = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainRaiseLimit = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainLowerLimit = Utils.BytesToFloat(bytes, i); i += 4;
                     PricePerMeter = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RedirectGridX = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RedirectGridY = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     UseEstateSun = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    SunHour = BitConverter.ToSingle(bytes, i); i += 4;
+                    SunHour = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -24893,55 +24322,24 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                bytes[i++] = (byte)(EstateID % 256);
-                bytes[i++] = (byte)((EstateID >> 8) % 256);
-                bytes[i++] = (byte)((EstateID >> 16) % 256);
-                bytes[i++] = (byte)((EstateID >> 24) % 256);
-                bytes[i++] = (byte)(ParentEstateID % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 8) % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 16) % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 24) % 256);
-                bytes[i++] = (byte)(RegionFlags % 256);
-                bytes[i++] = (byte)((RegionFlags >> 8) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 16) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 24) % 256);
+                Utils.UIntToBytes(EstateID, bytes, i); i += 4;
+                Utils.UIntToBytes(ParentEstateID, bytes, i); i += 4;
+                Utils.UIntToBytes(RegionFlags, bytes, i); i += 4;
                 bytes[i++] = SimAccess;
                 bytes[i++] = MaxAgents;
-                ba = BitConverter.GetBytes(BillableFactor);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(ObjectBonusFactor);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(WaterHeight);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainRaiseLimit);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainLowerLimit);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(PricePerMeter % 256);
-                bytes[i++] = (byte)((PricePerMeter >> 8) % 256);
-                bytes[i++] = (byte)((PricePerMeter >> 16) % 256);
-                bytes[i++] = (byte)((PricePerMeter >> 24) % 256);
-                bytes[i++] = (byte)(RedirectGridX % 256);
-                bytes[i++] = (byte)((RedirectGridX >> 8) % 256);
-                bytes[i++] = (byte)((RedirectGridX >> 16) % 256);
-                bytes[i++] = (byte)((RedirectGridX >> 24) % 256);
-                bytes[i++] = (byte)(RedirectGridY % 256);
-                bytes[i++] = (byte)((RedirectGridY >> 8) % 256);
-                bytes[i++] = (byte)((RedirectGridY >> 16) % 256);
-                bytes[i++] = (byte)((RedirectGridY >> 24) % 256);
+                Utils.FloatToBytes(BillableFactor, bytes, i); i += 4;
+                Utils.FloatToBytes(ObjectBonusFactor, bytes, i); i += 4;
+                Utils.FloatToBytes(WaterHeight, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainRaiseLimit, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainLowerLimit, bytes, i); i += 4;
+                Utils.IntToBytes(PricePerMeter, bytes, i); i += 4;
+                Utils.IntToBytes(RedirectGridX, bytes, i); i += 4;
+                Utils.IntToBytes(RedirectGridY, bytes, i); i += 4;
                 bytes[i++] = (byte)((UseEstateSun) ? 1 : 0);
-                ba = BitConverter.GetBytes(SunHour);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(SunHour, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -25146,8 +24544,7 @@ namespace OpenMetaverse.Packets
                     EstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParentEstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    BillableFactor = BitConverter.ToSingle(bytes, i); i += 4;
+                    BillableFactor = Utils.BytesToFloat(bytes, i); i += 4;
                     PricePerMeter = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RedirectGridX = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RedirectGridY = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -25160,37 +24557,16 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                bytes[i++] = (byte)(EstateID % 256);
-                bytes[i++] = (byte)((EstateID >> 8) % 256);
-                bytes[i++] = (byte)((EstateID >> 16) % 256);
-                bytes[i++] = (byte)((EstateID >> 24) % 256);
-                bytes[i++] = (byte)(ParentEstateID % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 8) % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 16) % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 24) % 256);
-                bytes[i++] = (byte)(RegionFlags % 256);
-                bytes[i++] = (byte)((RegionFlags >> 8) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 16) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 24) % 256);
-                ba = BitConverter.GetBytes(BillableFactor);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(PricePerMeter % 256);
-                bytes[i++] = (byte)((PricePerMeter >> 8) % 256);
-                bytes[i++] = (byte)((PricePerMeter >> 16) % 256);
-                bytes[i++] = (byte)((PricePerMeter >> 24) % 256);
-                bytes[i++] = (byte)(RedirectGridX % 256);
-                bytes[i++] = (byte)((RedirectGridX >> 8) % 256);
-                bytes[i++] = (byte)((RedirectGridX >> 16) % 256);
-                bytes[i++] = (byte)((RedirectGridX >> 24) % 256);
-                bytes[i++] = (byte)(RedirectGridY % 256);
-                bytes[i++] = (byte)((RedirectGridY >> 8) % 256);
-                bytes[i++] = (byte)((RedirectGridY >> 16) % 256);
-                bytes[i++] = (byte)((RedirectGridY >> 24) % 256);
+                Utils.UIntToBytes(EstateID, bytes, i); i += 4;
+                Utils.UIntToBytes(ParentEstateID, bytes, i); i += 4;
+                Utils.UIntToBytes(RegionFlags, bytes, i); i += 4;
+                Utils.FloatToBytes(BillableFactor, bytes, i); i += 4;
+                Utils.IntToBytes(PricePerMeter, bytes, i); i += 4;
+                Utils.IntToBytes(RedirectGridX, bytes, i); i += 4;
+                Utils.IntToBytes(RedirectGridY, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -25322,14 +24698,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
             }
 
             public override string ToString()
@@ -25479,10 +24848,8 @@ namespace OpenMetaverse.Packets
                     Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     SimOwner.FromBytes(bytes, i); i += 16;
                     IsEstateManager = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    WaterHeight = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    BillableFactor = BitConverter.ToSingle(bytes, i); i += 4;
+                    WaterHeight = Utils.BytesToFloat(bytes, i); i += 4;
+                    BillableFactor = Utils.BytesToFloat(bytes, i); i += 4;
                     CacheID.FromBytes(bytes, i); i += 16;
                     TerrainBase0.FromBytes(bytes, i); i += 16;
                     TerrainBase1.FromBytes(bytes, i); i += 16;
@@ -25492,22 +24859,14 @@ namespace OpenMetaverse.Packets
                     TerrainDetail1.FromBytes(bytes, i); i += 16;
                     TerrainDetail2.FromBytes(bytes, i); i += 16;
                     TerrainDetail3.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainStartHeight00 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainStartHeight01 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainStartHeight10 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainStartHeight11 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainHeightRange00 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainHeightRange01 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainHeightRange10 = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    TerrainHeightRange11 = BitConverter.ToSingle(bytes, i); i += 4;
+                    TerrainStartHeight00 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainStartHeight01 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainStartHeight10 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainStartHeight11 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainHeightRange00 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainHeightRange01 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainHeightRange10 = Utils.BytesToFloat(bytes, i); i += 4;
+                    TerrainHeightRange11 = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -25517,23 +24876,15 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(RegionFlags % 256);
-                bytes[i++] = (byte)((RegionFlags >> 8) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 16) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 24) % 256);
+                Utils.UIntToBytes(RegionFlags, bytes, i); i += 4;
                 bytes[i++] = SimAccess;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 Buffer.BlockCopy(SimOwner.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsEstateManager) ? 1 : 0);
-                ba = BitConverter.GetBytes(WaterHeight);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(BillableFactor);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(WaterHeight, bytes, i); i += 4;
+                Utils.FloatToBytes(BillableFactor, bytes, i); i += 4;
                 Buffer.BlockCopy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TerrainBase0.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TerrainBase1.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -25543,30 +24894,14 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(TerrainDetail1.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TerrainDetail2.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TerrainDetail3.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(TerrainStartHeight00);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainStartHeight01);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainStartHeight10);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainStartHeight11);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainHeightRange00);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainHeightRange01);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainHeightRange10);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(TerrainHeightRange11);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(TerrainStartHeight00, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainStartHeight01, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainStartHeight10, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainStartHeight11, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainHeightRange00, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainHeightRange01, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainHeightRange10, bytes, i); i += 4;
+                Utils.FloatToBytes(TerrainHeightRange11, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -25808,10 +25143,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -25934,8 +25266,7 @@ namespace OpenMetaverse.Packets
                     SecPerDay = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SecPerYear = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SunDirection.FromBytes(bytes, i); i += 12;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    SunPhase = BitConverter.ToSingle(bytes, i); i += 4;
+                    SunPhase = Utils.BytesToFloat(bytes, i); i += 4;
                     SunAngVelocity.FromBytes(bytes, i); i += 12;
                 }
                 catch (Exception)
@@ -25946,27 +25277,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(UsecSinceStart % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 8) % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 16) % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 24) % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 32) % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 40) % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 48) % 256);
-                bytes[i++] = (byte)((UsecSinceStart >> 56) % 256);
-                bytes[i++] = (byte)(SecPerDay % 256);
-                bytes[i++] = (byte)((SecPerDay >> 8) % 256);
-                bytes[i++] = (byte)((SecPerDay >> 16) % 256);
-                bytes[i++] = (byte)((SecPerDay >> 24) % 256);
-                bytes[i++] = (byte)(SecPerYear % 256);
-                bytes[i++] = (byte)((SecPerYear >> 8) % 256);
-                bytes[i++] = (byte)((SecPerYear >> 16) % 256);
-                bytes[i++] = (byte)((SecPerYear >> 24) % 256);
+                Utils.UInt64ToBytes(UsecSinceStart, bytes, i); i += 8;
+                Utils.UIntToBytes(SecPerDay, bytes, i); i += 4;
+                Utils.UIntToBytes(SecPerYear, bytes, i); i += 4;
                 Buffer.BlockCopy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
-                ba = BitConverter.GetBytes(SunPhase);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(SunPhase, bytes, i); i += 4;
                 Buffer.BlockCopy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -26093,18 +25408,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Handle % 256);
-                bytes[i++] = (byte)((Handle >> 8) % 256);
-                bytes[i++] = (byte)((Handle >> 16) % 256);
-                bytes[i++] = (byte)((Handle >> 24) % 256);
-                bytes[i++] = (byte)((Handle >> 32) % 256);
-                bytes[i++] = (byte)((Handle >> 40) % 256);
-                bytes[i++] = (byte)((Handle >> 48) % 256);
-                bytes[i++] = (byte)((Handle >> 56) % 256);
-                bytes[i++] = (byte)(IP % 256);
-                bytes[i++] = (byte)((IP >> 8) % 256);
-                bytes[i++] = (byte)((IP >> 16) % 256);
-                bytes[i++] = (byte)((IP >> 24) % 256);
+                Utils.UInt64ToBytes(Handle, bytes, i); i += 8;
+                Utils.UIntToBytes(IP, bytes, i); i += 4;
                 bytes[i++] = (byte)((Port >> 8) % 256);
                 bytes[i++] = (byte)(Port % 256);
             }
@@ -26301,8 +25606,7 @@ namespace OpenMetaverse.Packets
                     TransferID.FromBytes(bytes, i); i += 16;
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SourceType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Priority = BitConverter.ToSingle(bytes, i); i += 4;
+                    Priority = Utils.BytesToFloat(bytes, i); i += 4;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _params = new byte[length];
                     Buffer.BlockCopy(bytes, i, _params, 0, length); i += length;
@@ -26315,19 +25619,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ChannelType % 256);
-                bytes[i++] = (byte)((ChannelType >> 8) % 256);
-                bytes[i++] = (byte)((ChannelType >> 16) % 256);
-                bytes[i++] = (byte)((ChannelType >> 24) % 256);
-                bytes[i++] = (byte)(SourceType % 256);
-                bytes[i++] = (byte)((SourceType >> 8) % 256);
-                bytes[i++] = (byte)((SourceType >> 16) % 256);
-                bytes[i++] = (byte)((SourceType >> 24) % 256);
-                ba = BitConverter.GetBytes(Priority);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(ChannelType, bytes, i); i += 4;
+                Utils.IntToBytes(SourceType, bytes, i); i += 4;
+                Utils.FloatToBytes(Priority, bytes, i); i += 4;
                 if(Params == null) { Console.WriteLine("Warning: Params is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Params.Length % 256);
                 bytes[i++] = (byte)((Params.Length >> 8) % 256);
@@ -26479,22 +25774,10 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ChannelType % 256);
-                bytes[i++] = (byte)((ChannelType >> 8) % 256);
-                bytes[i++] = (byte)((ChannelType >> 16) % 256);
-                bytes[i++] = (byte)((ChannelType >> 24) % 256);
-                bytes[i++] = (byte)(TargetType % 256);
-                bytes[i++] = (byte)((TargetType >> 8) % 256);
-                bytes[i++] = (byte)((TargetType >> 16) % 256);
-                bytes[i++] = (byte)((TargetType >> 24) % 256);
-                bytes[i++] = (byte)(Status % 256);
-                bytes[i++] = (byte)((Status >> 8) % 256);
-                bytes[i++] = (byte)((Status >> 16) % 256);
-                bytes[i++] = (byte)((Status >> 24) % 256);
-                bytes[i++] = (byte)(Size % 256);
-                bytes[i++] = (byte)((Size >> 8) % 256);
-                bytes[i++] = (byte)((Size >> 16) % 256);
-                bytes[i++] = (byte)((Size >> 24) % 256);
+                Utils.IntToBytes(ChannelType, bytes, i); i += 4;
+                Utils.IntToBytes(TargetType, bytes, i); i += 4;
+                Utils.IntToBytes(Status, bytes, i); i += 4;
+                Utils.IntToBytes(Size, bytes, i); i += 4;
                 if(Params == null) { Console.WriteLine("Warning: Params is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Params.Length % 256);
                 bytes[i++] = (byte)((Params.Length >> 8) % 256);
@@ -26624,10 +25907,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ChannelType % 256);
-                bytes[i++] = (byte)((ChannelType >> 8) % 256);
-                bytes[i++] = (byte)((ChannelType >> 16) % 256);
-                bytes[i++] = (byte)((ChannelType >> 24) % 256);
+                Utils.IntToBytes(ChannelType, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -26773,14 +26053,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
-                bytes[i++] = (byte)((ID >> 32) % 256);
-                bytes[i++] = (byte)((ID >> 40) % 256);
-                bytes[i++] = (byte)((ID >> 48) % 256);
-                bytes[i++] = (byte)((ID >> 56) % 256);
+                Utils.UInt64ToBytes(ID, bytes, i); i += 8;
                 if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filename.Length;
                 Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
@@ -26916,18 +26189,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
-                bytes[i++] = (byte)((ID >> 32) % 256);
-                bytes[i++] = (byte)((ID >> 40) % 256);
-                bytes[i++] = (byte)((ID >> 48) % 256);
-                bytes[i++] = (byte)((ID >> 56) % 256);
-                bytes[i++] = (byte)(Result % 256);
-                bytes[i++] = (byte)((Result >> 8) % 256);
-                bytes[i++] = (byte)((Result >> 16) % 256);
-                bytes[i++] = (byte)((Result >> 24) % 256);
+                Utils.UInt64ToBytes(ID, bytes, i); i += 8;
+                Utils.IntToBytes(Result, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -27342,8 +26605,7 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Value = BitConverter.ToSingle(bytes, i); i += 4;
+                    Value = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -27353,14 +26615,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(Type % 256);
-                bytes[i++] = (byte)((Type >> 8) % 256);
-                bytes[i++] = (byte)((Type >> 16) % 256);
-                bytes[i++] = (byte)((Type >> 24) % 256);
-                ba = BitConverter.GetBytes(Value);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(Type, bytes, i); i += 4;
+                Utils.FloatToBytes(Value, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -27739,10 +26995,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(DefaultPayPrice % 256);
-                bytes[i++] = (byte)((DefaultPayPrice >> 8) % 256);
-                bytes[i++] = (byte)((DefaultPayPrice >> 16) % 256);
-                bytes[i++] = (byte)((DefaultPayPrice >> 24) % 256);
+                Utils.IntToBytes(DefaultPayPrice, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -27788,10 +27041,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(PayButton % 256);
-                bytes[i++] = (byte)((PayButton >> 8) % 256);
-                bytes[i++] = (byte)((PayButton >> 16) % 256);
-                bytes[i++] = (byte)((PayButton >> 24) % 256);
+                Utils.IntToBytes(PayButton, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -27934,10 +27184,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(TargetIP % 256);
-                bytes[i++] = (byte)((TargetIP >> 8) % 256);
-                bytes[i++] = (byte)((TargetIP >> 16) % 256);
-                bytes[i++] = (byte)((TargetIP >> 24) % 256);
+                Utils.UIntToBytes(TargetIP, bytes, i); i += 4;
                 bytes[i++] = (byte)((TargetPort >> 8) % 256);
                 bytes[i++] = (byte)(TargetPort % 256);
             }
@@ -28137,10 +27384,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -28284,10 +27528,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(GodID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GodSessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(KickFlags % 256);
-                bytes[i++] = (byte)((KickFlags >> 8) % 256);
-                bytes[i++] = (byte)((KickFlags >> 16) % 256);
-                bytes[i++] = (byte)((KickFlags >> 24) % 256);
+                Utils.UIntToBytes(KickFlags, bytes, i); i += 4;
                 if(Reason == null) { Console.WriteLine("Warning: Reason is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Reason.Length % 256);
                 bytes[i++] = (byte)((Reason.Length >> 8) % 256);
@@ -28464,10 +27705,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -28643,10 +27881,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -29046,10 +28281,7 @@ namespace OpenMetaverse.Packets
                 if(CharterMember == null) { Console.WriteLine("Warning: CharterMember is null, in " + this.GetType()); }
                 bytes[i++] = (byte)CharterMember.Length;
                 Buffer.BlockCopy(CharterMember, 0, bytes, i, CharterMember.Length); i += CharterMember.Length;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -29284,17 +28516,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(WantToMask % 256);
-                bytes[i++] = (byte)((WantToMask >> 8) % 256);
-                bytes[i++] = (byte)((WantToMask >> 16) % 256);
-                bytes[i++] = (byte)((WantToMask >> 24) % 256);
+                Utils.UIntToBytes(WantToMask, bytes, i); i += 4;
                 if(WantToText == null) { Console.WriteLine("Warning: WantToText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)WantToText.Length;
                 Buffer.BlockCopy(WantToText, 0, bytes, i, WantToText.Length); i += WantToText.Length;
-                bytes[i++] = (byte)(SkillsMask % 256);
-                bytes[i++] = (byte)((SkillsMask >> 8) % 256);
-                bytes[i++] = (byte)((SkillsMask >> 16) % 256);
-                bytes[i++] = (byte)((SkillsMask >> 24) % 256);
+                Utils.UIntToBytes(SkillsMask, bytes, i); i += 4;
                 if(SkillsText == null) { Console.WriteLine("Warning: SkillsText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SkillsText.Length;
                 Buffer.BlockCopy(SkillsText, 0, bytes, i, SkillsText.Length); i += SkillsText.Length;
@@ -29517,14 +28743,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(GroupPowers % 256);
-                bytes[i++] = (byte)((GroupPowers >> 8) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 16) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 24) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 32) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 40) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 48) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 56) % 256);
+                Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
                 if(GroupTitle == null) { Console.WriteLine("Warning: GroupTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupTitle.Length;
@@ -30078,17 +29297,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(WantToMask % 256);
-                bytes[i++] = (byte)((WantToMask >> 8) % 256);
-                bytes[i++] = (byte)((WantToMask >> 16) % 256);
-                bytes[i++] = (byte)((WantToMask >> 24) % 256);
+                Utils.UIntToBytes(WantToMask, bytes, i); i += 4;
                 if(WantToText == null) { Console.WriteLine("Warning: WantToText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)WantToText.Length;
                 Buffer.BlockCopy(WantToText, 0, bytes, i, WantToText.Length); i += WantToText.Length;
-                bytes[i++] = (byte)(SkillsMask % 256);
-                bytes[i++] = (byte)((SkillsMask >> 8) % 256);
-                bytes[i++] = (byte)((SkillsMask >> 16) % 256);
-                bytes[i++] = (byte)((SkillsMask >> 24) % 256);
+                Utils.UIntToBytes(SkillsMask, bytes, i); i += 4;
                 if(SkillsText == null) { Console.WriteLine("Warning: SkillsText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SkillsText.Length;
                 Buffer.BlockCopy(SkillsText, 0, bytes, i, SkillsText.Length); i += SkillsText.Length;
@@ -30868,10 +30081,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -31143,10 +30353,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
                 if(Creator == null) { Console.WriteLine("Warning: Creator is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Creator.Length;
                 Buffer.BlockCopy(Creator, 0, bytes, i, Creator.Length); i += Creator.Length;
@@ -31163,30 +30370,15 @@ namespace OpenMetaverse.Packets
                 if(Date == null) { Console.WriteLine("Warning: Date is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Date.Length;
                 Buffer.BlockCopy(Date, 0, bytes, i, Date.Length); i += Date.Length;
-                bytes[i++] = (byte)(DateUTC % 256);
-                bytes[i++] = (byte)((DateUTC >> 8) % 256);
-                bytes[i++] = (byte)((DateUTC >> 16) % 256);
-                bytes[i++] = (byte)((DateUTC >> 24) % 256);
-                bytes[i++] = (byte)(Duration % 256);
-                bytes[i++] = (byte)((Duration >> 8) % 256);
-                bytes[i++] = (byte)((Duration >> 16) % 256);
-                bytes[i++] = (byte)((Duration >> 24) % 256);
-                bytes[i++] = (byte)(Cover % 256);
-                bytes[i++] = (byte)((Cover >> 8) % 256);
-                bytes[i++] = (byte)((Cover >> 16) % 256);
-                bytes[i++] = (byte)((Cover >> 24) % 256);
-                bytes[i++] = (byte)(Amount % 256);
-                bytes[i++] = (byte)((Amount >> 8) % 256);
-                bytes[i++] = (byte)((Amount >> 16) % 256);
-                bytes[i++] = (byte)((Amount >> 24) % 256);
+                Utils.UIntToBytes(DateUTC, bytes, i); i += 4;
+                Utils.UIntToBytes(Duration, bytes, i); i += 4;
+                Utils.UIntToBytes(Cover, bytes, i); i += 4;
+                Utils.UIntToBytes(Amount, bytes, i); i += 4;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 Buffer.BlockCopy(GlobalPos.GetBytes(), 0, bytes, i, 24); i += 24;
-                bytes[i++] = (byte)(EventFlags % 256);
-                bytes[i++] = (byte)((EventFlags >> 8) % 256);
-                bytes[i++] = (byte)((EventFlags >> 16) % 256);
-                bytes[i++] = (byte)((EventFlags >> 24) % 256);
+                Utils.UIntToBytes(EventFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -31376,10 +30568,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -31551,10 +30740,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -31726,10 +30912,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -31799,14 +30982,8 @@ namespace OpenMetaverse.Packets
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
-                bytes[i++] = (byte)(QueryFlags % 256);
-                bytes[i++] = (byte)((QueryFlags >> 8) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 16) % 256);
-                bytes[i++] = (byte)((QueryFlags >> 24) % 256);
-                bytes[i++] = (byte)(QueryStart % 256);
-                bytes[i++] = (byte)((QueryStart >> 8) % 256);
-                bytes[i++] = (byte)((QueryStart >> 16) % 256);
-                bytes[i++] = (byte)((QueryStart >> 24) % 256);
+                Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
+                Utils.IntToBytes(QueryStart, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -32097,10 +31274,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
-                bytes[i++] = (byte)(SortOrder % 256);
-                bytes[i++] = (byte)((SortOrder >> 8) % 256);
-                bytes[i++] = (byte)((SortOrder >> 16) % 256);
-                bytes[i++] = (byte)((SortOrder >> 24) % 256);
+                Utils.IntToBytes(SortOrder, bytes, i); i += 4;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
             }
 
@@ -32349,10 +31523,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
-                bytes[i++] = (byte)(SortOrder % 256);
-                bytes[i++] = (byte)((SortOrder >> 8) % 256);
-                bytes[i++] = (byte)((SortOrder >> 16) % 256);
-                bytes[i++] = (byte)((SortOrder >> 24) % 256);
+                Utils.IntToBytes(SortOrder, bytes, i); i += 4;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
             }
 
@@ -32879,10 +32050,7 @@ namespace OpenMetaverse.Packets
                 if(ObjectOwner == null) { Console.WriteLine("Warning: ObjectOwner is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectOwner.Length;
                 Buffer.BlockCopy(ObjectOwner, 0, bytes, i, ObjectOwner.Length); i += ObjectOwner.Length;
-                bytes[i++] = (byte)(Questions % 256);
-                bytes[i++] = (byte)((Questions >> 8) % 256);
-                bytes[i++] = (byte)((Questions >> 16) % 256);
-                bytes[i++] = (byte)((Questions >> 24) % 256);
+                Utils.IntToBytes(Questions, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -33010,10 +32178,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((TakeControls) ? 1 : 0);
-                bytes[i++] = (byte)(Controls % 256);
-                bytes[i++] = (byte)((Controls >> 8) % 256);
-                bytes[i++] = (byte)((Controls >> 16) % 256);
-                bytes[i++] = (byte)((Controls >> 24) % 256);
+                Utils.UIntToBytes(Controls, bytes, i); i += 4;
                 bytes[i++] = (byte)((PassToAgent) ? 1 : 0);
             }
 
@@ -33231,10 +32396,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)(Message.Length % 256);
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
-                bytes[i++] = (byte)(ChatChannel % 256);
-                bytes[i++] = (byte)((ChatChannel >> 8) % 256);
-                bytes[i++] = (byte)((ChatChannel >> 16) % 256);
-                bytes[i++] = (byte)((ChatChannel >> 24) % 256);
+                Utils.IntToBytes(ChatChannel, bytes, i); i += 4;
                 Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -33520,14 +32682,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ChatChannel % 256);
-                bytes[i++] = (byte)((ChatChannel >> 8) % 256);
-                bytes[i++] = (byte)((ChatChannel >> 16) % 256);
-                bytes[i++] = (byte)((ChatChannel >> 24) % 256);
-                bytes[i++] = (byte)(ButtonIndex % 256);
-                bytes[i++] = (byte)((ButtonIndex >> 8) % 256);
-                bytes[i++] = (byte)((ButtonIndex >> 16) % 256);
-                bytes[i++] = (byte)((ButtonIndex >> 24) % 256);
+                Utils.IntToBytes(ChatChannel, bytes, i); i += 4;
+                Utils.IntToBytes(ButtonIndex, bytes, i); i += 4;
                 if(ButtonLabel == null) { Console.WriteLine("Warning: ButtonLabel is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ButtonLabel.Length;
                 Buffer.BlockCopy(ButtonLabel, 0, bytes, i, ButtonLabel.Length); i += ButtonLabel.Length;
@@ -33830,10 +32986,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ObjectPermissions % 256);
-                bytes[i++] = (byte)((ObjectPermissions >> 8) % 256);
-                bytes[i++] = (byte)((ObjectPermissions >> 16) % 256);
-                bytes[i++] = (byte)((ObjectPermissions >> 24) % 256);
+                Utils.UIntToBytes(ObjectPermissions, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -34323,10 +33476,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
@@ -34500,14 +33650,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -34755,8 +33899,7 @@ namespace OpenMetaverse.Packets
                     MediaAutoScale = (byte)bytes[i++];
                     GroupID.FromBytes(bytes, i); i += 16;
                     PassPrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    PassHours = BitConverter.ToSingle(bytes, i); i += 4;
+                    PassHours = Utils.BytesToFloat(bytes, i); i += 4;
                     Category = (byte)bytes[i++];
                     AuthBuyerID.FromBytes(bytes, i); i += 16;
                     SnapshotID.FromBytes(bytes, i); i += 16;
@@ -34772,23 +33915,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(ParcelFlags % 256);
-                bytes[i++] = (byte)((ParcelFlags >> 8) % 256);
-                bytes[i++] = (byte)((ParcelFlags >> 16) % 256);
-                bytes[i++] = (byte)((ParcelFlags >> 24) % 256);
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.UIntToBytes(ParcelFlags, bytes, i); i += 4;
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -34804,13 +33934,8 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = MediaAutoScale;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(PassPrice % 256);
-                bytes[i++] = (byte)((PassPrice >> 8) % 256);
-                bytes[i++] = (byte)((PassPrice >> 16) % 256);
-                bytes[i++] = (byte)((PassPrice >> 24) % 256);
-                ba = BitConverter.GetBytes(PassHours);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(PassPrice, bytes, i); i += 4;
+                Utils.FloatToBytes(PassHours, bytes, i); i += 4;
                 bytes[i++] = Category;
                 Buffer.BlockCopy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -35013,14 +34138,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                bytes[i++] = (byte)(ReturnType % 256);
-                bytes[i++] = (byte)((ReturnType >> 8) % 256);
-                bytes[i++] = (byte)((ReturnType >> 16) % 256);
-                bytes[i++] = (byte)((ReturnType >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
+                Utils.UIntToBytes(ReturnType, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -35334,14 +34453,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                bytes[i++] = (byte)(OtherCleanTime % 256);
-                bytes[i++] = (byte)((OtherCleanTime >> 8) % 256);
-                bytes[i++] = (byte)((OtherCleanTime >> 16) % 256);
-                bytes[i++] = (byte)((OtherCleanTime >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
+                Utils.IntToBytes(OtherCleanTime, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -35517,14 +34630,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                bytes[i++] = (byte)(ReturnType % 256);
-                bytes[i++] = (byte)((ReturnType >> 8) % 256);
-                bytes[i++] = (byte)((ReturnType >> 16) % 256);
-                bytes[i++] = (byte)((ReturnType >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
+                Utils.UIntToBytes(ReturnType, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -35838,14 +34945,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                bytes[i++] = (byte)(ReturnType % 256);
-                bytes[i++] = (byte)((ReturnType >> 8) % 256);
-                bytes[i++] = (byte)((ReturnType >> 16) % 256);
-                bytes[i++] = (byte)((ReturnType >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
+                Utils.UIntToBytes(ReturnType, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -36182,10 +35283,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(CovenantID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CovenantTimestamp % 256);
-                bytes[i++] = (byte)((CovenantTimestamp >> 8) % 256);
-                bytes[i++] = (byte)((CovenantTimestamp >> 16) % 256);
-                bytes[i++] = (byte)((CovenantTimestamp >> 24) % 256);
+                Utils.UIntToBytes(CovenantTimestamp, bytes, i); i += 4;
                 if(EstateName == null) { Console.WriteLine("Warning: EstateName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)EstateName.Length;
                 Buffer.BlockCopy(EstateName, 0, bytes, i, EstateName.Length); i += EstateName.Length;
@@ -36355,10 +35453,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -36548,10 +35643,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -36726,10 +35818,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -36902,10 +35991,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -37123,14 +36209,10 @@ namespace OpenMetaverse.Packets
             {
                 try
                 {
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    West = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    South = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    East = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    North = BitConverter.ToSingle(bytes, i); i += 4;
+                    West = Utils.BytesToFloat(bytes, i); i += 4;
+                    South = Utils.BytesToFloat(bytes, i); i += 4;
+                    East = Utils.BytesToFloat(bytes, i); i += 4;
+                    North = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -37140,19 +36222,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                ba = BitConverter.GetBytes(West);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(South);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(East);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(North);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(West, bytes, i); i += 4;
+                Utils.FloatToBytes(South, bytes, i); i += 4;
+                Utils.FloatToBytes(East, bytes, i); i += 4;
+                Utils.FloatToBytes(North, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -37345,14 +36418,10 @@ namespace OpenMetaverse.Packets
             {
                 try
                 {
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    West = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    South = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    East = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    North = BitConverter.ToSingle(bytes, i); i += 4;
+                    West = Utils.BytesToFloat(bytes, i); i += 4;
+                    South = Utils.BytesToFloat(bytes, i); i += 4;
+                    East = Utils.BytesToFloat(bytes, i); i += 4;
+                    North = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -37362,19 +36431,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                ba = BitConverter.GetBytes(West);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(South);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(East);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(North);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(West, bytes, i); i += 4;
+                Utils.FloatToBytes(South, bytes, i); i += 4;
+                Utils.FloatToBytes(East, bytes, i); i += 4;
+                Utils.FloatToBytes(North, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -37542,14 +36602,10 @@ namespace OpenMetaverse.Packets
             {
                 try
                 {
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    West = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    South = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    East = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    North = BitConverter.ToSingle(bytes, i); i += 4;
+                    West = Utils.BytesToFloat(bytes, i); i += 4;
+                    South = Utils.BytesToFloat(bytes, i); i += 4;
+                    East = Utils.BytesToFloat(bytes, i); i += 4;
+                    North = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -37559,19 +36615,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                ba = BitConverter.GetBytes(West);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(South);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(East);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(North);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(West, bytes, i); i += 4;
+                Utils.FloatToBytes(South, bytes, i); i += 4;
+                Utils.FloatToBytes(East, bytes, i); i += 4;
+                Utils.FloatToBytes(North, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -37746,10 +36793,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -37932,10 +36976,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveContribution) ? 1 : 0);
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Final) ? 1 : 0);
             }
 
@@ -37987,14 +37028,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Price % 256);
-                bytes[i++] = (byte)((Price >> 8) % 256);
-                bytes[i++] = (byte)((Price >> 16) % 256);
-                bytes[i++] = (byte)((Price >> 24) % 256);
-                bytes[i++] = (byte)(Area % 256);
-                bytes[i++] = (byte)((Area >> 8) % 256);
-                bytes[i++] = (byte)((Area >> 16) % 256);
-                bytes[i++] = (byte)((Area >> 24) % 256);
+                Utils.IntToBytes(Price, bytes, i); i += 4;
+                Utils.IntToBytes(Area, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -38177,10 +37212,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -38358,18 +37390,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -38502,18 +37525,9 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -38566,14 +37580,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Time % 256);
-                bytes[i++] = (byte)((Time >> 8) % 256);
-                bytes[i++] = (byte)((Time >> 16) % 256);
-                bytes[i++] = (byte)((Time >> 24) % 256);
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.IntToBytes(Time, bytes, i); i += 4;
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -38774,23 +37782,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
-                bytes[i++] = (byte)(Sections % 256);
-                bytes[i++] = (byte)((Sections >> 8) % 256);
-                bytes[i++] = (byte)((Sections >> 16) % 256);
-                bytes[i++] = (byte)((Sections >> 24) % 256);
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
+                Utils.IntToBytes(Sections, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -38844,14 +37840,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Time % 256);
-                bytes[i++] = (byte)((Time >> 8) % 256);
-                bytes[i++] = (byte)((Time >> 16) % 256);
-                bytes[i++] = (byte)((Time >> 24) % 256);
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.IntToBytes(Time, bytes, i); i += 4;
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -39052,10 +38042,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -39219,8 +38206,7 @@ namespace OpenMetaverse.Packets
                 {
                     LocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Dwell = BitConverter.ToSingle(bytes, i); i += 4;
+                    Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -39230,15 +38216,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(Dwell);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Dwell, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -39412,10 +38392,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -39589,10 +38566,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -41186,10 +40160,8 @@ namespace OpenMetaverse.Packets
                     _searchname = new byte[length];
                     Buffer.BlockCopy(bytes, i, _searchname, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Range = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Arc = BitConverter.ToSingle(bytes, i); i += 4;
+                    Range = Utils.BytesToFloat(bytes, i); i += 4;
+                    Arc = Utils.BytesToFloat(bytes, i); i += 4;
                     RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     SearchRegions = (byte)bytes[i++];
                 }
@@ -41201,7 +40173,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SearchID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -41210,24 +40181,10 @@ namespace OpenMetaverse.Packets
                 if(SearchName == null) { Console.WriteLine("Warning: SearchName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SearchName.Length;
                 Buffer.BlockCopy(SearchName, 0, bytes, i, SearchName.Length); i += SearchName.Length;
-                bytes[i++] = (byte)(Type % 256);
-                bytes[i++] = (byte)((Type >> 8) % 256);
-                bytes[i++] = (byte)((Type >> 16) % 256);
-                bytes[i++] = (byte)((Type >> 24) % 256);
-                ba = BitConverter.GetBytes(Range);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(Arc);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.IntToBytes(Type, bytes, i); i += 4;
+                Utils.FloatToBytes(Range, bytes, i); i += 4;
+                Utils.FloatToBytes(Arc, bytes, i); i += 4;
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 bytes[i++] = SearchRegions;
             }
 
@@ -41423,8 +40380,7 @@ namespace OpenMetaverse.Packets
                     _name = new byte[length];
                     Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Range = BitConverter.ToSingle(bytes, i); i += 4;
+                    Range = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -41434,7 +40390,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -41444,13 +40399,8 @@ namespace OpenMetaverse.Packets
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                bytes[i++] = (byte)(Type % 256);
-                bytes[i++] = (byte)((Type >> 8) % 256);
-                bytes[i++] = (byte)((Type >> 16) % 256);
-                bytes[i++] = (byte)((Type >> 24) % 256);
-                ba = BitConverter.GetBytes(Range);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(Type, bytes, i); i += 4;
+                Utils.FloatToBytes(Range, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -41607,10 +40557,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CircuitCode % 256);
-                bytes[i++] = (byte)((CircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((CircuitCode >> 24) % 256);
+                Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -41786,18 +40733,8 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                bytes[i++] = (byte)(Timestamp % 256);
-                bytes[i++] = (byte)((Timestamp >> 8) % 256);
-                bytes[i++] = (byte)((Timestamp >> 16) % 256);
-                bytes[i++] = (byte)((Timestamp >> 24) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
+                Utils.UIntToBytes(Timestamp, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -42418,19 +41355,13 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)((FromGroup) ? 1 : 0);
                 Buffer.BlockCopy(ToAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ParentEstateID % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 8) % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 16) % 256);
-                bytes[i++] = (byte)((ParentEstateID >> 24) % 256);
+                Utils.UIntToBytes(ParentEstateID, bytes, i); i += 4;
                 Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = Offline;
                 bytes[i++] = Dialog;
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Timestamp % 256);
-                bytes[i++] = (byte)((Timestamp >> 8) % 256);
-                bytes[i++] = (byte)((Timestamp >> 16) % 256);
-                bytes[i++] = (byte)((Timestamp >> 24) % 256);
+                Utils.UIntToBytes(Timestamp, bytes, i); i += 4;
                 if(FromAgentName == null) { Console.WriteLine("Warning: FromAgentName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FromAgentName.Length;
                 Buffer.BlockCopy(FromAgentName, 0, bytes, i, FromAgentName.Length); i += FromAgentName.Length;
@@ -42705,10 +41636,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(Hunter.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(Prey.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SpaceIP % 256);
-                bytes[i++] = (byte)((SpaceIP >> 8) % 256);
-                bytes[i++] = (byte)((SpaceIP >> 16) % 256);
-                bytes[i++] = (byte)((SpaceIP >> 24) % 256);
+                Utils.UIntToBytes(SpaceIP, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -42746,10 +41674,8 @@ namespace OpenMetaverse.Packets
             {
                 try
                 {
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 8);
-                    GlobalX = BitConverter.ToDouble(bytes, i); i += 8;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 8);
-                    GlobalY = BitConverter.ToDouble(bytes, i); i += 8;
+                    GlobalX = Utils.BytesToDouble(bytes, i); i += 8;
+                    GlobalY = Utils.BytesToDouble(bytes, i); i += 8;
                 }
                 catch (Exception)
                 {
@@ -42759,13 +41685,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                ba = BitConverter.GetBytes(GlobalX);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
-                ba = BitConverter.GetBytes(GlobalY);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
+                Utils.DoubleToBytes(GlobalX, bytes, i); i += 8;
+                Utils.DoubleToBytes(GlobalY, bytes, i); i += 8;
             }
 
             public override string ToString()
@@ -44163,10 +43084,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(MuteCRC % 256);
-                bytes[i++] = (byte)((MuteCRC >> 8) % 256);
-                bytes[i++] = (byte)((MuteCRC >> 16) % 256);
-                bytes[i++] = (byte)((MuteCRC >> 24) % 256);
+                Utils.UIntToBytes(MuteCRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -44363,14 +43281,8 @@ namespace OpenMetaverse.Packets
                 if(MuteName == null) { Console.WriteLine("Warning: MuteName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MuteName.Length;
                 Buffer.BlockCopy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
-                bytes[i++] = (byte)(MuteType % 256);
-                bytes[i++] = (byte)((MuteType >> 8) % 256);
-                bytes[i++] = (byte)((MuteType >> 16) % 256);
-                bytes[i++] = (byte)((MuteType >> 24) % 256);
-                bytes[i++] = (byte)(MuteFlags % 256);
-                bytes[i++] = (byte)((MuteFlags >> 8) % 256);
-                bytes[i++] = (byte)((MuteFlags >> 16) % 256);
-                bytes[i++] = (byte)((MuteFlags >> 24) % 256);
+                Utils.IntToBytes(MuteType, bytes, i); i += 4;
+                Utils.UIntToBytes(MuteFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -45065,60 +43977,30 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CallbackID % 256);
-                bytes[i++] = (byte)((CallbackID >> 8) % 256);
-                bytes[i++] = (byte)((CallbackID >> 16) % 256);
-                bytes[i++] = (byte)((CallbackID >> 24) % 256);
+                Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -45408,60 +44290,30 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CallbackID % 256);
-                bytes[i++] = (byte)((CallbackID >> 8) % 256);
-                bytes[i++] = (byte)((CallbackID >> 16) % 256);
-                bytes[i++] = (byte)((CallbackID >> 24) % 256);
+                Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -45918,10 +44770,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(CallbackID % 256);
-                bytes[i++] = (byte)((CallbackID >> 8) % 256);
-                bytes[i++] = (byte)((CallbackID >> 16) % 256);
-                bytes[i++] = (byte)((CallbackID >> 24) % 256);
+                Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
                 Buffer.BlockCopy(OldAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -46315,10 +45164,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -47500,10 +46346,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SortOrder % 256);
-                bytes[i++] = (byte)((SortOrder >> 8) % 256);
-                bytes[i++] = (byte)((SortOrder >> 16) % 256);
-                bytes[i++] = (byte)((SortOrder >> 24) % 256);
+                Utils.IntToBytes(SortOrder, bytes, i); i += 4;
                 bytes[i++] = (byte)((FetchFolders) ? 1 : 0);
                 bytes[i++] = (byte)((FetchItems) ? 1 : 0);
             }
@@ -47644,14 +46487,8 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Version % 256);
-                bytes[i++] = (byte)((Version >> 8) % 256);
-                bytes[i++] = (byte)((Version >> 16) % 256);
-                bytes[i++] = (byte)((Version >> 24) % 256);
-                bytes[i++] = (byte)(Descendents % 256);
-                bytes[i++] = (byte)((Descendents >> 8) % 256);
-                bytes[i++] = (byte)((Descendents >> 16) % 256);
-                bytes[i++] = (byte)((Descendents >> 24) % 256);
+                Utils.IntToBytes(Version, bytes, i); i += 4;
+                Utils.IntToBytes(Descendents, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -47847,53 +46684,26 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -48394,53 +47204,26 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -48798,61 +47581,31 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CallbackID % 256);
-                bytes[i++] = (byte)((CallbackID >> 8) % 256);
-                bytes[i++] = (byte)((CallbackID >> 16) % 256);
-                bytes[i++] = (byte)((CallbackID >> 24) % 256);
+                Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
                 Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -49778,10 +48531,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 bytes[i++] = Key;
             }
 
@@ -49901,53 +48651,26 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -50150,10 +48873,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -50334,10 +49054,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -50511,10 +49228,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.UIntToBytes(LocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -50895,10 +49609,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -51250,22 +49961,10 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
-                bytes[i++] = (byte)(ItemFlags % 256);
-                bytes[i++] = (byte)((ItemFlags >> 8) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 16) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(ItemFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -51394,53 +50093,26 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -51675,22 +50347,10 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
-                bytes[i++] = (byte)(ItemFlags % 256);
-                bytes[i++] = (byte)((ItemFlags >> 8) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 16) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(ItemFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -53299,10 +51959,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
             }
 
@@ -53422,53 +52079,26 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.IntToBytes(CreationDate, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -53713,16 +52343,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(CallbackID % 256);
-                bytes[i++] = (byte)((CallbackID >> 8) % 256);
-                bytes[i++] = (byte)((CallbackID >> 16) % 256);
-                bytes[i++] = (byte)((CallbackID >> 24) % 256);
+                Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
                 Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = WearableType;
@@ -53913,10 +52537,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(EventID % 256);
-                bytes[i++] = (byte)((EventID >> 8) % 256);
-                bytes[i++] = (byte)((EventID >> 16) % 256);
-                bytes[i++] = (byte)((EventID >> 24) % 256);
+                Utils.UIntToBytes(EventID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -54232,14 +52853,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
             }
 
             public override string ToString()
@@ -54438,16 +53052,10 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Flags;
-                bytes[i++] = (byte)(Amount % 256);
-                bytes[i++] = (byte)((Amount >> 8) % 256);
-                bytes[i++] = (byte)((Amount >> 16) % 256);
-                bytes[i++] = (byte)((Amount >> 24) % 256);
+                Utils.IntToBytes(Amount, bytes, i); i += 4;
                 bytes[i++] = AggregatePermNextOwner;
                 bytes[i++] = AggregatePermInventory;
-                bytes[i++] = (byte)(TransactionType % 256);
-                bytes[i++] = (byte)((TransactionType >> 8) % 256);
-                bytes[i++] = (byte)((TransactionType >> 16) % 256);
-                bytes[i++] = (byte)((TransactionType >> 24) % 256);
+                Utils.IntToBytes(TransactionType, bytes, i); i += 4;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
@@ -54784,18 +53392,9 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((TransactionSuccess) ? 1 : 0);
-                bytes[i++] = (byte)(MoneyBalance % 256);
-                bytes[i++] = (byte)((MoneyBalance >> 8) % 256);
-                bytes[i++] = (byte)((MoneyBalance >> 16) % 256);
-                bytes[i++] = (byte)((MoneyBalance >> 24) % 256);
-                bytes[i++] = (byte)(SquareMetersCredit % 256);
-                bytes[i++] = (byte)((SquareMetersCredit >> 8) % 256);
-                bytes[i++] = (byte)((SquareMetersCredit >> 16) % 256);
-                bytes[i++] = (byte)((SquareMetersCredit >> 24) % 256);
-                bytes[i++] = (byte)(SquareMetersCommitted % 256);
-                bytes[i++] = (byte)((SquareMetersCommitted >> 8) % 256);
-                bytes[i++] = (byte)((SquareMetersCommitted >> 16) % 256);
-                bytes[i++] = (byte)((SquareMetersCommitted >> 24) % 256);
+                Utils.IntToBytes(MoneyBalance, bytes, i); i += 4;
+                Utils.IntToBytes(SquareMetersCredit, bytes, i); i += 4;
+                Utils.IntToBytes(SquareMetersCommitted, bytes, i); i += 4;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
@@ -54924,10 +53523,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(TargetIP % 256);
-                bytes[i++] = (byte)((TargetIP >> 8) % 256);
-                bytes[i++] = (byte)((TargetIP >> 16) % 256);
-                bytes[i++] = (byte)((TargetIP >> 24) % 256);
+                Utils.UIntToBytes(TargetIP, bytes, i); i += 4;
                 bytes[i++] = (byte)((TargetPort >> 8) % 256);
                 bytes[i++] = (byte)(TargetPort % 256);
             }
@@ -55005,18 +53601,9 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((TransactionSuccess) ? 1 : 0);
-                bytes[i++] = (byte)(MoneyBalance % 256);
-                bytes[i++] = (byte)((MoneyBalance >> 8) % 256);
-                bytes[i++] = (byte)((MoneyBalance >> 16) % 256);
-                bytes[i++] = (byte)((MoneyBalance >> 24) % 256);
-                bytes[i++] = (byte)(SquareMetersCredit % 256);
-                bytes[i++] = (byte)((SquareMetersCredit >> 8) % 256);
-                bytes[i++] = (byte)((SquareMetersCredit >> 16) % 256);
-                bytes[i++] = (byte)((SquareMetersCredit >> 24) % 256);
-                bytes[i++] = (byte)(SquareMetersCommitted % 256);
-                bytes[i++] = (byte)((SquareMetersCommitted >> 8) % 256);
-                bytes[i++] = (byte)((SquareMetersCommitted >> 16) % 256);
-                bytes[i++] = (byte)((SquareMetersCommitted >> 24) % 256);
+                Utils.IntToBytes(MoneyBalance, bytes, i); i += 4;
+                Utils.IntToBytes(SquareMetersCredit, bytes, i); i += 4;
+                Utils.IntToBytes(SquareMetersCommitted, bytes, i); i += 4;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
@@ -55155,10 +53742,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -55211,10 +53795,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(GestureFlags % 256);
-                bytes[i++] = (byte)((GestureFlags >> 8) % 256);
-                bytes[i++] = (byte)((GestureFlags >> 16) % 256);
-                bytes[i++] = (byte)((GestureFlags >> 24) % 256);
+                Utils.UIntToBytes(GestureFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -55363,10 +53944,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -55416,10 +53994,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(GestureFlags % 256);
-                bytes[i++] = (byte)((GestureFlags >> 8) % 256);
-                bytes[i++] = (byte)((GestureFlags >> 16) % 256);
-                bytes[i++] = (byte)((GestureFlags >> 24) % 256);
+                Utils.UIntToBytes(GestureFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -55868,10 +54443,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(RelatedRights % 256);
-                bytes[i++] = (byte)((RelatedRights >> 8) % 256);
-                bytes[i++] = (byte)((RelatedRights >> 16) % 256);
-                bytes[i++] = (byte)((RelatedRights >> 24) % 256);
+                Utils.IntToBytes(RelatedRights, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -56061,10 +54633,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(RelatedRights % 256);
-                bytes[i++] = (byte)((RelatedRights >> 8) % 256);
-                bytes[i++] = (byte)((RelatedRights >> 16) % 256);
-                bytes[i++] = (byte)((RelatedRights >> 24) % 256);
+                Utils.IntToBytes(RelatedRights, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -56549,10 +55118,7 @@ namespace OpenMetaverse.Packets
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                bytes[i++] = (byte)(LocationID % 256);
-                bytes[i++] = (byte)((LocationID >> 8) % 256);
-                bytes[i++] = (byte)((LocationID >> 16) % 256);
-                bytes[i++] = (byte)((LocationID >> 24) % 256);
+                Utils.UIntToBytes(LocationID, bytes, i); i += 4;
                 Buffer.BlockCopy(LocationPos.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(LocationLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
             }
@@ -57058,10 +55624,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
                 Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(MembershipFee % 256);
-                bytes[i++] = (byte)((MembershipFee >> 8) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 16) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 24) % 256);
+                Utils.IntToBytes(MembershipFee, bytes, i); i += 4;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
@@ -57475,10 +56038,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
                 Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(MembershipFee % 256);
-                bytes[i++] = (byte)((MembershipFee >> 8) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 16) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 24) % 256);
+                Utils.IntToBytes(MembershipFee, bytes, i); i += 4;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
@@ -57672,10 +56232,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Change % 256);
-                bytes[i++] = (byte)((Change >> 8) % 256);
-                bytes[i++] = (byte)((Change >> 16) % 256);
-                bytes[i++] = (byte)((Change >> 24) % 256);
+                Utils.UIntToBytes(Change, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -59512,33 +58069,14 @@ namespace OpenMetaverse.Packets
                 if(MemberTitle == null) { Console.WriteLine("Warning: MemberTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MemberTitle.Length;
                 Buffer.BlockCopy(MemberTitle, 0, bytes, i, MemberTitle.Length); i += MemberTitle.Length;
-                bytes[i++] = (byte)(PowersMask % 256);
-                bytes[i++] = (byte)((PowersMask >> 8) % 256);
-                bytes[i++] = (byte)((PowersMask >> 16) % 256);
-                bytes[i++] = (byte)((PowersMask >> 24) % 256);
-                bytes[i++] = (byte)((PowersMask >> 32) % 256);
-                bytes[i++] = (byte)((PowersMask >> 40) % 256);
-                bytes[i++] = (byte)((PowersMask >> 48) % 256);
-                bytes[i++] = (byte)((PowersMask >> 56) % 256);
+                Utils.UInt64ToBytes(PowersMask, bytes, i); i += 8;
                 Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(FounderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(MembershipFee % 256);
-                bytes[i++] = (byte)((MembershipFee >> 8) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 16) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 24) % 256);
+                Utils.IntToBytes(MembershipFee, bytes, i); i += 4;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
-                bytes[i++] = (byte)(Money % 256);
-                bytes[i++] = (byte)((Money >> 8) % 256);
-                bytes[i++] = (byte)((Money >> 16) % 256);
-                bytes[i++] = (byte)((Money >> 24) % 256);
-                bytes[i++] = (byte)(GroupMembershipCount % 256);
-                bytes[i++] = (byte)((GroupMembershipCount >> 8) % 256);
-                bytes[i++] = (byte)((GroupMembershipCount >> 16) % 256);
-                bytes[i++] = (byte)((GroupMembershipCount >> 24) % 256);
-                bytes[i++] = (byte)(GroupRolesCount % 256);
-                bytes[i++] = (byte)((GroupRolesCount >> 8) % 256);
-                bytes[i++] = (byte)((GroupRolesCount >> 16) % 256);
-                bytes[i++] = (byte)((GroupRolesCount >> 24) % 256);
+                Utils.IntToBytes(Money, bytes, i); i += 4;
+                Utils.IntToBytes(GroupMembershipCount, bytes, i); i += 4;
+                Utils.IntToBytes(GroupRolesCount, bytes, i); i += 4;
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
                 Buffer.BlockCopy(OwnerRole.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -59741,14 +58279,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IntervalDays % 256);
-                bytes[i++] = (byte)((IntervalDays >> 8) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 16) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 24) % 256);
-                bytes[i++] = (byte)(CurrentInterval % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 24) % 256);
+                Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
+                Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -60003,73 +58535,25 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IntervalDays % 256);
-                bytes[i++] = (byte)((IntervalDays >> 8) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 16) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 24) % 256);
-                bytes[i++] = (byte)(CurrentInterval % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 24) % 256);
+                Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
+                Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
                 Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
-                bytes[i++] = (byte)(Balance % 256);
-                bytes[i++] = (byte)((Balance >> 8) % 256);
-                bytes[i++] = (byte)((Balance >> 16) % 256);
-                bytes[i++] = (byte)((Balance >> 24) % 256);
-                bytes[i++] = (byte)(TotalCredits % 256);
-                bytes[i++] = (byte)((TotalCredits >> 8) % 256);
-                bytes[i++] = (byte)((TotalCredits >> 16) % 256);
-                bytes[i++] = (byte)((TotalCredits >> 24) % 256);
-                bytes[i++] = (byte)(TotalDebits % 256);
-                bytes[i++] = (byte)((TotalDebits >> 8) % 256);
-                bytes[i++] = (byte)((TotalDebits >> 16) % 256);
-                bytes[i++] = (byte)((TotalDebits >> 24) % 256);
-                bytes[i++] = (byte)(ObjectTaxCurrent % 256);
-                bytes[i++] = (byte)((ObjectTaxCurrent >> 8) % 256);
-                bytes[i++] = (byte)((ObjectTaxCurrent >> 16) % 256);
-                bytes[i++] = (byte)((ObjectTaxCurrent >> 24) % 256);
-                bytes[i++] = (byte)(LightTaxCurrent % 256);
-                bytes[i++] = (byte)((LightTaxCurrent >> 8) % 256);
-                bytes[i++] = (byte)((LightTaxCurrent >> 16) % 256);
-                bytes[i++] = (byte)((LightTaxCurrent >> 24) % 256);
-                bytes[i++] = (byte)(LandTaxCurrent % 256);
-                bytes[i++] = (byte)((LandTaxCurrent >> 8) % 256);
-                bytes[i++] = (byte)((LandTaxCurrent >> 16) % 256);
-                bytes[i++] = (byte)((LandTaxCurrent >> 24) % 256);
-                bytes[i++] = (byte)(GroupTaxCurrent % 256);
-                bytes[i++] = (byte)((GroupTaxCurrent >> 8) % 256);
-                bytes[i++] = (byte)((GroupTaxCurrent >> 16) % 256);
-                bytes[i++] = (byte)((GroupTaxCurrent >> 24) % 256);
-                bytes[i++] = (byte)(ParcelDirFeeCurrent % 256);
-                bytes[i++] = (byte)((ParcelDirFeeCurrent >> 8) % 256);
-                bytes[i++] = (byte)((ParcelDirFeeCurrent >> 16) % 256);
-                bytes[i++] = (byte)((ParcelDirFeeCurrent >> 24) % 256);
-                bytes[i++] = (byte)(ObjectTaxEstimate % 256);
-                bytes[i++] = (byte)((ObjectTaxEstimate >> 8) % 256);
-                bytes[i++] = (byte)((ObjectTaxEstimate >> 16) % 256);
-                bytes[i++] = (byte)((ObjectTaxEstimate >> 24) % 256);
-                bytes[i++] = (byte)(LightTaxEstimate % 256);
-                bytes[i++] = (byte)((LightTaxEstimate >> 8) % 256);
-                bytes[i++] = (byte)((LightTaxEstimate >> 16) % 256);
-                bytes[i++] = (byte)((LightTaxEstimate >> 24) % 256);
-                bytes[i++] = (byte)(LandTaxEstimate % 256);
-                bytes[i++] = (byte)((LandTaxEstimate >> 8) % 256);
-                bytes[i++] = (byte)((LandTaxEstimate >> 16) % 256);
-                bytes[i++] = (byte)((LandTaxEstimate >> 24) % 256);
-                bytes[i++] = (byte)(GroupTaxEstimate % 256);
-                bytes[i++] = (byte)((GroupTaxEstimate >> 8) % 256);
-                bytes[i++] = (byte)((GroupTaxEstimate >> 16) % 256);
-                bytes[i++] = (byte)((GroupTaxEstimate >> 24) % 256);
-                bytes[i++] = (byte)(ParcelDirFeeEstimate % 256);
-                bytes[i++] = (byte)((ParcelDirFeeEstimate >> 8) % 256);
-                bytes[i++] = (byte)((ParcelDirFeeEstimate >> 16) % 256);
-                bytes[i++] = (byte)((ParcelDirFeeEstimate >> 24) % 256);
-                bytes[i++] = (byte)(NonExemptMembers % 256);
-                bytes[i++] = (byte)((NonExemptMembers >> 8) % 256);
-                bytes[i++] = (byte)((NonExemptMembers >> 16) % 256);
-                bytes[i++] = (byte)((NonExemptMembers >> 24) % 256);
+                Utils.IntToBytes(Balance, bytes, i); i += 4;
+                Utils.IntToBytes(TotalCredits, bytes, i); i += 4;
+                Utils.IntToBytes(TotalDebits, bytes, i); i += 4;
+                Utils.IntToBytes(ObjectTaxCurrent, bytes, i); i += 4;
+                Utils.IntToBytes(LightTaxCurrent, bytes, i); i += 4;
+                Utils.IntToBytes(LandTaxCurrent, bytes, i); i += 4;
+                Utils.IntToBytes(GroupTaxCurrent, bytes, i); i += 4;
+                Utils.IntToBytes(ParcelDirFeeCurrent, bytes, i); i += 4;
+                Utils.IntToBytes(ObjectTaxEstimate, bytes, i); i += 4;
+                Utils.IntToBytes(LightTaxEstimate, bytes, i); i += 4;
+                Utils.IntToBytes(LandTaxEstimate, bytes, i); i += 4;
+                Utils.IntToBytes(GroupTaxEstimate, bytes, i); i += 4;
+                Utils.IntToBytes(ParcelDirFeeEstimate, bytes, i); i += 4;
+                Utils.IntToBytes(NonExemptMembers, bytes, i); i += 4;
                 if(LastTaxDate == null) { Console.WriteLine("Warning: LastTaxDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastTaxDate.Length;
                 Buffer.BlockCopy(LastTaxDate, 0, bytes, i, LastTaxDate.Length); i += LastTaxDate.Length;
@@ -60278,14 +58762,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IntervalDays % 256);
-                bytes[i++] = (byte)((IntervalDays >> 8) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 16) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 24) % 256);
-                bytes[i++] = (byte)(CurrentInterval % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 24) % 256);
+                Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
+                Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -60482,14 +58960,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IntervalDays % 256);
-                bytes[i++] = (byte)((IntervalDays >> 8) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 16) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 24) % 256);
-                bytes[i++] = (byte)(CurrentInterval % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 24) % 256);
+                Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
+                Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
                 Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
@@ -60560,10 +59032,7 @@ namespace OpenMetaverse.Packets
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(Amount % 256);
-                bytes[i++] = (byte)((Amount >> 8) % 256);
-                bytes[i++] = (byte)((Amount >> 16) % 256);
-                bytes[i++] = (byte)((Amount >> 24) % 256);
+                Utils.IntToBytes(Amount, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -60771,14 +59240,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IntervalDays % 256);
-                bytes[i++] = (byte)((IntervalDays >> 8) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 16) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 24) % 256);
-                bytes[i++] = (byte)(CurrentInterval % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 24) % 256);
+                Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
+                Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -60975,14 +59438,8 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(IntervalDays % 256);
-                bytes[i++] = (byte)((IntervalDays >> 8) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 16) % 256);
-                bytes[i++] = (byte)((IntervalDays >> 24) % 256);
-                bytes[i++] = (byte)(CurrentInterval % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
-                bytes[i++] = (byte)((CurrentInterval >> 24) % 256);
+                Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
+                Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
                 Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
@@ -61088,17 +59545,11 @@ namespace OpenMetaverse.Packets
                 if(User == null) { Console.WriteLine("Warning: User is null, in " + this.GetType()); }
                 bytes[i++] = (byte)User.Length;
                 Buffer.BlockCopy(User, 0, bytes, i, User.Length); i += User.Length;
-                bytes[i++] = (byte)(Type % 256);
-                bytes[i++] = (byte)((Type >> 8) % 256);
-                bytes[i++] = (byte)((Type >> 16) % 256);
-                bytes[i++] = (byte)((Type >> 24) % 256);
+                Utils.IntToBytes(Type, bytes, i); i += 4;
                 if(Item == null) { Console.WriteLine("Warning: Item is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Item.Length;
                 Buffer.BlockCopy(Item, 0, bytes, i, Item.Length); i += Item.Length;
-                bytes[i++] = (byte)(Amount % 256);
-                bytes[i++] = (byte)((Amount >> 8) % 256);
-                bytes[i++] = (byte)((Amount >> 16) % 256);
-                bytes[i++] = (byte)((Amount >> 24) % 256);
+                Utils.IntToBytes(Amount, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -61528,10 +59979,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(TotalNumItems % 256);
-                bytes[i++] = (byte)((TotalNumItems >> 8) % 256);
-                bytes[i++] = (byte)((TotalNumItems >> 16) % 256);
-                bytes[i++] = (byte)((TotalNumItems >> 24) % 256);
+                Utils.UIntToBytes(TotalNumItems, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -61648,8 +60096,7 @@ namespace OpenMetaverse.Packets
                     length = (ushort)bytes[i++];
                     _votecast = new byte[length];
                     Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Majority = BitConverter.ToSingle(bytes, i); i += 4;
+                    Majority = Utils.BytesToFloat(bytes, i); i += 4;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _proposaltext = new byte[length];
@@ -61663,7 +60110,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(TerseDateID == null) { Console.WriteLine("Warning: TerseDateID is null, in " + this.GetType()); }
@@ -61679,13 +60125,8 @@ namespace OpenMetaverse.Packets
                 if(VoteCast == null) { Console.WriteLine("Warning: VoteCast is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteCast.Length;
                 Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
-                ba = BitConverter.GetBytes(Majority);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(Quorum % 256);
-                bytes[i++] = (byte)((Quorum >> 8) % 256);
-                bytes[i++] = (byte)((Quorum >> 16) % 256);
-                bytes[i++] = (byte)((Quorum >> 24) % 256);
+                Utils.FloatToBytes(Majority, bytes, i); i += 4;
+                Utils.IntToBytes(Quorum, bytes, i); i += 4;
                 if(ProposalText == null) { Console.WriteLine("Warning: ProposalText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProposalText.Length;
                 Buffer.BlockCopy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
@@ -62124,10 +60565,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(TotalNumItems % 256);
-                bytes[i++] = (byte)((TotalNumItems >> 8) % 256);
-                bytes[i++] = (byte)((TotalNumItems >> 16) % 256);
-                bytes[i++] = (byte)((TotalNumItems >> 24) % 256);
+                Utils.UIntToBytes(TotalNumItems, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -62257,8 +60695,7 @@ namespace OpenMetaverse.Packets
                     length = (ushort)bytes[i++];
                     _voteresult = new byte[length];
                     Buffer.BlockCopy(bytes, i, _voteresult, 0, length); i += length;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Majority = BitConverter.ToSingle(bytes, i); i += 4;
+                    Majority = Utils.BytesToFloat(bytes, i); i += 4;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _proposaltext = new byte[length];
@@ -62272,7 +60709,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(TerseDateID == null) { Console.WriteLine("Warning: TerseDateID is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TerseDateID.Length;
@@ -62290,13 +60726,8 @@ namespace OpenMetaverse.Packets
                 if(VoteResult == null) { Console.WriteLine("Warning: VoteResult is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteResult.Length;
                 Buffer.BlockCopy(VoteResult, 0, bytes, i, VoteResult.Length); i += VoteResult.Length;
-                ba = BitConverter.GetBytes(Majority);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(Quorum % 256);
-                bytes[i++] = (byte)((Quorum >> 8) % 256);
-                bytes[i++] = (byte)((Quorum >> 16) % 256);
-                bytes[i++] = (byte)((Quorum >> 24) % 256);
+                Utils.FloatToBytes(Majority, bytes, i); i += 4;
+                Utils.IntToBytes(Quorum, bytes, i); i += 4;
                 if(ProposalText == null) { Console.WriteLine("Warning: ProposalText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(ProposalText.Length % 256);
                 bytes[i++] = (byte)((ProposalText.Length >> 8) % 256);
@@ -62382,10 +60813,7 @@ namespace OpenMetaverse.Packets
                 if(VoteCast == null) { Console.WriteLine("Warning: VoteCast is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteCast.Length;
                 Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
-                bytes[i++] = (byte)(NumVotes % 256);
-                bytes[i++] = (byte)((NumVotes >> 8) % 256);
-                bytes[i++] = (byte)((NumVotes >> 16) % 256);
-                bytes[i++] = (byte)((NumVotes >> 24) % 256);
+                Utils.IntToBytes(NumVotes, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -62600,8 +61028,7 @@ namespace OpenMetaverse.Packets
                 {
                     GroupID.FromBytes(bytes, i); i += 16;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Majority = BitConverter.ToSingle(bytes, i); i += 4;
+                    Majority = Utils.BytesToFloat(bytes, i); i += 4;
                     Duration = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _proposaltext = new byte[length];
@@ -62615,19 +61042,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Quorum % 256);
-                bytes[i++] = (byte)((Quorum >> 8) % 256);
-                bytes[i++] = (byte)((Quorum >> 16) % 256);
-                bytes[i++] = (byte)((Quorum >> 24) % 256);
-                ba = BitConverter.GetBytes(Majority);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(Duration % 256);
-                bytes[i++] = (byte)((Duration >> 8) % 256);
-                bytes[i++] = (byte)((Duration >> 16) % 256);
-                bytes[i++] = (byte)((Duration >> 24) % 256);
+                Utils.IntToBytes(Quorum, bytes, i); i += 4;
+                Utils.FloatToBytes(Majority, bytes, i); i += 4;
+                Utils.IntToBytes(Duration, bytes, i); i += 4;
                 if(ProposalText == null) { Console.WriteLine("Warning: ProposalText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProposalText.Length;
                 Buffer.BlockCopy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
@@ -63182,10 +61600,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(MemberCount % 256);
-                bytes[i++] = (byte)((MemberCount >> 8) % 256);
-                bytes[i++] = (byte)((MemberCount >> 16) % 256);
-                bytes[i++] = (byte)((MemberCount >> 24) % 256);
+                Utils.IntToBytes(MemberCount, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -63271,21 +61686,11 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Contribution % 256);
-                bytes[i++] = (byte)((Contribution >> 8) % 256);
-                bytes[i++] = (byte)((Contribution >> 16) % 256);
-                bytes[i++] = (byte)((Contribution >> 24) % 256);
+                Utils.IntToBytes(Contribution, bytes, i); i += 4;
                 if(OnlineStatus == null) { Console.WriteLine("Warning: OnlineStatus is null, in " + this.GetType()); }
                 bytes[i++] = (byte)OnlineStatus.Length;
                 Buffer.BlockCopy(OnlineStatus, 0, bytes, i, OnlineStatus.Length); i += OnlineStatus.Length;
-                bytes[i++] = (byte)(AgentPowers % 256);
-                bytes[i++] = (byte)((AgentPowers >> 8) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 16) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 24) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 32) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 40) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 48) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 56) % 256);
+                Utils.UInt64ToBytes(AgentPowers, bytes, i); i += 8;
                 if(Title == null) { Console.WriteLine("Warning: Title is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Title.Length;
                 Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
@@ -63622,10 +62027,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Contribution % 256);
-                bytes[i++] = (byte)((Contribution >> 8) % 256);
-                bytes[i++] = (byte)((Contribution >> 16) % 256);
-                bytes[i++] = (byte)((Contribution >> 24) % 256);
+                Utils.IntToBytes(Contribution, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -64203,10 +62605,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(RoleCount % 256);
-                bytes[i++] = (byte)((RoleCount >> 8) % 256);
-                bytes[i++] = (byte)((RoleCount >> 16) % 256);
-                bytes[i++] = (byte)((RoleCount >> 24) % 256);
+                Utils.IntToBytes(RoleCount, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -64314,18 +62713,8 @@ namespace OpenMetaverse.Packets
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
                 Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                bytes[i++] = (byte)(Powers % 256);
-                bytes[i++] = (byte)((Powers >> 8) % 256);
-                bytes[i++] = (byte)((Powers >> 16) % 256);
-                bytes[i++] = (byte)((Powers >> 24) % 256);
-                bytes[i++] = (byte)((Powers >> 32) % 256);
-                bytes[i++] = (byte)((Powers >> 40) % 256);
-                bytes[i++] = (byte)((Powers >> 48) % 256);
-                bytes[i++] = (byte)((Powers >> 56) % 256);
-                bytes[i++] = (byte)(Members % 256);
-                bytes[i++] = (byte)((Members >> 8) % 256);
-                bytes[i++] = (byte)((Members >> 16) % 256);
-                bytes[i++] = (byte)((Members >> 24) % 256);
+                Utils.UInt64ToBytes(Powers, bytes, i); i += 8;
+                Utils.UIntToBytes(Members, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -64665,10 +63054,7 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(TotalPairs % 256);
-                bytes[i++] = (byte)((TotalPairs >> 8) % 256);
-                bytes[i++] = (byte)((TotalPairs >> 16) % 256);
-                bytes[i++] = (byte)((TotalPairs >> 24) % 256);
+                Utils.UIntToBytes(TotalPairs, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -65454,14 +63840,7 @@ namespace OpenMetaverse.Packets
                 if(Title == null) { Console.WriteLine("Warning: Title is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Title.Length;
                 Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
-                bytes[i++] = (byte)(Powers % 256);
-                bytes[i++] = (byte)((Powers >> 8) % 256);
-                bytes[i++] = (byte)((Powers >> 16) % 256);
-                bytes[i++] = (byte)((Powers >> 24) % 256);
-                bytes[i++] = (byte)((Powers >> 32) % 256);
-                bytes[i++] = (byte)((Powers >> 40) % 256);
-                bytes[i++] = (byte)((Powers >> 48) % 256);
-                bytes[i++] = (byte)((Powers >> 56) % 256);
+                Utils.UInt64ToBytes(Powers, bytes, i); i += 8;
                 bytes[i++] = UpdateType;
             }
 
@@ -66001,10 +64380,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SerialNum % 256);
-                bytes[i++] = (byte)((SerialNum >> 8) % 256);
-                bytes[i++] = (byte)((SerialNum >> 16) % 256);
-                bytes[i++] = (byte)((SerialNum >> 24) % 256);
+                Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -66402,10 +64778,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SerialNum % 256);
-                bytes[i++] = (byte)((SerialNum >> 8) % 256);
-                bytes[i++] = (byte)((SerialNum >> 16) % 256);
-                bytes[i++] = (byte)((SerialNum >> 24) % 256);
+                Utils.IntToBytes(SerialNum, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -66603,10 +64976,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(SerialNum % 256);
-                bytes[i++] = (byte)((SerialNum >> 8) % 256);
-                bytes[i++] = (byte)((SerialNum >> 16) % 256);
-                bytes[i++] = (byte)((SerialNum >> 24) % 256);
+                Utils.IntToBytes(SerialNum, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -67017,14 +65387,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)GroupTitle.Length;
                 Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
                 Buffer.BlockCopy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(GroupPowers % 256);
-                bytes[i++] = (byte)((GroupPowers >> 8) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 16) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 24) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 32) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 40) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 48) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 56) % 256);
+                Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
@@ -67177,14 +65540,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(AgentPowers % 256);
-                bytes[i++] = (byte)((AgentPowers >> 8) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 16) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 24) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 32) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 40) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 48) % 256);
-                bytes[i++] = (byte)((AgentPowers >> 56) % 256);
+                Utils.UInt64ToBytes(AgentPowers, bytes, i); i += 8;
                 if(GroupTitle == null) { Console.WriteLine("Warning: GroupTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupTitle.Length;
                 Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
@@ -67397,20 +65753,10 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(GroupPowers % 256);
-                bytes[i++] = (byte)((GroupPowers >> 8) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 16) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 24) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 32) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 40) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 48) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 56) % 256);
+                Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
                 Buffer.BlockCopy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Contribution % 256);
-                bytes[i++] = (byte)((Contribution >> 8) % 256);
-                bytes[i++] = (byte)((Contribution >> 16) % 256);
-                bytes[i++] = (byte)((Contribution >> 24) % 256);
+                Utils.IntToBytes(Contribution, bytes, i); i += 4;
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
@@ -67686,7 +66032,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
-                                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
+                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
             }
 
             public override string ToString()
@@ -68083,22 +66429,10 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = AttachmentPt;
-                bytes[i++] = (byte)(ItemFlags % 256);
-                bytes[i++] = (byte)((ItemFlags >> 8) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 16) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(ItemFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -68386,22 +66720,10 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = AttachmentPt;
-                bytes[i++] = (byte)(ItemFlags % 256);
-                bytes[i++] = (byte)((ItemFlags >> 8) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 16) % 256);
-                bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
+                Utils.UIntToBytes(ItemFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -69683,7 +68005,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)Method.Length;
                 Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
                 Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
-                                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
+                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
             }
 
             public override string ToString()
@@ -69900,14 +68222,8 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(EstateID % 256);
-                bytes[i++] = (byte)((EstateID >> 8) % 256);
-                bytes[i++] = (byte)((EstateID >> 16) % 256);
-                bytes[i++] = (byte)((EstateID >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
             }
 
@@ -70032,10 +68348,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -70089,22 +68402,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Left % 256);
-                bytes[i++] = (byte)((Left >> 8) % 256);
-                bytes[i++] = (byte)((Left >> 16) % 256);
-                bytes[i++] = (byte)((Left >> 24) % 256);
-                bytes[i++] = (byte)(Right % 256);
-                bytes[i++] = (byte)((Right >> 8) % 256);
-                bytes[i++] = (byte)((Right >> 16) % 256);
-                bytes[i++] = (byte)((Right >> 24) % 256);
-                bytes[i++] = (byte)(Top % 256);
-                bytes[i++] = (byte)((Top >> 8) % 256);
-                bytes[i++] = (byte)((Top >> 16) % 256);
-                bytes[i++] = (byte)((Top >> 24) % 256);
-                bytes[i++] = (byte)(Bottom % 256);
-                bytes[i++] = (byte)((Bottom >> 8) % 256);
-                bytes[i++] = (byte)((Bottom >> 16) % 256);
-                bytes[i++] = (byte)((Bottom >> 24) % 256);
+                Utils.UIntToBytes(Left, bytes, i); i += 4;
+                Utils.UIntToBytes(Right, bytes, i); i += 4;
+                Utils.UIntToBytes(Top, bytes, i); i += 4;
+                Utils.UIntToBytes(Bottom, bytes, i); i += 4;
                 Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -70260,14 +68561,8 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(EstateID % 256);
-                bytes[i++] = (byte)((EstateID >> 8) % 256);
-                bytes[i++] = (byte)((EstateID >> 16) % 256);
-                bytes[i++] = (byte)((EstateID >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
             }
 
@@ -70466,14 +68761,8 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(EstateID % 256);
-                bytes[i++] = (byte)((EstateID >> 8) % 256);
-                bytes[i++] = (byte)((EstateID >> 16) % 256);
-                bytes[i++] = (byte)((EstateID >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
             }
 
@@ -70666,10 +68955,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -70752,10 +69038,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = Access;
-                bytes[i++] = (byte)(RegionFlags % 256);
-                bytes[i++] = (byte)((RegionFlags >> 8) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 16) % 256);
-                bytes[i++] = (byte)((RegionFlags >> 24) % 256);
+                Utils.UIntToBytes(RegionFlags, bytes, i); i += 4;
                 bytes[i++] = WaterHeight;
                 bytes[i++] = Agents;
                 Buffer.BlockCopy(MapImageID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -70917,14 +69200,8 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(EstateID % 256);
-                bytes[i++] = (byte)((EstateID >> 8) % 256);
-                bytes[i++] = (byte)((EstateID >> 16) % 256);
-                bytes[i++] = (byte)((EstateID >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
             }
 
@@ -70976,18 +69253,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ItemType % 256);
-                bytes[i++] = (byte)((ItemType >> 8) % 256);
-                bytes[i++] = (byte)((ItemType >> 16) % 256);
-                bytes[i++] = (byte)((ItemType >> 24) % 256);
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UIntToBytes(ItemType, bytes, i); i += 4;
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
             }
 
             public override string ToString()
@@ -71114,10 +69381,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -71163,10 +69427,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ItemType % 256);
-                bytes[i++] = (byte)((ItemType >> 8) % 256);
-                bytes[i++] = (byte)((ItemType >> 16) % 256);
-                bytes[i++] = (byte)((ItemType >> 24) % 256);
+                Utils.UIntToBytes(ItemType, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -71236,23 +69497,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(X % 256);
-                bytes[i++] = (byte)((X >> 8) % 256);
-                bytes[i++] = (byte)((X >> 16) % 256);
-                bytes[i++] = (byte)((X >> 24) % 256);
-                bytes[i++] = (byte)(Y % 256);
-                bytes[i++] = (byte)((Y >> 8) % 256);
-                bytes[i++] = (byte)((Y >> 16) % 256);
-                bytes[i++] = (byte)((Y >> 24) % 256);
+                Utils.UIntToBytes(X, bytes, i); i += 4;
+                Utils.UIntToBytes(Y, bytes, i); i += 4;
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Extra % 256);
-                bytes[i++] = (byte)((Extra >> 8) % 256);
-                bytes[i++] = (byte)((Extra >> 16) % 256);
-                bytes[i++] = (byte)((Extra >> 24) % 256);
-                bytes[i++] = (byte)(Extra2 % 256);
-                bytes[i++] = (byte)((Extra2 >> 8) % 256);
-                bytes[i++] = (byte)((Extra2 >> 16) % 256);
-                bytes[i++] = (byte)((Extra2 >> 24) % 256);
+                Utils.IntToBytes(Extra, bytes, i); i += 4;
+                Utils.IntToBytes(Extra2, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -71641,8 +69890,7 @@ namespace OpenMetaverse.Packets
                 {
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Command = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Time = BitConverter.ToSingle(bytes, i); i += 4;
+                    Time = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -71652,18 +69900,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(Flags % 256);
-                bytes[i++] = (byte)((Flags >> 8) % 256);
-                bytes[i++] = (byte)((Flags >> 16) % 256);
-                bytes[i++] = (byte)((Flags >> 24) % 256);
-                bytes[i++] = (byte)(Command % 256);
-                bytes[i++] = (byte)((Command >> 8) % 256);
-                bytes[i++] = (byte)((Command >> 16) % 256);
-                bytes[i++] = (byte)((Command >> 24) % 256);
-                ba = BitConverter.GetBytes(Time);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+                Utils.UIntToBytes(Command, bytes, i); i += 4;
+                Utils.FloatToBytes(Time, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -71895,14 +70134,8 @@ namespace OpenMetaverse.Packets
                 if(MediaDesc == null) { Console.WriteLine("Warning: MediaDesc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaDesc.Length;
                 Buffer.BlockCopy(MediaDesc, 0, bytes, i, MediaDesc.Length); i += MediaDesc.Length;
-                bytes[i++] = (byte)(MediaWidth % 256);
-                bytes[i++] = (byte)((MediaWidth >> 8) % 256);
-                bytes[i++] = (byte)((MediaWidth >> 16) % 256);
-                bytes[i++] = (byte)((MediaWidth >> 24) % 256);
-                bytes[i++] = (byte)(MediaHeight % 256);
-                bytes[i++] = (byte)((MediaHeight >> 8) % 256);
-                bytes[i++] = (byte)((MediaHeight >> 16) % 256);
-                bytes[i++] = (byte)((MediaHeight >> 24) % 256);
+                Utils.IntToBytes(MediaWidth, bytes, i); i += 4;
+                Utils.IntToBytes(MediaHeight, bytes, i); i += 4;
                 bytes[i++] = MediaLoop;
             }
 
@@ -72102,21 +70335,12 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ReportType % 256);
-                bytes[i++] = (byte)((ReportType >> 8) % 256);
-                bytes[i++] = (byte)((ReportType >> 16) % 256);
-                bytes[i++] = (byte)((ReportType >> 24) % 256);
-                bytes[i++] = (byte)(RequestFlags % 256);
-                bytes[i++] = (byte)((RequestFlags >> 8) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 16) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 24) % 256);
+                Utils.UIntToBytes(ReportType, bytes, i); i += 4;
+                Utils.UIntToBytes(RequestFlags, bytes, i); i += 4;
                 if(Filter == null) { Console.WriteLine("Warning: Filter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filter.Length;
                 Buffer.BlockCopy(Filter, 0, bytes, i, Filter.Length); i += Filter.Length;
-                bytes[i++] = (byte)(ParcelLocalID % 256);
-                bytes[i++] = (byte)((ParcelLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ParcelLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ParcelLocalID >> 24) % 256);
+                Utils.IntToBytes(ParcelLocalID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -72247,18 +70471,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ReportType % 256);
-                bytes[i++] = (byte)((ReportType >> 8) % 256);
-                bytes[i++] = (byte)((ReportType >> 16) % 256);
-                bytes[i++] = (byte)((ReportType >> 24) % 256);
-                bytes[i++] = (byte)(RequestFlags % 256);
-                bytes[i++] = (byte)((RequestFlags >> 8) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 16) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 24) % 256);
-                bytes[i++] = (byte)(TotalObjectCount % 256);
-                bytes[i++] = (byte)((TotalObjectCount >> 8) % 256);
-                bytes[i++] = (byte)((TotalObjectCount >> 16) % 256);
-                bytes[i++] = (byte)((TotalObjectCount >> 24) % 256);
+                Utils.UIntToBytes(ReportType, bytes, i); i += 4;
+                Utils.UIntToBytes(RequestFlags, bytes, i); i += 4;
+                Utils.UIntToBytes(TotalObjectCount, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -72328,14 +70543,10 @@ namespace OpenMetaverse.Packets
                 {
                     TaskLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TaskID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    LocationX = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    LocationY = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    LocationZ = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Score = BitConverter.ToSingle(bytes, i); i += 4;
+                    LocationX = Utils.BytesToFloat(bytes, i); i += 4;
+                    LocationY = Utils.BytesToFloat(bytes, i); i += 4;
+                    LocationZ = Utils.BytesToFloat(bytes, i); i += 4;
+                    Score = Utils.BytesToFloat(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _taskname = new byte[length];
                     Buffer.BlockCopy(bytes, i, _taskname, 0, length); i += length;
@@ -72351,24 +70562,12 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(TaskLocalID % 256);
-                bytes[i++] = (byte)((TaskLocalID >> 8) % 256);
-                bytes[i++] = (byte)((TaskLocalID >> 16) % 256);
-                bytes[i++] = (byte)((TaskLocalID >> 24) % 256);
+                Utils.UIntToBytes(TaskLocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(LocationX);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(LocationY);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(LocationZ);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(Score);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(LocationX, bytes, i); i += 4;
+                Utils.FloatToBytes(LocationY, bytes, i); i += 4;
+                Utils.FloatToBytes(LocationZ, bytes, i); i += 4;
+                Utils.FloatToBytes(Score, bytes, i); i += 4;
                 if(TaskName == null) { Console.WriteLine("Warning: TaskName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TaskName.Length;
                 Buffer.BlockCopy(TaskName, 0, bytes, i, TaskName.Length); i += TaskName.Length;
@@ -72632,10 +70831,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(Code % 256);
-                bytes[i++] = (byte)((Code >> 8) % 256);
-                bytes[i++] = (byte)((Code >> 16) % 256);
-                bytes[i++] = (byte)((Code >> 24) % 256);
+                Utils.IntToBytes(Code, bytes, i); i += 4;
                 if(Token == null) { Console.WriteLine("Warning: Token is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Token.Length;
                 Buffer.BlockCopy(Token, 0, bytes, i, Token.Length); i += Token.Length;
@@ -72833,10 +71029,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = (byte)((IncludeInSearch) ? 1 : 0);
             }
 
@@ -72979,10 +71172,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
+                Utils.UIntToBytes(ID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -73119,10 +71309,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(IP % 256);
-                bytes[i++] = (byte)((IP >> 8) % 256);
-                bytes[i++] = (byte)((IP >> 16) % 256);
-                bytes[i++] = (byte)((IP >> 24) % 256);
+                Utils.UIntToBytes(IP, bytes, i); i += 4;
                 bytes[i++] = (byte)((Port >> 8) % 256);
                 bytes[i++] = (byte)(Port % 256);
             }
@@ -73419,10 +71606,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = PCode;
                 bytes[i++] = Material;
-                bytes[i++] = (byte)(AddFlags % 256);
-                bytes[i++] = (byte)((AddFlags >> 8) % 256);
-                bytes[i++] = (byte)((AddFlags >> 16) % 256);
-                bytes[i++] = (byte)((AddFlags >> 24) % 256);
+                Utils.UIntToBytes(AddFlags, bytes, i); i += 4;
                 bytes[i++] = PathCurve;
                 bytes[i++] = ProfileCurve;
                 bytes[i++] = (byte)(PathBegin % 256);
@@ -73673,10 +71857,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = Type;
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Data.Length;
@@ -73876,10 +72057,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = CacheMissType;
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
+                Utils.UIntToBytes(ID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -74073,10 +72251,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ObjectLocalID % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
-                bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
+                Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -74271,10 +72446,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RequestFlags % 256);
-                bytes[i++] = (byte)((RequestFlags >> 8) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 16) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 24) % 256);
+                Utils.UIntToBytes(RequestFlags, bytes, i); i += 4;
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -74739,20 +72911,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(SimIP % 256);
-                bytes[i++] = (byte)((SimIP >> 8) % 256);
-                bytes[i++] = (byte)((SimIP >> 16) % 256);
-                bytes[i++] = (byte)((SimIP >> 24) % 256);
+                Utils.UIntToBytes(SimIP, bytes, i); i += 4;
                 bytes[i++] = (byte)((SimPort >> 8) % 256);
                 bytes[i++] = (byte)(SimPort % 256);
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 if(SeedCapability == null) { Console.WriteLine("Warning: SeedCapability is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(SeedCapability.Length % 256);
                 bytes[i++] = (byte)((SeedCapability.Length >> 8) % 256);
@@ -75181,50 +73343,19 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CreationDate % 256);
-                bytes[i++] = (byte)((CreationDate >> 8) % 256);
-                bytes[i++] = (byte)((CreationDate >> 16) % 256);
-                bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                bytes[i++] = (byte)((CreationDate >> 32) % 256);
-                bytes[i++] = (byte)((CreationDate >> 40) % 256);
-                bytes[i++] = (byte)((CreationDate >> 48) % 256);
-                bytes[i++] = (byte)((CreationDate >> 56) % 256);
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnershipCost % 256);
-                bytes[i++] = (byte)((OwnershipCost >> 8) % 256);
-                bytes[i++] = (byte)((OwnershipCost >> 16) % 256);
-                bytes[i++] = (byte)((OwnershipCost >> 24) % 256);
+                Utils.UInt64ToBytes(CreationDate, bytes, i); i += 8;
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
+                Utils.IntToBytes(OwnershipCost, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 bytes[i++] = AggregatePerms;
                 bytes[i++] = AggregatePermTextures;
                 bytes[i++] = AggregatePermTexturesOwner;
-                bytes[i++] = (byte)(Category % 256);
-                bytes[i++] = (byte)((Category >> 8) % 256);
-                bytes[i++] = (byte)((Category >> 16) % 256);
-                bytes[i++] = (byte)((Category >> 24) % 256);
+                Utils.UIntToBytes(Category, bytes, i); i += 4;
                 bytes[i++] = (byte)(InventorySerial % 256);
                 bytes[i++] = (byte)((InventorySerial >> 8) % 256);
                 Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -75469,46 +73600,19 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RequestFlags % 256);
-                bytes[i++] = (byte)((RequestFlags >> 8) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 16) % 256);
-                bytes[i++] = (byte)((RequestFlags >> 24) % 256);
+                Utils.UIntToBytes(RequestFlags, bytes, i); i += 4;
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(BaseMask % 256);
-                bytes[i++] = (byte)((BaseMask >> 8) % 256);
-                bytes[i++] = (byte)((BaseMask >> 16) % 256);
-                bytes[i++] = (byte)((BaseMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnerMask % 256);
-                bytes[i++] = (byte)((OwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((OwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(GroupMask % 256);
-                bytes[i++] = (byte)((GroupMask >> 8) % 256);
-                bytes[i++] = (byte)((GroupMask >> 16) % 256);
-                bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                bytes[i++] = (byte)(EveryoneMask % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
-                bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                bytes[i++] = (byte)(NextOwnerMask % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
-                bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                bytes[i++] = (byte)(OwnershipCost % 256);
-                bytes[i++] = (byte)((OwnershipCost >> 8) % 256);
-                bytes[i++] = (byte)((OwnershipCost >> 16) % 256);
-                bytes[i++] = (byte)((OwnershipCost >> 24) % 256);
+                Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
+                Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
+                Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
+                Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
+                Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
+                Utils.IntToBytes(OwnershipCost, bytes, i); i += 4;
                 bytes[i++] = SaleType;
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                bytes[i++] = (byte)(Category % 256);
-                bytes[i++] = (byte)((Category >> 8) % 256);
-                bytes[i++] = (byte)((Category >> 16) % 256);
-                bytes[i++] = (byte)((Category >> 24) % 256);
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
+                Utils.UIntToBytes(Category, bytes, i); i += 4;
                 Buffer.BlockCopy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
@@ -75694,14 +73798,10 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     SequenceID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    West = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    South = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    East = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    North = BitConverter.ToSingle(bytes, i); i += 4;
+                    West = Utils.BytesToFloat(bytes, i); i += 4;
+                    South = Utils.BytesToFloat(bytes, i); i += 4;
+                    East = Utils.BytesToFloat(bytes, i); i += 4;
+                    North = Utils.BytesToFloat(bytes, i); i += 4;
                     SnapSelection = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
                 catch (Exception)
@@ -75712,23 +73812,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
-                ba = BitConverter.GetBytes(West);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(South);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(East);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(North);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
+                Utils.FloatToBytes(West, bytes, i); i += 4;
+                Utils.FloatToBytes(South, bytes, i); i += 4;
+                Utils.FloatToBytes(East, bytes, i); i += 4;
+                Utils.FloatToBytes(North, bytes, i); i += 4;
                 bytes[i++] = (byte)((SnapSelection) ? 1 : 0);
             }
 
@@ -75855,8 +73943,7 @@ namespace OpenMetaverse.Packets
                     SoundID.FromBytes(bytes, i); i += 16;
                     ObjectID.FromBytes(bytes, i); i += 16;
                     OwnerID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Gain = BitConverter.ToSingle(bytes, i); i += 4;
+                    Gain = Utils.BytesToFloat(bytes, i); i += 4;
                     Flags = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -75867,13 +73954,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(Gain);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Gain, bytes, i); i += 4;
                 bytes[i++] = Flags;
             }
 
@@ -75987,8 +74071,7 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ObjectID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Gain = BitConverter.ToSingle(bytes, i); i += 4;
+                    Gain = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -75998,11 +74081,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(Gain);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Gain, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -76323,8 +74403,7 @@ namespace OpenMetaverse.Packets
                     ID.FromBytes(bytes, i); i += 16;
                     AgentID.FromBytes(bytes, i); i += 16;
                     Type = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Duration = BitConverter.ToSingle(bytes, i); i += 4;
+                    Duration = Utils.BytesToFloat(bytes, i); i += 4;
                     Color = new byte[4];
                     Buffer.BlockCopy(bytes, i, Color, 0, 4); i += 4;
                     length = (ushort)bytes[i++];
@@ -76339,14 +74418,11 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Type;
-                ba = BitConverter.GetBytes(Duration);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                                Buffer.BlockCopy(Color, 0, bytes, i, 4);i += 4;
+                Utils.FloatToBytes(Duration, bytes, i); i += 4;
+                Buffer.BlockCopy(Color, 0, bytes, i, 4);i += 4;
                 if(TypeData == null) { Console.WriteLine("Warning: TypeData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TypeData.Length;
                 Buffer.BlockCopy(TypeData, 0, bytes, i, TypeData.Length); i += TypeData.Length;
@@ -76500,10 +74576,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = PingID;
-                bytes[i++] = (byte)(OldestUnacked % 256);
-                bytes[i++] = (byte)((OldestUnacked >> 8) % 256);
-                bytes[i++] = (byte)((OldestUnacked >> 16) % 256);
-                bytes[i++] = (byte)((OldestUnacked >> 24) % 256);
+                Utils.UIntToBytes(OldestUnacked, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -76748,8 +74821,7 @@ namespace OpenMetaverse.Packets
                     CameraAtAxis.FromBytes(bytes, i); i += 12;
                     CameraLeftAxis.FromBytes(bytes, i); i += 12;
                     CameraUpAxis.FromBytes(bytes, i); i += 12;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Far = BitConverter.ToSingle(bytes, i); i += 4;
+                    Far = Utils.BytesToFloat(bytes, i); i += 4;
                     ControlFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Flags = (byte)bytes[i++];
                 }
@@ -76761,7 +74833,6 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -76771,13 +74842,8 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(CameraAtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(CameraLeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(CameraUpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                ba = BitConverter.GetBytes(Far);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(ControlFlags % 256);
-                bytes[i++] = (byte)((ControlFlags >> 8) % 256);
-                bytes[i++] = (byte)((ControlFlags >> 16) % 256);
-                bytes[i++] = (byte)((ControlFlags >> 24) % 256);
+                Utils.FloatToBytes(Far, bytes, i); i += 4;
+                Utils.UIntToBytes(ControlFlags, bytes, i); i += 4;
                 bytes[i++] = Flags;
             }
 
@@ -77530,8 +75596,7 @@ namespace OpenMetaverse.Packets
                 {
                     Image.FromBytes(bytes, i); i += 16;
                     DiscardLevel = (sbyte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    DownloadPriority = BitConverter.ToSingle(bytes, i); i += 4;
+                    DownloadPriority = Utils.BytesToFloat(bytes, i); i += 4;
                     Packet = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Type = (byte)bytes[i++];
                 }
@@ -77543,16 +75608,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(Image.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)DiscardLevel;
-                ba = BitConverter.GetBytes(DownloadPriority);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(Packet % 256);
-                bytes[i++] = (byte)((Packet >> 8) % 256);
-                bytes[i++] = (byte)((Packet >> 16) % 256);
-                bytes[i++] = (byte)((Packet >> 24) % 256);
+                Utils.FloatToBytes(DownloadPriority, bytes, i); i += 4;
+                Utils.UIntToBytes(Packet, bytes, i); i += 4;
                 bytes[i++] = Type;
             }
 
@@ -77706,10 +75765,7 @@ namespace OpenMetaverse.Packets
             {
                 Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Codec;
-                bytes[i++] = (byte)(Size % 256);
-                bytes[i++] = (byte)((Size >> 8) % 256);
-                bytes[i++] = (byte)((Size >> 16) % 256);
-                bytes[i++] = (byte)((Size >> 24) % 256);
+                Utils.UIntToBytes(Size, bytes, i); i += 4;
                 bytes[i++] = (byte)(Packets % 256);
                 bytes[i++] = (byte)((Packets >> 8) % 256);
             }
@@ -78279,14 +76335,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 bytes[i++] = (byte)(TimeDilation % 256);
                 bytes[i++] = (byte)((TimeDilation >> 8) % 256);
             }
@@ -78529,11 +76578,9 @@ namespace OpenMetaverse.Packets
                     Buffer.BlockCopy(bytes, i, _extraparams, 0, length); i += length;
                     Sound.FromBytes(bytes, i); i += 16;
                     OwnerID.FromBytes(bytes, i); i += 16;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Gain = BitConverter.ToSingle(bytes, i); i += 4;
+                    Gain = Utils.BytesToFloat(bytes, i); i += 4;
                     Flags = (byte)bytes[i++];
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Radius = BitConverter.ToSingle(bytes, i); i += 4;
+                    Radius = Utils.BytesToFloat(bytes, i); i += 4;
                     JointType = (byte)bytes[i++];
                     JointPivot.FromBytes(bytes, i); i += 12;
                     JointAxisOrAnchor.FromBytes(bytes, i); i += 12;
@@ -78546,17 +76593,10 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
+                Utils.UIntToBytes(ID, bytes, i); i += 4;
                 bytes[i++] = State;
                 Buffer.BlockCopy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
                 bytes[i++] = PCode;
                 bytes[i++] = Material;
                 bytes[i++] = ClickAction;
@@ -78564,14 +76604,8 @@ namespace OpenMetaverse.Packets
                 if(ObjectData == null) { Console.WriteLine("Warning: ObjectData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectData.Length;
                 Buffer.BlockCopy(ObjectData, 0, bytes, i, ObjectData.Length); i += ObjectData.Length;
-                bytes[i++] = (byte)(ParentID % 256);
-                bytes[i++] = (byte)((ParentID >> 8) % 256);
-                bytes[i++] = (byte)((ParentID >> 16) % 256);
-                bytes[i++] = (byte)((ParentID >> 24) % 256);
-                bytes[i++] = (byte)(UpdateFlags % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 8) % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 16) % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 24) % 256);
+                Utils.UIntToBytes(ParentID, bytes, i); i += 4;
+                Utils.UIntToBytes(UpdateFlags, bytes, i); i += 4;
                 bytes[i++] = PathCurve;
                 bytes[i++] = ProfileCurve;
                 bytes[i++] = (byte)(PathBegin % 256);
@@ -78613,7 +76647,7 @@ namespace OpenMetaverse.Packets
                 if(Text == null) { Console.WriteLine("Warning: Text is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Text.Length;
                 Buffer.BlockCopy(Text, 0, bytes, i, Text.Length); i += Text.Length;
-                                Buffer.BlockCopy(TextColor, 0, bytes, i, 4);i += 4;
+                Buffer.BlockCopy(TextColor, 0, bytes, i, 4);i += 4;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
                 Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
@@ -78625,13 +76659,9 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(ExtraParams, 0, bytes, i, ExtraParams.Length); i += ExtraParams.Length;
                 Buffer.BlockCopy(Sound.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                ba = BitConverter.GetBytes(Gain);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Gain, bytes, i); i += 4;
                 bytes[i++] = Flags;
-                ba = BitConverter.GetBytes(Radius);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Radius, bytes, i); i += 4;
                 bytes[i++] = JointType;
                 Buffer.BlockCopy(JointPivot.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(JointAxisOrAnchor.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -78833,14 +76863,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 bytes[i++] = (byte)(TimeDilation % 256);
                 bytes[i++] = (byte)((TimeDilation >> 8) % 256);
             }
@@ -78905,10 +76928,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(UpdateFlags % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 8) % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 16) % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 24) % 256);
+                Utils.UIntToBytes(UpdateFlags, bytes, i); i += 4;
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
@@ -79056,14 +77076,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 bytes[i++] = (byte)(TimeDilation % 256);
                 bytes[i++] = (byte)((TimeDilation >> 8) % 256);
             }
@@ -79115,18 +77128,9 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
-                bytes[i++] = (byte)(CRC % 256);
-                bytes[i++] = (byte)((CRC >> 8) % 256);
-                bytes[i++] = (byte)((CRC >> 16) % 256);
-                bytes[i++] = (byte)((CRC >> 24) % 256);
-                bytes[i++] = (byte)(UpdateFlags % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 8) % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 16) % 256);
-                bytes[i++] = (byte)((UpdateFlags >> 24) % 256);
+                Utils.UIntToBytes(ID, bytes, i); i += 4;
+                Utils.UIntToBytes(CRC, bytes, i); i += 4;
+                Utils.UIntToBytes(UpdateFlags, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -79271,14 +77275,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 bytes[i++] = (byte)(TimeDilation % 256);
                 bytes[i++] = (byte)((TimeDilation >> 8) % 256);
             }
@@ -79505,10 +77502,7 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
+                Utils.UIntToBytes(ID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -79667,18 +77661,9 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(ChannelType % 256);
-                bytes[i++] = (byte)((ChannelType >> 8) % 256);
-                bytes[i++] = (byte)((ChannelType >> 16) % 256);
-                bytes[i++] = (byte)((ChannelType >> 24) % 256);
-                bytes[i++] = (byte)(Packet % 256);
-                bytes[i++] = (byte)((Packet >> 8) % 256);
-                bytes[i++] = (byte)((Packet >> 16) % 256);
-                bytes[i++] = (byte)((Packet >> 24) % 256);
-                bytes[i++] = (byte)(Status % 256);
-                bytes[i++] = (byte)((Status >> 8) % 256);
-                bytes[i++] = (byte)((Status >> 16) % 256);
-                bytes[i++] = (byte)((Status >> 24) % 256);
+                Utils.IntToBytes(ChannelType, bytes, i); i += 4;
+                Utils.IntToBytes(Packet, bytes, i); i += 4;
+                Utils.IntToBytes(Status, bytes, i); i += 4;
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
@@ -79805,18 +77790,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
-                bytes[i++] = (byte)((ID >> 32) % 256);
-                bytes[i++] = (byte)((ID >> 40) % 256);
-                bytes[i++] = (byte)((ID >> 48) % 256);
-                bytes[i++] = (byte)((ID >> 56) % 256);
-                bytes[i++] = (byte)(Packet % 256);
-                bytes[i++] = (byte)((Packet >> 8) % 256);
-                bytes[i++] = (byte)((Packet >> 16) % 256);
-                bytes[i++] = (byte)((Packet >> 24) % 256);
+                Utils.UInt64ToBytes(ID, bytes, i); i += 8;
+                Utils.UIntToBytes(Packet, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -80005,18 +77980,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(ID % 256);
-                bytes[i++] = (byte)((ID >> 8) % 256);
-                bytes[i++] = (byte)((ID >> 16) % 256);
-                bytes[i++] = (byte)((ID >> 24) % 256);
-                bytes[i++] = (byte)((ID >> 32) % 256);
-                bytes[i++] = (byte)((ID >> 40) % 256);
-                bytes[i++] = (byte)((ID >> 48) % 256);
-                bytes[i++] = (byte)((ID >> 56) % 256);
-                bytes[i++] = (byte)(Packet % 256);
-                bytes[i++] = (byte)((Packet >> 8) % 256);
-                bytes[i++] = (byte)((Packet >> 16) % 256);
-                bytes[i++] = (byte)((Packet >> 24) % 256);
+                Utils.UInt64ToBytes(ID, bytes, i); i += 8;
+                Utils.UIntToBytes(Packet, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -80182,10 +78147,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(AnimSequenceID % 256);
-                bytes[i++] = (byte)((AnimSequenceID >> 8) % 256);
-                bytes[i++] = (byte)((AnimSequenceID >> 16) % 256);
-                bytes[i++] = (byte)((AnimSequenceID >> 24) % 256);
+                Utils.IntToBytes(AnimSequenceID, bytes, i); i += 4;
             }
 
             public override string ToString()
@@ -80912,8 +78874,7 @@ namespace OpenMetaverse.Packets
                     GroupPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OtherPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SelectedPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    ParcelPrimBonus = BitConverter.ToSingle(bytes, i); i += 4;
+                    ParcelPrimBonus = Utils.BytesToFloat(bytes, i); i += 4;
                     OtherCleanTime = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -80933,8 +78894,7 @@ namespace OpenMetaverse.Packets
                     MediaAutoScale = (byte)bytes[i++];
                     GroupID.FromBytes(bytes, i); i += 16;
                     PassPrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    PassHours = BitConverter.ToSingle(bytes, i); i += 4;
+                    PassHours = Utils.BytesToFloat(bytes, i); i += 4;
                     Category = (byte)bytes[i++];
                     AuthBuyerID.FromBytes(bytes, i); i += 16;
                     SnapshotID.FromBytes(bytes, i); i += 16;
@@ -80954,108 +78914,39 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(RequestResult % 256);
-                bytes[i++] = (byte)((RequestResult >> 8) % 256);
-                bytes[i++] = (byte)((RequestResult >> 16) % 256);
-                bytes[i++] = (byte)((RequestResult >> 24) % 256);
-                bytes[i++] = (byte)(SequenceID % 256);
-                bytes[i++] = (byte)((SequenceID >> 8) % 256);
-                bytes[i++] = (byte)((SequenceID >> 16) % 256);
-                bytes[i++] = (byte)((SequenceID >> 24) % 256);
+                Utils.IntToBytes(RequestResult, bytes, i); i += 4;
+                Utils.IntToBytes(SequenceID, bytes, i); i += 4;
                 bytes[i++] = (byte)((SnapSelection) ? 1 : 0);
-                bytes[i++] = (byte)(SelfCount % 256);
-                bytes[i++] = (byte)((SelfCount >> 8) % 256);
-                bytes[i++] = (byte)((SelfCount >> 16) % 256);
-                bytes[i++] = (byte)((SelfCount >> 24) % 256);
-                bytes[i++] = (byte)(OtherCount % 256);
-                bytes[i++] = (byte)((OtherCount >> 8) % 256);
-                bytes[i++] = (byte)((OtherCount >> 16) % 256);
-                bytes[i++] = (byte)((OtherCount >> 24) % 256);
-                bytes[i++] = (byte)(PublicCount % 256);
-                bytes[i++] = (byte)((PublicCount >> 8) % 256);
-                bytes[i++] = (byte)((PublicCount >> 16) % 256);
-                bytes[i++] = (byte)((PublicCount >> 24) % 256);
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
+                Utils.IntToBytes(SelfCount, bytes, i); i += 4;
+                Utils.IntToBytes(OtherCount, bytes, i); i += 4;
+                Utils.IntToBytes(PublicCount, bytes, i); i += 4;
+                Utils.IntToBytes(LocalID, bytes, i); i += 4;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                bytes[i++] = (byte)(AuctionID % 256);
-                bytes[i++] = (byte)((AuctionID >> 8) % 256);
-                bytes[i++] = (byte)((AuctionID >> 16) % 256);
-                bytes[i++] = (byte)((AuctionID >> 24) % 256);
-                bytes[i++] = (byte)(ClaimDate % 256);
-                bytes[i++] = (byte)((ClaimDate >> 8) % 256);
-                bytes[i++] = (byte)((ClaimDate >> 16) % 256);
-                bytes[i++] = (byte)((ClaimDate >> 24) % 256);
-                bytes[i++] = (byte)(ClaimPrice % 256);
-                bytes[i++] = (byte)((ClaimPrice >> 8) % 256);
-                bytes[i++] = (byte)((ClaimPrice >> 16) % 256);
-                bytes[i++] = (byte)((ClaimPrice >> 24) % 256);
-                bytes[i++] = (byte)(RentPrice % 256);
-                bytes[i++] = (byte)((RentPrice >> 8) % 256);
-                bytes[i++] = (byte)((RentPrice >> 16) % 256);
-                bytes[i++] = (byte)((RentPrice >> 24) % 256);
+                Utils.UIntToBytes(AuctionID, bytes, i); i += 4;
+                Utils.IntToBytes(ClaimDate, bytes, i); i += 4;
+                Utils.IntToBytes(ClaimPrice, bytes, i); i += 4;
+                Utils.IntToBytes(RentPrice, bytes, i); i += 4;
                 Buffer.BlockCopy(AABBMin.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(AABBMax.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(Bitmap == null) { Console.WriteLine("Warning: Bitmap is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Bitmap.Length % 256);
                 bytes[i++] = (byte)((Bitmap.Length >> 8) % 256);
                 Buffer.BlockCopy(Bitmap, 0, bytes, i, Bitmap.Length); i += Bitmap.Length;
-                bytes[i++] = (byte)(Area % 256);
-                bytes[i++] = (byte)((Area >> 8) % 256);
-                bytes[i++] = (byte)((Area >> 16) % 256);
-                bytes[i++] = (byte)((Area >> 24) % 256);
+                Utils.IntToBytes(Area, bytes, i); i += 4;
                 bytes[i++] = Status;
-                bytes[i++] = (byte)(SimWideMaxPrims % 256);
-                bytes[i++] = (byte)((SimWideMaxPrims >> 8) % 256);
-                bytes[i++] = (byte)((SimWideMaxPrims >> 16) % 256);
-                bytes[i++] = (byte)((SimWideMaxPrims >> 24) % 256);
-                bytes[i++] = (byte)(SimWideTotalPrims % 256);
-                bytes[i++] = (byte)((SimWideTotalPrims >> 8) % 256);
-                bytes[i++] = (byte)((SimWideTotalPrims >> 16) % 256);
-                bytes[i++] = (byte)((SimWideTotalPrims >> 24) % 256);
-                bytes[i++] = (byte)(MaxPrims % 256);
-                bytes[i++] = (byte)((MaxPrims >> 8) % 256);
-                bytes[i++] = (byte)((MaxPrims >> 16) % 256);
-                bytes[i++] = (byte)((MaxPrims >> 24) % 256);
-                bytes[i++] = (byte)(TotalPrims % 256);
-                bytes[i++] = (byte)((TotalPrims >> 8) % 256);
-                bytes[i++] = (byte)((TotalPrims >> 16) % 256);
-                bytes[i++] = (byte)((TotalPrims >> 24) % 256);
-                bytes[i++] = (byte)(OwnerPrims % 256);
-                bytes[i++] = (byte)((OwnerPrims >> 8) % 256);
-                bytes[i++] = (byte)((OwnerPrims >> 16) % 256);
-                bytes[i++] = (byte)((OwnerPrims >> 24) % 256);
-                bytes[i++] = (byte)(GroupPrims % 256);
-                bytes[i++] = (byte)((GroupPrims >> 8) % 256);
-                bytes[i++] = (byte)((GroupPrims >> 16) % 256);
-                bytes[i++] = (byte)((GroupPrims >> 24) % 256);
-                bytes[i++] = (byte)(OtherPrims % 256);
-                bytes[i++] = (byte)((OtherPrims >> 8) % 256);
-                bytes[i++] = (byte)((OtherPrims >> 16) % 256);
-                bytes[i++] = (byte)((OtherPrims >> 24) % 256);
-                bytes[i++] = (byte)(SelectedPrims % 256);
-                bytes[i++] = (byte)((SelectedPrims >> 8) % 256);
-                bytes[i++] = (byte)((SelectedPrims >> 16) % 256);
-                bytes[i++] = (byte)((SelectedPrims >> 24) % 256);
-                ba = BitConverter.GetBytes(ParcelPrimBonus);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(OtherCleanTime % 256);
-                bytes[i++] = (byte)((OtherCleanTime >> 8) % 256);
-                bytes[i++] = (byte)((OtherCleanTime >> 16) % 256);
-                bytes[i++] = (byte)((OtherCleanTime >> 24) % 256);
-                bytes[i++] = (byte)(ParcelFlags % 256);
-                bytes[i++] = (byte)((ParcelFlags >> 8) % 256);
-                bytes[i++] = (byte)((ParcelFlags >> 16) % 256);
-                bytes[i++] = (byte)((ParcelFlags >> 24) % 256);
-                bytes[i++] = (byte)(SalePrice % 256);
-                bytes[i++] = (byte)((SalePrice >> 8) % 256);
-                bytes[i++] = (byte)((SalePrice >> 16) % 256);
-                bytes[i++] = (byte)((SalePrice >> 24) % 256);
+                Utils.IntToBytes(SimWideMaxPrims, bytes, i); i += 4;
+                Utils.IntToBytes(SimWideTotalPrims, bytes, i); i += 4;
+                Utils.IntToBytes(MaxPrims, bytes, i); i += 4;
+                Utils.IntToBytes(TotalPrims, bytes, i); i += 4;
+                Utils.IntToBytes(OwnerPrims, bytes, i); i += 4;
+                Utils.IntToBytes(GroupPrims, bytes, i); i += 4;
+                Utils.IntToBytes(OtherPrims, bytes, i); i += 4;
+                Utils.IntToBytes(SelectedPrims, bytes, i); i += 4;
+                Utils.FloatToBytes(ParcelPrimBonus, bytes, i); i += 4;
+                Utils.IntToBytes(OtherCleanTime, bytes, i); i += 4;
+                Utils.UIntToBytes(ParcelFlags, bytes, i); i += 4;
+                Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -81071,13 +78962,8 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = MediaAutoScale;
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(PassPrice % 256);
-                bytes[i++] = (byte)((PassPrice >> 8) % 256);
-                bytes[i++] = (byte)((PassPrice >> 16) % 256);
-                bytes[i++] = (byte)((PassPrice >> 24) % 256);
-                ba = BitConverter.GetBytes(PassHours);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.IntToBytes(PassPrice, bytes, i); i += 4;
+                Utils.FloatToBytes(PassHours, bytes, i); i += 4;
                 bytes[i++] = Category;
                 Buffer.BlockCopy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -81360,10 +79246,8 @@ namespace OpenMetaverse.Packets
                     LeftAxis.FromBytes(bytes, i); i += 12;
                     UpAxis.FromBytes(bytes, i); i += 12;
                     ChangedGrid = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Far = BitConverter.ToSingle(bytes, i); i += 4;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Aspect = BitConverter.ToSingle(bytes, i); i += 4;
+                    Far = Utils.BytesToFloat(bytes, i); i += 4;
+                    Aspect = Utils.BytesToFloat(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _throttles = new byte[length];
                     Buffer.BlockCopy(bytes, i, _throttles, 0, length); i += length;
@@ -81371,8 +79255,7 @@ namespace OpenMetaverse.Packets
                     HeadRotation.FromBytes(bytes, i, true); i += 12;
                     BodyRotation.FromBytes(bytes, i, true); i += 12;
                     ControlFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    EnergyLevel = BitConverter.ToSingle(bytes, i); i += 4;
+                    EnergyLevel = Utils.BytesToFloat(bytes, i); i += 4;
                     GodLevel = (byte)bytes[i++];
                     AlwaysRun = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     PreyAgent.FromBytes(bytes, i); i += 16;
@@ -81390,19 +79273,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                bytes[i++] = (byte)(ViewerCircuitCode % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 24) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
+                Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -81413,28 +79285,16 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
-                ba = BitConverter.GetBytes(Far);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                ba = BitConverter.GetBytes(Aspect);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Far, bytes, i); i += 4;
+                Utils.FloatToBytes(Aspect, bytes, i); i += 4;
                 if(Throttles == null) { Console.WriteLine("Warning: Throttles is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Throttles.Length;
                 Buffer.BlockCopy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
-                bytes[i++] = (byte)(LocomotionState % 256);
-                bytes[i++] = (byte)((LocomotionState >> 8) % 256);
-                bytes[i++] = (byte)((LocomotionState >> 16) % 256);
-                bytes[i++] = (byte)((LocomotionState >> 24) % 256);
+                Utils.UIntToBytes(LocomotionState, bytes, i); i += 4;
                 Buffer.BlockCopy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = (byte)(ControlFlags % 256);
-                bytes[i++] = (byte)((ControlFlags >> 8) % 256);
-                bytes[i++] = (byte)((ControlFlags >> 16) % 256);
-                bytes[i++] = (byte)((ControlFlags >> 24) % 256);
-                ba = BitConverter.GetBytes(EnergyLevel);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.UIntToBytes(ControlFlags, bytes, i); i += 4;
+                Utils.FloatToBytes(EnergyLevel, bytes, i); i += 4;
                 bytes[i++] = GodLevel;
                 bytes[i++] = (byte)((AlwaysRun) ? 1 : 0);
                 Buffer.BlockCopy(PreyAgent.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -81520,14 +79380,7 @@ namespace OpenMetaverse.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(GroupPowers % 256);
-                bytes[i++] = (byte)((GroupPowers >> 8) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 16) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 24) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 32) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 40) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 48) % 256);
-                bytes[i++] = (byte)((GroupPowers >> 56) % 256);
+                Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
             }
 
@@ -81976,18 +79829,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                bytes[i++] = (byte)(ViewerCircuitCode % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 24) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
+                Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
@@ -82131,18 +79974,8 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)(RegionHandle % 256);
-                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
-                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                bytes[i++] = (byte)(ViewerCircuitCode % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 8) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 16) % 256);
-                bytes[i++] = (byte)((ViewerCircuitCode >> 24) % 256);
+                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
+                Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -82282,8 +80115,7 @@ namespace OpenMetaverse.Packets
                     ParentID.FromBytes(bytes, i); i += 16;
                     Handle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     Position.FromBytes(bytes, i); i += 12;
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Gain = BitConverter.ToSingle(bytes, i); i += 4;
+                    Gain = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
                 {
@@ -82293,23 +80125,13 @@ namespace OpenMetaverse.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                byte[] ba;
                 Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(Handle % 256);
-                bytes[i++] = (byte)((Handle >> 8) % 256);
-                bytes[i++] = (byte)((Handle >> 16) % 256);
-                bytes[i++] = (byte)((Handle >> 24) % 256);
-                bytes[i++] = (byte)((Handle >> 32) % 256);
-                bytes[i++] = (byte)((Handle >> 40) % 256);
-                bytes[i++] = (byte)((Handle >> 48) % 256);
-                bytes[i++] = (byte)((Handle >> 56) % 256);
+                Utils.UInt64ToBytes(Handle, bytes, i); i += 8;
                 Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                ba = BitConverter.GetBytes(Gain);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Utils.FloatToBytes(Gain, bytes, i); i += 4;
             }
 
             public override string ToString()

@@ -96,16 +96,12 @@ namespace mapgenerator
                         field.Name + " = (bytes[i++] != 0) ? (bool)true : (bool)false;");
                     break;
                 case FieldType.F32:
-                    writer.WriteLine("                    " + 
-                        "if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);");
                     writer.WriteLine("                    " +
-                        field.Name + " = BitConverter.ToSingle(bytes, i); i += 4;");
+                        field.Name + " = Utils.BytesToFloat(bytes, i); i += 4;");
                     break;
                 case FieldType.F64:
                     writer.WriteLine("                    " +
-                        "if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 8);");
-                    writer.WriteLine("                    " +
-                        field.Name + " = BitConverter.ToDouble(bytes, i); i += 8;");
+                        field.Name + " = Utils.BytesToDouble(bytes, i); i += 8;");
                     break;
                 case FieldType.Fixed:
                     writer.WriteLine("                    " + field.Name + " = new byte[" + field.Count + "];");
@@ -193,17 +189,13 @@ namespace mapgenerator
                     writer.WriteLine("bytes[i++] = (byte)((" + field.Name + ") ? 1 : 0);");
                     break;
                 case FieldType.F32:
-                    writer.WriteLine("ba = BitConverter.GetBytes(" + field.Name + ");" + Environment.NewLine +
-                        "                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }" + Environment.NewLine +
-                        "                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;");
+                    writer.WriteLine("Utils.FloatToBytes(" + field.Name + ", bytes, i); i += 4;");
                     break;
                 case FieldType.F64:
-                    writer.WriteLine("ba = BitConverter.GetBytes(" + field.Name + ");" + Environment.NewLine +
-                        "                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }" + Environment.NewLine +
-                        "                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;");
+                    writer.WriteLine("Utils.DoubleToBytes(" + field.Name + ", bytes, i); i += 8;");
                     break;
                 case FieldType.Fixed:
-                    writer.WriteLine("                Buffer.BlockCopy(" + field.Name + ", 0, bytes, i, " + field.Count + ");" + 
+                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ", 0, bytes, i, " + field.Count + ");" + 
                         "i += " + field.Count + ";");
                     break;
                 case FieldType.IPPORT:
@@ -237,21 +229,13 @@ namespace mapgenerator
                     break;
                 case FieldType.IPADDR:
                 case FieldType.U32:
+                    writer.WriteLine("Utils.UIntToBytes(" + field.Name + ", bytes, i); i += 4;");
+                    break;
                 case FieldType.S32:
-                    writer.WriteLine("bytes[i++] = (byte)(" + field.Name + " % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 8) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 16) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 24) % 256);");
+                    writer.WriteLine("Utils.IntToBytes(" + field.Name + ", bytes, i); i += 4;");
                     break;
                 case FieldType.U64:
-                    writer.WriteLine("bytes[i++] = (byte)(" + field.Name + " % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 8) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 16) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 24) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 32) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 40) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 48) % 256);");
-                    writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 56) % 256);");
+                    writer.WriteLine("Utils.UInt64ToBytes(" + field.Name + ", bytes, i); i += 8;");
                     break;
                 case FieldType.Variable:
                     writer.WriteLine("if(" + field.Name + " == null) { Console.WriteLine(\"Warning: " + field.Name + " is null, in \" + this.GetType()); }");
@@ -316,7 +300,6 @@ namespace mapgenerator
         static void WriteBlockClass(TextWriter writer, MapBlock block, MapPacket packet)
         {
             bool variableFields = false;
-            bool floatFields = false;
 
             //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
             writer.WriteLine("        /// <exclude/>");
@@ -326,9 +309,7 @@ namespace mapgenerator
             foreach (MapField field in block.Fields)
             {
                 WriteFieldMember(writer, field);
-
                 if (field.Type == FieldType.Variable) { variableFields = true; }
-                if (field.Type == FieldType.F32 || field.Type == FieldType.F64) { floatFields = true; }
             }
 
             // Length property
@@ -405,9 +386,6 @@ namespace mapgenerator
             //writer.WriteLine("            /// <summary>Serialize this block to a byte array</summary>");
             writer.WriteLine("            public void ToBytes(byte[] bytes, ref int i)" + Environment.NewLine + 
                 "            {");
-
-            // Declare a byte[] variable if we need it for floating point field conversions
-            if (floatFields) { writer.WriteLine("                byte[] ba;"); }
 
             foreach (MapField field in block.Fields)
             {
