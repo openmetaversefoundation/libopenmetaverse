@@ -58,7 +58,7 @@ namespace Simian.Extensions
                 // Create some inventory items for appearance
                 UUID clothingFolder = UUID.Random();
                 server.Inventory.CreateFolder(agent.AgentID, clothingFolder, "Clothing", AssetType.Clothing,
-                    UUID.Zero, agent.AgentID);
+                    agent.InventoryRoot, agent.AgentID);
                 UUID defaultOutfitFolder = UUID.Random();
                 server.Inventory.CreateFolder(agent.AgentID, defaultOutfitFolder, "Default Outfit", AssetType.Unknown,
                     clothingFolder, agent.AgentID);
