@@ -25,6 +25,7 @@ namespace Simian.Extensions
         public event ObjectFlagsCallback OnObjectFlags;
         public event ObjectImageCallback OnObjectImage;
         public event ObjectModifyCallback OnObjectModify;
+        public event AvatarAppearanceCallback OnAvatarAppearance;
         public event TerrainUpdatedCallback OnTerrainUpdated;
 
         public float[] Heightmap
@@ -180,6 +181,35 @@ namespace Simian.Extensions
             BroadcastObjectUpdate(obj);
         }
 
+        public void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
+        {
+            if (OnAvatarAppearance != null)
+            {
+                OnAvatarAppearance(sender, agent, textures, visualParams);
+            }
+
+            // Update the avatar
+            agent.Avatar.Textures = textures;
+            if (visualParams != null)
+                agent.VisualParams = visualParams;
+
+            // Broadcast the object update
+            ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
+                server.RegionHandle, agent.State, agent.Flags);
+            server.UDP.BroadcastPacket(update, PacketCategory.State);
+
+            // Send the appearance packet to all other clients
+            AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
+            lock (server.Agents)
+            {
+                foreach (Agent recipient in server.Agents.Values)
+                {
+                    if (recipient != agent)
+                        server.UDP.SendPacket(recipient.AgentID, appearance, PacketCategory.State);
+                }
+            }
+        }
+
         public bool TryGetObject(uint localID, out SimulationObject obj)
         {
             return sceneObjects.TryGetValue(localID, out obj);
@@ -284,7 +314,7 @@ namespace Simian.Extensions
                     if (otherAgent != agent)
                     {
                         // Send appearances for this avatar
-                        AvatarAppearancePacket appearance = AvatarManager.BuildAppearancePacket(otherAgent);
+                        AvatarAppearancePacket appearance = BuildAppearancePacket(otherAgent);
                         server.UDP.SendPacket(agent.AgentID, appearance, PacketCategory.State);
                     }
                 }
@@ -342,6 +372,23 @@ namespace Simian.Extensions
                     }
                 }
             }
+        }
+
+        static AvatarAppearancePacket BuildAppearancePacket(Agent agent)
+        {
+            AvatarAppearancePacket appearance = new AvatarAppearancePacket();
+            appearance.ObjectData.TextureEntry = agent.Avatar.Textures.ToBytes();
+            appearance.Sender.ID = agent.AgentID;
+            appearance.Sender.IsTrial = false;
+
+            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[218];
+            for (int i = 0; i < 218; i++)
+            {
+                appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
+                appearance.VisualParam[i].ParamValue = agent.VisualParams[i];
+            }
+
+            return appearance;
         }
     }
 }

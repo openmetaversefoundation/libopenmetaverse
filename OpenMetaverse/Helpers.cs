@@ -186,18 +186,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Convert a variable length field (byte array) to a string
-        /// </summary>
-        /// <remarks>If the byte array has unprintable characters in it, a 
-        /// hex dump will be written instead</remarks>
-        /// <param name="output">The StringBuilder object to write to</param>
-        /// <param name="bytes">The byte array to convert to a string</param>
-        internal static void FieldToString(StringBuilder output, byte[] bytes)
-        {
-            FieldToString(output, bytes, String.Empty);
-        }
-
-        /// <summary>
         /// Convert a variable length field (byte array) to a string, with a
         /// field name prepended to each line of the output
         /// </summary>
@@ -542,6 +530,32 @@ namespace OpenMetaverse
             const uint ATTACHMENT_MASK = 0xF0;
             uint fixedState = (((byte)state & ATTACHMENT_MASK) >> 4) | (((byte)state & ~ATTACHMENT_MASK) << 4);
             return (AttachmentPoint)fixedState;
+        }
+
+        public static List<int> SplitBlocks(PacketBlock[] blocks, int packetOverhead)
+        {
+            List<int> splitPoints = new List<int>();
+            int size = 0;
+
+            if (blocks != null && blocks.Length > 0)
+            {
+                splitPoints.Add(0);
+
+                for (int i = 0; i < blocks.Length; i++)
+                {
+                    size += blocks[i].Length;
+
+                    // If the next block will put this packet over the limit, add a split point
+                    if (i < blocks.Length - 1 &&
+                        size + blocks[i + 1].Length + packetOverhead >= Settings.MAX_PACKET_SIZE)
+                    {
+                        splitPoints.Add(i + 1);
+                        size = 0;
+                    }
+                }
+            }
+
+            return splitPoints;
         }
     }
 }

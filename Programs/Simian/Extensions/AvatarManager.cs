@@ -307,41 +307,9 @@ namespace Simian.Extensions
             SendWearables(agent);
         }
 
-        void ClearWearables(Agent agent)
-        {
-            agent.ShapeItem = UUID.Zero;
-            agent.ShapeAsset = UUID.Zero;
-            agent.SkinItem = UUID.Zero;
-            agent.SkinAsset = UUID.Zero;
-            agent.HairItem = UUID.Zero;
-            agent.HairAsset = UUID.Zero;
-            agent.EyesItem = UUID.Zero;
-            agent.EyesAsset = UUID.Zero;
-            agent.ShirtItem = UUID.Zero;
-            agent.ShirtAsset = UUID.Zero;
-            agent.PantsItem = UUID.Zero;
-            agent.PantsAsset = UUID.Zero;
-            agent.ShoesItem = UUID.Zero;
-            agent.ShoesAsset = UUID.Zero;
-            agent.SocksItem = UUID.Zero;
-            agent.SocksAsset = UUID.Zero;
-            agent.JacketItem = UUID.Zero;
-            agent.JacketAsset = UUID.Zero;
-            agent.GlovesItem = UUID.Zero;
-            agent.GlovesAsset = UUID.Zero;
-            agent.UndershirtItem = UUID.Zero;
-            agent.UndershirtAsset = UUID.Zero;
-            agent.UnderpantsItem = UUID.Zero;
-            agent.UnderpantsAsset = UUID.Zero;
-            agent.SkirtItem = UUID.Zero;
-            agent.SkirtAsset = UUID.Zero;
-        }
-
         void AgentIsNowWearingHandler(Packet packet, Agent agent)
         {
             AgentIsNowWearingPacket wearing = (AgentIsNowWearingPacket)packet;
-
-            ClearWearables(agent);
 
             for (int i = 0; i < wearing.WearableData.Length; i++)
             {
@@ -422,16 +390,6 @@ namespace Simian.Extensions
 
             Logger.DebugLog("Updating avatar appearance");
 
-            agent.Avatar.Textures = new Primitive.TextureEntry(set.ObjectData.TextureEntry, 0,
-                set.ObjectData.TextureEntry.Length);
-
-            // Update agent visual params
-            if (agent.VisualParams == null)
-                agent.VisualParams = new byte[set.VisualParam.Length];
-
-            for (int i = 0; i < set.VisualParam.Length; i++)
-                agent.VisualParams[i] = set.VisualParam[i].ParamValue;
-
             //TODO: Store this for cached bake responses
             for (int i = 0; i < set.WearableData.Length; i++)
             {
@@ -441,20 +399,16 @@ namespace Simian.Extensions
                 Logger.DebugLog(String.Format("WearableData: {0} is now {1}", index, cacheID));
             }
 
-            ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
-                Server.RegionHandle, agent.State, agent.Flags | PrimFlags.ObjectYouOwner);
-            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
+            // Create a TextureEntry
+            Primitive.TextureEntry textureEntry = new Primitive.TextureEntry(set.ObjectData.TextureEntry, 0,
+                set.ObjectData.TextureEntry.Length);
 
-            // Send out this appearance to all other connected avatars
-            AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
-            lock (Server.Agents)
-            {
-                foreach (Agent recipient in Server.Agents.Values)
-                {
-                    if (recipient != agent)
-                        Server.UDP.SendPacket(recipient.AgentID, appearance, PacketCategory.State);
-                }
-            }
+            // Create a block of VisualParams
+            byte[] visualParams = new byte[set.VisualParam.Length];
+            for (int i = 0; i < set.VisualParam.Length; i++)
+                visualParams[i] = set.VisualParam[i].ParamValue;
+
+            Server.Scene.AvatarAppearance(this, agent, textureEntry, visualParams);
         }
 
         void AgentCachedTextureHandler(Packet packet, Agent agent)
@@ -515,23 +469,6 @@ namespace Simian.Extensions
             }
 
             Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
-        }
-
-        public static AvatarAppearancePacket BuildAppearancePacket(Agent agent)
-        {
-            AvatarAppearancePacket appearance = new AvatarAppearancePacket();
-            appearance.ObjectData.TextureEntry = agent.Avatar.Textures.ToBytes();
-            appearance.Sender.ID = agent.AgentID;
-            appearance.Sender.IsTrial = false;
-
-            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[218];
-            for (int i = 0; i < 218; i++)
-            {
-                appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
-                appearance.VisualParam[i].ParamValue = agent.VisualParams[i];
-            }
-
-            return appearance;
         }
     }
 }

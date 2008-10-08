@@ -13,6 +13,8 @@ namespace Simian
         string mediaURL, Primitive.TextureEntry textureEntry);
     public delegate void ObjectModifyCallback(object sender, SimulationObject obj,
         Primitive.ConstructionData data);
+    public delegate void AvatarAppearanceCallback(object sender, Agent agent,
+        Primitive.TextureEntry textures, byte[] visualParams);
     // TODO: Convert terrain to a patch-based system
     public delegate void TerrainUpdatedCallback(object sender);
 
@@ -23,6 +25,7 @@ namespace Simian
         event ObjectTransformCallback OnObjectTransform;
         event ObjectFlagsCallback OnObjectFlags;
         event ObjectModifyCallback OnObjectModify;
+        event AvatarAppearanceCallback OnAvatarAppearance;
         event TerrainUpdatedCallback OnTerrainUpdated;
 
         // TODO: Convert to a patch-based system, and expose terrain editing
@@ -38,6 +41,9 @@ namespace Simian
         void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags);
         void ObjectImage(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
         void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data);
+
+        void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
+
         bool TryGetObject(uint localID, out SimulationObject obj);
         bool TryGetObject(UUID id, out SimulationObject obj);
     }

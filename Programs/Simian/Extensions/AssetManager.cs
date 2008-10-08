@@ -96,7 +96,7 @@ namespace Simian.Extensions
                 AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
                 complete.AssetBlock.Success = true;
                 complete.AssetBlock.Type = request.AssetBlock.Type;
-                complete.AssetBlock.UUID = request.AssetBlock.TransactionID;
+                complete.AssetBlock.UUID = assetID;
                 Server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Inventory);
             }
             else
@@ -394,6 +394,7 @@ namespace Simian.Extensions
             string[] textures = Directory.GetFiles(path, "*.jp2", SearchOption.TopDirectoryOnly);
             string[] clothing = Directory.GetFiles(path, "*.clothing", SearchOption.TopDirectoryOnly);
             string[] bodyparts = Directory.GetFiles(path, "*.bodypart", SearchOption.TopDirectoryOnly);
+            string[] sounds = Directory.GetFiles(path, "*.ogg", SearchOption.TopDirectoryOnly);
 
             for (int i = 0; i < textures.Length; i++)
             {
@@ -411,6 +412,12 @@ namespace Simian.Extensions
             {
                 UUID assetID = ParseUUIDFromFilename(bodyparts[i]);
                 StoreAsset(new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i])));
+            }
+
+            for (int i = 0; i < sounds.Length; i++)
+            {
+                UUID assetID = ParseUUIDFromFilename(sounds[i]);
+                StoreAsset(new AssetSound(assetID, File.ReadAllBytes(sounds[i])));
             }
 
             Logger.DebugLog(String.Format("Loaded {0} assets", AssetStore.Count));

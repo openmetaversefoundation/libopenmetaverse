@@ -152,6 +152,9 @@ namespace Simian.Extensions
 
         void FetchInventoryDescendentsHandler(Packet packet, Agent agent)
         {
+            // A very safe estimate of the fixed minimum packet size
+            const int PACKET_OVERHEAD = 96;
+
             FetchInventoryDescendentsPacket fetch = (FetchInventoryDescendentsPacket)packet;
             bool sendFolders = fetch.InventoryData.FetchFolders;
             bool sendItems = fetch.InventoryData.FetchItems;
@@ -161,30 +164,29 @@ namespace Simian.Extensions
 
             // TODO: Use OwnerID
             // TODO: Do we need to obey InventorySortOrder?
-            // FIXME: This packet can become huge very quickly. Add logic to break it up into multiple packets
-
             InventoryObject invObject;
             if (agentInventory.TryGetValue(fetch.InventoryData.FolderID, out invObject) && invObject is InventoryFolder)
             {
                 InventoryFolder folder = (InventoryFolder)invObject;
 
+                int descendCount;
+                int version;
+
+                List<InventoryItem> items = new List<InventoryItem>();
+                List<InventoryFolder> folders = new List<InventoryFolder>();
+                InventoryDescendentsPacket.FolderDataBlock[] folderBlocks;
+                InventoryDescendentsPacket.ItemDataBlock[] itemBlocks;
+
                 lock (folder.Children.Dictionary)
                 {
-                    InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
-                    descendents.AgentData.AgentID = agent.AgentID;
-                    descendents.AgentData.Descendents = folder.Children.Count;
-                    descendents.AgentData.FolderID = folder.ID;
-                    descendents.AgentData.OwnerID = folder.OwnerID;
-                    descendents.AgentData.Version = folder.Version;
-
-                    descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[0];
-                    descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[0];
+                    // These two are coupled to the actual items in the dictionary,
+                    // so they are set inside the lock
+                    descendCount = folder.Children.Count;
+                    version = folder.Version;
 
                     if (sendItems || sendFolders)
                     {
-                        List<InventoryItem> items = new List<InventoryItem>();
-                        List<InventoryFolder> folders = new List<InventoryFolder>();
-
+                        // Create a list of all of the folders and items under this folder
                         folder.Children.ForEach(
                             delegate(InventoryObject obj)
                             {
@@ -194,63 +196,141 @@ namespace Simian.Extensions
                                     folders.Add((InventoryFolder)obj);
                             }
                         );
-
-                        if (sendItems)
-                        {
-                            descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[items.Count];
-                            for (int i = 0; i < items.Count; i++)
-                            {
-                                InventoryItem currentItem = items[i];
-
-                                descendents.ItemData[i] = new InventoryDescendentsPacket.ItemDataBlock();
-                                descendents.ItemData[i].AssetID = currentItem.AssetID;
-                                descendents.ItemData[i].BaseMask = (uint)currentItem.Permissions.BaseMask;
-                                descendents.ItemData[i].CRC = Helpers.InventoryCRC(
-                                    (int)Utils.DateTimeToUnixTime(currentItem.CreationDate),
-                                    (byte)currentItem.SaleType, (sbyte)currentItem.InventoryType,
-                                    (sbyte)currentItem.AssetType, currentItem.AssetID, currentItem.GroupID,
-                                    currentItem.SalePrice, currentItem.OwnerID, currentItem.CreatorID, currentItem.ID,
-                                    currentItem.ParentID, (uint)currentItem.Permissions.EveryoneMask, currentItem.Flags,
-                                    (uint)currentItem.Permissions.NextOwnerMask, (uint)currentItem.Permissions.GroupMask,
-                                    (uint)currentItem.Permissions.OwnerMask);
-                                descendents.ItemData[i].CreationDate = (int)Utils.DateTimeToUnixTime(currentItem.CreationDate);
-                                descendents.ItemData[i].CreatorID = currentItem.CreatorID;
-                                descendents.ItemData[i].Description = Utils.StringToBytes(currentItem.Description);
-                                descendents.ItemData[i].EveryoneMask = (uint)currentItem.Permissions.EveryoneMask;
-                                descendents.ItemData[i].Flags = currentItem.Flags;
-                                descendents.ItemData[i].FolderID = currentItem.ParentID;
-                                descendents.ItemData[i].GroupID = currentItem.GroupID;
-                                descendents.ItemData[i].GroupMask = (uint)currentItem.Permissions.GroupMask;
-                                descendents.ItemData[i].GroupOwned = currentItem.GroupOwned;
-                                descendents.ItemData[i].InvType = (sbyte)currentItem.InventoryType;
-                                descendents.ItemData[i].ItemID = currentItem.ID;
-                                descendents.ItemData[i].Name = Utils.StringToBytes(currentItem.Name);
-                                descendents.ItemData[i].NextOwnerMask = (uint)currentItem.Permissions.NextOwnerMask;
-                                descendents.ItemData[i].OwnerID = currentItem.OwnerID;
-                                descendents.ItemData[i].OwnerMask = (uint)currentItem.Permissions.OwnerMask;
-                                descendents.ItemData[i].SalePrice = currentItem.SalePrice;
-                                descendents.ItemData[i].SaleType = (byte)currentItem.SaleType;
-                                descendents.ItemData[i].Type = (sbyte)currentItem.AssetType;
-                            }
-                        }
-
-                        if (sendFolders)
-                        {
-                            descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[folders.Count];
-                            for (int i = 0; i < folders.Count; i++)
-                            {
-                                InventoryFolder currentFolder = folders[i];
-
-                                descendents.FolderData[i] = new InventoryDescendentsPacket.FolderDataBlock();
-                                descendents.FolderData[i].FolderID = currentFolder.ID;
-                                descendents.FolderData[i].Name = Utils.StringToBytes(currentFolder.Name);
-                                descendents.FolderData[i].ParentID = currentFolder.ParentID;
-                                descendents.FolderData[i].Type = (sbyte)currentFolder.PreferredType;
-                            }
-                        }
                     }
+                }
+
+                if (sendFolders)
+                {
+                    folderBlocks = new InventoryDescendentsPacket.FolderDataBlock[folders.Count];
+                    for (int i = 0; i < folders.Count; i++)
+                    {
+                        InventoryFolder currentFolder = folders[i];
+
+                        folderBlocks[i] = new InventoryDescendentsPacket.FolderDataBlock();
+                        folderBlocks[i].FolderID = currentFolder.ID;
+                        folderBlocks[i].Name = Utils.StringToBytes(currentFolder.Name);
+                        folderBlocks[i].ParentID = currentFolder.ParentID;
+                        folderBlocks[i].Type = (sbyte)currentFolder.PreferredType;
+                    }
+                }
+                else
+                {
+                    folderBlocks = new InventoryDescendentsPacket.FolderDataBlock[0];
+                }
+
+                if (sendItems)
+                {
+                    itemBlocks = new InventoryDescendentsPacket.ItemDataBlock[items.Count];
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        InventoryItem currentItem = items[i];
+
+                        itemBlocks[i] = new InventoryDescendentsPacket.ItemDataBlock();
+                        itemBlocks[i].AssetID = currentItem.AssetID;
+                        itemBlocks[i].BaseMask = (uint)currentItem.Permissions.BaseMask;
+                        itemBlocks[i].CRC = Helpers.InventoryCRC(
+                            (int)Utils.DateTimeToUnixTime(currentItem.CreationDate),
+                            (byte)currentItem.SaleType, (sbyte)currentItem.InventoryType,
+                            (sbyte)currentItem.AssetType, currentItem.AssetID, currentItem.GroupID,
+                            currentItem.SalePrice, currentItem.OwnerID, currentItem.CreatorID, currentItem.ID,
+                            currentItem.ParentID, (uint)currentItem.Permissions.EveryoneMask, currentItem.Flags,
+                            (uint)currentItem.Permissions.NextOwnerMask, (uint)currentItem.Permissions.GroupMask,
+                            (uint)currentItem.Permissions.OwnerMask);
+                        itemBlocks[i].CreationDate = (int)Utils.DateTimeToUnixTime(currentItem.CreationDate);
+                        itemBlocks[i].CreatorID = currentItem.CreatorID;
+                        itemBlocks[i].Description = Utils.StringToBytes(currentItem.Description);
+                        itemBlocks[i].EveryoneMask = (uint)currentItem.Permissions.EveryoneMask;
+                        itemBlocks[i].Flags = currentItem.Flags;
+                        itemBlocks[i].FolderID = currentItem.ParentID;
+                        itemBlocks[i].GroupID = currentItem.GroupID;
+                        itemBlocks[i].GroupMask = (uint)currentItem.Permissions.GroupMask;
+                        itemBlocks[i].GroupOwned = currentItem.GroupOwned;
+                        itemBlocks[i].InvType = (sbyte)currentItem.InventoryType;
+                        itemBlocks[i].ItemID = currentItem.ID;
+                        itemBlocks[i].Name = Utils.StringToBytes(currentItem.Name);
+                        itemBlocks[i].NextOwnerMask = (uint)currentItem.Permissions.NextOwnerMask;
+                        itemBlocks[i].OwnerID = currentItem.OwnerID;
+                        itemBlocks[i].OwnerMask = (uint)currentItem.Permissions.OwnerMask;
+                        itemBlocks[i].SalePrice = currentItem.SalePrice;
+                        itemBlocks[i].SaleType = (byte)currentItem.SaleType;
+                        itemBlocks[i].Type = (sbyte)currentItem.AssetType;
+                    }
+                }
+                else
+                {
+                    itemBlocks = new InventoryDescendentsPacket.ItemDataBlock[0];
+                }
+
+                // FolderDataBlock and ItemDataBlock are both variable and possibly very large,
+                // so we handle the splitting separately. This could be replaced by some custom
+                // splitting
+                if (folderBlocks.Length > 0)
+                {
+                    List<int> splitPoints = Helpers.SplitBlocks(folderBlocks, PACKET_OVERHEAD);
+                    Logger.DebugLog(String.Format("Sending {0} InventoryDescendents packets containing {1} folders",
+                        splitPoints.Count, folderBlocks.Length));
+
+                    for (int i = 0; i < splitPoints.Count; i++)
+                    {
+                        int count = (i != splitPoints.Count - 1) ? splitPoints[i + 1] - splitPoints[i] :
+                            folderBlocks.Length - splitPoints[i];
+
+                        InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
+                        descendents.AgentData.AgentID = agent.AgentID;
+                        descendents.AgentData.FolderID = folder.ID;
+                        descendents.AgentData.OwnerID = folder.OwnerID;
+                        descendents.AgentData.Descendents = descendCount;
+                        descendents.AgentData.Version = version;
+                        descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[count];
+                        descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[0];
+
+                        for (int j = 0; j < count; j++)
+                            descendents.FolderData[j] = folderBlocks[splitPoints[i] + j];
+
+                        Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                    }
+                }
+                else
+                {
+                    Logger.DebugLog("Sending a single InventoryDescendents for folders");
+
+                    InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
+                    descendents.AgentData.AgentID = agent.AgentID;
+                    descendents.AgentData.FolderID = folder.ID;
+                    descendents.AgentData.OwnerID = folder.OwnerID;
+                    descendents.AgentData.Descendents = descendCount;
+                    descendents.AgentData.Version = version;
+                    descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[0];
+                    descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[0];
 
                     Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                }
+
+                if (itemBlocks.Length > 0)
+                {
+                    List<int> splitPoints = Helpers.SplitBlocks(itemBlocks, PACKET_OVERHEAD);
+                    Logger.DebugLog(String.Format("Sending {0} InventoryDescendents packets containing {1} items",
+                        splitPoints.Count, itemBlocks.Length));
+
+                    for (int i = 0; i < splitPoints.Count; i++)
+                    {
+                        int count = (i != splitPoints.Count - 1) ? splitPoints[i + 1] - splitPoints[i] :
+                            itemBlocks.Length - splitPoints[i];
+
+                        InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
+                        descendents.AgentData.AgentID = agent.AgentID;
+                        descendents.AgentData.FolderID = folder.ID;
+                        descendents.AgentData.OwnerID = folder.OwnerID;
+                        descendents.AgentData.Descendents = descendCount;
+                        descendents.AgentData.Version = version;
+                        descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[0];
+                        descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[count];
+
+                        for (int j = 0; j < count; j++)
+                            descendents.ItemData[j] = itemBlocks[splitPoints[i] + j];
+
+                        Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                    }
                 }
             }
             else
@@ -262,61 +342,79 @@ namespace Simian.Extensions
 
         void FetchInventoryHandler(Packet packet, Agent agent)
         {
-            FetchInventoryPacket fetch = (FetchInventoryPacket)packet;
+            // This is probably too large, but better to be on the safe side
+            const int PACKET_OVERHEAD = 32;
 
-            FetchInventoryReplyPacket reply = new FetchInventoryReplyPacket();
-            reply.AgentData.AgentID = agent.AgentID;
-            reply.InventoryData = new FetchInventoryReplyPacket.InventoryDataBlock[fetch.InventoryData.Length];
+            FetchInventoryPacket fetch = (FetchInventoryPacket)packet;
+            
+            // Create all of the blocks first. These will be split up into different packets
+            FetchInventoryReplyPacket.InventoryDataBlock[] blocks =
+                new FetchInventoryReplyPacket.InventoryDataBlock[fetch.InventoryData.Length];
 
             for (int i = 0; i < fetch.InventoryData.Length; i++)
             {
                 UUID itemID = fetch.InventoryData[i].ItemID;
                 Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
-                reply.InventoryData[i] = new FetchInventoryReplyPacket.InventoryDataBlock();
-                reply.InventoryData[i].ItemID = itemID;
+                blocks[i] = new FetchInventoryReplyPacket.InventoryDataBlock();
+                blocks[i].ItemID = itemID;
 
                 InventoryObject obj;
                 if (agentInventory.TryGetValue(itemID, out obj) && obj is InventoryItem)
                 {
                     InventoryItem item = (InventoryItem)obj;
 
-                    reply.InventoryData[i].AssetID = item.AssetID;
-                    reply.InventoryData[i].BaseMask = (uint)item.Permissions.BaseMask;
-                    reply.InventoryData[i].CRC = Helpers.InventoryCRC((int)Utils.DateTimeToUnixTime(item.CreationDate),
+                    blocks[i].AssetID = item.AssetID;
+                    blocks[i].BaseMask = (uint)item.Permissions.BaseMask;
+                    blocks[i].CRC = Helpers.InventoryCRC((int)Utils.DateTimeToUnixTime(item.CreationDate),
                         (byte)item.SaleType, (sbyte)item.InventoryType, (sbyte)item.AssetType, item.AssetID, item.GroupID,
                         item.SalePrice, item.OwnerID, item.CreatorID, item.ID, item.ParentID,
                         (uint)item.Permissions.EveryoneMask, item.Flags, (uint)item.Permissions.NextOwnerMask,
                         (uint)item.Permissions.GroupMask, (uint)item.Permissions.OwnerMask);
-                    reply.InventoryData[i].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
-                    reply.InventoryData[i].CreatorID = item.CreatorID;
-                    reply.InventoryData[i].Description = Utils.StringToBytes(item.Description);
-                    reply.InventoryData[i].EveryoneMask = (uint)item.Permissions.EveryoneMask;
-                    reply.InventoryData[i].Flags = item.Flags;
-                    reply.InventoryData[i].FolderID = item.ParentID;
-                    reply.InventoryData[i].GroupID = item.GroupID;
-                    reply.InventoryData[i].GroupMask = (uint)item.Permissions.GroupMask;
-                    reply.InventoryData[i].GroupOwned = item.GroupOwned;
-                    reply.InventoryData[i].InvType = (sbyte)item.InventoryType;
-                    reply.InventoryData[i].Name = Utils.StringToBytes(item.Name);
-                    reply.InventoryData[i].NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
-                    reply.InventoryData[i].OwnerID = item.OwnerID;
-                    reply.InventoryData[i].OwnerMask = (uint)item.Permissions.OwnerMask;
-                    reply.InventoryData[i].SalePrice = item.SalePrice;
-                    reply.InventoryData[i].SaleType = (byte)item.SaleType;
-                    reply.InventoryData[i].Type = (sbyte)item.AssetType;
+                    blocks[i].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
+                    blocks[i].CreatorID = item.CreatorID;
+                    blocks[i].Description = Utils.StringToBytes(item.Description);
+                    blocks[i].EveryoneMask = (uint)item.Permissions.EveryoneMask;
+                    blocks[i].Flags = item.Flags;
+                    blocks[i].FolderID = item.ParentID;
+                    blocks[i].GroupID = item.GroupID;
+                    blocks[i].GroupMask = (uint)item.Permissions.GroupMask;
+                    blocks[i].GroupOwned = item.GroupOwned;
+                    blocks[i].InvType = (sbyte)item.InventoryType;
+                    blocks[i].Name = Utils.StringToBytes(item.Name);
+                    blocks[i].NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+                    blocks[i].OwnerID = item.OwnerID;
+                    blocks[i].OwnerMask = (uint)item.Permissions.OwnerMask;
+                    blocks[i].SalePrice = item.SalePrice;
+                    blocks[i].SaleType = (byte)item.SaleType;
+                    blocks[i].Type = (sbyte)item.AssetType;
                 }
                 else
                 {
                     Logger.Log("FetchInventory called for an unknown item " + itemID.ToString(),
                         Helpers.LogLevel.Warning);
 
-                    reply.InventoryData[i].Name = new byte[0];
-                    reply.InventoryData[i].Description = new byte[0];
+                    blocks[i].Name = new byte[0];
+                    blocks[i].Description = new byte[0];
                 }
             }
 
-            Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+            // Split the blocks up into multiple packets
+            List<int> splitPoints = Helpers.SplitBlocks(blocks, PACKET_OVERHEAD);
+            for (int i = 0; i < splitPoints.Count; i++)
+            {
+                int count = (i != splitPoints.Count - 1) ? splitPoints[i + 1] - splitPoints[i] :
+                    blocks.Length - splitPoints[i];
+
+                FetchInventoryReplyPacket reply = new FetchInventoryReplyPacket();
+                reply.AgentData.AgentID = agent.AgentID;
+                reply.InventoryData = new FetchInventoryReplyPacket.InventoryDataBlock[count];
+
+                for (int j = 0; j < count; j++)
+                    reply.InventoryData[j] = blocks[splitPoints[i] + j];
+
+                Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+            }
         }
 
         void CopyInventoryItemHandler(Packet packet, Agent agent)
