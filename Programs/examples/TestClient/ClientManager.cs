@@ -146,10 +146,10 @@ namespace OpenMetaverse.TestClient
             account.LastName = args[1];
             account.Password = args[2];
 
-            if (args.Length == 4)
-            {
+            if (args.Length > 3)
                 account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
-            }
+            if (args.Length > 4)
+                account.URI = args[4];
 
             return Login(account);
         }
@@ -212,15 +212,23 @@ namespace OpenMetaverse.TestClient
             else if (firstToken == "quit")
             {
                 Quit();
-                Console.WriteLine("All clients logged out and program finished running.");
+                Logger.Log("All clients logged out and program finished running.", Helpers.LogLevel.Info);
             }
             else
             {
-                // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
+                // Make an immutable copy of the Clients dictionary to safely iterate over
                 Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
 
+                int completed = 0;
+
                 foreach (TestClient client in clientsCopy.Values)
-                    client.DoCommand(cmd, fromAgentID);
+                {
+                    ThreadStart starter = delegate() { client.DoCommand(cmd, fromAgentID); };
+                    starter.BeginInvoke((AsyncCallback)delegate(IAsyncResult ar) { ++completed; }, null);
+                }
+
+                while (completed < clientsCopy.Count)
+                    Thread.Sleep(50);
             }
         }
 

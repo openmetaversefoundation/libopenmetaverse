@@ -11,25 +11,14 @@ namespace OpenMetaverse.TestClient
         public LoginCommand(TestClient testClient)
         {
             Name = "login";
-            Description = "Logs in another avatar";
+            Description = "Logs in another avatar. Usage: login firstname lastname [simname] [loginuri]";
             Category = CommandCategory.TestClient;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            if (args.Length != 3 && args.Length != 4)
-                return "usage: login firstname lastname password [simname]";
-
-            GridClient newClient = Client.ClientManager.Login(args);
-
-            if (newClient.Network.Connected)
-            {
-                return "Logged in " + newClient.ToString();
-            }
-            else
-            {
-                return "Failed to login: " + newClient.Network.LoginMessage;
-            }
+            // This is a dummy command. Calls to it should be intercepted and handled specially
+            return "This command should not be executed directly";
         }
     }
 }

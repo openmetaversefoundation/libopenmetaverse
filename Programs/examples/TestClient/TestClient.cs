@@ -131,7 +131,7 @@ namespace OpenMetaverse.TestClient
             string[] tokens;
 
             try { tokens = Parsing.ParseArguments(cmd); }
-            catch (FormatException ex) { Console.WriteLine(ex.Message); return; }
+            catch (FormatException ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); return; }
 
             if (tokens.Length == 0)
                 return;
@@ -145,16 +145,24 @@ namespace OpenMetaverse.TestClient
 
                 // Reserialize all of the arguments except for "all"
                 for (int i = 1; i < tokens.Length; i++)
-                {
                     cmd += tokens[i] + " ";
-                }
 
                 ClientManager.DoCommandAll(cmd, fromAgentID);
-
-                return;
             }
-
-            if (Commands.ContainsKey(firstToken))
+            else if (firstToken == "login")
+            {
+                // Special login case: Only call it once, and allow it with
+                // no logged in avatars
+                string[] args = new string[tokens.Length - 1];
+                Array.Copy(tokens, 1, args, 0, args.Length);
+                ClientManager.Login(args);
+            }
+            else if (firstToken == "quit")
+            {
+                ClientManager.Quit();
+                Logger.Log("All clients logged out and program finished running.", Helpers.LogLevel.Info);
+            }
+            else if (Commands.ContainsKey(firstToken))
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);

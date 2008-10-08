@@ -8,7 +8,7 @@ namespace OpenMetaverse.TestClient
     public class CommandLineArgumentsException : Exception
     {
     }
-    
+
     public class Program
     {
         private static void Usage()
@@ -28,104 +28,79 @@ namespace OpenMetaverse.TestClient
             string masterName = String.Empty;
             UUID masterKey = UUID.Zero;
             string file = String.Empty;
-			string loginuri = String.Empty;
+            string loginuri = String.Empty;
 
-            try
+            if (arguments["groupcommands"] != null)
+                groupCommands = true;
+
+            if (arguments["masterkey"] != null)
+                masterKey = UUID.Parse(arguments["masterkey"]);
+
+            if (arguments["master"] != null)
+                masterName = arguments["master"];
+
+            if (arguments["loginuri"] != null)
+                loginuri = arguments["loginuri"];
+
+            if (arguments["file"] != null)
             {
-                if (arguments["groupcommands"] != null)
+                file = arguments["file"];
+
+                if (!File.Exists(file))
                 {
-                    groupCommands = true;
+                    Console.WriteLine("File {0} Does not exist", file);
+                    return;
                 }
 
-                if (arguments["masterkey"] != null)
+                // Loading names from a file
+                try
                 {
-                    masterKey = UUID.Parse(arguments["masterkey"]);
-                }
-
-                if (arguments["master"] != null)
-                {
-                    masterName = arguments["master"];
-                }
-
-                if (arguments["loginuri"] != null)
-                {
-                    loginuri = arguments["loginuri"];
-                }
-
-                if (arguments["file"] != null)
-                {
-                    file = arguments["file"];
-
-                    if (!File.Exists(file))
+                    using (StreamReader reader = new StreamReader(file))
                     {
-                        Console.WriteLine("File {0} Does not exist", file);
-                        return;
-                    }
+                        string line;
+                        int lineNumber = 0;
 
-                    // Loading names from a file
-                    try
-                    {
-                        using (StreamReader reader = new StreamReader(file))
+                        while ((line = reader.ReadLine()) != null)
                         {
-                            string line;
-                            int lineNumber = 0;
+                            lineNumber++;
+                            string[] tokens = line.Trim().Split(new char[] { ' ', ',' });
 
-                            while ((line = reader.ReadLine()) != null)
+                            if (tokens.Length >= 3)
                             {
-                                lineNumber++;
-                                string[] tokens = line.Trim().Split(new char[] { ' ', ',' });
+                                account = new LoginDetails();
+                                account.FirstName = tokens[0];
+                                account.LastName = tokens[1];
+                                account.Password = tokens[2];
 
-                                if (tokens.Length >= 3)
-                                {
-                                    account = new LoginDetails();
-                                    account.FirstName = tokens[0];
-                                    account.LastName = tokens[1];
-                                    account.Password = tokens[2];
-
-                                    accounts.Add(account);
-
-                                    // Leaving this out until we have per-account masters (if that
-                                    // is desirable). For now the command-line option can 
-                                    // specify the single master that TestClient supports
-
-                                    //if (tokens.Length == 5)
-                                    //{
-                                    //    master = tokens[3] + " " + tokens[4];
-                                    //}
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Invalid data on line " + lineNumber +
-                                        ", must be in the format of: FirstName LastName Password");
-                                }
+                                accounts.Add(account);
+                            }
+                            else
+                            {
+                                Logger.Log("Invalid data on line " + lineNumber +
+                                    ", must be in the format of: FirstName LastName Password",
+                                    Helpers.LogLevel.Warning);
                             }
                         }
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("Error reading from " + args[1]);
-                        Console.WriteLine(e.ToString());
-                        return;
-                    }
                 }
-                else if (arguments["first"] != null && arguments["last"] != null && arguments["pass"] != null)
+                catch (Exception e)
                 {
-                    // Taking a single login off the command-line
-                      account = new LoginDetails();
-                      account.FirstName = arguments["first"];
-                      account.LastName = arguments["last"];
-                      account.Password = arguments["pass"];
-  
-                      accounts.Add(account);
-              
-                }
-                else
-                {
-                    throw new CommandLineArgumentsException();
+                    Console.WriteLine("Error reading from " + args[1]);
+                    Console.WriteLine(e.ToString());
+                    return;
                 }
             }
+            else if (arguments["first"] != null && arguments["last"] != null && arguments["pass"] != null)
+            {
+                // Taking a single login off the command-line
+                account = new LoginDetails();
+                account.FirstName = arguments["first"];
+                account.LastName = arguments["last"];
+                account.Password = arguments["pass"];
 
-            catch (CommandLineArgumentsException)
+                accounts.Add(account);
+            }
+            else if (arguments["help"] != null)
             {
                 Usage();
                 return;
@@ -141,13 +116,9 @@ namespace OpenMetaverse.TestClient
 
             // Login the accounts and run the input loop
             if (arguments["startpos"] != null)
-            {
                 manager = new ClientManager(accounts, arguments["startpos"]);
-            }
             else
-            {
                 manager = new ClientManager(accounts);
-            }
 
             manager.Run();
         }

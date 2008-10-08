@@ -17,9 +17,8 @@ namespace OpenMetaverse.TestClient
 
         public override string Execute(string[] args, UUID fromAgentID)
 		{
-			Client.ClientManager.LogoutAll();
-            Client.ClientManager.Running = false;
-            return "All avatars logged out";
+            // This is a dummy command. Calls to it should be intercepted and handled specially
+            return "This command should not be executed directly";
 		}
     }
 }
