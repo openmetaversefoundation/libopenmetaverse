@@ -303,8 +303,7 @@ namespace mapgenerator
 
             //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
             writer.WriteLine("        /// <exclude/>");
-            //writer.WriteLine("        [XmlType(\"" + packet.Name.ToLower() + "_" + block.Name.ToLower() + "\")]");
-            writer.WriteLine("        public class " + block.Name + "Block" + Environment.NewLine + "        {");
+            writer.WriteLine("        public class " + block.Name + "Block : PacketBlock" + Environment.NewLine + "        {");
 
             foreach (MapField field in block.Fields)
             {
@@ -315,8 +314,7 @@ namespace mapgenerator
             // Length property
             writer.WriteLine("");
             //writer.WriteLine("            /// <summary>Length of this block serialized in bytes</summary>");
-            writer.WriteLine(//"            [XmlIgnore]" + Environment.NewLine +
-                             "            public int Length" + Environment.NewLine +
+            writer.WriteLine("            public override int Length" + Environment.NewLine +
                              "            {" + Environment.NewLine + 
                              "                get" + Environment.NewLine +
                              "                {");
@@ -362,7 +360,7 @@ namespace mapgenerator
                 "            }" + Environment.NewLine);
 
             // Initiates instance variables from a byte message
-            writer.WriteLine("            public void FromBytes(byte[] bytes, ref int i)" + Environment.NewLine + 
+            writer.WriteLine("            public override void FromBytes(byte[] bytes, ref int i)" + Environment.NewLine + 
                 "            {");
 
             // Declare a length variable if we need it for variable fields in this constructor
@@ -384,7 +382,7 @@ namespace mapgenerator
 
             // ToBytes() function
             //writer.WriteLine("            /// <summary>Serialize this block to a byte array</summary>");
-            writer.WriteLine("            public void ToBytes(byte[] bytes, ref int i)" + Environment.NewLine + 
+            writer.WriteLine("            public override void ToBytes(byte[] bytes, ref int i)" + Environment.NewLine + 
                 "            {");
 
             foreach (MapField field in block.Fields)
@@ -831,22 +829,6 @@ namespace mapgenerator
             writer.WriteLine("                    }" + Environment.NewLine +
                 "                    break;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
                 "            return PacketType.Default;" + Environment.NewLine + "        }" + Environment.NewLine);
-            
-
-            // Write the Packet.BuildPacket(PacketType) function
-            writer.WriteLine("        public static Packet BuildPacket(PacketType type)");
-            writer.WriteLine("        {");
-            foreach (MapPacket packet in protocol.HighMaps)
-                if (packet != null)
-                    writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
-            foreach (MapPacket packet in protocol.MediumMaps)
-                if (packet != null)
-                    writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
-            foreach (MapPacket packet in protocol.LowMaps)
-                if (packet != null)
-                    writer.WriteLine("            if(type == PacketType." + packet.Name  + ") return new " + packet.Name +"Packet();");
-            writer.WriteLine("            return null;" + Environment.NewLine);
-            writer.WriteLine("        }" + Environment.NewLine);
 
             // Write the Packet.BuildPacket() function
             writer.WriteLine(
