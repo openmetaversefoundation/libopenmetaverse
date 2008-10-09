@@ -306,11 +306,13 @@ namespace OpenMetaverse.Imaging
         /// </summary>
         /// <param name="encoded"></param>
         /// <param name="layerInfo"></param>
+        /// <param name="components"></param>
         /// <returns></returns>
-        public static bool DecodeLayerBoundaries(byte[] encoded, out J2KLayerInfo[] layerInfo)
+        public static bool DecodeLayerBoundaries(byte[] encoded, out J2KLayerInfo[] layerInfo, out int components)
         {
             bool success = false;
             layerInfo = null;
+            components = 0;
             MarshalledImage marshalled = new MarshalledImage();
 
             // Allocate and copy to input buffer
@@ -321,6 +323,8 @@ namespace OpenMetaverse.Imaging
             // Run the decode
             if (DotNetDecodeWithInfo(ref marshalled))
             {
+                components = marshalled.components;
+
                 // Sanity check
                 if (marshalled.layers * marshalled.resolutions * marshalled.components == marshalled.packet_count)
                 {

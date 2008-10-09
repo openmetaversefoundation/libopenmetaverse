@@ -81,7 +81,7 @@ namespace Simian.Extensions
             CreateItem(agent.AgentID, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
                 (InventoryType)create.InventoryBlock.InvType, assetType, assetID, parentID,
                 PermissionMask.All, (PermissionMask)create.InventoryBlock.NextOwnerMask, agent.AgentID,
-                agent.AgentID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID);
+                agent.AgentID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID, true);
         }
 
         void CreateInventoryFolderHandler(Packet packet, Agent agent)
@@ -137,6 +137,7 @@ namespace Simian.Extensions
                     item.SalePrice = block.SalePrice;
                     item.SaleType = (SaleType)block.SaleType;
                     item.AssetType = (AssetType)block.Type;
+                    item.AssetID = UUID.Combine(block.TransactionID, agent.SecureSessionID);
 
                     Logger.DebugLog(String.Format(
                         "UpdateInventoryItem: CallbackID: {0}, TransactionID: {1}",
@@ -228,14 +229,7 @@ namespace Simian.Extensions
                         itemBlocks[i] = new InventoryDescendentsPacket.ItemDataBlock();
                         itemBlocks[i].AssetID = currentItem.AssetID;
                         itemBlocks[i].BaseMask = (uint)currentItem.Permissions.BaseMask;
-                        itemBlocks[i].CRC = Helpers.InventoryCRC(
-                            (int)Utils.DateTimeToUnixTime(currentItem.CreationDate),
-                            (byte)currentItem.SaleType, (sbyte)currentItem.InventoryType,
-                            (sbyte)currentItem.AssetType, currentItem.AssetID, currentItem.GroupID,
-                            currentItem.SalePrice, currentItem.OwnerID, currentItem.CreatorID, currentItem.ID,
-                            currentItem.ParentID, (uint)currentItem.Permissions.EveryoneMask, currentItem.Flags,
-                            (uint)currentItem.Permissions.NextOwnerMask, (uint)currentItem.Permissions.GroupMask,
-                            (uint)currentItem.Permissions.OwnerMask);
+                        itemBlocks[i].CRC = currentItem.CRC;
                         itemBlocks[i].CreationDate = (int)Utils.DateTimeToUnixTime(currentItem.CreationDate);
                         itemBlocks[i].CreatorID = currentItem.CreatorID;
                         itemBlocks[i].Description = Utils.StringToBytes(currentItem.Description);
@@ -366,11 +360,7 @@ namespace Simian.Extensions
 
                     blocks[i].AssetID = item.AssetID;
                     blocks[i].BaseMask = (uint)item.Permissions.BaseMask;
-                    blocks[i].CRC = Helpers.InventoryCRC((int)Utils.DateTimeToUnixTime(item.CreationDate),
-                        (byte)item.SaleType, (sbyte)item.InventoryType, (sbyte)item.AssetType, item.AssetID, item.GroupID,
-                        item.SalePrice, item.OwnerID, item.CreatorID, item.ID, item.ParentID,
-                        (uint)item.Permissions.EveryoneMask, item.Flags, (uint)item.Permissions.NextOwnerMask,
-                        (uint)item.Permissions.GroupMask, (uint)item.Permissions.OwnerMask);
+                    blocks[i].CRC = item.CRC;
                     blocks[i].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
                     blocks[i].CreatorID = item.CreatorID;
                     blocks[i].Description = Utils.StringToBytes(item.Description);
@@ -447,7 +437,7 @@ namespace Simian.Extensions
                         // Create the copy
                         CreateItem(agent.AgentID, newName, item.Description, item.InventoryType, item.AssetType,
                             item.AssetID, folderObj.ID, item.Permissions.OwnerMask, item.Permissions.NextOwnerMask,
-                            agent.AgentID, item.CreatorID, UUID.Zero, block.CallbackID);
+                            agent.AgentID, item.CreatorID, UUID.Zero, block.CallbackID, true);
                     }
                     else
                     {
@@ -477,7 +467,8 @@ namespace Simian.Extensions
                 UUID newFolderID = block.FolderID;
                 if (newFolderID == UUID.Zero)
                     newFolderID = agent.InventoryRoot;
-                MoveInventory(agentInventory, block.ItemID, newFolderID, Utils.BytesToString(block.NewName));
+                MoveInventory(agent, agentInventory, block.ItemID, newFolderID, Utils.BytesToString(block.NewName),
+                    UUID.Zero, 0);
             }
         }
 
@@ -494,11 +485,64 @@ namespace Simian.Extensions
                 UUID newFolderID = block.ParentID;
                 if (newFolderID == UUID.Zero)
                     newFolderID = agent.InventoryRoot;
-                MoveInventory(agentInventory, block.FolderID, newFolderID, null);
+                MoveInventory(agent, agentInventory, block.FolderID, newFolderID, null, UUID.Zero, 0);
             }
         }
 
-        void MoveInventory(Dictionary<UUID, InventoryObject> agentInventory, UUID objectID, UUID newFolderID, string newName)
+        void SendBulkUpdate(Agent agent, InventoryObject obj, UUID transactionID, uint callbackID)
+        {
+            BulkUpdateInventoryPacket update = new BulkUpdateInventoryPacket();
+            update.AgentData.AgentID = agent.AgentID;
+            update.AgentData.TransactionID = transactionID;
+
+            if (obj is InventoryItem)
+            {
+                InventoryItem item = (InventoryItem)obj;
+
+                update.FolderData = new BulkUpdateInventoryPacket.FolderDataBlock[0];
+                update.ItemData = new BulkUpdateInventoryPacket.ItemDataBlock[1];
+                update.ItemData[0] = new BulkUpdateInventoryPacket.ItemDataBlock();
+                update.ItemData[0].AssetID = item.AssetID;
+                update.ItemData[0].BaseMask = (uint)item.Permissions.BaseMask;
+                update.ItemData[0].CallbackID = callbackID;
+                update.ItemData[0].CRC = item.CRC;
+                update.ItemData[0].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
+                update.ItemData[0].CreatorID = item.CreatorID;
+                update.ItemData[0].Description = Utils.StringToBytes(item.Description);
+                update.ItemData[0].EveryoneMask = (uint)item.Permissions.EveryoneMask;
+                update.ItemData[0].Flags = item.Flags;
+                update.ItemData[0].FolderID = item.ParentID;
+                update.ItemData[0].GroupID = item.GroupID;
+                update.ItemData[0].GroupMask = (uint)item.Permissions.GroupMask;
+                update.ItemData[0].GroupOwned = item.GroupOwned;
+                update.ItemData[0].InvType = (sbyte)item.InventoryType;
+                update.ItemData[0].ItemID = item.ID;
+                update.ItemData[0].Name = Utils.StringToBytes(item.Name);
+                update.ItemData[0].NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+                update.ItemData[0].OwnerID = item.OwnerID;
+                update.ItemData[0].OwnerMask = (uint)item.Permissions.OwnerMask;
+                update.ItemData[0].SalePrice = item.SalePrice;
+                update.ItemData[0].SaleType = (byte)item.SaleType;
+                update.ItemData[0].Type = (sbyte)item.InventoryType;
+            }
+            else
+            {
+                InventoryFolder folder = (InventoryFolder)obj;
+
+                update.ItemData = new BulkUpdateInventoryPacket.ItemDataBlock[0];
+                update.FolderData = new BulkUpdateInventoryPacket.FolderDataBlock[1];
+                update.FolderData[0] = new BulkUpdateInventoryPacket.FolderDataBlock();
+                update.FolderData[0].FolderID = folder.ID;
+                update.FolderData[0].Name = Utils.StringToBytes(folder.Name);
+                update.FolderData[0].ParentID = folder.ParentID;
+                update.FolderData[0].Type = (sbyte)folder.PreferredType;
+            }
+
+            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
+        }
+
+        void MoveInventory(Agent agent, Dictionary<UUID, InventoryObject> agentInventory, UUID objectID,
+            UUID newFolderID, string newName, UUID transactionID, uint callbackID)
         {
             InventoryObject obj;
             if (agentInventory.TryGetValue(objectID, out obj))
@@ -531,6 +575,8 @@ namespace Simian.Extensions
                         Logger.Log("MoveInventory called with an unknown destination folder " + newFolderID,
                             Helpers.LogLevel.Warning);
                     }
+
+                    SendBulkUpdate(agent, obj, transactionID, callbackID);
                 }
             }
             else
@@ -662,7 +708,7 @@ namespace Simian.Extensions
 
         public UUID CreateItem(UUID agentID, string name, string description, InventoryType invType, AssetType type,
             UUID assetID, UUID parentID, PermissionMask ownerMask, PermissionMask nextOwnerMask, UUID ownerID,
-            UUID creatorID, UUID transactionID, uint callbackID)
+            UUID creatorID, UUID transactionID, uint callbackID, bool sendPacket)
         {
             Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
@@ -716,12 +762,7 @@ namespace Simian.Extensions
                     update.InventoryData[0].BaseMask = (uint)PermissionMask.All;
                     update.InventoryData[0].CallbackID = callbackID;
                     update.InventoryData[0].CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
-                    update.InventoryData[0].CRC =
-                        Helpers.InventoryCRC((int)Utils.DateTimeToUnixTime(item.CreationDate), (byte)item.SaleType,
-                        (sbyte)item.InventoryType, (sbyte)item.AssetType, item.AssetID, item.GroupID, item.SalePrice,
-                        item.OwnerID, item.CreatorID, item.ID, item.ParentID, (uint)item.Permissions.EveryoneMask,
-                        item.Flags, (uint)item.Permissions.NextOwnerMask, (uint)item.Permissions.GroupMask,
-                        (uint)item.Permissions.OwnerMask);
+                    update.InventoryData[0].CRC = item.CRC;
                     update.InventoryData[0].CreatorID = item.CreatorID;
                     update.InventoryData[0].Description = Utils.StringToBytes(item.Description);
                     update.InventoryData[0].EveryoneMask = (uint)item.Permissions.EveryoneMask;
@@ -740,7 +781,9 @@ namespace Simian.Extensions
                     update.InventoryData[0].SaleType = (byte)item.SaleType;
                     update.InventoryData[0].Type = (sbyte)item.AssetType;
 
-                    Server.UDP.SendPacket(agentID, update, PacketCategory.Inventory);
+                    if (sendPacket)
+                        Server.UDP.SendPacket(agentID, update, PacketCategory.Inventory);
+
                     return item.ID;
                 }
                 else

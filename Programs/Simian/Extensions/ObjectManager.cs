@@ -565,7 +565,7 @@ namespace Simian.Extensions
                                 InventoryFolder trash = (InventoryFolder)invObj;
                                 Server.Inventory.CreateItem(agent.AgentID, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
                                     AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
-                                    obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0);
+                                    obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0, true);
                                 Server.Scene.ObjectRemove(this, obj);
 
                                 Logger.DebugLog(String.Format("Derezzed prim {0} to agent inventory trash", obj.Prim.LocalID));

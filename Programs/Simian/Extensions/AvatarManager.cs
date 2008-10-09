@@ -152,23 +152,38 @@ namespace Simian.Extensions
             }
         }
 
-        int CountWearables(Agent agent)
+        bool TryAddWearable(UUID agentID, Dictionary<WearableType, InventoryItem> wearables, WearableType type, UUID itemID)
         {
-            int wearables = 0;
+            InventoryObject obj;
+            if (itemID != UUID.Zero && Server.Inventory.TryGetInventory(agentID, itemID, out obj) &&
+                obj is InventoryItem)
+            {
+                wearables.Add(type, (InventoryItem)obj);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-            if (agent.ShapeAsset != UUID.Zero) ++wearables;
-            if (agent.SkinAsset != UUID.Zero) ++wearables;
-            if (agent.HairAsset != UUID.Zero) ++wearables;
-            if (agent.EyesAsset != UUID.Zero) ++wearables;
-            if (agent.ShirtAsset != UUID.Zero) ++wearables;
-            if (agent.PantsAsset != UUID.Zero) ++wearables;
-            if (agent.ShoesAsset != UUID.Zero) ++wearables;
-            if (agent.SocksAsset != UUID.Zero) ++wearables;
-            if (agent.JacketAsset != UUID.Zero) ++wearables;
-            if (agent.GlovesAsset != UUID.Zero) ++wearables;
-            if (agent.UndershirtAsset != UUID.Zero) ++wearables;
-            if (agent.UnderpantsAsset != UUID.Zero) ++wearables;
-            if (agent.SkirtAsset != UUID.Zero) ++wearables;
+        Dictionary<WearableType, InventoryItem> GetCurrentWearables(Agent agent)
+        {
+            Dictionary<WearableType, InventoryItem> wearables = new Dictionary<WearableType, InventoryItem>();
+
+            TryAddWearable(agent.AgentID, wearables, WearableType.Shape, agent.ShapeItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Skin, agent.SkinItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Hair, agent.HairItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Eyes, agent.EyesItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Shirt, agent.ShirtItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Pants, agent.PantsItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Shoes, agent.ShoesItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Socks, agent.SocksItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Jacket, agent.JacketItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Gloves, agent.GlovesItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Undershirt, agent.UndershirtItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Underpants, agent.UnderpantsItem);
+            TryAddWearable(agent.AgentID, wearables, WearableType.Skirt, agent.SkirtItem);
 
             return wearables;
         }
@@ -178,126 +193,24 @@ namespace Simian.Extensions
             AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
             update.AgentData.AgentID = agent.AgentID;
 
-            // Count the number of WearableData blocks needed
-            int wearableCount = CountWearables(agent);
+            Dictionary<WearableType, InventoryItem> wearables = GetCurrentWearables(agent);
+            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[wearables.Count];
             int i = 0;
 
-            update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[wearableCount];
-
-            #region WearableData Blocks
-
-            if (agent.ShapeAsset != UUID.Zero)
+            foreach (KeyValuePair<WearableType, InventoryItem> kvp in wearables)
             {
                 update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.ShapeAsset;
-                update.WearableData[i].ItemID = agent.ShapeItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Shape;
+                update.WearableData[i].AssetID = kvp.Value.AssetID;
+                update.WearableData[i].ItemID = kvp.Value.ID;
+                update.WearableData[i].WearableType = (byte)kvp.Key;
                 ++i;
             }
-            if (agent.SkinAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.SkinAsset;
-                update.WearableData[i].ItemID = agent.SkinItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Skin;
-                ++i;
-            }
-            if (agent.HairAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.HairAsset;
-                update.WearableData[i].ItemID = agent.HairItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Hair;
-                ++i;
-            }
-            if (agent.EyesAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.EyesAsset;
-                update.WearableData[i].ItemID = agent.EyesItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Eyes;
-                ++i;
-            }
-            if (agent.ShirtAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.ShirtAsset;
-                update.WearableData[i].ItemID = agent.ShirtItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Shirt;
-                ++i;
-            }
-            if (agent.PantsAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.PantsAsset;
-                update.WearableData[i].ItemID = agent.PantsItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Pants;
-                ++i;
-            }
-            if (agent.ShoesAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.ShoesAsset;
-                update.WearableData[i].ItemID = agent.ShoesItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Shoes;
-                ++i;
-            }
-            if (agent.SocksAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.SocksAsset;
-                update.WearableData[i].ItemID = agent.SocksItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Socks;
-                ++i;
-            }
-            if (agent.JacketAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.JacketAsset;
-                update.WearableData[i].ItemID = agent.JacketItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Jacket;
-                ++i;
-            }
-            if (agent.GlovesAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.GlovesAsset;
-                update.WearableData[i].ItemID = agent.GlovesItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Gloves;
-                ++i;
-            }
-            if (agent.UndershirtAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.UndershirtAsset;
-                update.WearableData[i].ItemID = agent.UndershirtItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Undershirt;
-                ++i;
-            }
-            if (agent.UnderpantsAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.UnderpantsAsset;
-                update.WearableData[i].ItemID = agent.UnderpantsItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Underpants;
-                ++i;
-            }
-            if (agent.SkirtAsset != UUID.Zero)
-            {
-                update.WearableData[i] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                update.WearableData[i].AssetID = agent.SkirtAsset;
-                update.WearableData[i].ItemID = agent.SkirtItem;
-                update.WearableData[i].WearableType = (byte)WearableType.Skirt;
-                ++i;
-            }
-
-            #endregion WearableData Blocks
 
             // Technically this should be per-agent, but if the only requirement is that it
             // increments this is easier
             update.AgentData.SerialNum = (uint)Interlocked.Increment(ref currentWearablesSerialNum);
 
-            Logger.DebugLog(String.Format("Sending info about {0} wearables", wearableCount));
+            Logger.DebugLog(String.Format("Sending info about {0} wearables", wearables.Count));
 
             Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
         }
@@ -313,67 +226,49 @@ namespace Simian.Extensions
 
             for (int i = 0; i < wearing.WearableData.Length; i++)
             {
-                UUID assetID = UUID.Zero;
                 UUID itemID = wearing.WearableData[i].ItemID;
-
-                InventoryObject invObj;
-                if (Server.Inventory.TryGetInventory(agent.AgentID, itemID, out invObj) && invObj is InventoryItem)
-                    assetID = ((InventoryItem)invObj).AssetID;
 
                 #region Update Wearables
 
                 switch ((WearableType)wearing.WearableData[i].WearableType)
                 {
                     case WearableType.Shape:
-                        agent.ShapeAsset = assetID;
                         agent.ShapeItem = itemID;
                         break;
                     case WearableType.Skin:
-                        agent.SkinAsset = assetID;
                         agent.SkinItem = itemID;
                         break;
                     case WearableType.Hair:
-                        agent.HairAsset = assetID;
                         agent.HairItem = itemID;
                         break;
                     case WearableType.Eyes:
-                        agent.EyesAsset = assetID;
                         agent.EyesItem = itemID;
                         break;
                     case WearableType.Shirt:
-                        agent.ShirtAsset = assetID;
                         agent.ShirtItem = itemID;
                         break;
                     case WearableType.Pants:
-                        agent.PantsAsset = assetID;
                         agent.PantsItem = itemID;
                         break;
                     case WearableType.Shoes:
-                        agent.ShoesAsset = assetID;
                         agent.ShoesItem = itemID;
                         break;
                     case WearableType.Socks:
-                        agent.SocksAsset = assetID;
                         agent.SocksItem = itemID;
                         break;
                     case WearableType.Jacket:
-                        agent.JacketAsset = assetID;
                         agent.JacketItem = itemID;
                         break;
                     case WearableType.Gloves:
-                        agent.GlovesAsset = assetID;
                         agent.GlovesItem = itemID;
                         break;
                     case WearableType.Undershirt:
-                        agent.UndershirtAsset = assetID;
                         agent.UndershirtItem = itemID;
                         break;
                     case WearableType.Underpants:
-                        agent.UnderpantsAsset = assetID;
                         agent.UnderpantsItem = itemID;
                         break;
                     case WearableType.Skirt:
-                        agent.SkirtAsset = assetID;
                         agent.SkirtItem = itemID;
                         break;
                 }
@@ -381,7 +276,8 @@ namespace Simian.Extensions
                 #endregion Update Wearables
             }
 
-            Logger.DebugLog("Updated agent wearables, new count: " + CountWearables(agent));
+            // FIXME: GetCurrentWearables() is a very expensive call, remove it from this debug line
+            Logger.DebugLog("Updated agent wearables, new count: " + GetCurrentWearables(agent).Count);
         }
 
         void AgentSetAppearanceHandler(Packet packet, Agent agent)

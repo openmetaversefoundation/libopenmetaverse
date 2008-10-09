@@ -50,31 +50,18 @@ namespace Simian
         //public byte[] Texture;
         public float Height;
         public UUID ShapeItem;
-        public UUID ShapeAsset;
         public UUID SkinItem;
-        public UUID SkinAsset;
         public UUID HairItem;
-        public UUID HairAsset;
         public UUID EyesItem;
-        public UUID EyesAsset;
         public UUID ShirtItem;
-        public UUID ShirtAsset;
         public UUID PantsItem;
-        public UUID PantsAsset;
         public UUID ShoesItem;
-        public UUID ShoesAsset;
         public UUID SocksItem;
-        public UUID SocksAsset;
         public UUID JacketItem;
-        public UUID JacketAsset;
         public UUID GlovesItem;
-        public UUID GlovesAsset;
         public UUID UndershirtItem;
-        public UUID UndershirtAsset;
         public UUID UnderpantsItem;
-        public UUID UnderpantsAsset;
         public UUID SkirtItem;
-        public UUID SkirtAsset;
 
         // Temporary
         [NonSerialized]

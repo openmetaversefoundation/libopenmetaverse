@@ -10,9 +10,12 @@ namespace Simian.Extensions
 {
     public class AssetManager : IExtension, IAssetProvider
     {
+        public const string UPLOAD_DIR = "uploadedAssets";
+
         Simian Server;
         Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
+        string UploadDir;
 
         public AssetManager(Simian server)
         {
@@ -21,7 +24,22 @@ namespace Simian.Extensions
 
         public void Start()
         {
-            LoadDefaultAssets(Server.DataDir);
+            UploadDir = Path.Combine(Server.DataDir, UPLOAD_DIR);
+
+            // Try to create the data directories if they don't already exist
+            if (!Directory.Exists(Server.DataDir))
+            {
+                try { Directory.CreateDirectory(Server.DataDir); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex); }
+            }
+            if (!Directory.Exists(UploadDir))
+            {
+                try { Directory.CreateDirectory(UploadDir); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex); }
+            }
+
+            LoadAssets(Server.DataDir);
+            LoadAssets(UploadDir);
 
             Server.UDP.RegisterPacketCallback(PacketType.AssetUploadRequest, new PacketCallback(AssetUploadRequestHandler));
             Server.UDP.RegisterPacketCallback(PacketType.SendXferPacket, new PacketCallback(SendXferPacketHandler));
@@ -43,6 +61,8 @@ namespace Simian.Extensions
                 {
                     lock (AssetStore)
                         AssetStore[asset.AssetID] = texture;
+                    if (!asset.Temporary)
+                        SaveAsset(texture);
                 }
                 else
                 {
@@ -56,6 +76,8 @@ namespace Simian.Extensions
                 {
                     lock (AssetStore)
                         AssetStore[asset.AssetID] = asset;
+                    if (!asset.Temporary)
+                        SaveAsset(asset);
                 }
                 else
                 {
@@ -77,9 +99,10 @@ namespace Simian.Extensions
             AssetUploadRequestPacket request = (AssetUploadRequestPacket)packet;
             UUID assetID = UUID.Combine(request.AssetBlock.TransactionID, agent.SecureSessionID);
 
+            // Check if the asset is small enough to fit in a single packet
             if (request.AssetBlock.AssetData.Length != 0)
             {
-                // Create a new asset from the upload
+                // Create a new asset from the completed upload
                 Asset asset = CreateAsset((AssetType)request.AssetBlock.Type, assetID, request.AssetBlock.AssetData);
                 if (asset == null)
                 {
@@ -88,6 +111,8 @@ namespace Simian.Extensions
                 }
 
                 Logger.DebugLog(String.Format("Storing uploaded asset {0} ({1})", assetID, asset.AssetType));
+
+                asset.Temporary = (request.AssetBlock.Tempfile | request.AssetBlock.StoreLocal);
 
                 // Store the asset
                 StoreAsset(asset);
@@ -101,14 +126,17 @@ namespace Simian.Extensions
             }
             else
             {
-                // Create a new asset for the upload
+                // Create a new (empty) asset for the upload
                 Asset asset = CreateAsset((AssetType)request.AssetBlock.Type, assetID, null);
                 if (asset == null)
                 {
                     Logger.Log("Failed to create asset from uploaded data", Helpers.LogLevel.Warning);
+                    return;
                 }
 
                 Logger.DebugLog(String.Format("Starting upload for {0} ({1})", assetID, asset.AssetType));
+
+                asset.Temporary = (request.AssetBlock.Tempfile | request.AssetBlock.StoreLocal);
 
                 RequestXferPacket xfer = new RequestXferPacket();
                 xfer.XferID.DeleteOnCompletion = request.AssetBlock.Tempfile;
@@ -168,7 +196,7 @@ namespace Simian.Extensions
                     if ((xfer.XferID.Packet & (uint)0x80000000) != 0)
                     {
                         // Asset upload finished
-                        Logger.DebugLog("Completed asset upload");
+                        Logger.DebugLog(String.Format("Completed Xfer upload of asset {0} ({1}", asset.AssetID, asset.AssetType));
 
                         lock (CurrentUploads)
                             CurrentUploads.Remove(xfer.XferID.ID);
@@ -348,6 +376,19 @@ namespace Simian.Extensions
 
         #endregion Transfer System
 
+        void SaveAsset(Asset asset)
+        {
+            try
+            {
+                File.WriteAllBytes(Path.Combine(UploadDir, String.Format("{0}.{1}", asset.AssetID,
+                    asset.AssetType.ToString().ToLower())), asset.AssetData);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex);
+            }
+        }
+
         Asset CreateAsset(AssetType type, UUID assetID, byte[] data)
         {
             switch (type)
@@ -389,38 +430,51 @@ namespace Simian.Extensions
             }
         }
 
-        void LoadDefaultAssets(string path)
+        void LoadAssets(string path)
         {
-            string[] textures = Directory.GetFiles(path, "*.jp2", SearchOption.TopDirectoryOnly);
-            string[] clothing = Directory.GetFiles(path, "*.clothing", SearchOption.TopDirectoryOnly);
-            string[] bodyparts = Directory.GetFiles(path, "*.bodypart", SearchOption.TopDirectoryOnly);
-            string[] sounds = Directory.GetFiles(path, "*.ogg", SearchOption.TopDirectoryOnly);
-
-            for (int i = 0; i < textures.Length; i++)
+            try
             {
-                UUID assetID = ParseUUIDFromFilename(textures[i]);
-                StoreAsset(new AssetTexture(assetID, File.ReadAllBytes(textures[i])));
-            }
+                string[] textures = Directory.GetFiles(path, "*.jp2", SearchOption.TopDirectoryOnly);
+                string[] clothing = Directory.GetFiles(path, "*.clothing", SearchOption.TopDirectoryOnly);
+                string[] bodyparts = Directory.GetFiles(path, "*.bodypart", SearchOption.TopDirectoryOnly);
+                string[] sounds = Directory.GetFiles(path, "*.ogg", SearchOption.TopDirectoryOnly);
 
-            for (int i = 0; i < clothing.Length; i++)
+                for (int i = 0; i < textures.Length; i++)
+                {
+                    UUID assetID = ParseUUIDFromFilename(textures[i]);
+                    Asset asset = new AssetTexture(assetID, File.ReadAllBytes(textures[i]));
+                    asset.Temporary = true;
+                    StoreAsset(asset);
+                }
+
+                for (int i = 0; i < clothing.Length; i++)
+                {
+                    UUID assetID = ParseUUIDFromFilename(clothing[i]);
+                    Asset asset = new AssetClothing(assetID, File.ReadAllBytes(clothing[i]));
+                    asset.Temporary = true;
+                    StoreAsset(asset);
+                }
+
+                for (int i = 0; i < bodyparts.Length; i++)
+                {
+                    UUID assetID = ParseUUIDFromFilename(bodyparts[i]);
+                    Asset asset = new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i]));
+                    asset.Temporary = true;
+                    StoreAsset(asset);
+                }
+
+                for (int i = 0; i < sounds.Length; i++)
+                {
+                    UUID assetID = ParseUUIDFromFilename(sounds[i]);
+                    Asset asset = new AssetSound(assetID, File.ReadAllBytes(sounds[i]));
+                    asset.Temporary = true;
+                    StoreAsset(asset);
+                }
+            }
+            catch (Exception ex)
             {
-                UUID assetID = ParseUUIDFromFilename(clothing[i]);
-                StoreAsset(new AssetClothing(assetID, File.ReadAllBytes(clothing[i])));
+                Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex);
             }
-
-            for (int i = 0; i < bodyparts.Length; i++)
-            {
-                UUID assetID = ParseUUIDFromFilename(bodyparts[i]);
-                StoreAsset(new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i])));
-            }
-
-            for (int i = 0; i < sounds.Length; i++)
-            {
-                UUID assetID = ParseUUIDFromFilename(sounds[i]);
-                StoreAsset(new AssetSound(assetID, File.ReadAllBytes(sounds[i])));
-            }
-
-            Logger.DebugLog(String.Format("Loaded {0} assets", AssetStore.Count));
         }
 
         static UUID ParseUUIDFromFilename(string filename)

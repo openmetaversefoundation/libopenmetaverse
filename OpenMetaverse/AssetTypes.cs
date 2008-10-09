@@ -99,6 +99,7 @@ namespace OpenMetaverse
     public abstract class Asset
     {
         public byte[] AssetData;
+        public bool Temporary;
 
         private UUID _AssetID;
         public UUID AssetID
@@ -251,6 +252,7 @@ namespace OpenMetaverse
 
         public ManagedImage Image;
         public OpenJPEG.J2KLayerInfo[] LayerInfo;
+        public int Components;
         
         public AssetTexture() { }
 
@@ -259,6 +261,15 @@ namespace OpenMetaverse
         public AssetTexture(ManagedImage image)
         {
             Image = image;
+            Components = 0;
+            if ((Image.Channels & ManagedImage.ImageChannels.Color) != 0)
+                Components += 3;
+            if ((Image.Channels & ManagedImage.ImageChannels.Gray) != 0)
+                ++Components;
+            if ((Image.Channels & ManagedImage.ImageChannels.Bump) != 0)
+                ++Components;
+            if ((Image.Channels & ManagedImage.ImageChannels.Alpha) != 0)
+                ++Components;
         }
 
         /// <summary>
@@ -277,7 +288,25 @@ namespace OpenMetaverse
         /// <returns>True if the decoding was successful, otherwise false</returns>
         public override bool Decode()
         {
-            return OpenJPEG.DecodeToImage(AssetData, out Image);
+            Components = 0;
+
+            if (OpenJPEG.DecodeToImage(AssetData, out Image))
+            {
+                if ((Image.Channels & ManagedImage.ImageChannels.Color) != 0)
+                    Components += 3;
+                if ((Image.Channels & ManagedImage.ImageChannels.Gray) != 0)
+                    ++Components;
+                if ((Image.Channels & ManagedImage.ImageChannels.Bump) != 0)
+                    ++Components;
+                if ((Image.Channels & ManagedImage.ImageChannels.Alpha) != 0)
+                    ++Components;
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -287,7 +316,7 @@ namespace OpenMetaverse
         /// <returns></returns>
         public bool DecodeLayerBoundaries()
         {
-            return OpenJPEG.DecodeLayerBoundaries(AssetData, out LayerInfo);
+            return OpenJPEG.DecodeLayerBoundaries(AssetData, out LayerInfo, out Components);
         }
     }
 

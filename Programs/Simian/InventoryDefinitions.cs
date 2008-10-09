@@ -74,6 +74,20 @@ namespace Simian
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
 
+        /// <summary>Cyclic redundancy check for this inventory item, calculated by adding most of
+        /// the fields together</summary>
+        public uint CRC
+        {
+            get
+            {
+                return Helpers.InventoryCRC((int)Utils.DateTimeToUnixTime(CreationDate), (byte)SaleType,
+                    (sbyte)InventoryType, (sbyte)AssetType, AssetID, GroupID, SalePrice,
+                    OwnerID, CreatorID, ID, ParentID, (uint)Permissions.EveryoneMask,
+                    Flags, (uint)Permissions.NextOwnerMask, (uint)Permissions.GroupMask,
+                    (uint)Permissions.OwnerMask);
+            }
+        }
+
         public override int GetHashCode()
         {
             return ID.GetHashCode();
