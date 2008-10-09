@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe --first firstname --last lastname --pass password --contact \"youremail\" [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] --loginuri=\"uri\"");
+                    "TestClient.exe --first firstname --last lastname --pass password [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] [--gettextures]");
         }
 
         static void Main(string[] args)
@@ -29,6 +29,7 @@ namespace OpenMetaverse.TestClient
             UUID masterKey = UUID.Zero;
             string file = String.Empty;
             string loginuri = String.Empty;
+            bool getTextures = false;
 
             if (arguments["groupcommands"] != null)
                 groupCommands = true;
@@ -41,6 +42,9 @@ namespace OpenMetaverse.TestClient
 
             if (arguments["loginuri"] != null)
                 loginuri = arguments["loginuri"];
+
+            if (arguments["gettextures"] != null)
+                getTextures = true;
 
             if (arguments["file"] != null)
             {
@@ -116,9 +120,9 @@ namespace OpenMetaverse.TestClient
 
             // Login the accounts and run the input loop
             if (arguments["startpos"] != null)
-                manager = new ClientManager(accounts, arguments["startpos"]);
+                manager = new ClientManager(accounts, arguments["startpos"], getTextures);
             else
-                manager = new ClientManager(accounts);
+                manager = new ClientManager(accounts, getTextures);
 
             manager.Run();
         }

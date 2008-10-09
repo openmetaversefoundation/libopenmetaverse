@@ -11,6 +11,8 @@ namespace OpenMetaverse.TestClient
 
         public TexturesCommand(TestClient testClient)
         {
+            enabled = testClient.ClientManager.GetTextures;
+
             Name = "textures";
             Description = "Turns automatic texture downloading on or off. Usage: textures [on/off]";
             Category = CommandCategory.Objects;
@@ -27,12 +29,12 @@ namespace OpenMetaverse.TestClient
 
             if (args[0].ToLower() == "on")
             {
-                enabled = true;
+                Client.ClientManager.GetTextures = enabled = true;
                 return "Texture downloading is on";
             }
             else if (args[0].ToLower() == "off")
             {
-                enabled = false;
+                Client.ClientManager.GetTextures = enabled = false;
                 return "Texture downloading is off";
             }
             else

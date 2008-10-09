@@ -42,19 +42,20 @@ namespace OpenMetaverse.TestClient
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
+        public bool GetTextures = false;
 
         string version = "1.0.0";
         /// <summary>
         /// 
         /// </summary>
         /// <param name="accounts"></param>
-        public ClientManager(List<LoginDetails> accounts)
+        public ClientManager(List<LoginDetails> accounts, bool getTextures)
         {
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
-        public ClientManager(List<LoginDetails> accounts, string s)
+        public ClientManager(List<LoginDetails> accounts, string s, bool getTextures)
         {
             char sep = '/';
             string[] startbits = s.Split(sep);
