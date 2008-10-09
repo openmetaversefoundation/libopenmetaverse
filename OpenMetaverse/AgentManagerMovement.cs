@@ -501,13 +501,24 @@ namespace OpenMetaverse
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
-                    Vector3 myPos = Client.Self.SimPosition;
-                    Vector3 offset = Vector3.Normalize(target - myPos);
-                    Quaternion newRot = Vector3.RotationBetween(Vector3.UnitX, offset);
+                    Quaternion parentRot = Quaternion.Identity;
 
-                    BodyRotation = newRot;
-                    HeadRotation = newRot;
-                    Camera.LookAt(myPos, target);
+                    if (Client.Self.SittingOn > 0)
+                    {
+                        if (!Client.Network.CurrentSim.ObjectsPrimitives.ContainsKey(Client.Self.SittingOn))
+                        {
+                            Logger.Log("Attempted TurnToward but parent prim is not in dictionary", Helpers.LogLevel.Warning, Client);
+                            return false;
+                        }
+                        else parentRot = Client.Network.CurrentSim.ObjectsPrimitives[Client.Self.SittingOn].Rotation;
+                    }
+
+                    Quaternion rot = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Client.Self.SimPosition) * Utils.DEG_TO_RAD);
+                    rot /= parentRot;
+
+                    BodyRotation = rot;
+                    HeadRotation = rot;
+                    Camera.LookAt(Client.Self.SimPosition, target);
 
                     SendUpdate();
 
