@@ -51,22 +51,12 @@ namespace OpenMetaverse.TestClient
         /// <param name="accounts"></param>
         public ClientManager(List<LoginDetails> accounts, bool getTextures)
         {
+            GetTextures = getTextures;
+
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
-        public ClientManager(List<LoginDetails> accounts, string s, bool getTextures)
-        {
-            char sep = '/';
-            string[] startbits = s.Split(sep);
-
-            foreach (LoginDetails account in accounts)
-            {
-                account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
-                    Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
-                Login(account);
-            }
-        }
         /// <summary>
         /// 
         /// </summary>

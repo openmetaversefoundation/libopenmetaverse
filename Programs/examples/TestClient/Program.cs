@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe --first firstname --last lastname --pass password [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] [--gettextures]");
+                    "TestClient.exe --first firstname --last lastname --pass password [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] [--gettextures] [--scriptfile \"filename\"]");
         }
 
         static void Main(string[] args)
@@ -30,6 +30,7 @@ namespace OpenMetaverse.TestClient
             string file = String.Empty;
             string loginuri = String.Empty;
             bool getTextures = false;
+            string scriptFile = String.Empty;
 
             if (arguments["groupcommands"] != null)
                 groupCommands = true;
@@ -45,6 +46,16 @@ namespace OpenMetaverse.TestClient
 
             if (arguments["gettextures"] != null)
                 getTextures = true;
+
+            if (arguments["scriptfile"] != null)
+            {
+                scriptFile = arguments["scriptfile"];
+                if (!File.Exists(scriptFile))
+                {
+                    Console.WriteLine("File {0} Does not exist", scriptFile);
+                    return;
+                }
+            }
 
             if (arguments["file"] != null)
             {
@@ -76,12 +87,20 @@ namespace OpenMetaverse.TestClient
                                 account.LastName = tokens[1];
                                 account.Password = tokens[2];
 
+                                if (tokens.Length >= 4) // Optional starting position
+                                {
+                                    char sep = '/';
+                                    string[] startbits = tokens[3].Split(sep);
+                                    account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
+                                        Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
+                                }
+
                                 accounts.Add(account);
                             }
                             else
                             {
                                 Logger.Log("Invalid data on line " + lineNumber +
-                                    ", must be in the format of: FirstName LastName Password",
+                                    ", must be in the format of: FirstName LastName Password [Sim/StartX/StartY/StartZ]",
                                     Helpers.LogLevel.Warning);
                             }
                         }
@@ -116,14 +135,30 @@ namespace OpenMetaverse.TestClient
                 a.MasterName = masterName;
                 a.MasterKey = masterKey;
                 a.URI = loginuri;
+
+                if (arguments["startpos"] != null)
+                {
+                    char sep = '/';
+                    string[] startbits = arguments["startpos"].Split(sep);
+                    a.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
+                            Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
+                }
             }
 
             // Login the accounts and run the input loop
-            if (arguments["startpos"] != null)
-                manager = new ClientManager(accounts, arguments["startpos"], getTextures);
-            else
-                manager = new ClientManager(accounts, getTextures);
+            manager = new ClientManager(accounts, getTextures);
 
+            if (!String.IsNullOrEmpty(scriptFile))
+            {
+                // Kick off the initially specified script
+                string[] scriptargs = new string[1];
+                scriptargs[0] = scriptFile;
+                ScriptCommand command = new ScriptCommand(null);
+                command.Client = new TestClient(manager);
+                Logger.Log(command.Execute(scriptargs, UUID.Zero), Helpers.LogLevel.Info);
+            }
+
+            // Then Run the ClientManager normally
             manager.Run();
         }
     }
