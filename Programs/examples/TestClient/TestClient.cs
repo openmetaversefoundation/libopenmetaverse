@@ -137,6 +137,9 @@ namespace OpenMetaverse.TestClient
                 return;
 
             string firstToken = tokens[0].ToLower();
+            
+            string[] args = new string[tokens.Length - 1];
+            Array.Copy(tokens, 1, args, 0, args.Length);
 
             // "all balance" will send the balance command to all currently logged in bots
             if (firstToken == "all" && tokens.Length > 1)
@@ -153,8 +156,6 @@ namespace OpenMetaverse.TestClient
             {
                 // Special login case: Only call it once, and allow it with
                 // no logged in avatars
-                string[] args = new string[tokens.Length - 1];
-                Array.Copy(tokens, 1, args, 0, args.Length);
                 ClientManager.Login(args);
             }
             else if (firstToken == "quit")
@@ -162,10 +163,13 @@ namespace OpenMetaverse.TestClient
                 ClientManager.Quit();
                 Logger.Log("All clients logged out and program finished running.", Helpers.LogLevel.Info);
             }
+            else if (firstToken == "script")
+            {
+                // Execute only once
+                Commands[firstToken].Execute(args, fromAgentID);
+            }
             else if (Commands.ContainsKey(firstToken))
             {
-                string[] args = new string[tokens.Length - 1];
-                Array.Copy(tokens, 1, args, 0, args.Length);
                 string response = Commands[firstToken].Execute(args, fromAgentID);
 
                 if (!String.IsNullOrEmpty(response))

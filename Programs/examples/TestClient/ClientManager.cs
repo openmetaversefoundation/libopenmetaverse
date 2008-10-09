@@ -198,6 +198,9 @@ namespace OpenMetaverse.TestClient
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
             string firstToken = tokens[0].ToLower();
 
+            string[] args = new string[tokens.Length - 1];
+            Array.Copy(tokens, 1, args, 0, args.Length);
+
             if (tokens.Length == 0)
                 return;
 
@@ -205,14 +208,26 @@ namespace OpenMetaverse.TestClient
             {
                 // Special login case: Only call it once, and allow it with
                 // no logged in avatars
-                string[] args = new string[tokens.Length - 1];
-                Array.Copy(tokens, 1, args, 0, args.Length);
+                
                 Login(args);
             }
             else if (firstToken == "quit")
             {
                 Quit();
                 Logger.Log("All clients logged out and program finished running.", Helpers.LogLevel.Info);
+            }
+            else if (firstToken == "help")
+            {
+                // No reason to pass this to all bots, and we also want to allow it when there are no bots
+                HelpCommand command = new HelpCommand(null);
+                command.Client = new TestClient(this);
+                Console.WriteLine(command.Execute(args, UUID.Zero));
+            }
+            else if (firstToken == "script")
+            {
+                // No reason to pass this to all bots, and we also want to allow it when there are no bots
+                ScriptCommand command = new ScriptCommand(null);
+                Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
             }
             else
             {
