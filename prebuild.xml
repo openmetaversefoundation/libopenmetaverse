@@ -580,32 +580,6 @@
       </Files>
     </Project>
 
-    <Project name="GUITestClient" path="Programs/examples/GUITestClient" type="WinExe">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../../../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Data"/>
-      <Reference name="System.Drawing"/>
-      <Reference name="System.Windows.Forms"/>
-      <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseTypes"/>
-
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-        <Match pattern="*.resx" buildAction="EmbeddedResource" recurse="true"/>
-      </Files>
-    </Project>
-
     <Project name="Heightmap" path="Programs/examples/Heightmap" type="WinExe">
       <Configuration name="Debug">
         <Options>

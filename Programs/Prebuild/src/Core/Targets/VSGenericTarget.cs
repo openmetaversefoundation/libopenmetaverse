@@ -369,7 +369,7 @@ namespace Prebuild.Core.Targets
 						string autogen_name = file.Substring(0, file.LastIndexOf('.')) + ".Designer.cs";
                         string dependent_name = file.Substring(0, file.LastIndexOf('.')) + ".cs";
 
-						ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", autogen_name);
+						ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
 
                         // Check for a parent .cs file with the same name as this designer file
                         if (File.Exists(dependent_name))

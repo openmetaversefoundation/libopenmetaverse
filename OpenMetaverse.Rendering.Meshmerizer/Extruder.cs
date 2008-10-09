@@ -34,8 +34,6 @@ namespace OpenMetaverse.Rendering
 {
     class Extruder
     {
-        public PhysicsVector size;
-
         public float taperTopFactorX = 1f;
         public float taperTopFactorY = 1f;
         public float taperBotFactorX = 1f;
@@ -209,21 +207,6 @@ namespace OpenMetaverse.Rendering
                 else done = true;
 
             } while (!done); // loop until all the layers in the path are completed
-
-            // scale the mesh to the desired size
-            float xScale = size.X;
-            float yScale = size.Y;
-            float zScale = size.Z;
-
-            foreach (MeshmerizerVertex v in result.vertices)
-            {
-                if (v != null)
-                {
-                    v.X *= xScale;
-                    v.Y *= yScale;
-                    v.Z *= zScale;
-                }
-            }
 
             return result;
         }
@@ -412,21 +395,6 @@ namespace OpenMetaverse.Rendering
                         angle = endAngle;
                 }
             } while (!done); // loop until all the layers in the path are completed
-
-            // scale the mesh to the desired size
-            float xScale = size.X;
-            float yScale = size.Y;
-            float zScale = size.Z;
-
-            foreach (MeshmerizerVertex v in result.vertices)
-            {
-                if (v != null)
-                {
-                    v.X *= xScale;
-                    v.Y *= yScale;
-                    v.Z *= zScale;
-                }
-            }
 
             return result;
         }
