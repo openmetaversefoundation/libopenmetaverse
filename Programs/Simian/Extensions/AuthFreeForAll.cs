@@ -83,6 +83,10 @@ namespace Simian.Extensions
                 UUID skinItem = server.Inventory.CreateItem(agent.AgentID, "Default Skin", "Default Skin",
                     InventoryType.Wearable, AssetType.Clothing, skinAsset, defaultOutfitFolder,
                     PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
+                UUID eyesAsset = new UUID("78d20332-9b07-44a2-bf74-3b368605f4b5");
+                UUID eyesItem = server.Inventory.CreateItem(agent.AgentID, "Default Eyes", "Default Eyes",
+                    InventoryType.Wearable, AssetType.Bodypart, eyesAsset, defaultOutfitFolder,
+                    PermissionMask.All, PermissionMask.All, agent.AgentID, agent.AgentID, UUID.Random(), 0);
 
                 agent.HairAsset = hairAsset;
                 agent.HairItem = hairItem;
@@ -94,6 +98,8 @@ namespace Simian.Extensions
                 agent.ShirtItem = shirtItem;
                 agent.SkinAsset = skinAsset;
                 agent.SkinItem = skinItem;
+                agent.EyesAsset = eyesAsset;
+                agent.EyesItem = eyesItem;
 
                 server.Accounts.AddAccount(agent);
 

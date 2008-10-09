@@ -1,5 +1,5 @@
 LLWearable version 22
-Default Pants
+Default Eyes
 
 	permissions 0
 	{
@@ -18,16 +18,9 @@ Default Pants
 		sale_type	not
 		sale_price	10
 	}
-type 5
-parameters 9
-625 0
-638 0
-806 .8
-807 .2
-808 .2
-814 1
-815 .8
-816 0
-869 0
+type 3
+parameters 2
+98 .02
+99 .04
 textures 1
-2 54a55781-afa8-a64d-cc69-6d63e6da76fb
+3 6522e74d-1660-4e7f-b601-6f48c1659a78
