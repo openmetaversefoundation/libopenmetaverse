@@ -63,16 +63,16 @@ namespace OpenMetaverse.Capabilities
 
         HttpListener server;
         AsyncCallback serverCallback;
-        int serverPort;
-        bool sslEnabled;
+        //int serverPort;
+        //bool sslEnabled;
         List<HttpRequestHandler> requestHandlers;
 
         bool isRunning;
 
         public HttpServer(int port, bool ssl)
         {
-            serverPort = port;
-            sslEnabled = ssl;
+            //serverPort = port;
+            //sslEnabled = ssl;
             server = new HttpListener();
             serverCallback = new AsyncCallback(BeginGetContextCallback);
 

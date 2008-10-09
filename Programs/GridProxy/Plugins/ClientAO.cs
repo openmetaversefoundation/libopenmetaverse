@@ -149,18 +149,18 @@ public class ClientAO : ProxyPlugin
         }
     }
 
-    private PacketDelegate _transferInfoDelegate;
-    private PacketDelegate transferInfoDelegate
-    {
-        get
-        {
-            if (_transferInfoDelegate == null)
-            {
-                _transferInfoDelegate = new PacketDelegate(TransferInfoHandler);
-            }
-            return _transferInfoDelegate;
-        }
-    }
+//     private PacketDelegate _transferInfoDelegate;
+//     private PacketDelegate transferInfoDelegate
+//     {
+//         get
+//         {
+//             if (_transferInfoDelegate == null)
+//             {
+//                 _transferInfoDelegate = new PacketDelegate(TransferInfoHandler);
+//             }
+//             return _transferInfoDelegate;
+//         }
+//     }
     #endregion
 
 
@@ -556,10 +556,10 @@ public class ClientAO : ProxyPlugin
     }
 
     //return the name of an animation by its UUID
-    private string animname(UUID arg)
-    {
-        return animuid2name[arg];
-    }
+//     private string animname(UUID arg)
+//     {
+//         return animuid2name[arg];
+//     }
 
     //handle animation packets from simulator
     private Packet AnimationPacketHandler(Packet packet, IPEndPoint sim) {        
@@ -614,29 +614,29 @@ public class ClientAO : ProxyPlugin
     }
 
     //handle packets that contain info about the notecard data transfer
-    private Packet TransferInfoHandler(Packet packet, IPEndPoint simulator)
-    {
-        TransferInfoPacket info = (TransferInfoPacket)packet;
-        
-        if (info.TransferInfo.TransferID == assetdownloadID)
-        {
-            //this is our requested tranfer, handle it
-            downloadsize = info.TransferInfo.Size;
-
-            if ((StatusCode)info.TransferInfo.Status != StatusCode.OK)
-            {
-                SayToUser("Failed to read notecard");
-            }
-            if (downloadedbytes >= downloadsize)
-            {
-                //Download already completed!
-                downloadCompleted();
-            }
-            //intercept packet
-            return null;
-        }
-        return packet;
-    }
+//     private Packet TransferInfoHandler(Packet packet, IPEndPoint simulator)
+//     {
+//         TransferInfoPacket info = (TransferInfoPacket)packet;
+//         
+//         if (info.TransferInfo.TransferID == assetdownloadID)
+//         {
+//             //this is our requested tranfer, handle it
+//             downloadsize = info.TransferInfo.Size;
+// 
+//             if ((StatusCode)info.TransferInfo.Status != StatusCode.OK)
+//             {
+//                 SayToUser("Failed to read notecard");
+//             }
+//             if (downloadedbytes >= downloadsize)
+//             {
+//                 //Download already completed!
+//                 downloadCompleted();
+//             }
+//             //intercept packet
+//             return null;
+//         }
+//         return packet;
+//     }
 
     //handle packets which contain the notecard data
     private Packet TransferPacketHandler(Packet packet, IPEndPoint simulator)

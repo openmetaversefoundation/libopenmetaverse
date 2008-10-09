@@ -72,7 +72,7 @@ namespace OpenMetaverse.GUI
             {
                 Bitmap bmp = new Bitmap(256, 256);
                 Graphics g = Graphics.FromImage(bmp);
-                SolidBrush brush = new SolidBrush(Color.FromArgb(90, 32, 32, 32));
+                //SolidBrush brush = new SolidBrush(Color.FromArgb(90, 32, 32, 32));
 
                 g.Clear(this.BackColor);
 

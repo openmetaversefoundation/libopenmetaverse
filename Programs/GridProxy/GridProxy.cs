@@ -357,7 +357,7 @@ namespace GridProxy
                 for (; ; )
                 {
                     Socket client = loginServer.Accept();
-                    IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
+                    //IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
 
                     try
                     {
@@ -569,8 +569,7 @@ namespace GridProxy
         }
 
         private Dictionary<string, CapInfo> KnownCaps;
-        private Dictionary<string, bool> SubHack = new Dictionary<string, bool>();
-
+        //private Dictionary<string, bool> SubHack = new Dictionary<string, bool>();
 
         private void ProxyCaps(NetworkStream netStream, string meth, string uri, Dictionary<string, string> headers, byte[] content, int reqNo)
         {
@@ -1380,7 +1379,7 @@ namespace GridProxy
         // SimProxy: proxy for a single simulator
         private class SimProxy
         {
-            private ProxyConfig proxyConfig;
+            //private ProxyConfig proxyConfig;
             private IPEndPoint remoteEndPoint;
             private Proxy proxy;
             private Socket socket;
@@ -1398,7 +1397,7 @@ namespace GridProxy
             // SimProxy: construct a proxy for a single simulator
             public SimProxy(ProxyConfig proxyConfig, IPEndPoint simEndPoint, Proxy proxy)
             {
-                this.proxyConfig = proxyConfig;
+                //this.proxyConfig = proxyConfig;
                 remoteEndPoint = new IPEndPoint(simEndPoint.Address, simEndPoint.Port);
                 this.proxy = proxy;
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -1848,7 +1847,7 @@ namespace GridProxy
                     int ackCount = packet.Header.AckList.Length;
                     for (int i = 0; i < ackCount; ++i)
                     {
-                        int offset = length - (ackCount - i) * 4 - 1;
+                        //int offset = length - (ackCount - i) * 4 - 1;
                         uint ackID = packet.Header.AckList[i] - theirOffset;
 #if DEBUG_SEQUENCE
 						uint hrup = packet.Header.AckList[i];

@@ -69,7 +69,7 @@ namespace OpenMetaverse
         private static readonly float[] DequantizeTable16 = new float[16 * 16];
         private static readonly float[] DequantizeTable32 = new float[16 * 16];
         private static readonly float[] CosineTable16 = new float[16 * 16];
-        private static readonly float[] CosineTable32 = new float[16 * 16];
+        //private static readonly float[] CosineTable32 = new float[16 * 16];
         private static readonly int[] CopyMatrix16 = new int[16 * 16];
         private static readonly int[] CopyMatrix32 = new int[16 * 16];
         private static readonly float[] QuantizeTable16 = new float[16 * 16];

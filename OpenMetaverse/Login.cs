@@ -969,7 +969,7 @@ namespace OpenMetaverse
                 return;
             }
 
-            CapsClient loginRequest = new CapsClient(new Uri(loginParams.URI));
+            CapsClient loginRequest = new CapsClient(loginUri);
             loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
             loginRequest.UserData = CurrentContext;
             loginRequest.StartRequest(LLSDParser.SerializeXmlBytes(loginLLSD), "application/xml+llsd");

@@ -250,7 +250,6 @@ namespace OpenMetaverse.Packets
 
                     if (proptype.Equals(LLSDType.Binary))
                     {
-                        byte[] bytes = blockData[property.Name].AsBinary();
                         set.Invoke(block, new object[] { blockData[property.Name].AsBinary() });
                     }
                     else

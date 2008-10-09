@@ -788,7 +788,7 @@ namespace OpenMetaverse
 
         private GridClient _Client;
         private Inventory _Store;
-        private Random _RandNumbers = new Random();
+        //private Random _RandNumbers = new Random();
         private object _CallbacksLock = new object();
         private uint _CallbackPos;
         private Dictionary<uint, ItemCreatedCallback> _ItemCreatedCallbacks = new Dictionary<uint, ItemCreatedCallback>();
@@ -2549,8 +2549,6 @@ namespace OpenMetaverse
 
         private static bool ParseLine(string line, out string key, out string value)
         {
-            string origLine = line;
-
             // Clean up and convert tabs to spaces
             line = line.Trim();
             line = line.Replace('\t', ' ');
@@ -2943,7 +2941,7 @@ namespace OpenMetaverse
 
         private void SaveAssetIntoInventoryHandler(Packet packet, Simulator simulator)
         {
-            SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
+            //SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
 
             // FIXME: Find this item in the inventory structure and mark the parent as needing an update
             //save.InventoryData.ItemID;

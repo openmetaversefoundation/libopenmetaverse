@@ -226,7 +226,7 @@ namespace OpenMetaverse
             EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)packet;
             uint estateID;
             string method = Utils.BytesToString(message.MethodData.Method);
-            List<string> parameters = new List<string>();
+            //List<string> parameters = new List<string>();
 
             if (method == "estateupdateinfo")
             {

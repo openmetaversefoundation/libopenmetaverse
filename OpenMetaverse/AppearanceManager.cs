@@ -477,7 +477,7 @@ namespace OpenMetaverse
         public void AddAttachments(List<InventoryBase> attachments, bool removeExistingFirst)
         {
             // FIXME: Obey this
-            const int OBJECTS_PER_PACKET = 4;
+            //const int OBJECTS_PER_PACKET = 4;
 
             // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
             RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
@@ -1032,7 +1032,7 @@ namespace OpenMetaverse
         private void UploadBake(Baker bake)
         {
             // Upload the completed layer data
-            UUID transactionID = Assets.RequestUpload(bake.BakedTexture, true);
+            Assets.RequestUpload(bake.BakedTexture, true);
 
             Logger.DebugLog(String.Format("Bake {0} completed. Uploading asset {1}", bake.BakeType,
                 bake.BakedTexture.AssetID.ToString()), Client);

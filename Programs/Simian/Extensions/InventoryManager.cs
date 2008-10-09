@@ -538,6 +538,8 @@ namespace Simian.Extensions
                 update.FolderData[0].Type = (sbyte)folder.PreferredType;
             }
 
+            Logger.DebugLog("Sending bulk update for inventory object " + obj.ID);
+
             Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
         }
 

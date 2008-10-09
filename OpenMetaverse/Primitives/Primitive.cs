@@ -583,7 +583,6 @@ namespace OpenMetaverse
                 get
                 {
                     bool linearPath = (PathCurve == PathCurve.Line || PathCurve == PathCurve.Flexible);
-                    float scaleX = PathScaleX;
                     float scaleY = PathScaleY;
 
                     if (linearPath)

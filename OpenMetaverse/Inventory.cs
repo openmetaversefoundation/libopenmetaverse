@@ -144,7 +144,7 @@ namespace OpenMetaverse
         private UUID _Owner;
 
         private GridClient Client;
-        private InventoryManager Manager;
+        //private InventoryManager Manager;
         private Dictionary<UUID, InventoryNode> Items = new Dictionary<UUID, InventoryNode>();
 
         public Inventory(GridClient client, InventoryManager manager)
@@ -153,7 +153,7 @@ namespace OpenMetaverse
         public Inventory(GridClient client, InventoryManager manager, UUID owner)
         {
             Client = client;
-            Manager = manager;
+            //Manager = manager;
             _Owner = owner;
             if (owner == UUID.Zero)
                 Logger.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning, Client);

@@ -3041,7 +3041,7 @@ namespace OpenMetaverse
 
 
             //string errormsg = map["error"].AsString();
-            LLSDMap updates = (LLSDMap)map["updates"];
+            //LLSDMap updates = (LLSDMap)map["updates"];
 
             // Handle any agent data updates
             LLSDMap agent_updates = (LLSDMap)map["agent_updates"];
@@ -3086,7 +3086,7 @@ namespace OpenMetaverse
                     // handle parts
                     else if (record["transition"].AsString().Equals("LEAVE"))
                     {
-                        if (fndMbr.AvatarKey != null)
+                        if (fndMbr.AvatarKey != UUID.Zero)
                             lock (GroupChatSessions.Dictionary)
                                 GroupChatSessions[sessionID].Remove(fndMbr);
 
@@ -3208,7 +3208,7 @@ namespace OpenMetaverse
             {
                 LLSDMap map = (LLSDMap)llsd;
                 LLSDMap im = (LLSDMap)map["instantmessage"];
-                LLSDMap agent = (LLSDMap)im["agent_params"];
+                //LLSDMap agent = (LLSDMap)im["agent_params"];
                 LLSDMap msg = (LLSDMap)im["message_params"];
                 LLSDMap msgdata = (LLSDMap)msg["data"];
 

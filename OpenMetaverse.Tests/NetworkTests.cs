@@ -38,11 +38,11 @@ namespace OpenMetaverse.Tests
     {
         GridClient Client;
 
-        ulong CurrentRegionHandle = 0;
+        //ulong CurrentRegionHandle = 0;
         //ulong AhernRegionHandle = 1096213093149184;
         //ulong MorrisRegionHandle = 1096213093149183;
         //ulong DoreRegionHandle = 1095113581521408;
-        ulong HooperRegionHandle = 1106108697797888;
+        //ulong HooperRegionHandle = 1106108697797888;
         bool DetectedObject = false;
 
         public NetworkTests()
@@ -69,7 +69,7 @@ namespace OpenMetaverse.Tests
         {
             Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid");
 
-            int start = Environment.TickCount;
+            //int start = Environment.TickCount;
 
             Assert.AreEqual("hooper", Client.Network.CurrentSim.Name.ToLower(), "Logged in to sim " + 
                 Client.Network.CurrentSim.Name + " instead of hooper");
@@ -173,10 +173,10 @@ namespace OpenMetaverse.Tests
 
         private void ObjectUpdateHandler(Packet packet, Simulator sim)
         {
-            ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
+            //ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
 
             DetectedObject = true;
-            CurrentRegionHandle = update.RegionData.RegionHandle;
+            //CurrentRegionHandle = update.RegionData.RegionHandle;
         }
 
         [TearDown]

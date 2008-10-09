@@ -215,7 +215,7 @@ namespace OpenMetaverse
         {
             if (response is LLSDMap)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                //LLSDMap respTable = (LLSDMap)response;
 
                 //FIXME:
                 //_lastNames = new List<LastName>(respTable.Count);
@@ -246,7 +246,7 @@ namespace OpenMetaverse
             LLSDMap query = new LLSDMap();
             query.Add("username", LLSD.FromString(firstName));
             query.Add("last_name_id", LLSD.FromInteger(lastName.ID));
-            byte[] postData = LLSDParser.SerializeXmlBytes(query);
+            //byte[] postData = LLSDParser.SerializeXmlBytes(query);
 
             CapsClient request = new CapsClient(_caps.CheckName);
             request.OnComplete += new CapsClient.CompleteCallback(CheckNameResponse);
@@ -311,7 +311,7 @@ namespace OpenMetaverse
                 query.Add("start_look_at_z", LLSD.FromReal(user.StartLookAt.Value.Z));
             }
 
-            byte[] postData = LLSDParser.SerializeXmlBytes(query);
+            //byte[] postData = LLSDParser.SerializeXmlBytes(query);
 
             // Make the request
             CapsClient request = new CapsClient(_caps.CreateUser);

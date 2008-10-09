@@ -126,14 +126,14 @@ namespace OpenMetaverse.Utilities
         private bool isModeratorMuted = false;
         private bool isSpeaking = false;
         private int cookie = 0;
-        private int returnCode = 0;
+        //private int returnCode = 0;
         private int statusCode = 0;
         private int volume = 0;
         private int state = 0;
         private int participantType = 0;
         private float energy = 0f;
         private string statusString = String.Empty;
-        private string uuidString = String.Empty;
+        //private string uuidString = String.Empty;
         private string actionString = String.Empty;
         private string connectorHandle = String.Empty;
         private string accountHandle = String.Empty;
@@ -142,7 +142,7 @@ namespace OpenMetaverse.Utilities
         private string eventTypeString = String.Empty;
         private string uriString = String.Empty;
         private string nameString = String.Empty;
-        private string audioMediaString = String.Empty;
+        //private string audioMediaString = String.Empty;
         private string displayNameString = String.Empty;
 
         #endregion Response Processing Variables
@@ -605,9 +605,9 @@ namespace OpenMetaverse.Utilities
 
                                     switch (reader.Name)
                                     {
-                                        case "requestId":
-                                            uuidString = reader.Value;
-                                            break;
+//                                         case "requestId":
+//                                             uuidString = reader.Value;
+//                                             break;
                                         case "action":
                                             actionString = reader.Value;
                                             break;
@@ -653,9 +653,9 @@ namespace OpenMetaverse.Utilities
                                 case "RenderDevices":
                                     _RenderDevices.Clear();
                                     break;
-                                case "ReturnCode":
-                                    returnCode = reader.ReadElementContentAsInt();
-                                    break;
+//                                 case "ReturnCode":
+//                                     returnCode = reader.ReadElementContentAsInt();
+//                                     break;
                                 case "StatusCode":
                                     statusCode = reader.ReadElementContentAsInt();
                                     break;
@@ -683,9 +683,9 @@ namespace OpenMetaverse.Utilities
                                 case "Name":
                                     nameString = reader.ReadElementContentAsString();
                                     break;
-                                case "AudioMedia":
-                                    audioMediaString = reader.ReadElementContentAsString();
-                                    break;
+//                                 case "AudioMedia":
+//                                     audioMediaString = reader.ReadElementContentAsString();
+//                                     break;
                                 case "ChannelName":
                                     nameString = reader.ReadElementContentAsString();
                                     break;

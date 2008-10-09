@@ -1055,11 +1055,11 @@ namespace OpenMetaverse
                         else if (download.Source == SourceType.SimInventoryItem && info.TransferInfo.Params.Length == 100)
                         {
                             // TODO: Can we use these?
-                            UUID agentID = new UUID(info.TransferInfo.Params, 0);
-                            UUID sessionID = new UUID(info.TransferInfo.Params, 16);
-                            UUID ownerID = new UUID(info.TransferInfo.Params, 32);
-                            UUID taskID = new UUID(info.TransferInfo.Params, 48);
-                            UUID itemID = new UUID(info.TransferInfo.Params, 64);
+                            //UUID agentID = new UUID(info.TransferInfo.Params, 0);
+                            //UUID sessionID = new UUID(info.TransferInfo.Params, 16);
+                            //UUID ownerID = new UUID(info.TransferInfo.Params, 32);
+                            //UUID taskID = new UUID(info.TransferInfo.Params, 48);
+                            //UUID itemID = new UUID(info.TransferInfo.Params, 64);
                             download.AssetID = new UUID(info.TransferInfo.Params, 80);
                             download.AssetType = (AssetType)(sbyte)info.TransferInfo.Params[96];
 
