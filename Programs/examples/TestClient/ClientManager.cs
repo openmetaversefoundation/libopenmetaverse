@@ -243,7 +243,12 @@ namespace OpenMetaverse.TestClient
                 foreach (TestClient client in clientsCopy.Values)
                 {
                     ThreadPool.QueueUserWorkItem((WaitCallback)
-                        delegate(object state) { client.DoCommand(cmd, fromAgentID); ++completed; });
+                        delegate(object state)
+                        {
+                            Logger.Log(client.Commands[firstToken].Execute(args, fromAgentID),
+                                Helpers.LogLevel.Info);
+                            ++completed;
+                        });
                 }
 
                 while (completed < clientsCopy.Count)

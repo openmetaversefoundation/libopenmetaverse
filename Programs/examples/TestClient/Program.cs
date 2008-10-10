@@ -153,6 +153,7 @@ namespace OpenMetaverse.TestClient
                 // Kick off the initially specified script
                 string[] scriptargs = new string[1];
                 scriptargs[0] = scriptFile;
+
                 ScriptCommand command = new ScriptCommand(null);
                 Logger.Log(command.Execute(scriptargs, UUID.Zero), Helpers.LogLevel.Info);
             }
