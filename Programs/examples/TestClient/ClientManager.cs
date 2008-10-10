@@ -242,8 +242,8 @@ namespace OpenMetaverse.TestClient
 
                 foreach (TestClient client in clientsCopy.Values)
                 {
-                    ThreadStart starter = delegate() { client.DoCommand(cmd, fromAgentID); };
-                    starter.BeginInvoke((AsyncCallback)delegate(IAsyncResult ar) { ++completed; }, null);
+                    ThreadPool.QueueUserWorkItem((WaitCallback)
+                        delegate(object state) { client.DoCommand(cmd, fromAgentID); ++completed; });
                 }
 
                 while (completed < clientsCopy.Count)

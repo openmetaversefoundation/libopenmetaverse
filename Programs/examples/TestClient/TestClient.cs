@@ -166,7 +166,7 @@ namespace OpenMetaverse.TestClient
             else if (firstToken == "script")
             {
                 // Execute only once
-                Commands[firstToken].Execute(args, fromAgentID);
+                Logger.Log(Commands[firstToken].Execute(args, fromAgentID), Helpers.LogLevel.Info);
             }
             else if (Commands.ContainsKey(firstToken))
             {
@@ -174,7 +174,7 @@ namespace OpenMetaverse.TestClient
 
                 if (!String.IsNullOrEmpty(response))
                 {
-                    Console.WriteLine(response);
+                    Logger.Log(response, Helpers.LogLevel.Info);
 
                     if (fromAgentID != UUID.Zero && Network.Connected)
                     {
