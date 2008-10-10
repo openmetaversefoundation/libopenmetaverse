@@ -44,7 +44,7 @@ namespace OpenMetaverse.TestClient
 
     public class ClientManager
     {
-        public Dictionary<UUID, GridClient> Clients = new Dictionary<UUID, GridClient>();
+        public Dictionary<UUID, TestClient> Clients = new Dictionary<UUID, TestClient>();
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
@@ -205,9 +205,6 @@ namespace OpenMetaverse.TestClient
 
             if (firstToken == "login")
             {
-                // Special login case: Only call it once, and allow it with
-                // no logged in avatars
-                
                 Login(args);
             }
             else if (firstToken == "quit")
@@ -217,10 +214,18 @@ namespace OpenMetaverse.TestClient
             }
             else if (firstToken == "help")
             {
-                // No reason to pass this to all bots, and we also want to allow it when there are no bots
-                HelpCommand command = new HelpCommand(null);
-                command.Client = new TestClient(this);
-                Console.WriteLine(command.Execute(args, UUID.Zero));
+                if (Clients.Count > 0)
+                {
+                    foreach (TestClient client in Clients.Values)
+                    {
+                        Console.WriteLine(client.Commands["help"].Execute(args, UUID.Zero));
+                        break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("You must login at least one bot to use the help command");
+                }
             }
             else if (firstToken == "script")
             {
@@ -231,7 +236,7 @@ namespace OpenMetaverse.TestClient
             else
             {
                 // Make an immutable copy of the Clients dictionary to safely iterate over
-                Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
+                Dictionary<UUID, TestClient> clientsCopy = new Dictionary<UUID, TestClient>(Clients);
 
                 int completed = 0;
 
@@ -262,7 +267,7 @@ namespace OpenMetaverse.TestClient
         public void LogoutAll()
         {
             // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-            Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
+            Dictionary<UUID, TestClient> clientsCopy = new Dictionary<UUID, TestClient>(Clients);
 
             foreach (TestClient client in clientsCopy.Values)
                 Logout(client);
