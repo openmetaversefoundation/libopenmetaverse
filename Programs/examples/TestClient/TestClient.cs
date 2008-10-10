@@ -126,66 +126,6 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        public void DoCommand(string cmd, UUID fromAgentID)
-        {
-            string[] tokens;
-
-            try { tokens = Parsing.ParseArguments(cmd); }
-            catch (FormatException ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); return; }
-
-            if (tokens.Length == 0)
-                return;
-
-            string firstToken = tokens[0].ToLower();
-            
-            string[] args = new string[tokens.Length - 1];
-            Array.Copy(tokens, 1, args, 0, args.Length);
-
-            // "all balance" will send the balance command to all currently logged in bots
-            if (firstToken == "all" && tokens.Length > 1)
-            {
-                cmd = String.Empty;
-
-                // Reserialize all of the arguments except for "all"
-                for (int i = 1; i < tokens.Length; i++)
-                    cmd += tokens[i] + " ";
-
-                ClientManager.DoCommandAll(cmd, fromAgentID);
-            }
-            else if (firstToken == "login")
-            {
-                // Special login case: Only call it once, and allow it with
-                // no logged in avatars
-                ClientManager.Login(args);
-            }
-            else if (firstToken == "quit")
-            {
-                ClientManager.Quit();
-                Logger.Log("All clients logged out and program finished running.", Helpers.LogLevel.Info);
-            }
-            else if (firstToken == "script")
-            {
-                // Execute only once
-                Logger.Log(Commands[firstToken].Execute(args, fromAgentID), Helpers.LogLevel.Info);
-            }
-            else if (Commands.ContainsKey(firstToken))
-            {
-                string response = Commands[firstToken].Execute(args, fromAgentID);
-
-                if (!String.IsNullOrEmpty(response))
-                {
-                    Logger.Log(response, Helpers.LogLevel.Info);
-
-                    if (fromAgentID != UUID.Zero && Network.Connected)
-                    {
-                        // IMs don't like \r\n line endings, clean them up first
-                        response = response.Replace("\r", String.Empty);
-                        SendResponseIM(this, fromAgentID, response);
-                    }
-                }
-            }
-        }
-
         private void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             foreach (Command c in Commands.Values)
@@ -227,7 +167,6 @@ namespace OpenMetaverse.TestClient
 
         private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
         {
-
             bool groupIM = im.GroupIM && GroupMembers != null && GroupMembers.ContainsKey(im.FromAgentID) ? true : false;
 
             if (im.FromAgentID == MasterKey || (GroupCommands && groupIM))
@@ -244,10 +183,9 @@ namespace OpenMetaverse.TestClient
                     im.Dialog == InstantMessageDialog.MessageFromAgent ||
                     im.Dialog == InstantMessageDialog.MessageFromObject)
                 {
-                    DoCommand(im.Message, im.FromAgentID);
+                    ClientManagerRef.ClientManager.DoCommandAll(im.Message, im.FromAgentID);
                 }
             }
-
             else
             {
                 // Received an IM from someone that is not the bot's master, ignore
@@ -255,7 +193,6 @@ namespace OpenMetaverse.TestClient
                     im.RegionID, im.Position);
                 return;
             }
-
         }
 
         private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,

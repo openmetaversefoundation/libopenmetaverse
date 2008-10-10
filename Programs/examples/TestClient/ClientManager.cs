@@ -107,27 +107,37 @@ namespace OpenMetaverse.TestClient
             if (client.Network.Login(loginParams))
             {
                 Clients[client.Self.AgentID] = client;
+
                 if (client.MasterKey == UUID.Zero)
                 {
                     UUID query = UUID.Random();
-                    client.Directory.OnDirPeopleReply +=
+                    DirectoryManager.DirPeopleReplyCallback peopleDirCallback =
                         delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
                         {
-                            if (queryID != query)
-                                return;
-                            if (matchedPeople.Count != 1)
-                                Console.WriteLine("Unable to resolve master key.");
-                            else
-                                client.MasterKey = matchedPeople[0].AgentID;
+                            if (queryID == query)
+                            {
+                                if (matchedPeople.Count != 1)
+                                {
+                                    Logger.Log("Unable to resolve master key from " + client.MasterName, Helpers.LogLevel.Warning);
+                                }
+                                else
+                                {
+                                    client.MasterKey = matchedPeople[0].AgentID;
+                                    Logger.Log("Master key resolved to " + client.MasterKey, Helpers.LogLevel.Info);
+                                }
+                            }
                         };
+
+                    client.Directory.OnDirPeopleReply += peopleDirCallback;
                     client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, client.MasterName, 0, query);
                 }
-                Console.WriteLine("Logged in " + client.ToString());
+
+                Logger.Log("Logged in " + client.ToString(), Helpers.LogLevel.Info);
             }
             else
             {
-                Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                    client.Network.LoginMessage);
+                Logger.Log("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                    client.Network.LoginMessage, Helpers.LogLevel.Warning);
             }
 
             return client;
@@ -195,13 +205,16 @@ namespace OpenMetaverse.TestClient
         public void DoCommandAll(string cmd, UUID fromAgentID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
-            string firstToken = tokens[0].ToLower();
-
-            string[] args = new string[tokens.Length - 1];
-            Array.Copy(tokens, 1, args, 0, args.Length);
-
             if (tokens.Length == 0)
                 return;
+            
+            string firstToken = tokens[0].ToLower();
+            if (String.IsNullOrEmpty(firstToken))
+                return;
+
+            string[] args = new string[tokens.Length - 1];
+            if (args.Length > 0)
+                Array.Copy(tokens, 1, args, 0, args.Length);
 
             if (firstToken == "login")
             {
@@ -245,10 +258,12 @@ namespace OpenMetaverse.TestClient
                     ThreadPool.QueueUserWorkItem((WaitCallback)
                         delegate(object state)
                         {
-                            Logger.Log(client.Commands[firstToken].Execute(args, fromAgentID),
-                                Helpers.LogLevel.Info);
+                            TestClient testClient = (TestClient)state;
+                            Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
+                                Helpers.LogLevel.Info, testClient);
                             ++completed;
-                        });
+                        },
+                        client);
                 }
 
                 while (completed < clientsCopy.Count)
@@ -269,21 +284,8 @@ namespace OpenMetaverse.TestClient
         /// <summary>
         /// 
         /// </summary>
-        public void LogoutAll()
-        {
-            // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-            Dictionary<UUID, TestClient> clientsCopy = new Dictionary<UUID, TestClient>(Clients);
-
-            foreach (TestClient client in clientsCopy.Values)
-                Logout(client);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public void Quit()
         {
-            LogoutAll();
             Running = false;
             // TODO: It would be really nice if we could figure out a way to abort the ReadLine here in so that Run() will exit.
         }
