@@ -36,6 +36,12 @@ namespace OpenMetaverse.TestClient
         }
     }
 
+    // WOW WHAT A HACK!
+    public static class ClientManagerRef
+    {
+        public static ClientManager ClientManager;
+    }
+
     public class ClientManager
     {
         public Dictionary<UUID, GridClient> Clients = new Dictionary<UUID, GridClient>();
@@ -51,6 +57,8 @@ namespace OpenMetaverse.TestClient
         /// <param name="accounts"></param>
         public ClientManager(List<LoginDetails> accounts, bool getTextures)
         {
+            ClientManagerRef.ClientManager = this;
+
             GetTextures = getTextures;
 
             foreach (LoginDetails account in accounts)
