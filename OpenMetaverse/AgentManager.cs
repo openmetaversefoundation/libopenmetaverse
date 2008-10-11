@@ -2150,6 +2150,24 @@ namespace OpenMetaverse
         /// <remarks>This call is blocking</remarks>
         public bool Teleport(ulong regionHandle, Vector3 position, Vector3 lookAt)
         {
+            if (Client.Network.CurrentSim == null ||
+                Client.Network.CurrentSim.Caps == null ||
+                !Client.Network.CurrentSim.Caps.IsEventQueueRunning)
+            {
+                // Wait a bit to see if the event queue comes online
+                AutoResetEvent queueEvent = new AutoResetEvent(false);
+                NetworkManager.EventQueueRunningCallback queueCallback =
+                    delegate(Simulator simulator)
+                    {
+                        if (simulator == Client.Network.CurrentSim)
+                            queueEvent.Set();
+                    };
+
+                Client.Network.OnEventQueueRunning += queueCallback;
+                queueEvent.WaitOne(10 * 1000, false);
+                Client.Network.OnEventQueueRunning -= queueCallback;
+            }
+
             teleportStat = TeleportStatus.None;
             teleportEvent.Reset();
 

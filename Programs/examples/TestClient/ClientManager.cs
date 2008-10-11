@@ -259,8 +259,12 @@ namespace OpenMetaverse.TestClient
                         delegate(object state)
                         {
                             TestClient testClient = (TestClient)state;
-                            Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
-                                Helpers.LogLevel.Info, testClient);
+                            if (testClient.Commands.ContainsKey(firstToken))
+                                Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
+                                    Helpers.LogLevel.Info, testClient);
+                            else
+                                Logger.Log("Unknown command " + firstToken, Helpers.LogLevel.Warning);
+
                             ++completed;
                         },
                         client);
