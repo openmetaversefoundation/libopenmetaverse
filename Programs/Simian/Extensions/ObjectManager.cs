@@ -319,11 +319,12 @@ namespace Simian.Extensions
 
                 if (linkSet[i].Prim.ParentID > 0)
                 {
+                    //previously linked children
                     SimulationObject parent;
                     if (Server.Scene.TryGetObject(linkSet[i].Prim.ParentID, out parent))
                     {
                         //re-add old root orientation
-                        linkSet[i].Prim.Position += parent.Prim.Position;
+                        linkSet[i].Prim.Position = parent.Prim.Position + Vector3.Transform(linkSet[i].Prim.Position, Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
                         linkSet[i].Prim.Rotation *= parent.Prim.Rotation;
                     }
                 }
@@ -331,7 +332,7 @@ namespace Simian.Extensions
                 if (i > 0)
                 {
                     //subtract root prim orientation
-                    linkSet[i].Prim.Position -= linkSet[0].Prim.Position;
+                    linkSet[i].Prim.Position = Vector3.Transform(linkSet[i].Prim.Position - linkSet[0].Prim.Position, Matrix4.CreateFromQuaternion(Quaternion.Identity / linkSet[0].Prim.Rotation));
                     linkSet[i].Prim.Rotation /= linkSet[0].Prim.Rotation;
 
                     //set parent ID
@@ -339,6 +340,7 @@ namespace Simian.Extensions
                 }
                 else
                 {
+                    //root prim
                     update.ObjectData[0].ParentID = 0;
                 }
 
@@ -393,7 +395,7 @@ namespace Simian.Extensions
                 //add root prim orientation to child prims
                 if (i > 0)
                 {
-                    linkSet[i].Prim.Position += linkSet[0].Prim.Position;
+                    linkSet[i].Prim.Position = linkSet[0].Prim.Position + Vector3.Transform(linkSet[i].Prim.Position, Matrix4.CreateFromQuaternion(linkSet[0].Prim.Rotation));
                     linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
                 }
 
@@ -403,7 +405,7 @@ namespace Simian.Extensions
             }
 
             Server.UDP.BroadcastPacket(update, PacketCategory.State);
-        }         
+        }
 
         void ObjectShapeHandler(Packet packet, Agent agent)
         {
