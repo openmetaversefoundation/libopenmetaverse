@@ -98,7 +98,7 @@ namespace Simian.Extensions
 
                     // is the avatar trying to move?
                     bool moving = move != Vector3.Zero;
-                    bool jumping = agent.TickJump > 0;
+                    bool jumping = agent.TickJump != 0;
 
                     // 2-dimensional speed multipler
                     float speed = seconds * (flying ? FLY_SPEED : agent.Running && !jumping ? RUN_SPEED : WALK_SPEED);
@@ -113,7 +113,7 @@ namespace Simian.Extensions
 
                     // least possible distance from avatar to the ground
                     // TODO: calculate to get rid of "bot squat"
-                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
+                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;                    
 
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
@@ -242,12 +242,22 @@ namespace Simian.Extensions
                             }
                             else if (Environment.TickCount - agent.TickJump > PREJUMP_DELAY * 1000)
                             { //start actual jump
+
+                                if (agent.TickJump == -1)
+                                {
+                                    //already jumping! end current jump
+                                    agent.TickJump = 0;
+                                    return;
+                                }
+
                                 if (server.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
                                     animsChanged = true;
 
-                                agent.Avatar.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
                                 agent.Avatar.Velocity.X += agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
                                 agent.Avatar.Velocity.Y += agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL;
+                                agent.Avatar.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
+
+                                agent.TickJump = -1; //flag that we are currently jumping
                             }
                             else move.Z = 0; //override Z control
                         }
