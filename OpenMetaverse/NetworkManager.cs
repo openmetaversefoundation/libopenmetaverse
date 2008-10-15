@@ -283,6 +283,7 @@ namespace OpenMetaverse
         private uint _CircuitCode;
         private Simulator _CurrentSim = null;
         private bool connected = false;
+        internal int pauseSerial;
 
         /// <summary>
         /// Default constructor
@@ -536,6 +537,32 @@ namespace OpenMetaverse
                 Shutdown(DisconnectType.NetworkTimeout);
 
             OnLogoutReply -= callback;
+        }
+
+        /// <summary>
+        /// Instructs the simulator to stop sending update (and possibly other) packets
+        /// </summary>
+        public void Pause()
+        {
+            AgentPausePacket pause = new AgentPausePacket();
+            pause.AgentData.AgentID = Client.Self.AgentID;
+            pause.AgentData.SessionID = Client.Self.SessionID;
+            pause.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
+
+            Client.Network.SendPacket(pause);
+        }
+
+        /// <summary>
+        /// Instructs the simulator to resume sending update packets (unpause)
+        /// </summary>
+        public void Resume()
+        {
+            AgentResumePacket resume = new AgentResumePacket();
+            resume.AgentData.AgentID = Client.Self.AgentID;
+            resume.AgentData.SessionID = Client.Self.SessionID;
+            resume.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
+
+            Client.Network.SendPacket(resume);
         }
 
         /// <summary>
