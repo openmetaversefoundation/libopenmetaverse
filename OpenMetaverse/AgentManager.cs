@@ -1649,6 +1649,7 @@ namespace OpenMetaverse
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
+                Movement.SitOnGround = false;
                 Movement.StandUp = true;
                 Movement.SendUpdate();
                 Movement.StandUp = false;
