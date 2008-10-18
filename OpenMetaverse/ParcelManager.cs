@@ -1562,7 +1562,7 @@ namespace OpenMetaverse
                 {
                     ParcelAccessEntry pae = new ParcelAccessEntry();
                     pae.AgentID = reply.List[i].ID;
-                    pae.Flags = (AccessList)reply.List[i].Flags;
+                    pae.Flags = (AccessList)reply.Data.Flags;
                     pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
 
                     accessList.Add(pae);
