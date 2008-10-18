@@ -666,6 +666,10 @@ namespace OpenMetaverse
             public DateTime Time;
             /// <summary>Flag to Permit access to agent, or ban agent from parcel</summary>
             public AccessList Flags;
+            /// <summary>The flags of the specific entry itself 
+            /// TODO: this should be an enum, need to figure out what these flags are, 
+            /// they probably have something to do with expiring bans</summary>
+            public uint EntryFlags;
         }
 
         /// <summary>
@@ -1564,6 +1568,7 @@ namespace OpenMetaverse
                     pae.AgentID = reply.List[i].ID;
                     pae.Flags = (AccessList)reply.Data.Flags;
                     pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
+                    pae.EntryFlags = reply.List[i].Flags;
 
                     accessList.Add(pae);
                 }
