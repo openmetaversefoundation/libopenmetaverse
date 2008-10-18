@@ -521,7 +521,7 @@ namespace OpenMetaverse.Utilities
             if (simulator != null && Parcels.ContainsKey(simulator) && Parcels[simulator].ContainsKey(localID))
             {
                 Parcel parcel = Parcels[simulator][localID];
-                parcel.AccessList = accessEntries;
+                //parcel.AccessList = accessEntries;
                 Parcels[simulator][localID] = parcel;
             }
         }

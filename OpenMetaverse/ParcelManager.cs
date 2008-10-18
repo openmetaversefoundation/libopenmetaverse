@@ -89,7 +89,7 @@ namespace OpenMetaverse
         Access = 1 << 0,
         /// <summary>Request the ban list</summary>
         Ban = 1 << 1,
-        /// <summary>Request both the access list and ban list</summary>
+        /// <summary>Request both White and Black lists</summary>
         Both = Access | Ban
     }
 
@@ -509,9 +509,12 @@ namespace OpenMetaverse
         public bool RegionDenyAnonymous;
         /// <summary></summary>
         public bool RegionPushOverride;
-        /// <summary>Access list of who is whitelisted or blacklisted on this
+        /// <summary>Access list of who is whitelisted on this
         /// parcel</summary>
-        public List<ParcelManager.ParcelAccessEntry> AccessList;
+        public List<ParcelManager.ParcelAccessEntry> AccessWhiteList;
+        /// <summary>Access list of who is blacklisted on this
+        /// parcel</summary>
+        public List<ParcelManager.ParcelAccessEntry> AccessBlackList;
         /// <summary>TRUE of region denies access to age unverified users</summary>
         public bool RegionDenyAgeUnverified;
         /// <summary>true to obscure (hide) media url</summary>
@@ -583,7 +586,8 @@ namespace OpenMetaverse
             Dwell = 0;
             RegionDenyAnonymous = false;
             RegionPushOverride = false;
-            AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
+            AccessWhiteList = new List<ParcelManager.ParcelAccessEntry>();
+            AccessBlackList = new List<ParcelManager.ParcelAccessEntry>(0);
             RegionDenyAgeUnverified = false;
             Media = new ParcelMedia();
             ObscureMedia = false;
@@ -664,12 +668,8 @@ namespace OpenMetaverse
             public UUID AgentID;
             /// <summary></summary>
             public DateTime Time;
-            /// <summary>Flag to Permit access to agent, or ban agent from parcel</summary>
-            public AccessList Flags;
-            /// <summary>The flags of the specific entry itself 
-            /// TODO: this should be an enum, need to figure out what these flags are, 
-            /// they probably have something to do with expiring bans</summary>
-            public uint EntryFlags;
+            /// <summary>Flags for specific entry in white/black lists</summary>
+            public uint Flags;
         }
 
         /// <summary>
@@ -1560,28 +1560,33 @@ namespace OpenMetaverse
             if (OnAccessListReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
             {
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
+
                 List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>(reply.List.Length);
-
-                for (int i = 0; i < reply.List.Length; i++)
-                {
-                    ParcelAccessEntry pae = new ParcelAccessEntry();
-                    pae.AgentID = reply.List[i].ID;
-                    pae.Flags = (AccessList)reply.Data.Flags;
-                    pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
-                    pae.EntryFlags = reply.List[i].Flags;
-
-                    accessList.Add(pae);
-                }
-
-                lock (simulator.Parcels.Dictionary)
-                {
-                    if (simulator.Parcels.Dictionary.ContainsKey(reply.Data.LocalID))
+                   
+                    for (int i = 0; i < reply.List.Length; i++)
                     {
-                        Parcel parcel = simulator.Parcels.Dictionary[reply.Data.LocalID];
-                        parcel.AccessList = accessList;
-                        simulator.Parcels.Dictionary[reply.Data.LocalID] = parcel;
+                        ParcelAccessEntry pae = new ParcelAccessEntry();
+                        pae.AgentID = reply.List[i].ID;
+                        pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
+                        pae.Flags = reply.List[i].Flags;
+
+                        accessList.Add(pae);
                     }
-                }
+
+                    lock (simulator.Parcels.Dictionary)
+                    {
+                        if (simulator.Parcels.Dictionary.ContainsKey(reply.Data.LocalID))
+                        {
+                            Parcel parcel = simulator.Parcels.Dictionary[reply.Data.LocalID];
+                            if ((AccessList)reply.Data.Flags == AccessList.Ban)
+                                parcel.AccessBlackList = accessList;
+                            else
+                                parcel.AccessWhiteList = accessList;
+
+                            simulator.Parcels.Dictionary[reply.Data.LocalID] = parcel;
+                        }
+                    }
+                
 
                 if (OnAccessListReply != null)
                 {

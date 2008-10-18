@@ -43,8 +43,18 @@ namespace OpenMetaverse.TestClient
 
                 Client.Network.CurrentSim.Parcels.ForEach(delegate(Parcel parcel)
                 {
-                    sb.AppendFormat("Parcel[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3} Traffic: {4}" + System.Environment.NewLine,
-                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessList.Count, parcel.Dwell);
+                    sb.AppendFormat("Parcel[{0}]: Name: \"{1}\", Description: \"{2}\" ACLBlacklist Count: {3}, ACLWhiteList Count: {5} Traffic: {4}" + System.Environment.NewLine,
+                        parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessBlackList.Count, parcel.Dwell, parcel.AccessWhiteList.Count);
+                    //foreach (ParcelManager.ParcelAccessEntry white in parcel.AccessWhiteList)
+                    //{
+                    //    if(white.AgentID != UUID.Zero)
+                    //        sb.AppendFormat("\tAllowed Avatar {0}" + System.Environment.NewLine, white.AgentID);
+                    //}
+                    //foreach (ParcelManager.ParcelAccessEntry black in parcel.AccessBlackList)
+                    //{
+                    //    if(black.AgentID != UUID.Zero)
+                    //        sb.AppendFormat("\t Banned Avatar {0}" + System.Environment.NewLine, black.AgentID);
+                    //}
                 });
 
                 result = sb.ToString();
