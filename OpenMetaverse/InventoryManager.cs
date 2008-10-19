@@ -3156,6 +3156,21 @@ namespace OpenMetaverse
                 item.SalePrice = dataBlock.SalePrice;
                 item.SaleType = (SaleType)dataBlock.SaleType;
 
+                /* 
+                 * When attaching new objects, an UpdateCreateInventoryItem packet will be
+                 * returned by the server that has a FolderID/ParentUUID of zero. It is up
+                 * to the client to make sure that the item gets a good folder, otherwise
+                 * it will end up inaccesible in inventory.
+                 */
+                if (item.ParentUUID == UUID.Zero)
+                {
+                    // assign default folder for type
+                    item.ParentUUID = FindFolderForType(item.AssetType);
+
+                    // send update to the sim
+                    RequestUpdateItem(item);
+                }
+
                 // Update the local copy
                 _Store[item.UUID] = item;
 
