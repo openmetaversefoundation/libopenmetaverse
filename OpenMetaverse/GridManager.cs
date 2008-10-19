@@ -637,7 +637,7 @@ namespace OpenMetaverse
                         simulator.positionIndexPrey = i;
                     }
                     simulator.avatarPositions.Add(new Vector3(coarse.Location[i].X, coarse.Location[i].Y,
-                        coarse.Location[i].Z));
+                        coarse.Location[i].Z * 4));
                 }
 
                 if (OnCoarseLocationUpdate != null)
