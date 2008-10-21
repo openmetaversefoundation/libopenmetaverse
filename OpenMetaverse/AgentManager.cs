@@ -1051,7 +1051,7 @@ namespace OpenMetaverse
                     Primitive parent;
                     if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out parent))
                     {
-                        return parent.Position + relativePosition;
+                        return parent.Position + Vector3.Transform(relativePosition, Matrix4.CreateFromQuaternion(parent.Rotation));
                     }
                     else
                     {
