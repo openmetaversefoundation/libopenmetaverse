@@ -513,8 +513,8 @@ namespace OpenMetaverse
                         else parentRot = Client.Network.CurrentSim.ObjectsPrimitives[Client.Self.SittingOn].Rotation;
                     }
 
-                    Quaternion rot = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Client.Self.SimPosition) * Utils.DEG_TO_RAD);
-                    rot /= parentRot;
+                    Quaternion between = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Client.Self.SimPosition));
+                    Quaternion rot = between * (Quaternion.Identity / parentRot);
 
                     BodyRotation = rot;
                     HeadRotation = rot;
