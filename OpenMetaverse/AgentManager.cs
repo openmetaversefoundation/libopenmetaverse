@@ -1165,7 +1165,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
             Client.Network.RegisterCallback(PacketType.TeleportProgress, callback);
             Client.Network.RegisterCallback(PacketType.TeleportFailed, callback);
-            Client.Network.RegisterCallback(PacketType.TeleportFinish, callback);
+            Client.Network.RegisterEventCallback("TeleportFinish", new Caps.EventQueueCallback(TeleportFinishEventHandler));
             Client.Network.RegisterCallback(PacketType.TeleportCancel, callback);
             Client.Network.RegisterCallback(PacketType.TeleportLocal, callback);
 
@@ -2736,6 +2736,36 @@ namespace OpenMetaverse
 
                     sim.SetSeedCaps(body["seed-capability"].AsString());
                 }
+            }
+        }
+
+        /// <summary>
+        /// Process TeleportFinish from Event Queue and pass it onto our TeleportHandler
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="llsd"></param>
+        /// <param name="simulator"></param>
+        private void TeleportFinishEventHandler(string message, LLSD llsd, Simulator simulator)
+        {
+            
+            LLSDMap map = (LLSDMap)llsd;
+            LLSDArray array = (LLSDArray)map["Info"];
+            for (int i = 0; i < array.Count; i++)
+            {
+                TeleportFinishPacket p = new TeleportFinishPacket();
+                LLSDMap data = (LLSDMap)array[i];
+                p.Info.AgentID = data["AgentID"].AsUUID();
+                p.Info.LocationID = Utils.BytesToUInt(data["LocationID"].AsBinary());
+                p.Info.RegionHandle = Utils.BytesToUInt64(data["RegionHandle"].AsBinary());
+                p.Info.SeedCapability = data["SeedCapability"].AsBinary();
+                p.Info.SimAccess = (byte)data["SimAccess"].AsInteger();
+                p.Info.SimIP = Utils.BytesToUInt(data["SimIP"].AsBinary());
+                p.Info.SimPort = (ushort)data["SimPort"].AsInteger();
+                p.Info.TeleportFlags = Utils.BytesToUInt(data["TeleportFlags"].AsBinary());
+
+                // pass the packet onto the teleport handler
+                TeleportHandler(p, simulator);
+
             }
         }
 
