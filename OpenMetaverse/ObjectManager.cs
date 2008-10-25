@@ -2067,6 +2067,7 @@ namespace OpenMetaverse
 
             lock (simulator.ObjectsPrimitives.Dictionary)
             {
+                List<uint> removeAvatars = new List<uint>();
                 List<uint> removePrims = new List<uint>();
 
                 if (Client.Settings.OBJECT_TRACKING)
@@ -2076,7 +2077,8 @@ namespace OpenMetaverse
                     {
                         localID = kill.ObjectData[i].ID;
 
-                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID)) removePrims.Add(localID);
+                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID))
+                            removePrims.Add(localID);
 
                         foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
                         {
@@ -2091,31 +2093,35 @@ namespace OpenMetaverse
 
                 if (Client.Settings.AVATAR_TRACKING)
                 {
-                    uint localID;
-                    for (int i = 0; i < kill.ObjectData.Length; i++)
+                    lock (simulator.ObjectsAvatars.Dictionary)
                     {
-                        localID = kill.ObjectData[i].ID;
-
-                        if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID)) removePrims.Add(localID);                            
-
-                        List<uint> rootPrims = new List<uint>();
-
-                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
+                        uint localID;
+                        for (int i = 0; i < kill.ObjectData.Length; i++)
                         {
-                            if (prim.Value.ParentID == localID)
+                            localID = kill.ObjectData[i].ID;
+
+                            if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
+                                removeAvatars.Add(localID);
+
+                            List<uint> rootPrims = new List<uint>();
+
+                            foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
                             {
-                                FireOnObjectKilled(simulator, prim.Key);
-                                removePrims.Add(prim.Key);
-                                rootPrims.Add(prim.Key);
+                                if (prim.Value.ParentID == localID)
+                                {
+                                    FireOnObjectKilled(simulator, prim.Key);
+                                    removePrims.Add(prim.Key);
+                                    rootPrims.Add(prim.Key);
+                                }
                             }
-                        }
 
-                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
-                        {
-                            if (rootPrims.Contains(prim.Value.ParentID))
+                            foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
                             {
-                                FireOnObjectKilled(simulator, prim.Key);
-                                removePrims.Add(prim.Key);
+                                if (rootPrims.Contains(prim.Value.ParentID))
+                                {
+                                    FireOnObjectKilled(simulator, prim.Key);
+                                    removePrims.Add(prim.Key);
+                                }
                             }
                         }
                     }
@@ -2123,6 +2129,9 @@ namespace OpenMetaverse
 
                 //Do the actual removing outside of the loops but still inside the lock.
                 //This safely prevents the collection from being modified during a loop.
+                foreach (uint removeID in removeAvatars)
+                    simulator.ObjectsAvatars.Remove(removeID);
+
                 foreach (uint removeID in removePrims)
                     simulator.ObjectsPrimitives.Remove(removeID);
             }
