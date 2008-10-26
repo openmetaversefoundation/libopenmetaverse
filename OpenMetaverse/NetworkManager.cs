@@ -1142,9 +1142,16 @@ namespace OpenMetaverse
 
             for(int i = 0; i < connectInfo.Count; i++)
             {
-                IPAddress ip = new IPAddress(((LLSDMap)connectInfo[i])["IP"].AsBinary());
-                ushort port = (ushort)((LLSDMap)connectInfo[i])["Port"].AsInteger();
-                ulong rh = (ulong)((LLSDMap)connectInfo[i])["Handle"].AsInteger();
+                LLSDMap data = (LLSDMap)connectInfo[i];
+
+                IPAddress ip = new IPAddress(data["IP"].AsBinary());
+                ushort port = (ushort)data["Port"].AsInteger();
+                byte[] bytes = data["Handle"].AsBinary();
+
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(bytes);
+
+                ulong rh = Utils.BytesToUInt64(bytes);
 
                 IPEndPoint endPoint = new IPEndPoint(ip, port);
                 
