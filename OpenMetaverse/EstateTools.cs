@@ -184,7 +184,7 @@ namespace OpenMetaverse
         /// <summary>Requests estate settings, including estate manager and access/ban lists</summary>
         public void GetInfo()
         {
-            EstateOwnerMessage("getinfo", new List<string>());
+            EstateOwnerMessage("getinfo", "");
         }
 
         /// <summary>Requests the "Top Scripts" list for the current region</summary>
@@ -259,23 +259,29 @@ namespace OpenMetaverse
                 estateID = Utils.BytesToUInt(message.ParamList[0].Parameter);
                 if (message.ParamList.Length > 1)
                 {
-                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)Utils.BytesToUInt(message.ParamList[1].Parameter);
+                    //param comes in as a string for some reason
+                    uint param;
+                    if (!uint.TryParse(Utils.BytesToString(message.ParamList[1].Parameter), out param)) return;
+
+                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)param;
+
                     switch (accessType)
                     {
                         case EstateAccessReplyDelta.EstateManagers:
                             if (OnGetEstateManagers != null)
                             {
-                                count = (int)Utils.BytesToUInt(message.ParamList[3].Parameter);
-                                List<UUID> managers = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
-                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[5].Parameter), out count)) return;
+                                    List<UUID> managers = new List<UUID>();
+                                    for (int i = 6; i < message.ParamList.Length; i++)
                                     {
-                                        UUID managerID;
-                                        if (UUID.TryParse(Utils.BytesToString(message.ParamList[i].Parameter), out managerID))
+                                        try
                                         {
+                                            UUID managerID = new UUID(message.ParamList[i].Parameter, 0);
                                             managers.Add(managerID);
                                         }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                     }
                                     try { OnGetEstateManagers(estateID, count, managers); }
                                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -286,38 +292,40 @@ namespace OpenMetaverse
                         case EstateAccessReplyDelta.EstateBans:
                             if (OnGetEstateBans != null)
                             {
-                                count = (int)Utils.BytesToUInt(message.ParamList[4].Parameter);
-                                List<UUID> bannedUsers = new List<UUID>();
-                                if (message.ParamList.Length > 5)
+                                if (message.ParamList.Length > 6)
                                 {
-                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[5].Parameter), out count)) return;
+                                    List<UUID> bannedUsers = new List<UUID>();
+                                    for (int i = 7; i < message.ParamList.Length; i++)
                                     {
-                                        UUID bannedID;
-                                        if (UUID.TryParse(Utils.BytesToString(message.ParamList[i].Parameter), out bannedID))
+                                        try
                                         {
+                                            UUID bannedID = new UUID(message.ParamList[i].Parameter, 0);
                                             bannedUsers.Add(bannedID);
                                         }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                     }
                                     try { OnGetEstateBans(estateID, count, bannedUsers); }
                                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                 }
                             }
-                            break;                            
+                            break;
 
                         case EstateAccessReplyDelta.AllowedUsers:
                             if (OnGetAllowedUsers != null)
                             {
-                                count = (int)Utils.BytesToUInt(message.ParamList[2].Parameter);
-                                List<UUID> allowedUsers = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
-                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[2].Parameter), out count)) return;
+                                    List<UUID> allowedUsers = new List<UUID>();
+                                    for (int i = 6; i < message.ParamList.Length; i++)
                                     {
-                                        UUID userID;
-                                        if (UUID.TryParse(Utils.BytesToString(message.ParamList[i].Parameter), out userID))
+                                        try
                                         {
-                                            allowedUsers.Add(userID);
+                                            UUID allowedID = new UUID(message.ParamList[i].Parameter, 0);
+                                            allowedUsers.Add(allowedID);
                                         }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                     }
                                     try { OnGetAllowedUsers(estateID, count, allowedUsers); }
                                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -328,17 +336,18 @@ namespace OpenMetaverse
                         case EstateAccessReplyDelta.AllowedGroups:
                             if (OnGetAllowedGroups != null)
                             {
-                                count = (int)Utils.BytesToUInt(message.ParamList[3].Parameter);
-                                List<UUID> allowedGroups = new List<UUID>();
                                 if (message.ParamList.Length > 5)
                                 {
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[3].Parameter), out count)) return;
+                                    List<UUID> allowedGroups = new List<UUID>();
                                     for (int i = 5; i < message.ParamList.Length; i++)
                                     {
-                                        UUID groupID;
-                                        if (UUID.TryParse(Utils.BytesToString(message.ParamList[i].Parameter), out groupID))
+                                        try
                                         {
+                                            UUID groupID = new UUID(message.ParamList[i].Parameter, 0);
                                             allowedGroups.Add(groupID);
                                         }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                                     }
                                     try { OnGetAllowedGroups(estateID, count, allowedGroups); }
                                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -346,27 +355,6 @@ namespace OpenMetaverse
                             }
                             break;
                     }
-
-                    if (accessType == EstateAccessReplyDelta.EstateManagers)
-                    {
-                        if (OnGetEstateManagers != null)
-                        {
-                            count = (int)Utils.BytesToUInt(message.ParamList[5].Parameter);
-                            List<UUID> managers = new List<UUID>();
-
-                            for (int i = 5; i < message.ParamList.Length; i++)
-                            {
-                                UUID managerID;
-                                if (UUID.TryParse(Utils.BytesToString(message.ParamList[i].Parameter), out managerID))
-                                {
-                                    managers.Add(managerID);
-                                }
-                            }
-                            try { OnGetEstateManagers(estateID, count, managers); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                        }
-                    }
-
                 }
             }
 
