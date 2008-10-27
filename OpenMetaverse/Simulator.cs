@@ -393,6 +393,8 @@ namespace OpenMetaverse
         internal Queue<uint> PacketArchive;
         /// <summary>Packets we sent out that need ACKs from the simulator</summary>
         internal Dictionary<uint, NetworkManager.OutgoingPacket> NeedAck = new Dictionary<uint, NetworkManager.OutgoingPacket>();
+        /// <summary>Sequence number for pause/resume</summary>
+        internal int pauseSerial;
 
         private NetworkManager Network;
         private Queue<ulong> InBytes, OutBytes;
@@ -574,6 +576,32 @@ namespace OpenMetaverse
                 // Shut the socket communication down
                 Stop();
             }
+        }
+
+        /// <summary>
+        /// Instructs the simulator to stop sending update (and possibly other) packets
+        /// </summary>
+        public void Pause()
+        {
+            AgentPausePacket pause = new AgentPausePacket();
+            pause.AgentData.AgentID = Client.Self.AgentID;
+            pause.AgentData.SessionID = Client.Self.SessionID;
+            pause.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
+
+            Client.Network.SendPacket(pause, this);
+        }
+
+        /// <summary>
+        /// Instructs the simulator to resume sending update packets (unpause)
+        /// </summary>
+        public void Resume()
+        {
+            AgentResumePacket resume = new AgentResumePacket();
+            resume.AgentData.AgentID = Client.Self.AgentID;
+            resume.AgentData.SessionID = Client.Self.SessionID;
+            resume.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
+
+            Client.Network.SendPacket(resume, this);
         }
 
         /// <summary>
