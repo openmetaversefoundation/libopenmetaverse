@@ -294,7 +294,7 @@ namespace OpenMetaverse
                             {
                                 if (message.ParamList.Length > 6)
                                 {
-                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[5].Parameter), out count)) return;
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[4].Parameter), out count)) return;
                                     List<UUID> bannedUsers = new List<UUID>();
                                     for (int i = 7; i < message.ParamList.Length; i++)
                                     {
