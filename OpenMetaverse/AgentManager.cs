@@ -1690,23 +1690,19 @@ namespace OpenMetaverse
         /// Starts or stops crouching
         /// </summary>
         /// <param name="start">True to start crouching, false to stop crouching</param>
-        public void Crouch(bool start)
+        public void Crouch(bool crouching)
         {
-            if (start)
-                Movement.UpNeg = true;
-            else
-                Movement.UpNeg = false;
-
+            Movement.UpNeg = crouching;
             Movement.SendUpdate(true);
         }
 
         /// <summary>
         /// Starts a jump (begin holding the jump key)
         /// </summary>
-        public void Jump()
+        public void Jump(bool jumping)
         {
-            Movement.UpPos = true;
-            Movement.FastUp = true;
+            Movement.UpPos = jumping;
+            Movement.FastUp = jumping;
             Movement.SendUpdate(true);
         }
 
@@ -2924,6 +2920,7 @@ namespace OpenMetaverse
                             {
                                 Movement.FinishAnim = true;
                                 Movement.SendUpdate(true);
+                                Movement.FinishAnim = false;
                             }
                         }
                     }
