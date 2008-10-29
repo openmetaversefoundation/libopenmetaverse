@@ -48,7 +48,7 @@ namespace ExtensionLoader
         }
 
         /// <summary>
-        /// Load extensions within the current assembly, from assembly files in
+        /// Load extensions within the given assembly, from assembly files in
         /// a given directory, or from source code files in a given directory
         /// </summary>
         /// <param name="assembly">Main assembly to load extensions from</param>
@@ -135,7 +135,7 @@ namespace ExtensionLoader
                     System.Type[] types = a.GetTypes();
                     foreach (System.Type type in types)
                     {
-                        if (type.GetInterface("IExtension") != null)
+                        if (type.GetInterface(typeof(IExtension<TOwner>).Name) != null)
                         {
                             plugins.Add(f);
                             break;
