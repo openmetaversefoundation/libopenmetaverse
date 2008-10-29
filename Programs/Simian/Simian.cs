@@ -7,6 +7,7 @@ using System.Xml;
 using System.Threading;
 using System.Reflection;
 using ExtensionLoader;
+using ExtensionLoader.Config;
 using OpenMetaverse;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.Packets;
@@ -64,7 +65,7 @@ namespace Simian
                 references.Add("OpenMetaverse.dll");
                 references.Add("Simian.exe");
 
-                Dictionary<Type, FieldInfo> assignables = GetInterfaces();
+                List<FieldInfo> assignables = ExtensionLoader<Simian>.GetInterfaces(this);
 
                 ExtensionLoader<Simian>.LoadAllExtensions(Assembly.GetExecutingAssembly(),
                     AppDomain.CurrentDomain.BaseDirectory, this, references,
@@ -77,30 +78,30 @@ namespace Simian
                 return false;
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Track all of the extensions with persistence
                 if (extension is IPersistable)
                     PersistentExtensions.Add((IPersistable)extension);
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Start all extensions except for persistence providers
                 if (!(extension is IPersistenceProvider))
                 {
                     Logger.DebugLog("Loading extension " + extension.GetType().Name);
-                    extension.Start();
+                    extension.Start(this);
                 }
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
             {
-                // Start the persistance provider(s) after all other extensions are loaded
+                // Start the persistence provider(s) after all other extensions are loaded
                 if (extension is IPersistenceProvider)
                 {
                     Logger.DebugLog("Loading persistance provider " + extension.GetType().Name);
-                    extension.Start();
+                    extension.Start(this);
                 }
             }
 
@@ -109,14 +110,14 @@ namespace Simian
 
         public void Stop()
         {
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
             {
-                // Stop persistance providers first
+                // Stop persistence providers first
                 if (extension is IPersistenceProvider)
                     extension.Stop();
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
             {
                 // Stop all other extensions
                 if (!(extension is IPersistenceProvider))
@@ -144,19 +145,6 @@ namespace Simian
             offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
             offline.AgentBlock[0].AgentID = agent.AgentID;
             UDP.BroadcastPacket(offline, PacketCategory.State);
-        }
-
-        Dictionary<Type, FieldInfo> GetInterfaces()
-        {
-            Dictionary<Type, FieldInfo> interfaces = new Dictionary<Type, FieldInfo>();
-
-            foreach (FieldInfo field in this.GetType().GetFields())
-            {
-                if (field.FieldType.IsInterface)
-                    interfaces.Add(field.FieldType, field);
-            }
-
-            return interfaces;
         }
 
         void InitHttpServer(int port, bool ssl)

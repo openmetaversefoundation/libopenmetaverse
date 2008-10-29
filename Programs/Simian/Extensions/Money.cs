@@ -6,19 +6,21 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    class Money : IExtension
+    class Money : IExtension<Simian>
     {
-        Simian Server;
+        Simian server;
 
-        public Money(Simian server)
+        public Money()
         {
-            Server = server;
+            
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
-            Server.UDP.RegisterPacketCallback(PacketType.MoneyBalanceRequest, new PacketCallback(MoneyBalanceRequestHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.MoneyTransferRequest, new PacketCallback(MoneyTransferRequestHandler));
+            this.server = server;
+
+            server.UDP.RegisterPacketCallback(PacketType.MoneyBalanceRequest, new PacketCallback(MoneyBalanceRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.MoneyTransferRequest, new PacketCallback(MoneyTransferRequestHandler));
         }
 
         public void Stop()
@@ -33,7 +35,7 @@ namespace Simian.Extensions
             reply.MoneyData.TransactionID = transactionID;
             reply.MoneyData.Description = Utils.StringToBytes(message);
 
-            Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
         }
 
         void MoneyBalanceRequestHandler(Packet packet, Agent agent)
@@ -50,9 +52,9 @@ namespace Simian.Extensions
             if (request.MoneyData.Amount < 0 || request.MoneyData.Amount > agent.Balance)
                 return;
 
-            lock (Server.Agents)
+            lock (server.Agents)
             {
-                foreach (Agent recipient in Server.Agents.Values)
+                foreach (Agent recipient in server.Agents.Values)
                 {
                     if (recipient.AgentID == request.MoneyData.DestID)
                     {

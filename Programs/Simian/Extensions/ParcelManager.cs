@@ -6,20 +6,21 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class ParcelManager : IExtension, IParcelProvider
+    public class ParcelManager : IExtension<Simian>, IParcelProvider
     {
         Simian server;
         Dictionary<int, Parcel> parcels = new Dictionary<int, Parcel>();
         /// <summary>X,Y ordered 2D array of the parcelIDs for each sq. meter of a simulator</summary>
         int[] parcelOverlay = new int[64 * 64];
 
-        public ParcelManager(Simian server)
+        public ParcelManager()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             lock (parcels)
                 parcels.Clear();
 

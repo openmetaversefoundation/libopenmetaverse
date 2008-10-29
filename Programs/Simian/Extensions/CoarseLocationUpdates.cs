@@ -8,18 +8,19 @@ using System.Threading;
 
 namespace Simian.Extensions
 {
-    public class CoarseLocationUpdates : IExtension
+    public class CoarseLocationUpdates : IExtension<Simian>
     {
-        Simian Server;
+        Simian server;
         Timer CoarseLocationTimer;
 
-        public CoarseLocationUpdates(Simian server)
+        public CoarseLocationUpdates()
         {
-            Server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             if (CoarseLocationTimer != null) CoarseLocationTimer = null;
             CoarseLocationTimer = new Timer(new TimerCallback(CoarseLocationTimer_Elapsed));
             CoarseLocationTimer.Change(1000, 1000);
@@ -32,9 +33,9 @@ namespace Simian.Extensions
 
         void CoarseLocationTimer_Elapsed(object sender)
         {
-            lock (Server.Agents)
+            lock (server.Agents)
             {
-                foreach (Agent recipient in Server.Agents.Values)
+                foreach (Agent recipient in server.Agents.Values)
                 {
                     int i = 0;
 
@@ -42,8 +43,8 @@ namespace Simian.Extensions
                     update.Index.Prey = -1;
                     update.Index.You = 0;
 
-                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[Server.Agents.Count];
-                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[Server.Agents.Count];
+                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[server.Agents.Count];
+                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[server.Agents.Count];
 
                     // Fill in this avatar
                     update.AgentData[0] = new CoarseLocationUpdatePacket.AgentDataBlock();
@@ -54,7 +55,7 @@ namespace Simian.Extensions
                     update.Location[0].Z = (byte)((int)recipient.Avatar.Position.Z / 4);
                     ++i;
                     
-                    foreach (Agent agent in Server.Agents.Values)
+                    foreach (Agent agent in server.Agents.Values)
                     {
                         if (agent != recipient)
                         {
@@ -68,7 +69,7 @@ namespace Simian.Extensions
                         }
                     }
 
-                    Server.UDP.SendPacket(recipient.AgentID, update, PacketCategory.State);
+                    server.UDP.SendPacket(recipient.AgentID, update, PacketCategory.State);
                 }
             }
         }

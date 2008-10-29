@@ -4,17 +4,17 @@ using OpenMetaverse;
 
 namespace Simian.Extensions
 {
-    public class AuthFreeForAll : IExtension, IAuthenticationProvider
+    public class AuthFreeForAll : IExtension<Simian>, IAuthenticationProvider
     {
         Simian server;
 
-        public AuthFreeForAll(Simian server)
+        public AuthFreeForAll()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
         }
 
         public void Stop()

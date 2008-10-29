@@ -86,6 +86,14 @@ namespace OpenMetaverse.Capabilities
             isRunning = false;
         }
 
+        public void AddHandler(string method, string path, HttpRequestCallback callback)
+        {
+            HttpRequestSignature signature = new HttpRequestSignature();
+            signature.Method = method;
+            signature.Path = path;
+            AddHandler(new HttpRequestHandler(signature, callback));
+        }
+
         public void AddHandler(HttpRequestHandler handler)
         {
             if (!isRunning)
@@ -148,7 +156,7 @@ namespace OpenMetaverse.Capabilities
                     {
                         HttpRequestHandler handler = requestHandlers[i];
 
-                        if (handler.Signature == signature)
+                        if (signature == handler.Signature)
                         {
                             // Request signature matched, handle it
                             try

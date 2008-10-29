@@ -8,28 +8,29 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    class AvatarManager : IExtension, IAvatarProvider
+    class AvatarManager : IExtension<Simian>, IAvatarProvider
     {
-        Simian Server;
+        Simian server;
         int currentWearablesSerialNum = -1;
         int currentAnimSequenceNum = 0;
 
-        public AvatarManager(Simian server)
+        public AvatarManager()
         {
-            Server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
-            Server.UDP.RegisterPacketCallback(PacketType.AvatarPropertiesRequest, new PacketCallback(AvatarPropertiesRequestHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.AgentWearablesRequest, new PacketCallback(AgentWearablesRequestHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, new PacketCallback(AgentIsNowWearingHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, new PacketCallback(AgentSetAppearanceHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.AgentCachedTexture, new PacketCallback(AgentCachedTextureHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
+            this.server = server;
+
+            server.UDP.RegisterPacketCallback(PacketType.AvatarPropertiesRequest, new PacketCallback(AvatarPropertiesRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentWearablesRequest, new PacketCallback(AgentWearablesRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, new PacketCallback(AgentIsNowWearingHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, new PacketCallback(AgentSetAppearanceHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentCachedTexture, new PacketCallback(AgentCachedTextureHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
+            server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
+            server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
+            server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
         }
 
         public void Stop()
@@ -71,13 +72,13 @@ namespace Simian.Extensions
                 sendAnim.AnimationList[i].AnimSequenceID = sequenceNums[i];
             }
 
-            Server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+            server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
         }
 
         public void TriggerSound(Agent agent, UUID soundID, float gain)
         {
             SoundTriggerPacket sound = new SoundTriggerPacket();
-            sound.SoundData.Handle = Server.RegionHandle;
+            sound.SoundData.Handle = server.RegionHandle;
             sound.SoundData.ObjectID = agent.AgentID;
             sound.SoundData.ParentID = agent.AgentID;
             sound.SoundData.OwnerID = agent.AgentID;
@@ -85,7 +86,7 @@ namespace Simian.Extensions
             sound.SoundData.SoundID = soundID;
             sound.SoundData.Gain = gain;
 
-            Server.UDP.BroadcastPacket(sound, PacketCategory.State);
+            server.UDP.BroadcastPacket(sound, PacketCategory.State);
         }
 
         void AgentAnimationHandler(Packet packet, Agent agent)
@@ -120,7 +121,7 @@ namespace Simian.Extensions
             effect.AgentData.AgentID = UUID.Zero;
             effect.AgentData.SessionID = UUID.Zero;
 
-            Server.UDP.BroadcastPacket(effect, PacketCategory.State);
+            server.UDP.BroadcastPacket(effect, PacketCategory.State);
         }
 
         void AvatarPropertiesRequestHandler(Packet packet, Agent agent)
@@ -128,7 +129,7 @@ namespace Simian.Extensions
             AvatarPropertiesRequestPacket request = (AvatarPropertiesRequestPacket)packet;
 
             Agent foundAgent;
-            if (Server.Agents.TryGetValue(request.AgentData.AvatarID, out foundAgent))
+            if (server.Agents.TryGetValue(request.AgentData.AvatarID, out foundAgent))
             {
                 AvatarPropertiesReplyPacket reply = new AvatarPropertiesReplyPacket();
                 reply.AgentData.AgentID = agent.AgentID;
@@ -143,7 +144,7 @@ namespace Simian.Extensions
                 reply.PropertiesData.PartnerID = foundAgent.PartnerID;
                 reply.PropertiesData.ProfileURL = Utils.StringToBytes(foundAgent.ProfileURL);
 
-                Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
+                server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
             }
             else
             {
@@ -155,7 +156,7 @@ namespace Simian.Extensions
         bool TryAddWearable(UUID agentID, Dictionary<WearableType, InventoryItem> wearables, WearableType type, UUID itemID)
         {
             InventoryObject obj;
-            if (itemID != UUID.Zero && Server.Inventory.TryGetInventory(agentID, itemID, out obj) &&
+            if (itemID != UUID.Zero && server.Inventory.TryGetInventory(agentID, itemID, out obj) &&
                 obj is InventoryItem)
             {
                 wearables.Add(type, (InventoryItem)obj);
@@ -212,7 +213,7 @@ namespace Simian.Extensions
 
             Logger.DebugLog(String.Format("Sending info about {0} wearables", wearables.Count));
 
-            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
+            server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Asset);
         }
 
         void AgentWearablesRequestHandler(Packet packet, Agent agent)
@@ -304,7 +305,7 @@ namespace Simian.Extensions
             for (int i = 0; i < set.VisualParam.Length; i++)
                 visualParams[i] = set.VisualParam[i].ParamValue;
 
-            Server.Scene.AvatarAppearance(this, agent, textureEntry, visualParams);
+            server.Scene.AvatarAppearance(this, agent, textureEntry, visualParams);
         }
 
         void AgentCachedTextureHandler(Packet packet, Agent agent)
@@ -328,7 +329,7 @@ namespace Simian.Extensions
 
             response.Header.Zerocoded = true;
 
-            Server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Transaction);
         }
 
         void SoundTriggerHandler(Packet packet, Agent agent)
@@ -352,7 +353,7 @@ namespace Simian.Extensions
                 reply.UUIDNameBlock[i].ID = id;
 
                 Agent foundAgent;
-                if (Server.Agents.TryGetValue(id, out foundAgent))
+                if (server.Agents.TryGetValue(id, out foundAgent))
                 {
                     reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(foundAgent.FirstName);
                     reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(foundAgent.LastName);
@@ -364,7 +365,7 @@ namespace Simian.Extensions
                 }
             }
 
-            Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
         }
     }
 }

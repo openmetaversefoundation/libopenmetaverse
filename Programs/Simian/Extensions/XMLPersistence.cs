@@ -8,17 +8,18 @@ using OpenMetaverse.StructuredData;
 
 namespace Simian.Extensions
 {
-    public class XMLPersistence : IExtension, IPersistenceProvider
+    public class XMLPersistence : IExtension<Simian>, IPersistenceProvider
     {
         Simian server;
 
-        public XMLPersistence(Simian server)
+        public XMLPersistence()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             LLSD llsd;
 
             try

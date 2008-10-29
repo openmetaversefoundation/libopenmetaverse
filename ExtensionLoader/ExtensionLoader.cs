@@ -25,15 +25,16 @@ namespace ExtensionLoader
     public static class ExtensionLoader<TOwner>
     {
         /// <summary>Currently loaded extensions</summary>
-        public static List<IExtension> Extensions;
+        public static List<IExtension<TOwner>> Extensions;
+        
         /// <summary></summary>
-        public static CodeDomProvider CSCompiler;
+        static CodeDomProvider CSCompiler;
         /// <summary></summary>
-        public static CompilerParameters CSCompilerParams;
+        static CompilerParameters CSCompilerParams;
 
         static ExtensionLoader()
         {
-            Extensions = new List<IExtension>();
+            Extensions = new List<IExtension<TOwner>>();
 
             CSCompiler = CodeDomProvider.CreateProvider("C#");
 
@@ -63,11 +64,11 @@ namespace ExtensionLoader
         /// source code files, for example MyApp.Extension.*.cs</param>
         /// <param name="assignablesParent">The object containing the 
         /// assignable interfaces</param>
-        /// <param name="assignableInterfaces">A list of interface types and
-        /// interface references to assign extensions to</param>
+        /// <param name="assignableInterfaces">A list of interface references
+        /// to assign extensions to</param>
         public static void LoadAllExtensions(Assembly assembly, string path, TOwner owner,
             List<string> referencedAssemblies, string assemblySearchPattern, string sourceSearchPattern,
-            object assignablesParent, Dictionary<Type, FieldInfo> assignableInterfaces)
+            object assignablesParent, List<FieldInfo> assignableInterfaces)
         {
             // Add referenced assemblies to the C# compiler
             CSCompilerParams.ReferencedAssemblies.Clear();
@@ -78,12 +79,12 @@ namespace ExtensionLoader
             }
 
             // Load internal extensions
-            LoadAssemblyExtensions(assembly, owner);
+            LoadAssemblyExtensions(assembly);
 
             // Load extensions from external assemblies
             List<string> extensionNames = ListExtensionAssemblies(path, assemblySearchPattern);
             foreach (string name in extensionNames)
-                LoadAssemblyExtensions(Assembly.LoadFile(name), owner);
+                LoadAssemblyExtensions(Assembly.LoadFile(name));
 
             // Load extensions from external code files
             extensionNames = ListExtensionSourceFiles(path, sourceSearchPattern);
@@ -91,7 +92,7 @@ namespace ExtensionLoader
             {
                 CompilerResults results = CSCompiler.CompileAssemblyFromFile(CSCompilerParams, name);
                 if (results.Errors.Count == 0)
-                    LoadAssemblyExtensions(results.CompiledAssembly, owner);
+                    LoadAssemblyExtensions(results.CompiledAssembly);
                 else
                     throw new ExtensionException("Error(s) compiling " + name);
             }
@@ -99,14 +100,13 @@ namespace ExtensionLoader
             if (assignableInterfaces != null)
             {
                 // Assign extensions to interfaces
-                foreach (KeyValuePair<Type, FieldInfo> kvp in assignableInterfaces)
+                foreach (FieldInfo assignable in assignableInterfaces)
                 {
-                    Type type = kvp.Key;
-                    FieldInfo assignable = kvp.Value;
+                    Type type = assignable.FieldType;
 
                     for (int i = 0; i < Extensions.Count; i++)
                     {
-                        IExtension extension = Extensions[i];
+                        IExtension<TOwner> extension = Extensions[i];
 
                         if (extension.GetType().GetInterface(type.Name) != null)
                             assignable.SetValue(assignablesParent, extension);
@@ -114,10 +114,10 @@ namespace ExtensionLoader
                 }
 
                 // Check for unassigned interfaces
-                foreach (KeyValuePair<Type, FieldInfo> kvp in assignableInterfaces)
+                foreach (FieldInfo assignable in assignableInterfaces)
                 {
-                    if (kvp.Value.GetValue(assignablesParent) == null)
-                        throw new ExtensionException("Unassigned interface " + kvp.Key.Name);
+                    if (assignable.GetValue(assignablesParent) == null)
+                        throw new ExtensionException("Unassigned interface " + assignable.FieldType.Name);
                 }
             }
         }
@@ -165,18 +165,19 @@ namespace ExtensionLoader
             return plugins;
         }
 
-        public static void LoadAssemblyExtensions(Assembly assembly, TOwner owner)
+        public static void LoadAssemblyExtensions(Assembly assembly)
         {
-            Type[] constructorParams = new Type[] { typeof(TOwner) };
+            Type[] constructorParams = new Type[] { };
+            object[] parameters = new object[] { };
 
             foreach (Type t in assembly.GetTypes())
             {
                 try
                 {
-                    if (t.GetInterface("IExtension") != null)
+                    if (t.GetInterface(typeof(IExtension<TOwner>).Name) != null)
                     {
                         ConstructorInfo info = t.GetConstructor(constructorParams);
-                        IExtension extension = (IExtension)info.Invoke(new object[] { owner });
+                        IExtension<TOwner> extension = (IExtension<TOwner>)info.Invoke(parameters);
                         Extensions.Add(extension);
                     }
                 }
@@ -186,6 +187,28 @@ namespace ExtensionLoader
                         "Failed to load IExtension {0} from assembly {1}", t.FullName, assembly.FullName), e);
                 }
             }
+        }
+
+        public static FieldInfo GetInterface(Type ownerType, string memberName)
+        {
+            FieldInfo fieldInfo = ownerType.GetField(memberName);
+            if (fieldInfo.FieldType.IsInterface)
+                return fieldInfo;
+            else
+                return null;
+        }
+
+        public static List<FieldInfo> GetInterfaces(object ownerObject)
+        {
+            List<FieldInfo> interfaces = new List<FieldInfo>();
+
+            foreach (FieldInfo field in ownerObject.GetType().GetFields())
+            {
+                if (field.FieldType.IsInterface)
+                    interfaces.Add(field);
+            }
+
+            return interfaces;
         }
     }
 }

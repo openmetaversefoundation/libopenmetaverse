@@ -6,18 +6,20 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class FriendManager : IExtension
+    public class FriendManager : IExtension<Simian>
     {
-        Simian Server;
+        Simian server;
 
-        public FriendManager(Simian server)
+        public FriendManager()
         {
-            Server = server;
+            
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
-            Server.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new PacketCallback(ImprovedInstantMessageHandler));
+            this.server = server;
+
+            server.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new PacketCallback(ImprovedInstantMessageHandler));
         }
 
         public void Stop()
@@ -31,9 +33,9 @@ namespace Simian.Extensions
 
             if (dialog == InstantMessageDialog.FriendshipOffered || dialog == InstantMessageDialog.FriendshipAccepted || dialog == InstantMessageDialog.FriendshipDeclined)
             {
-                lock (Server.Agents)
+                lock (server.Agents)
                 {
-                    foreach (Agent recipient in Server.Agents.Values)
+                    foreach (Agent recipient in server.Agents.Values)
                     {
                         if (recipient.AgentID == im.MessageBlock.ToAgentID)
                         {
@@ -53,12 +55,12 @@ namespace Simian.Extensions
 
                             sendIM.AgentData.AgentID = agent.AgentID;
 
-                            Server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
+                            server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
 
                             if (dialog == InstantMessageDialog.FriendshipAccepted)
                             {
-                                bool receiverOnline = Server.Agents.ContainsKey(agent.AgentID);
-                                bool senderOnline = Server.Agents.ContainsKey(recipient.AgentID);
+                                bool receiverOnline = server.Agents.ContainsKey(agent.AgentID);
+                                bool senderOnline = server.Agents.ContainsKey(recipient.AgentID);
 
                                 if (receiverOnline)
                                 {
@@ -68,7 +70,7 @@ namespace Simian.Extensions
                                         notify.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[0];
                                         notify.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
                                         notify.AgentBlock[0].AgentID = agent.AgentID;
-                                        Server.UDP.SendPacket(recipient.AgentID, notify, PacketCategory.State);
+                                        server.UDP.SendPacket(recipient.AgentID, notify, PacketCategory.State);
                                     }
                                     else
                                     {
@@ -76,7 +78,7 @@ namespace Simian.Extensions
                                         notify.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[0];
                                         notify.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
                                         notify.AgentBlock[0].AgentID = agent.AgentID;
-                                        Server.UDP.SendPacket(recipient.AgentID, notify, PacketCategory.State);
+                                        server.UDP.SendPacket(recipient.AgentID, notify, PacketCategory.State);
                                     }
                                 }
 
@@ -88,7 +90,7 @@ namespace Simian.Extensions
                                         notify.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[0];
                                         notify.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
                                         notify.AgentBlock[0].AgentID = recipient.AgentID;
-                                        Server.UDP.SendPacket(agent.AgentID, notify, PacketCategory.State);
+                                        server.UDP.SendPacket(agent.AgentID, notify, PacketCategory.State);
                                     }
                                     else
                                     {
@@ -96,7 +98,7 @@ namespace Simian.Extensions
                                         notify.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[0];
                                         notify.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
                                         notify.AgentBlock[0].AgentID = recipient.AgentID;
-                                        Server.UDP.SendPacket(agent.AgentID, notify, PacketCategory.State);
+                                        server.UDP.SendPacket(agent.AgentID, notify, PacketCategory.State);
                                     }
                                 }
 

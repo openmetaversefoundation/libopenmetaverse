@@ -6,18 +6,19 @@ using OpenMetaverse.Rendering;
 
 namespace Simian.Extensions
 {
-    public class RenderingPluginMesher : IExtension, IMeshingProvider
+    public class RenderingPluginMesher : IExtension<Simian>, IMeshingProvider
     {
-        Simian Server;
+        Simian server;
         IRendering Renderer;
 
-        public RenderingPluginMesher(Simian server)
+        public RenderingPluginMesher()
         {
-            Server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             // Search for a the best available OpenMetaverse.Rendering plugin
             List<string> renderers = RenderingLoader.ListRenderers(AppDomain.CurrentDomain.BaseDirectory);
 

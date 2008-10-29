@@ -68,21 +68,20 @@ namespace Simian
         }
     }
 
-    public class UDPManager : IExtension, IUDPProvider
+    public class UDPManager : IExtension<Simian>, IUDPProvider
     {
-        Simian Server;
+        Simian server;
         UDPServer udpServer;
 
-        public UDPManager(Simian server)
+        public UDPManager()
         {
-            Server = server;
-            // Have to do this in the constructor, because we don't know that the
-            // UDP extension will be started before other extensions
-            udpServer = new UDPServer(Server.UDPPort, Server);
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
+            udpServer = new UDPServer(server.UDPPort, server);
         }
 
         public void Stop()

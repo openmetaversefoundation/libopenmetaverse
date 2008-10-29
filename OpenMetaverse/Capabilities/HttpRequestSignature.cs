@@ -40,7 +40,6 @@ namespace OpenMetaverse.Capabilities
         private string method;
         private string contentType;
         private string path;
-        private bool pathIsWildcard;
 
         public string Method
         {
@@ -65,68 +64,55 @@ namespace OpenMetaverse.Capabilities
             get { return path; }
             set
             {
-                pathIsWildcard = false;
-
-                if (!String.IsNullOrEmpty(value))
-                {
-                    // Regex to tear apart URLs, used to extract just a URL
-                    // path from any data we're given
-                    string regexPattern =
-                        @"^(?<s1>(?<s0>[^:/\?#]+):)?(?<a1>"
-                      + @"//(?<a0>[^/\?#]*))?(?<p0>[^\?#]*)"
-                      + @"(?<q1>\?(?<q0>[^#]*))?"
-                      + @"(?<f1>#(?<f0>.*))?";
-                    Regex re = new Regex(regexPattern, RegexOptions.ExplicitCapture);
-                    Match m = re.Match(value);
-                    string newPath = m.Groups["p0"].Value.ToLower();
-
-                    // Remove any trailing forward-slashes
-                    if (newPath.EndsWith("/"))
-                        newPath = newPath.Substring(0, newPath.Length - 1);
-
-                    // Check if this path contains a wildcard. If so, convert it to a regular expression
-                    if (newPath.Contains("*"))
-                    {
-                        pathIsWildcard = true;
-                        newPath = String.Format("^{0}$", newPath.Replace("\\*", ".*"));
-                    }
-
-                    path = newPath;
-                }
-                else
-                {
-                    path = String.Empty;
-                }
+                if (!String.IsNullOrEmpty(value)) path = value.ToLower();
+                else path = String.Empty;
             }
-        }
-        public bool PathIsWildcard
-        {
-            get { return pathIsWildcard; }
         }
 
         public HttpRequestSignature(HttpListenerContext context)
         {
             method = contentType = path = String.Empty;
-            pathIsWildcard = false;
 
             Method = context.Request.HttpMethod;
             ContentType = context.Request.ContentType;
             Path = context.Request.RawUrl;
         }
 
+        /// <summary>
+        /// Test if two HTTP request signatures contain exactly the same data
+        /// </summary>
+        /// <param name="signature">Signature to test against</param>
+        /// <returns>True if the contents of both signatures are identical, 
+        /// otherwise false</returns>
         public bool ExactlyEquals(HttpRequestSignature signature)
         {
             return (method.Equals(signature.Method) && contentType.Equals(signature.ContentType) && path.Equals(signature.Path));
         }
 
+        /// <summary>
+        /// Does pattern matching to determine if an incoming HTTP request
+        /// matches a given pattern. Equals can only be called on an incoming
+        /// request; the pattern to match against is the parameter
+        /// </summary>
+        /// <param name="obj">The pattern to test against this request</param>
+        /// <returns>True if the request matches the given pattern, otherwise
+        /// false</returns>
         public override bool Equals(object obj)
         {
             return (obj is HttpRequestSignature) ? this == (HttpRequestSignature)obj : false;
         }
 
-        public bool Equals(HttpRequestSignature signature)
+        /// <summary>
+        /// Does pattern matching to determine if an incoming HTTP request
+        /// matches a given pattern. Equals can only be called on an incoming
+        /// request; the pattern to match against is the parameter
+        /// </summary>
+        /// <param name="pattern">The pattern to test against this request</param>
+        /// <returns>True if the request matches the given pattern, otherwise
+        /// false</returns>
+        public bool Equals(HttpRequestSignature pattern)
         {
-            return (this == signature);
+            return (this == pattern);
         }
 
         public override int GetHashCode()
@@ -137,36 +123,41 @@ namespace OpenMetaverse.Capabilities
             return hash;
         }
 
-        public static bool operator ==(HttpRequestSignature lhs, HttpRequestSignature rhs)
+        /// <summary>
+        /// Does pattern matching to determine if an incoming HTTP request
+        /// matches a given pattern. The incoming request must be on the
+        /// left-hand side, and the pattern to match against must be on the
+        /// right-hand side
+        /// </summary>
+        /// <param name="request">The incoming HTTP request signature</param>
+        /// <param name="pattern">The pattern to test against the incoming request</param>
+        /// <returns>True if the request matches the given pattern, otherwise
+        /// false</returns>
+        public static bool operator ==(HttpRequestSignature request, HttpRequestSignature pattern)
         {
-            bool methodMatch = (String.IsNullOrEmpty(lhs.Method) || String.IsNullOrEmpty(rhs.Method) || lhs.Method.Equals(rhs.Method));
-            bool contentTypeMatch = (String.IsNullOrEmpty(lhs.ContentType) || String.IsNullOrEmpty(rhs.ContentType) || lhs.ContentType.Equals(rhs.ContentType));
-            bool pathMatch = false;
+            bool methodMatch = (String.IsNullOrEmpty(pattern.Method) || request.Method.Equals(pattern.Method));
+            bool contentTypeMatch = (String.IsNullOrEmpty(pattern.ContentType) || request.ContentType.Equals(pattern.ContentType));
+            bool pathMatch = true;
 
-            if (methodMatch && contentTypeMatch)
-            {
-                if (!String.IsNullOrEmpty(lhs.Path) && !String.IsNullOrEmpty(rhs.Path))
-                {
-                    // Do wildcard matching if there is any to be done
-                    if (lhs.PathIsWildcard)
-                        pathMatch = Regex.IsMatch(rhs.Path, lhs.Path);
-                    else if (rhs.PathIsWildcard)
-                        pathMatch = Regex.IsMatch(lhs.Path, rhs.Path);
-                    else
-                        pathMatch = lhs.Path.Equals(rhs.Path);
-                }
-                else
-                {
-                    pathMatch = true;
-                }
-            }
+            if (methodMatch && contentTypeMatch && !String.IsNullOrEmpty(pattern.Path))
+                pathMatch = Regex.IsMatch(request.Path, pattern.Path, RegexOptions.IgnoreCase);
 
             return (methodMatch && contentTypeMatch && pathMatch);
         }
 
-        public static bool operator !=(HttpRequestSignature lhs, HttpRequestSignature rhs)
+        /// <summary>
+        /// Does pattern matching to determine if an incoming HTTP request
+        /// matches a given pattern. The incoming request must be on the
+        /// left-hand side, and the pattern to match against must be on the
+        /// right-hand side
+        /// </summary>
+        /// <param name="request">The incoming HTTP request signature</param>
+        /// <param name="pattern">The pattern to test against the incoming request</param>
+        /// <returns>True if the request does not match the given pattern, otherwise
+        /// false</returns>
+        public static bool operator !=(HttpRequestSignature request, HttpRequestSignature pattern)
         {
-            return !(lhs == rhs);
+            return !(request == pattern);
         }
     }
 }

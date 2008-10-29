@@ -7,9 +7,9 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class InventoryManager : IExtension, IInventoryProvider, IPersistable
+    public class InventoryManager : IExtension<Simian>, IInventoryProvider, IPersistable
     {
-        Simian Server;
+        Simian server;
         /// <summary>Dictionary of inventories for each agent. Each inventory
         /// is also a dictionary itself</summary>
         Dictionary<UUID, Dictionary<UUID, InventoryObject>> Inventory =
@@ -17,22 +17,23 @@ namespace Simian.Extensions
         /// <summary>Global shared inventory for all agent</summary>
         Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
 
-        public InventoryManager(Simian server)
+        public InventoryManager()
         {
-            Server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
-            Server.UDP.RegisterPacketCallback(PacketType.CreateInventoryItem, new PacketCallback(CreateInventoryItemHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.CreateInventoryFolder, new PacketCallback(CreateInventoryFolderHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.UpdateInventoryItem, new PacketCallback(UpdateInventoryItemHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new PacketCallback(FetchInventoryDescendentsHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.FetchInventory, new PacketCallback(FetchInventoryHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.CopyInventoryItem, new PacketCallback(CopyInventoryItemHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.MoveInventoryItem, new PacketCallback(MoveInventoryItemHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.MoveInventoryFolder, new PacketCallback(MoveInventoryFolderHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.PurgeInventoryDescendents, new PacketCallback(PurgeInventoryDescendentsHandler));
+            this.server = server;
+
+            server.UDP.RegisterPacketCallback(PacketType.CreateInventoryItem, new PacketCallback(CreateInventoryItemHandler));
+            server.UDP.RegisterPacketCallback(PacketType.CreateInventoryFolder, new PacketCallback(CreateInventoryFolderHandler));
+            server.UDP.RegisterPacketCallback(PacketType.UpdateInventoryItem, new PacketCallback(UpdateInventoryItemHandler));
+            server.UDP.RegisterPacketCallback(PacketType.FetchInventoryDescendents, new PacketCallback(FetchInventoryDescendentsHandler));
+            server.UDP.RegisterPacketCallback(PacketType.FetchInventory, new PacketCallback(FetchInventoryHandler));
+            server.UDP.RegisterPacketCallback(PacketType.CopyInventoryItem, new PacketCallback(CopyInventoryItemHandler));
+            server.UDP.RegisterPacketCallback(PacketType.MoveInventoryItem, new PacketCallback(MoveInventoryItemHandler));
+            server.UDP.RegisterPacketCallback(PacketType.MoveInventoryFolder, new PacketCallback(MoveInventoryFolderHandler));
+            server.UDP.RegisterPacketCallback(PacketType.PurgeInventoryDescendents, new PacketCallback(PurgeInventoryDescendentsHandler));
         }
 
         public void Stop()
@@ -281,7 +282,7 @@ namespace Simian.Extensions
                         for (int j = 0; j < count; j++)
                             descendents.FolderData[j] = folderBlocks[splitPoints[i] + j];
 
-                        Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                        server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
                     }
                 }
                 else
@@ -297,7 +298,7 @@ namespace Simian.Extensions
                     descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[0];
                     descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[0];
 
-                    Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                    server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
                 }
 
                 if (itemBlocks.Length > 0)
@@ -323,7 +324,7 @@ namespace Simian.Extensions
                         for (int j = 0; j < count; j++)
                             descendents.ItemData[j] = itemBlocks[splitPoints[i] + j];
 
-                        Server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                        server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
                     }
                 }
             }
@@ -403,7 +404,7 @@ namespace Simian.Extensions
                 for (int j = 0; j < count; j++)
                     reply.InventoryData[j] = blocks[splitPoints[i] + j];
 
-                Server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+                server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
             }
         }
 
@@ -540,7 +541,7 @@ namespace Simian.Extensions
 
             Logger.DebugLog("Sending bulk update for inventory object " + obj.ID);
 
-            Server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
+            server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
         }
 
         void MoveInventory(Agent agent, Dictionary<UUID, InventoryObject> agentInventory, UUID objectID,
@@ -784,7 +785,7 @@ namespace Simian.Extensions
                     update.InventoryData[0].Type = (sbyte)item.AssetType;
 
                     if (sendPacket)
-                        Server.UDP.SendPacket(agentID, update, PacketCategory.Inventory);
+                        server.UDP.SendPacket(agentID, update, PacketCategory.Inventory);
 
                     return item.ID;
                 }

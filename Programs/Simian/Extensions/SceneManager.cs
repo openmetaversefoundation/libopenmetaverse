@@ -12,7 +12,7 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class SceneManager : IExtension, ISceneProvider
+    public class SceneManager : IExtension<Simian>, ISceneProvider
     {
         Simian server;
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
@@ -41,13 +41,14 @@ namespace Simian.Extensions
 
         public float WaterHeight { get { return 35f; } }
 
-        public SceneManager(Simian server)
+        public SceneManager()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             server.UDP.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler));
             LoadTerrain(server.DataDir + "heightmap.tga");
         }

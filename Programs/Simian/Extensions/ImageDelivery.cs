@@ -81,20 +81,21 @@ namespace Simian.Extensions
         }
     }
 
-    public class ImageDelivery : IExtension
+    public class ImageDelivery : IExtension<Simian>
     {
-        Simian Server;
+        Simian server;
         Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
         BlockingQueue<ImageDownload> CurrentDownloadQueue = new BlockingQueue<ImageDownload>();
 
-        public ImageDelivery(Simian server)
+        public ImageDelivery()
         {
-            Server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
-            Server.UDP.RegisterPacketCallback(PacketType.RequestImage, new PacketCallback(RequestImageHandler));
+            this.server = server;
+
+            server.UDP.RegisterPacketCallback(PacketType.RequestImage, new PacketCallback(RequestImageHandler));
         }
 
         public void Stop()
@@ -150,7 +151,7 @@ namespace Simian.Extensions
 
                     // New download, check if we have this image
                     Asset asset;
-                    if (Server.Assets.TryGetAsset(block.Image, out asset) && asset is AssetTexture)
+                    if (server.Assets.TryGetAsset(block.Image, out asset) && asset is AssetTexture)
                     {
                         download = new ImageDownload((AssetTexture)asset, block.DiscardLevel, block.DownloadPriority,
                             (int)block.Packet);
@@ -174,7 +175,7 @@ namespace Simian.Extensions
                         data.ImageData.Data = new byte[imageDataSize];
                         Buffer.BlockCopy(download.Texture.AssetData, 0, data.ImageData.Data, 0, imageDataSize);
 
-                        Server.UDP.SendPacket(agent.AgentID, data, PacketCategory.Texture);
+                        server.UDP.SendPacket(agent.AgentID, data, PacketCategory.Texture);
 
                         // Check if ImagePacket packets need to be sent to complete this transfer
                         if (download.CurrentPacket <= download.StopPacket)
@@ -204,7 +205,7 @@ namespace Simian.Extensions
                                             Buffer.BlockCopy(download.Texture.AssetData, download.CurrentBytePosition(),
                                                 transfer.ImageData.Data, 0, imagePacketSize);
 
-                                            Server.UDP.SendPacket(agent.AgentID, transfer, PacketCategory.Texture);
+                                            server.UDP.SendPacket(agent.AgentID, transfer, PacketCategory.Texture);
 
                                             ++download.CurrentPacket;
                                         }
@@ -225,7 +226,7 @@ namespace Simian.Extensions
 
                         ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
                         notfound.ImageID.ID = block.Image;
-                        Server.UDP.SendPacket(agent.AgentID, notfound, PacketCategory.Texture);
+                        server.UDP.SendPacket(agent.AgentID, notfound, PacketCategory.Texture);
                     }
                 }
             }

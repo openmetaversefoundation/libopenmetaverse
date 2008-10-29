@@ -7,7 +7,7 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class Movement : IExtension
+    public class Movement : IExtension<Simian>
     {
         const int UPDATE_ITERATION = 100; //rate in milliseconds to send ObjectUpdate
         const bool ENVIRONMENT_SOUNDS = true; //collision sounds, splashing, etc
@@ -23,7 +23,7 @@ namespace Simian.Extensions
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
 
-        UUID BIG_SPLASH_SOUND = new UUID("486475b9-1460-4969-871e-fad973b38015");
+        static readonly UUID BIG_SPLASH_SOUND = new UUID("486475b9-1460-4969-871e-fad973b38015");
 
         const float SQRT_TWO = 1.41421356f;
 
@@ -37,13 +37,14 @@ namespace Simian.Extensions
             set { Interlocked.Exchange(ref lastTick, value); }
         }
 
-        public Movement(Simian server)
+        public Movement()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, new PacketCallback(AgentUpdateHandler));
             server.UDP.RegisterPacketCallback(PacketType.AgentHeightWidth, new PacketCallback(AgentHeightWidthHandler));
             server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, new PacketCallback(SetAlwaysRunHandler));

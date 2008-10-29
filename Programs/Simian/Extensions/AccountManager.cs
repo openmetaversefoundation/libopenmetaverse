@@ -6,18 +6,18 @@ using OpenMetaverse.StructuredData;
 
 namespace Simian.Extensions
 {
-    public class AccountManager : IExtension, IAccountProvider, IPersistable
+    public class AccountManager : IExtension<Simian>, IAccountProvider, IPersistable
     {
         Simian server;
         DoubleDictionary<string, UUID, Agent> accounts = new DoubleDictionary<string, UUID, Agent>();
 
-        public AccountManager(Simian server)
+        public AccountManager()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
         }
 
         public void Stop()

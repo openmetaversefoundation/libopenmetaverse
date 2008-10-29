@@ -6,19 +6,20 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class Messaging : IExtension
+    public class Messaging : IExtension<Simian>
     {
-        Simian Server;
+        Simian server;
 
-        public Messaging(Simian server)
+        public Messaging()
         {
-            Server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
-            Server.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, new PacketCallback(ChatFromViewerHandler));
-            Server.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new PacketCallback(ImprovedInstantMessageHandler));
+            this.server = server;
+
+            server.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, new PacketCallback(ChatFromViewerHandler));
+            server.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new PacketCallback(ImprovedInstantMessageHandler));
         }
 
         public void Stop()
@@ -45,7 +46,7 @@ namespace Simian.Extensions
             chat.ChatData.FromName = Utils.StringToBytes(agent.Avatar.Name);
             chat.ChatData.Message = viewerChat.ChatData.Message;
 
-            Server.UDP.BroadcastPacket(chat, PacketCategory.Transaction);
+            server.UDP.BroadcastPacket(chat, PacketCategory.Transaction);
         }
 
         void ImprovedInstantMessageHandler(Packet packet, Agent agent)
@@ -55,9 +56,9 @@ namespace Simian.Extensions
 
             if (dialog == InstantMessageDialog.MessageFromAgent)
             {
-                lock (Server.Agents)
+                lock (server.Agents)
                 {
-                    foreach (Agent recipient in Server.Agents.Values)
+                    foreach (Agent recipient in server.Agents.Values)
                     {
                         if (recipient.AgentID == im.MessageBlock.ToAgentID)
                         {
@@ -77,7 +78,7 @@ namespace Simian.Extensions
 
                             sendIM.AgentData.AgentID = agent.AgentID;
 
-                            Server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
+                            server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
 
                             break;
                         }

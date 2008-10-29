@@ -5,17 +5,18 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class ConnectionManagement : IExtension
+    public class ConnectionManagement : IExtension<Simian>
     {
         Simian server;
 
-        public ConnectionManagement(Simian server)
+        public ConnectionManagement()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public void Start(Simian server)
         {
+            this.server = server;
+
             server.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, new PacketCallback(UseCircuitCodeHandler));
             server.UDP.RegisterPacketCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
             server.UDP.RegisterPacketCallback(PacketType.LogoutRequest, new PacketCallback(LogoutRequestHandler));
