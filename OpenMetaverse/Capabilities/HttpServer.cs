@@ -86,10 +86,11 @@ namespace OpenMetaverse.Capabilities
             isRunning = false;
         }
 
-        public void AddHandler(string method, string path, HttpRequestCallback callback)
+        public void AddHandler(string method, string contentType, string path, HttpRequestCallback callback)
         {
             HttpRequestSignature signature = new HttpRequestSignature();
             signature.Method = method;
+            signature.ContentType = contentType;
             signature.Path = path;
             AddHandler(new HttpRequestHandler(signature, callback));
         }

@@ -152,40 +152,16 @@ namespace Simian
             HttpServer = new HttpServer(HttpPort, ssl);
 
             // Login webpage HEAD request, used to check if the login webpage is alive
-            HttpRequestSignature signature = new HttpRequestSignature();
-            signature.Method = "head";
-            signature.ContentType = String.Empty;
-            signature.Path = "/loginpage";
-            HttpServer.HttpRequestCallback callback = new HttpServer.HttpRequestCallback(LoginWebpageHeadHandler);
-            HttpServer.HttpRequestHandler handler = new HttpServer.HttpRequestHandler(signature, callback);
-            HttpServer.AddHandler(handler);
+            HttpServer.AddHandler("head", null, "^/loginpage", new HttpServer.HttpRequestCallback(LoginWebpageHeadHandler));
 
             // Login webpage GET request, gets the login webpage data (purely aesthetic)
-            signature.Method = "get";
-            signature.ContentType = String.Empty;
-            signature.Path = "/loginpage";
-            callback = new HttpServer.HttpRequestCallback(LoginWebpageGetHandler);
-            handler.Signature = signature;
-            handler.Callback = callback;
-            HttpServer.AddHandler(handler);
+            HttpServer.AddHandler("get", null, "^/loginpage", new HttpServer.HttpRequestCallback(LoginWebpageGetHandler));
 
             // Client XML-RPC login
-            signature.Method = "post";
-            signature.ContentType = "text/xml";
-            signature.Path = "/login";
-            callback = new HttpServer.HttpRequestCallback(LoginXmlRpcPostHandler);
-            handler.Signature = signature;
-            handler.Callback = callback;
-            HttpServer.AddHandler(handler);
+            HttpServer.AddHandler("post", "text/xml", "^/login", new HttpServer.HttpRequestCallback(LoginXmlRpcPostHandler));
 
             // Client LLSD login
-            signature.Method = "post";
-            signature.ContentType = "application/xml";
-            signature.Path = "/login";
-            callback = new HttpServer.HttpRequestCallback(LoginLLSDPostHandler);
-            handler.Signature = signature;
-            handler.Callback = callback;
-            HttpServer.AddHandler(handler);
+            HttpServer.AddHandler("post", "application/xml", "^/login", new HttpServer.HttpRequestCallback(LoginLLSDPostHandler));
 
             HttpServer.Start();
         }
