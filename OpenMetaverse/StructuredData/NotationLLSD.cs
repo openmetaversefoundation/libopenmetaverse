@@ -34,7 +34,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public static partial class LLSDParser
+    public static partial class OSDParser
     {
         private const string baseIndent = "  ";
 

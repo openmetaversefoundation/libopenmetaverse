@@ -3309,7 +3309,7 @@ namespace OpenMetaverse
                 
                 req.Add("session-id", OSD.FromUUID(sessionID));
                 
-                byte[] postData = StructuredData.LLSDParser.SerializeLLSDXmlBytes(req);
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
 
                 CapsClient request = new CapsClient(url);
                 request.StartRequest(postData);

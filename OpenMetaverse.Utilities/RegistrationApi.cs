@@ -246,7 +246,7 @@ namespace OpenMetaverse
             OSDMap query = new OSDMap();
             query.Add("username", OSD.FromString(firstName));
             query.Add("last_name_id", OSD.FromInteger(lastName.ID));
-            //byte[] postData = LLSDParser.SerializeXmlBytes(query);
+            //byte[] postData = OSDParser.SerializeXmlBytes(query);
 
             CapsClient request = new CapsClient(_caps.CheckName);
             request.OnComplete += new CapsClient.CompleteCallback(CheckNameResponse);
@@ -311,7 +311,7 @@ namespace OpenMetaverse
                 query.Add("start_look_at_z", OSD.FromReal(user.StartLookAt.Value.Z));
             }
 
-            //byte[] postData = LLSDParser.SerializeXmlBytes(query);
+            //byte[] postData = OSDParser.SerializeXmlBytes(query);
 
             // Make the request
             CapsClient request = new CapsClient(_caps.CreateUser);

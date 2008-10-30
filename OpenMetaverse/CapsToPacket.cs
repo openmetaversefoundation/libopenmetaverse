@@ -38,7 +38,7 @@ namespace OpenMetaverse.Packets
 
         public static string ToXmlString(Packet packet)
         {
-            return LLSDParser.SerializeLLSDXmlString(GetLLSD(packet));
+            return OSDParser.SerializeLLSDXmlString(GetLLSD(packet));
         }
 
         public static OSD GetLLSD(Packet packet)
@@ -80,7 +80,7 @@ namespace OpenMetaverse.Packets
 
         public static byte[] ToBinary(Packet packet)
         {
-            return LLSDParser.SerializeLLSDBinary(GetLLSD(packet));
+            return OSDParser.SerializeLLSDBinary(GetLLSD(packet));
         }
 
         public static Packet FromXmlString(string xml)
@@ -88,7 +88,7 @@ namespace OpenMetaverse.Packets
             System.Xml.XmlTextReader reader =
                 new System.Xml.XmlTextReader(new System.IO.MemoryStream(Utils.StringToBytes(xml)));
 
-            return FromLLSD(LLSDParser.DeserializeLLSDXml(reader));
+            return FromLLSD(OSDParser.DeserializeLLSDXml(reader));
         }
 
         public static Packet FromLLSD(OSD osd)

@@ -149,7 +149,7 @@ namespace OpenMetaverse
 
             // Home
             OSDMap home = null;
-            OSD osdHome = LLSDParser.DeserializeLLSDNotation(reply["home"].AsString());
+            OSD osdHome = OSDParser.DeserializeLLSDNotation(reply["home"].AsString());
 
             if (osdHome.Type == OSDType.Map)
             {
@@ -373,13 +373,13 @@ namespace OpenMetaverse
                         home["position"] = OSD.FromVector3(HomePosition);
                         home["look_at"] = OSD.FromVector3(HomeLookAt);
 
-                        WriteXmlRpcStringMember(writer, false, "home", LLSDParser.SerializeLLSDNotation(home));
+                        WriteXmlRpcStringMember(writer, false, "home", OSDParser.SerializeLLSDNotation(home));
 
                         // message
                         WriteXmlRpcStringMember(writer, false, "message", Message);
 
                         // look_at
-                        WriteXmlRpcStringMember(writer, false, "look_at", LLSDParser.SerializeLLSDNotation(OSD.FromVector3(LookAt)));
+                        WriteXmlRpcStringMember(writer, false, "look_at", OSDParser.SerializeLLSDNotation(OSD.FromVector3(LookAt)));
 
                         // login
                         WriteXmlRpcStringMember(writer, false, "login", "true");
@@ -461,7 +461,7 @@ namespace OpenMetaverse
                 }
                 else if (osd.Type == OSDType.String)
                 {
-                    OSDArray array = (OSDArray)LLSDParser.DeserializeLLSDNotation(osd.AsString());
+                    OSDArray array = (OSDArray)OSDParser.DeserializeLLSDNotation(osd.AsString());
                     return array.AsVector3();
                 }
             }
@@ -972,7 +972,7 @@ namespace OpenMetaverse
             CapsClient loginRequest = new CapsClient(loginUri);
             loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
             loginRequest.UserData = CurrentContext;
-            loginRequest.StartRequest(LLSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
+            loginRequest.StartRequest(OSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
         }
 
         private void UpdateLoginStatus(LoginStatus status, string message)

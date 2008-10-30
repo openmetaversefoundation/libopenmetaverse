@@ -100,7 +100,7 @@ namespace OpenMetaverse.TestClient
                         Logger.Log(uuid.ToString(), Helpers.LogLevel.Warning, Client);
                 }
 
-                string output = LLSDParser.SerializeLLSDXmlString(Helpers.PrimListToOSD(prims));
+                string output = OSDParser.SerializeLLSDXmlString(Helpers.PrimListToOSD(prims));
                 try { File.WriteAllText(file, output); }
                 catch (Exception e) { return e.Message; }
 

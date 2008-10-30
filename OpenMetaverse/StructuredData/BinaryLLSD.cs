@@ -47,7 +47,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public static partial class LLSDParser
+    public static partial class OSDParser
     {
         private const int initialBufferSize = 128;
         private const int int32Length = 4;

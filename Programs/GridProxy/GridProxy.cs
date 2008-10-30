@@ -599,11 +599,11 @@ namespace GridProxy
 
                 if (cap.ReqFmt == CapsDataFormat.SD)
                 {
-                    capReq.Request = LLSDParser.DeserializeLLSDXml(content);
+                    capReq.Request = OSDParser.DeserializeLLSDXml(content);
                 }
                 else
                 {
-                    capReq.Request = LLSDParser.DeserializeLLSDXml(content);
+                    capReq.Request = OSDParser.DeserializeLLSDXml(content);
                 }
 
                 foreach (CapsDelegate d in cap.GetDelegates())
@@ -613,11 +613,11 @@ namespace GridProxy
 
                 if (cap.ReqFmt == CapsDataFormat.SD)
                 {
-                    content = LLSDParser.SerializeLLSDXmlBytes((OSD)capReq.Request);
+                    content = OSDParser.SerializeLLSDXmlBytes((OSD)capReq.Request);
                 }
                 else
                 {
-                    content = LLSDParser.SerializeLLSDXmlBytes(capReq.Request);
+                    content = OSDParser.SerializeLLSDXmlBytes(capReq.Request);
                 }
             }
 
@@ -709,11 +709,11 @@ namespace GridProxy
                     {
                         if (cap.RespFmt == CapsDataFormat.SD)
                         {
-                            capReq.Response = LLSDParser.DeserializeLLSDXml(respBuf);
+                            capReq.Response = OSDParser.DeserializeLLSDXml(respBuf);
                         }
                         else
                         {
-                            capReq.Response = LLSDParser.DeserializeLLSDXml(respBuf);
+                            capReq.Response = OSDParser.DeserializeLLSDXml(respBuf);
                         }
 
                     }
@@ -760,11 +760,11 @@ namespace GridProxy
 
                 if (cap.RespFmt == CapsDataFormat.SD)
                 {
-                    respBuf = LLSDParser.SerializeLLSDXmlBytes((OSD)capReq.Response);
+                    respBuf = OSDParser.SerializeLLSDXmlBytes((OSD)capReq.Response);
                 }
                 else
                 {
-                    respBuf = LLSDParser.SerializeLLSDXmlBytes(capReq.Response);
+                    respBuf = OSDParser.SerializeLLSDXmlBytes(capReq.Response);
                 }
             }
 
@@ -1105,7 +1105,7 @@ namespace GridProxy
                 writer.Write("HTTP/1.0 200 OK\r\n");
                 writer.Write("Content-type: application/xml+llsd\r\n");
                 writer.Write("\r\n");
-                writer.Write(LLSDParser.SerializeLLSDXmlString(response));
+                writer.Write(OSDParser.SerializeLLSDXmlString(response));
                 writer.Close();
             }
         }

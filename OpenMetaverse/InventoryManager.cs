@@ -1942,7 +1942,7 @@ namespace OpenMetaverse
                 OSDMap query = new OSDMap();
                 query.Add("item_id", OSD.FromUUID(notecardID));
 
-                byte[] postData = StructuredData.LLSDParser.SerializeLLSDXmlBytes(query);
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(query);
 
                 // Make the request
                 CapsClient request = new CapsClient(url);

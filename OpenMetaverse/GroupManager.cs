@@ -241,7 +241,7 @@ namespace OpenMetaverse
             att.Add("item_id", OpenMetaverse.StructuredData.OSD.FromUUID(AttachmentID));
             att.Add("owner_id", OpenMetaverse.StructuredData.OSD.FromUUID(OwnerID));
 
-            return OpenMetaverse.StructuredData.LLSDParser.SerializeLLSDXmlBytes(att);
+            return OpenMetaverse.StructuredData.OSDParser.SerializeLLSDXmlBytes(att);
 
             /*
             //I guess this is how this works, no gaurentees

@@ -208,7 +208,7 @@ namespace OpenMetaverse.Tests
             string testTwo = "[[r1,r1,r1],r0]";
             string testThree = "{'region_handle':[r255232, r256512], 'position':[r33.6, r33.71, r43.13], 'look_at':[r34.6, r33.71, r43.13]}";
 
-            OSD obj = LLSDParser.DeserializeLLSDNotation(testOne);
+            OSD obj = OSDParser.DeserializeLLSDNotation(testOne);
             Assert.IsInstanceOfType(typeof(OSDArray), obj, "Expected SDArray, got " + obj.GetType().ToString());
             OSDArray array = (OSDArray)obj;
             Assert.IsTrue(array.Count == 3, "Expected three contained objects, got " + array.Count);
@@ -216,7 +216,7 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(array[1].AsReal() < 0.0d && array[1].AsReal() > -0.03d, "Unexpected value for second real " + array[1].AsReal());
             Assert.IsTrue(array[2].AsReal() == 0.0d, "Unexpected value for third real " + array[2].AsReal());
 
-            obj = LLSDParser.DeserializeLLSDNotation(testTwo);
+            obj = OSDParser.DeserializeLLSDNotation(testTwo);
             Assert.IsInstanceOfType(typeof(OSDArray), obj, "Expected SDArray, got " + obj.GetType().ToString());
             array = (OSDArray)obj;
             Assert.IsTrue(array.Count == 2, "Expected two contained objects, got " + array.Count);
@@ -228,7 +228,7 @@ namespace OpenMetaverse.Tests
                 "Unexpected value(s) for nested array: " + array[0].AsReal() + ", " + array[1].AsReal() + ", " +
                 array[2].AsReal());
 
-            obj = LLSDParser.DeserializeLLSDNotation(testThree);
+            obj = OSDParser.DeserializeLLSDNotation(testThree);
             Assert.IsInstanceOfType(typeof(OSDMap), obj, "Expected LLSDMap, got " + obj.GetType().ToString());
             OSDMap hashtable = (OSDMap)obj;
             Assert.IsTrue(hashtable.Count == 3, "Expected three contained objects, got " + hashtable.Count);

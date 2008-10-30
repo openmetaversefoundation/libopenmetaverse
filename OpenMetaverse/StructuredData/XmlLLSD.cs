@@ -36,7 +36,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public static partial class LLSDParser
+    public static partial class OSDParser
     {
         private static XmlSchema XmlSchema;
         private static XmlTextReader XmlTextReader;

@@ -62,7 +62,7 @@ namespace OpenMetaverse.Capabilities
 
         public void StartRequest(OSD llsd)
         {
-            byte[] postData = LLSDParser.SerializeLLSDXmlBytes(llsd);
+            byte[] postData = OSDParser.SerializeLLSDXmlBytes(llsd);
             StartRequest(postData, null);
         }
 
@@ -137,7 +137,7 @@ namespace OpenMetaverse.Capabilities
             {
                 if (e.Error == null)
                 {
-                    OSD result = LLSDParser.DeserializeLLSDXml(e.Result);
+                    OSD result = OSDParser.DeserializeLLSDXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
@@ -188,7 +188,7 @@ namespace OpenMetaverse.Capabilities
             {
                 if (e.Error == null)
                 {
-                    OSD result = LLSDParser.DeserializeLLSDXml(e.Result);
+                    OSD result = OSDParser.DeserializeLLSDXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }

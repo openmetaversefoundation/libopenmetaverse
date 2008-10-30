@@ -55,22 +55,22 @@ namespace OpenMetaverse.Tests
             StringReader reader = new StringReader("test1tast2test3");
 
             char[] charsOne = { 't', 'e', 's', 't' };
-            int resultOne = LLSDParser.BufferCharactersEqual(reader, charsOne, 0);
+            int resultOne = OSDParser.BufferCharactersEqual(reader, charsOne, 0);
             Assert.AreEqual(charsOne.Length, resultOne);
 
             char[] charsTwo = { '1', 't', 'e' };
-            int resultTwo = LLSDParser.BufferCharactersEqual(reader, charsTwo, 0);
+            int resultTwo = OSDParser.BufferCharactersEqual(reader, charsTwo, 0);
             Assert.AreEqual(2, resultTwo);
 
             char[] charsThree = { 'a', 's', 't', '2', 't', 'e', 's' };
-            int resultThree = LLSDParser.BufferCharactersEqual(reader, charsThree, 1);
+            int resultThree = OSDParser.BufferCharactersEqual(reader, charsThree, 1);
             Assert.AreEqual(1, resultThree);
 
-            int resultFour = LLSDParser.BufferCharactersEqual(reader, charsThree, 0);
+            int resultFour = OSDParser.BufferCharactersEqual(reader, charsThree, 0);
             Assert.AreEqual(charsThree.Length, resultFour);
 
             char[] charsFive = { 't', '3', 'a', 'a' };
-            int resultFive = LLSDParser.BufferCharactersEqual(reader, charsFive, 0);
+            int resultFive = OSDParser.BufferCharactersEqual(reader, charsFive, 0);
             Assert.AreEqual(2, resultFive);
 
 
@@ -80,7 +80,7 @@ namespace OpenMetaverse.Tests
         public void DeserializeUndef()
         {
             String s = "!";
-            OSD llsd = LLSDParser.DeserializeLLSDNotation(s);
+            OSD llsd = OSDParser.DeserializeLLSDNotation(s);
             Assert.AreEqual(OSDType.Unknown, llsd.Type);
         }
 
@@ -88,9 +88,9 @@ namespace OpenMetaverse.Tests
         public void SerializeUndef()
         {
             OSD llsd = new OSD();
-            string s = LLSDParser.SerializeLLSDNotation(llsd);
+            string s = OSDParser.SerializeLLSDNotation(llsd);
 
-            OSD llsdDS = LLSDParser.DeserializeLLSDNotation(s);
+            OSD llsdDS = OSDParser.DeserializeLLSDNotation(s);
             Assert.AreEqual(OSDType.Unknown, llsdDS.Type);
         }
 
@@ -98,52 +98,52 @@ namespace OpenMetaverse.Tests
         public void DeserializeBoolean()
         {
             String t = "true";
-            OSD llsdT = LLSDParser.DeserializeLLSDNotation(t);
+            OSD llsdT = OSDParser.DeserializeLLSDNotation(t);
             Assert.AreEqual(OSDType.Boolean, llsdT.Type);
             Assert.AreEqual(true, llsdT.AsBoolean());
 
             String tTwo = "t";
-            OSD llsdTTwo = LLSDParser.DeserializeLLSDNotation(tTwo);
+            OSD llsdTTwo = OSDParser.DeserializeLLSDNotation(tTwo);
             Assert.AreEqual(OSDType.Boolean, llsdTTwo.Type);
             Assert.AreEqual(true, llsdTTwo.AsBoolean());
 
             String tThree = "TRUE";
-            OSD llsdTThree = LLSDParser.DeserializeLLSDNotation(tThree);
+            OSD llsdTThree = OSDParser.DeserializeLLSDNotation(tThree);
             Assert.AreEqual(OSDType.Boolean, llsdTThree.Type);
             Assert.AreEqual(true, llsdTThree.AsBoolean());
 
             String tFour = "T";
-            OSD llsdTFour = LLSDParser.DeserializeLLSDNotation(tFour);
+            OSD llsdTFour = OSDParser.DeserializeLLSDNotation(tFour);
             Assert.AreEqual(OSDType.Boolean, llsdTFour.Type);
             Assert.AreEqual(true, llsdTFour.AsBoolean());
 
             String tFive = "1";
-            OSD llsdTFive = LLSDParser.DeserializeLLSDNotation(tFive);
+            OSD llsdTFive = OSDParser.DeserializeLLSDNotation(tFive);
             Assert.AreEqual(OSDType.Boolean, llsdTFive.Type);
             Assert.AreEqual(true, llsdTFive.AsBoolean());
 
             String f = "false";
-            OSD llsdF = LLSDParser.DeserializeLLSDNotation(f);
+            OSD llsdF = OSDParser.DeserializeLLSDNotation(f);
             Assert.AreEqual(OSDType.Boolean, llsdF.Type);
             Assert.AreEqual(false, llsdF.AsBoolean());
 
             String fTwo = "f";
-            OSD llsdFTwo = LLSDParser.DeserializeLLSDNotation(fTwo);
+            OSD llsdFTwo = OSDParser.DeserializeLLSDNotation(fTwo);
             Assert.AreEqual(OSDType.Boolean, llsdFTwo.Type);
             Assert.AreEqual(false, llsdFTwo.AsBoolean());
 
             String fThree = "FALSE";
-            OSD llsdFThree = LLSDParser.DeserializeLLSDNotation(fThree);
+            OSD llsdFThree = OSDParser.DeserializeLLSDNotation(fThree);
             Assert.AreEqual(OSDType.Boolean, llsdFThree.Type);
             Assert.AreEqual(false, llsdFThree.AsBoolean());
 
             String fFour = "F";
-            OSD llsdFFour = LLSDParser.DeserializeLLSDNotation(fFour);
+            OSD llsdFFour = OSDParser.DeserializeLLSDNotation(fFour);
             Assert.AreEqual(OSDType.Boolean, llsdFFour.Type);
             Assert.AreEqual(false, llsdFFour.AsBoolean());
 
             String fFive = "0";
-            OSD llsdFFive = LLSDParser.DeserializeLLSDNotation(fFive);
+            OSD llsdFFive = OSDParser.DeserializeLLSDNotation(fFive);
             Assert.AreEqual(OSDType.Boolean, llsdFFive.Type);
             Assert.AreEqual(false, llsdFFive.AsBoolean());
         }
@@ -152,14 +152,14 @@ namespace OpenMetaverse.Tests
         public void SerializeBoolean()
         {
             OSD llsdTrue = OSD.FromBoolean(true);
-            string sTrue = LLSDParser.SerializeLLSDNotation(llsdTrue);
-            OSD llsdTrueDS = LLSDParser.DeserializeLLSDNotation(sTrue);
+            string sTrue = OSDParser.SerializeLLSDNotation(llsdTrue);
+            OSD llsdTrueDS = OSDParser.DeserializeLLSDNotation(sTrue);
             Assert.AreEqual(OSDType.Boolean, llsdTrueDS.Type);
             Assert.AreEqual(true, llsdTrueDS.AsBoolean());
 
             OSD llsdFalse = OSD.FromBoolean(false);
-            string sFalse = LLSDParser.SerializeLLSDNotation(llsdFalse);
-            OSD llsdFalseDS = LLSDParser.DeserializeLLSDNotation(sFalse);
+            string sFalse = OSDParser.SerializeLLSDNotation(llsdFalse);
+            OSD llsdFalseDS = OSDParser.DeserializeLLSDNotation(sFalse);
             Assert.AreEqual(OSDType.Boolean, llsdFalseDS.Type);
             Assert.AreEqual(false, llsdFalseDS.AsBoolean());
         }
@@ -168,12 +168,12 @@ namespace OpenMetaverse.Tests
         public void DeserializeInteger()
         {
             string integerOne = "i12319423";
-            OSD llsdOne = LLSDParser.DeserializeLLSDNotation(integerOne);
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(integerOne);
             Assert.AreEqual(OSDType.Integer, llsdOne.Type);
             Assert.AreEqual(12319423, llsdOne.AsInteger());
 
             string integerTwo = "i-489234";
-            OSD llsdTwo = LLSDParser.DeserializeLLSDNotation(integerTwo);
+            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(integerTwo);
             Assert.AreEqual(OSDType.Integer, llsdTwo.Type);
             Assert.AreEqual(-489234, llsdTwo.AsInteger());
         }
@@ -182,14 +182,14 @@ namespace OpenMetaverse.Tests
         public void SerializeInteger()
         {
             OSD llsdOne = OSD.FromInteger(12319423);
-            string sOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSD llsdOneDS = LLSDParser.DeserializeLLSDNotation(sOne);
+            string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.Integer, llsdOneDS.Type);
             Assert.AreEqual(12319423, llsdOne.AsInteger());
 
             OSD llsdTwo = OSD.FromInteger(-71892034);
-            string sTwo = LLSDParser.SerializeLLSDNotation(llsdTwo);
-            OSD llsdTwoDS = LLSDParser.DeserializeLLSDNotation(sTwo);
+            string sTwo = OSDParser.SerializeLLSDNotation(llsdTwo);
+            OSD llsdTwoDS = OSDParser.DeserializeLLSDNotation(sTwo);
             Assert.AreEqual(OSDType.Integer, llsdTwoDS.Type);
             Assert.AreEqual(-71892034, llsdTwoDS.AsInteger());
         }
@@ -198,27 +198,27 @@ namespace OpenMetaverse.Tests
         public void DeserializeReal()
         {
             String realOne = "r1123412345.465711";
-            OSD llsdOne = LLSDParser.DeserializeLLSDNotation(realOne);
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(realOne);
             Assert.AreEqual(OSDType.Real, llsdOne.Type);
             Assert.AreEqual(1123412345.465711d, llsdOne.AsReal());
 
             String realTwo = "r-11234684.923411";
-            OSD llsdTwo = LLSDParser.DeserializeLLSDNotation(realTwo);
+            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(realTwo);
             Assert.AreEqual(OSDType.Real, llsdTwo.Type);
             Assert.AreEqual(-11234684.923411d, llsdTwo.AsReal());
 
             String realThree = "r1";
-            OSD llsdThree = LLSDParser.DeserializeLLSDNotation(realThree);
+            OSD llsdThree = OSDParser.DeserializeLLSDNotation(realThree);
             Assert.AreEqual(OSDType.Real, llsdThree.Type);
             Assert.AreEqual(1d, llsdThree.AsReal());
 
             String realFour = "r2.0193899999999998204e-06";
-            OSD llsdFour = LLSDParser.DeserializeLLSDNotation(realFour);
+            OSD llsdFour = OSDParser.DeserializeLLSDNotation(realFour);
             Assert.AreEqual(OSDType.Real, llsdFour.Type);
             Assert.AreEqual(2.0193899999999998204e-06d, llsdFour.AsReal());
 
             String realFive = "r0";
-            OSD llsdFive = LLSDParser.DeserializeLLSDNotation(realFive);
+            OSD llsdFive = OSDParser.DeserializeLLSDNotation(realFive);
             Assert.AreEqual(OSDType.Real, llsdFive.Type);
             Assert.AreEqual(0d, llsdFive.AsReal());
         }
@@ -227,41 +227,38 @@ namespace OpenMetaverse.Tests
         public void SerializeReal()
         {
             OSD llsdOne = OSD.FromReal(12987234.723847d);
-            string sOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSD llsdOneDS = LLSDParser.DeserializeLLSDNotation(sOne);
+            string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.Real, llsdOneDS.Type);
             Assert.AreEqual(12987234.723847d, llsdOneDS.AsReal());
 
             OSD llsdTwo = OSD.FromReal(-32347892.234234d);
-            string sTwo = LLSDParser.SerializeLLSDNotation(llsdTwo);
-            OSD llsdTwoDS = LLSDParser.DeserializeLLSDNotation(sTwo);
+            string sTwo = OSDParser.SerializeLLSDNotation(llsdTwo);
+            OSD llsdTwoDS = OSDParser.DeserializeLLSDNotation(sTwo);
             Assert.AreEqual(OSDType.Real, llsdTwoDS.Type);
             Assert.AreEqual(-32347892.234234d, llsdTwoDS.AsReal());
 
-            /* The following two tests don't pass on mono 1.9, as
-             * mono isnt able to parse its own Double.Max/MinValue.
-             */
-            //            SD llsdThree = SD.FromReal( Double.MaxValue );
-            //            string sThree = LLSDParser.SerializeLLSDNotation( llsdThree );
-            //            SD llsdThreeDS = LLSDParser.DeserializeLLSDNotation( sThree );
-            //            Assert.AreEqual( SDType.Real, llsdThreeDS.Type );
-            //            Assert.AreEqual( Double.MaxValue, llsdThreeDS.AsReal());
-            //            
-            //            SD llsdFour = SD.FromReal( Double.MinValue );
-            //            string sFour = LLSDParser.SerializeLLSDNotation( llsdFour );
-            //            SD llsdFourDS = LLSDParser.DeserializeLLSDNotation( sFour );
-            //            Assert.AreEqual( SDType.Real, llsdFourDS.Type );
-            //            Assert.AreEqual( Double.MinValue, llsdFourDS.AsReal());
+            OSD llsdThree = OSD.FromReal( Double.MaxValue );
+            string sThree = OSDParser.SerializeLLSDNotation( llsdThree );
+            OSD llsdThreeDS = OSDParser.DeserializeLLSDNotation( sThree );
+            Assert.AreEqual( OSDType.Real, llsdThreeDS.Type );
+            Assert.AreEqual( Double.MaxValue, llsdThreeDS.AsReal());
+        
+            OSD llsdFour = OSD.FromReal(Double.MinValue);
+            string sFour = OSDParser.SerializeLLSDNotation(llsdFour);
+            OSD llsdFourDS = OSDParser.DeserializeLLSDNotation(sFour);
+            Assert.AreEqual(OSDType.Real, llsdFourDS.Type);
+            Assert.AreEqual(Double.MinValue, llsdFourDS.AsReal());
 
             OSD llsdFive = OSD.FromReal(-1.1123123E+50d);
-            string sFive = LLSDParser.SerializeLLSDNotation(llsdFive);
-            OSD llsdFiveDS = LLSDParser.DeserializeLLSDNotation(sFive);
+            string sFive = OSDParser.SerializeLLSDNotation(llsdFive);
+            OSD llsdFiveDS = OSDParser.DeserializeLLSDNotation(sFive);
             Assert.AreEqual(OSDType.Real, llsdFiveDS.Type);
             Assert.AreEqual(-1.1123123E+50d, llsdFiveDS.AsReal());
 
             OSD llsdSix = OSD.FromReal(2.0193899999999998204e-06);
-            string sSix = LLSDParser.SerializeLLSDNotation(llsdSix);
-            OSD llsdSixDS = LLSDParser.DeserializeLLSDNotation(sSix);
+            string sSix = OSDParser.SerializeLLSDNotation(llsdSix);
+            OSD llsdSixDS = OSDParser.DeserializeLLSDNotation(sSix);
             Assert.AreEqual(OSDType.Real, llsdSixDS.Type);
             Assert.AreEqual(2.0193899999999998204e-06, llsdSixDS.AsReal());
 
@@ -272,12 +269,12 @@ namespace OpenMetaverse.Tests
         public void DeserializeUUID()
         {
             String uuidOne = "u97f4aeca-88a1-42a1-b385-b97b18abb255";
-            OSD llsdOne = LLSDParser.DeserializeLLSDNotation(uuidOne);
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(uuidOne);
             Assert.AreEqual(OSDType.UUID, llsdOne.Type);
             Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdOne.AsString());
 
             String uuidTwo = "u00000000-0000-0000-0000-000000000000";
-            OSD llsdTwo = LLSDParser.DeserializeLLSDNotation(uuidTwo);
+            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(uuidTwo);
             Assert.AreEqual(OSDType.UUID, llsdTwo.Type);
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdTwo.AsString());
         }
@@ -286,14 +283,14 @@ namespace OpenMetaverse.Tests
         public void SerializeUUID()
         {
             OSD llsdOne = OSD.FromUUID(new UUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
-            string sOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSD llsdOneDS = LLSDParser.DeserializeLLSDNotation(sOne);
+            string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.UUID, llsdOneDS.Type);
             Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdOneDS.AsString());
 
             OSD llsdTwo = OSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
-            string sTwo = LLSDParser.SerializeLLSDNotation(llsdTwo);
-            OSD llsdTwoDS = LLSDParser.DeserializeLLSDNotation(sTwo);
+            string sTwo = OSDParser.SerializeLLSDNotation(llsdTwo);
+            OSD llsdTwoDS = OSDParser.DeserializeLLSDNotation(sTwo);
             Assert.AreEqual(OSDType.UUID, llsdTwoDS.Type);
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdTwoDS.AsString());
         }
@@ -301,13 +298,13 @@ namespace OpenMetaverse.Tests
         public void DeserializeString()
         {
             string sOne = "''";
-            OSD llsdOne = LLSDParser.DeserializeLLSDNotation(sOne);
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.String, llsdOne.Type);
             Assert.AreEqual("", llsdOne.AsString());
 
             // This is double escaping. Once for the encoding, and once for csharp.  
             string sTwo = "'test\\'\"test'";
-            OSD llsdTwo = LLSDParser.DeserializeLLSDNotation(sTwo);
+            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(sTwo);
             Assert.AreEqual(OSDType.String, llsdTwo.Type);
             Assert.AreEqual("test'\"test", llsdTwo.AsString());
 
@@ -316,34 +313,34 @@ namespace OpenMetaverse.Tests
                                 (char)0x5c, (char)0x6c, (char)0x65, (char)0x73, (char)0x74, (char)0x27 };
             string sThree = new string(cThree);
 
-            OSD llsdThree = LLSDParser.DeserializeLLSDNotation(sThree);
+            OSD llsdThree = OSDParser.DeserializeLLSDNotation(sThree);
             Assert.AreEqual(OSDType.String, llsdThree.Type);
             Assert.AreEqual("test \\lest", llsdThree.AsString());
 
             string sFour = "'aa\t la'";
-            OSD llsdFour = LLSDParser.DeserializeLLSDNotation(sFour);
+            OSD llsdFour = OSDParser.DeserializeLLSDNotation(sFour);
             Assert.AreEqual(OSDType.String, llsdFour.Type);
             Assert.AreEqual("aa\t la", llsdFour.AsString());
 
             char[] cFive = { (char)0x27, (char)0x5c, (char)0x5c, (char)0x27 };
             string sFive = new String(cFive);
-            OSD llsdFive = LLSDParser.DeserializeLLSDNotation(sFive);
+            OSD llsdFive = OSDParser.DeserializeLLSDNotation(sFive);
             Assert.AreEqual(OSDType.String, llsdFive.Type);
             Assert.AreEqual("\\", llsdFive.AsString());
 
 
             string sSix = "s(10)\"1234567890\"";
-            OSD llsdSix = LLSDParser.DeserializeLLSDNotation(sSix);
+            OSD llsdSix = OSDParser.DeserializeLLSDNotation(sSix);
             Assert.AreEqual(OSDType.String, llsdSix.Type);
             Assert.AreEqual("1234567890", llsdSix.AsString());
 
             string sSeven = "s(5)\"\\\\\\\\\\\"";
-            OSD llsdSeven = LLSDParser.DeserializeLLSDNotation(sSeven);
+            OSD llsdSeven = OSDParser.DeserializeLLSDNotation(sSeven);
             Assert.AreEqual(OSDType.String, llsdSeven.Type);
             Assert.AreEqual("\\\\\\\\\\", llsdSeven.AsString());
 
             string sEight = "\"aouAOUhsdjklfghskldjfghqeiurtzwieortzaslxfjkgh\"";
-            OSD llsdEight = LLSDParser.DeserializeLLSDNotation(sEight);
+            OSD llsdEight = OSDParser.DeserializeLLSDNotation(sEight);
             Assert.AreEqual(OSDType.String, llsdEight.Type);
             Assert.AreEqual("aouAOUhsdjklfghskldjfghqeiurtzwieortzaslxfjkgh", llsdEight.AsString());
 
@@ -354,8 +351,8 @@ namespace OpenMetaverse.Tests
         public void DoSomeStringSerializingActionsAndAsserts(string s)
         {
             OSD llsdOne = OSD.FromString(s);
-            string sOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSD llsdOneDS = LLSDParser.DeserializeLLSDNotation(sOne);
+            string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.String, llsdOne.Type);
             Assert.AreEqual(s, llsdOneDS.AsString());
         }
@@ -399,12 +396,12 @@ namespace OpenMetaverse.Tests
         public void DeserializeURI()
         {
             string sUriOne = "l\"http://test.com/test test>\\\"/&yes\"";
-            OSD llsdOne = LLSDParser.DeserializeLLSDNotation(sUriOne);
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(sUriOne);
             Assert.AreEqual(OSDType.URI, llsdOne.Type);
             Assert.AreEqual("http://test.com/test test>\"/&yes", llsdOne.AsString());
 
             string sUriTwo = "l\"test/test/test?test=1&toast=2\"";
-            OSD llsdTwo = LLSDParser.DeserializeLLSDNotation(sUriTwo);
+            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(sUriTwo);
             Assert.AreEqual(OSDType.URI, llsdTwo.Type);
             Assert.AreEqual("test/test/test?test=1&toast=2", llsdTwo.AsString());
         }
@@ -414,15 +411,15 @@ namespace OpenMetaverse.Tests
         {
             Uri uriOne = new Uri("http://test.org/test test>\\\"/&yes\"", UriKind.RelativeOrAbsolute);
             OSD llsdOne = OSD.FromUri(uriOne);
-            string sUriOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSD llsdOneDS = LLSDParser.DeserializeLLSDNotation(sUriOne);
+            string sUriOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sUriOne);
             Assert.AreEqual(OSDType.URI, llsdOneDS.Type);
             Assert.AreEqual(uriOne, llsdOneDS.AsUri());
 
             Uri uriTwo = new Uri("test/test/near/the/end?test=1", UriKind.RelativeOrAbsolute);
             OSD llsdTwo = OSD.FromUri(uriTwo);
-            string sUriTwo = LLSDParser.SerializeLLSDNotation(llsdTwo);
-            OSD llsdTwoDS = LLSDParser.DeserializeLLSDNotation(sUriTwo);
+            string sUriTwo = OSDParser.SerializeLLSDNotation(llsdTwo);
+            OSD llsdTwoDS = OSDParser.DeserializeLLSDNotation(sUriTwo);
             Assert.AreEqual(OSDType.URI, llsdTwoDS.Type);
             Assert.AreEqual(uriTwo, llsdTwoDS.AsUri());
         }
@@ -431,7 +428,7 @@ namespace OpenMetaverse.Tests
         public void DeserializeDate()
         {
             string sDateOne = "d\"2007-12-31T20:49:10Z\"";
-            OSD llsdOne = LLSDParser.DeserializeLLSDNotation(sDateOne);
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(sDateOne);
             Assert.AreEqual(OSDType.Date, llsdOne.Type);
             DateTime dt = new DateTime(2007, 12, 31, 20, 49, 10, 0, DateTimeKind.Utc);
             DateTime dtDS = llsdOne.AsDate();
@@ -443,16 +440,16 @@ namespace OpenMetaverse.Tests
         {
             DateTime dtOne = new DateTime(2005, 8, 10, 11, 23, 4, DateTimeKind.Utc);
             OSD llsdOne = OSD.FromDate(dtOne);
-            string sDtOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSD llsdOneDS = LLSDParser.DeserializeLLSDNotation(sDtOne);
+            string sDtOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sDtOne);
             Assert.AreEqual(OSDType.Date, llsdOneDS.Type);
             DateTime dtOneDS = llsdOneDS.AsDate();
             Assert.AreEqual(dtOne, dtOneDS.ToUniversalTime());
 
             DateTime dtTwo = new DateTime(2010, 10, 11, 23, 00, 10, 100, DateTimeKind.Utc);
             OSD llsdTwo = OSD.FromDate(dtTwo);
-            string sDtTwo = LLSDParser.SerializeLLSDNotation(llsdTwo);
-            OSD llsdTwoDS = LLSDParser.DeserializeLLSDNotation(sDtTwo);
+            string sDtTwo = OSDParser.SerializeLLSDNotation(llsdTwo);
+            OSD llsdTwoDS = OSDParser.DeserializeLLSDNotation(sDtTwo);
             Assert.AreEqual(OSDType.Date, llsdTwoDS.Type);
             DateTime dtTwoDS = llsdTwoDS.AsDate();
             Assert.AreEqual(dtTwo, dtTwoDS.ToUniversalTime());
@@ -460,8 +457,8 @@ namespace OpenMetaverse.Tests
             // check if a *local* time can be serialized and deserialized
             DateTime dtThree = new DateTime(2009, 12, 30, 8, 25, 10, DateTimeKind.Local);
             OSD llsdDateThree = OSD.FromDate(dtThree);
-            string sDateThreeSerialized = LLSDParser.SerializeLLSDNotation(llsdDateThree);
-            OSD llsdDateThreeDS = LLSDParser.DeserializeLLSDNotation(sDateThreeSerialized);
+            string sDateThreeSerialized = OSDParser.SerializeLLSDNotation(llsdDateThree);
+            OSD llsdDateThreeDS = OSDParser.DeserializeLLSDNotation(sDateThreeSerialized);
             Assert.AreEqual(OSDType.Date, llsdDateThreeDS.Type);
             Assert.AreEqual(dtThree, llsdDateThreeDS.AsDate());
         }
@@ -473,8 +470,8 @@ namespace OpenMetaverse.Tests
                                 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
             OSD llsdBinary = OSD.FromBinary(binary);
-            string sBinarySerialized = LLSDParser.SerializeLLSDNotation(llsdBinary);
-            OSD llsdBinaryDS = LLSDParser.DeserializeLLSDNotation(sBinarySerialized);
+            string sBinarySerialized = OSDParser.SerializeLLSDNotation(llsdBinary);
+            OSD llsdBinaryDS = OSDParser.DeserializeLLSDNotation(sBinarySerialized);
             Assert.AreEqual(OSDType.Binary, llsdBinaryDS.Type);
             Assert.AreEqual(binary, llsdBinaryDS.AsBinary());
         }
@@ -483,12 +480,12 @@ namespace OpenMetaverse.Tests
         public void DeserializeArray()
         {
             string sArrayOne = "[]";
-            OSDArray llsdArrayOne = (OSDArray)LLSDParser.DeserializeLLSDNotation(sArrayOne);
+            OSDArray llsdArrayOne = (OSDArray)OSDParser.DeserializeLLSDNotation(sArrayOne);
             Assert.AreEqual(OSDType.Array, llsdArrayOne.Type);
             Assert.AreEqual(0, llsdArrayOne.Count);
 
             string sArrayTwo = "[ i0 ]";
-            OSDArray llsdArrayTwo = (OSDArray)LLSDParser.DeserializeLLSDNotation(sArrayTwo);
+            OSDArray llsdArrayTwo = (OSDArray)OSDParser.DeserializeLLSDNotation(sArrayTwo);
             Assert.AreEqual(OSDType.Array, llsdArrayTwo.Type);
             Assert.AreEqual(1, llsdArrayTwo.Count);
             OSDInteger llsdIntOne = (OSDInteger)llsdArrayTwo[0];
@@ -496,7 +493,7 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(0, llsdIntOne.AsInteger());
 
             string sArrayThree = "[ i0, i1 ]";
-            OSDArray llsdArrayThree = (OSDArray)LLSDParser.DeserializeLLSDNotation(sArrayThree);
+            OSDArray llsdArrayThree = (OSDArray)OSDParser.DeserializeLLSDNotation(sArrayThree);
             Assert.AreEqual(OSDType.Array, llsdArrayThree.Type);
             Assert.AreEqual(2, llsdArrayThree.Count);
             OSDInteger llsdIntTwo = (OSDInteger)llsdArrayThree[0];
@@ -507,7 +504,7 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(1, llsdIntThree.AsInteger());
 
             string sArrayFour = " [ \"testtest\", \"aha\",t,f,i1, r1.2, [ i1] ] ";
-            OSDArray llsdArrayFour = (OSDArray)LLSDParser.DeserializeLLSDNotation(sArrayFour);
+            OSDArray llsdArrayFour = (OSDArray)OSDParser.DeserializeLLSDNotation(sArrayFour);
             Assert.AreEqual(OSDType.Array, llsdArrayFour.Type);
             Assert.AreEqual(7, llsdArrayFour.Count);
             Assert.AreEqual("testtest", llsdArrayFour[0].AsString());
@@ -526,8 +523,8 @@ namespace OpenMetaverse.Tests
         public void SerializeArray()
         {
             OSDArray llsdOne = new OSDArray();
-            string sOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSDArray llsdOneDS = (OSDArray)LLSDParser.DeserializeLLSDNotation(sOne);
+            string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSDArray llsdOneDS = (OSDArray)OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.Array, llsdOneDS.Type);
             Assert.AreEqual(0, llsdOneDS.Count);
 
@@ -541,8 +538,8 @@ namespace OpenMetaverse.Tests
             llsdOne.Add(llsdThree);
             llsdOne.Add(llsdFour);
 
-            string sFive = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSDArray llsdFive = (OSDArray)LLSDParser.DeserializeLLSDNotation(sFive);
+            string sFive = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSDArray llsdFive = (OSDArray)OSDParser.DeserializeLLSDNotation(sFive);
             Assert.AreEqual(OSDType.Array, llsdFive.Type);
             Assert.AreEqual(3, llsdFive.Count);
             Assert.AreEqual(OSDType.Integer, llsdFive[0].Type);
@@ -563,19 +560,19 @@ namespace OpenMetaverse.Tests
         public void DeserializeMap()
         {
             string sMapOne = " { } ";
-            OSDMap llsdMapOne = (OSDMap)LLSDParser.DeserializeLLSDNotation(sMapOne);
+            OSDMap llsdMapOne = (OSDMap)OSDParser.DeserializeLLSDNotation(sMapOne);
             Assert.AreEqual(OSDType.Map, llsdMapOne.Type);
             Assert.AreEqual(0, llsdMapOne.Count);
 
             string sMapTwo = " { \"test\":i2 } ";
-            OSDMap llsdMapTwo = (OSDMap)LLSDParser.DeserializeLLSDNotation(sMapTwo);
+            OSDMap llsdMapTwo = (OSDMap)OSDParser.DeserializeLLSDNotation(sMapTwo);
             Assert.AreEqual(OSDType.Map, llsdMapTwo.Type);
             Assert.AreEqual(1, llsdMapTwo.Count);
             Assert.AreEqual(OSDType.Integer, llsdMapTwo["test"].Type);
             Assert.AreEqual(2, llsdMapTwo["test"].AsInteger());
 
             string sMapThree = " { 'test':\"testtesttest\", 'aha':\"muahahaha\" , \"anywhere\":! } ";
-            OSDMap llsdMapThree = (OSDMap)LLSDParser.DeserializeLLSDNotation(sMapThree);
+            OSDMap llsdMapThree = (OSDMap)OSDParser.DeserializeLLSDNotation(sMapThree);
             Assert.AreEqual(OSDType.Map, llsdMapThree.Type);
             Assert.AreEqual(3, llsdMapThree.Count);
             Assert.AreEqual(OSDType.String, llsdMapThree["test"].Type);
@@ -585,7 +582,7 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(OSDType.Unknown, llsdMapThree["self"].Type);
 
             string sMapFour = " { 'test' : { 'test' : i1, 't0st' : r2.5 }, 'tist' : \"hello world!\", 'tast' : \"last\" } ";
-            OSDMap llsdMapFour = (OSDMap)LLSDParser.DeserializeLLSDNotation(sMapFour);
+            OSDMap llsdMapFour = (OSDMap)OSDParser.DeserializeLLSDNotation(sMapFour);
             Assert.AreEqual(OSDType.Map, llsdMapFour.Type);
             Assert.AreEqual(3, llsdMapFour.Count);
             Assert.AreEqual("hello world!", llsdMapFour["tist"].AsString());
@@ -604,8 +601,8 @@ namespace OpenMetaverse.Tests
         public void SerializeMap()
         {
             OSDMap llsdOne = new OSDMap();
-            string sOne = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSDMap llsdOneDS = (OSDMap)LLSDParser.DeserializeLLSDNotation(sOne);
+            string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSDMap llsdOneDS = (OSDMap)OSDParser.DeserializeLLSDNotation(sOne);
             Assert.AreEqual(OSDType.Map, llsdOneDS.Type);
             Assert.AreEqual(0, llsdOneDS.Count);
 
@@ -619,8 +616,8 @@ namespace OpenMetaverse.Tests
             llsdOne["test1"] = llsdThree;
             llsdOne["test2"] = llsdFour;
 
-            string sFive = LLSDParser.SerializeLLSDNotation(llsdOne);
-            OSDMap llsdFive = (OSDMap)LLSDParser.DeserializeLLSDNotation(sFive);
+            string sFive = OSDParser.SerializeLLSDNotation(llsdOne);
+            OSDMap llsdFive = (OSDMap)OSDParser.DeserializeLLSDNotation(sFive);
             Assert.AreEqual(OSDType.Map, llsdFive.Type);
             Assert.AreEqual(3, llsdFive.Count);
             Assert.AreEqual(OSDType.Integer, llsdFive["test0"].Type);
@@ -646,8 +643,8 @@ namespace OpenMetaverse.Tests
 
             OSDMap llsdSeven = new OSDMap();
             llsdSeven[content] = OSD.FromString(content);
-            string sSeven = LLSDParser.SerializeLLSDNotation(llsdSeven);
-            OSDMap llsdSevenDS = (OSDMap)LLSDParser.DeserializeLLSDNotation(sSeven);
+            string sSeven = OSDParser.SerializeLLSDNotation(llsdSeven);
+            OSDMap llsdSevenDS = (OSDMap)OSDParser.DeserializeLLSDNotation(sSeven);
             Assert.AreEqual(OSDType.Map, llsdSevenDS.Type);
             Assert.AreEqual(1, llsdSevenDS.Count);
             Assert.AreEqual(content, llsdSevenDS[content].AsString());
@@ -686,7 +683,7 @@ namespace OpenMetaverse.Tests
 ]";
             // We dont do full testing here. We are fine if a few values are right
             // and the parser doesnt throw an exception
-            OSDArray llsdArray = (OSDArray)LLSDParser.DeserializeLLSDNotation(realWorldExample);
+            OSDArray llsdArray = (OSDArray)OSDParser.DeserializeLLSDNotation(realWorldExample);
             Assert.AreEqual(OSDType.Array, llsdArray.Type);
             Assert.AreEqual(3, llsdArray.Count);
 
@@ -717,7 +714,7 @@ namespace OpenMetaverse.Tests
             llsdArray.Add(llsdOne);
             llsdArray.Add(llsdTwo);
 
-            string sOne = LLSDParser.SerializeLLSDNotationFormatted(llsdArray);
+            string sOne = OSDParser.SerializeLLSDNotationFormatted(llsdArray);
             Console.Write(sOne);
 
             OSDMap llsdMap = new OSDMap();
@@ -728,7 +725,7 @@ namespace OpenMetaverse.Tests
 
             llsdArray.Add(llsdMap);
 
-            string sTwo = LLSDParser.SerializeLLSDNotationFormatted(llsdArray);
+            string sTwo = OSDParser.SerializeLLSDNotationFormatted(llsdArray);
             Console.Write(sTwo);
 
             OSDArray llsdArrayTwo = new OSDArray();
@@ -739,11 +736,11 @@ namespace OpenMetaverse.Tests
 
             llsdMap["test3"] = llsdArrayTwo;
 
-            string sThree = LLSDParser.SerializeLLSDNotationFormatted(llsdArray);
+            string sThree = OSDParser.SerializeLLSDNotationFormatted(llsdArray);
             Console.Write(sThree);
 
             // we also try to parse this... and look a little at the results 
-            OSDArray llsdSeven = (OSDArray)LLSDParser.DeserializeLLSDNotation(sThree);
+            OSDArray llsdSeven = (OSDArray)OSDParser.DeserializeLLSDNotation(sThree);
             Assert.AreEqual(OSDType.Array, llsdSeven.Type);
             Assert.AreEqual(3, llsdSeven.Count);
             Assert.AreEqual(OSDType.Integer, llsdSeven[0].Type);

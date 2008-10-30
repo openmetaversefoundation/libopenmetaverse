@@ -82,7 +82,7 @@ namespace OpenMetaverse.Tests
 
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             //Confirm the contents
             Assert.IsNotNull(theSD);
@@ -177,7 +177,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -224,7 +224,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -274,7 +274,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -319,7 +319,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -354,7 +354,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -396,7 +396,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -443,7 +443,7 @@ namespace OpenMetaverse.Tests
 
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -501,7 +501,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSD);
         }
@@ -525,7 +525,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
@@ -578,7 +578,7 @@ namespace OpenMetaverse.Tests
             </llsd>";
             //Deserialize the string
             byte[] bytes = Encoding.UTF8.GetBytes(testSD);
-            theSD = LLSDParser.DeserializeLLSDXml(bytes);
+            theSD = OSDParser.DeserializeLLSDXml(bytes);
 
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;

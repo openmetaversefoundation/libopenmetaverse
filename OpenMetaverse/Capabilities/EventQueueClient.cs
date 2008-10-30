@@ -107,7 +107,7 @@ namespace OpenMetaverse.Capabilities
             request["ack"] = new OSD();
             request["done"] = OSD.FromBoolean(false);
 
-            byte[] postData = LLSDParser.SerializeLLSDXmlBytes(request);
+            byte[] postData = OSDParser.SerializeLLSDXmlBytes(request);
 
             _Client.UploadDataAsync(_Client.Location, postData);
 
@@ -174,7 +174,7 @@ namespace OpenMetaverse.Capabilities
             else if (!e.Cancelled && e.Result != null)
             {
                 // Got a response
-                OSD result = LLSDParser.DeserializeLLSDXml(e.Result);
+                OSD result = OSDParser.DeserializeLLSDXml(e.Result);
                 if (result != null && result.Type == OSDType.Map)
                 {
                     // Parse any events returned by the event queue
@@ -197,7 +197,7 @@ namespace OpenMetaverse.Capabilities
                 else request["ack"] = new OSD();
                 request["done"] = OSD.FromBoolean(_Dead);
 
-                byte[] postData = LLSDParser.SerializeLLSDXmlBytes(request);
+                byte[] postData = OSDParser.SerializeLLSDXmlBytes(request);
 
                 _Client.UploadDataAsync(_Client.Location, postData);
 

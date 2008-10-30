@@ -270,7 +270,7 @@ namespace PrimWorkshop
 
                 OSD osd = null;
 
-                try { osd = LLSDParser.DeserializeLLSDXml(File.ReadAllText(primsFile)); }
+                try { osd = OSDParser.DeserializeLLSDXml(File.ReadAllText(primsFile)); }
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
 
                 if (osd != null && osd.Type == OSDType.Map)

@@ -60,42 +60,42 @@ namespace OpenMetaverse.Tests
 
             byte[] sFirstFind = Encoding.ASCII.GetBytes("this");
             stream.Position = 0L;
-            bool result = LLSDParser.FindByteArray(stream, sFirstFind);
+            bool result = OSDParser.FindByteArray(stream, sFirstFind);
             Assert.AreEqual(true, result);
             Assert.AreEqual(4L, stream.Position);
 
             stream.Position = 10L;
             byte[] sSecondFind = Encoding.ASCII.GetBytes("teststring");
-            result = LLSDParser.FindByteArray(stream, sSecondFind);
+            result = OSDParser.FindByteArray(stream, sSecondFind);
             Assert.AreEqual(true, result);
             Assert.AreEqual(20L, stream.Position);
 
             stream.Position = 25L;
             byte[] sThirdNotFind = Encoding.ASCII.GetBytes("notfound");
-            result = LLSDParser.FindByteArray(stream, sThirdNotFind);
+            result = OSDParser.FindByteArray(stream, sThirdNotFind);
             Assert.AreEqual(false, result);
             Assert.AreEqual(25L, stream.Position);
 
             stream.Position = 60L;
             byte[] sFourthNotFound = Encoding.ASCII.GetBytes("beginningAndMore");
-            result = LLSDParser.FindByteArray(stream, sFourthNotFound);
+            result = OSDParser.FindByteArray(stream, sFourthNotFound);
             Assert.AreEqual(false, result);
             Assert.AreEqual(60L, stream.Position);
 
             byte[] sFrontWhiteSpace = Encoding.ASCII.GetBytes("   \t\t\n\rtest");
             MemoryStream streamTwo = new MemoryStream(sFrontWhiteSpace);
-            LLSDParser.SkipWhiteSpace(streamTwo);
+            OSDParser.SkipWhiteSpace(streamTwo);
             Assert.AreEqual(7L, streamTwo.Position);
 
             byte[] sMiddleWhiteSpace = Encoding.ASCII.GetBytes("test \t\t\n\rtest");
             MemoryStream streamThree = new MemoryStream(sMiddleWhiteSpace);
             streamThree.Position = 4L;
-            LLSDParser.SkipWhiteSpace(streamThree);
+            OSDParser.SkipWhiteSpace(streamThree);
             Assert.AreEqual(9L, streamThree.Position);
 
             byte[] sNoWhiteSpace = Encoding.ASCII.GetBytes("testtesttest");
             MemoryStream streamFour = new MemoryStream(sNoWhiteSpace);
-            LLSDParser.SkipWhiteSpace(streamFour);
+            OSDParser.SkipWhiteSpace(streamFour);
             Assert.AreEqual(0L, streamFour.Position);
 
         }
@@ -107,7 +107,7 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeUndef()
         {
-            OSD llsdUndef = LLSDParser.DeserializeLLSDBinary(binaryUndef);
+            OSD llsdUndef = OSDParser.DeserializeLLSDBinary(binaryUndef);
             Assert.AreEqual(OSDType.Unknown, llsdUndef.Type);
         }
 
@@ -115,7 +115,7 @@ namespace OpenMetaverse.Tests
         public void SerializeUndef()
         {
             OSD llsdUndef = new OSD();
-            byte[] binaryUndefSerialized = LLSDParser.SerializeLLSDBinary(llsdUndef);
+            byte[] binaryUndefSerialized = OSDParser.SerializeLLSDBinary(llsdUndef);
             Assert.AreEqual(binaryUndef, binaryUndefSerialized);
         }
 
@@ -129,11 +129,11 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeBool()
         {
-            OSD llsdTrue = LLSDParser.DeserializeLLSDBinary(binaryTrue);
+            OSD llsdTrue = OSDParser.DeserializeLLSDBinary(binaryTrue);
             Assert.AreEqual(OSDType.Boolean, llsdTrue.Type);
             Assert.AreEqual(true, llsdTrue.AsBoolean());
 
-            OSD llsdFalse = LLSDParser.DeserializeLLSDBinary(binaryFalse);
+            OSD llsdFalse = OSDParser.DeserializeLLSDBinary(binaryFalse);
             Assert.AreEqual(OSDType.Boolean, llsdFalse.Type);
             Assert.AreEqual(false, llsdFalse.AsBoolean());
         }
@@ -142,11 +142,11 @@ namespace OpenMetaverse.Tests
         public void SerializeBool()
         {
             OSD llsdTrue = OSD.FromBoolean(true);
-            byte[] binaryTrueSerialized = LLSDParser.SerializeLLSDBinary(llsdTrue);
+            byte[] binaryTrueSerialized = OSDParser.SerializeLLSDBinary(llsdTrue);
             Assert.AreEqual(binaryTrue, binaryTrueSerialized);
 
             OSD llsdFalse = OSD.FromBoolean(false);
-            byte[] binaryFalseSerialized = LLSDParser.SerializeLLSDBinary(llsdFalse);
+            byte[] binaryFalseSerialized = OSDParser.SerializeLLSDBinary(llsdFalse);
             Assert.AreEqual(binaryFalse, binaryFalseSerialized);
         }
 
@@ -159,12 +159,12 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeInteger()
         {
-            OSD llsdZeroInteger = LLSDParser.DeserializeLLSDBinary(binaryZeroInt);
+            OSD llsdZeroInteger = OSDParser.DeserializeLLSDBinary(binaryZeroInt);
             Assert.AreEqual(OSDType.Integer, llsdZeroInteger.Type);
             Assert.AreEqual(0, llsdZeroInteger.AsInteger());
 
 
-            OSD llsdAnInteger = LLSDParser.DeserializeLLSDBinary(binaryAnInt);
+            OSD llsdAnInteger = OSDParser.DeserializeLLSDBinary(binaryAnInt);
             Assert.AreEqual(OSDType.Integer, llsdAnInteger.Type);
             Assert.AreEqual(1234843, llsdAnInteger.AsInteger());
         }
@@ -173,11 +173,11 @@ namespace OpenMetaverse.Tests
         public void SerializeInteger()
         {
             OSD llsdZeroInt = OSD.FromInteger(0);
-            byte[] binaryZeroIntSerialized = LLSDParser.SerializeLLSDBinary(llsdZeroInt);
+            byte[] binaryZeroIntSerialized = OSDParser.SerializeLLSDBinary(llsdZeroInt);
             Assert.AreEqual(binaryZeroInt, binaryZeroIntSerialized);
 
             OSD llsdAnInt = OSD.FromInteger(1234843);
-            byte[] binaryAnIntSerialized = LLSDParser.SerializeLLSDBinary(llsdAnInt);
+            byte[] binaryAnIntSerialized = OSDParser.SerializeLLSDBinary(llsdAnInt);
             Assert.AreEqual(binaryAnInt, binaryAnIntSerialized);
         }
 
@@ -187,7 +187,7 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeReal()
         {
-            OSD llsdReal = LLSDParser.DeserializeLLSDBinary(binaryReal);
+            OSD llsdReal = OSDParser.DeserializeLLSDBinary(binaryReal);
             Assert.AreEqual(OSDType.Real, llsdReal.Type);
             Assert.AreEqual(947835.234d, llsdReal.AsReal());
         }
@@ -196,7 +196,7 @@ namespace OpenMetaverse.Tests
         public void SerializeReal()
         {
             OSD llsdReal = OSD.FromReal(947835.234d);
-            byte[] binaryRealSerialized = LLSDParser.SerializeLLSDBinary(llsdReal);
+            byte[] binaryRealSerialized = OSDParser.SerializeLLSDBinary(llsdReal);
             Assert.AreEqual(binaryReal, binaryRealSerialized);
         }
 
@@ -211,11 +211,11 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeUUID()
         {
-            OSD llsdAUUID = LLSDParser.DeserializeLLSDBinary(binaryAUUID);
+            OSD llsdAUUID = OSDParser.DeserializeLLSDBinary(binaryAUUID);
             Assert.AreEqual(OSDType.UUID, llsdAUUID.Type);
             Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdAUUID.AsString());
 
-            OSD llsdZeroUUID = LLSDParser.DeserializeLLSDBinary(binaryZeroUUID);
+            OSD llsdZeroUUID = OSDParser.DeserializeLLSDBinary(binaryZeroUUID);
             Assert.AreEqual(OSDType.UUID, llsdZeroUUID.Type);
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdZeroUUID.AsString());
 
@@ -225,11 +225,11 @@ namespace OpenMetaverse.Tests
         public void SerializeUUID()
         {
             OSD llsdAUUID = OSD.FromUUID(new UUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
-            byte[] binaryAUUIDSerialized = LLSDParser.SerializeLLSDBinary(llsdAUUID);
+            byte[] binaryAUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdAUUID);
             Assert.AreEqual(binaryAUUID, binaryAUUIDSerialized);
 
             OSD llsdZeroUUID = OSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
-            byte[] binaryZeroUUIDSerialized = LLSDParser.SerializeLLSDBinary(llsdZeroUUID);
+            byte[] binaryZeroUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdZeroUUID);
             Assert.AreEqual(binaryZeroUUID, binaryZeroUUIDSerialized);
         }
 
@@ -243,7 +243,7 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeLLSDBinary()
         {
-            OSD llsdBytes = LLSDParser.DeserializeLLSDBinary(binaryBinString);
+            OSD llsdBytes = OSDParser.DeserializeLLSDBinary(binaryBinString);
             Assert.AreEqual(OSDType.Binary, llsdBytes.Type);
             byte[] contentBinString = { 0x74, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x20, 0x61, 0x20, 0x73, 
                                         0x69, 0x6d, 0x70, 0x6c, 0x65, 0x20, 0x62, 0x69, 0x6e, 0x61, 0x72, 0x79, 0x20, 0x63, 0x6f,
@@ -260,7 +260,7 @@ namespace OpenMetaverse.Tests
                                         0x6e, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x20, 0x66, 0x6f, 0x72, 0x20, 0x74, 0x68,
                                         0x69, 0x73, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0xa, 0xd };
             OSD llsdBinary = OSD.FromBinary(contentBinString);
-            byte[] binaryBinarySerialized = LLSDParser.SerializeLLSDBinary(llsdBinary);
+            byte[] binaryBinarySerialized = OSDParser.SerializeLLSDBinary(llsdBinary);
             Assert.AreEqual(binaryBinString, binaryBinarySerialized);
         }
 
@@ -278,12 +278,12 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeString()
         {
-            OSD llsdEmptyString = LLSDParser.DeserializeLLSDBinary(binaryEmptyString);
+            OSD llsdEmptyString = OSDParser.DeserializeLLSDBinary(binaryEmptyString);
             Assert.AreEqual(OSDType.String, llsdEmptyString.Type);
             string contentEmptyString = "";
             Assert.AreEqual(contentEmptyString, llsdEmptyString.AsString());
 
-            OSD llsdLongString = LLSDParser.DeserializeLLSDBinary(binaryLongString);
+            OSD llsdLongString = OSDParser.DeserializeLLSDBinary(binaryLongString);
             Assert.AreEqual(OSDType.String, llsdLongString.Type);
             string contentLongString = "abcdefghijklmnopqrstuvwxyz01234567890";
             Assert.AreEqual(contentLongString, llsdLongString.AsString());
@@ -293,7 +293,7 @@ namespace OpenMetaverse.Tests
         public void SerializeString()
         {
             OSD llsdString = OSD.FromString("abcdefghijklmnopqrstuvwxyz01234567890");
-            byte[] binaryLongStringSerialized = LLSDParser.SerializeLLSDBinary(llsdString);
+            byte[] binaryLongStringSerialized = OSDParser.SerializeLLSDBinary(llsdString);
             Assert.AreEqual(binaryLongString, binaryLongStringSerialized);
 
             // A test with some utf8 characters
@@ -305,8 +305,8 @@ namespace OpenMetaverse.Tests
 
             string contentAString = xtr.ReadString();
             OSD llsdAString = OSD.FromString(contentAString);
-            byte[] binaryAString = LLSDParser.SerializeLLSDBinary(llsdAString);
-            OSD llsdAStringDS = LLSDParser.DeserializeLLSDBinary(binaryAString);
+            byte[] binaryAString = OSDParser.SerializeLLSDBinary(llsdAString);
+            OSD llsdAStringDS = OSDParser.DeserializeLLSDBinary(binaryAString);
             Assert.AreEqual(OSDType.String, llsdAStringDS.Type);
             Assert.AreEqual(contentAString, llsdAStringDS.AsString());
 
@@ -319,8 +319,8 @@ namespace OpenMetaverse.Tests
             string content = xtrTwo.ReadString();
 
             OSD llsdStringOne = OSD.FromString(content);
-            byte[] binaryAStringOneSerialized = LLSDParser.SerializeLLSDBinary(llsdStringOne);
-            OSD llsdStringOneDS = LLSDParser.DeserializeLLSDBinary(binaryAStringOneSerialized);
+            byte[] binaryAStringOneSerialized = OSDParser.SerializeLLSDBinary(llsdStringOne);
+            OSD llsdStringOneDS = OSDParser.DeserializeLLSDBinary(binaryAStringOneSerialized);
             Assert.AreEqual(OSDType.String, llsdStringOneDS.Type);
             Assert.AreEqual(content, llsdStringOneDS.AsString());
 
@@ -337,7 +337,7 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeURI()
         {
-            OSD llsdURI = LLSDParser.DeserializeLLSDBinary(binaryURI);
+            OSD llsdURI = OSDParser.DeserializeLLSDBinary(binaryURI);
             Assert.AreEqual(OSDType.URI, llsdURI.Type);
             Uri uri = new Uri("http://www.testurl.test/");
             Assert.AreEqual(uri, llsdURI.AsUri());
@@ -348,7 +348,7 @@ namespace OpenMetaverse.Tests
         public void SerializeURI()
         {
             OSD llsdUri = OSD.FromUri(new Uri("http://www.testurl.test/"));
-            byte[] binaryURISerialized = LLSDParser.SerializeLLSDBinary(llsdUri);
+            byte[] binaryURISerialized = OSDParser.SerializeLLSDBinary(llsdUri);
             Assert.AreEqual(binaryURI, binaryURISerialized);
         }
 
@@ -363,7 +363,7 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeDateTime()
         {
-            OSD llsdDateTime = LLSDParser.DeserializeLLSDBinary(binaryDateTime);
+            OSD llsdDateTime = OSDParser.DeserializeLLSDBinary(binaryDateTime);
             Assert.AreEqual(OSDType.Date, llsdDateTime.Type);
             DateTime dt = new DateTime(2008, 1, 1, 20, 10, 31, 0, DateTimeKind.Utc);
             DateTime dateLocal = llsdDateTime.AsDate();
@@ -375,21 +375,21 @@ namespace OpenMetaverse.Tests
         {
             DateTime dt = new DateTime(2008, 1, 1, 20, 10, 31, 0, DateTimeKind.Utc);
             OSD llsdDate = OSD.FromDate(dt);
-            byte[] binaryDateSerialized = LLSDParser.SerializeLLSDBinary(llsdDate);
+            byte[] binaryDateSerialized = OSDParser.SerializeLLSDBinary(llsdDate);
             Assert.AreEqual(binaryDateTime, binaryDateSerialized);
 
             // check if a *local* time can be serialized and deserialized
             DateTime dtOne = new DateTime(2009, 12, 30, 8, 25, 10, DateTimeKind.Local);
             OSD llsdDateOne = OSD.FromDate(dtOne);
-            byte[] binaryDateOneSerialized = LLSDParser.SerializeLLSDBinary(llsdDateOne);
-            OSD llsdDateOneDS = LLSDParser.DeserializeLLSDBinary(binaryDateOneSerialized);
+            byte[] binaryDateOneSerialized = OSDParser.SerializeLLSDBinary(llsdDateOne);
+            OSD llsdDateOneDS = OSDParser.DeserializeLLSDBinary(binaryDateOneSerialized);
             Assert.AreEqual(OSDType.Date, llsdDateOneDS.Type);
             Assert.AreEqual(dtOne, llsdDateOneDS.AsDate());
 
             DateTime dtTwo = new DateTime(2010, 11, 11, 10, 8, 20, DateTimeKind.Utc);
             OSD llsdDateTwo = OSD.FromDate(dtTwo);
-            byte[] binaryDateTwoSerialized = LLSDParser.SerializeLLSDBinary(llsdDateTwo);
-            OSD llsdDateTwoDS = LLSDParser.DeserializeLLSDBinary(binaryDateTwoSerialized);
+            byte[] binaryDateTwoSerialized = OSDParser.SerializeLLSDBinary(llsdDateTwo);
+            OSD llsdDateTwoDS = OSDParser.DeserializeLLSDBinary(binaryDateTwoSerialized);
             Assert.AreEqual(OSDType.Date, llsdDateOneDS.Type);
             Assert.AreEqual(dtTwo.ToLocalTime(), llsdDateTwoDS.AsDate());
 
@@ -413,20 +413,20 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeArray()
         {
-            OSD llsdEmptyArray = LLSDParser.DeserializeLLSDBinary(binaryEmptyArray);
+            OSD llsdEmptyArray = OSDParser.DeserializeLLSDBinary(binaryEmptyArray);
             Assert.AreEqual(OSDType.Array, llsdEmptyArray.Type);
             OSDArray llsdEmptyArrayArray = (OSDArray)llsdEmptyArray;
             Assert.AreEqual(0, llsdEmptyArrayArray.Count);
 
 
-            OSD llsdSimpleArray = LLSDParser.DeserializeLLSDBinary(binarySimpleArray);
+            OSD llsdSimpleArray = OSDParser.DeserializeLLSDBinary(binarySimpleArray);
             Assert.AreEqual(OSDType.Array, llsdSimpleArray.Type);
             OSDArray llsdArray = (OSDArray)llsdSimpleArray;
             Assert.AreEqual(OSDType.Integer, llsdArray[0].Type);
             Assert.AreEqual(0, llsdArray[0].AsInteger());
 
 
-            OSD llsdSimpleArrayTwo = LLSDParser.DeserializeLLSDBinary(binarySimpleArrayTwo);
+            OSD llsdSimpleArrayTwo = OSDParser.DeserializeLLSDBinary(binarySimpleArrayTwo);
             Assert.AreEqual(OSDType.Array, llsdSimpleArrayTwo.Type);
             OSDArray llsdArrayTwo = (OSDArray)llsdSimpleArrayTwo;
             Assert.AreEqual(2, llsdArrayTwo.Count);
@@ -441,18 +441,18 @@ namespace OpenMetaverse.Tests
         public void SerializeArray()
         {
             OSDArray llsdEmptyArray = new OSDArray();
-            byte[] binaryEmptyArraySerialized = LLSDParser.SerializeLLSDBinary(llsdEmptyArray);
+            byte[] binaryEmptyArraySerialized = OSDParser.SerializeLLSDBinary(llsdEmptyArray);
             Assert.AreEqual(binaryEmptyArray, binaryEmptyArraySerialized);
 
             OSDArray llsdSimpleArray = new OSDArray();
             llsdSimpleArray.Add(OSD.FromInteger(0));
-            byte[] binarySimpleArraySerialized = LLSDParser.SerializeLLSDBinary(llsdSimpleArray);
+            byte[] binarySimpleArraySerialized = OSDParser.SerializeLLSDBinary(llsdSimpleArray);
             Assert.AreEqual(binarySimpleArray, binarySimpleArraySerialized);
 
             OSDArray llsdSimpleArrayTwo = new OSDArray();
             llsdSimpleArrayTwo.Add(OSD.FromInteger(0));
             llsdSimpleArrayTwo.Add(OSD.FromInteger(0));
-            byte[] binarySimpleArrayTwoSerialized = LLSDParser.SerializeLLSDBinary(llsdSimpleArrayTwo);
+            byte[] binarySimpleArrayTwoSerialized = OSDParser.SerializeLLSDBinary(llsdSimpleArrayTwo);
             Assert.AreEqual(binarySimpleArrayTwo, binarySimpleArrayTwoSerialized);
 
         }
@@ -487,17 +487,17 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeDictionary()
         {
-            OSDMap llsdEmptyMap = (OSDMap)LLSDParser.DeserializeLLSDBinary(binaryEmptyMap);
+            OSDMap llsdEmptyMap = (OSDMap)OSDParser.DeserializeLLSDBinary(binaryEmptyMap);
             Assert.AreEqual(OSDType.Map, llsdEmptyMap.Type);
             Assert.AreEqual(0, llsdEmptyMap.Count);
 
-            OSDMap llsdSimpleMap = (OSDMap)LLSDParser.DeserializeLLSDBinary(binarySimpleMap);
+            OSDMap llsdSimpleMap = (OSDMap)OSDParser.DeserializeLLSDBinary(binarySimpleMap);
             Assert.AreEqual(OSDType.Map, llsdSimpleMap.Type);
             Assert.AreEqual(1, llsdSimpleMap.Count);
             Assert.AreEqual(OSDType.Integer, llsdSimpleMap["test"].Type);
             Assert.AreEqual(0, llsdSimpleMap["test"].AsInteger());
 
-            OSDMap llsdSimpleMapTwo = (OSDMap)LLSDParser.DeserializeLLSDBinary(binarySimpleMapTwo);
+            OSDMap llsdSimpleMapTwo = (OSDMap)OSDParser.DeserializeLLSDBinary(binarySimpleMapTwo);
             Assert.AreEqual(OSDType.Map, llsdSimpleMapTwo.Type);
             Assert.AreEqual(3, llsdSimpleMapTwo.Count);
             Assert.AreEqual(OSDType.Unknown, llsdSimpleMapTwo["test"].Type);
@@ -513,24 +513,24 @@ namespace OpenMetaverse.Tests
         public void SerializeDictionary()
         {
             OSDMap llsdEmptyMap = new OSDMap();
-            byte[] binaryEmptyMapSerialized = LLSDParser.SerializeLLSDBinary(llsdEmptyMap);
+            byte[] binaryEmptyMapSerialized = OSDParser.SerializeLLSDBinary(llsdEmptyMap);
             Assert.AreEqual(binaryEmptyMap, binaryEmptyMapSerialized);
 
             OSDMap llsdSimpleMap = new OSDMap();
             llsdSimpleMap["test"] = OSD.FromInteger(0);
-            byte[] binarySimpleMapSerialized = LLSDParser.SerializeLLSDBinary(llsdSimpleMap);
+            byte[] binarySimpleMapSerialized = OSDParser.SerializeLLSDBinary(llsdSimpleMap);
             Assert.AreEqual(binarySimpleMap, binarySimpleMapSerialized);
 
             OSDMap llsdSimpleMapTwo = new OSDMap();
             llsdSimpleMapTwo["t0st"] = OSD.FromInteger(241);
             llsdSimpleMapTwo["tes1"] = OSD.FromString("aha");
             llsdSimpleMapTwo["test"] = new OSD();
-            byte[] binarySimpleMapTwoSerialized = LLSDParser.SerializeLLSDBinary(llsdSimpleMapTwo);
+            byte[] binarySimpleMapTwoSerialized = OSDParser.SerializeLLSDBinary(llsdSimpleMapTwo);
 
             // We dont compare here to the original serialized value, because, as maps dont preserve order,
             // the original serialized value is not *exactly* the same. Instead we compare to a deserialized
             // version created by this deserializer.
-            OSDMap llsdSimpleMapDeserialized = (OSDMap)LLSDParser.DeserializeLLSDBinary(binarySimpleMapTwoSerialized);
+            OSDMap llsdSimpleMapDeserialized = (OSDMap)OSDParser.DeserializeLLSDBinary(binarySimpleMapTwoSerialized);
             Assert.AreEqual(OSDType.Map, llsdSimpleMapDeserialized.Type);
             Assert.AreEqual(3, llsdSimpleMapDeserialized.Count);
             Assert.AreEqual(OSDType.Integer, llsdSimpleMapDeserialized["t0st"].Type);
@@ -552,8 +552,8 @@ namespace OpenMetaverse.Tests
             llsdSimpleMapThree[content] = llsdSimpleValue;
             Assert.AreEqual(content, llsdSimpleMapThree[content].AsString());
 
-            byte[] binarySimpleMapThree = LLSDParser.SerializeLLSDBinary(llsdSimpleMapThree);
-            OSDMap llsdSimpleMapThreeDS = (OSDMap)LLSDParser.DeserializeLLSDBinary(binarySimpleMapThree);
+            byte[] binarySimpleMapThree = OSDParser.SerializeLLSDBinary(llsdSimpleMapThree);
+            OSDMap llsdSimpleMapThreeDS = (OSDMap)OSDParser.DeserializeLLSDBinary(binarySimpleMapThree);
             Assert.AreEqual(OSDType.Map, llsdSimpleMapThreeDS.Type);
             Assert.AreEqual(1, llsdSimpleMapThreeDS.Count);
             Assert.AreEqual(content, llsdSimpleMapThreeDS[content].AsString());
@@ -579,7 +579,7 @@ namespace OpenMetaverse.Tests
         [Test()]
         public void DeserializeNestedComposite()
         {
-            OSD llsdNested = LLSDParser.DeserializeLLSDBinary(binaryNested);
+            OSD llsdNested = OSDParser.DeserializeLLSDBinary(binaryNested);
             Assert.AreEqual(OSDType.Array, llsdNested.Type);
             OSDArray llsdArray = (OSDArray)llsdNested;
             Assert.AreEqual(3, llsdArray.Count);
@@ -624,9 +624,9 @@ namespace OpenMetaverse.Tests
             llsdNested.Add(OSD.FromInteger(124));
             llsdNested.Add(OSD.FromInteger(987));
 
-            byte[] binaryNestedSerialized = LLSDParser.SerializeLLSDBinary(llsdNested);
+            byte[] binaryNestedSerialized = OSDParser.SerializeLLSDBinary(llsdNested);
             // Because maps don't preserve order, we compare here to a deserialized value. 
-            OSDArray llsdNestedDeserialized = (OSDArray)LLSDParser.DeserializeLLSDBinary(binaryNestedSerialized);
+            OSDArray llsdNestedDeserialized = (OSDArray)OSDParser.DeserializeLLSDBinary(binaryNestedSerialized);
             Assert.AreEqual(OSDType.Array, llsdNestedDeserialized.Type);
             Assert.AreEqual(3, llsdNestedDeserialized.Count);
 
@@ -677,9 +677,9 @@ namespace OpenMetaverse.Tests
             llsdMap["testTen"] = stringTwo;
             
             
-            byte[] binaryData = LLSDParser.SerializeLLSDBinary( llsdMap );
+            byte[] binaryData = OSDParser.SerializeLLSDBinary( llsdMap );
 
-            OSDMap llsdMapDS = (OSDMap)LLSDParser.DeserializeLLSDBinary( binaryData );
+            OSDMap llsdMapDS = (OSDMap)OSDParser.DeserializeLLSDBinary( binaryData );
             Assert.AreEqual( OSDType.Map, llsdMapDS.Type );
             Assert.AreEqual( 10, llsdMapDS.Count );
             Assert.AreEqual( sOne, llsdMapDS["testOne"].AsString());
