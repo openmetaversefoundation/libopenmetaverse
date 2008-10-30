@@ -237,11 +237,11 @@ namespace OpenMetaverse
             if (OwnerID == UUID.Zero || AttachmentID == UUID.Zero)
                 return new byte[0];
             
-            OpenMetaverse.StructuredData.LLSDMap att = new OpenMetaverse.StructuredData.LLSDMap();
-            att.Add("item_id", OpenMetaverse.StructuredData.LLSD.FromUUID(AttachmentID));
-            att.Add("owner_id", OpenMetaverse.StructuredData.LLSD.FromUUID(OwnerID));
+            OpenMetaverse.StructuredData.OSDMap att = new OpenMetaverse.StructuredData.OSDMap();
+            att.Add("item_id", OpenMetaverse.StructuredData.OSD.FromUUID(AttachmentID));
+            att.Add("owner_id", OpenMetaverse.StructuredData.OSD.FromUUID(OwnerID));
 
-            return OpenMetaverse.StructuredData.LLSDParser.SerializeXmlBytes(att);
+            return OpenMetaverse.StructuredData.LLSDParser.SerializeLLSDXmlBytes(att);
 
             /*
             //I guess this is how this works, no gaurentees

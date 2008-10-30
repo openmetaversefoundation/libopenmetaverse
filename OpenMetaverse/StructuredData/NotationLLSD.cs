@@ -73,82 +73,52 @@ namespace OpenMetaverse.StructuredData
         private const char doubleQuotesNotationMarker = '"';
         private const char singleQuotesNotationMarker = '\'';
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="notationData"></param>
-        /// <returns></returns>
-        public static LLSD DeserializeNotation(string notationData)
+        public static OSD DeserializeLLSDNotation(string notationData)
         {
             StringReader reader = new StringReader(notationData);
-            LLSD llsd = DeserializeNotation(reader);
+            OSD osd = DeserializeLLSDNotation(reader);
             reader.Close();
-            return llsd;
+            return osd;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="reader"></param>
-        /// <returns></returns>
-        public static LLSD DeserializeNotation(StringReader reader)
+        public static OSD DeserializeLLSDNotation(StringReader reader)
         {
-            LLSD llsd = DeserializeNotationElement(reader);
-            return llsd;
+            OSD osd = DeserializeLLSDNotationElement(reader);
+            return osd;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="llsd"></param>
-        /// <returns></returns>
-        public static string SerializeNotation(LLSD llsd)
+        public static string SerializeLLSDNotation(OSD osd)
         {
-            StringWriter writer = SerializeNotationStream(llsd);
+            StringWriter writer = SerializeLLSDNotationStream(osd);
             string s = writer.ToString();
             writer.Close();
 
             return s;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="llsd"></param>
-        /// <returns></returns>
-        public static StringWriter SerializeNotationStream(LLSD llsd)
+        public static StringWriter SerializeLLSDNotationStream(OSD osd)
         {
             StringWriter writer = new StringWriter();
 
-            SerializeNotationElement(writer, llsd);
+            SerializeLLSDNotationElement(writer, osd);
             return writer;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="llsd"></param>
-        /// <returns></returns>
-        public static string SerializeNotationFormatted(LLSD llsd)
+        public static string SerializeLLSDNotationFormatted(OSD osd)
         {
-            StringWriter writer = SerializeNotationStreamFormatted(llsd);
+            StringWriter writer = SerializeLLSDNotationStreamFormatted(osd);
             string s = writer.ToString();
             writer.Close();
 
             return s;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="llsd"></param>
-        /// <returns></returns>
-        public static StringWriter SerializeNotationStreamFormatted(LLSD llsd)
+        public static StringWriter SerializeLLSDNotationStreamFormatted(OSD osd)
         {
             StringWriter writer = new StringWriter();
 
             string indent = String.Empty;
-            SerializeNotationElementFormatted(writer, indent, llsd);
+            SerializeLLSDNotationElementFormatted(writer, indent, osd);
             return writer;
         }
 
@@ -157,117 +127,117 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private static LLSD DeserializeNotationElement(StringReader reader)
+        private static OSD DeserializeLLSDNotationElement(StringReader reader)
         {
             int character = ReadAndSkipWhitespace(reader);
             if (character < 0)
-                return new LLSD(); // server returned an empty file, so we're going to pass along a null LLSD object
+                return new OSD(); // server returned an empty file, so we're going to pass along a null LLSD object
 
-            LLSD llsd;
+            OSD osd;
             int matching;
             switch ((char)character)
             {
                 case undefNotationValue:
-                    llsd = new LLSD();
+                    osd = new OSD();
                     break;
                 case trueNotationValueOne:
-                    llsd = LLSD.FromBoolean(true);
+                    osd = OSD.FromBoolean(true);
                     break;
                 case trueNotationValueTwo:
                     matching = BufferCharactersEqual(reader, trueNotationValueTwoFull, 1);
                     if (matching > 1 && matching < trueNotationValueTwoFull.Length)
-                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
-                    llsd = LLSD.FromBoolean(true);
+                        throw new OSDException("Notation LLSD parsing: True value parsing error:");
+                    osd = OSD.FromBoolean(true);
                     break;
                 case trueNotationValueThree:
                     matching = BufferCharactersEqual(reader, trueNotationValueThreeFull, 1);
                     if (matching > 1 && matching < trueNotationValueThreeFull.Length)
-                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
-                    llsd = LLSD.FromBoolean(true);
+                        throw new OSDException("Notation LLSD parsing: True value parsing error:");
+                    osd = OSD.FromBoolean(true);
                     break;
                 case falseNotationValueOne:
-                    llsd = LLSD.FromBoolean(false);
+                    osd = OSD.FromBoolean(false);
                     break;
                 case falseNotationValueTwo:
                     matching = BufferCharactersEqual(reader, falseNotationValueTwoFull, 1);
                     if (matching > 1 && matching < falseNotationValueTwoFull.Length)
-                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
-                    llsd = LLSD.FromBoolean(false);
+                        throw new OSDException("Notation LLSD parsing: True value parsing error:");
+                    osd = OSD.FromBoolean(false);
                     break;
                 case falseNotationValueThree:
                     matching = BufferCharactersEqual(reader, falseNotationValueThreeFull, 1);
                     if (matching > 1 && matching < falseNotationValueThreeFull.Length)
-                        throw new LLSDException("Notation LLSD parsing: True value parsing error:");
-                    llsd = LLSD.FromBoolean(false);
+                        throw new OSDException("Notation LLSD parsing: True value parsing error:");
+                    osd = OSD.FromBoolean(false);
                     break;
                 case integerNotationMarker:
-                    llsd = DeserializeNotationInteger(reader);
+                    osd = DeserializeLLSDNotationInteger(reader);
                     break;
                 case realNotationMarker:
-                    llsd = DeserializeNotationReal(reader);
+                    osd = DeserializeLLSDNotationReal(reader);
                     break;
                 case uuidNotationMarker:
                     char[] uuidBuf = new char[36];
                     if (reader.Read(uuidBuf, 0, 36) < 36)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in UUID.");
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in UUID.");
                     UUID lluuid;
                     if (!UUID.TryParse(new String(uuidBuf), out lluuid))
-                        throw new LLSDException("Notation LLSD parsing: Invalid UUID discovered.");
-                    llsd = LLSD.FromUUID(lluuid);
+                        throw new OSDException("Notation LLSD parsing: Invalid UUID discovered.");
+                    osd = OSD.FromUUID(lluuid);
                     break;
                 case binaryNotationMarker:
                     byte[] bytes = new byte[0];
                     int bChar = reader.Peek();
                     if (bChar < 0)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
                     if ((char)bChar == sizeBeginNotationMarker)
                     {
-                        throw new LLSDException("Notation LLSD parsing: Raw binary encoding not supported.");
+                        throw new OSDException("Notation LLSD parsing: Raw binary encoding not supported.");
                     }
                     else if (Char.IsDigit((char)bChar))
                     {
                         char[] charsBaseEncoding = new char[2];
                         if (reader.Read(charsBaseEncoding, 0, 2) < 2)
-                            throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
+                            throw new OSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
                         int baseEncoding;
                         if (!Int32.TryParse(new String(charsBaseEncoding), out baseEncoding))
-                            throw new LLSDException("Notation LLSD parsing: Invalid binary encoding base.");
+                            throw new OSDException("Notation LLSD parsing: Invalid binary encoding base.");
                         if (baseEncoding == 64)
                         {
                             if (reader.Read() < 0)
-                                throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
+                                throw new OSDException("Notation LLSD parsing: Unexpected end of stream in binary.");
                             string bytes64 = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
                             bytes = Convert.FromBase64String(bytes64);
                         }
                         else
                         {
-                            throw new LLSDException("Notation LLSD parsing: Encoding base" + baseEncoding + " + not supported.");
+                            throw new OSDException("Notation LLSD parsing: Encoding base" + baseEncoding + " + not supported.");
                         }
                     }
-                    llsd = LLSD.FromBinary(bytes);
+                    osd = OSD.FromBinary(bytes);
                     break;
                 case stringNotationMarker:
                     int numChars = GetLengthInBrackets(reader);
                     if (reader.Read() < 0)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in string.");
                     char[] chars = new char[numChars];
                     if (reader.Read(chars, 0, numChars) < numChars)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in string.");
                     if (reader.Read() < 0)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
-                    llsd = LLSD.FromString(new String(chars));
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                    osd = OSD.FromString(new String(chars));
                     break;
                 case singleQuotesNotationMarker:
                     string sOne = GetStringDelimitedBy(reader, singleQuotesNotationMarker);
-                    llsd = LLSD.FromString(sOne);
+                    osd = OSD.FromString(sOne);
                     break;
                 case doubleQuotesNotationMarker:
                     string sTwo = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
-                    llsd = LLSD.FromString(sTwo);
+                    osd = OSD.FromString(sTwo);
                     break;
                 case uriNotationMarker:
                     if (reader.Read() < 0)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in string.");
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in string.");
                     string sUri = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
 
                     Uri uri;
@@ -277,32 +247,32 @@ namespace OpenMetaverse.StructuredData
                     }
                     catch
                     {
-                        throw new LLSDException("Notation LLSD parsing: Invalid Uri format detected.");
+                        throw new OSDException("Notation LLSD parsing: Invalid Uri format detected.");
                     }
-                    llsd = LLSD.FromUri(uri);
+                    osd = OSD.FromUri(uri);
                     break;
                 case dateNotationMarker:
                     if (reader.Read() < 0)
-                        throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in date.");
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in date.");
                     string date = GetStringDelimitedBy(reader, doubleQuotesNotationMarker);
                     DateTime dt;
                     if (!DateTime.TryParse(date, out dt))
-                        throw new LLSDException("Notation LLSD parsing: Invalid date discovered.");
-                    llsd = LLSD.FromDate(dt);
+                        throw new OSDException("Notation LLSD parsing: Invalid date discovered.");
+                    osd = OSD.FromDate(dt);
                     break;
                 case arrayBeginNotationMarker:
-                    llsd = DeserializeNotationArray(reader);
+                    osd = DeserializeLLSDNotationArray(reader);
                     break;
                 case mapBeginNotationMarker:
-                    llsd = DeserializeNotationMap(reader);
+                    osd = DeserializeLLSDNotationMap(reader);
                     break;
                 default:
-                    throw new LLSDException("Notation LLSD parsing: Unknown type marker '" + (char)character + "'.");
+                    throw new OSDException("Notation LLSD parsing: Unknown type marker '" + (char)character + "'.");
             }
-            return llsd;
+            return osd;
         }
 
-        private static LLSD DeserializeNotationInteger(StringReader reader)
+        private static OSD DeserializeLLSDNotationInteger(StringReader reader)
         {
             int character;
             StringBuilder s = new StringBuilder();
@@ -320,12 +290,12 @@ namespace OpenMetaverse.StructuredData
             }
             int integer;
             if (!Int32.TryParse(s.ToString(), out integer))
-                throw new LLSDException("Notation LLSD parsing: Can't parse integer value." + s.ToString());
+                throw new OSDException("Notation LLSD parsing: Can't parse integer value." + s.ToString());
 
-            return LLSD.FromInteger(integer);
+            return OSD.FromInteger(integer);
         }
 
-        private static LLSD DeserializeNotationReal(StringReader reader)
+        private static OSD DeserializeLLSDNotationReal(StringReader reader)
         {
             int character;
             StringBuilder s = new StringBuilder();
@@ -345,156 +315,156 @@ namespace OpenMetaverse.StructuredData
             }
             double dbl;
             if (!Utils.TryParseDouble(s.ToString(), out dbl))
-                throw new LLSDException("Notation LLSD parsing: Can't parse real value: " + s.ToString());
+                throw new OSDException("Notation LLSD parsing: Can't parse real value: " + s.ToString());
 
-            return LLSD.FromReal(dbl);
+            return OSD.FromReal(dbl);
         }
 
-        private static LLSD DeserializeNotationArray(StringReader reader)
+        private static OSD DeserializeLLSDNotationArray(StringReader reader)
         {
             int character;
-            LLSDArray llsdArray = new LLSDArray();
+            OSDArray osdArray = new OSDArray();
             while (((character = PeekAndSkipWhitespace(reader)) > 0) &&
                   ((char)character != arrayEndNotationMarker))
             {
-                llsdArray.Add(DeserializeNotationElement(reader));
+                osdArray.Add(DeserializeLLSDNotationElement(reader));
 
                 character = ReadAndSkipWhitespace(reader);
                 if (character < 0)
-                    throw new LLSDException("Notation LLSD parsing: Unexpected end of array discovered.");
+                    throw new OSDException("Notation LLSD parsing: Unexpected end of array discovered.");
                 else if ((char)character == kommaNotationDelimiter)
                     continue;
                 else if ((char)character == arrayEndNotationMarker)
                     break;
             }
             if (character < 0)
-                throw new LLSDException("Notation LLSD parsing: Unexpected end of array discovered.");
+                throw new OSDException("Notation LLSD parsing: Unexpected end of array discovered.");
 
-            return (LLSD)llsdArray;
+            return (OSD)osdArray;
         }
 
-        private static LLSD DeserializeNotationMap(StringReader reader)
+        private static OSD DeserializeLLSDNotationMap(StringReader reader)
         {
             int character;
-            LLSDMap llsdMap = new LLSDMap();
+            OSDMap osdMap = new OSDMap();
             while (((character = PeekAndSkipWhitespace(reader)) > 0) &&
                   ((char)character != mapEndNotationMarker))
             {
-                LLSD llsdKey = DeserializeNotationElement(reader);
-                if (llsdKey.Type != LLSDType.String)
-                    throw new LLSDException("Notation LLSD parsing: Invalid key in map");
-                string key = llsdKey.AsString();
+                OSD osdKey = DeserializeLLSDNotationElement(reader);
+                if (osdKey.Type != OSDType.String)
+                    throw new OSDException("Notation LLSD parsing: Invalid key in map");
+                string key = osdKey.AsString();
 
                 character = ReadAndSkipWhitespace(reader);
                 if ((char)character != keyNotationDelimiter)
-                    throw new LLSDException("Notation LLSD parsing: Unexpected end of stream in map.");
+                    throw new OSDException("Notation LLSD parsing: Unexpected end of stream in map.");
                 if ((char)character != keyNotationDelimiter)
-                    throw new LLSDException("Notation LLSD parsing: Invalid delimiter in map.");
+                    throw new OSDException("Notation LLSD parsing: Invalid delimiter in map.");
 
-                llsdMap[key] = DeserializeNotationElement(reader);
+                osdMap[key] = DeserializeLLSDNotationElement(reader);
                 character = ReadAndSkipWhitespace(reader);
                 if (character < 0)
-                    throw new LLSDException("Notation LLSD parsing: Unexpected end of map discovered.");
+                    throw new OSDException("Notation LLSD parsing: Unexpected end of map discovered.");
                 else if ((char)character == kommaNotationDelimiter)
                     continue;
                 else if ((char)character == mapEndNotationMarker)
                     break;
             }
             if (character < 0)
-                throw new LLSDException("Notation LLSD parsing: Unexpected end of map discovered.");
+                throw new OSDException("Notation LLSD parsing: Unexpected end of map discovered.");
 
-            return (LLSD)llsdMap;
+            return (OSD)osdMap;
         }
 
-        private static void SerializeNotationElement(StringWriter writer, LLSD llsd)
+        private static void SerializeLLSDNotationElement(StringWriter writer, OSD osd)
         {
 
-            switch (llsd.Type)
+            switch (osd.Type)
             {
-                case LLSDType.Unknown:
+                case OSDType.Unknown:
                     writer.Write(undefNotationValue);
                     break;
-                case LLSDType.Boolean:
-                    if (llsd.AsBoolean())
+                case OSDType.Boolean:
+                    if (osd.AsBoolean())
                         writer.Write(trueNotationValueTwo);
                     else
                         writer.Write(falseNotationValueTwo);
                     break;
-                case LLSDType.Integer:
+                case OSDType.Integer:
                     writer.Write(integerNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     break;
-                case LLSDType.Real:
+                case OSDType.Real:
                     writer.Write(realNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     break;
-                case LLSDType.UUID:
+                case OSDType.UUID:
                     writer.Write(uuidNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     break;
-                case LLSDType.String:
+                case OSDType.String:
                     writer.Write(singleQuotesNotationMarker);
-                    writer.Write(EscapeCharacter(llsd.AsString(), singleQuotesNotationMarker));
+                    writer.Write(EscapeCharacter(osd.AsString(), singleQuotesNotationMarker));
                     writer.Write(singleQuotesNotationMarker);
                     break;
-                case LLSDType.Binary:
+                case OSDType.Binary:
                     writer.Write(binaryNotationMarker);
                     writer.Write("64");
                     writer.Write(doubleQuotesNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     writer.Write(doubleQuotesNotationMarker);
                     break;
-                case LLSDType.Date:
+                case OSDType.Date:
                     writer.Write(dateNotationMarker);
                     writer.Write(doubleQuotesNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     writer.Write(doubleQuotesNotationMarker);
                     break;
-                case LLSDType.URI:
+                case OSDType.URI:
                     writer.Write(uriNotationMarker);
                     writer.Write(doubleQuotesNotationMarker);
-                    writer.Write(EscapeCharacter(llsd.AsString(), doubleQuotesNotationMarker));
+                    writer.Write(EscapeCharacter(osd.AsString(), doubleQuotesNotationMarker));
                     writer.Write(doubleQuotesNotationMarker);
                     break;
-                case LLSDType.Array:
-                    SerializeNotationArray(writer, (LLSDArray)llsd);
+                case OSDType.Array:
+                    SerializeLLSDNotationArray(writer, (OSDArray)osd);
                     break;
-                case LLSDType.Map:
-                    SerializeNotationMap(writer, (LLSDMap)llsd);
+                case OSDType.Map:
+                    SerializeLLSDNotationMap(writer, (OSDMap)osd);
                     break;
                 default:
-                    throw new LLSDException("Notation serialization: Not existing element discovered.");
+                    throw new OSDException("Notation serialization: Not existing element discovered.");
 
             }
         }
 
-        private static void SerializeNotationArray(StringWriter writer, LLSDArray llsdArray)
+        private static void SerializeLLSDNotationArray(StringWriter writer, OSDArray osdArray)
         {
             writer.Write(arrayBeginNotationMarker);
-            int lastIndex = llsdArray.Count - 1;
+            int lastIndex = osdArray.Count - 1;
 
             for (int idx = 0; idx <= lastIndex; idx++)
             {
-                SerializeNotationElement(writer, llsdArray[idx]);
+                SerializeLLSDNotationElement(writer, osdArray[idx]);
                 if (idx < lastIndex)
                     writer.Write(kommaNotationDelimiter);
             }
             writer.Write(arrayEndNotationMarker);
         }
 
-        private static void SerializeNotationMap(StringWriter writer, LLSDMap llsdMap)
+        private static void SerializeLLSDNotationMap(StringWriter writer, OSDMap osdMap)
         {
             writer.Write(mapBeginNotationMarker);
-            int lastIndex = llsdMap.Count - 1;
+            int lastIndex = osdMap.Count - 1;
             int idx = 0;
 
-            foreach (KeyValuePair<string, LLSD> kvp in llsdMap)
+            foreach (KeyValuePair<string, OSD> kvp in osdMap)
             {
                 writer.Write(singleQuotesNotationMarker);
                 writer.Write(EscapeCharacter(kvp.Key, singleQuotesNotationMarker));
                 writer.Write(singleQuotesNotationMarker);
                 writer.Write(keyNotationDelimiter);
-                SerializeNotationElement(writer, kvp.Value);
+                SerializeLLSDNotationElement(writer, kvp.Value);
                 if (idx < lastIndex)
                     writer.Write(kommaNotationDelimiter);
 
@@ -503,80 +473,80 @@ namespace OpenMetaverse.StructuredData
             writer.Write(mapEndNotationMarker);
         }
 
-        private static void SerializeNotationElementFormatted(StringWriter writer, string indent, LLSD llsd)
+        private static void SerializeLLSDNotationElementFormatted(StringWriter writer, string indent, OSD osd)
         {
-            switch (llsd.Type)
+            switch (osd.Type)
             {
-                case LLSDType.Unknown:
+                case OSDType.Unknown:
                     writer.Write(undefNotationValue);
                     break;
-                case LLSDType.Boolean:
-                    if (llsd.AsBoolean())
+                case OSDType.Boolean:
+                    if (osd.AsBoolean())
                         writer.Write(trueNotationValueTwo);
                     else
                         writer.Write(falseNotationValueTwo);
                     break;
-                case LLSDType.Integer:
+                case OSDType.Integer:
                     writer.Write(integerNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     break;
-                case LLSDType.Real:
+                case OSDType.Real:
                     writer.Write(realNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     break;
-                case LLSDType.UUID:
+                case OSDType.UUID:
                     writer.Write(uuidNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     break;
-                case LLSDType.String:
+                case OSDType.String:
                     writer.Write(singleQuotesNotationMarker);
-                    writer.Write(EscapeCharacter(llsd.AsString(), singleQuotesNotationMarker));
+                    writer.Write(EscapeCharacter(osd.AsString(), singleQuotesNotationMarker));
                     writer.Write(singleQuotesNotationMarker);
                     break;
-                case LLSDType.Binary:
+                case OSDType.Binary:
                     writer.Write(binaryNotationMarker);
                     writer.Write("64");
                     writer.Write(doubleQuotesNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     writer.Write(doubleQuotesNotationMarker);
                     break;
-                case LLSDType.Date:
+                case OSDType.Date:
                     writer.Write(dateNotationMarker);
                     writer.Write(doubleQuotesNotationMarker);
-                    writer.Write(llsd.AsString());
+                    writer.Write(osd.AsString());
                     writer.Write(doubleQuotesNotationMarker);
                     break;
-                case LLSDType.URI:
+                case OSDType.URI:
                     writer.Write(uriNotationMarker);
                     writer.Write(doubleQuotesNotationMarker);
-                    writer.Write(EscapeCharacter(llsd.AsString(), doubleQuotesNotationMarker));
+                    writer.Write(EscapeCharacter(osd.AsString(), doubleQuotesNotationMarker));
                     writer.Write(doubleQuotesNotationMarker);
                     break;
-                case LLSDType.Array:
-                    SerializeNotationArrayFormatted(writer, indent + baseIndent, (LLSDArray)llsd);
+                case OSDType.Array:
+                    SerializeLLSDNotationArrayFormatted(writer, indent + baseIndent, (OSDArray)osd);
                     break;
-                case LLSDType.Map:
-                    SerializeNotationMapFormatted(writer, indent + baseIndent, (LLSDMap)llsd);
+                case OSDType.Map:
+                    SerializeLLSDNotationMapFormatted(writer, indent + baseIndent, (OSDMap)osd);
                     break;
                 default:
-                    throw new LLSDException("Notation serialization: Not existing element discovered.");
+                    throw new OSDException("Notation serialization: Not existing element discovered.");
 
             }
         }
 
-        private static void SerializeNotationArrayFormatted(StringWriter writer, string intend, LLSDArray llsdArray)
+        private static void SerializeLLSDNotationArrayFormatted(StringWriter writer, string intend, OSDArray osdArray)
         {
             writer.Write(Helpers.NewLine);
             writer.Write(intend);
             writer.Write(arrayBeginNotationMarker);
-            int lastIndex = llsdArray.Count - 1;
+            int lastIndex = osdArray.Count - 1;
 
             for (int idx = 0; idx <= lastIndex; idx++)
             {
-                if (llsdArray[idx].Type != LLSDType.Array && llsdArray[idx].Type != LLSDType.Map)
+                if (osdArray[idx].Type != OSDType.Array && osdArray[idx].Type != OSDType.Map)
                     writer.Write(Helpers.NewLine);
                 writer.Write(intend + baseIndent);
-                SerializeNotationElementFormatted(writer, intend, llsdArray[idx]);
+                SerializeLLSDNotationElementFormatted(writer, intend, osdArray[idx]);
                 if (idx < lastIndex)
                 {
                     writer.Write(kommaNotationDelimiter);
@@ -587,23 +557,23 @@ namespace OpenMetaverse.StructuredData
             writer.Write(arrayEndNotationMarker);
         }
 
-        private static void SerializeNotationMapFormatted(StringWriter writer, string intend, LLSDMap llsdMap)
+        private static void SerializeLLSDNotationMapFormatted(StringWriter writer, string intend, OSDMap osdMap)
         {
             writer.Write(Helpers.NewLine);
             writer.Write(intend);
             writer.Write(mapBeginNotationMarker);
             writer.Write(Helpers.NewLine);
-            int lastIndex = llsdMap.Count - 1;
+            int lastIndex = osdMap.Count - 1;
             int idx = 0;
 
-            foreach (KeyValuePair<string, LLSD> kvp in llsdMap)
+            foreach (KeyValuePair<string, OSD> kvp in osdMap)
             {
                 writer.Write(intend + baseIndent);
                 writer.Write(singleQuotesNotationMarker);
                 writer.Write(EscapeCharacter(kvp.Key, singleQuotesNotationMarker));
                 writer.Write(singleQuotesNotationMarker);
                 writer.Write(keyNotationDelimiter);
-                SerializeNotationElementFormatted(writer, intend, kvp.Value);
+                SerializeLLSDNotationElementFormatted(writer, intend, kvp.Value);
                 if (idx < lastIndex)
                 {
                     writer.Write(Helpers.NewLine);
@@ -674,10 +644,10 @@ namespace OpenMetaverse.StructuredData
                 s.Append((char)character);
             }
             if (character < 0)
-                throw new LLSDException("Notation LLSD parsing: Can't parse length value cause unexpected end of stream.");
+                throw new OSDException("Notation LLSD parsing: Can't parse length value cause unexpected end of stream.");
             int length;
             if (!Int32.TryParse(s.ToString(), out length))
-                throw new LLSDException("Notation LLSD parsing: Can't parse length value.");
+                throw new OSDException("Notation LLSD parsing: Can't parse length value.");
 
             return length;
         }
@@ -736,7 +706,7 @@ namespace OpenMetaverse.StructuredData
 
             }
             if (character < 0)
-                throw new LLSDException("Notation LLSD parsing: Can't parse text because unexpected end of stream while expecting a '"
+                throw new OSDException("Notation LLSD parsing: Can't parse text because unexpected end of stream while expecting a '"
                                             + delimiter + "' character.");
 
             return s.ToString();

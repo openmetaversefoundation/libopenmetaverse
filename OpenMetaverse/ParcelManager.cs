@@ -1427,19 +1427,19 @@ namespace OpenMetaverse
         /// <param name="capsKey">Not used (will always be ParcelProperties)</param>
         /// <param name="llsd">LLSD Structured data</param>
         /// <param name="simulator">Object representing simulator</param>
-        private void ParcelPropertiesReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ParcelPropertiesReplyHandler(string capsKey, OSD llsd, Simulator simulator)
         {
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
-                LLSDMap map = (LLSDMap)llsd;
-                LLSDMap parcelDataBlock = (LLSDMap)(((LLSDArray)map["ParcelData"])[0]);
-                LLSDMap ageVerifyBlock = (LLSDMap)(((LLSDArray)map["AgeVerificationBlock"])[0]);
-                LLSDMap mediaDataBlock = (LLSDMap)(((LLSDArray)map["MediaData"])[0]);
+                OSDMap map = (OSDMap)llsd;
+                OSDMap parcelDataBlock = (OSDMap)(((OSDArray)map["ParcelData"])[0]);
+                OSDMap ageVerifyBlock = (OSDMap)(((OSDArray)map["AgeVerificationBlock"])[0]);
+                OSDMap mediaDataBlock = (OSDMap)(((OSDArray)map["MediaData"])[0]);
 
                 Parcel parcel = new Parcel(parcelDataBlock["LocalID"].AsInteger());
 
-                parcel.AABBMax = ((LLSDArray)parcelDataBlock["AABBMax"]).AsVector3();
-                parcel.AABBMin = ((LLSDArray)parcelDataBlock["AABBMin"]).AsVector3();
+                parcel.AABBMax = ((OSDArray)parcelDataBlock["AABBMax"]).AsVector3();
+                parcel.AABBMin = ((OSDArray)parcelDataBlock["AABBMin"]).AsVector3();
                 parcel.Area = parcelDataBlock["Area"].AsInteger();
                 parcel.AuctionID = (uint)parcelDataBlock["AuctionID"].AsInteger();
                 parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
@@ -1489,8 +1489,8 @@ namespace OpenMetaverse
                 parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsUUID();
                 parcel.Status = (Parcel.ParcelStatus)parcelDataBlock["Status"].AsInteger();
                 parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
-                parcel.UserLocation = ((LLSDArray)parcelDataBlock["UserLocation"]).AsVector3();
-                parcel.UserLookAt = ((LLSDArray)parcelDataBlock["UserLookAt"]).AsVector3();
+                parcel.UserLocation = ((OSDArray)parcelDataBlock["UserLocation"]).AsVector3();
+                parcel.UserLookAt = ((OSDArray)parcelDataBlock["UserLookAt"]).AsVector3();
                 parcel.Media.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
                 parcel.Media.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
                 parcel.Media.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
@@ -1606,30 +1606,30 @@ namespace OpenMetaverse
         /// <param name="capsKey"></param>
         /// <param name="llsd"></param>
         /// <param name="simulator"></param>
-        private void ParcelObjectOwnersReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ParcelObjectOwnersReplyHandler(string capsKey, OSD llsd, Simulator simulator)
         {
             if (OnPrimOwnersListReply != null)
             {
 
-                LLSDMap map = (LLSDMap)llsd;
+                OSDMap map = (OSDMap)llsd;
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
                 if (map.ContainsKey("Data") && map.ContainsKey("DataExtended"))
                 {
 
-                    LLSDArray dataBlock = (LLSDArray)map["Data"];
-                    LLSDArray dataExtendedBlock = (LLSDArray)map["DataExtended"];
+                    OSDArray dataBlock = (OSDArray)map["Data"];
+                    OSDArray dataExtendedBlock = (OSDArray)map["DataExtended"];
 
                     for (int i = 0; i < dataBlock.Count; i++)
                     {
                         ParcelPrimOwners poe = new ParcelPrimOwners();
-                        poe.OwnerID = ((LLSDMap)dataBlock[i])["OwnerID"].AsUUID();
-                        poe.Count = ((LLSDMap)dataBlock[i])["Count"].AsInteger();
-                        poe.IsGroupOwned = ((LLSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
-                        poe.OnlineStatus = ((LLSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
-                        if (((LLSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
+                        poe.OwnerID = ((OSDMap)dataBlock[i])["OwnerID"].AsUUID();
+                        poe.Count = ((OSDMap)dataBlock[i])["Count"].AsInteger();
+                        poe.IsGroupOwned = ((OSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
+                        poe.OnlineStatus = ((OSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
+                        if (((OSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
                         {
-                            byte[] bytes = (((LLSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
+                            byte[] bytes = (((OSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
 
                             if (BitConverter.IsLittleEndian)
                                 Array.Reverse(bytes);

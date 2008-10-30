@@ -334,7 +334,7 @@ namespace PrimWorkshop
             textures = 0;
             
             // Write the LLSD to the hard drive in XML format
-            string output = LLSDParser.SerializeXmlString(Helpers.PrimListToLLSD(primList));
+            string output = LLSDParser.SerializeLLSDXmlString(Helpers.PrimListToOSD(primList));
             try
             {
                 // Create a temporary directory
@@ -504,8 +504,8 @@ namespace PrimWorkshop
 
                 // Decode the .prims file
                 string raw = File.ReadAllText(primFile);
-                LLSD llsd = LLSDParser.DeserializeXml(raw);
-                return Helpers.LLSDToPrimList(llsd);
+                OSD osd = LLSDParser.DeserializeLLSDXml(raw);
+                return Helpers.OSDToPrimList(osd);
             }
             catch (Exception e)
             {

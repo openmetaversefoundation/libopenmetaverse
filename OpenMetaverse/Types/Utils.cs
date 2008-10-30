@@ -85,6 +85,11 @@ namespace OpenMetaverse
         private static readonly System.Security.Cryptography.MD5 MD5Builder =
             new System.Security.Cryptography.MD5CryptoServiceProvider();
 
+        /// <summary>Provide a single instance of the SHA-1 class to avoid
+        /// making duplicate copies</summary>
+        private static readonly System.Security.Cryptography.SHA1 SHA1Builder =
+            new System.Security.Cryptography.SHA1CryptoServiceProvider();
+
         #region Math
 
         /// <summary>
@@ -272,6 +277,17 @@ namespace OpenMetaverse
         {
             lock (MD5Builder)
                 return MD5Builder.ComputeHash(data);
+        }
+
+        /// <summary>
+        /// Compute the SHA-1 hash for a byte array
+        /// </summary>
+        /// <param name="data">Byte array to compute the hash for</param>
+        /// <returns>SHA-1 hash of the input data</returns>
+        public static byte[] SHA1(byte[] data)
+        {
+            lock (SHA1Builder)
+                return SHA1Builder.ComputeHash(data);
         }
 
         /// <summary>

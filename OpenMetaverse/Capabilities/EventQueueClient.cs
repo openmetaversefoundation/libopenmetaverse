@@ -42,7 +42,7 @@ namespace OpenMetaverse.Capabilities
         /// </summary>
         /// <param name="eventName"></param>
         /// <param name="body"></param>
-        public delegate void EventCallback(string eventName, LLSDMap body);
+        public delegate void EventCallback(string eventName, OSDMap body);
 
         /// <summary></summary>
         public ConnectedCallback OnConnected;
@@ -103,11 +103,11 @@ namespace OpenMetaverse.Capabilities
             }
 
             // Create an EventQueueGet request
-            LLSDMap request = new LLSDMap();
-            request["ack"] = new LLSD();
-            request["done"] = LLSD.FromBoolean(false);
+            OSDMap request = new OSDMap();
+            request["ack"] = new OSD();
+            request["done"] = OSD.FromBoolean(false);
 
-            byte[] postData = LLSDParser.SerializeXmlBytes(request);
+            byte[] postData = LLSDParser.SerializeLLSDXmlBytes(request);
 
             _Client.UploadDataAsync(_Client.Location, postData);
 
@@ -126,7 +126,7 @@ namespace OpenMetaverse.Capabilities
 
         private void Client_UploadDataCompleted(object sender, CapsBase.UploadDataCompletedEventArgs e)
         {
-            LLSDArray events = null;
+            OSDArray events = null;
             int ack = 0;
 
             if (e.Error != null)
@@ -174,13 +174,13 @@ namespace OpenMetaverse.Capabilities
             else if (!e.Cancelled && e.Result != null)
             {
                 // Got a response
-                LLSD result = LLSDParser.DeserializeXml(e.Result);
-                if (result != null && result.Type == LLSDType.Map)
+                OSD result = LLSDParser.DeserializeLLSDXml(e.Result);
+                if (result != null && result.Type == OSDType.Map)
                 {
                     // Parse any events returned by the event queue
-                    LLSDMap map = (LLSDMap)result;
+                    OSDMap map = (OSDMap)result;
 
-                    events = (LLSDArray)map["events"];
+                    events = (OSDArray)map["events"];
                     ack = map["id"].AsInteger();
                 }
             }
@@ -192,12 +192,12 @@ namespace OpenMetaverse.Capabilities
 
             if (_Running)
             {
-                LLSDMap request = new LLSDMap();
-                if (ack != 0) request["ack"] = LLSD.FromInteger(ack);
-                else request["ack"] = new LLSD();
-                request["done"] = LLSD.FromBoolean(_Dead);
+                OSDMap request = new OSDMap();
+                if (ack != 0) request["ack"] = OSD.FromInteger(ack);
+                else request["ack"] = new OSD();
+                request["done"] = OSD.FromBoolean(_Dead);
 
-                byte[] postData = LLSDParser.SerializeXmlBytes(request);
+                byte[] postData = LLSDParser.SerializeLLSDXmlBytes(request);
 
                 _Client.UploadDataAsync(_Client.Location, postData);
 
@@ -213,10 +213,10 @@ namespace OpenMetaverse.Capabilities
             if (OnEvent != null && events != null && events.Count > 0)
             {
                 // Fire callbacks for each event received
-                foreach (LLSDMap evt in events)
+                foreach (OSDMap evt in events)
                 {
                     string msg = evt["message"].AsString();
-                    LLSDMap body = (LLSDMap)evt["body"];
+                    OSDMap body = (OSDMap)evt["body"];
 
                     try { OnEvent(msg, body); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }

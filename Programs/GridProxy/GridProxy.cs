@@ -545,7 +545,7 @@ namespace GridProxy
             if (uri == "/")
             {
                 if (contentType == "application/xml+llsd" || contentType == "application/xml") {
-                    ProxyLoginLLSD(netStream, content);
+                    ProxyLoginSD(netStream, content);
                 } else {
                     ProxyLogin(netStream, content);
                 }
@@ -597,13 +597,13 @@ namespace GridProxy
             {
                 capReq = new CapsRequest(cap);
 
-                if (cap.ReqFmt == CapsDataFormat.LLSD)
+                if (cap.ReqFmt == CapsDataFormat.SD)
                 {
-                    capReq.Request = LLSDParser.DeserializeXml(content);
+                    capReq.Request = LLSDParser.DeserializeLLSDXml(content);
                 }
                 else
                 {
-                    capReq.Request = LLSDParser.DeserializeXml(content);
+                    capReq.Request = LLSDParser.DeserializeLLSDXml(content);
                 }
 
                 foreach (CapsDelegate d in cap.GetDelegates())
@@ -611,13 +611,13 @@ namespace GridProxy
                     if (d(capReq, CapsStage.Request)) { shortCircuit = true; break; }
                 }
 
-                if (cap.ReqFmt == CapsDataFormat.LLSD)
+                if (cap.ReqFmt == CapsDataFormat.SD)
                 {
-                    content = LLSDParser.SerializeXmlBytes((LLSD)capReq.Request);
+                    content = LLSDParser.SerializeLLSDXmlBytes((OSD)capReq.Request);
                 }
                 else
                 {
-                    content = LLSDParser.SerializeXmlBytes(capReq.Request);
+                    content = LLSDParser.SerializeLLSDXmlBytes(capReq.Request);
                 }
             }
 
@@ -707,13 +707,13 @@ namespace GridProxy
 
                     if (capReq != null && !requestFailed)
                     {
-                        if (cap.RespFmt == CapsDataFormat.LLSD)
+                        if (cap.RespFmt == CapsDataFormat.SD)
                         {
-                            capReq.Response = LLSDParser.DeserializeXml(respBuf);
+                            capReq.Response = LLSDParser.DeserializeLLSDXml(respBuf);
                         }
                         else
                         {
-                            capReq.Response = LLSDParser.DeserializeXml(respBuf);
+                            capReq.Response = LLSDParser.DeserializeLLSDXml(respBuf);
                         }
 
                     }
@@ -758,13 +758,13 @@ namespace GridProxy
                     }
                 }
 
-                if (cap.RespFmt == CapsDataFormat.LLSD)
+                if (cap.RespFmt == CapsDataFormat.SD)
                 {
-                    respBuf = LLSDParser.SerializeXmlBytes((LLSD)capReq.Response);
+                    respBuf = LLSDParser.SerializeLLSDXmlBytes((OSD)capReq.Response);
                 }
                 else
                 {
-                    respBuf = LLSDParser.SerializeXmlBytes(capReq.Response);
+                    respBuf = LLSDParser.SerializeLLSDXmlBytes(capReq.Response);
                 }
             }
 
@@ -803,11 +803,11 @@ namespace GridProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            LLSDMap nm = new LLSDMap();
+            OSDMap nm = new OSDMap();
 
-            if (capReq.Response.Type == LLSDType.Map)
+            if (capReq.Response.Type == OSDType.Map)
             {
-                LLSDMap m = (LLSDMap)capReq.Response;
+                OSDMap m = (OSDMap)capReq.Response;
                 
                 foreach (string key in m.Keys)
                 {
@@ -821,11 +821,11 @@ namespace GridProxy
                             newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
                             lock (this) { KnownCaps[val] = newCap; }
                         }
-                        nm[key] = LLSD.FromString(loginURI + val);
+                        nm[key] = OSD.FromString(loginURI + val);
                     }
                     else
                     {
-                        nm[key] = LLSD.FromString(val);
+                        nm[key] = OSD.FromString(val);
                     }
                 }
             }
@@ -899,23 +899,23 @@ namespace GridProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            LLSDMap map = (LLSDMap)capReq.Response;
-            LLSDArray array = (LLSDArray)map["events"];
+            OSDMap map = (OSDMap)capReq.Response;
+            OSDArray array = (OSDArray)map["events"];
 
             for (int i = 0; i < array.Count; i++)
             {
-                LLSDMap evt = (LLSDMap)array[i];
+                OSDMap evt = (OSDMap)array[i];
 
                 string message = evt["message"].AsString();
-                LLSDMap body = (LLSDMap)evt["body"];
+                OSDMap body = (OSDMap)evt["body"];
 
                 if (message == "TeleportFinish" || message == "CrossedRegion")
                 {
-                    LLSDMap info = null;
+                    OSDMap info = null;
                     if (message == "TeleportFinish")
-                        info = (LLSDMap)(((LLSDArray)body["Info"])[0]);
+                        info = (OSDMap)(((OSDArray)body["Info"])[0]);
                     else
-                        info = (LLSDMap)(((LLSDArray)body["RegionData"])[0]);
+                        info = (OSDMap)(((OSDArray)body["RegionData"])[0]);
                     byte[] bytes = info["SimIP"].AsBinary();
                     uint simIP = Utils.BytesToUInt(bytes);
                     ushort simPort = (ushort)info["SimPort"].AsInteger();
@@ -923,13 +923,13 @@ namespace GridProxy
 
                     GenericCheck(ref simIP, ref simPort, ref capsURL, capReq.Info.Sim == activeCircuit);
 
-                    info["SeedCapability"] = LLSD.FromString(capsURL);
+                    info["SeedCapability"] = OSD.FromString(capsURL);
                     bytes[0] = (byte)(simIP % 256);
                     bytes[1] = (byte)((simIP >> 8) % 256);
                     bytes[2] = (byte)((simIP >> 16) % 256);
                     bytes[3] = (byte)((simIP >> 24) % 256);
-                    info["SimIP"] = LLSD.FromBinary(bytes);
-                    info["SimPort"] = LLSD.FromInteger(simPort);
+                    info["SimIP"] = OSD.FromBinary(bytes);
+                    info["SimPort"] = OSD.FromInteger(simPort);
                 }
                 else if (message == "EstablishAgentCommunication")
                 {
@@ -946,9 +946,9 @@ namespace GridProxy
 #endif
 
                     GenericCheck(ref simIP, ref simPort, ref capsURL, false);
-                    body["seed-capability"] = LLSD.FromString(capsURL);
+                    body["seed-capability"] = OSD.FromString(capsURL);
                     string ipport = String.Format("{0}:{1}", new IPAddress(simIP), simPort);
-                    body["sim-ip-and-port"] = LLSD.FromString(ipport);
+                    body["sim-ip-and-port"] = OSD.FromString(ipport);
 
 #if DEBUG_CAPS
                     Console.WriteLine("DEBUG: Modified EstablishAgentCommunication to " + body["sim-ip-and-port"].AsString() + " with seed cap " + capsURL);
@@ -1041,19 +1041,19 @@ namespace GridProxy
             }
         }
 
-        private void ProxyLoginLLSD(NetworkStream netStream, byte[] content)
+        private void ProxyLoginSD(NetworkStream netStream, byte[] content)
         {
             lock (this) {
                 ServicePointManager.CertificatePolicy = new OpenMetaverse.AcceptAllCertificatePolicy();
                 AutoResetEvent remoteComplete = new AutoResetEvent(false);
                 //CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
                 CapsClient loginRequest = new CapsClient(new Uri("https://login1.aditi.lindenlab.com/cgi-bin/auth.cgi"));
-                LLSD response = null;
+                OSD response = null;
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(
-                    delegate(CapsClient client, LLSD result, Exception error)
+                    delegate(CapsClient client, OSD result, Exception error)
                     {
                         if (error == null) {
-                            if (result != null && result.Type == LLSDType.Map) {
+                            if (result != null && result.Type == OSDType.Map) {
                                 response = result;
                             }
                         }
@@ -1069,9 +1069,9 @@ namespace GridProxy
                     return;
                 }
 
-                LLSDMap map = (LLSDMap)response;
+                OSDMap map = (OSDMap)response;
 
-                LLSD llsd;
+                OSD llsd;
                 string sim_port = null, sim_ip = null, seed_capability = null;
                 map.TryGetValue("sim_port", out llsd);
                 if (llsd != null) sim_port = llsd.AsString();
@@ -1088,8 +1088,8 @@ namespace GridProxy
 
                 IPEndPoint realSim = new IPEndPoint(IPAddress.Parse(sim_ip), Convert.ToUInt16(sim_port));
                 IPEndPoint fakeSim = ProxySim(realSim);
-                map["sim_ip"] = LLSD.FromString(fakeSim.Address.ToString());
-                map["sim_port"] = LLSD.FromInteger(fakeSim.Port);
+                map["sim_ip"] = OSD.FromString(fakeSim.Address.ToString());
+                map["sim_port"] = OSD.FromInteger(fakeSim.Port);
                 activeCircuit = realSim;
 
                 // start a new proxy session
@@ -1099,13 +1099,13 @@ namespace GridProxy
                 info.AddDelegate(new CapsDelegate(FixupSeedCapsResponse));
 
                 KnownCaps[seed_capability] = info;
-                map["seed_capability"] = LLSD.FromString(loginURI + seed_capability);
+                map["seed_capability"] = OSD.FromString(loginURI + seed_capability);
 
                 StreamWriter writer = new StreamWriter(netStream);
                 writer.Write("HTTP/1.0 200 OK\r\n");
                 writer.Write("Content-type: application/xml+llsd\r\n");
                 writer.Write("\r\n");
-                writer.Write(LLSDParser.SerializeXmlString(response));
+                writer.Write(LLSDParser.SerializeLLSDXmlString(response));
                 writer.Close();
             }
         }
@@ -2002,7 +2002,7 @@ namespace GridProxy
     public enum CapsDataFormat
     {
         Binary = 0,
-        LLSD = 1
+        SD = 1
     }
 
     // Describes a caps URI
@@ -2019,7 +2019,7 @@ namespace GridProxy
 
         public CapInfo(string URI, IPEndPoint Sim, string CapType)
             :
-            this(URI, Sim, CapType, CapsDataFormat.LLSD, CapsDataFormat.LLSD) { }
+            this(URI, Sim, CapType, CapsDataFormat.SD, CapsDataFormat.SD) { }
         public CapInfo(string URI, IPEndPoint Sim, string CapType, CapsDataFormat ReqFmt, CapsDataFormat RespFmt)
         {
             uri = URI; sim = Sim; type = CapType; reqFmt = ReqFmt; respFmt = RespFmt;
@@ -2087,10 +2087,10 @@ namespace GridProxy
         public readonly CapInfo Info;
 
         // The request
-        public LLSD Request = null;
+        public OSD Request = null;
 
         // The corresponding response
-        public LLSD Response = null;
+        public OSD Response = null;
     }
 
     // XmlRpcRequestDelegate: specifies a delegate to be called for XML-RPC requests

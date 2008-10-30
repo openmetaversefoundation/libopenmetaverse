@@ -38,12 +38,12 @@ namespace OpenMetaverse.Packets
 
         public static string ToXmlString(Packet packet)
         {
-            return LLSDParser.SerializeXmlString(GetLLSD(packet));
+            return LLSDParser.SerializeLLSDXmlString(GetLLSD(packet));
         }
 
-        public static LLSD GetLLSD(Packet packet)
+        public static OSD GetLLSD(Packet packet)
         {
-            LLSDMap body = new LLSDMap();
+            OSDMap body = new OSDMap();
             Type type = packet.GetType();
 
             foreach (FieldInfo field in type.GetFields())
@@ -56,7 +56,7 @@ namespace OpenMetaverse.Packets
                     {
                         object blockArray = field.GetValue(packet);
                         Array array = (Array)blockArray;
-                        LLSDArray blockList = new LLSDArray(array.Length);
+                        OSDArray blockList = new OSDArray(array.Length);
                         IEnumerator ie = array.GetEnumerator();
 
                         while (ie.MoveNext())
@@ -80,7 +80,7 @@ namespace OpenMetaverse.Packets
 
         public static byte[] ToBinary(Packet packet)
         {
-            return LLSDParser.SerializeBinary(GetLLSD(packet));
+            return LLSDParser.SerializeLLSDBinary(GetLLSD(packet));
         }
 
         public static Packet FromXmlString(string xml)
@@ -88,10 +88,10 @@ namespace OpenMetaverse.Packets
             System.Xml.XmlTextReader reader =
                 new System.Xml.XmlTextReader(new System.IO.MemoryStream(Utils.StringToBytes(xml)));
 
-            return FromLLSD(LLSDParser.DeserializeXml(reader));
+            return FromLLSD(LLSDParser.DeserializeLLSDXml(reader));
         }
 
-        public static Packet FromLLSD(LLSD llsd)
+        public static Packet FromLLSD(OSD osd)
         {
             // FIXME: Need the inverse of the reflection magic above done here
             throw new NotImplementedException();
@@ -106,7 +106,7 @@ namespace OpenMetaverse.Packets
         /// packet name for a Packet to be successfully built</param>
         /// <param name="body">LLSD to convert to a Packet</param>
         /// <returns>A Packet on success, otherwise null</returns>
-        public static Packet BuildPacket(string capsEventName, LLSDMap body)
+        public static Packet BuildPacket(string capsEventName, OSDMap body)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
 
@@ -131,13 +131,13 @@ namespace OpenMetaverse.Packets
 
                         if (blockType.IsArray)
                         {
-                            LLSDArray array = (LLSDArray)body[field.Name];
+                            OSDArray array = (OSDArray)body[field.Name];
                             Type elementType = blockType.GetElementType();
                             object[] blockArray = (object[])Array.CreateInstance(elementType, array.Count);
 
                             for (int i = 0; i < array.Count; i++)
                             {
-                                LLSDMap map = (LLSDMap)array[i];
+                                OSDMap map = (OSDMap)array[i];
                                 blockArray[i] = ParseLLSDBlock(map, elementType);
                             }
 
@@ -145,7 +145,7 @@ namespace OpenMetaverse.Packets
                         }
                         else
                         {
-                            LLSDMap map = (LLSDMap)((LLSDArray)body[field.Name])[0];
+                            OSDMap map = (OSDMap)((OSDArray)body[field.Name])[0];
                             field.SetValue(packet, ParseLLSDBlock(map, blockType));
                         }
                     }
@@ -159,7 +159,7 @@ namespace OpenMetaverse.Packets
             return packet;
         }
 
-        private static object ParseLLSDBlock(LLSDMap blockData, Type blockType)
+        private static object ParseLLSDBlock(OSDMap blockData, Type blockType)
         {
             object block = Activator.CreateInstance(blockType);
 
@@ -224,17 +224,17 @@ namespace OpenMetaverse.Packets
                     }
                     else if (fieldType == typeof(Vector3))
                     {
-                        Vector3 vec = ((LLSDArray)blockData[field.Name]).AsVector3();
+                        Vector3 vec = ((OSDArray)blockData[field.Name]).AsVector3();
                         field.SetValue(block, vec);
                     }
                     else if (fieldType == typeof(Vector4))
                     {
-                        Vector4 vec = ((LLSDArray)blockData[field.Name]).AsVector4();
+                        Vector4 vec = ((OSDArray)blockData[field.Name]).AsVector4();
                         field.SetValue(block, vec);
                     }
                     else if (fieldType == typeof(Quaternion))
                     {
-                        Quaternion quat = ((LLSDArray)blockData[field.Name]).AsQuaternion();
+                        Quaternion quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
                         field.SetValue(block, quat);
                     }
                 }
@@ -245,10 +245,10 @@ namespace OpenMetaverse.Packets
             {
                 if (blockData.ContainsKey(property.Name))
                 {
-                    LLSDType proptype = blockData[property.Name].Type;
+                    OSDType proptype = blockData[property.Name].Type;
                     MethodInfo set = property.GetSetMethod();
 
-                    if (proptype.Equals(LLSDType.Binary))
+                    if (proptype.Equals(OSDType.Binary))
                     {
                         set.Invoke(block, new object[] { blockData[property.Name].AsBinary() });
                     }
@@ -260,22 +260,22 @@ namespace OpenMetaverse.Packets
             return block;
         }
 
-        private static LLSD BuildLLSDBlock(object block)
+        private static OSD BuildLLSDBlock(object block)
         {
-            LLSDMap map = new LLSDMap();
+            OSDMap map = new OSDMap();
             Type blockType = block.GetType();
 
             foreach (FieldInfo field in blockType.GetFields())
             {
                 if (field.IsPublic)
-                    map[field.Name] = LLSD.FromObject(field.GetValue(block));
+                    map[field.Name] = OSD.FromObject(field.GetValue(block));
             }
 
             foreach (PropertyInfo property in blockType.GetProperties())
             {
                 if (property.Name != "Length")
                 {
-                    map[property.Name] = LLSD.FromObject(property.GetValue(block, null));
+                    map[property.Name] = OSD.FromObject(property.GetValue(block, null));
                 }
             }
 

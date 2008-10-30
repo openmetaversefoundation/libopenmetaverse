@@ -1732,12 +1732,12 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap query = new LLSDMap();
-                query.Add("folder_id", LLSD.FromUUID(folderID));
-                query.Add("asset_type", LLSD.FromString(AssetTypeToString(assetType)));
-                query.Add("inventory_type", LLSD.FromString(InventoryTypeToString(invType)));
-                query.Add("name", LLSD.FromString(name));
-                query.Add("description", LLSD.FromString(description));
+                OSDMap query = new OSDMap();
+                query.Add("folder_id", OSD.FromUUID(folderID));
+                query.Add("asset_type", OSD.FromString(AssetTypeToString(assetType)));
+                query.Add("inventory_type", OSD.FromString(InventoryTypeToString(invType)));
+                query.Add("name", OSD.FromString(name));
+                query.Add("description", OSD.FromString(description));
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
@@ -1939,10 +1939,10 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap query = new LLSDMap();
-                query.Add("item_id", LLSD.FromUUID(notecardID));
+                OSDMap query = new OSDMap();
+                query.Add("item_id", OSD.FromUUID(notecardID));
 
-                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(query);
+                byte[] postData = StructuredData.LLSDParser.SerializeLLSDXmlBytes(query);
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
@@ -2884,7 +2884,7 @@ namespace OpenMetaverse
 
         #region Callbacks
 
-        private void CreateItemFromAssetResponse(CapsClient client, LLSD result, Exception error)
+        private void CreateItemFromAssetResponse(CapsClient client, OSD result, Exception error)
         {
             object[] args = (object[])client.UserData;
             CapsClient.ProgressCallback progCallback = (CapsClient.ProgressCallback)args[0];
@@ -2898,7 +2898,7 @@ namespace OpenMetaverse
                 return;
             }
 
-            LLSDMap contents = (LLSDMap)result;
+            OSDMap contents = (OSDMap)result;
 
             string status = contents["state"].AsString().ToLower();
 
@@ -3490,9 +3490,9 @@ namespace OpenMetaverse
             }
         }
 
-        private void UploadNotecardAssetResponse(CapsClient client, LLSD result, Exception error)
+        private void UploadNotecardAssetResponse(CapsClient client, OSD result, Exception error)
         {
-            LLSDMap contents = (LLSDMap)result;
+            OSDMap contents = (OSDMap)result;
             KeyValuePair<NotecardUploadedAssetCallback, byte[]> kvp = (KeyValuePair<NotecardUploadedAssetCallback, byte[]>)(((object[])client.UserData)[0]);
             NotecardUploadedAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;

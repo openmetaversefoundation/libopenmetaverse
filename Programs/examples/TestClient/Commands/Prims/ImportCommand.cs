@@ -63,7 +63,7 @@ namespace OpenMetaverse.TestClient
             try { xml = File.ReadAllText(filename); }
             catch (Exception e) { return e.Message; }
 
-            try { prims = Helpers.LLSDToPrimList(LLSDParser.DeserializeXml(xml)); }
+            try { prims = Helpers.OSDToPrimList(LLSDParser.DeserializeLLSDXml(xml)); }
             catch (Exception e) { return "Failed to deserialize " + filename + ": " + e.Message; }
 
             // Build an organized structure from the imported prims

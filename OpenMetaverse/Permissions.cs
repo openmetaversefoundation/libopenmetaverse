@@ -90,21 +90,21 @@ namespace OpenMetaverse
             OwnerMask = (PermissionMask)ownerMask;
         }
 
-        public LLSD GetLLSD()
+        public OSD GetOSD()
         {
-            LLSDMap permissions = new LLSDMap(5);
-            permissions["BaseMask"] = LLSD.FromUInteger((uint)BaseMask);
-            permissions["EveryoneMask"] = LLSD.FromUInteger((uint)EveryoneMask);
-            permissions["GroupMask"] = LLSD.FromUInteger((uint)GroupMask);
-            permissions["NextOwnerMask"] = LLSD.FromUInteger((uint)NextOwnerMask);
-            permissions["OwnerMask"] = LLSD.FromUInteger((uint)OwnerMask);
+            OSDMap permissions = new OSDMap(5);
+            permissions["BaseMask"] = OSD.FromUInteger((uint)BaseMask);
+            permissions["EveryoneMask"] = OSD.FromUInteger((uint)EveryoneMask);
+            permissions["GroupMask"] = OSD.FromUInteger((uint)GroupMask);
+            permissions["NextOwnerMask"] = OSD.FromUInteger((uint)NextOwnerMask);
+            permissions["OwnerMask"] = OSD.FromUInteger((uint)OwnerMask);
             return permissions;
         }
 
-        public static Permissions FromLLSD(LLSD llsd)
+        public static Permissions FromOSD(OSD llsd)
         {
             Permissions permissions = new Permissions();
-            LLSDMap map = (LLSDMap)llsd;
+            OSDMap map = (OSDMap)llsd;
 
             byte[] bytes = map["BaseMask"].AsBinary();
             permissions.BaseMask = (PermissionMask)Utils.BytesToUInt(bytes);

@@ -268,14 +268,14 @@ namespace PrimWorkshop
                     return;
                 }
 
-                LLSD llsd = null;
+                OSD osd = null;
 
-                try { llsd = LLSDParser.DeserializeXml(File.ReadAllText(primsFile)); }
+                try { osd = LLSDParser.DeserializeLLSDXml(File.ReadAllText(primsFile)); }
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
 
-                if (llsd != null && llsd.Type == LLSDType.Map)
+                if (osd != null && osd.Type == OSDType.Map)
                 {
-                    List<Primitive> primList = Helpers.LLSDToPrimList(llsd);
+                    List<Primitive> primList = Helpers.OSDToPrimList(osd);
                     Prims = new List<FacetedMesh>(primList.Count);
 
                     for (int i = 0; i < primList.Count; i++)

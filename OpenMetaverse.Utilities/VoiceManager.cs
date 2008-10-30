@@ -331,7 +331,7 @@ namespace OpenMetaverse.Utilities
                     if (url != null)
                     {
                         CapsClient request = new CapsClient(url);
-                        LLSDMap body = new LLSDMap();
+                        OSDMap body = new OSDMap();
                         request.OnComplete += new CapsClient.CompleteCallback(callback);
                         request.StartRequest(body);
 
@@ -523,9 +523,9 @@ namespace OpenMetaverse.Utilities
 
         #region Callbacks
 
-        private void RequiredVoiceVersionEventHandler(string message, LLSD llsd, Simulator simulator)
+        private void RequiredVoiceVersionEventHandler(string message, OSD osd, Simulator simulator)
         {
-            LLSDMap body = (LLSDMap)llsd;
+            OSDMap body = (OSDMap)osd;
 
             if (body.ContainsKey("major_version"))
             {
@@ -544,11 +544,11 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        private void ProvisionCapsResponse(CapsClient client, LLSD response, Exception error)
+        private void ProvisionCapsResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                OSDMap respTable = (OSDMap)response;
 
                 if (OnProvisionAccount != null)
                 {
@@ -558,18 +558,19 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        private void ParcelVoiceInfoResponse(CapsClient client, LLSD response, Exception error)
+        private void ParcelVoiceInfoResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                OSDMap respTable = (OSDMap)response;
 
                 string regionName = respTable["region_name"].AsString();
                 int localID = (int)respTable["parcel_local_id"].AsInteger();
 
                 string channelURI = null;
-                if (respTable["voice_credentials"] is LLSDMap) {
-                    LLSDMap creds = (LLSDMap)respTable["voice_credentials"];
+                if (respTable["voice_credentials"] is OSDMap)
+                {
+                    OSDMap creds = (OSDMap)respTable["voice_credentials"];
                     channelURI = creds["channel_uri"].AsString();
                 }
                 

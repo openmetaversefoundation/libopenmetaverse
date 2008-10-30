@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public enum LLSDType
+    public enum OSDType
     {
         /// <summary></summary>
         Unknown,
@@ -64,17 +64,17 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDException : Exception
+    public class OSDException : Exception
     {
-        public LLSDException(string message) : base(message) { }
+        public OSDException(string message) : base(message) { }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public partial class LLSD
+    public partial class OSD
     {
-        public virtual LLSDType Type { get { return LLSDType.Unknown; } }
+        public virtual OSDType Type { get { return OSDType.Unknown; } }
 
         public virtual bool AsBoolean() { return false; }
         public virtual int AsInteger() { return 0; }
@@ -87,113 +87,113 @@ namespace OpenMetaverse.StructuredData
 
         public override string ToString() { return "undef"; }
 
-        public static LLSD FromBoolean(bool value) { return new LLSDBoolean(value); }
-        public static LLSD FromInteger(int value) { return new LLSDInteger(value); }
-        public static LLSD FromInteger(uint value) { return new LLSDInteger((int)value); }
-        public static LLSD FromInteger(short value) { return new LLSDInteger((int)value); }
-        public static LLSD FromInteger(ushort value) { return new LLSDInteger((int)value); }
-        public static LLSD FromInteger(sbyte value) { return new LLSDInteger((int)value); }
-        public static LLSD FromInteger(byte value) { return new LLSDInteger((int)value); }
-        public static LLSD FromUInteger(uint value) { return new LLSDBinary(value); }
-        public static LLSD FromReal(double value) { return new LLSDReal(value); }
-        public static LLSD FromReal(float value) { return new LLSDReal((double)value); }
-        public static LLSD FromString(string value) { return new LLSDString(value); }
-        public static LLSD FromUUID(UUID value) { return new LLSDUUID(value); }
-        public static LLSD FromDate(DateTime value) { return new LLSDDate(value); }
-        public static LLSD FromUri(Uri value) { return new LLSDURI(value); }
-        public static LLSD FromBinary(byte[] value) { return new LLSDBinary(value); }
-        public static LLSD FromBinary(long value) { return new LLSDBinary(value); }
-        public static LLSD FromBinary(ulong value) { return new LLSDBinary(value); }
+        public static OSD FromBoolean(bool value) { return new OSDBoolean(value); }
+        public static OSD FromInteger(int value) { return new OSDInteger(value); }
+        public static OSD FromInteger(uint value) { return new OSDInteger((int)value); }
+        public static OSD FromInteger(short value) { return new OSDInteger((int)value); }
+        public static OSD FromInteger(ushort value) { return new OSDInteger((int)value); }
+        public static OSD FromInteger(sbyte value) { return new OSDInteger((int)value); }
+        public static OSD FromInteger(byte value) { return new OSDInteger((int)value); }
+        public static OSD FromUInteger(uint value) { return new OSDBinary(value); }
+        public static OSD FromReal(double value) { return new OSDReal(value); }
+        public static OSD FromReal(float value) { return new OSDReal((double)value); }
+        public static OSD FromString(string value) { return new OSDString(value); }
+        public static OSD FromUUID(UUID value) { return new OSDUUID(value); }
+        public static OSD FromDate(DateTime value) { return new OSDDate(value); }
+        public static OSD FromUri(Uri value) { return new OSDURI(value); }
+        public static OSD FromBinary(byte[] value) { return new OSDBinary(value); }
+        public static OSD FromBinary(long value) { return new OSDBinary(value); }
+        public static OSD FromBinary(ulong value) { return new OSDBinary(value); }
 
-        public static LLSD FromVector2(Vector2 value)
+        public static OSD FromVector2(Vector2 value)
         {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(value.X));
-            array.Add(LLSD.FromReal(value.Y));
+            OSDArray array = new OSDArray();
+            array.Add(OSD.FromReal(value.X));
+            array.Add(OSD.FromReal(value.Y));
             return array;
         }
 
-        public static LLSD FromVector3(Vector3 value)
+        public static OSD FromVector3(Vector3 value)
         {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(value.X));
-            array.Add(LLSD.FromReal(value.Y));
-            array.Add(LLSD.FromReal(value.Z));
+            OSDArray array = new OSDArray();
+            array.Add(OSD.FromReal(value.X));
+            array.Add(OSD.FromReal(value.Y));
+            array.Add(OSD.FromReal(value.Z));
             return array;
         }
 
-        public static LLSD FromVector3d(Vector3d value)
+        public static OSD FromVector3d(Vector3d value)
         {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(value.X));
-            array.Add(LLSD.FromReal(value.Y));
-            array.Add(LLSD.FromReal(value.Z));
+            OSDArray array = new OSDArray();
+            array.Add(OSD.FromReal(value.X));
+            array.Add(OSD.FromReal(value.Y));
+            array.Add(OSD.FromReal(value.Z));
             return array;
         }
 
-        public static LLSD FromVector4(Vector4 value)
+        public static OSD FromVector4(Vector4 value)
         {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(value.X));
-            array.Add(LLSD.FromReal(value.Y));
-            array.Add(LLSD.FromReal(value.Z));
-            array.Add(LLSD.FromReal(value.W));
+            OSDArray array = new OSDArray();
+            array.Add(OSD.FromReal(value.X));
+            array.Add(OSD.FromReal(value.Y));
+            array.Add(OSD.FromReal(value.Z));
+            array.Add(OSD.FromReal(value.W));
             return array;
         }
 
-        public static LLSD FromQuaternion(Quaternion value)
+        public static OSD FromQuaternion(Quaternion value)
         {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(value.X));
-            array.Add(LLSD.FromReal(value.Y));
-            array.Add(LLSD.FromReal(value.Z));
-            array.Add(LLSD.FromReal(value.W));
+            OSDArray array = new OSDArray();
+            array.Add(OSD.FromReal(value.X));
+            array.Add(OSD.FromReal(value.Y));
+            array.Add(OSD.FromReal(value.Z));
+            array.Add(OSD.FromReal(value.W));
             return array;
         }
 
-        public static LLSD FromColor4(Color4 value)
+        public static OSD FromColor4(Color4 value)
         {
-            LLSDArray array = new LLSDArray();
-            array.Add(LLSD.FromReal(value.R));
-            array.Add(LLSD.FromReal(value.G));
-            array.Add(LLSD.FromReal(value.B));
-            array.Add(LLSD.FromReal(value.A));
+            OSDArray array = new OSDArray();
+            array.Add(OSD.FromReal(value.R));
+            array.Add(OSD.FromReal(value.G));
+            array.Add(OSD.FromReal(value.B));
+            array.Add(OSD.FromReal(value.A));
             return array;
         }
 
-        public static LLSD FromObject(object value)
+        public static OSD FromObject(object value)
         {
-            if (value == null) { return new LLSD(); }
-            else if (value is bool) { return new LLSDBoolean((bool)value); }
-            else if (value is int) { return new LLSDInteger((int)value); }
-            else if (value is uint) { return new LLSDBinary((uint)value); }
-            else if (value is short) { return new LLSDInteger((int)(short)value); }
-            else if (value is ushort) { return new LLSDInteger((int)(ushort)value); }
-            else if (value is sbyte) { return new LLSDInteger((int)(sbyte)value); }
-            else if (value is byte) { return new LLSDInteger((int)(byte)value); }
-            else if (value is double) { return new LLSDReal((double)value); }
-            else if (value is float) { return new LLSDReal((double)(float)value); }
-            else if (value is string) { return new LLSDString((string)value); }
-            else if (value is UUID) { return new LLSDUUID((UUID)value); }
-            else if (value is DateTime) { return new LLSDDate((DateTime)value); }
-            else if (value is Uri) { return new LLSDURI((Uri)value); }
-            else if (value is byte[]) { return new LLSDBinary((byte[])value); }
-            else if (value is long) { return new LLSDBinary((long)value); }
-            else if (value is ulong) { return new LLSDBinary((ulong)value); }
+            if (value == null) { return new OSD(); }
+            else if (value is bool) { return new OSDBoolean((bool)value); }
+            else if (value is int) { return new OSDInteger((int)value); }
+            else if (value is uint) { return new OSDBinary((uint)value); }
+            else if (value is short) { return new OSDInteger((int)(short)value); }
+            else if (value is ushort) { return new OSDInteger((int)(ushort)value); }
+            else if (value is sbyte) { return new OSDInteger((int)(sbyte)value); }
+            else if (value is byte) { return new OSDInteger((int)(byte)value); }
+            else if (value is double) { return new OSDReal((double)value); }
+            else if (value is float) { return new OSDReal((double)(float)value); }
+            else if (value is string) { return new OSDString((string)value); }
+            else if (value is UUID) { return new OSDUUID((UUID)value); }
+            else if (value is DateTime) { return new OSDDate((DateTime)value); }
+            else if (value is Uri) { return new OSDURI((Uri)value); }
+            else if (value is byte[]) { return new OSDBinary((byte[])value); }
+            else if (value is long) { return new OSDBinary((long)value); }
+            else if (value is ulong) { return new OSDBinary((ulong)value); }
             else if (value is Vector2) { return FromVector2((Vector2)value); }
             else if (value is Vector3) { return FromVector3((Vector3)value); }
             else if (value is Vector3d) { return FromVector3d((Vector3d)value); }
             else if (value is Vector4) { return FromVector4((Vector4)value); }
             else if (value is Quaternion) { return FromQuaternion((Quaternion)value); }
             else if (value is Color4) { return FromColor4((Color4)value); }
-            else return new LLSD();
+            else return new OSD();
         }
 
-        public static object ToObject(Type type, LLSD value)
+        public static object ToObject(Type type, OSD value)
         {
             if (type == typeof(ulong))
             {
-                if (value.Type == LLSDType.Binary)
+                if (value.Type == OSDType.Binary)
                 {
                     byte[] bytes = value.AsBinary();
                     return Utils.BytesToUInt64(bytes);
@@ -205,7 +205,7 @@ namespace OpenMetaverse.StructuredData
             }
             else if (type == typeof(uint))
             {
-                if (value.Type == LLSDType.Binary)
+                if (value.Type == OSDType.Binary)
                 {
                     byte[] bytes = value.AsBinary();
                     return Utils.BytesToUInt(bytes);
@@ -253,22 +253,22 @@ namespace OpenMetaverse.StructuredData
             }
             else if (type == typeof(Vector3))
             {
-                if (value.Type == LLSDType.Array)
-                    return ((LLSDArray)value).AsVector3();
+                if (value.Type == OSDType.Array)
+                    return ((OSDArray)value).AsVector3();
                 else
                     return Vector3.Zero;
             }
             else if (type == typeof(Vector4))
             {
-                if (value.Type == LLSDType.Array)
-                    return ((LLSDArray)value).AsVector4();
+                if (value.Type == OSDType.Array)
+                    return ((OSDArray)value).AsVector4();
                 else
                     return Vector4.Zero;
             }
             else if (type == typeof(Quaternion))
             {
-                if (value.Type == LLSDType.Array)
-                    return ((LLSDArray)value).AsQuaternion();
+                if (value.Type == OSDType.Array)
+                    return ((OSDArray)value).AsQuaternion();
                 else
                     return Quaternion.Identity;
             }
@@ -279,27 +279,27 @@ namespace OpenMetaverse.StructuredData
         }
 
         /// <summary>
-        /// Uses reflection to create an LLSDMap from all of the LLSD
+        /// Uses reflection to create an SDMap from all of the SD
         /// serializable types in an object
         /// </summary>
         /// <param name="obj">Class or struct containing serializable types</param>
-        /// <returns>An LLSDMap holding the serialized values from the
+        /// <returns>An SDMap holding the serialized values from the
         /// container object</returns>
-        public static LLSDMap SerializeMembers(object obj)
+        public static OSDMap SerializeMembers(object obj)
         {
             Type t = obj.GetType();
             FieldInfo[] fields = t.GetFields();
 
-            LLSDMap map = new LLSDMap(fields.Length);
+            OSDMap map = new OSDMap(fields.Length);
 
             for (int i = 0; i < fields.Length; i++)
             {
                 FieldInfo field = fields[i];
                 if (!Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
                 {
-                    LLSD serializedField = LLSD.FromObject(field.GetValue(obj));
+                    OSD serializedField = OSD.FromObject(field.GetValue(obj));
 
-                    if (serializedField.Type != LLSDType.Unknown || field.FieldType == typeof(string) || field.FieldType == typeof(byte[]))
+                    if (serializedField.Type != OSDType.Unknown || field.FieldType == typeof(string) || field.FieldType == typeof(byte[]))
                         map.Add(field.Name, serializedField);
                 }
             }
@@ -309,13 +309,13 @@ namespace OpenMetaverse.StructuredData
 
         /// <summary>
         /// Uses reflection to deserialize member variables in an object from
-        /// an LLSDMap
+        /// an SDMap
         /// </summary>
         /// <param name="obj">Reference to an object to fill with deserialized
         /// values</param>
         /// <param name="serialized">Serialized values to put in the target
         /// object</param>
-        public static void DeserializeMembers(ref object obj, LLSDMap serialized)
+        public static void DeserializeMembers(ref object obj, OSDMap serialized)
         {
             Type t = obj.GetType();
             FieldInfo[] fields = t.GetFields();
@@ -325,7 +325,7 @@ namespace OpenMetaverse.StructuredData
                 FieldInfo field = fields[i];
                 if (!Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
                 {
-                    LLSD serializedField;
+                    OSD serializedField;
                     if (serialized.TryGetValue(field.Name, out serializedField))
                         field.SetValue(obj, ToObject(field.FieldType, serializedField));
                 }
@@ -336,16 +336,16 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDBoolean : LLSD
+    public class OSDBoolean : OSD
     {
         private bool value;
 
         private static byte[] trueBinary = { 0x31 };
         private static byte[] falseBinary = { 0x30 };
 
-        public override LLSDType Type { get { return LLSDType.Boolean; } }
+        public override OSDType Type { get { return OSDType.Boolean; } }
 
-        public LLSDBoolean(bool value)
+        public OSDBoolean(bool value)
         {
             this.value = value;
         }
@@ -362,13 +362,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDInteger : LLSD
+    public class OSDInteger : OSD
     {
         private int value;
 
-        public override LLSDType Type { get { return LLSDType.Integer; } }
+        public override OSDType Type { get { return OSDType.Integer; } }
 
-        public LLSDInteger(int value)
+        public OSDInteger(int value)
         {
             this.value = value;
         }
@@ -385,13 +385,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDReal : LLSD
+    public class OSDReal : OSD
     {
         private double value;
 
-        public override LLSDType Type { get { return LLSDType.Real; } }
+        public override OSDType Type { get { return OSDType.Real; } }
 
-        public LLSDReal(double value)
+        public OSDReal(double value)
         {
             this.value = value;
         }
@@ -416,13 +416,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDString : LLSD
+    public class OSDString : OSD
     {
         private string value;
 
-        public override LLSDType Type { get { return LLSDType.String; } }
+        public override OSDType Type { get { return OSDType.String; } }
 
-        public LLSDString(string value)
+        public OSDString(string value)
         {
             // Refuse to hold null pointers
             if (value != null)
@@ -484,13 +484,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDUUID : LLSD
+    public class OSDUUID : OSD
     {
         private UUID value;
 
-        public override LLSDType Type { get { return LLSDType.UUID; } }
+        public override OSDType Type { get { return OSDType.UUID; } }
 
-        public LLSDUUID(UUID value)
+        public OSDUUID(UUID value)
         {
             this.value = value;
         }
@@ -505,13 +505,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDDate : LLSD
+    public class OSDDate : OSD
     {
         private DateTime value;
 
-        public override LLSDType Type { get { return LLSDType.Date; } }
+        public override OSDType Type { get { return OSDType.Date; } }
 
-        public LLSDDate(DateTime value)
+        public OSDDate(DateTime value)
         {
             this.value = value;
         }
@@ -539,13 +539,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDURI : LLSD
+    public class OSDURI : OSD
     {
         private Uri value;
 
-        public override LLSDType Type { get { return LLSDType.URI; } }
+        public override OSDType Type { get { return OSDType.URI; } }
 
-        public LLSDURI(Uri value)
+        public OSDURI(Uri value)
         {
             this.value = value;
         }
@@ -559,13 +559,13 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDBinary : LLSD
+    public class OSDBinary : OSD
     {
         private byte[] value;
 
-        public override LLSDType Type { get { return LLSDType.Binary; } }
+        public override OSDType Type { get { return OSDType.Binary; } }
 
-        public LLSDBinary(byte[] value)
+        public OSDBinary(byte[] value)
         {
             if (value != null)
                 this.value = value;
@@ -573,17 +573,17 @@ namespace OpenMetaverse.StructuredData
                 this.value = new byte[0];
         }
 
-        public LLSDBinary(uint value)
+        public OSDBinary(uint value)
         {
             this.value = Utils.UIntToBytes(value);
         }
 
-        public LLSDBinary(long value)
+        public OSDBinary(long value)
         {
             this.value = Utils.Int64ToBytes(value);
         }
 
-        public LLSDBinary(ulong value)
+        public OSDBinary(ulong value)
         {
             this.value = Utils.UInt64ToBytes(value);
         }
@@ -600,35 +600,35 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDMap : LLSD, IDictionary<string, LLSD>
+    public class OSDMap : OSD, IDictionary<string, OSD>
     {
-        private Dictionary<string, LLSD> value;
+        private Dictionary<string, OSD> value;
 
-        public override LLSDType Type { get { return LLSDType.Map; } }
+        public override OSDType Type { get { return OSDType.Map; } }
 
-        public LLSDMap()
+        public OSDMap()
         {
-            value = new Dictionary<string, LLSD>();
+            value = new Dictionary<string, OSD>();
         }
 
-        public LLSDMap(int capacity)
+        public OSDMap(int capacity)
         {
-            value = new Dictionary<string, LLSD>(capacity);
+            value = new Dictionary<string, OSD>(capacity);
         }
 
-        public LLSDMap(Dictionary<string, LLSD> value)
+        public OSDMap(Dictionary<string, OSD> value)
         {
             if (value != null)
                 this.value = value;
             else
-                this.value = new Dictionary<string, LLSD>();
+                this.value = new Dictionary<string, OSD>();
         }
 
         public override bool AsBoolean() { return value.Count > 0; }
 
         public override string ToString()
         {
-            return LLSDParser.SerializeNotationFormatted(this);
+            return LLSDParser.SerializeLLSDNotationFormatted(this);
         }
 
         #region IDictionary Implementation
@@ -636,16 +636,16 @@ namespace OpenMetaverse.StructuredData
         public int Count { get { return value.Count; } }
         public bool IsReadOnly { get { return false; } }
         public ICollection<string> Keys { get { return value.Keys; } }
-        public ICollection<LLSD> Values { get { return value.Values; } }
-        public LLSD this[string key]
+        public ICollection<OSD> Values { get { return value.Values; } }
+        public OSD this[string key]
         {
             get
             {
-                LLSD llsd;
+                OSD llsd;
                 if (this.value.TryGetValue(key, out llsd))
                     return llsd;
                 else
-                    return new LLSD();
+                    return new OSD();
             }
             set { this.value[key] = value; }
         }
@@ -655,12 +655,12 @@ namespace OpenMetaverse.StructuredData
             return value.ContainsKey(key);
         }
 
-        public void Add(string key, LLSD llsd)
+        public void Add(string key, OSD llsd)
         {
             value.Add(key, llsd);
         }
 
-        public void Add(KeyValuePair<string, LLSD> kvp)
+        public void Add(KeyValuePair<string, OSD> kvp)
         {
             value.Add(kvp.Key, kvp.Value);
         }
@@ -670,7 +670,7 @@ namespace OpenMetaverse.StructuredData
             return value.Remove(key);
         }
 
-        public bool TryGetValue(string key, out LLSD llsd)
+        public bool TryGetValue(string key, out OSD llsd)
         {
             return value.TryGetValue(key, out llsd);
         }
@@ -680,19 +680,19 @@ namespace OpenMetaverse.StructuredData
             value.Clear();
         }
 
-        public bool Contains(KeyValuePair<string, LLSD> kvp)
+        public bool Contains(KeyValuePair<string, OSD> kvp)
         {
             // This is a bizarre function... we don't really implement it
             // properly, hopefully no one wants to use it
             return value.ContainsKey(kvp.Key);
         }
 
-        public void CopyTo(KeyValuePair<string, LLSD>[] array, int index)
+        public void CopyTo(KeyValuePair<string, OSD>[] array, int index)
         {
             throw new NotImplementedException();
         }
 
-        public bool Remove(KeyValuePair<string, LLSD> kvp)
+        public bool Remove(KeyValuePair<string, OSD> kvp)
         {
             return this.value.Remove(kvp.Key);
         }
@@ -702,7 +702,7 @@ namespace OpenMetaverse.StructuredData
             return value.GetEnumerator();
         }
 
-        IEnumerator<KeyValuePair<string, LLSD>> IEnumerable<KeyValuePair<string, LLSD>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, OSD>> IEnumerable<KeyValuePair<string, OSD>>.GetEnumerator()
         {
             return null;
         }
@@ -718,28 +718,28 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class LLSDArray : LLSD, IList<LLSD>
+    public class OSDArray : OSD, IList<OSD>
     {
-        private List<LLSD> value;
+        private List<OSD> value;
 
-        public override LLSDType Type { get { return LLSDType.Array; } }
+        public override OSDType Type { get { return OSDType.Array; } }
 
-        public LLSDArray()
+        public OSDArray()
         {
-            value = new List<LLSD>();
+            value = new List<OSD>();
         }
 
-        public LLSDArray(int capacity)
+        public OSDArray(int capacity)
         {
-            value = new List<LLSD>(capacity);
+            value = new List<OSD>(capacity);
         }
 
-        public LLSDArray(List<LLSD> value)
+        public OSDArray(List<OSD> value)
         {
             if (value != null)
                 this.value = value;
             else
-                this.value = new List<LLSD>();
+                this.value = new List<OSD>();
         }
 
         public Vector2 AsVector2()
@@ -832,25 +832,25 @@ namespace OpenMetaverse.StructuredData
 
         public override string ToString()
         {
-            return LLSDParser.SerializeNotationFormatted(this);
+            return LLSDParser.SerializeLLSDNotationFormatted(this);
         }
 
         #region IList Implementation
 
         public int Count { get { return value.Count; } }
         public bool IsReadOnly { get { return false; } }
-        public LLSD this[int index]
+        public OSD this[int index]
         {
             get { return value[index]; }
             set { this.value[index] = value; }
         }
 
-        public int IndexOf(LLSD llsd)
+        public int IndexOf(OSD llsd)
         {
             return value.IndexOf(llsd);
         }
 
-        public void Insert(int index, LLSD llsd)
+        public void Insert(int index, OSD llsd)
         {
             value.Insert(index, llsd);
         }
@@ -860,7 +860,7 @@ namespace OpenMetaverse.StructuredData
             value.RemoveAt(index);
         }
 
-        public void Add(LLSD llsd)
+        public void Add(OSD llsd)
         {
             value.Add(llsd);
         }
@@ -868,7 +868,7 @@ namespace OpenMetaverse.StructuredData
         public void Add(string str)
         {
             // This is so common that we throw a little helper in here
-            value.Add(LLSD.FromString(str));
+            value.Add(OSD.FromString(str));
         }
 
         public void Clear()
@@ -876,7 +876,7 @@ namespace OpenMetaverse.StructuredData
             value.Clear();
         }
 
-        public bool Contains(LLSD llsd)
+        public bool Contains(OSD llsd)
         {
             return value.Contains(llsd);
         }
@@ -885,19 +885,19 @@ namespace OpenMetaverse.StructuredData
         {
             for (int i = 0; i < value.Count; i++)
             {
-                if (value[i].Type == LLSDType.String && value[i].AsString() == element)
+                if (value[i].Type == OSDType.String && value[i].AsString() == element)
                     return true;
             }
 
             return false;
         }
 
-        public void CopyTo(LLSD[] array, int index)
+        public void CopyTo(OSD[] array, int index)
         {
             throw new NotImplementedException();
         }
 
-        public bool Remove(LLSD llsd)
+        public bool Remove(OSD llsd)
         {
             return value.Remove(llsd);
         }
@@ -907,7 +907,7 @@ namespace OpenMetaverse.StructuredData
             return value.GetEnumerator();
         }
 
-        IEnumerator<LLSD> IEnumerable<LLSD>.GetEnumerator()
+        IEnumerator<OSD> IEnumerable<OSD>.GetEnumerator()
         {
             return value.GetEnumerator();
         }

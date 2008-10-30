@@ -47,7 +47,7 @@ namespace OpenMetaverse
         /// <param name="message">Event name</param>
         /// <param name="body">Decoded event data</param>
         /// <param name="simulator">The simulator that generated the event</param>
-        public delegate void EventQueueCallback(string message, StructuredData.LLSD body, Simulator simulator);
+        public delegate void EventQueueCallback(string message, StructuredData.OSD body, Simulator simulator);
 
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
@@ -122,7 +122,7 @@ namespace OpenMetaverse
                 return;
 
             // Create a request list
-            LLSDArray req = new LLSDArray();
+            OSDArray req = new OSDArray();
             req.Add("ChatSessionRequest");
             req.Add("CopyInventoryFromNotecard");
             req.Add("DispatchRegionInfo");
@@ -160,11 +160,11 @@ namespace OpenMetaverse
             _SeedRequest.StartRequest(req);
         }
 
-        private void SeedRequestCompleteHandler(CapsClient client, LLSD result, Exception error)
+        private void SeedRequestCompleteHandler(CapsClient client, OSD result, Exception error)
         {
-            if (result != null && result.Type == LLSDType.Map)
+            if (result != null && result.Type == OSDType.Map)
             {
-                LLSDMap respTable = (LLSDMap)result;
+                OSDMap respTable = (OSDMap)result;
 
                 foreach (string cap in respTable.Keys)
                 {
@@ -193,7 +193,7 @@ namespace OpenMetaverse
             Simulator.Client.Network.RaiseConnectedEvent(Simulator);
         }
 
-        private void EventQueueEventHandler(string eventName, LLSDMap body)
+        private void EventQueueEventHandler(string eventName, OSDMap body)
         {
             if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
                 Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, body, Simulator);

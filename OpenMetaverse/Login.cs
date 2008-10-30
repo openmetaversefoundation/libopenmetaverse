@@ -129,7 +129,7 @@ namespace OpenMetaverse
         public InventoryFolder[] LibrarySkeleton;
         public UUID LibraryOwner;
 
-        public void Parse(LLSDMap reply)
+        public void Parse(OSDMap reply)
         {
             try
             {
@@ -142,23 +142,23 @@ namespace OpenMetaverse
                 AgentAccess = ParseString("agent_access", reply);
                 LookAt = ParseVector3("look_at", reply); 
             }
-            catch (LLSDException e)
+            catch (OSDException e)
             {
                 Logger.DebugLog("Login server returned (some) invalid data: " + e.Message);
             }
 
             // Home
-            LLSDMap home = null;
-            LLSD llsdHome = LLSDParser.DeserializeNotation(reply["home"].AsString());
+            OSDMap home = null;
+            OSD osdHome = LLSDParser.DeserializeLLSDNotation(reply["home"].AsString());
 
-            if (llsdHome.Type == LLSDType.Map)
+            if (osdHome.Type == OSDType.Map)
             {
-                home = (LLSDMap)llsdHome;
+                home = (OSDMap)osdHome;
 
-                LLSD homeRegion;
-                if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == LLSDType.Array)
+                OSD homeRegion;
+                if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
                 {
-                    LLSDArray homeArray = (LLSDArray)homeRegion;
+                    OSDArray homeArray = (OSDArray)homeRegion;
                     if (homeArray.Count == 2)
                         HomeRegion = Utils.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
                     else
@@ -184,17 +184,17 @@ namespace OpenMetaverse
             SeedCapability = ParseString("seed_capability", reply);
 
             // Buddy list
-            LLSD buddyLLSD;
-            if (reply.TryGetValue("buddy-list", out buddyLLSD) && buddyLLSD.Type == LLSDType.Array)
+            OSD buddyLLSD;
+            if (reply.TryGetValue("buddy-list", out buddyLLSD) && buddyLLSD.Type == OSDType.Array)
             {
-                LLSDArray buddyArray = (LLSDArray)buddyLLSD;
+                OSDArray buddyArray = (OSDArray)buddyLLSD;
                 BuddyList = new FriendInfo[buddyArray.Count];
 
                 for (int i = 0; i < buddyArray.Count; i++)
                 {
-                    if (buddyArray[i].Type == LLSDType.Map)
+                    if (buddyArray[i].Type == OSDType.Map)
                     {
-                        LLSDMap buddy = (LLSDMap)buddyArray[i];
+                        OSDMap buddy = (OSDMap)buddyArray[i];
                         BuddyList[i] = new FriendInfo(
                             ParseUUID("buddy_id", buddy),
                             (FriendRights)ParseUInt("buddy_rights_given", buddy),
@@ -362,24 +362,24 @@ namespace OpenMetaverse
                         WriteXmlRpcStringMember(writer, false, "inventory_host", IPAddress.Loopback.ToString());
 
                         // home
-                        LLSDArray homeRegionHandle = new LLSDArray(2);
+                        OSDArray homeRegionHandle = new OSDArray(2);
                         uint homeRegionX, homeRegionY;
                         Utils.LongToUInts(HomeRegion, out homeRegionX, out homeRegionY);
-                        homeRegionHandle.Add(LLSD.FromReal((double)homeRegionX));
-                        homeRegionHandle.Add(LLSD.FromReal((double)homeRegionY));
+                        homeRegionHandle.Add(OSD.FromReal((double)homeRegionX));
+                        homeRegionHandle.Add(OSD.FromReal((double)homeRegionY));
 
-                        LLSDMap home = new LLSDMap(3);
+                        OSDMap home = new OSDMap(3);
                         home["region_handle"] = homeRegionHandle;
-                        home["position"] = LLSD.FromVector3(HomePosition);
-                        home["look_at"] = LLSD.FromVector3(HomeLookAt);
+                        home["position"] = OSD.FromVector3(HomePosition);
+                        home["look_at"] = OSD.FromVector3(HomeLookAt);
 
-                        WriteXmlRpcStringMember(writer, false, "home", LLSDParser.SerializeNotation(home));
+                        WriteXmlRpcStringMember(writer, false, "home", LLSDParser.SerializeLLSDNotation(home));
 
                         // message
                         WriteXmlRpcStringMember(writer, false, "message", Message);
 
                         // look_at
-                        WriteXmlRpcStringMember(writer, false, "look_at", LLSDParser.SerializeNotation(LLSD.FromVector3(LookAt)));
+                        WriteXmlRpcStringMember(writer, false, "look_at", LLSDParser.SerializeLLSDNotation(OSD.FromVector3(LookAt)));
 
                         // login
                         WriteXmlRpcStringMember(writer, false, "login", "true");
@@ -423,45 +423,45 @@ namespace OpenMetaverse
 
         #region Parsing Helpers
 
-        public static uint ParseUInt(string key, LLSDMap reply)
+        public static uint ParseUInt(string key, OSDMap reply)
         {
-            LLSD llsd;
-            if (reply.TryGetValue(key, out llsd))
-                return (uint)llsd.AsInteger();
+            OSD osd;
+            if (reply.TryGetValue(key, out osd))
+                return (uint)osd.AsInteger();
             else
                 return 0;
         }
 
-        public static UUID ParseUUID(string key, LLSDMap reply)
+        public static UUID ParseUUID(string key, OSDMap reply)
         {
-            LLSD llsd;
-            if (reply.TryGetValue(key, out llsd))
-                return llsd.AsUUID();
+            OSD osd;
+            if (reply.TryGetValue(key, out osd))
+                return osd.AsUUID();
             else
                 return UUID.Zero;
         }
 
-        public static string ParseString(string key, LLSDMap reply)
+        public static string ParseString(string key, OSDMap reply)
         {
-            LLSD llsd;
-            if (reply.TryGetValue(key, out llsd))
-                return llsd.AsString();
+            OSD osd;
+            if (reply.TryGetValue(key, out osd))
+                return osd.AsString();
             else
                 return String.Empty;
         }
 
-        public static Vector3 ParseVector3(string key, LLSDMap reply)
+        public static Vector3 ParseVector3(string key, OSDMap reply)
         {
-            LLSD llsd;
-            if (reply.TryGetValue(key, out llsd))
+            OSD osd;
+            if (reply.TryGetValue(key, out osd))
             {
-                if (llsd.Type == LLSDType.Array)
+                if (osd.Type == OSDType.Array)
                 {
-                    return ((LLSDArray)llsd).AsVector3();
+                    return ((OSDArray)osd).AsVector3();
                 }
-                else if (llsd.Type == LLSDType.String)
+                else if (osd.Type == OSDType.String)
                 {
-                    LLSDArray array = (LLSDArray)LLSDParser.DeserializeNotation(llsd.AsString());
+                    OSDArray array = (OSDArray)LLSDParser.DeserializeLLSDNotation(osd.AsString());
                     return array.AsVector3();
                 }
             }
@@ -469,16 +469,16 @@ namespace OpenMetaverse
             return Vector3.Zero;
         }
 
-        public static UUID ParseMappedUUID(string key, string key2, LLSDMap reply)
+        public static UUID ParseMappedUUID(string key, string key2, OSDMap reply)
         {
-            LLSD folderLLSD;
-            if (reply.TryGetValue(key, out folderLLSD) && folderLLSD.Type == LLSDType.Array)
+            OSD folderOSD;
+            if (reply.TryGetValue(key, out folderOSD) && folderOSD.Type == OSDType.Array)
             {
-                LLSDArray array = (LLSDArray)folderLLSD;
-                if (array.Count == 1 && array[0].Type == LLSDType.Map)
+                OSDArray array = (OSDArray)folderOSD;
+                if (array.Count == 1 && array[0].Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)array[0];
-                    LLSD folder;
+                    OSDMap map = (OSDMap)array[0];
+                    OSD folder;
                     if (map.TryGetValue(key2, out folder))
                         return folder.AsUUID();
                 }
@@ -487,20 +487,20 @@ namespace OpenMetaverse
             return UUID.Zero;
         }
 
-        public static InventoryFolder[] ParseInventoryFolders(string key, UUID owner, LLSDMap reply)
+        public static InventoryFolder[] ParseInventoryFolders(string key, UUID owner, OSDMap reply)
         {
             List<InventoryFolder> folders = new List<InventoryFolder>();
 
-            LLSD skeleton;
-            if (reply.TryGetValue(key, out skeleton) && skeleton.Type == LLSDType.Array)
+            OSD skeleton;
+            if (reply.TryGetValue(key, out skeleton) && skeleton.Type == OSDType.Array)
             {
-                LLSDArray array = (LLSDArray)skeleton;
+                OSDArray array = (OSDArray)skeleton;
 
                 for (int i = 0; i < array.Count; i++)
                 {
-                    if (array[i].Type == LLSDType.Map)
+                    if (array[i].Type == OSDType.Map)
                     {
-                        LLSDMap map = (LLSDMap)array[i];
+                        OSDMap map = (OSDMap)array[i];
                         InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
                         folder.PreferredType = (AssetType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
@@ -925,36 +925,36 @@ namespace OpenMetaverse
             // TODO: At some point, maybe we should check the cert?
 
             // Create the CAPS login structure
-            LLSDMap loginLLSD = new LLSDMap();
-            loginLLSD["first"] = LLSD.FromString(loginParams.FirstName);
-            loginLLSD["last"] = LLSD.FromString(loginParams.LastName);
-            loginLLSD["passwd"] = LLSD.FromString(loginParams.Password);
-            loginLLSD["start"] = LLSD.FromString(loginParams.Start);
-            loginLLSD["channel"] = LLSD.FromString(loginParams.Channel);
-            loginLLSD["version"] = LLSD.FromString(loginParams.Version);
-            loginLLSD["platform"] = LLSD.FromString(loginParams.Platform);
-            loginLLSD["mac"] = LLSD.FromString(loginParams.MAC);
-            loginLLSD["agree_to_tos"] = LLSD.FromBoolean(true);
-            loginLLSD["read_critical"] = LLSD.FromBoolean(true);
-            loginLLSD["viewer_digest"] = LLSD.FromString(loginParams.ViewerDigest);
-            loginLLSD["id0"] = LLSD.FromString(loginParams.id0);
+            OSDMap loginLLSD = new OSDMap();
+            loginLLSD["first"] = OSD.FromString(loginParams.FirstName);
+            loginLLSD["last"] = OSD.FromString(loginParams.LastName);
+            loginLLSD["passwd"] = OSD.FromString(loginParams.Password);
+            loginLLSD["start"] = OSD.FromString(loginParams.Start);
+            loginLLSD["channel"] = OSD.FromString(loginParams.Channel);
+            loginLLSD["version"] = OSD.FromString(loginParams.Version);
+            loginLLSD["platform"] = OSD.FromString(loginParams.Platform);
+            loginLLSD["mac"] = OSD.FromString(loginParams.MAC);
+            loginLLSD["agree_to_tos"] = OSD.FromBoolean(true);
+            loginLLSD["read_critical"] = OSD.FromBoolean(true);
+            loginLLSD["viewer_digest"] = OSD.FromString(loginParams.ViewerDigest);
+            loginLLSD["id0"] = OSD.FromString(loginParams.id0);
 
             // Create the options LLSD array
-            LLSDArray optionsLLSD = new LLSDArray();
+            OSDArray optionsOSD = new OSDArray();
             for (int i = 0; i < loginParams.Options.Count; i++)
-                optionsLLSD.Add(LLSD.FromString(loginParams.Options[i]));
+                optionsOSD.Add(OSD.FromString(loginParams.Options[i]));
             foreach (string[] callbackOpts in CallbackOptions.Values)
             {
                 if (callbackOpts != null)
                 {
                     for (int i = 0; i < callbackOpts.Length; i++)
                     {
-                        if (!optionsLLSD.Contains(callbackOpts[i]))
-                            optionsLLSD.Add(callbackOpts[i]);
+                        if (!optionsOSD.Contains(callbackOpts[i]))
+                            optionsOSD.Add(callbackOpts[i]);
                     }
                 }
             }
-            loginLLSD["options"] = optionsLLSD;
+            loginLLSD["options"] = optionsOSD;
 
             // Make the CAPS POST for login
             Uri loginUri;
@@ -972,7 +972,7 @@ namespace OpenMetaverse
             CapsClient loginRequest = new CapsClient(loginUri);
             loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
             loginRequest.UserData = CurrentContext;
-            loginRequest.StartRequest(LLSDParser.SerializeXmlBytes(loginLLSD), "application/xml+llsd");
+            loginRequest.StartRequest(LLSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
         }
 
         private void UpdateLoginStatus(LoginStatus status, string message)
@@ -997,31 +997,31 @@ namespace OpenMetaverse
             }
         }
 
-        private void LoginReplyHandler(CapsClient client, LLSD result, Exception error)
+        private void LoginReplyHandler(CapsClient client, OSD result, Exception error)
         {
             if (error == null)
             {
-                if (result != null && result.Type == LLSDType.Map)
+                if (result != null && result.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)result;
+                    OSDMap map = (OSDMap)result;
 
-                    LLSD llsd;
+                    OSD osd;
                     string reason, message;
 
-                    if (map.TryGetValue("reason", out llsd))
-                        reason = llsd.AsString();
+                    if (map.TryGetValue("reason", out osd))
+                        reason = osd.AsString();
                     else
                         reason = String.Empty;
 
-                    if (map.TryGetValue("message", out llsd))
-                        message = llsd.AsString();
+                    if (map.TryGetValue("message", out osd))
+                        message = osd.AsString();
                     else
                         message = String.Empty;
 
-                    if (map.TryGetValue("login", out llsd))
+                    if (map.TryGetValue("login", out osd))
                     {
-                        bool loginSuccess = llsd.AsBoolean();
-                        bool redirect = (llsd.AsString() == "indeterminate");
+                        bool loginSuccess = osd.AsBoolean();
+                        bool redirect = (osd.AsString() == "indeterminate");
                         LoginResponseData data = new LoginResponseData();
                         data.Reason = reason;
                         data.Message = message;

@@ -48,9 +48,9 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="xmlData"></param>
         /// <returns></returns>
-        public static LLSD DeserializeXml(byte[] xmlData)
+        public static OSD DeserializeLLSDXml(byte[] xmlData)
         {
-            return DeserializeXml(new XmlTextReader(new MemoryStream(xmlData, false)));
+            return DeserializeLLSDXml(new XmlTextReader(new MemoryStream(xmlData, false)));
         }
 
         /// <summary>
@@ -58,10 +58,10 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="xmlData"></param>
         /// <returns></returns>
-        public static LLSD DeserializeXml(string xmlData)
+        public static OSD DeserializeLLSDXml(string xmlData)
         {
             byte[] bytes = Utils.StringToBytes(xmlData);
-            return DeserializeXml(new XmlTextReader(new MemoryStream(bytes, false)));
+            return DeserializeLLSDXml(new XmlTextReader(new MemoryStream(bytes, false)));
         }
 
         /// <summary>
@@ -69,13 +69,13 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="xmlData"></param>
         /// <returns></returns>
-        public static LLSD DeserializeXml(XmlTextReader xmlData)
+        public static OSD DeserializeLLSDXml(XmlTextReader xmlData)
         {
             xmlData.Read();
             SkipWhitespace(xmlData);
 
             xmlData.Read();
-            LLSD ret = ParseXmlElement(xmlData);
+            OSD ret = ParseLLSDXmlElement(xmlData);
 
             return ret;
         }
@@ -85,9 +85,9 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static byte[] SerializeXmlBytes(LLSD data)
+        public static byte[] SerializeLLSDXmlBytes(OSD data)
         {
-            return Encoding.UTF8.GetBytes(SerializeXmlString(data));
+            return Encoding.UTF8.GetBytes(SerializeLLSDXmlString(data));
         }
 
         /// <summary>
@@ -95,14 +95,14 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static string SerializeXmlString(LLSD data)
+        public static string SerializeLLSDXmlString(OSD data)
         {
             StringWriter sw = new StringWriter();
             XmlTextWriter writer = new XmlTextWriter(sw);
             writer.Formatting = Formatting.None;
 
             writer.WriteStartElement(String.Empty, "llsd", String.Empty);
-            SerializeXmlElement(writer, data);
+            SerializeLLSDXmlElement(writer, data);
             writer.WriteEndElement();
 
             writer.Close();
@@ -115,50 +115,50 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="data"></param>
-        public static void SerializeXmlElement(XmlTextWriter writer, LLSD data)
+        public static void SerializeLLSDXmlElement(XmlTextWriter writer, OSD data)
         {
             switch (data.Type)
             {
-                case LLSDType.Unknown:
+                case OSDType.Unknown:
                     writer.WriteStartElement(String.Empty, "undef", String.Empty);
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Boolean:
+                case OSDType.Boolean:
                     writer.WriteStartElement(String.Empty, "boolean", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Integer:
+                case OSDType.Integer:
                     writer.WriteStartElement(String.Empty, "integer", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Real:
+                case OSDType.Real:
                     writer.WriteStartElement(String.Empty, "real", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.String:
+                case OSDType.String:
                     writer.WriteStartElement(String.Empty, "string", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.UUID:
+                case OSDType.UUID:
                     writer.WriteStartElement(String.Empty, "uuid", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Date:
+                case OSDType.Date:
                     writer.WriteStartElement(String.Empty, "date", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.URI:
+                case OSDType.URI:
                     writer.WriteStartElement(String.Empty, "uri", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Binary:
+                case OSDType.Binary:
                     writer.WriteStartElement(String.Empty, "binary", String.Empty);
                         writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
                         writer.WriteString("base64");
@@ -166,25 +166,25 @@ namespace OpenMetaverse.StructuredData
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Map:
-                    LLSDMap map = (LLSDMap)data;
+                case OSDType.Map:
+                    OSDMap map = (OSDMap)data;
                     writer.WriteStartElement(String.Empty, "map", String.Empty);
-                    foreach (KeyValuePair<string, LLSD> kvp in map)
+                    foreach (KeyValuePair<string, OSD> kvp in map)
                     {
                         writer.WriteStartElement(String.Empty, "key", String.Empty);
                         writer.WriteString(kvp.Key);
                         writer.WriteEndElement();
 
-                        SerializeXmlElement(writer, kvp.Value);
+                        SerializeLLSDXmlElement(writer, kvp.Value);
                     }
                     writer.WriteEndElement();
                     break;
-                case LLSDType.Array:
-                    LLSDArray array = (LLSDArray)data;
+                case OSDType.Array:
+                    OSDArray array = (OSDArray)data;
                     writer.WriteStartElement(String.Empty, "array", String.Empty);
                     for (int i = 0; i < array.Count; i++)
                     {
-                        SerializeXmlElement(writer, array[i]);
+                        SerializeLLSDXmlElement(writer, array[i]);
                     }
                     writer.WriteEndElement();
                     break;
@@ -197,19 +197,19 @@ namespace OpenMetaverse.StructuredData
         /// <param name="xmlData"></param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public static bool TryValidate(XmlTextReader xmlData, out string error)
+        public static bool TryValidateLLSDXml(XmlTextReader xmlData, out string error)
         {
             lock (XmlValidationLock)
             {
                 LastXmlErrors = String.Empty;
                 XmlTextReader = xmlData;
 
-                CreateSchema();
+                CreateLLSDXmlSchema();
 
                 XmlReaderSettings readerSettings = new XmlReaderSettings();
                 readerSettings.ValidationType = ValidationType.Schema;
                 readerSettings.Schemas.Add(XmlSchema);
-                readerSettings.ValidationEventHandler += new ValidationEventHandler(SchemaValidationHandler);
+                readerSettings.ValidationEventHandler += new ValidationEventHandler(LLSDXmlSchemaValidationHandler);
 
                 XmlReader reader = XmlReader.Create(xmlData, readerSettings);
 
@@ -241,15 +241,15 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private static LLSD ParseXmlElement(XmlTextReader reader)
+        private static OSD ParseLLSDXmlElement(XmlTextReader reader)
         {
             SkipWhitespace(reader);
 
             if (reader.NodeType != XmlNodeType.Element)
-                throw new LLSDException("Expected an element");
+                throw new OSDException("Expected an element");
 
             string type = reader.LocalName;
-            LLSD ret;
+            OSD ret;
 
             switch (type)
             {
@@ -257,18 +257,18 @@ namespace OpenMetaverse.StructuredData
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return new LLSD();
+                        return new OSD();
                     }
 
                     reader.Read();
                     SkipWhitespace(reader);
-                    ret = new LLSD();
+                    ret = new OSD();
                     break;
                 case "boolean":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromBoolean(false);
+                        return OSD.FromBoolean(false);
                     }
 
                     if (reader.Read())
@@ -277,35 +277,35 @@ namespace OpenMetaverse.StructuredData
 
                         if (!String.IsNullOrEmpty(s) && (s == "true" || s == "1"))
                         {
-                            ret = LLSD.FromBoolean(true);
+                            ret = OSD.FromBoolean(true);
                             break;
                         }
                     }
 
-                    ret = LLSD.FromBoolean(false);
+                    ret = OSD.FromBoolean(false);
                     break;
                 case "integer":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromInteger(0);
+                        return OSD.FromInteger(0);
                     }
 
                     if (reader.Read())
                     {
                         int value = 0;
                         Int32.TryParse(reader.ReadString().Trim(), out value);
-                        ret = LLSD.FromInteger(value);
+                        ret = OSD.FromInteger(value);
                         break;
                     }
 
-                    ret = LLSD.FromInteger(0);
+                    ret = OSD.FromInteger(0);
                     break;
                 case "real":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromReal(0d);
+                        return OSD.FromReal(0d);
                     }
 
                     if (reader.Read())
@@ -318,105 +318,105 @@ namespace OpenMetaverse.StructuredData
                         else
                             Utils.TryParseDouble(str, out value);
 
-                        ret = LLSD.FromReal(value);
+                        ret = OSD.FromReal(value);
                         break;
                     }
 
-                    ret = LLSD.FromReal(0d);
+                    ret = OSD.FromReal(0d);
                     break;
                 case "uuid":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromUUID(UUID.Zero);
+                        return OSD.FromUUID(UUID.Zero);
                     }
 
                     if (reader.Read())
                     {
                         UUID value = UUID.Zero;
                         UUID.TryParse(reader.ReadString().Trim(), out value);
-                        ret = LLSD.FromUUID(value);
+                        ret = OSD.FromUUID(value);
                         break;
                     }
 
-                    ret = LLSD.FromUUID(UUID.Zero);
+                    ret = OSD.FromUUID(UUID.Zero);
                     break;
                 case "date":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromDate(Utils.Epoch);
+                        return OSD.FromDate(Utils.Epoch);
                     }
 
                     if (reader.Read())
                     {
                         DateTime value = Utils.Epoch;
                         DateTime.TryParse(reader.ReadString().Trim(), out value);
-                        ret = LLSD.FromDate(value);
+                        ret = OSD.FromDate(value);
                         break;
                     }
 
-                    ret = LLSD.FromDate(Utils.Epoch);
+                    ret = OSD.FromDate(Utils.Epoch);
                     break;
                 case "string":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromString(String.Empty);
+                        return OSD.FromString(String.Empty);
                     }
 
                     if (reader.Read())
                     {
-                        ret = LLSD.FromString(reader.ReadString());
+                        ret = OSD.FromString(reader.ReadString());
                         break;
                     }
 
-                    ret = LLSD.FromString(String.Empty);
+                    ret = OSD.FromString(String.Empty);
                     break;
                 case "binary":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromBinary(new byte[0]);
+                        return OSD.FromBinary(new byte[0]);
                     }
 
                     if (reader.GetAttribute("encoding") != null && reader.GetAttribute("encoding") != "base64")
-                        throw new LLSDException("Unsupported binary encoding: " + reader.GetAttribute("encoding"));
+                        throw new OSDException("Unsupported binary encoding: " + reader.GetAttribute("encoding"));
 
                     if (reader.Read())
                     {
                         try
                         {
-                            ret = LLSD.FromBinary(Convert.FromBase64String(reader.ReadString().Trim()));
+                            ret = OSD.FromBinary(Convert.FromBase64String(reader.ReadString().Trim()));
                             break;
                         }
                         catch (FormatException ex)
                         {
-                            throw new LLSDException("Binary decoding exception: " + ex.Message);
+                            throw new OSDException("Binary decoding exception: " + ex.Message);
                         }
                     }
 
-                    ret = LLSD.FromBinary(new byte[0]);
+                    ret = OSD.FromBinary(new byte[0]);
                     break;
                 case "uri":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return LLSD.FromUri(new Uri(String.Empty, UriKind.RelativeOrAbsolute));
+                        return OSD.FromUri(new Uri(String.Empty, UriKind.RelativeOrAbsolute));
                     }
 
                     if (reader.Read())
                     {
-                        ret = LLSD.FromUri(new Uri(reader.ReadString(), UriKind.RelativeOrAbsolute));
+                        ret = OSD.FromUri(new Uri(reader.ReadString(), UriKind.RelativeOrAbsolute));
                         break;
                     }
 
-                    ret = LLSD.FromUri(new Uri(String.Empty, UriKind.RelativeOrAbsolute));
+                    ret = OSD.FromUri(new Uri(String.Empty, UriKind.RelativeOrAbsolute));
                     break;
                 case "map":
-                    return ParseXmlMap(reader);
+                    return ParseLLSDXmlMap(reader);
                 case "array":
-                    return ParseXmlArray(reader);
+                    return ParseLLSDXmlArray(reader);
                 default:
                     reader.Read();
                     ret = null;
@@ -425,7 +425,7 @@ namespace OpenMetaverse.StructuredData
 
             if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != type)
             {
-                throw new LLSDException("Expected </" + type + ">");
+                throw new OSDException("Expected </" + type + ">");
             }
             else
             {
@@ -434,12 +434,12 @@ namespace OpenMetaverse.StructuredData
             }
         }
 
-        private static LLSDMap ParseXmlMap(XmlTextReader reader)
+        private static OSDMap ParseLLSDXmlMap(XmlTextReader reader)
         {
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "map")
                 throw new NotImplementedException("Expected <map>");
 
-            LLSDMap map = new LLSDMap();
+            OSDMap map = new OSDMap();
 
             if (reader.IsEmptyElement)
             {
@@ -460,29 +460,29 @@ namespace OpenMetaverse.StructuredData
                     }
 
                     if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "key")
-                        throw new LLSDException("Expected <key>");
+                        throw new OSDException("Expected <key>");
 
                     string key = reader.ReadString();
 
                     if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != "key")
-                        throw new LLSDException("Expected </key>");
+                        throw new OSDException("Expected </key>");
 
                     if (reader.Read())
-                        map[key] = ParseXmlElement(reader);
+                        map[key] = ParseLLSDXmlElement(reader);
                     else
-                        throw new LLSDException("Failed to parse a value for key " + key);
+                        throw new OSDException("Failed to parse a value for key " + key);
                 }
             }
 
             return map;
         }
 
-        private static LLSDArray ParseXmlArray(XmlTextReader reader)
+        private static OSDArray ParseLLSDXmlArray(XmlTextReader reader)
         {
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "array")
-                throw new LLSDException("Expected <array>");
+                throw new OSDException("Expected <array>");
 
-            LLSDArray array = new LLSDArray();
+            OSDArray array = new OSDArray();
 
             if (reader.IsEmptyElement)
             {
@@ -502,7 +502,7 @@ namespace OpenMetaverse.StructuredData
                         break;
                     }
 
-                    array.Add(ParseXmlElement(reader));
+                    array.Add(ParseLLSDXmlElement(reader));
                 }
             }
 
@@ -521,7 +521,7 @@ namespace OpenMetaverse.StructuredData
             }
         }
 
-        private static void CreateSchema()
+        private static void CreateLLSDXmlSchema()
         {
             if (XmlSchema == null)
             {
@@ -622,11 +622,11 @@ namespace OpenMetaverse.StructuredData
                 MemoryStream stream = new MemoryStream(Encoding.ASCII.GetBytes(schemaText));
 
                 XmlSchema = new XmlSchema();
-                XmlSchema = XmlSchema.Read(stream, new ValidationEventHandler(SchemaValidationHandler));
+                XmlSchema = XmlSchema.Read(stream, new ValidationEventHandler(LLSDXmlSchemaValidationHandler));
             }
         }
 
-        private static void SchemaValidationHandler(object sender, ValidationEventArgs args)
+        private static void LLSDXmlSchemaValidationHandler(object sender, ValidationEventArgs args)
         {
             string error = String.Format("Line: {0} - Position: {1} - {2}", XmlTextReader.LineNumber, XmlTextReader.LinePosition,
                 args.Message);

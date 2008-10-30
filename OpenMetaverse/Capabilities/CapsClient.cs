@@ -34,7 +34,7 @@ namespace OpenMetaverse.Capabilities
     {
         public delegate void ProgressCallback(CapsClient client, long bytesReceived, long bytesSent, 
             long totalBytesToReceive, long totalBytesToSend);
-        public delegate void CompleteCallback(CapsClient client, LLSD result, Exception error);
+        public delegate void CompleteCallback(CapsClient client, OSD result, Exception error);
 
         public ProgressCallback OnProgress;
         public CompleteCallback OnComplete;
@@ -60,9 +60,9 @@ namespace OpenMetaverse.Capabilities
             StartRequest(null, null);
         }
 
-        public void StartRequest(LLSD llsd)
+        public void StartRequest(OSD llsd)
         {
-            byte[] postData = LLSDParser.SerializeXmlBytes(llsd);
+            byte[] postData = LLSDParser.SerializeLLSDXmlBytes(llsd);
             StartRequest(postData, null);
         }
 
@@ -137,7 +137,7 @@ namespace OpenMetaverse.Capabilities
             {
                 if (e.Error == null)
                 {
-                    LLSD result = LLSDParser.DeserializeXml(e.Result);
+                    OSD result = LLSDParser.DeserializeLLSDXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
@@ -188,7 +188,7 @@ namespace OpenMetaverse.Capabilities
             {
                 if (e.Error == null)
                 {
-                    LLSD result = LLSDParser.DeserializeXml(e.Result);
+                    OSD result = LLSDParser.DeserializeLLSDXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }

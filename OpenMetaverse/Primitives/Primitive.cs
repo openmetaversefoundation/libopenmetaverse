@@ -722,34 +722,34 @@ namespace OpenMetaverse
             /// 
             /// </summary>
             /// <returns></returns>
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDMap map = new LLSDMap();
+                OSDMap map = new OSDMap();
 
-                map["simulate_lod"] = LLSD.FromInteger(Softness);
-                map["gravity"] = LLSD.FromReal(Gravity);
-                map["air_friction"] = LLSD.FromReal(Drag);
-                map["wind_sensitivity"] = LLSD.FromReal(Wind);
-                map["tension"] = LLSD.FromReal(Tension);
-                map["user_force"] = LLSD.FromVector3(Force);
+                map["simulate_lod"] = OSD.FromInteger(Softness);
+                map["gravity"] = OSD.FromReal(Gravity);
+                map["air_friction"] = OSD.FromReal(Drag);
+                map["wind_sensitivity"] = OSD.FromReal(Wind);
+                map["tension"] = OSD.FromReal(Tension);
+                map["user_force"] = OSD.FromVector3(Force);
 
                 return map;
             }
 
-            public static FlexibleData FromLLSD(LLSD llsd)
+            public static FlexibleData FromOSD(OSD osd)
             {
                 FlexibleData flex = new FlexibleData();
 
-                if (llsd.Type == LLSDType.Map)
+                if (osd.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)llsd;
+                    OSDMap map = (OSDMap)osd;
 
                     flex.Softness = map["simulate_lod"].AsInteger();
                     flex.Gravity = (float)map["gravity"].AsReal();
                     flex.Drag = (float)map["air_friction"].AsReal();
                     flex.Wind = (float)map["wind_sensitivity"].AsReal();
                     flex.Tension = (float)map["tension"].AsReal();
-                    flex.Force = ((LLSDArray)map["user_force"]).AsVector3();
+                    flex.Force = ((OSDArray)map["user_force"]).AsVector3();
                 }
 
                 return flex;
@@ -819,28 +819,28 @@ namespace OpenMetaverse
                 return data;
             }
 
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDMap map = new LLSDMap();
+                OSDMap map = new OSDMap();
 
-                map["color"] = LLSD.FromColor4(Color);
-                map["intensity"] = LLSD.FromReal(Intensity);
-                map["radius"] = LLSD.FromReal(Radius);
-                map["cutoff"] = LLSD.FromReal(Cutoff);
-                map["falloff"] = LLSD.FromReal(Falloff);
+                map["color"] = OSD.FromColor4(Color);
+                map["intensity"] = OSD.FromReal(Intensity);
+                map["radius"] = OSD.FromReal(Radius);
+                map["cutoff"] = OSD.FromReal(Cutoff);
+                map["falloff"] = OSD.FromReal(Falloff);
 
                 return map;
             }
 
-            public static LightData FromLLSD(LLSD llsd)
+            public static LightData FromOSD(OSD osd)
             {
                 LightData light = new LightData();
 
-                if (llsd.Type == LLSDType.Map)
+                if (osd.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)llsd;
+                    OSDMap map = (OSDMap)osd;
 
-                    light.Color = ((LLSDArray)map["color"]).AsColor4();
+                    light.Color = ((OSDArray)map["color"]).AsColor4();
                     light.Intensity = (float)map["intensity"].AsReal();
                     light.Radius = (float)map["radius"].AsReal();
                     light.Cutoff = (float)map["cutoff"].AsReal();
@@ -893,23 +893,23 @@ namespace OpenMetaverse
                 return data;
             }
 
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDMap map = new LLSDMap();
+                OSDMap map = new OSDMap();
 
-                map["texture"] = LLSD.FromUUID(SculptTexture);
-                map["type"] = LLSD.FromInteger((int)Type);
+                map["texture"] = OSD.FromUUID(SculptTexture);
+                map["type"] = OSD.FromInteger((int)Type);
 
                 return map;
             }
 
-            public static SculptData FromLLSD(LLSD llsd)
+            public static SculptData FromOSD(OSD osd)
             {
                 SculptData sculpt = new SculptData();
 
-                if (llsd.Type == LLSDType.Map)
+                if (osd.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)llsd;
+                    OSDMap map = (OSDMap)osd;
 
                     sculpt.SculptTexture = map["texture"].AsUUID();
                     sculpt.Type = (SculptType)map["type"].AsInteger();
@@ -1138,73 +1138,73 @@ namespace OpenMetaverse
 
         #region Public Methods
 
-        public LLSD GetLLSD()
+        public OSD GetOSD()
         {
-            LLSDMap path = new LLSDMap(14);
-            path["begin"] = LLSD.FromReal(PrimData.PathBegin);
-            path["curve"] = LLSD.FromInteger((int)PrimData.PathCurve);
-            path["end"] = LLSD.FromReal(PrimData.PathEnd);
-            path["radius_offset"] = LLSD.FromReal(PrimData.PathRadiusOffset);
-            path["revolutions"] = LLSD.FromReal(PrimData.PathRevolutions);
-            path["scale_x"] = LLSD.FromReal(PrimData.PathScaleX);
-            path["scale_y"] = LLSD.FromReal(PrimData.PathScaleY);
-            path["shear_x"] = LLSD.FromReal(PrimData.PathShearX);
-            path["shear_y"] = LLSD.FromReal(PrimData.PathShearY);
-            path["skew"] = LLSD.FromReal(PrimData.PathSkew);
-            path["taper_x"] = LLSD.FromReal(PrimData.PathTaperX);
-            path["taper_y"] = LLSD.FromReal(PrimData.PathTaperY);
-            path["twist"] = LLSD.FromReal(PrimData.PathTwist);
-            path["twist_begin"] = LLSD.FromReal(PrimData.PathTwistBegin);
+            OSDMap path = new OSDMap(14);
+            path["begin"] = OSD.FromReal(PrimData.PathBegin);
+            path["curve"] = OSD.FromInteger((int)PrimData.PathCurve);
+            path["end"] = OSD.FromReal(PrimData.PathEnd);
+            path["radius_offset"] = OSD.FromReal(PrimData.PathRadiusOffset);
+            path["revolutions"] = OSD.FromReal(PrimData.PathRevolutions);
+            path["scale_x"] = OSD.FromReal(PrimData.PathScaleX);
+            path["scale_y"] = OSD.FromReal(PrimData.PathScaleY);
+            path["shear_x"] = OSD.FromReal(PrimData.PathShearX);
+            path["shear_y"] = OSD.FromReal(PrimData.PathShearY);
+            path["skew"] = OSD.FromReal(PrimData.PathSkew);
+            path["taper_x"] = OSD.FromReal(PrimData.PathTaperX);
+            path["taper_y"] = OSD.FromReal(PrimData.PathTaperY);
+            path["twist"] = OSD.FromReal(PrimData.PathTwist);
+            path["twist_begin"] = OSD.FromReal(PrimData.PathTwistBegin);
 
-            LLSDMap profile = new LLSDMap(4);
-            profile["begin"] = LLSD.FromReal(PrimData.ProfileBegin);
-            profile["curve"] = LLSD.FromInteger((int)PrimData.ProfileCurve);
-            profile["hole"] = LLSD.FromInteger((int)PrimData.ProfileHole);
-            profile["end"] = LLSD.FromReal(PrimData.ProfileEnd);
-            profile["hollow"] = LLSD.FromReal(PrimData.ProfileHollow);
+            OSDMap profile = new OSDMap(4);
+            profile["begin"] = OSD.FromReal(PrimData.ProfileBegin);
+            profile["curve"] = OSD.FromInteger((int)PrimData.ProfileCurve);
+            profile["hole"] = OSD.FromInteger((int)PrimData.ProfileHole);
+            profile["end"] = OSD.FromReal(PrimData.ProfileEnd);
+            profile["hollow"] = OSD.FromReal(PrimData.ProfileHollow);
 
-            LLSDMap volume = new LLSDMap(2);
+            OSDMap volume = new OSDMap(2);
             volume["path"] = path;
             volume["profile"] = profile;
 
-            LLSDMap prim = new LLSDMap(9);
-            prim["name"] = LLSD.FromString(Properties.Name);
-            prim["description"] = LLSD.FromString(Properties.Description);
-            prim["phantom"] = LLSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
-            prim["physical"] = LLSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
-            prim["position"] = LLSD.FromVector3(Position);
-            prim["rotation"] = LLSD.FromQuaternion(Rotation);
-            prim["scale"] = LLSD.FromVector3(Scale);
-            prim["material"] = LLSD.FromInteger((int)PrimData.Material);
-            prim["shadows"] = LLSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
-            prim["textures"] = Textures.GetLLSD();
+            OSDMap prim = new OSDMap(9);
+            prim["name"] = OSD.FromString(Properties.Name);
+            prim["description"] = OSD.FromString(Properties.Description);
+            prim["phantom"] = OSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
+            prim["physical"] = OSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
+            prim["position"] = OSD.FromVector3(Position);
+            prim["rotation"] = OSD.FromQuaternion(Rotation);
+            prim["scale"] = OSD.FromVector3(Scale);
+            prim["material"] = OSD.FromInteger((int)PrimData.Material);
+            prim["shadows"] = OSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
+            prim["textures"] = Textures.GetOSD();
             prim["volume"] = volume;
             if (ParentID != 0)
-                prim["parentid"] = LLSD.FromInteger(ParentID);
+                prim["parentid"] = OSD.FromInteger(ParentID);
 
-            prim["light"] = Light.GetLLSD();
-            prim["flex"] = Flexible.GetLLSD();
-            prim["sculpt"] = Sculpt.GetLLSD();
+            prim["light"] = Light.GetOSD();
+            prim["flex"] = Flexible.GetOSD();
+            prim["sculpt"] = Sculpt.GetOSD();
 
             return prim;
         }
 
-        public static Primitive FromLLSD(LLSD llsd)
+        public static Primitive FromOSD(OSD osd)
         {
             Primitive prim = new Primitive();
             Primitive.ConstructionData data;
 
-            LLSDMap map = (LLSDMap)llsd;
-            LLSDMap volume = (LLSDMap)map["volume"];
-            LLSDMap path = (LLSDMap)volume["path"];
-            LLSDMap profile = (LLSDMap)volume["profile"];
+            OSDMap map = (OSDMap)osd;
+            OSDMap volume = (OSDMap)map["volume"];
+            OSDMap path = (OSDMap)volume["path"];
+            OSDMap profile = (OSDMap)volume["profile"];
 
             #region Path/Profile
 
             data.profileCurve = (byte)0;
             data.State = 0;
             data.Material = (Material)map["material"].AsInteger();
-            data.PCode = PCode.Prim; // TODO: Put this in LLSD
+            data.PCode = PCode.Prim; // TODO: Put this in SD
 
             data.PathBegin = (float)path["begin"].AsReal();
             data.PathCurve = (PathCurve)path["curve"].AsInteger();
@@ -1241,13 +1241,13 @@ namespace OpenMetaverse
                 prim.Flags |= PrimFlags.CastShadows;
 
             prim.ParentID = (uint)map["parentid"].AsInteger();
-            prim.Position = ((LLSDArray)map["position"]).AsVector3();
-            prim.Rotation = ((LLSDArray)map["rotation"]).AsQuaternion();
-            prim.Scale = ((LLSDArray)map["scale"]).AsVector3();
-            prim.Flexible = FlexibleData.FromLLSD(map["flex"]);
-            prim.Light = LightData.FromLLSD(map["light"]);
-            prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);
-            prim.Textures = TextureEntry.FromLLSD(map["textures"]);
+            prim.Position = ((OSDArray)map["position"]).AsVector3();
+            prim.Rotation = ((OSDArray)map["rotation"]).AsQuaternion();
+            prim.Scale = ((OSDArray)map["scale"]).AsVector3();
+            prim.Flexible = FlexibleData.FromOSD(map["flex"]);
+            prim.Light = LightData.FromOSD(map["light"]);
+            prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
+            prim.Textures = TextureEntry.FromOSD(map["textures"]);
             if (!string.IsNullOrEmpty(map["name"].AsString()))
             {
                 prim.Properties.Name = map["name"].AsString();

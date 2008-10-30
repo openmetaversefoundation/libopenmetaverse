@@ -211,7 +211,7 @@ namespace OpenMetaverse
             /// <summary>Name of the CAPS event</summary>
             public string CapsEvent;
             /// <summary>Decoded body of the CAPS event</summary>
-            public StructuredData.LLSD Body;
+            public StructuredData.OSD Body;
             /// <summary>Reference to the simulator that generated this event</summary>
             public Simulator Simulator;
         }
@@ -273,7 +273,7 @@ namespace OpenMetaverse
         /// <param name="body">Decoded event body</param>
         /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
-        internal void RaiseEvent(string capsEvent, StructuredData.LLSD body, Simulator simulator)
+        internal void RaiseEvent(string capsEvent, StructuredData.OSD body, Simulator simulator)
         {
             bool specialHandler = false;
             Caps.EventQueueCallback callback;
@@ -289,9 +289,9 @@ namespace OpenMetaverse
             }
 
             // Generic parser next
-            if (body.Type == StructuredData.LLSDType.Map)
+            if (body.Type == StructuredData.OSDType.Map)
             {
-                StructuredData.LLSDMap map = (StructuredData.LLSDMap)body;
+                StructuredData.OSDMap map = (StructuredData.OSDMap)body;
                 Packet packet = Packet.BuildPacket(capsEvent, map);
                 if (packet != null)
                 {
@@ -326,7 +326,7 @@ namespace OpenMetaverse
         /// <param name="body">Decoded event body</param>
         /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
-        internal void BeginRaiseEvent(string capsEvent, StructuredData.LLSD body, Simulator simulator)
+        internal void BeginRaiseEvent(string capsEvent, StructuredData.OSD body, Simulator simulator)
         {
             bool specialHandler = false;
             Caps.EventQueueCallback callback;
@@ -346,9 +346,9 @@ namespace OpenMetaverse
             }
 
             // Generic parser next, don't generic parse events we've manually registered for
-            if (body.Type == StructuredData.LLSDType.Map && !_EventTable.ContainsKey(capsEvent))
+            if (body.Type == StructuredData.OSDType.Map && !_EventTable.ContainsKey(capsEvent))
             {
-                StructuredData.LLSDMap map = (StructuredData.LLSDMap)body;
+                StructuredData.OSDMap map = (StructuredData.OSDMap)body;
                 Packet packet = Packet.BuildPacket(capsEvent, map);
                 if (packet != null)
                 {

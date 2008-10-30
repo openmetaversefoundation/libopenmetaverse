@@ -285,8 +285,8 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap body = new LLSDMap();
-                body["Flags"] = LLSD.FromInteger((int)layer);
+                OSDMap body = new OSDMap();
+                body["Flags"] = OSD.FromInteger((int)layer);
 
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(MapLayerResponseHandler);
@@ -475,16 +475,16 @@ namespace OpenMetaverse
             }
         }
 
-        private void MapLayerResponseHandler(CapsClient client, LLSD result, Exception error)
+        private void MapLayerResponseHandler(CapsClient client, OSD result, Exception error)
         {
-            LLSDMap body = (LLSDMap)result;
-            LLSDArray layerData = (LLSDArray)body["LayerData"];
+            OSDMap body = (OSDMap)result;
+            OSDArray layerData = (OSDArray)body["LayerData"];
 
             if (OnGridLayer != null)
             {
                 for (int i = 0; i < layerData.Count; i++)
                 {
-                    LLSDMap thisLayerData = (LLSDMap)layerData[i];
+                    OSDMap thisLayerData = (OSDMap)layerData[i];
 
                     GridLayer layer;
                     layer.Bottom = thisLayerData["Bottom"].AsInteger();

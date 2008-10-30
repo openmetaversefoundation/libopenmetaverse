@@ -140,11 +140,11 @@ namespace OpenMetaverse
             request.StartRequest(postData);
         }
 
-        private void GatherCapsResponse(CapsClient client, LLSD response, Exception error)
+        private void GatherCapsResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                OSDMap respTable = (OSDMap)response;
 
                 // parse
                 _caps = new RegistrationCaps();
@@ -171,9 +171,9 @@ namespace OpenMetaverse
             request.StartRequest();
         }
 
-        private void GatherErrorMessagesResponse(CapsClient client, LLSD response, Exception error)
+        private void GatherErrorMessagesResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
                 // parse
 
@@ -211,9 +211,9 @@ namespace OpenMetaverse
             // FIXME: Block
         }
 
-        private void GatherLastNamesResponse(CapsClient client, LLSD response, Exception error)
+        private void GatherLastNamesResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
                 //LLSDMap respTable = (LLSDMap)response;
 
@@ -243,9 +243,9 @@ namespace OpenMetaverse
                 throw new InvalidOperationException("access denied; only approved developers have access to the registration api");
 
             // Create the POST data
-            LLSDMap query = new LLSDMap();
-            query.Add("username", LLSD.FromString(firstName));
-            query.Add("last_name_id", LLSD.FromInteger(lastName.ID));
+            OSDMap query = new OSDMap();
+            query.Add("username", OSD.FromString(firstName));
+            query.Add("last_name_id", OSD.FromInteger(lastName.ID));
             //byte[] postData = LLSDParser.SerializeXmlBytes(query);
 
             CapsClient request = new CapsClient(_caps.CheckName);
@@ -256,9 +256,9 @@ namespace OpenMetaverse
             return false;
         }
 
-        private void CheckNameResponse(CapsClient client, LLSD response, Exception error)
+        private void CheckNameResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response.Type == LLSDType.Boolean)
+            if (response.Type == OSDType.Boolean)
             {
                 // FIXME:
                 //(bool)response;
@@ -284,31 +284,31 @@ namespace OpenMetaverse
                 throw new InvalidOperationException("access denied; only approved developers have access to the registration api");
 
             // Create the POST data
-            LLSDMap query = new LLSDMap();
-            query.Add("username", LLSD.FromString(user.FirstName));
-            query.Add("last_name_id", LLSD.FromInteger(user.LastName.ID));
-            query.Add("email", LLSD.FromString(user.Email));
-            query.Add("password", LLSD.FromString(user.Password));
-            query.Add("dob", LLSD.FromString(user.Birthdate.ToString("yyyy-MM-dd")));
+            OSDMap query = new OSDMap();
+            query.Add("username", OSD.FromString(user.FirstName));
+            query.Add("last_name_id", OSD.FromInteger(user.LastName.ID));
+            query.Add("email", OSD.FromString(user.Email));
+            query.Add("password", OSD.FromString(user.Password));
+            query.Add("dob", OSD.FromString(user.Birthdate.ToString("yyyy-MM-dd")));
 
             if (user.LimitedToEstate != null)
-                query.Add("limited_to_estate", LLSD.FromInteger(user.LimitedToEstate.Value));
+                query.Add("limited_to_estate", OSD.FromInteger(user.LimitedToEstate.Value));
 
             if (!string.IsNullOrEmpty(user.StartRegionName))
-                query.Add("start_region_name", LLSD.FromInteger(user.LimitedToEstate.Value));
+                query.Add("start_region_name", OSD.FromInteger(user.LimitedToEstate.Value));
 
             if (user.StartLocation != null)
             {
-                query.Add("start_local_x", LLSD.FromReal(user.StartLocation.Value.X));
-                query.Add("start_local_y", LLSD.FromReal(user.StartLocation.Value.Y));
-                query.Add("start_local_z", LLSD.FromReal(user.StartLocation.Value.Z));
+                query.Add("start_local_x", OSD.FromReal(user.StartLocation.Value.X));
+                query.Add("start_local_y", OSD.FromReal(user.StartLocation.Value.Y));
+                query.Add("start_local_z", OSD.FromReal(user.StartLocation.Value.Z));
             }
 
             if (user.StartLookAt != null)
             {
-                query.Add("start_look_at_x", LLSD.FromReal(user.StartLookAt.Value.X));
-                query.Add("start_look_at_y", LLSD.FromReal(user.StartLookAt.Value.Y));
-                query.Add("start_look_at_z", LLSD.FromReal(user.StartLookAt.Value.Z));
+                query.Add("start_look_at_x", OSD.FromReal(user.StartLookAt.Value.X));
+                query.Add("start_look_at_y", OSD.FromReal(user.StartLookAt.Value.Y));
+                query.Add("start_look_at_z", OSD.FromReal(user.StartLookAt.Value.Z));
             }
 
             //byte[] postData = LLSDParser.SerializeXmlBytes(query);
@@ -322,9 +322,9 @@ namespace OpenMetaverse
             return UUID.Zero;
         }
 
-        private void CreateUserResponse(CapsClient client, LLSD response, Exception error)
+        private void CreateUserResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
                 // everything is okay
                 // FIXME:
@@ -333,11 +333,11 @@ namespace OpenMetaverse
             else
             {
                 // an error happened
-                LLSDArray al = (LLSDArray)response;
+                OSDArray al = (OSDArray)response;
 
                 StringBuilder sb = new StringBuilder();
 
-                foreach (LLSD ec in al)
+                foreach (OSD ec in al)
                 {
                     if (sb.Length > 0)
                         sb.Append("; ");

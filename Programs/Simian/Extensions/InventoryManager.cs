@@ -857,47 +857,47 @@ namespace Simian.Extensions
 
         #region Persistence
 
-        LLSDMap SerializeItem(InventoryItem item)
+        OSDMap SerializeItem(InventoryItem item)
         {
-            LLSDMap itemMap = new LLSDMap(16);
-            itemMap.Add("ID", LLSD.FromUUID(item.ID));
-            itemMap.Add("ParentID", LLSD.FromUUID(item.ParentID));
-            itemMap.Add("Name", LLSD.FromString(item.Name));
-            itemMap.Add("OwnerID", LLSD.FromUUID(item.OwnerID));
-            itemMap.Add("AssetID", LLSD.FromUUID(item.AssetID));
-            itemMap.Add("AssetType", LLSD.FromInteger((sbyte)item.AssetType));
-            itemMap.Add("InventoryType", LLSD.FromInteger((sbyte)item.InventoryType));
-            itemMap.Add("CreatorID", LLSD.FromUUID(item.CreatorID));
-            itemMap.Add("GroupID", LLSD.FromUUID(item.GroupID));
-            itemMap.Add("Description", LLSD.FromString(item.Description));
-            itemMap.Add("GroupOwned", LLSD.FromBoolean(item.GroupOwned));
-            itemMap.Add("Permissions", item.Permissions.GetLLSD());
-            itemMap.Add("SalePrice", LLSD.FromInteger(item.SalePrice));
-            itemMap.Add("SaleType", LLSD.FromInteger((byte)item.SaleType));
-            itemMap.Add("Flags", LLSD.FromUInteger((uint)item.Flags));
-            itemMap.Add("CreationDate", LLSD.FromDate(item.CreationDate));
+            OSDMap itemMap = new OSDMap(16);
+            itemMap.Add("ID", OSD.FromUUID(item.ID));
+            itemMap.Add("ParentID", OSD.FromUUID(item.ParentID));
+            itemMap.Add("Name", OSD.FromString(item.Name));
+            itemMap.Add("OwnerID", OSD.FromUUID(item.OwnerID));
+            itemMap.Add("AssetID", OSD.FromUUID(item.AssetID));
+            itemMap.Add("AssetType", OSD.FromInteger((sbyte)item.AssetType));
+            itemMap.Add("InventoryType", OSD.FromInteger((sbyte)item.InventoryType));
+            itemMap.Add("CreatorID", OSD.FromUUID(item.CreatorID));
+            itemMap.Add("GroupID", OSD.FromUUID(item.GroupID));
+            itemMap.Add("Description", OSD.FromString(item.Description));
+            itemMap.Add("GroupOwned", OSD.FromBoolean(item.GroupOwned));
+            itemMap.Add("Permissions", item.Permissions.GetOSD());
+            itemMap.Add("SalePrice", OSD.FromInteger(item.SalePrice));
+            itemMap.Add("SaleType", OSD.FromInteger((byte)item.SaleType));
+            itemMap.Add("Flags", OSD.FromUInteger((uint)item.Flags));
+            itemMap.Add("CreationDate", OSD.FromDate(item.CreationDate));
             return itemMap;
         }
 
-        LLSDMap SerializeFolder(InventoryFolder folder)
+        OSDMap SerializeFolder(InventoryFolder folder)
         {
-            LLSDMap folderMap = new LLSDMap(6);
-            folderMap.Add("ID", LLSD.FromUUID(folder.ID));
-            folderMap.Add("ParentID", LLSD.FromUUID(folder.ParentID));
-            folderMap.Add("Name", LLSD.FromString(folder.Name));
-            folderMap.Add("OwnerID", LLSD.FromUUID(folder.OwnerID));
-            folderMap.Add("PreferredType", LLSD.FromInteger((sbyte)folder.PreferredType));
-            folderMap.Add("Version", LLSD.FromInteger(folder.Version));
+            OSDMap folderMap = new OSDMap(6);
+            folderMap.Add("ID", OSD.FromUUID(folder.ID));
+            folderMap.Add("ParentID", OSD.FromUUID(folder.ParentID));
+            folderMap.Add("Name", OSD.FromString(folder.Name));
+            folderMap.Add("OwnerID", OSD.FromUUID(folder.OwnerID));
+            folderMap.Add("PreferredType", OSD.FromInteger((sbyte)folder.PreferredType));
+            folderMap.Add("Version", OSD.FromInteger(folder.Version));
             return folderMap;
         }
 
-        LLSDMap SerializeInventory(Dictionary<UUID, InventoryObject> agentInventory)
+        OSDMap SerializeInventory(Dictionary<UUID, InventoryObject> agentInventory)
         {
-            LLSDMap map = new LLSDMap(agentInventory.Count);
+            OSDMap map = new OSDMap(agentInventory.Count);
 
             foreach (KeyValuePair<UUID, InventoryObject> kvp in agentInventory)
             {
-                LLSD value;
+                OSD value;
                 if (kvp.Value is InventoryItem)
                     value = SerializeItem((InventoryItem)kvp.Value);
                 else
@@ -909,9 +909,9 @@ namespace Simian.Extensions
             return map;
         }
 
-        public LLSD Serialize()
+        public OSD Serialize()
         {
-            LLSDMap map = new LLSDMap(Inventory.Count);
+            OSDMap map = new OSDMap(Inventory.Count);
             int itemCount = 0;
 
             lock (Inventory)
@@ -929,7 +929,7 @@ namespace Simian.Extensions
             return map;
         }
 
-        InventoryItem DeserializeItem(LLSDMap itemMap)
+        InventoryItem DeserializeItem(OSDMap itemMap)
         {
             InventoryItem item = new InventoryItem();
             item.ID = itemMap["ID"].AsUUID();
@@ -943,7 +943,7 @@ namespace Simian.Extensions
             item.GroupID = itemMap["GroupID"].AsUUID();
             item.Description = itemMap["Description"].AsString();
             item.GroupOwned = itemMap["GroupOwned"].AsBoolean();
-            item.Permissions = Permissions.FromLLSD(itemMap["Permissions"]);
+            item.Permissions = Permissions.FromOSD(itemMap["Permissions"]);
             item.SalePrice = itemMap["SalePrice"].AsInteger();
             item.SaleType = (SaleType)itemMap["SaleType"].AsInteger();
             item.Flags = Utils.BytesToUInt(itemMap["Flags"].AsBinary());
@@ -951,7 +951,7 @@ namespace Simian.Extensions
             return item;
         }
 
-        InventoryFolder DeserializeFolder(LLSDMap folderMap)
+        InventoryFolder DeserializeFolder(OSDMap folderMap)
         {
             InventoryFolder folder = new InventoryFolder();
             folder.ID = folderMap["ID"].AsUUID();
@@ -963,14 +963,14 @@ namespace Simian.Extensions
             return folder;
         }
 
-        Dictionary<UUID, InventoryObject> DeserializeInventory(LLSDMap map)
+        Dictionary<UUID, InventoryObject> DeserializeInventory(OSDMap map)
         {
             Dictionary<UUID, InventoryObject> inventory = new Dictionary<UUID, InventoryObject>();
 
-            foreach (KeyValuePair<string, LLSD> kvp in map)
+            foreach (KeyValuePair<string, OSD> kvp in map)
             {
                 UUID objectID = (UUID)kvp.Key;
-                LLSDMap objectMap = (LLSDMap)kvp.Value;
+                OSDMap objectMap = (OSDMap)kvp.Value;
                 InventoryObject obj;
 
                 if (objectMap.ContainsKey("AssetID"))
@@ -984,19 +984,19 @@ namespace Simian.Extensions
             return inventory;
         }
 
-        public void Deserialize(LLSD serialized)
+        public void Deserialize(OSD serialized)
         {
             int itemCount = 0;
-            LLSDMap map = (LLSDMap)serialized;
+            OSDMap map = (OSDMap)serialized;
 
             lock (Inventory)
             {
                 Inventory.Clear();
 
-                foreach (KeyValuePair<string, LLSD> kvp in map)
+                foreach (KeyValuePair<string, OSD> kvp in map)
                 {
                     UUID agentID = (UUID)kvp.Key;
-                    Dictionary<UUID, InventoryObject> agentInventory = DeserializeInventory((LLSDMap)kvp.Value);
+                    Dictionary<UUID, InventoryObject> agentInventory = DeserializeInventory((OSDMap)kvp.Value);
                     itemCount += agentInventory.Count;
 
                     Inventory[agentID] = agentInventory;

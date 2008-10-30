@@ -74,13 +74,13 @@ namespace Simian.Extensions
 
         #region Persistance
 
-        public LLSD Serialize()
+        public OSD Serialize()
         {
-            LLSDArray array = new LLSDArray(accounts.Count);
+            OSDArray array = new OSDArray(accounts.Count);
 
             accounts.ForEach(delegate(Agent agent)
             {
-                array.Add(LLSD.SerializeMembers(agent));
+                array.Add(OSD.SerializeMembers(agent));
             });
 
             Logger.Log(String.Format("Serializing the agent store with {0} entries", accounts.Count),
@@ -89,17 +89,17 @@ namespace Simian.Extensions
             return array;
         }
 
-        public void Deserialize(LLSD serialized)
+        public void Deserialize(OSD serialized)
         {
             accounts.Clear();
 
-            LLSDArray array = (LLSDArray)serialized;
+            OSDArray array = (OSDArray)serialized;
 
             for (int i = 0; i < array.Count; i++)
             {
                 Agent agent = new Agent();
                 object agentRef = (object)agent;
-                LLSD.DeserializeMembers(ref agentRef, (LLSDMap)array[i]);
+                OSD.DeserializeMembers(ref agentRef, (OSDMap)array[i]);
                 agent = (Agent)agentRef;
 
                 accounts.Add(agent.FullName, agent.AgentID, agent);

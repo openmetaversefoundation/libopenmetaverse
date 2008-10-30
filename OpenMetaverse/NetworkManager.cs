@@ -1105,17 +1105,17 @@ namespace OpenMetaverse
         /// Handler for EnableSimulator packet
         /// </summary>
         /// <param name="capsKey">the Capabilities Key, "EnableSimulator"</param>
-        /// <param name="llsd">the LLSD Encoded packet</param>
+        /// <param name="osd">the LLSD Encoded packet</param>
         /// <param name="simulator">The simulator the packet was sent from</param>
-        private void EnableSimulatorHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void EnableSimulatorHandler(string capsKey, OSD osd, Simulator simulator)
         {
             if (!Client.Settings.MULTIPLE_SIMS) return;
-            LLSDMap map = (LLSDMap)llsd;
-            LLSDArray connectInfo = (LLSDArray)map["SimulatorInfo"];
+            OSDMap map = (OSDMap)osd;
+            OSDArray connectInfo = (OSDArray)map["SimulatorInfo"];
 
             for(int i = 0; i < connectInfo.Count; i++)
             {
-                LLSDMap data = (LLSDMap)connectInfo[i];
+                OSDMap data = (OSDMap)connectInfo[i];
 
                 IPAddress ip = new IPAddress(data["IP"].AsBinary());
                 ushort port = (ushort)data["Port"].AsInteger();

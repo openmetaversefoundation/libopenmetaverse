@@ -462,39 +462,39 @@ namespace OpenMetaverse
                     hasAttribute = TextureAttributes.None;
             }
 
-            public LLSD GetLLSD(int faceNumber)
+            public OSD GetOSD(int faceNumber)
             {
-                LLSDMap tex = new LLSDMap(10);
-                if (faceNumber >= 0) tex["face_number"] = LLSD.FromInteger(faceNumber);
-                tex["colors"] = LLSD.FromColor4(RGBA);
-                tex["scales"] = LLSD.FromReal(RepeatU);
-                tex["scalet"] = LLSD.FromReal(RepeatV);
-                tex["offsets"] = LLSD.FromReal(OffsetU);
-                tex["offsett"] = LLSD.FromReal(OffsetV);
-                tex["imagerot"] = LLSD.FromReal(Rotation);
-                tex["bump"] = LLSD.FromInteger((int)Bump);
-                tex["shiny"] = LLSD.FromInteger((int)Shiny);
-                tex["fullbright"] = LLSD.FromBoolean(Fullbright);
-                tex["media_flags"] = LLSD.FromInteger(Convert.ToInt32(MediaFlags));
-                tex["mapping"] = LLSD.FromInteger((int)TexMapType);
-                tex["glow"] = LLSD.FromReal(Glow);
+                OSDMap tex = new OSDMap(10);
+                if (faceNumber >= 0) tex["face_number"] = OSD.FromInteger(faceNumber);
+                tex["colors"] = OSD.FromColor4(RGBA);
+                tex["scales"] = OSD.FromReal(RepeatU);
+                tex["scalet"] = OSD.FromReal(RepeatV);
+                tex["offsets"] = OSD.FromReal(OffsetU);
+                tex["offsett"] = OSD.FromReal(OffsetV);
+                tex["imagerot"] = OSD.FromReal(Rotation);
+                tex["bump"] = OSD.FromInteger((int)Bump);
+                tex["shiny"] = OSD.FromInteger((int)Shiny);
+                tex["fullbright"] = OSD.FromBoolean(Fullbright);
+                tex["media_flags"] = OSD.FromInteger(Convert.ToInt32(MediaFlags));
+                tex["mapping"] = OSD.FromInteger((int)TexMapType);
+                tex["glow"] = OSD.FromReal(Glow);
 
                 if (TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
-                    tex["imageid"] = LLSD.FromUUID(TextureID);
+                    tex["imageid"] = OSD.FromUUID(TextureID);
                 else
-                    tex["imageid"] = LLSD.FromUUID(UUID.Zero);
+                    tex["imageid"] = OSD.FromUUID(UUID.Zero);
 
                 return tex;
             }
 
-            public static TextureEntryFace FromLLSD(LLSD llsd, TextureEntryFace defaultFace, out int faceNumber)
+            public static TextureEntryFace FromOSD(OSD osd, TextureEntryFace defaultFace, out int faceNumber)
             {
-                LLSDMap map = (LLSDMap)llsd;
+                OSDMap map = (OSDMap)osd;
 
                 TextureEntryFace face = new TextureEntryFace(defaultFace);
                 faceNumber = (map.ContainsKey("face_number")) ? map["face_number"].AsInteger() : -1;
                 Color4 rgba = face.RGBA;
-                rgba = ((LLSDArray)map["colors"]).AsColor4();
+                rgba = ((OSDArray)map["colors"]).AsColor4();
                 face.RGBA = rgba;
                 face.RepeatU = (float)map["scales"].AsReal();
                 face.RepeatV = (float)map["scalet"].AsReal();
@@ -627,37 +627,37 @@ namespace OpenMetaverse
             /// 
             /// </summary>
             /// <returns></returns>
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDArray array = new LLSDArray();
+                OSDArray array = new OSDArray();
 
                 // Always add default texture
-                array.Add(DefaultTexture.GetLLSD(-1));
+                array.Add(DefaultTexture.GetOSD(-1));
 
                 for (int i = 0; i < MAX_FACES; i++)
                 {
                     if (FaceTextures[i] != null)
-                        array.Add(FaceTextures[i].GetLLSD(i));
+                        array.Add(FaceTextures[i].GetOSD(i));
                 }
 
                 return array;
             }
 
-            public static TextureEntry FromLLSD(LLSD llsd)
+            public static TextureEntry FromOSD(OSD osd)
             {
-                LLSDArray array = (LLSDArray)llsd;
-                LLSDMap faceLLSD;
+                OSDArray array = (OSDArray)osd;
+                OSDMap faceSD;
 
                 if (array.Count > 0)
                 {
                     int faceNumber;
-                    faceLLSD = (LLSDMap)array[0];
-                    TextureEntryFace defaultFace = TextureEntryFace.FromLLSD(faceLLSD, null, out faceNumber);
+                    faceSD = (OSDMap)array[0];
+                    TextureEntryFace defaultFace = TextureEntryFace.FromOSD(faceSD, null, out faceNumber);
                     TextureEntry te = new TextureEntry(defaultFace);
 
                     for (int i = 1; i < array.Count; i++)
                     {
-                        TextureEntryFace tex = TextureEntryFace.FromLLSD(array[i], defaultFace, out faceNumber);
+                        TextureEntryFace tex = TextureEntryFace.FromOSD(array[i], defaultFace, out faceNumber);
                         if (faceNumber >= 0 && faceNumber < te.FaceTextures.Length)
                             te.FaceTextures[faceNumber] = tex;
                     }
@@ -666,7 +666,7 @@ namespace OpenMetaverse
                 }
                 else
                 {
-                    throw new ArgumentException("LLSD contains no elements");
+                    throw new ArgumentException("SD contains no elements");
                 }
             }
 

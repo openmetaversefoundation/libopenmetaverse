@@ -20,12 +20,12 @@ namespace Simian.Extensions
         {
             this.server = server;
 
-            LLSD llsd;
+            OSD osd;
 
             try
             {
                 XmlTextReader reader = new XmlTextReader(File.OpenRead(server.DataDir + "simiandata.xml"));
-                llsd = LLSDParser.DeserializeXml(reader);
+                osd = LLSDParser.DeserializeLLSDXml(reader);
                 reader.Close();
             }
             catch (FileNotFoundException)
@@ -38,15 +38,15 @@ namespace Simian.Extensions
                 return;
             }
 
-            if (llsd is LLSDMap)
+            if (osd is OSDMap)
             {
-                LLSDMap dictionary = (LLSDMap)llsd;
+                OSDMap dictionary = (OSDMap)osd;
 
                 for (int i = 0; i < server.PersistentExtensions.Count; i++)
                 {
                     IPersistable persistable = server.PersistentExtensions[i];
 
-                    LLSD savedData;
+                    OSD savedData;
                     if (dictionary.TryGetValue(persistable.ToString(), out savedData))
                     {
                         Logger.DebugLog("Loading saved data for " + persistable.ToString());
@@ -62,7 +62,7 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            LLSDMap dictionary = new LLSDMap(server.PersistentExtensions.Count);
+            OSDMap dictionary = new OSDMap(server.PersistentExtensions.Count);
 
             for (int i = 0; i < server.PersistentExtensions.Count; i++)
             {
@@ -77,7 +77,7 @@ namespace Simian.Extensions
                 XmlTextWriter writer = new XmlTextWriter(server.DataDir + "simiandata.xml", System.Text.Encoding.UTF8);
                 writer.Formatting = Formatting.Indented;
                 writer.WriteStartElement("llsd");
-                LLSDParser.SerializeXmlElement(writer, dictionary);
+                LLSDParser.SerializeLLSDXmlElement(writer, dictionary);
                 writer.WriteEndElement();
                 writer.Close();
             }

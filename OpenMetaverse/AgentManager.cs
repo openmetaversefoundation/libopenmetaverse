@@ -2706,9 +2706,9 @@ namespace OpenMetaverse
             }
         }
 
-        private void EstablishAgentCommunicationEventHandler(string message, LLSD llsd, Simulator simulator)
+        private void EstablishAgentCommunicationEventHandler(string message, OSD osd, Simulator simulator)
         {
-            StructuredData.LLSDMap body = (StructuredData.LLSDMap)llsd;
+            StructuredData.OSDMap body = (StructuredData.OSDMap)osd;
 
 
             if (Client.Settings.MULTIPLE_SIMS && body.ContainsKey("sim-ip-and-port"))
@@ -2739,17 +2739,17 @@ namespace OpenMetaverse
         /// Process TeleportFinish from Event Queue and pass it onto our TeleportHandler
         /// </summary>
         /// <param name="message"></param>
-        /// <param name="llsd"></param>
+        /// <param name="osd"></param>
         /// <param name="simulator"></param>
-        private void TeleportFinishEventHandler(string message, LLSD llsd, Simulator simulator)
+        private void TeleportFinishEventHandler(string message, OSD osd, Simulator simulator)
         {
             
-            LLSDMap map = (LLSDMap)llsd;
-            LLSDArray array = (LLSDArray)map["Info"];
+            OSDMap map = (OSDMap)osd;
+            OSDArray array = (OSDArray)map["Info"];
             for (int i = 0; i < array.Count; i++)
             {
                 TeleportFinishPacket p = new TeleportFinishPacket();
-                LLSDMap data = (LLSDMap)array[i];
+                OSDMap data = (OSDMap)array[i];
                 p.Info.AgentID = data["AgentID"].AsUUID();
                 p.Info.LocationID = Utils.BytesToUInt(data["LocationID"].AsBinary());
                 p.Info.RegionHandle = Utils.BytesToUInt64(data["RegionHandle"].AsBinary());
@@ -3014,11 +3014,11 @@ namespace OpenMetaverse
         /// Group Chat event handler
         /// </summary>
         /// <param name="capsKey">The capability Key</param>
-        /// <param name="llsd"></param>
+        /// <param name="osd"></param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionEventHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ChatterBoxSessionEventHandler(string capsKey, OSD osd, Simulator simulator)
         {
-            LLSDMap map = (LLSDMap)llsd;
+            OSDMap map = (OSDMap)osd;
             if (map["success"].AsBoolean() != true)
             {
                 Logger.Log("Attempt to send group chat to non-existant session for group " + map["session_id"].AsString(),
@@ -3030,11 +3030,11 @@ namespace OpenMetaverse
         /// Response from request to join a group chat
         /// </summary>
         /// <param name="capsKey"></param>
-        /// <param name="llsd"></param>
+        /// <param name="osd"></param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionStartReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ChatterBoxSessionStartReplyHandler(string capsKey, OSD osd, Simulator simulator)
         {
-            LLSDMap map = (LLSDMap)llsd;
+            OSDMap map = (OSDMap)osd;
             UUID sessionID = map["session_id"].AsUUID();
             UUID tmpSessionID = map["temp_session_id"].AsUUID();
             
@@ -3044,7 +3044,7 @@ namespace OpenMetaverse
 
             if (success)
             {
-                LLSDMap sessionInfo = (LLSDMap)map["session_info"];
+                OSDMap sessionInfo = (OSDMap)map["session_info"];
                 sessionName = sessionInfo["session_name"].AsString();
                 
                 /* Parameters we do not currently use for anything */
@@ -3064,12 +3064,12 @@ namespace OpenMetaverse
         /// Someone joined or left group chat
         /// </summary>
         /// <param name="capsKey"></param>
-        /// <param name="llsd"></param>
+        /// <param name="osd"></param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionAgentListReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ChatterBoxSessionAgentListReplyHandler(string capsKey, OSD osd, Simulator simulator)
         {
-            // parse the LLSD 
-            LLSDMap map = (LLSDMap)llsd;
+            // parse the SD 
+            OSDMap map = (OSDMap)osd;
 
             // verify sessions exists, if not add it
             UUID sessionID;
@@ -3087,15 +3087,15 @@ namespace OpenMetaverse
 
 
             //string errormsg = map["error"].AsString();
-            //LLSDMap updates = (LLSDMap)map["updates"];
+            //SDMap updates = (SDMap)map["updates"];
 
             // Handle any agent data updates
-            LLSDMap agent_updates = (LLSDMap)map["agent_updates"];
+            OSDMap agent_updates = (OSDMap)map["agent_updates"];
 
-            foreach (KeyValuePair<string, LLSD> kvp in agent_updates)
+            foreach (KeyValuePair<string, OSD> kvp in agent_updates)
             {
                 UUID agent_key = UUID.Parse(kvp.Key);
-                LLSDMap record = (LLSDMap)kvp.Value;
+                OSDMap record = (OSDMap)kvp.Value;
 
                 // handle joins/parts first
                 if (record.ContainsKey("transition"))
@@ -3167,15 +3167,15 @@ namespace OpenMetaverse
                     return m.AvatarKey == agent_key;
                 });
 
-                LLSDMap record_info = (LLSDMap)record["info"];
+                OSDMap record_info = (OSDMap)record["info"];
 
                 lock (GroupChatSessions.Dictionary)
                 {
 
                     if (record_info.ContainsKey("mutes"))
                     {
-                        LLSDMap mutes = (LLSDMap)record_info["mutes"];
-                        foreach (KeyValuePair<string, LLSD> muteEntry in mutes)
+                        OSDMap mutes = (OSDMap)record_info["mutes"];
+                        foreach (KeyValuePair<string, OSD> muteEntry in mutes)
                         {
                             if (muteEntry.Key == "text")
                             {
@@ -3214,7 +3214,7 @@ namespace OpenMetaverse
             }
 
             
-            //foreach (KeyValuePair<string, LLSD> kvp in updates)
+            //foreach (KeyValuePair<string, SD> kvp in updates)
             //{
             //    if (kvp.Value.Equals("ENTER"))
             //    {
@@ -3246,17 +3246,17 @@ namespace OpenMetaverse
         /// Group Chat Request
         /// </summary>
         /// <param name="capsKey">Caps Key</param>
-        /// <param name="llsd">LLSD Map containing invitation</param>
+        /// <param name="osd">SD Map containing invitation</param>
         /// <param name="simulator">Originating Simulator</param>
-        private void ChatterBoxInvitationHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ChatterBoxInvitationHandler(string capsKey, OSD osd, Simulator simulator)
         {
             if (OnInstantMessage != null)
             {
-                LLSDMap map = (LLSDMap)llsd;
-                LLSDMap im = (LLSDMap)map["instantmessage"];
-                //LLSDMap agent = (LLSDMap)im["agent_params"];
-                LLSDMap msg = (LLSDMap)im["message_params"];
-                LLSDMap msgdata = (LLSDMap)msg["data"];
+                OSDMap map = (OSDMap)osd;
+                OSDMap im = (OSDMap)map["instantmessage"];
+                //SDMap agent = (SDMap)im["agent_params"];
+                OSDMap msg = (OSDMap)im["message_params"];
+                OSDMap msgdata = (OSDMap)msg["data"];
 
                 InstantMessage message = new InstantMessage();
 
@@ -3265,7 +3265,7 @@ namespace OpenMetaverse
                 message.ToAgentID = msg["to_id"].AsUUID();
                 message.ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
                 message.RegionID = msg["region_id"].AsUUID();
-                message.Position = ((LLSDArray)msg["position"]).AsVector3();
+                message.Position = ((OSDArray)msg["position"]).AsVector3();
                 message.Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
                 message.GroupIM = true;
                 message.IMSessionID = map["session_id"].AsUUID();
@@ -3295,21 +3295,21 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap req = new LLSDMap();
-                req.Add("method", LLSD.FromString("mute update"));
+                OSDMap req = new OSDMap();
+                req.Add("method", OSD.FromString("mute update"));
                 
-                LLSDMap mute_info = new LLSDMap();
-                mute_info.Add("text", LLSD.FromBoolean(moderateText));
+                OSDMap mute_info = new OSDMap();
+                mute_info.Add("text", OSD.FromBoolean(moderateText));
 
-                LLSDMap parameters = new LLSDMap();
-                parameters["agent_id"] = LLSD.FromUUID(memberID);
+                OSDMap parameters = new OSDMap();
+                parameters["agent_id"] = OSD.FromUUID(memberID);
                 parameters["mute_info"] = mute_info;
 
                 req["params"] = parameters;
                 
-                req.Add("session-id", LLSD.FromUUID(sessionID));
+                req.Add("session-id", OSD.FromUUID(sessionID));
                 
-                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(req);
+                byte[] postData = StructuredData.LLSDParser.SerializeLLSDXmlBytes(req);
 
                 CapsClient request = new CapsClient(url);
                 request.StartRequest(postData);
