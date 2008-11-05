@@ -767,10 +767,9 @@ namespace OpenMetaverse
         public UUID RequestGroupRoleMembers(UUID group)
         {
             UUID requestID = UUID.Random();
+
             lock (GroupRolesMembersCaches)
-            {
-                GroupRolesMembersCaches[requestID] = new List<KeyValuePair<UUID, UUID>>();
-            }
+                GroupRolesMembersCaches[group] = new List<KeyValuePair<UUID, UUID>>();
 
             GroupRoleMembersRequestPacket request = new GroupRoleMembersRequestPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
