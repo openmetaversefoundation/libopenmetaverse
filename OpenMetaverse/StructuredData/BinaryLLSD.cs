@@ -91,11 +91,14 @@ namespace OpenMetaverse.StructuredData
         /// <returns></returns>
         public static OSD DeserializeLLSDBinary(Stream stream)
         {
+            if (!stream.CanSeek)
+                throw new OSDException("Cannot deserialize binary LLSD from unseekable streams");
+
             SkipWhiteSpace(stream);
 
             bool result = FindByteArray(stream, llsdBinaryHead);
             if (!result)
-                throw new OSDException("No binary encoded SD.");
+                throw new OSDException("Failed to decode binary LLSD");
 
             return ParseLLSDBinaryElement(stream);
         }
