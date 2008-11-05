@@ -1689,7 +1689,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Starts or stops crouching
         /// </summary>
-        /// <param name="start">True to start crouching, false to stop crouching</param>
+        /// <param name="crouching">True to start crouching, false to stop crouching</param>
         public void Crouch(bool crouching)
         {
             Movement.UpNeg = crouching;

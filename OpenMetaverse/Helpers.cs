@@ -504,7 +504,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Deserializes OSD in to a list of primitives
         /// </summary>
-        /// <param name="llsd">Structure holding the serialized primitive list,
+        /// <param name="osd">Structure holding the serialized primitive list,
         /// must be of the SDMap type</param>
         /// <returns>A list of deserialized primitives</returns>
         public static List<Primitive> OSDToPrimList(StructuredData.OSD osd)
