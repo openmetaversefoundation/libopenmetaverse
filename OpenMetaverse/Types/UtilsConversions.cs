@@ -413,45 +413,48 @@ namespace OpenMetaverse
             return System.Text.UTF8Encoding.UTF8.GetBytes(str);
         }
 
-        ///// <summary>
-        ///// Converts a string containing hexadecimal characters to a byte array
-        ///// </summary>
-        ///// <param name="hexString">String containing hexadecimal characters</param>
-        ///// <returns>The converted byte array</returns>
-        public static byte[] HexStringToBytes(string hexString)
+        /// <summary>
+        /// Converts a string containing hexadecimal characters to a byte array
+        /// </summary>
+        /// <param name="hexString">String containing hexadecimal characters</param>
+        /// <param name="handleDirty">If true, gracefully handles null, empty and
+        /// uneven strings as well as stripping unconvertable characters</param>
+        /// <returns>The converted byte array</returns>
+        public static byte[] HexStringToBytes(string hexString, bool handleDirty)
         {
-            if (String.IsNullOrEmpty(hexString))
-                return new byte[0];
-
-            StringBuilder stripped = new StringBuilder(hexString.Length);
-            char c;
-
-            // remove all non A-F, 0-9, characters
-            for (int i = 0; i < hexString.Length; i++)
+            if (handleDirty)
             {
-                c = hexString[i];
-                if (IsHexDigit(c))
-                    stripped.Append(c);
+                if (String.IsNullOrEmpty(hexString))
+                    return new byte[0];
+
+                StringBuilder stripped = new StringBuilder(hexString.Length);
+                char c;
+
+                // remove all non A-F, 0-9, characters
+                for (int i = 0; i < hexString.Length; i++)
+                {
+                    c = hexString[i];
+                    if (IsHexDigit(c))
+                        stripped.Append(c);
+                }
+
+                hexString = stripped.ToString();
+
+                // if odd number of characters, discard last character
+                if (hexString.Length % 2 != 0)
+                {
+                    hexString = hexString.Substring(0, hexString.Length - 1);
+                }
             }
 
-            string newString = stripped.ToString();
-
-            // if odd number of characters, discard last character
-            if (newString.Length % 2 != 0)
-            {
-                newString = newString.Substring(0, newString.Length - 1);
-            }
-
-            int byteLength = newString.Length / 2;
+            int byteLength = hexString.Length / 2;
             byte[] bytes = new byte[byteLength];
-            string hex;
             int j = 0;
 
             for (int i = 0; i < bytes.Length; i++)
             {
-                hex = new String(new Char[] { newString[j], newString[j + 1] });
-                bytes[i] = HexToByte(hex);
-                j = j + 2;
+                bytes[i] = HexToByte(hexString.Substring(j, 2));
+                j += 2;
             }
 
             return bytes;
@@ -728,6 +731,37 @@ namespace OpenMetaverse
             T temp = lhs;
             lhs = rhs;
             rhs = temp;
+        }
+
+        /// <summary>
+        /// Try to parse an enumeration value from a string
+        /// </summary>
+        /// <typeparam name="T">Enumeration type</typeparam>
+        /// <param name="strType">String value to parse</param>
+        /// <param name="result">Enumeration value on success</param>
+        /// <returns>True if the parsing succeeded, otherwise false</returns>
+        public static bool EnumTryParse<T>(string strType, out T result)
+        {
+            Type t = typeof(T);
+
+            if (Enum.IsDefined(t, strType))
+            {
+                result = (T)Enum.Parse(t, strType, true);
+                return true;
+            }
+            else
+            {
+                foreach (string value in Enum.GetNames(typeof(T)))
+                {
+                    if (value.Equals(strType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = (T)Enum.Parse(typeof(T), value);
+                        return true;
+                    }
+                }
+                result = default(T);
+                return false;
+            }
         }
 
         #endregion Miscellaneous

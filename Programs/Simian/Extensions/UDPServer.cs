@@ -80,7 +80,6 @@ namespace Simian
         public void Start(Simian server)
         {
             this.server = server;
-
             udpServer = new UDPServer(server.UDPPort, server);
         }
 

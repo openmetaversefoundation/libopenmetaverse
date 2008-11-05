@@ -529,8 +529,8 @@ namespace OpenMetaverse
             request.TransferInfo.TransferID = transfer.ID;
 
             byte[] paramField = new byte[20];
-            Array.Copy(assetID.GetBytes(), 0, paramField, 0, 16);
-            Array.Copy(Utils.IntToBytes((int)type), 0, paramField, 16, 4);
+            Buffer.BlockCopy(assetID.GetBytes(), 0, paramField, 0, 16);
+            Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, paramField, 16, 4);
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);

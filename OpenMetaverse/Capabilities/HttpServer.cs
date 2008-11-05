@@ -65,6 +65,7 @@ namespace OpenMetaverse.Capabilities
         AsyncCallback serverCallback;
         //int serverPort;
         //bool sslEnabled;
+        // TODO: Replace this with an immutable list to avoid locking
         List<HttpRequestHandler> requestHandlers;
 
         bool isRunning;
@@ -97,18 +98,12 @@ namespace OpenMetaverse.Capabilities
 
         public void AddHandler(HttpRequestHandler handler)
         {
-            if (!isRunning)
-                requestHandlers.Add(handler);
-            else
-                throw new InvalidOperationException("Cannot add HTTP request handlers while the server is running");
+            lock (requestHandlers) requestHandlers.Add(handler);
         }
 
         public void RemoveHandler(HttpRequestHandler handler)
         {
-            if (!isRunning)
-                requestHandlers.Remove(handler);
-            else
-                throw new InvalidOperationException("Cannot add HTTP request handlers while the server is running");
+            lock (requestHandlers) requestHandlers.Remove(handler);
         }
 
         public void Start()
@@ -153,35 +148,18 @@ namespace OpenMetaverse.Capabilities
                     HttpRequestSignature signature = new HttpRequestSignature(context);
 
                     // Look for a signature match in our handlers
-                    for (int i = 0; i < requestHandlers.Count; i++)
+                    lock (requestHandlers)
                     {
-                        HttpRequestHandler handler = requestHandlers[i];
-
-                        if (signature == handler.Signature)
+                        for (int i = 0; i < requestHandlers.Count; i++)
                         {
-                            // Request signature matched, handle it
-                            try
-                            {
-                                handler.Callback(signature, ref context);
-                            }
-                            catch (Exception e)
-                            {
-                                try
-                                {
-                                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                                    context.Response.StatusDescription = e.ToString();
-                                }
-                                catch (Exception)
-                                {
-                                    Logger.Log(e.ToString(), Helpers.LogLevel.Error);
-                                }
-                            }
-                            finally
-                            {
-                                context.Response.Close();
-                            }
+                            HttpRequestHandler handler = requestHandlers[i];
 
-                            return;
+                            if (signature == handler.Signature)
+                            {
+                                // Request signature matched, handle it
+                                handler.Callback(signature, ref context);
+                                return;
+                            }
                         }
                     }
 

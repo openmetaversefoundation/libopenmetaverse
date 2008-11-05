@@ -53,7 +53,7 @@ namespace OpenMetaverse.StructuredData
         private const int int32Length = 4;
         private const int doubleLength = 8;
 
-        private static byte[] binaryHead = Encoding.ASCII.GetBytes("<?osd/binary?>\n");
+        private static byte[] llsdBinaryHead = Encoding.ASCII.GetBytes("<?llsd/binary?>\n");
         private const byte undefBinaryValue = (byte)'!';
         private const byte trueBinaryValue = (byte)'1';
         private const byte falseBinaryValue = (byte)'0';
@@ -89,11 +89,11 @@ namespace OpenMetaverse.StructuredData
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static OSD DeserializeLLSDBinary(MemoryStream stream)
+        public static OSD DeserializeLLSDBinary(Stream stream)
         {
             SkipWhiteSpace(stream);
 
-            bool result = FindByteArray(stream, binaryHead);
+            bool result = FindByteArray(stream, llsdBinaryHead);
             if (!result)
                 throw new OSDException("No binary encoded SD.");
 
@@ -123,7 +123,7 @@ namespace OpenMetaverse.StructuredData
         {
             MemoryStream stream = new MemoryStream(initialBufferSize);
 
-            stream.Write(binaryHead, 0, binaryHead.Length);
+            stream.Write(llsdBinaryHead, 0, llsdBinaryHead.Length);
             SerializeLLSDBinaryElement(stream, data);
             return stream;
         }
@@ -218,7 +218,7 @@ namespace OpenMetaverse.StructuredData
             stream.WriteByte(mapEndBinaryMarker);
         }
 
-        private static OSD ParseLLSDBinaryElement(MemoryStream stream)
+        private static OSD ParseLLSDBinaryElement(Stream stream)
         {
             SkipWhiteSpace(stream);
             OSD osd;
@@ -291,7 +291,7 @@ namespace OpenMetaverse.StructuredData
             return osd;
         }
 
-        private static OSD ParseLLSDBinaryArray(MemoryStream stream)
+        private static OSD ParseLLSDBinaryArray(Stream stream)
         {
             int numElements = NetworkToHostInt(ConsumeBytes(stream, int32Length));
             int crrElement = 0;
@@ -308,7 +308,7 @@ namespace OpenMetaverse.StructuredData
             return (OSD)osdArray;
         }
 
-        private static OSD ParseLLSDBinaryMap(MemoryStream stream)
+        private static OSD ParseLLSDBinaryMap(Stream stream)
         {
             int numElements = NetworkToHostInt(ConsumeBytes(stream, int32Length));
             int crrElement = 0;
@@ -333,7 +333,7 @@ namespace OpenMetaverse.StructuredData
         /// 
         /// </summary>
         /// <param name="stream"></param>
-        public static void SkipWhiteSpace(MemoryStream stream)
+        public static void SkipWhiteSpace(Stream stream)
         {
             int bt;
 
@@ -352,7 +352,7 @@ namespace OpenMetaverse.StructuredData
         /// <param name="stream"></param>
         /// <param name="toFind"></param>
         /// <returns></returns>
-        public static bool FindByte(MemoryStream stream, byte toFind)
+        public static bool FindByte(Stream stream, byte toFind)
         {
             int bt = stream.ReadByte();
             if (bt < 0)
@@ -372,7 +372,7 @@ namespace OpenMetaverse.StructuredData
         /// <param name="stream"></param>
         /// <param name="toFind"></param>
         /// <returns></returns>
-        public static bool FindByteArray(MemoryStream stream, byte[] toFind)
+        public static bool FindByteArray(Stream stream, byte[] toFind)
         {
             int lastIndexToFind = toFind.Length - 1;
             int crrIndex = 0;
@@ -412,7 +412,7 @@ namespace OpenMetaverse.StructuredData
         /// <param name="stream"></param>
         /// <param name="consumeBytes"></param>
         /// <returns></returns>
-        public static byte[] ConsumeBytes(MemoryStream stream, int consumeBytes)
+        public static byte[] ConsumeBytes(Stream stream, int consumeBytes)
         {
             byte[] bytes = new byte[consumeBytes];
             if (stream.Read(bytes, 0, consumeBytes) < consumeBytes)
