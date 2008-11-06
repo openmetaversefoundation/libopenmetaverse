@@ -13,6 +13,7 @@ namespace Simian.Extensions
         Simian server;
         int currentWearablesSerialNum = -1;
         int currentAnimSequenceNum = 0;
+        Timer CoarseLocationTimer;
 
         public AvatarManager()
         {
@@ -31,10 +32,19 @@ namespace Simian.Extensions
             server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
             server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
             server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
+
+            if (CoarseLocationTimer != null) CoarseLocationTimer.Dispose();
+            CoarseLocationTimer = new Timer(CoarseLocationTimer_Elapsed);
+            CoarseLocationTimer.Change(1000, 1000);
         }
 
         public void Stop()
         {
+            if (CoarseLocationTimer != null)
+            {
+                CoarseLocationTimer.Dispose();
+                CoarseLocationTimer = null;
+            }
         }
 
         public bool SetDefaultAnimation(Agent agent, UUID animID)
@@ -366,6 +376,49 @@ namespace Simian.Extensions
             }
 
             server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
+        }
+
+        void CoarseLocationTimer_Elapsed(object sender)
+        {
+            lock (server.Agents)
+            {
+                foreach (Agent recipient in server.Agents.Values)
+                {
+                    int i = 0;
+
+                    CoarseLocationUpdatePacket update = new CoarseLocationUpdatePacket();
+                    update.Index.Prey = -1;
+                    update.Index.You = 0;
+
+                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[server.Agents.Count];
+                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[server.Agents.Count];
+
+                    // Fill in this avatar
+                    update.AgentData[0] = new CoarseLocationUpdatePacket.AgentDataBlock();
+                    update.AgentData[0].AgentID = recipient.AgentID;
+                    update.Location[0] = new CoarseLocationUpdatePacket.LocationBlock();
+                    update.Location[0].X = (byte)((int)recipient.Avatar.Position.X);
+                    update.Location[0].Y = (byte)((int)recipient.Avatar.Position.Y);
+                    update.Location[0].Z = (byte)((int)recipient.Avatar.Position.Z / 4);
+                    ++i;
+
+                    foreach (Agent agent in server.Agents.Values)
+                    {
+                        if (agent != recipient)
+                        {
+                            update.AgentData[i] = new CoarseLocationUpdatePacket.AgentDataBlock();
+                            update.AgentData[i].AgentID = agent.AgentID;
+                            update.Location[i] = new CoarseLocationUpdatePacket.LocationBlock();
+                            update.Location[i].X = (byte)((int)agent.Avatar.Position.X);
+                            update.Location[i].Y = (byte)((int)agent.Avatar.Position.Y);
+                            update.Location[i].Z = (byte)((int)agent.Avatar.Position.Z / 4);
+                            ++i;
+                        }
+                    }
+
+                    server.UDP.SendPacket(recipient.AgentID, update, PacketCategory.State);
+                }
+            }
         }
     }
 }

@@ -247,6 +247,7 @@ namespace ExtensionLoader.Ini
 				// do nothing
 				break;
 			case IniFileType.PythonStyle:
+                result.AcceptNoAssignmentOperator = false;
 				result.AcceptCommentAfterKey = false;
 				result.SetCommentDelimiters (new char[] { ';', '#' });
 				result.SetAssignDelimiters (new char[] { ':' });

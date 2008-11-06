@@ -72,7 +72,7 @@ namespace Simian.Extensions
             return accounts.TryGetValue(fullName, out agent);
         }
 
-        #region Persistance
+        #region Persistence
 
         public OSD Serialize()
         {
@@ -109,6 +109,6 @@ namespace Simian.Extensions
                 Helpers.LogLevel.Info);
         }
 
-        #endregion Persistance
+        #endregion Persistence
     }
 }

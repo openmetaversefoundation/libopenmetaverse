@@ -16,6 +16,8 @@ namespace Simian
 {
     public partial class Simian
     {
+        public const string CONFIG_FILE = "Simian.ini";
+
         // TODO: Don't hard-code these
         public const uint REGION_X = 256000;
         public const uint REGION_Y = 256000;
@@ -25,6 +27,7 @@ namespace Simian
         public string DataDir = "SimianData/";
 
         public HttpServer HttpServer;
+        public IniConfigSource ConfigFile;
         public ulong RegionHandle;
 
         // Interfaces
@@ -52,6 +55,20 @@ namespace Simian
         {
             HttpPort = port;
             UDPPort = port;
+            List<string> extensionList = null;
+
+            try
+            {
+                // Load the extension list (and ordering) from our config file
+                ConfigFile = new IniConfigSource(CONFIG_FILE);
+                IConfig extensionConfig = ConfigFile.Configs["Extensions"];
+                extensionList = new List<string>(extensionConfig.GetKeys());
+            }
+            catch (Exception)
+            {
+                Logger.Log("Failed to load [Extensions] section from " + CONFIG_FILE, Helpers.LogLevel.Error);
+                return false;
+            }
 
             InitHttpServer(HttpPort, ssl);
 
@@ -68,7 +85,7 @@ namespace Simian
                 List<FieldInfo> assignables = ExtensionLoader<Simian>.GetInterfaces(this);
 
                 ExtensionLoader<Simian>.LoadAllExtensions(Assembly.GetExecutingAssembly(),
-                    AppDomain.CurrentDomain.BaseDirectory, this, references,
+                    AppDomain.CurrentDomain.BaseDirectory, this, extensionList, references,
                     "Simian.*.dll", "Simian.*.cs", this, assignables);
             }
             catch (ExtensionException ex)
@@ -85,24 +102,19 @@ namespace Simian
                     PersistentExtensions.Add((IPersistable)extension);
             }
 
-            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
+            for (int i = 0; i < extensionList.Count; i++)
             {
                 // Start all extensions except for persistence providers
-                if (!(extension is IPersistenceProvider))
-                {
-                    Logger.DebugLog("Loading extension " + extension.GetType().Name);
-                    extension.Start(this);
-                }
-            }
-
-            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
-            {
-                // Start the persistence provider(s) after all other extensions are loaded
-                if (extension is IPersistenceProvider)
-                {
-                    Logger.DebugLog("Loading persistance provider " + extension.GetType().Name);
-                    extension.Start(this);
-                }
+                ExtensionLoader<Simian>.Extensions.ForEach(
+                    delegate(IExtension<Simian> extension)
+                    {
+                        if (extension.GetType().Name == extensionList[i])
+                        {
+                            Logger.DebugLog("Starting extension " + extensionList[i]);
+                            extension.Start(this);
+                        }
+                    }
+                );
             }
 
             return true;
@@ -149,19 +161,19 @@ namespace Simian
 
         void InitHttpServer(int port, bool ssl)
         {
-            HttpServer = new HttpServer(HttpPort, ssl);
+            HttpServer = new HttpServer(port, ssl);
 
             // Login webpage HEAD request, used to check if the login webpage is alive
-            HttpServer.AddHandler("head", null, "^/loginpage", new HttpServer.HttpRequestCallback(LoginWebpageHeadHandler));
+            HttpServer.AddHandler("head", null, "^/loginpage", LoginWebpageHeadHandler);
 
             // Login webpage GET request, gets the login webpage data (purely aesthetic)
-            HttpServer.AddHandler("get", null, "^/loginpage", new HttpServer.HttpRequestCallback(LoginWebpageGetHandler));
+            HttpServer.AddHandler("get", null, "^/loginpage", LoginWebpageGetHandler);
 
             // Client XML-RPC login
-            HttpServer.AddHandler("post", "text/xml", "^/login", new HttpServer.HttpRequestCallback(LoginXmlRpcPostHandler));
+            HttpServer.AddHandler("post", "text/xml", "^/login", LoginXmlRpcPostHandler);
 
             // Client LLSD login
-            HttpServer.AddHandler("post", "application/xml", "^/login", new HttpServer.HttpRequestCallback(LoginLLSDPostHandler));
+            HttpServer.AddHandler("post", "application/xml", "^/login", LoginLLSDPostHandler);
 
             HttpServer.Start();
         }
@@ -170,6 +182,7 @@ namespace Simian
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.StatusDescription = "OK";
+            context.Response.Close();
         }
 
         void LoginWebpageGetHandler(HttpRequestSignature signature, ref HttpListenerContext context)

@@ -56,6 +56,8 @@ namespace ExtensionLoader
         /// extensions from</param>
         /// <param name="owner">Object that owns the extensions. A reference to
         /// this is passed to the constructor of each extension</param>
+        /// <param name="extensionList">An optional whitelist of extensions to
+        /// load</param>
         /// <param name="referencedAssemblies">List of assemblies the
         /// extensions need references to</param>
         /// <param name="assemblySearchPattern">Search pattern for extension
@@ -67,7 +69,8 @@ namespace ExtensionLoader
         /// <param name="assignableInterfaces">A list of interface references
         /// to assign extensions to</param>
         public static void LoadAllExtensions(Assembly assembly, string path, TOwner owner,
-            List<string> referencedAssemblies, string assemblySearchPattern, string sourceSearchPattern,
+            List<string> extensionList, List<string> referencedAssemblies,
+            string assemblySearchPattern, string sourceSearchPattern,
             object assignablesParent, List<FieldInfo> assignableInterfaces)
         {
             // Add referenced assemblies to the C# compiler
@@ -79,12 +82,12 @@ namespace ExtensionLoader
             }
 
             // Load internal extensions
-            LoadAssemblyExtensions(assembly);
+            LoadAssemblyExtensions(assembly, extensionList);
 
             // Load extensions from external assemblies
             List<string> extensionNames = ListExtensionAssemblies(path, assemblySearchPattern);
             foreach (string name in extensionNames)
-                LoadAssemblyExtensions(Assembly.LoadFile(name));
+                LoadAssemblyExtensions(Assembly.LoadFile(name), extensionList);
 
             // Load extensions from external code files
             extensionNames = ListExtensionSourceFiles(path, sourceSearchPattern);
@@ -92,7 +95,7 @@ namespace ExtensionLoader
             {
                 CompilerResults results = CSCompiler.CompileAssemblyFromFile(CSCompilerParams, name);
                 if (results.Errors.Count == 0)
-                    LoadAssemblyExtensions(results.CompiledAssembly);
+                    LoadAssemblyExtensions(results.CompiledAssembly, extensionList);
                 else
                     throw new ExtensionException("Error(s) compiling " + name);
             }
@@ -165,7 +168,7 @@ namespace ExtensionLoader
             return plugins;
         }
 
-        public static void LoadAssemblyExtensions(Assembly assembly)
+        public static void LoadAssemblyExtensions(Assembly assembly, List<string> whitelist)
         {
             Type[] constructorParams = new Type[] { };
             object[] parameters = new object[] { };
@@ -174,7 +177,8 @@ namespace ExtensionLoader
             {
                 try
                 {
-                    if (t.GetInterface(typeof(IExtension<TOwner>).Name) != null)
+                    if (t.GetInterface(typeof(IExtension<TOwner>).Name) != null && 
+                        (whitelist == null || whitelist.Contains(t.Name)))
                     {
                         ConstructorInfo info = t.GetConstructor(constructorParams);
                         IExtension<TOwner> extension = (IExtension<TOwner>)info.Invoke(parameters);

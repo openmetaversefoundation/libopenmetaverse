@@ -56,7 +56,11 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            updateTimer.Dispose();
+            if (updateTimer != null)
+            {
+                updateTimer.Dispose();
+                updateTimer = null;
+            }
         }
 
         void UpdateTimer_Elapsed(object sender)

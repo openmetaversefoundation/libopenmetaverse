@@ -19,6 +19,7 @@ namespace Simian.Extensions
         {
             this.server = server;
 
+            // FIXME: Use the list in Simian.ini
             // Search for a the best available OpenMetaverse.Rendering plugin
             List<string> renderers = RenderingLoader.ListRenderers(AppDomain.CurrentDomain.BaseDirectory);
 

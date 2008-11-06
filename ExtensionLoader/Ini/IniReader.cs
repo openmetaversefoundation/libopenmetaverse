@@ -62,7 +62,7 @@ namespace ExtensionLoader.Ini
 		bool disposed = false;
 		bool lineContinuation = false;
 		bool acceptCommentAfterKey = true;
-		bool acceptNoAssignmentOperator = false;
+		bool acceptNoAssignmentOperator = true;
 		bool consumeAllKeyText = false;
 		char[] commentDelimiters = new char[] { ';' };
 		char[] assignDelimiters = new char[] { '=' };
