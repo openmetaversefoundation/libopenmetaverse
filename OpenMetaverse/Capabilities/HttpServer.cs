@@ -126,9 +126,7 @@ namespace OpenMetaverse.Capabilities
 
             // Retrieve the incoming request
             try { context = server.EndGetContext(result); }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
 
             if (isRunning)
             {
@@ -138,6 +136,7 @@ namespace OpenMetaverse.Capabilities
                 {
                     // Something went wrong, can't resume listening. Bail out now
                     // since this is a shutdown (whether it was meant to be or not)
+                    isRunning = false;
                     return;
                 }
 

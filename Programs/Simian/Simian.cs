@@ -164,16 +164,16 @@ namespace Simian
             HttpServer = new HttpServer(port, ssl);
 
             // Login webpage HEAD request, used to check if the login webpage is alive
-            HttpServer.AddHandler("head", null, "^/loginpage", LoginWebpageHeadHandler);
+            HttpServer.AddHandler("head", null, "^/$", LoginWebpageHeadHandler);
 
             // Login webpage GET request, gets the login webpage data (purely aesthetic)
-            HttpServer.AddHandler("get", null, "^/loginpage", LoginWebpageGetHandler);
+            HttpServer.AddHandler("get", null, @"^/(\?.*)?$", LoginWebpageGetHandler);
 
             // Client XML-RPC login
-            HttpServer.AddHandler("post", "text/xml", "^/login", LoginXmlRpcPostHandler);
+            HttpServer.AddHandler("post", "text/xml", "^/$", LoginXmlRpcPostHandler);
 
             // Client LLSD login
-            HttpServer.AddHandler("post", "application/xml", "^/login", LoginLLSDPostHandler);
+            HttpServer.AddHandler("post", "application/xml", "^/$", LoginLLSDPostHandler);
 
             HttpServer.Start();
         }
@@ -275,10 +275,11 @@ namespace Simian
                 XmlWriter writer = XmlWriter.Create(context.Response.OutputStream);
                 responseData.ToXmlRpc(writer);
                 writer.Close();
+                context.Response.Close();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Log("XmlRpc login error: " + ex.Message, Helpers.LogLevel.Error, ex);
             }
         }
 
