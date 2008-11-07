@@ -94,7 +94,7 @@ namespace OpenMetaverse
         /// Holds a simulator reference and an encoded packet, these structs are put in
         /// the packet outbox for sending
         /// </summary>
-        public struct OutgoingPacket
+        public class OutgoingPacket
         {
             /// <summary>Reference to the simulator this packet is destined for</summary>
             public Simulator Simulator;
@@ -113,21 +113,6 @@ namespace OpenMetaverse
                 Packet = packet;
                 SetSequence = setSequence;
                 ResendCount = 0;
-                TickCount = 0;
-            }
-
-            public void IncrementResendCount()
-            {
-                ++ResendCount;
-            }
-
-            public void SetTickCount()
-            {
-                TickCount = Environment.TickCount;
-            }
-
-            public void ZeroTickCount()
-            {
                 TickCount = 0;
             }
         }
@@ -561,7 +546,7 @@ namespace OpenMetaverse
             LogoutRequestPacket logout = new LogoutRequestPacket();
             logout.AgentData.AgentID = Client.Self.AgentID;
             logout.AgentData.SessionID = Client.Self.SessionID;
-            CurrentSim.SendPacket(logout, true);
+            SendPacket(logout);
         }
 
         /// <summary>
@@ -687,7 +672,7 @@ namespace OpenMetaverse
 
         private void OutgoingPacketHandler()
         {
-            OutgoingPacket outgoingPacket = new OutgoingPacket();
+            OutgoingPacket outgoingPacket = null;
             Simulator simulator = null;
             Packet packet = null;
             int now;
@@ -703,15 +688,14 @@ namespace OpenMetaverse
                     // Very primitive rate limiting, keeps a fixed buffer of time between each packet
                     now = Environment.TickCount;
                     int ms = now - lastPacketTime;
-
                     if (ms < 75)
                     {
                         //Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
                         Thread.Sleep(75 - ms);
                     }
-
                     lastPacketTime = now;
-                    simulator.SendPacketUnqueued(packet, outgoingPacket.SetSequence);
+
+                    simulator.SendPacketUnqueued(outgoingPacket);
                 }
             }
         }

@@ -184,7 +184,7 @@ namespace OpenMetaverse
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
-        public bool SEND_PINGS = false;
+        public bool SEND_PINGS = true;
 
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings

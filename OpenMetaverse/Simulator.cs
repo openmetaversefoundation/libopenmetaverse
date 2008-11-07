@@ -392,7 +392,7 @@ namespace OpenMetaverse
         /// (for duplicate checking)</summary>
         internal Queue<uint> PacketArchive;
         /// <summary>Packets we sent out that need ACKs from the simulator</summary>
-        internal Dictionary<uint, NetworkManager.OutgoingPacket> NeedAck = new Dictionary<uint, NetworkManager.OutgoingPacket>();
+        internal SortedDictionary<uint, NetworkManager.OutgoingPacket> NeedAck = new SortedDictionary<uint, NetworkManager.OutgoingPacket>();
         /// <summary>Sequence number for pause/resume</summary>
         internal int pauseSerial;
 
@@ -464,14 +464,12 @@ namespace OpenMetaverse
             if (PingTimer != null) PingTimer.Dispose();
 
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new Timer(new TimerCallback(AckTimer_Elapsed), null, Settings.NETWORK_TICK_INTERVAL,
-                Settings.NETWORK_TICK_INTERVAL);
+            AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
             // Timer for recording simulator connection statistics
-            StatsTimer = new Timer(new TimerCallback(StatsTimer_Elapsed), null, 1000, 1000);
+            StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
             // Timer for periodically pinging the simulator
             if (Client.Settings.SEND_PINGS)
-                PingTimer = new Timer(new TimerCallback(PingTimer_Elapsed), null, Settings.PING_INTERVAL,
-                    Settings.PING_INTERVAL);
+                PingTimer = new Timer(PingTimer_Elapsed, null, Settings.PING_INTERVAL, Settings.PING_INTERVAL);
 
             #endregion Start Timers
 
@@ -612,33 +610,40 @@ namespace OpenMetaverse
         /// leave it as is</param>
         public void SendPacket(Packet packet, bool setSequence)
         {
+            SendPacket(new NetworkManager.OutgoingPacket(this, packet, setSequence));
+        }
+
+        /// <summary>
+        /// Sends a packet
+        /// </summary>
+        /// <param name="outgoingPacket">Packet to be sent</param>
+        public void SendPacket(NetworkManager.OutgoingPacket outgoingPacket)
+        {
             // Send ACK and logout packets directly, everything else goes through the queue
-            if (packet.Type == PacketType.PacketAck ||
-                packet.Header.AppendedAcks ||
-                packet.Type == PacketType.LogoutRequest)
+            if (outgoingPacket.Packet.Type == PacketType.PacketAck ||
+                outgoingPacket.Packet.Header.AppendedAcks ||
+                outgoingPacket.Packet.Type == PacketType.LogoutRequest)
             {
-                SendPacketUnqueued(packet, setSequence);
+                SendPacketUnqueued(outgoingPacket);
             }
             else
             {
-                Network.PacketOutbox.Enqueue(new NetworkManager.OutgoingPacket(this, packet, setSequence));
+                Network.PacketOutbox.Enqueue(outgoingPacket);
             }
-            
         }
 
         /// <summary>
         /// Sends a packet directly to the simulator without queuing
         /// </summary>
         /// <param name="packet">Packet to be sent</param>
-        /// <param name="setSequence">True to set the sequence number, false to
-        /// leave it as is</param>
-        public void SendPacketUnqueued(Packet packet, bool setSequence)
+        public void SendPacketUnqueued(NetworkManager.OutgoingPacket outgoingPacket)
         {
+            Packet packet = outgoingPacket.Packet;
             byte[] buffer;
             int bytes;
 
             // Set sequence implies that this is not a resent packet
-            if (setSequence)
+            if (outgoingPacket.SetSequence)
             {
                 // Reset to zero if we've hit the upper sequence number limit
                 Interlocked.CompareExchange(ref Sequence, 0, Settings.MAX_SEQUENCE);
@@ -647,16 +652,11 @@ namespace OpenMetaverse
 
                 if (packet.Header.Reliable)
                 {
-                    // Wrap this packet in a struct to track timeouts and resends
-                    NetworkManager.OutgoingPacket outgoing = new NetworkManager.OutgoingPacket(this, packet, true);
-                    // Keep track of when this packet was first sent out (right now)
-                    outgoing.TickCount = Environment.TickCount;
+                    // Keep track of when this packet was sent out (right now)
+                    outgoingPacket.TickCount = Environment.TickCount;
 
                     // Add this packet to the list of ACK responses we are waiting on from the server
-                    lock (NeedAck)
-                    {
-                        NeedAck[packet.Header.Sequence] = outgoing;
-                    }
+                    lock (NeedAck) NeedAck[packet.Header.Sequence] = outgoingPacket;
 
                     if (packet.Header.Resent)
                     {
@@ -681,9 +681,6 @@ namespace OpenMetaverse
                             packet.Header.AppendedAcks = false;
                             packet.Header.AckList = new uint[0];
                         }
-
-                        // Update the sent time for this packet
-                        SetResentTime(packet.Header.Sequence);
                     }
                     else
                     {
@@ -784,9 +781,25 @@ namespace OpenMetaverse
         /// </summary>
         public void SendPing()
         {
+            uint oldestUnacked = 0;
+
+            // Get the oldest NeedAck value, the first entry in the sorted dictionary
+            lock (NeedAck)
+            {
+                if (NeedAck.Count > 0)
+                {
+                    SortedDictionary<uint, NetworkManager.OutgoingPacket>.KeyCollection.Enumerator en = NeedAck.Keys.GetEnumerator();
+                    en.MoveNext();
+                    oldestUnacked = en.Current;
+                }
+            }
+
+            //if (oldestUnacked != 0)
+            //    Logger.DebugLog("Sending ping with oldestUnacked=" + oldestUnacked);
+
             StartPingCheckPacket ping = new StartPingCheckPacket();
             ping.PingID.PingID = Stats.LastPingID++;
-            ping.PingID.OldestUnacked = 0; // FIXME
+            ping.PingID.OldestUnacked = oldestUnacked;
             ping.Header.Reliable = false;
             SendPacket(ping, true);
             Stats.LastPingSent = Environment.TickCount;
@@ -925,13 +938,6 @@ namespace OpenMetaverse
         {
         }
 
-        private void SetResentTime(uint sequence)
-        {
-            NetworkManager.OutgoingPacket outgoing;
-            if (NeedAck.TryGetValue(sequence, out outgoing))
-                outgoing.SetTickCount();
-        }
-
         /// <summary>
         /// Sends out pending acknowledgements
         /// </summary>
@@ -971,53 +977,59 @@ namespace OpenMetaverse
         {
             lock (NeedAck)
             {
-                List<uint> dropAck = new List<uint>();
-                int now = Environment.TickCount;
-
-                // Resend packets
-                foreach (NetworkManager.OutgoingPacket outgoing in NeedAck.Values)
+                if (NeedAck.Count > 0)
                 {
-                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Client.Settings.RESEND_TIMEOUT)
+                    // Create a temporary copy of the outgoing packets array to iterate over
+                    NetworkManager.OutgoingPacket[] array = new NetworkManager.OutgoingPacket[NeedAck.Count];
+                    NeedAck.Values.CopyTo(array, 0);
+
+                    int now = Environment.TickCount;
+
+                    // Resend packets
+                    for (int i = 0; i < array.Length; i++)
                     {
-                        if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
+                        NetworkManager.OutgoingPacket outgoing = array[i];
+
+                        if (outgoing.TickCount != 0 && now - outgoing.TickCount > Client.Settings.RESEND_TIMEOUT)
                         {
-                            try
+                            if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                             {
-                                if (Client.Settings.LOG_RESENDS)
+                                try
                                 {
-                                    Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                        outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount), Client);
+                                    if (Client.Settings.LOG_RESENDS)
+                                    {
+                                        Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
+                                            outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(),
+                                            now - outgoing.TickCount),Client);
+                                    }
+
+                                    // The TickCount will be set to the current time when the packet
+                                    // is actually sent out again. Set it to zero while it sits in the
+                                    // queue to avoid requeueing the same packet
+
+                                    outgoing.TickCount = 0;
+                                    outgoing.SetSequence = false;
+                                    outgoing.Packet.Header.Resent = true;
+                                    ++outgoing.ResendCount;
+
+                                    ++Stats.ResentPackets;
+
+                                    SendPacket(outgoing);
                                 }
-
-                                outgoing.ZeroTickCount();
-                                outgoing.Packet.Header.Resent = true;
-                                ++Stats.ResentPackets;
-                                outgoing.IncrementResendCount();
-
-                                SendPacket(outgoing.Packet, false);
+                                catch (Exception ex)
+                                {
+                                    Logger.DebugLog("Exception trying to resend packet: " + ex.ToString(), Client);
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                Logger.DebugLog("Exception trying to resend packet: " + ex.ToString(), Client);
-                            }
-                        }
-                        else
-                        {
-                            if (Client.Settings.LOG_RESENDS)
+                            else
                             {
                                 Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
                                     outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount));
-                            }
 
-                            dropAck.Add(outgoing.Packet.Header.Sequence);
+                                NeedAck.Remove(outgoing.Packet.Header.Sequence);
+                            }
                         }
                     }
-                }
-
-                if (dropAck.Count != 0)
-                {
-                    foreach (uint seq in dropAck)
-                        NeedAck.Remove(seq);
                 }
             }
         }
