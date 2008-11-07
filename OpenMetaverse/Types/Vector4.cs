@@ -25,173 +25,75 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using System.Globalization;
+using Mono.Simd;
 
 namespace OpenMetaverse
 {
-    [Serializable]
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Vector4 : IComparable<Vector4>, IEquatable<Vector4>
+    public static class Vector4
     {
-        /// <summary>X value</summary>
-        public float X;
-        /// <summary>Y value</summary>
-        public float Y;
-        /// <summary>Z value</summary>
-        public float Z;
-        /// <summary>W value</summary>
-        public float W;
-
-        #region Constructors
-
-        public Vector4(float x, float y, float z, float w)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-            W = w;
-        }
-
-        public Vector4(Vector2 value, float z, float w)
-        {
-            X = value.X;
-            Y = value.Y;
-            Z = z;
-            W = w;
-        }
-
-        public Vector4(Vector3 value, float w)
-        {
-            X = value.X;
-            Y = value.Y;
-            Z = value.Z;
-            W = w;
-        }
-
-        public Vector4(float value)
-        {
-            X = value;
-            Y = value;
-            Z = value;
-            W = value;
-        }
+        /// <summary>A vector with a value of 0,0,0,0</summary>
+        public static readonly Vector4f Zero = new Vector4f();
+        /// <summary>A vector with a value of 1,1,1,1</summary>
+        public static readonly Vector4f One = new Vector4f(1f, 1f, 1f, 1f);
+        /// <summary>A vector with a value of -1,-1,-1,-1</summary>
+        public static readonly Vector4f MinusOne = new Vector4f(-1f, -1f, -1f, -1f);
+        /// <summary>A vector with a value of 1,0,0,0</summary>
+        public readonly static Vector4f UnitX = new Vector4f(1f, 0f, 0f, 0f);
+        /// <summary>A vector with a value of 0,1,0,0</summary>
+        public readonly static Vector4f UnitY = new Vector4f(0f, 1f, 0f, 0f);
+        /// <summary>A vector with a value of 0,0,1,0</summary>
+        public readonly static Vector4f UnitZ = new Vector4f(0f, 0f, 1f, 0f);
+        /// <summary>A vector with a value of 0,0,0,1</summary>
+        public readonly static Vector4f UnitW = new Vector4f(0f, 0f, 0f, 1f);
 
         /// <summary>
-        /// Constructor, builds a vector from a byte array
+        /// Computes the distance formula between this vector and the origin
+        /// (0,0,0,0)
         /// </summary>
-        /// <param name="byteArray">Byte array containing four four-byte floats</param>
-        /// <param name="pos">Beginning position in the byte array</param>
-        public Vector4(byte[] byteArray, int pos)
+        public static float Length(this Vector4f vec)
         {
-            X = Y = Z = W = 0f;
-            FromBytes(byteArray, pos);
-        }
-
-        public Vector4(Vector4 value)
-        {
-            X = value.X;
-            Y = value.Y;
-            Z = value.Z;
-            W = value.W;
-        }
-
-        #endregion Constructors
-
-        #region Public Methods
-
-        public float Length()
-        {
-            return (float)Math.Sqrt(DistanceSquared(this, Zero));
-        }
-
-        public float LengthSquared()
-        {
-            return DistanceSquared(this, Zero);
-        }
-
-        public void Normalize()
-        {
-            this = Normalize(this);
+            return (float)Math.Sqrt(DistanceSquared(vec, Zero));
         }
 
         /// <summary>
-        /// Test if this vector is equal to another vector, within a given
+        /// Computes the distance formula between this vector and the origin
+        /// (0,0,0,0) without taking the square root of the result
+        /// </summary>
+        public static float LengthSquared(this Vector4f vec)
+        {
+            return DistanceSquared(vec, Zero);
+        }
+
+        /// <summary>
+        /// Test if one vector is equal to another vector within a given
         /// tolerance range
         /// </summary>
-        /// <param name="vec">Vector to test against</param>
-        /// <param name="tolerance">The acceptable magnitude of difference
-        /// between the two vectors</param>
-        /// <returns>True if the magnitude of difference between the two vectors
-        /// is less than the given tolerance, otherwise false</returns>
-        public bool ApproxEquals(Vector4 vec, float tolerance)
+        public static bool ApproxEquals(this Vector4f vec1, Vector4f vec2, float tolerance)
         {
-            Vector4 diff = this - vec;
-            return (diff.Length() <= tolerance);
-        }
-
-        /// <summary>
-        /// IComparable.CompareTo implementation
-        /// </summary>
-        public int CompareTo(Vector4 vector)
-        {
-            return Length().CompareTo(vector.Length());
+            return (vec1 - vec2).Length() <= tolerance;
         }
 
         /// <summary>
         /// Test if this vector is composed of all finite numbers
         /// </summary>
-        public bool IsFinite()
+        public static bool IsFinite(this Vector4f vec)
         {
-            return (Utils.IsFinite(X) && Utils.IsFinite(Y) && Utils.IsFinite(Z) && Utils.IsFinite(W));
-        }
-
-        /// <summary>
-        /// Builds a vector from a byte array
-        /// </summary>
-        /// <param name="byteArray">Byte array containing a 16 byte vector</param>
-        /// <param name="pos">Beginning position in the byte array</param>
-        public void FromBytes(byte[] byteArray, int pos)
-        {
-            if (!BitConverter.IsLittleEndian)
-            {
-                // Big endian architecture
-                byte[] conversionBuffer = new byte[16];
-
-                Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 16);
-
-                Array.Reverse(conversionBuffer, 0, 4);
-                Array.Reverse(conversionBuffer, 4, 4);
-                Array.Reverse(conversionBuffer, 8, 4);
-                Array.Reverse(conversionBuffer, 12, 4);
-
-                X = BitConverter.ToSingle(conversionBuffer, 0);
-                Y = BitConverter.ToSingle(conversionBuffer, 4);
-                Z = BitConverter.ToSingle(conversionBuffer, 8);
-                W = BitConverter.ToSingle(conversionBuffer, 12);
-            }
-            else
-            {
-                // Little endian architecture
-                X = BitConverter.ToSingle(byteArray, pos);
-                Y = BitConverter.ToSingle(byteArray, pos + 4);
-                Z = BitConverter.ToSingle(byteArray, pos + 8);
-                W = BitConverter.ToSingle(byteArray, pos + 12);
-            }
+            return (Utils.IsFinite(vec.X) && Utils.IsFinite(vec.Y) && Utils.IsFinite(vec.Z) && Utils.IsFinite(vec.W));
         }
 
         /// <summary>
         /// Returns the raw bytes for this vector
         /// </summary>
         /// <returns>A 16 byte array containing X, Y, Z, and W</returns>
-        public byte[] GetBytes()
+        public static byte[] GetBytes(this Vector4f vec)
         {
             byte[] byteArray = new byte[16];
 
-            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(W), 0, byteArray, 12, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(vec.X), 0, byteArray, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(vec.Y), 0, byteArray, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(vec.Z), 0, byteArray, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(vec.W), 0, byteArray, 12, 4);
 
             if (!BitConverter.IsLittleEndian)
             {
@@ -204,342 +106,119 @@ namespace OpenMetaverse
             return byteArray;
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
-        public static Vector4 Add(Vector4 value1, Vector4 value2)
+        public static Vector4f Clamp(this Vector4f vec, Vector4f min, Vector4f max)
         {
-            value1.W += value2.W;
-            value1.X += value2.X;
-            value1.Y += value2.Y;
-            value1.Z += value2.Z;
-            return value1;
+            return Vector4f.Max(Vector4f.Min(vec, min), max);
         }
 
-        public static Vector4 Clamp(Vector4 value1, Vector4 min, Vector4 max)
+        public static float Distance(this Vector4f vec1, Vector4f vec2)
         {
-            return new Vector4(
-                Utils.Clamp(value1.X, min.X, max.X),
-                Utils.Clamp(value1.Y, min.Y, max.Y),
-                Utils.Clamp(value1.Z, min.Z, max.Z),
-                Utils.Clamp(value1.W, min.W, max.W));
+            Vector4f diff = vec1 - vec2;
+            diff = diff * diff;
+            return (float)Math.Sqrt(diff.X + diff.Y + diff.Z + diff.W);
         }
 
-        public static float Distance(Vector4 value1, Vector4 value2)
+        public static float DistanceSquared(this Vector4f vec1, Vector4f vec2)
         {
-            return (float)Math.Sqrt(DistanceSquared(value1, value2));
+            Vector4f diff = vec1 - vec2;
+            diff = diff * diff;
+            return diff.X + diff.Y + diff.Z + diff.W;
         }
 
-        public static float DistanceSquared(Vector4 value1, Vector4 value2)
+        public static Vector4f Divide(this Vector4f vec1, float divider)
         {
-            return
-                (value1.W - value2.W) * (value1.W - value2.W) +
-                (value1.X - value2.X) * (value1.X - value2.X) +
-                (value1.Y - value2.Y) * (value1.Y - value2.Y) +
-                (value1.Z - value2.Z) * (value1.Z - value2.Z);
+            Vector4f vec2 = new Vector4f();
+            vec2.X = divider;
+            Vector4f.Shuffle(vec2, ShuffleSel.ExpandX);
+
+            return vec1 / vec2;
         }
 
-        public static Vector4 Divide(Vector4 value1, Vector4 value2)
+        public static float Dot(this Vector4f vec1, Vector4f vec2)
         {
-            value1.W /= value2.W;
-            value1.X /= value2.X;
-            value1.Y /= value2.Y;
-            value1.Z /= value2.Z;
-            return value1;
+            Vector4f mult = vec1 * vec2;
+            return (mult.X + mult.Y + mult.Z + mult.W);
         }
 
-        public static Vector4 Divide(Vector4 value1, float divider)
+        public static Vector4f Lerp(this Vector4f vec1, Vector4f vec2, float amount)
         {
-            float factor = 1f / divider;
-            value1.W *= factor;
-            value1.X *= factor;
-            value1.Y *= factor;
-            value1.Z *= factor;
-            return value1;
+            Vector4f scale = new Vector4f();
+            scale.X = amount;
+            Vector4f.Shuffle(scale, ShuffleSel.ExpandX);
+
+            Vector4f lerp = vec2 - vec1;
+            lerp *= scale;
+            return lerp + vec1;
         }
 
-        public static float Dot(Vector4 vector1, Vector4 vector2)
+        public static Vector4f Multiply(this Vector4f vec1, float scaleFactor)
         {
-            return vector1.X * vector2.X + vector1.Y * vector2.Y + vector1.Z * vector2.Z + vector1.W * vector2.W;
+            Vector4f scale = new Vector4f();
+            scale.X = scaleFactor;
+            Vector4f.Shuffle(scale, ShuffleSel.ExpandX);
+
+            return vec1 * scale;
         }
 
-        public static Vector4 Lerp(Vector4 value1, Vector4 value2, float amount)
+        public static Vector4f Negate(this Vector4f vec1)
         {
-            return new Vector4(
-                Utils.Lerp(value1.X, value2.X, amount),
-                Utils.Lerp(value1.Y, value2.Y, amount),
-                Utils.Lerp(value1.Z, value2.Z, amount),
-                Utils.Lerp(value1.W, value2.W, amount));
+            return vec1 * MinusOne;
         }
 
-        public static Vector4 Max(Vector4 value1, Vector4 value2)
-        {
-            return new Vector4(
-               Math.Max(value1.X, value2.X),
-               Math.Max(value1.Y, value2.Y),
-               Math.Max(value1.Z, value2.Z),
-               Math.Max(value1.W, value2.W));
-        }
-
-        public static Vector4 Min(Vector4 value1, Vector4 value2)
-        {
-            return new Vector4(
-               Math.Min(value1.X, value2.X),
-               Math.Min(value1.Y, value2.Y),
-               Math.Min(value1.Z, value2.Z),
-               Math.Min(value1.W, value2.W));
-        }
-
-        public static Vector4 Multiply(Vector4 value1, Vector4 value2)
-        {
-            value1.W *= value2.W;
-            value1.X *= value2.X;
-            value1.Y *= value2.Y;
-            value1.Z *= value2.Z;
-            return value1;
-        }
-
-        public static Vector4 Multiply(Vector4 value1, float scaleFactor)
-        {
-            value1.W *= scaleFactor;
-            value1.X *= scaleFactor;
-            value1.Y *= scaleFactor;
-            value1.Z *= scaleFactor;
-            return value1;
-        }
-
-        public static Vector4 Negate(Vector4 value)
-        {
-            value.X = -value.X;
-            value.Y = -value.Y;
-            value.Z = -value.Z;
-            value.W = -value.W;
-            return value;
-        }
-
-        public static Vector4 Normalize(Vector4 vector)
+        public static Vector4f Normalize(this Vector4f vec1)
         {
             const float MAG_THRESHOLD = 0.0000001f;
-            float factor = DistanceSquared(vector, Zero);
+            float factor = DistanceSquared(vec1, Zero);
+
             if (factor > MAG_THRESHOLD)
             {
-                factor = 1f / (float)Math.Sqrt(factor);
-                vector.X *= factor;
-                vector.Y *= factor;
-                vector.Z *= factor;
-                vector.W *= factor;
+                Vector4f factorvec = new Vector4f();
+                factorvec.X = 1f / (float)Math.Sqrt(factor);
+                factorvec = Vector4f.Shuffle(factorvec, ShuffleSel.ExpandX);
+
+                return vec1 * factorvec;
             }
             else
             {
-                vector.X = 0f;
-                vector.Y = 0f;
-                vector.Z = 0f;
-                vector.W = 0f;
+                return Zero;
             }
-            return vector;
         }
 
-        public static Vector4 SmoothStep(Vector4 value1, Vector4 value2, float amount)
+        public static Vector4f SmoothStep(this Vector4f vec1, Vector4f vec2, float amount)
         {
-            return new Vector4(
-                Utils.SmoothStep(value1.X, value2.X, amount),
-                Utils.SmoothStep(value1.Y, value2.Y, amount),
-                Utils.SmoothStep(value1.Z, value2.Z, amount),
-                Utils.SmoothStep(value1.W, value2.W, amount));
+            // TODO: Convert this to SIMD instructions
+            return new Vector4f(
+                Utils.SmoothStep(vec1.X, vec2.X, amount),
+                Utils.SmoothStep(vec1.Y, vec2.Y, amount),
+                Utils.SmoothStep(vec1.Z, vec2.Z, amount),
+                Utils.SmoothStep(vec1.W, vec2.W, amount));
         }
 
-        public static Vector4 Subtract(Vector4 value1, Vector4 value2)
+        public static Vector4f Transform2(this Vector4f position, Matrix4 matrix)
         {
-            value1.W -= value2.W;
-            value1.X -= value2.X;
-            value1.Y -= value2.Y;
-            value1.Z -= value2.Z;
-            return value1;
-        }
-
-        public static Vector4 Transform(Vector2 position, Matrix4 matrix)
-        {
-            return new Vector4(
+            return new Vector4f(
                 (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M41,
                 (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M42,
                 (position.X * matrix.M13) + (position.Y * matrix.M23) + matrix.M43,
                 (position.X * matrix.M14) + (position.Y * matrix.M24) + matrix.M44);
         }
 
-        public static Vector4 Transform(Vector3 position, Matrix4 matrix)
+        public static Vector4f Transform3(this Vector4f position, Matrix4 matrix)
         {
-            return new Vector4(
+            return new Vector4f(
                 (position.X * matrix.M11) + (position.Y * matrix.M21) + (position.Z * matrix.M31) + matrix.M41,
                 (position.X * matrix.M12) + (position.Y * matrix.M22) + (position.Z * matrix.M32) + matrix.M42,
                 (position.X * matrix.M13) + (position.Y * matrix.M23) + (position.Z * matrix.M33) + matrix.M43,
                 (position.X * matrix.M14) + (position.Y * matrix.M24) + (position.Z * matrix.M34) + matrix.M44);
         }
 
-        public static Vector4 Transform(Vector4 vector, Matrix4 matrix)
+        public static Vector4f Transform(this Vector4f vector, Matrix4 matrix)
         {
-            return new Vector4(
+            return new Vector4f(
                 (vector.X * matrix.M11) + (vector.Y * matrix.M21) + (vector.Z * matrix.M31) + (vector.W * matrix.M41),
                 (vector.X * matrix.M12) + (vector.Y * matrix.M22) + (vector.Z * matrix.M32) + (vector.W * matrix.M42),
                 (vector.X * matrix.M13) + (vector.Y * matrix.M23) + (vector.Z * matrix.M33) + (vector.W * matrix.M43),
                 (vector.X * matrix.M14) + (vector.Y * matrix.M24) + (vector.Z * matrix.M34) + (vector.W * matrix.M44));
         }
-
-        public static Vector4 Parse(string val)
-        {
-            char[] splitChar = { ',' };
-            string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new Vector4(
-                float.Parse(split[0].Trim(), Utils.EnUsCulture),
-                float.Parse(split[1].Trim(), Utils.EnUsCulture),
-                float.Parse(split[2].Trim(), Utils.EnUsCulture),
-                float.Parse(split[3].Trim(), Utils.EnUsCulture));
-        }
-
-        public static bool TryParse(string val, out Vector4 result)
-        {
-            try
-            {
-                result = Parse(val);
-                return true;
-            }
-            catch (Exception)
-            {
-                result = new Vector4();
-                return false;
-            }
-        }
-
-        #endregion Static Methods
-
-        #region Overrides
-
-        public override bool Equals(object obj)
-        {
-            return (obj is Vector4) ? this == (Vector4)obj : false;
-        }
-
-        public bool Equals(Vector4 other)
-        {
-            return W == other.W
-                && X == other.X
-                && Y == other.Y
-                && Z == other.Z;
-        }
-
-        public override int GetHashCode()
-        {
-            return X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}, {3}>", X, Y, Z, W);
-        }
-
-        /// <summary>
-        /// Get a string representation of the vector elements with up to three
-        /// decimal digits and separated by spaces only
-        /// </summary>
-        /// <returns>Raw string representation of the vector</returns>
-        public string ToRawString()
-        {
-            CultureInfo enUs = new CultureInfo("en-us");
-            enUs.NumberFormat.NumberDecimalDigits = 3;
-
-            return String.Format(enUs, "{0} {1} {2} {3}", X, Y, Z, W);
-        }
-
-        #endregion Overrides
-
-        #region Operators
-
-        public static bool operator ==(Vector4 value1, Vector4 value2)
-        {
-            return value1.W == value2.W
-                && value1.X == value2.X
-                && value1.Y == value2.Y
-                && value1.Z == value2.Z;
-        }
-
-        public static bool operator !=(Vector4 value1, Vector4 value2)
-        {
-            return !(value1 == value2);
-        }
-
-        public static Vector4 operator +(Vector4 value1, Vector4 value2)
-        {
-            value1.W += value2.W;
-            value1.X += value2.X;
-            value1.Y += value2.Y;
-            value1.Z += value2.Z;
-            return value1;
-        }
-
-        public static Vector4 operator -(Vector4 value)
-        {
-            return new Vector4(-value.X, -value.Y, -value.Z, -value.W);
-        }
-
-        public static Vector4 operator -(Vector4 value1, Vector4 value2)
-        {
-            value1.W -= value2.W;
-            value1.X -= value2.X;
-            value1.Y -= value2.Y;
-            value1.Z -= value2.Z;
-            return value1;
-        }
-
-        public static Vector4 operator *(Vector4 value1, Vector4 value2)
-        {
-            value1.W *= value2.W;
-            value1.X *= value2.X;
-            value1.Y *= value2.Y;
-            value1.Z *= value2.Z;
-            return value1;
-        }
-
-        public static Vector4 operator *(Vector4 value1, float scaleFactor)
-        {
-            value1.W *= scaleFactor;
-            value1.X *= scaleFactor;
-            value1.Y *= scaleFactor;
-            value1.Z *= scaleFactor;
-            return value1;
-        }
-
-        public static Vector4 operator /(Vector4 value1, Vector4 value2)
-        {
-            value1.W /= value2.W;
-            value1.X /= value2.X;
-            value1.Y /= value2.Y;
-            value1.Z /= value2.Z;
-            return value1;
-        }
-
-        public static Vector4 operator /(Vector4 value1, float divider)
-        {
-            float factor = 1f / divider;
-            value1.W *= factor;
-            value1.X *= factor;
-            value1.Y *= factor;
-            value1.Z *= factor;
-            return value1;
-        }
-
-        #endregion Operators
-
-        /// <summary>A vector with a value of 0,0,0,0</summary>
-        public readonly static Vector4 Zero = new Vector4();
-        /// <summary>A vector with a value of 1,1,1,1</summary>
-        public readonly static Vector4 One = new Vector4(1f, 1f, 1f, 1f);
-        /// <summary>A vector with a value of 1,0,0,0</summary>
-        public readonly static Vector4 UnitX = new Vector4(1f, 0f, 0f, 0f);
-        /// <summary>A vector with a value of 0,1,0,0</summary>
-        public readonly static Vector4 UnitY = new Vector4(0f, 1f, 0f, 0f);
-        /// <summary>A vector with a value of 0,0,1,0</summary>
-        public readonly static Vector4 UnitZ = new Vector4(0f, 0f, 1f, 0f);
-        /// <summary>A vector with a value of 0,0,0,1</summary>
-        public readonly static Vector4 UnitW = new Vector4(0f, 0f, 0f, 1f);
     }
 }

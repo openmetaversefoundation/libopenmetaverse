@@ -26,6 +26,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Mono.Simd;
 
 namespace OpenMetaverse
 {
@@ -953,20 +954,20 @@ namespace OpenMetaverse
             return Divide(matrix, divider);
         }
 
-        public Vector4 this[int row]
+        public Vector4f this[int row]
         {
             get
             {
                 switch (row)
                 {
                     case 0:
-                        return new Vector4(M11, M12, M13, M14);
+                        return new Vector4f(M11, M12, M13, M14);
                     case 1:
-                        return new Vector4(M21, M22, M23, M24);
+                        return new Vector4f(M21, M22, M23, M24);
                     case 2:
-                        return new Vector4(M31, M32, M33, M34);
+                        return new Vector4f(M31, M32, M33, M34);
                     case 3:
-                        return new Vector4(M41, M42, M43, M44);
+                        return new Vector4f(M41, M42, M43, M44);
                     default:
                         throw new IndexOutOfRangeException("Matrix4 row index must be from 0-3");
                 }

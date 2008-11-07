@@ -26,6 +26,7 @@
 
 using System;
 using System.Text;
+using Mono.Simd;
 
 namespace OpenMetaverse
 {
@@ -167,6 +168,184 @@ namespace OpenMetaverse
             else
             {
                 return BitConverter.ToDouble(bytes, pos);
+            }
+        }
+
+        public static Vector4f BytesToVector2(byte[] bytes, int pos)
+        {
+            Vector4f vec = new Vector4f();
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                // Big endian architecture
+                byte[] conversionBuffer = new byte[8];
+
+                Buffer.BlockCopy(bytes, pos, conversionBuffer, 0, 8);
+
+                Array.Reverse(conversionBuffer, 0, 4);
+                Array.Reverse(conversionBuffer, 4, 4);
+
+                vec.X = BitConverter.ToSingle(conversionBuffer, 0);
+                vec.Y = BitConverter.ToSingle(conversionBuffer, 4);
+            }
+            else
+            {
+                // Little endian architecture
+                vec.X = BitConverter.ToSingle(bytes, pos);
+                vec.Y = BitConverter.ToSingle(bytes, pos + 4);
+            }
+
+            return vec;
+        }
+
+        public static Vector4f BytesToVector3(byte[] bytes, int pos)
+        {
+            Vector4f vec = new Vector4f();
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                // Big endian architecture
+                byte[] conversionBuffer = new byte[12];
+
+                Buffer.BlockCopy(bytes, pos, conversionBuffer, 0, 12);
+
+                Array.Reverse(conversionBuffer, 0, 4);
+                Array.Reverse(conversionBuffer, 4, 4);
+                Array.Reverse(conversionBuffer, 8, 4);
+                Array.Reverse(conversionBuffer, 12, 4);
+
+                vec.X = BitConverter.ToSingle(conversionBuffer, 0);
+                vec.Y = BitConverter.ToSingle(conversionBuffer, 4);
+                vec.Z = BitConverter.ToSingle(conversionBuffer, 8);
+            }
+            else
+            {
+                // Little endian architecture
+                vec.X = BitConverter.ToSingle(bytes, pos);
+                vec.Y = BitConverter.ToSingle(bytes, pos + 4);
+                vec.Z = BitConverter.ToSingle(bytes, pos + 8);
+            }
+
+            return vec;
+        }
+
+        public static Vector4f BytesToVector4(byte[] bytes, int pos)
+        {
+            Vector4f vec = new Vector4f();
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                // Big endian architecture
+                byte[] conversionBuffer = new byte[16];
+
+                Buffer.BlockCopy(bytes, pos, conversionBuffer, 0, 16);
+
+                Array.Reverse(conversionBuffer, 0, 4);
+                Array.Reverse(conversionBuffer, 4, 4);
+                Array.Reverse(conversionBuffer, 8, 4);
+                Array.Reverse(conversionBuffer, 12, 4);
+
+                vec.X = BitConverter.ToSingle(conversionBuffer, 0);
+                vec.Y = BitConverter.ToSingle(conversionBuffer, 4);
+                vec.Z = BitConverter.ToSingle(conversionBuffer, 8);
+                vec.W = BitConverter.ToSingle(conversionBuffer, 12);
+            }
+            else
+            {
+                // Little endian architecture
+                vec.X = BitConverter.ToSingle(bytes, pos);
+                vec.Y = BitConverter.ToSingle(bytes, pos + 4);
+                vec.Z = BitConverter.ToSingle(bytes, pos + 8);
+                vec.W = BitConverter.ToSingle(bytes, pos + 12);
+            }
+
+            return vec;
+        }
+
+        public static Color4 BytesToColor4(byte[] bytes, int pos, bool rgbInverted, bool alphaInverted)
+        {
+            const float quanta = 1.0f / 255.0f;
+
+            Color4 color;
+
+            if (rgbInverted)
+            {
+                color.R = (float)(255 - byteArray[pos]) * quanta;
+                color.G = (float)(255 - byteArray[pos + 1]) * quanta;
+                color.B = (float)(255 - byteArray[pos + 2]) * quanta;
+            }
+            else
+            {
+                color.R = (float)byteArray[pos] * quanta;
+                color.G = (float)byteArray[pos + 1] * quanta;
+                color.B = (float)byteArray[pos + 2] * quanta;
+            }
+
+            if (alphaInverted)
+                color.A = (float)(255 - byteArray[pos + 3]) * quanta;
+            else
+                color.A = (float)byteArray[pos + 3] * quanta;
+
+            return color;
+        }
+
+        public static Quaternion BytesToQuaternion(byte[] bytes, int pos, bool normalized)
+        {
+            if (!normalized)
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    // Big endian architecture
+                    byte[] conversionBuffer = new byte[16];
+
+                    Buffer.BlockCopy(bytes, pos, conversionBuffer, 0, 16);
+
+                    Array.Reverse(conversionBuffer, 0, 4);
+                    Array.Reverse(conversionBuffer, 4, 4);
+                    Array.Reverse(conversionBuffer, 8, 4);
+                    Array.Reverse(conversionBuffer, 12, 4);
+
+                    X = BitConverter.ToSingle(conversionBuffer, 0);
+                    Y = BitConverter.ToSingle(conversionBuffer, 4);
+                    Z = BitConverter.ToSingle(conversionBuffer, 8);
+                    W = BitConverter.ToSingle(conversionBuffer, 12);
+                }
+                else
+                {
+                    // Little endian architecture
+                    X = BitConverter.ToSingle(bytes, pos);
+                    Y = BitConverter.ToSingle(bytes, pos + 4);
+                    Z = BitConverter.ToSingle(bytes, pos + 8);
+                    W = BitConverter.ToSingle(bytes, pos + 12);
+                }
+            }
+            else
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    // Big endian architecture
+                    byte[] conversionBuffer = new byte[16];
+
+                    Buffer.BlockCopy(byteArray, pos, conversionBuffer, 0, 12);
+
+                    Array.Reverse(conversionBuffer, 0, 4);
+                    Array.Reverse(conversionBuffer, 4, 4);
+                    Array.Reverse(conversionBuffer, 8, 4);
+
+                    X = BitConverter.ToSingle(conversionBuffer, 0);
+                    Y = BitConverter.ToSingle(conversionBuffer, 4);
+                    Z = BitConverter.ToSingle(conversionBuffer, 8);
+                }
+                else
+                {
+                    // Little endian architecture
+                    X = BitConverter.ToSingle(byteArray, pos);
+                    Y = BitConverter.ToSingle(byteArray, pos + 4);
+                    Z = BitConverter.ToSingle(byteArray, pos + 8);
+                }
+
+                float xyzsum = 1f - X * X - Y * Y - Z * Z;
+                W = (xyzsum > 0f) ? (float)Math.Sqrt(xyzsum) : 0f;
             }
         }
 
