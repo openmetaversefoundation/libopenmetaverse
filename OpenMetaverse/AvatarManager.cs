@@ -239,7 +239,7 @@ namespace OpenMetaverse
         /// <param name="id">The avatar key to retrieve a name for</param>
         public void RequestAvatarName(UUID id)
         {
-            Console.WriteLine("AvatarManager requesting UUID for {0}", id);
+            Logger.Log("AvatarManager requesting UUID for " + id, Helpers.LogLevel.Debug);
             UUIDNameRequestPacket request = new UUIDNameRequestPacket();
             request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[1];
             request.UUIDNameBlock[0] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
