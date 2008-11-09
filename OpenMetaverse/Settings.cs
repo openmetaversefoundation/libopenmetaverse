@@ -281,6 +281,10 @@ namespace OpenMetaverse
 
         /// <summary>Maximum number of times to resend a failed packet</summary>
         public int MAX_RESEND_COUNT = 3;
+
+        /// <summary>Throttle outgoing packet rate</summary>
+        public bool THROTTLE_OUTGOING_PACKETS = true;
+
         #endregion
         #region Logging Configuration
 

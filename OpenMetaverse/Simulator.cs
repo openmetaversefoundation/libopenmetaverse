@@ -622,6 +622,7 @@ namespace OpenMetaverse
             // Send ACK and logout packets directly, everything else goes through the queue
             if (outgoingPacket.Packet.Type == PacketType.PacketAck ||
                 outgoingPacket.Packet.Header.AppendedAcks ||
+                Client.Settings.THROTTLE_OUTGOING_PACKETS == false ||
                 outgoingPacket.Packet.Type == PacketType.LogoutRequest)
             {
                 SendPacketUnqueued(outgoingPacket);
