@@ -479,12 +479,34 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Sets and object's flags (physical, temporary, phantom, casts shadow)
+        /// </summary>
+        /// <param name="localID"></param>
+        /// <param name="physical"></param>
+        /// <param name="temporary"></param>
+        /// <param name="phantom"></param>
+        /// <param name="castsShadow"></param>
+        public void SetFlags(uint localID, bool physical, bool temporary, bool phantom, bool castsShadow)
+        {
+            ObjectFlagUpdatePacket flags = new ObjectFlagUpdatePacket();
+            flags.AgentData.AgentID = Client.Self.AgentID;
+            flags.AgentData.SessionID = Client.Self.SessionID;
+            flags.AgentData.ObjectLocalID = localID;
+            flags.AgentData.UsePhysics = physical;
+            flags.AgentData.IsTemporary = temporary;
+            flags.AgentData.IsPhantom = phantom;
+            flags.AgentData.CastsShadows = castsShadow;
+
+            Client.Network.SendPacket(flags);
+        }
+
+        /// <summary>
         /// Sets an object's sale information
         /// </summary>
         /// <param name="localID"></param>
         /// <param name="saleType"></param>
         /// <param name="price"></param>
-        public void SetObjectSaleInfo(uint localID, SaleType saleType, int price)
+        public void SetSaleInfo(uint localID, SaleType saleType, int price)
         {
             ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
             sale.AgentData.AgentID = Client.Self.AgentID;
@@ -504,7 +526,7 @@ namespace OpenMetaverse
         /// <param name="localIDs"></param>
         /// <param name="saleType"></param>
         /// <param name="price"></param>
-        public void SetObjectSaleInfo(List<uint> localIDs, SaleType saleType, int price)
+        public void SetSaleInfo(List<uint> localIDs, SaleType saleType, int price)
         {
             ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
             sale.AgentData.AgentID = Client.Self.AgentID;
