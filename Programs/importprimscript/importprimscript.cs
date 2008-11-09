@@ -74,6 +74,7 @@ namespace importprimscript
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.ALWAYS_DECODE_OBJECTS = true;
+            Client.Settings.THROTTLE_OUTGOING_PACKETS = false;
             Client.Throttle.Land = 0;
             Client.Throttle.Wind = 0;
             Client.Throttle.Cloud = 0;
