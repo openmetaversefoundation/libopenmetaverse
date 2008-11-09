@@ -636,7 +636,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Sends a packet directly to the simulator without queuing
         /// </summary>
-        /// <param name="packet">Packet to be sent</param>
+        /// <param name="outgoingPacket">Packet to be sent</param>
         public void SendPacketUnqueued(NetworkManager.OutgoingPacket outgoingPacket)
         {
             Packet packet = outgoingPacket.Packet;

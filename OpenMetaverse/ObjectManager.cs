@@ -479,6 +479,49 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Sets an object's sale information
+        /// </summary>
+        /// <param name="localID"></param>
+        /// <param name="saleType"></param>
+        /// <param name="price"></param>
+        public void SetObjectSaleInfo(uint localID, SaleType saleType, int price)
+        {
+            ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
+            sale.AgentData.AgentID = Client.Self.AgentID;
+            sale.AgentData.SessionID = Client.Self.SessionID;
+            sale.ObjectData = new ObjectSaleInfoPacket.ObjectDataBlock[1];
+            sale.ObjectData[0] = new ObjectSaleInfoPacket.ObjectDataBlock();
+            sale.ObjectData[0].LocalID = localID;
+            sale.ObjectData[0].SalePrice = price;
+            sale.ObjectData[0].SaleType = (byte)saleType;
+
+            Client.Network.SendPacket(sale);
+        }
+
+        /// <summary>
+        /// Sets sale info for multiple objects
+        /// </summary>
+        /// <param name="localIDs"></param>
+        /// <param name="saleType"></param>
+        /// <param name="price"></param>
+        public void SetObjectSaleInfo(List<uint> localIDs, SaleType saleType, int price)
+        {
+            ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
+            sale.AgentData.AgentID = Client.Self.AgentID;
+            sale.AgentData.SessionID = Client.Self.SessionID;
+            sale.ObjectData = new ObjectSaleInfoPacket.ObjectDataBlock[localIDs.Count];
+            for (int i = 0; i < localIDs.Count; i++)
+            {
+                sale.ObjectData[i] = new ObjectSaleInfoPacket.ObjectDataBlock();
+                sale.ObjectData[i].LocalID = localIDs[i];
+                sale.ObjectData[i].SalePrice = price;
+                sale.ObjectData[i].SaleType = (byte)saleType;
+            }
+
+            Client.Network.SendPacket(sale);
+        }
+
+        /// <summary>
         /// Deselect an object
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
@@ -2124,16 +2167,16 @@ namespace OpenMetaverse
                                 }
                             }
                         }
+
+                        //Do the actual removing outside of the loops but still inside the lock.
+                        //This safely prevents the collection from being modified during a loop.
+                        foreach (uint removeID in removeAvatars)
+                            simulator.ObjectsAvatars.Dictionary.Remove(removeID);
                     }
                 }
 
-                //Do the actual removing outside of the loops but still inside the lock.
-                //This safely prevents the collection from being modified during a loop.
-                foreach (uint removeID in removeAvatars)
-                    simulator.ObjectsAvatars.Remove(removeID);
-
                 foreach (uint removeID in removePrims)
-                    simulator.ObjectsPrimitives.Remove(removeID);
+                    simulator.ObjectsPrimitives.Dictionary.Remove(removeID);
             }
         }
 
