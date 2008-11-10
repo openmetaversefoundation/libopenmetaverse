@@ -28,6 +28,7 @@ namespace Dashboard
 
             //initialize client object
             Client = new GridClient();
+            Client.Settings.USE_TEXTURE_CACHE = true;
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             LoginParams ClientLogin = Client.Network.DefaultLoginParams(firstName, lastName, password, "OpenMetaverse Dashboard", Assembly.GetExecutingAssembly().GetName().Version.ToString());
             ClientLogin.Start = "last";

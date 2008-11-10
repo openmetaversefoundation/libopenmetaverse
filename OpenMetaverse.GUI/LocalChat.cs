@@ -65,7 +65,7 @@ namespace OpenMetaverse.GUI
             _txtInput.Dock = DockStyle.Bottom;
             _txtInput.KeyDown += new KeyEventHandler(_txtInput_KeyDown);
 
-            this.Controls.AddRange(new Control[]{ _rtfOutput, _txtInput });
+            this.Controls.AddRange(new Control[] { _txtInput, _rtfOutput });
         }
 
         /// <summary>
