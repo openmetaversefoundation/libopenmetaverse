@@ -316,7 +316,8 @@ namespace Simian
 
                     // Get this machine's IP address
                     IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
-                    IPAddress simIP = addresses.AddressList.Length > 0 ? addresses.AddressList[0] : IPAddress.Loopback;
+                    IPAddress simIP = addresses.AddressList.Length > 0 ?
+                        addresses.AddressList[addresses.AddressList.Length - 1] :IPAddress.Loopback;
 
                     response.AgentID = agent.AgentID;
                     response.SecureSessionID = agent.SecureSessionID;

@@ -54,18 +54,15 @@ namespace Simian.Extensions
 
             lock (server.Agents)
             {
-                foreach (Agent recipient in server.Agents.Values)
+                // HACK: Only works for sending money to someone who is online
+                Agent recipient;
+                if (server.Agents.TryGetValue(request.MoneyData.DestID, out recipient))
                 {
-                    if (recipient.AgentID == request.MoneyData.DestID)
-                    {
-                        agent.Balance -= request.MoneyData.Amount;
-                        recipient.Balance += request.MoneyData.Amount;
+                    agent.Balance -= request.MoneyData.Amount;
+                    recipient.Balance += request.MoneyData.Amount;
 
-                        SendBalance(agent, UUID.Zero, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.Avatar.Name));
-                        SendBalance(agent, UUID.Zero, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.Avatar.Name));
-
-                        break;
-                    }
+                    SendBalance(agent, UUID.Zero, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.Avatar.Name));
+                    SendBalance(agent, UUID.Zero, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.Avatar.Name));
                 }
             }
         }

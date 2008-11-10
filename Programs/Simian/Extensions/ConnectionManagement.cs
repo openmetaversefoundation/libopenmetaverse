@@ -17,9 +17,9 @@ namespace Simian.Extensions
         {
             this.server = server;
 
-            server.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, new PacketCallback(UseCircuitCodeHandler));
-            server.UDP.RegisterPacketCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
-            server.UDP.RegisterPacketCallback(PacketType.LogoutRequest, new PacketCallback(LogoutRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, UseCircuitCodeHandler);
+            server.UDP.RegisterPacketCallback(PacketType.StartPingCheck, StartPingCheckHandler);
+            server.UDP.RegisterPacketCallback(PacketType.LogoutRequest, LogoutRequestHandler);
         }
 
         public void Stop()

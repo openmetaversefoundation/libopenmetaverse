@@ -22,10 +22,13 @@ namespace Simian
         public int ResendCount;
         /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
         public int TickCount;
+        /// <summary>Category this packet belongs to</summary>
+        public PacketCategory Category;
 
-        public OutgoingPacket(Packet packet)
+        public OutgoingPacket(Packet packet, PacketCategory category)
         {
             Packet = packet;
+            Category = category;
         }
     }
 
@@ -96,11 +99,6 @@ namespace Simian
         public bool RemoveClient(Agent agent)
         {
             return udpServer.RemoveClient(agent);
-        }
-
-        public bool RemoveClient(Agent agent, IPEndPoint endpoint)
-        {
-            return udpServer.RemoveClient(agent, endpoint);
         }
 
         public uint CreateCircuit(Agent agent)
@@ -176,11 +174,6 @@ namespace Simian
                 return false;
         }
 
-        public bool RemoveClient(Agent agent, IPEndPoint endpoint)
-        {
-            return clients.Remove(agent.AgentID, endpoint);
-        }
-
         public uint CreateCircuit(Agent agent)
         {
             uint circuitCode = (uint)Interlocked.Increment(ref currentCircuitCode);
@@ -197,7 +190,7 @@ namespace Simian
         public void BroadcastPacket(Packet packet, PacketCategory category)
         {
             clients.ForEach(
-                delegate(UDPClient client) { SendPacket(client, packet, category, true); });
+                delegate(UDPClient client) { SendPacket(client, new OutgoingPacket(packet, category)); });
         }
 
         public void SendPacket(UUID agentID, Packet packet, PacketCategory category)
@@ -211,16 +204,19 @@ namespace Simian
                 return;
             }
 
-            SendPacket(client, packet, category, true);
+            SendPacket(client, new OutgoingPacket(packet, category));
         }
 
-        void SendPacket(UDPClient client, Packet packet, PacketCategory category, bool setSequence)
+        void SendPacket(UDPClient client, OutgoingPacket outgoingPacket)
         {
+            Packet packet = outgoingPacket.Packet;
             byte[] buffer;
             int bytes;
 
-            // Set sequence implies that this is not a resent packet
-            if (setSequence)
+            // Update the sent time for this packet
+            outgoingPacket.TickCount = Environment.TickCount;
+
+            if (!packet.Header.Resent)
             {
                 // Reset to zero if we've hit the upper sequence number limit
                 Interlocked.CompareExchange(ref client.CurrentSequence, 0, 0xFFFFFF);
@@ -230,71 +226,55 @@ namespace Simian
 
                 if (packet.Header.Reliable)
                 {
-                    OutgoingPacket outgoing;
+                    // Add this packet to the list of ACK responses we are waiting on from this client
+                    lock (client.NeedAcks)
+                        client.NeedAcks[sequence] = outgoingPacket;
 
-                    if (packet.Header.Resent && client.NeedAcks.TryGetValue(packet.Header.Sequence, out outgoing))
+                    // This packet is reliable and not a resend, check if the conditions are favorable
+                    // to ACK appending
+                    if (packet.Type != PacketType.PacketAck)
                     {
-                        // This packet has already been sent out once, strip any appended ACKs
-                        // off it and reinsert them into the outgoing ACK queue under the 
-                        // assumption that this packet will continually be rejected from the
-                        // client or that the appended ACKs are possibly making the delivery fail
-                        if (packet.Header.AckList.Length > 0)
+                        lock (client.PendingAcks)
                         {
-                            Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
-                                packet.Header.Sequence, packet.GetType()));
+                            int count = client.PendingAcks.Count;
 
-                            lock (client.PendingAcks)
+                            if (count > 0 && count < 10)
                             {
-                                foreach (uint ack in packet.Header.AckList)
-                                {
-                                    if (!client.PendingAcks.ContainsKey(ack))
-                                        client.PendingAcks[ack] = ack;
-                                }
-                            }
+                                // Append all of the queued up outgoing ACKs to this packet
+                                packet.Header.AckList = new uint[count];
 
-                            packet.Header.AppendedAcks = false;
-                            packet.Header.AckList = new uint[0];
-                        }
-                    }
-                    else
-                    {
-                        // Wrap this packet in a struct to track timeouts and resends
-                        outgoing = new OutgoingPacket(packet);
+                                for (int i = 0; i < count; i++)
+                                    packet.Header.AckList[i] = client.PendingAcks.Values[i];
 
-                        // Add this packet to the list of ACK responses we are waiting on from this client
-                        lock (client.NeedAcks)
-                            client.NeedAcks[sequence] = outgoing;
-
-                        // This packet is not a resend, check if the conditions are favorable
-                        // to ACK appending
-                        if (packet.Type != PacketType.PacketAck)
-                        {
-                            lock (client.PendingAcks)
-                            {
-                                int count = client.PendingAcks.Count;
-
-                                if (count > 0 && count < 10)
-                                {
-                                    // Append all of the queued up outgoing ACKs to this packet
-                                    packet.Header.AckList = new uint[count];
-
-                                    for (int i = 0; i < count; i++)
-                                        packet.Header.AckList[i] = client.PendingAcks.Values[i];
-
-                                    client.PendingAcks.Clear();
-                                    packet.Header.AppendedAcks = true;
-                                }
+                                client.PendingAcks.Clear();
+                                packet.Header.AppendedAcks = true;
                             }
                         }
                     }
-
-                    // Update the sent time for this packet
-                    outgoing.TickCount = Environment.TickCount;
                 }
-                else if (packet.Header.AckList.Length > 0)
+            }
+            else
+            {
+                // This packet has already been sent out once, strip any appended ACKs
+                // off it and reinsert them into the outgoing ACK queue under the 
+                // assumption that this packet will continually be rejected from the
+                // client or that the appended ACKs are possibly making the delivery fail
+                if (packet.Header.AckList.Length > 0)
                 {
-                    // Sanity check for ACKS appended on an unreliable packet, this is bad form
-                    Logger.Log("Sending appended ACKs on an unreliable packet", Helpers.LogLevel.Warning);
+                    Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
+                        packet.Header.Sequence, packet.GetType()));
+
+                    lock (client.PendingAcks)
+                    {
+                        foreach (uint ack in packet.Header.AckList)
+                        {
+                            if (!client.PendingAcks.ContainsKey(ack))
+                                client.PendingAcks[ack] = ack;
+                        }
+                    }
+
+                    packet.Header.AppendedAcks = false;
+                    packet.Header.AckList = new uint[0];
                 }
             }
 
@@ -345,7 +325,7 @@ namespace Simian
             acks.Packets[0] = new PacketAckPacket.PacketsBlock();
             acks.Packets[0].ID = ack;
 
-            SendPacket(client, acks, PacketCategory.Overhead, true);
+            SendPacket(client, new OutgoingPacket(acks, PacketCategory.Overhead));
         }
 
         public void SendAcks(UDPClient client)
@@ -378,19 +358,29 @@ namespace Simian
             }
 
             if (acks != null)
-                SendPacket(client, acks, PacketCategory.Overhead, true);
+                SendPacket(client, new OutgoingPacket(acks, PacketCategory.Overhead));
         }
 
         public void ResendUnacked(UDPClient client)
         {
-            lock (client.NeedAcks)
+            if (client.NeedAcks.Count > 0)
             {
-                List<uint> dropAck = new List<uint>();
+                OutgoingPacket[] array;
                 int now = Environment.TickCount;
 
-                // Resend packets
-                foreach (OutgoingPacket outgoing in client.NeedAcks.Values)
+                lock (client.NeedAcks)
                 {
+                    // Create a temporary copy of the outgoing packets array to iterate over
+                    array = new OutgoingPacket[client.NeedAcks.Count];
+                    client.NeedAcks.Values.CopyTo(array, 0);
+                }
+
+                // Resend packets
+                for (int i = 0; i < array.Length; i++)
+                {
+                    OutgoingPacket outgoing = array[i];
+
+                    // FIXME: Make 4000 and 3 .ini settings
                     if (outgoing.TickCount != 0 && now - outgoing.TickCount > 4000)
                     {
                         if (outgoing.ResendCount < 3)
@@ -398,12 +388,15 @@ namespace Simian
                             Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
                                     outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount));
 
-                            outgoing.TickCount = Environment.TickCount;
+                            // The TickCount will be set to the current time when the packet
+                            // is actually sent out again
+                            outgoing.TickCount = 0;
                             outgoing.Packet.Header.Resent = true;
                             ++outgoing.ResendCount;
+
                             //++Stats.ResentPackets;
 
-                            SendPacket(client, outgoing.Packet, PacketCategory.Overhead, false);
+                            SendPacket(client, outgoing);
                         }
                         else
                         {
@@ -411,10 +404,10 @@ namespace Simian
                                 outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount),
                                 Helpers.LogLevel.Warning);
 
-                            dropAck.Add(outgoing.Packet.Header.Sequence);
+                            lock (client.NeedAcks) client.NeedAcks.Remove(outgoing.Packet.Header.Sequence);
 
                             //Disconnect an agent if no packets are received for some time
-                            //TODO: 60000 should be a setting somewhere.
+                            //FIXME: Make 60000 an .ini setting
                             if (Environment.TickCount - client.Agent.TickLastPacketReceived > 60000)
                             {
                                 Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name),
@@ -425,12 +418,6 @@ namespace Simian
                             }
                         }
                     }
-                }
-
-                if (dropAck.Count != 0)
-                {
-                    for (int i = 0; i < dropAck.Count; i++)
-                        client.NeedAcks.Remove(dropAck[i]);
                 }
             }
         }
@@ -470,6 +457,7 @@ namespace Simian
                 Agent agent;
                 if (CompleteAgentConnection(useCircuitCode.CircuitCode.Code, out agent))
                 {
+                    // FIXME: Sanity check that the agent isn't already logged in here
                     AddClient(agent, address);
                     if (clients.TryGetValue(agent.AgentID, out client))
                     {
@@ -607,35 +595,20 @@ namespace Simian
             }
         }
 
-        bool TryGetUnassociatedAgent(uint circuitCode, out Agent agent)
-        {
-            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
-            {
-                lock (unassociatedAgents)
-                    unassociatedAgents.Remove(circuitCode);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         bool CompleteAgentConnection(uint circuitCode, out Agent agent)
         {
-            if (unassociatedAgents.TryGetValue(circuitCode, out agent))
+            lock (unassociatedAgents)
             {
-                lock (server.Agents)
-                    server.Agents[agent.AgentID] = agent;
-                lock (unassociatedAgents)
+                if (unassociatedAgents.TryGetValue(circuitCode, out agent))
+                {
                     unassociatedAgents.Remove(circuitCode);
-
-                return true;
-            }
-            else
-            {
-                return false;
+                    lock (server.Agents) server.Agents[agent.AgentID] = agent;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
     }

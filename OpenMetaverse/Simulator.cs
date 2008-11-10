@@ -360,7 +360,7 @@ namespace OpenMetaverse
         #region Properties
 
         /// <summary>The IP address and port of the server</summary>
-        public IPEndPoint IPEndPoint { get { return ipEndPoint; } }
+        public IPEndPoint IPEndPoint { get { return remoteEndPoint; } }
         /// <summary>Whether there is a working connection to the simulator or 
         /// not</summary>
         public bool Connected { get { return connected; } }
@@ -400,7 +400,6 @@ namespace OpenMetaverse
         private Queue<ulong> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
         private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
-        private IPEndPoint ipEndPoint;
         private Timer AckTimer;
         private Timer PingTimer;
         private Timer StatsTimer;
@@ -421,7 +420,6 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            ipEndPoint = address;
             Handle = handle;
             Estate = new EstateTools(Client);
             Network = Client.Network;
@@ -563,7 +561,7 @@ namespace OpenMetaverse
                 {
                     // Try to send the CloseCircuit notice
                     CloseCircuitPacket close = new CloseCircuitPacket();
-                    UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint);
+                    UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
                     byte[] data = close.ToBytes();
                     Buffer.BlockCopy(data, 0, buf.Data, 0, data.Length);
                     buf.DataLength = data.Length;
@@ -659,31 +657,7 @@ namespace OpenMetaverse
                     // Add this packet to the list of ACK responses we are waiting on from the server
                     lock (NeedAck) NeedAck[packet.Header.Sequence] = outgoingPacket;
 
-                    if (packet.Header.Resent)
-                    {
-                        // This packet has already been sent out once, strip any appended ACKs
-                        // off it and reinsert them into the outgoing ACK queue under the 
-                        // assumption that this packet will continually be rejected from the
-                        // server or that the appended ACKs are possibly making the delivery fail
-                        if (packet.Header.AckList.Length > 0)
-                        {
-                            Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
-                                packet.Header.Sequence, packet.GetType()));
-
-                            lock (PendingAcks)
-                            {
-                                foreach (uint sequence in packet.Header.AckList)
-                                {
-                                    if (!PendingAcks.ContainsKey(sequence))
-                                        PendingAcks[sequence] = sequence;
-                                }
-                            }
-
-                            packet.Header.AppendedAcks = false;
-                            packet.Header.AckList = new uint[0];
-                        }
-                    }
-                    else
+                    if (!packet.Header.Resent)
                     {
                         // This packet is not a resend, check if the conditions are favorable
                         // to ACK appending
@@ -715,13 +689,38 @@ namespace OpenMetaverse
                 }
             }
 
+            if (packet.Header.Resent)
+            {
+                // This packet has already been sent out once, strip any appended ACKs
+                // off it and reinsert them into the outgoing ACK queue under the 
+                // assumption that this packet will continually be rejected from the
+                // server or that the appended ACKs are possibly making the delivery fail
+                if (packet.Header.AckList.Length > 0)
+                {
+                    Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
+                        packet.Header.Sequence, packet.GetType()));
+
+                    lock (PendingAcks)
+                    {
+                        foreach (uint sequence in packet.Header.AckList)
+                        {
+                            if (!PendingAcks.ContainsKey(sequence))
+                                PendingAcks[sequence] = sequence;
+                        }
+                    }
+
+                    packet.Header.AppendedAcks = false;
+                    packet.Header.AckList = new uint[0];
+                }
+            }
+
             // Serialize the packet
             buffer = packet.ToBytes();
             bytes = buffer.Length;
             Stats.SentBytes += (ulong)bytes;
             ++Stats.SentPackets;
 
-            UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint);
+            UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
 
             // Zerocode if needed
             if (packet.Header.Zerocoded)
@@ -756,7 +755,7 @@ namespace OpenMetaverse
                 Stats.SentBytes += (ulong)payload.Length;
                 ++Stats.SentPackets;
 
-                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint);
+                UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
                 Buffer.BlockCopy(payload, 0, buf.Data, 0, payload.Length);
                 buf.DataLength = payload.Length;
 
@@ -813,9 +812,9 @@ namespace OpenMetaverse
         public override string ToString()
         {
             if (!String.IsNullOrEmpty(Name))
-                return String.Format("{0} ({1})", Name, ipEndPoint);
+                return String.Format("{0} ({1})", Name, remoteEndPoint);
             else
-                return String.Format("({0})", ipEndPoint);
+                return String.Format("({0})", remoteEndPoint);
         }
 
         /// <summary>
@@ -837,7 +836,7 @@ namespace OpenMetaverse
             Simulator sim = obj as Simulator;
             if (sim == null)
                 return false;
-            return (ipEndPoint.Equals(sim.ipEndPoint));
+            return (remoteEndPoint.Equals(sim.remoteEndPoint));
         }
 
         public static bool operator ==(Simulator lhs, Simulator rhs)
@@ -854,7 +853,7 @@ namespace OpenMetaverse
                 return false;
             }
 
-            return lhs.ipEndPoint.Equals(rhs.ipEndPoint);
+            return lhs.remoteEndPoint.Equals(rhs.remoteEndPoint);
         }
 
         public static bool operator !=(Simulator lhs, Simulator rhs)
@@ -867,7 +866,7 @@ namespace OpenMetaverse
             Packet packet = null;
 
             // Check if this packet came from the server we expected it to come from
-            if (!ipEndPoint.Address.Equals(((IPEndPoint)buffer.RemoteEndPoint).Address))
+            if (!remoteEndPoint.Address.Equals(((IPEndPoint)buffer.RemoteEndPoint).Address))
             {
                 Logger.Log("Received " + buffer.DataLength + " bytes of data from unrecognized source " +
                     ((IPEndPoint)buffer.RemoteEndPoint).ToString(), Helpers.LogLevel.Warning, Client);
@@ -976,59 +975,52 @@ namespace OpenMetaverse
         /// </summary>
         private void ResendUnacked()
         {
-            lock (NeedAck)
+            if (NeedAck.Count > 0)
             {
-                if (NeedAck.Count > 0)
+                NetworkManager.OutgoingPacket[] array;
+
+                lock (NeedAck)
                 {
                     // Create a temporary copy of the outgoing packets array to iterate over
-                    NetworkManager.OutgoingPacket[] array = new NetworkManager.OutgoingPacket[NeedAck.Count];
+                    array = new NetworkManager.OutgoingPacket[NeedAck.Count];
                     NeedAck.Values.CopyTo(array, 0);
+                }
 
-                    int now = Environment.TickCount;
+                int now = Environment.TickCount;
 
-                    // Resend packets
-                    for (int i = 0; i < array.Length; i++)
+                // Resend packets
+                for (int i = 0; i < array.Length; i++)
+                {
+                    NetworkManager.OutgoingPacket outgoing = array[i];
+
+                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
-                        NetworkManager.OutgoingPacket outgoing = array[i];
-
-                        if (outgoing.TickCount != 0 && now - outgoing.TickCount > Client.Settings.RESEND_TIMEOUT)
+                        if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                         {
-                            if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
+                            if (Client.Settings.LOG_RESENDS)
                             {
-                                try
-                                {
-                                    if (Client.Settings.LOG_RESENDS)
-                                    {
-                                        Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                            outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(),
-                                            now - outgoing.TickCount),Client);
-                                    }
-
-                                    // The TickCount will be set to the current time when the packet
-                                    // is actually sent out again. Set it to zero while it sits in the
-                                    // queue to avoid requeueing the same packet
-
-                                    outgoing.TickCount = 0;
-                                    outgoing.SetSequence = false;
-                                    outgoing.Packet.Header.Resent = true;
-                                    ++outgoing.ResendCount;
-
-                                    ++Stats.ResentPackets;
-
-                                    SendPacket(outgoing);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.DebugLog("Exception trying to resend packet: " + ex.ToString(), Client);
-                                }
+                                Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
+                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(),
+                                    now - outgoing.TickCount), Client);
                             }
-                            else
-                            {
-                                Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
-                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount));
 
-                                NeedAck.Remove(outgoing.Packet.Header.Sequence);
-                            }
+                            // The TickCount will be set to the current time when the packet
+                            // is actually sent out again
+                            outgoing.TickCount = 0;
+                            outgoing.SetSequence = false;
+                            outgoing.Packet.Header.Resent = true;
+                            ++outgoing.ResendCount;
+
+                            ++Stats.ResentPackets;
+
+                            SendPacket(outgoing);
+                        }
+                        else
+                        {
+                            Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
+                                outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount));
+
+                            lock (NeedAck) NeedAck.Remove(outgoing.Packet.Header.Sequence);
                         }
                     }
                 }
