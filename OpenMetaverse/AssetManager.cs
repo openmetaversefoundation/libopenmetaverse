@@ -260,7 +260,7 @@ namespace OpenMetaverse
         public int Transferred;
         public bool Success;
         public AssetType AssetType;
-
+		public List<byte[]> TransferBlocks = new List<byte[]>();
         private int transferStart;
 
         /// <summary>Number of milliseconds passed since the last transfer
@@ -1125,21 +1125,32 @@ namespace OpenMetaverse
                     }
                 }
 
-                // This assumes that every transfer packet except the last one is exactly 1000 bytes,
-                // hopefully that is a safe assumption to make
-                Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
-                    asset.TransferData.Data.Length);
+				// copy each block into an array, as we cannot know the sequence and size of each block
+				while(download.TransferBlocks.Count<asset.TransferData.Packet+1)
+					download.TransferBlocks.Add(null);
+				download.TransferBlocks[asset.TransferData.Packet] = new byte[asset.TransferData.Data.Length];
+				Buffer.BlockCopy(asset.TransferData.Data, 0, download.TransferBlocks[asset.TransferData.Packet], 0, asset.TransferData.Data.Length);
+				
+//				Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, asset.TransferData.Data.Length * asset.TransferData.Packet,
+//                    asset.TransferData.Data.Length);
                 download.Transferred += asset.TransferData.Data.Length;
-
-                //Client.DebugLog(String.Format("Transfer packet {0}, received {1}/{2}/{3} bytes for asset {4}",
-                //    asset.TransferData.Packet, asset.TransferData.Data.Length, transfer.Transferred, transfer.Size,
-                //    transfer.AssetID.ToString()));
+				
+//                Logger.DebugLog(String.Format("Transfer packet {0}, received {1}/{2}/{3} bytes for asset {4}",
+//                    asset.TransferData.Packet, asset.TransferData.Data.Length, transfer.Transferred, transfer.Size,
+//                    transfer.ID.ToString()));
 
                 // Check if we downloaded the full asset
                 if (download.Transferred >= download.Size)
                 {
                     Logger.DebugLog("Transfer for asset " + download.AssetID.ToString() + " completed", Client);
-
+					
+					int offset = 0;
+					foreach(byte[] buf in download.TransferBlocks)
+					{
+						Buffer.BlockCopy(buf, 0, download.AssetData, offset, buf.Length);
+						offset += buf.Length;
+					}
+					
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
 
