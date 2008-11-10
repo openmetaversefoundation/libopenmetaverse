@@ -22,6 +22,8 @@ namespace OpenMetaverse.TestClient
             testClient.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
             testClient.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
             testClient.Groups.OnGroupJoined += new GroupManager.GroupJoinedCallback(Groups_OnGroupJoined);
+            testClient.Avatars.OnAvatarPicks += new AvatarManager.AvatarPicksCallback(Avatars_OnAvatarPicks);
+            testClient.Avatars.OnPickInfo += new AvatarManager.PickInfoCallback(Avatars_OnPickInfo);
 
             Name = "cloneprofile";
             Description = "Clones another avatars profile as closely as possible. WARNING: This command will " +
@@ -51,6 +53,10 @@ namespace OpenMetaverse.TestClient
             // Request all of the packets that make up an avatar profile
             Client.Avatars.RequestAvatarProperties(targetID);
 
+            //Request all of the avatars pics
+            Client.Avatars.RequestAvatarPicks(Client.Self.AgentID);
+            Client.Avatars.RequestAvatarPicks(targetID);
+
             // Wait for all the packets to arrive
             ReceivedProfileEvent.Reset();
             ReceivedProfileEvent.WaitOne(5000, false);
@@ -73,6 +79,26 @@ namespace OpenMetaverse.TestClient
             }
 
             return "Synchronized our profile to the profile of " + targetID.ToString();
+        }
+
+        void Avatars_OnAvatarPicks(UUID avatarid, Dictionary<UUID, string> picks)
+        {
+            foreach (KeyValuePair<UUID, string> kvp in picks)
+            {
+                if (avatarid == Client.Self.AgentID)
+                {
+                    Client.Self.PickDelete(kvp.Key);
+                }
+                else
+                {
+                    Client.Avatars.RequestPickInfo(avatarid, kvp.Key);
+                }
+            }
+        }
+
+        void Avatars_OnPickInfo(UUID pickid, ProfilePick pick)
+        {
+            Client.Self.PickInfoUpdate(pickid, pick.TopPick, pick.ParcelID, pick.Name, pick.PosGlobal, pick.SnapshotID, pick.Desc);
         }
 
         void Avatars_OnAvatarProperties(UUID avatarID, Avatar.AvatarProperties properties)
@@ -114,7 +140,7 @@ namespace OpenMetaverse.TestClient
                     ReceivedProfileEvent.Set();
             }
         }
-        
+
         void Groups_OnGroupJoined(UUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
