@@ -62,7 +62,6 @@ namespace OpenMetaverse.Capabilities
         }
 
         HttpListener server;
-        AsyncCallback serverCallback;
         //int serverPort;
         //bool sslEnabled;
         // TODO: Replace this with an immutable list to avoid locking
@@ -75,7 +74,6 @@ namespace OpenMetaverse.Capabilities
             //serverPort = port;
             //sslEnabled = ssl;
             server = new HttpListener();
-            serverCallback = new AsyncCallback(BeginGetContextCallback);
 
             if (ssl)
                 server.Prefixes.Add(String.Format("https://+:{0}/", port));
@@ -109,7 +107,7 @@ namespace OpenMetaverse.Capabilities
         public void Start()
         {
             server.Start();
-            server.BeginGetContext(serverCallback, server);
+            server.BeginGetContext(BeginGetContextCallback, server);
             isRunning = true;
         }
 
@@ -131,7 +129,7 @@ namespace OpenMetaverse.Capabilities
             if (isRunning)
             {
                 // Immediately start listening again
-                try { server.BeginGetContext(serverCallback, server); }
+                try { server.BeginGetContext(BeginGetContextCallback, server); }
                 catch (Exception)
                 {
                     // Something went wrong, can't resume listening. Bail out now

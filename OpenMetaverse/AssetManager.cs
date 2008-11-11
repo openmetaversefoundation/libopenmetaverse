@@ -548,8 +548,11 @@ namespace OpenMetaverse
         /// left empty</param>
         /// <param name="vFileType">Asset type of <code>vFileID</code>, or
         /// <code>AssetType.Unknown</code> if filename is not empty</param>
+        /// <param name="fromCache">Sets the FilePath in the request to Cache
+        /// (4) if true, otherwise Unknown (0) is used</param>
         /// <returns></returns>
-        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, UUID vFileID, AssetType vFileType)
+        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, UUID vFileID, AssetType vFileType,
+            bool fromCache)
         {
             UUID uuid = UUID.Random();
             ulong id = uuid.GetULong();
@@ -567,8 +570,7 @@ namespace OpenMetaverse
             RequestXferPacket request = new RequestXferPacket();
             request.XferID.ID = id;
             request.XferID.Filename = Utils.StringToBytes(filename);
-            request.XferID.FilePath = 4; // "Cache". This is a horrible thing that hardcodes a file path enumeration in to the
-                                         // protocol. For asset downloads we should only ever need this value
+            request.XferID.FilePath = fromCache ? (byte)4 : (byte)0;
             request.XferID.DeleteOnCompletion = deleteOnCompletion;
             request.XferID.UseBigPackets = useBigPackets;
             request.XferID.VFileID = vFileID;

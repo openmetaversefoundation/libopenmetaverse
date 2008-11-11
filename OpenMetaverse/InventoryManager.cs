@@ -2270,7 +2270,7 @@ namespace OpenMetaverse
                     _Client.Assets.OnXferReceived += xferCallback;
 
                     // Start the actual asset xfer
-                    xferID = _Client.Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown);
+                    xferID = _Client.Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown, true);
 
                     if (taskDownloadEvent.WaitOne(timeoutMS, false))
                     {
