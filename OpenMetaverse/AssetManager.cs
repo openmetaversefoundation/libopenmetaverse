@@ -1287,6 +1287,8 @@ namespace OpenMetaverse
                     {
                         Logger.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
                             Helpers.LogLevel.Warning, Client);
+                        // Re-confirm the last packet we actually received
+                        SendConfirmXferPacket(download.XferID, download.PacketNum - 1);
                     }
 
                     return;
