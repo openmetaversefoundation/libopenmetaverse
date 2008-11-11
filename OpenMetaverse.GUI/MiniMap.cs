@@ -94,9 +94,8 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateMiniMap(sim); });
             else
             {
-                Bitmap bmp = _MapLayer == null ? new Bitmap(256, 256) : (Bitmap)_MapLayer;
+                Bitmap bmp = _MapLayer == null ? new Bitmap(256, 256) : (Bitmap)_MapLayer.Clone();
                 Graphics g = Graphics.FromImage(bmp);
-                //SolidBrush brush = new SolidBrush(Color.FromArgb(90, 32, 32, 32));
 
                 if (_MapLayer == null)
                 {
