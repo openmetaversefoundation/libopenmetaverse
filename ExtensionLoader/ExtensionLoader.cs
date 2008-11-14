@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.CodeDom.Compiler;
 using System.IO;
+using System.Text;
 
 namespace ExtensionLoader
 {
@@ -95,9 +96,17 @@ namespace ExtensionLoader
             {
                 CompilerResults results = CSCompiler.CompileAssemblyFromFile(CSCompilerParams, name);
                 if (results.Errors.Count == 0)
+                {
                     LoadAssemblyExtensions(results.CompiledAssembly, extensionList);
+                }
                 else
-                    throw new ExtensionException("Error(s) compiling " + name);
+                {
+                    StringBuilder errors = new StringBuilder();
+                    errors.AppendLine("Error(s) compiling " + name);
+                    foreach (CompilerError error in results.Errors)
+                        errors.AppendFormat(" Line {0}: {1}{2}", error.Line, error.ErrorText, Environment.NewLine);
+                    throw new ExtensionException(errors.ToString());
+                }
             }
 
             if (assignableInterfaces != null)
@@ -145,10 +154,7 @@ namespace ExtensionLoader
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    throw new ExtensionException("Unrecognized extension " + f, e);
-                }
+                catch (Exception) { }
             }
 
             return plugins;

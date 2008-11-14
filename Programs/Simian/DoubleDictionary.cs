@@ -25,8 +25,19 @@ namespace Simian
         {
             lock (syncObject)
             {
-                Dictionary1.Add(key1, value);
-                Dictionary2.Add(key2, value);
+                if (Dictionary1.ContainsKey(key1))
+                {
+                    if (!Dictionary2.ContainsKey(key2))
+                        throw new ArgumentException("key1 exists in the dictionary but not key2");
+                }
+                else if (Dictionary2.ContainsKey(key2))
+                {
+                    if (!Dictionary1.ContainsKey(key1))
+                        throw new ArgumentException("key2 exists in the dictionary but not key1");
+                }
+
+                Dictionary1[key1] = value;
+                Dictionary2[key2] = value;
             }
         }
 
@@ -80,6 +91,16 @@ namespace Simian
                 foreach (TValue value in Dictionary1.Values)
                     action(value);
             }
+        }
+
+        public TValue this[TKey1 key1]
+        {
+            get { return Dictionary1[key1]; }
+        }
+
+        public TValue this[TKey2 key2]
+        {
+            get { return Dictionary2[key2]; }
         }
     }
 }

@@ -85,7 +85,6 @@ namespace Simian.Extensions
     {
         Simian server;
         Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
-        BlockingQueue<ImageDownload> CurrentDownloadQueue = new BlockingQueue<ImageDownload>();
 
         public ImageDelivery()
         {
