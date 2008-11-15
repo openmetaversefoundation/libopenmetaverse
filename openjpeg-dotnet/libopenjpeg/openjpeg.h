@@ -598,6 +598,8 @@ typedef struct opj_packet_info {
 	int end_pos;
 	/** packet distorsion */
 	double disto;
+	/** HACK: padding to maintain 8-byte alignment */
+	int padding;
 } opj_packet_info_t;
 
 /**
