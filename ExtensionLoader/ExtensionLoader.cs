@@ -109,6 +109,27 @@ namespace ExtensionLoader
                 }
             }
 
+            if (extensionList != null)
+            {
+                // Sort interfaces according to the ordering in the whitelist
+                SortedList<int, IExtension<TOwner>> sorted = new SortedList<int,IExtension<TOwner>>(Extensions.Count);
+                for (int i = 0; i < Extensions.Count; i++)
+                {
+                    // Find this extension in the whitelist
+                    for (int j = 0; j < extensionList.Count; j++)
+                    {
+                        if (extensionList[j].Equals(Extensions[i].GetType().Name, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            sorted.Add(j, Extensions[i]);
+                            break;
+                        }
+                    }
+                }
+
+                // Copy the sorted list back
+                Extensions = new List<IExtension<TOwner>>(sorted.Values);
+            }
+
             if (assignableInterfaces != null)
             {
                 // Assign extensions to interfaces
@@ -116,12 +137,15 @@ namespace ExtensionLoader
                 {
                     Type type = assignable.FieldType;
 
-                    for (int i = 0; i < Extensions.Count; i++)
+                    for (int i = Extensions.Count - 1; i >= 0; i--)
                     {
                         IExtension<TOwner> extension = Extensions[i];
 
                         if (extension.GetType().GetInterface(type.Name) != null)
+                        {
                             assignable.SetValue(assignablesParent, extension);
+                            break;
+                        }
                     }
                 }
 

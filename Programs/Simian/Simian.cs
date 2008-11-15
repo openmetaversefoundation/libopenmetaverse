@@ -102,19 +102,11 @@ namespace Simian
                     PersistentExtensions.Add((IPersistable)extension);
             }
 
-            for (int i = 0; i < extensionList.Count; i++)
+            // Start all of the extensions
+            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
             {
-                // Start all extensions except for persistence providers
-                ExtensionLoader<Simian>.Extensions.ForEach(
-                    delegate(IExtension<Simian> extension)
-                    {
-                        if (extension.GetType().Name == extensionList[i])
-                        {
-                            Logger.DebugLog("Starting extension " + extensionList[i]);
-                            extension.Start(this);
-                        }
-                    }
-                );
+                Logger.Log("Starting extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                extension.Start(this);
             }
 
             return true;
