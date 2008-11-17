@@ -536,7 +536,7 @@ namespace OpenMetaverse.StructuredData
 
         private static void SerializeLLSDNotationArrayFormatted(StringWriter writer, string intend, OSDArray osdArray)
         {
-            writer.Write(Helpers.NewLine);
+            writer.WriteLine();
             writer.Write(intend);
             writer.Write(arrayBeginNotationMarker);
             int lastIndex = osdArray.Count - 1;
@@ -544,7 +544,7 @@ namespace OpenMetaverse.StructuredData
             for (int idx = 0; idx <= lastIndex; idx++)
             {
                 if (osdArray[idx].Type != OSDType.Array && osdArray[idx].Type != OSDType.Map)
-                    writer.Write(Helpers.NewLine);
+                    writer.WriteLine();
                 writer.Write(intend + baseIndent);
                 SerializeLLSDNotationElementFormatted(writer, intend, osdArray[idx]);
                 if (idx < lastIndex)
@@ -552,17 +552,17 @@ namespace OpenMetaverse.StructuredData
                     writer.Write(kommaNotationDelimiter);
                 }
             }
-            writer.Write(Helpers.NewLine);
+            writer.WriteLine();
             writer.Write(intend);
             writer.Write(arrayEndNotationMarker);
         }
 
         private static void SerializeLLSDNotationMapFormatted(StringWriter writer, string intend, OSDMap osdMap)
         {
-            writer.Write(Helpers.NewLine);
+            writer.WriteLine();
             writer.Write(intend);
             writer.Write(mapBeginNotationMarker);
-            writer.Write(Helpers.NewLine);
+            writer.WriteLine();
             int lastIndex = osdMap.Count - 1;
             int idx = 0;
 
@@ -576,15 +576,15 @@ namespace OpenMetaverse.StructuredData
                 SerializeLLSDNotationElementFormatted(writer, intend, kvp.Value);
                 if (idx < lastIndex)
                 {
-                    writer.Write(Helpers.NewLine);
+                    writer.WriteLine();
                     writer.Write(intend + baseIndent);
                     writer.Write(kommaNotationDelimiter);
-                    writer.Write(Helpers.NewLine);
+                    writer.WriteLine();
                 }
 
                 idx++;
             }
-            writer.Write(Helpers.NewLine);
+            writer.WriteLine();
             writer.Write(intend);
             writer.Write(mapEndNotationMarker);
         }

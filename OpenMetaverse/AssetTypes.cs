@@ -404,7 +404,7 @@ namespace OpenMetaverse
                                     fields[1] = fields[1].Replace(',', '.');
 
                                 float weight = float.Parse(fields[1], System.Globalization.NumberStyles.Float,
-                                    Helpers.EnUsCulture.NumberFormat);
+                                    Utils.EnUsCulture.NumberFormat);
 
                                 Params[id] = weight;
                             }

@@ -408,7 +408,7 @@ namespace OpenMetaverse.StructuredData
         }
  
         public override double AsReal() { return value; }
-        public override string AsString() { return value.ToString(Helpers.EnUsCulture); }
+        public override string AsString() { return value.ToString(Utils.EnUsCulture); }
         public override byte[] AsBinary() { return Utils.DoubleToBytes(value); }
         public override string ToString() { return AsString(); }
     }

@@ -2871,7 +2871,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        Logger.Log("Unrecognized token " + key + " in: " + Helpers.NewLine + taskData,
+                        Logger.Log("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
                             Helpers.LogLevel.Error);
                     }
                 }

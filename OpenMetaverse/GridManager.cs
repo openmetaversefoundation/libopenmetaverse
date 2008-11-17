@@ -107,17 +107,8 @@ namespace OpenMetaverse
         /// <returns></returns>
         public override string ToString()
         {
-            StringBuilder output = new StringBuilder("GridRegion: ");
-            output.Append(Name); output.Append(Helpers.NewLine);
-            output.Append("RegionHandle: " + RegionHandle); output.Append(Helpers.NewLine);
-            output.Append(String.Format("X: {0} Y: {1}", X, Y)); output.Append(Helpers.NewLine);
-            output.Append("MapImageID: " + MapImageID.ToString()); output.Append(Helpers.NewLine);
-            output.Append("Access: " + Access); output.Append(Helpers.NewLine);
-            output.Append("RegionFlags: " + RegionFlags); output.Append(Helpers.NewLine);
-            output.Append("WaterHeight: " + WaterHeight); output.Append(Helpers.NewLine);
-            output.Append("Agents: " + Agents);
-
-            return output.ToString();
+            return String.Format("{0} ({1}/{2}), Handle: {3}, MapImage: {4}, Access: {5}, Flags: {6}",
+                Name, X, Y, RegionHandle, MapImageID, Access, RegionFlags);
         }
 
         /// <summary>

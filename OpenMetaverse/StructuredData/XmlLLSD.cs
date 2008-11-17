@@ -634,7 +634,7 @@ namespace OpenMetaverse.StructuredData
             if (LastXmlErrors == String.Empty)
                 LastXmlErrors = error;
             else
-                LastXmlErrors += Helpers.NewLine + error;
+                LastXmlErrors += Environment.NewLine + error;
         }
     }
 }

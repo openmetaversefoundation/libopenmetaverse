@@ -45,8 +45,6 @@ namespace OpenMetaverse
         /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
         public const byte MSG_ZEROCODED = 0x80;
 
-        public static readonly string NewLine = Environment.NewLine;
-
         /// <summary>
         /// Passed to Logger.Log() to identify the severity of a log entry
         /// </summary>
@@ -71,12 +69,6 @@ namespace OpenMetaverse
             /// </summary>
             Debug
         };
-
-        /// <summary>Provide a single instance of the CultureInfo class to
-        /// help parsing in situations where the grid assumes an en-us 
-        /// culture</summary>
-        public static readonly System.Globalization.CultureInfo EnUsCulture =
-            new System.Globalization.CultureInfo("en-us");
 
         /// <summary>
         /// 
