@@ -139,7 +139,7 @@
       </Files>
     </Project>
     
-    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library">
+    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library" guid="F0CCD62E-8055-4419-8171-F2C5FD7C8B6D">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
