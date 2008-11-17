@@ -142,7 +142,6 @@ namespace Simian.Extensions
                 else if (block.DiscardLevel == -1 && block.DownloadPriority == 0.0f)
                 {
                     // Aborting a download we are not tracking, ignore
-                    Logger.DebugLog(String.Format("Aborting an image download for untracked image " + block.Image.ToString()));
                 }
                 else
                 {
@@ -171,8 +170,16 @@ namespace Simian.Extensions
                         data.ImageData = new ImageDataPacket.ImageDataBlock();
                         int imageDataSize = (download.Texture.AssetData.Length >= ImageDownload.FIRST_IMAGE_PACKET_SIZE) ?
                             ImageDownload.FIRST_IMAGE_PACKET_SIZE : download.Texture.AssetData.Length;
-                        data.ImageData.Data = new byte[imageDataSize];
-                        Buffer.BlockCopy(download.Texture.AssetData, 0, data.ImageData.Data, 0, imageDataSize);
+                        try
+                        {
+                            data.ImageData.Data = new byte[imageDataSize];
+                            Buffer.BlockCopy(download.Texture.AssetData, 0, data.ImageData.Data, 0, imageDataSize);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log(String.Format("{0}: imageDataSize={1}", ex.Message, imageDataSize),
+                                Helpers.LogLevel.Error);
+                        }
 
                         server.UDP.SendPacket(agent.AgentID, data, PacketCategory.Texture);
 
@@ -201,8 +208,19 @@ namespace Simian.Extensions
                                             transfer.ImageID.ID = block.Image;
                                             transfer.ImageID.Packet = (ushort)download.CurrentPacket;
                                             transfer.ImageData.Data = new byte[imagePacketSize];
-                                            Buffer.BlockCopy(download.Texture.AssetData, download.CurrentBytePosition(),
-                                                transfer.ImageData.Data, 0, imagePacketSize);
+
+                                            try
+                                            {
+                                                Buffer.BlockCopy(download.Texture.AssetData, download.CurrentBytePosition(),
+                                                    transfer.ImageData.Data, 0, imagePacketSize);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Logger.Log(String.Format(
+                                                    "{0}: CurrentBytePosition()={1}, AssetData.Length={2} imagePacketSize={3}",
+                                                    ex.Message, download.CurrentBytePosition(), download.Texture.AssetData.Length,
+                                                    imagePacketSize), Helpers.LogLevel.Error);
+                                            }
 
                                             server.UDP.SendPacket(agent.AgentID, transfer, PacketCategory.Texture);
 

@@ -239,9 +239,16 @@ namespace Simian
                                             case "channel":
                                                 channel = reader.ReadElementContentAsString("string", String.Empty);
                                                 break;
+                                            case "platform":
+                                            case "mac":
+                                            case "id0":
+                                            case "options":
+                                                // Ignored values
+                                                reader.ReadInnerXml();
+                                                break;
                                             default:
                                                 if (reader.Name == "string")
-                                                    Console.WriteLine(String.Format("Ignore login xml value: name={0}, value={1}", name, reader.ReadInnerXml()));
+                                                    Console.WriteLine(String.Format("Ignore login xml value: name={0}", name, reader.ReadInnerXml()));
                                                 else
                                                     Console.WriteLine(String.Format("Unknown login xml: name={0}, value={1}", name, reader.ReadInnerXml()));
                                                 break;

@@ -341,8 +341,8 @@ namespace OpenMetaverse.Imaging
                         offset += 4;
                         packet.end_pos = Marshal.ReadInt32(marshalled.packets, offset);
                         offset += 4;
-                        // Skip the distortion field (double) and padding (integer)
-                        offset += 12;
+                        //double distortion = (double)Marshal.ReadInt64(marshalled.packets, offset);
+                        offset += 8;
 
                         packets[i] = packet;
                     }
