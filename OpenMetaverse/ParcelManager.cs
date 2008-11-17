@@ -669,7 +669,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public DateTime Time;
             /// <summary>Flags for specific entry in white/black lists</summary>
-            public uint Flags;
+            public AccessList Flags;
         }
 
         /// <summary>
@@ -1568,7 +1568,7 @@ namespace OpenMetaverse
                         ParcelAccessEntry pae = new ParcelAccessEntry();
                         pae.AgentID = reply.List[i].ID;
                         pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
-                        pae.Flags = reply.List[i].Flags;
+                        pae.Flags = (AccessList)reply.List[i].Flags;
 
                         accessList.Add(pae);
                     }
