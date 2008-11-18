@@ -95,6 +95,8 @@ namespace OpenMetaverse.StructuredData
         public static OSD FromInteger(sbyte value) { return new OSDInteger((int)value); }
         public static OSD FromInteger(byte value) { return new OSDInteger((int)value); }
         public static OSD FromUInteger(uint value) { return new OSDBinary(value); }
+        public static OSD FromLong(long value) { return new OSDBinary(value); }
+        public static OSD FromULong(ulong value) { return new OSDBinary(value); }
         public static OSD FromReal(double value) { return new OSDReal(value); }
         public static OSD FromReal(float value) { return new OSDReal((double)value); }
         public static OSD FromString(string value) { return new OSDString(value); }

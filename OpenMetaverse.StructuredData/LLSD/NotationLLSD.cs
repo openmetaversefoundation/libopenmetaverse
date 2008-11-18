@@ -561,8 +561,7 @@ namespace OpenMetaverse.StructuredData
         {
             writer.WriteLine();
             writer.Write(intend);
-            writer.Write(mapBeginNotationMarker);
-            writer.WriteLine();
+            writer.WriteLine(mapBeginNotationMarker);
             int lastIndex = osdMap.Count - 1;
             int idx = 0;
 
@@ -578,8 +577,7 @@ namespace OpenMetaverse.StructuredData
                 {
                     writer.WriteLine();
                     writer.Write(intend + baseIndent);
-                    writer.Write(kommaNotationDelimiter);
-                    writer.WriteLine();
+                    writer.WriteLine(kommaNotationDelimiter);
                 }
 
                 idx++;

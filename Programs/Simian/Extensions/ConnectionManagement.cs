@@ -84,7 +84,7 @@ namespace Simian.Extensions
 
             server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
 
-            server.DisconnectClient(agent);
+            server.Avatars.Disconnect(agent);
         }
     }
 }

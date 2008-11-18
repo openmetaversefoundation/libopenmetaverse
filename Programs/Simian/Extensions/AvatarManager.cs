@@ -99,6 +99,26 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(sound, PacketCategory.State);
         }
 
+        public void Disconnect(Agent agent)
+        {
+            // Remove the avatar from the scene
+            SimulationObject obj;
+            if (server.Scene.TryGetObject(agent.AgentID, out obj))
+                server.Scene.ObjectRemove(this, obj);
+            else
+                Logger.Log("Disconnecting an agent that is not in the scene", Helpers.LogLevel.Warning);
+
+            // Remove the UDP client
+            server.UDP.RemoveClient(agent);
+
+            // HACK: Notify everyone when someone disconnects
+            OfflineNotificationPacket offline = new OfflineNotificationPacket();
+            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+            offline.AgentBlock[0].AgentID = agent.AgentID;
+            server.UDP.BroadcastPacket(offline, PacketCategory.State);
+        }
+
         void AgentAnimationHandler(Packet packet, Agent agent)
         {
             AgentAnimationPacket animPacket = (AgentAnimationPacket)packet;

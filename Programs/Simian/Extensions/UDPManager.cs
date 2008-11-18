@@ -413,7 +413,7 @@ namespace Simian
                                 Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name),
                                     Helpers.LogLevel.Warning);
 
-                                server.DisconnectClient(client.Agent);
+                                server.Avatars.Disconnect(client.Agent);
                                 return;
                             }
                         }
