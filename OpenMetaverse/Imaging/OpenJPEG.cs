@@ -41,6 +41,8 @@ namespace OpenMetaverse.Imaging
         /// <summary>TGA Header size</summary>
         public const int TGA_HEADER_SIZE = 32;
 
+        #region JPEG2000 Structs
+
         /// <summary>
         /// Defines the beginning and ending file positions of a layer in an
         /// LRCP-progression JPEG2000 file
@@ -99,6 +101,10 @@ namespace OpenMetaverse.Imaging
             }
         }
 
+        #endregion JPEG2000 Structs
+
+        #region Unmanaged Function Declarations
+
         // allocate encoded buffer based on length field
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -128,7 +134,13 @@ namespace OpenMetaverse.Imaging
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool DotNetDecodeWithInfo(ref MarshalledImage image);
-        
+
+        #endregion Unmanaged Function Declarations
+
+        /// <summary>OpenJPEG is not threadsafe, so this object is used to lock
+        /// during calls into unmanaged code</summary>
+        private static object OpenJPEGLock = new object();
+
         /// <summary>
         /// Encode a <seealso cref="ManagedImage"/> object into a byte array
         /// </summary>
@@ -137,11 +149,11 @@ namespace OpenMetaverse.Imaging
         /// <returns>A byte array containing the encoded Image object</returns>
         public static byte[] Encode(ManagedImage image, bool lossless)
         {
-            if (
-                (image.Channels & ManagedImage.ImageChannels.Color) == 0 ||
+            if ((image.Channels & ManagedImage.ImageChannels.Color) == 0 ||
                 ((image.Channels & ManagedImage.ImageChannels.Bump) != 0 && (image.Channels & ManagedImage.ImageChannels.Alpha) == 0))
                 throw new ArgumentException("JPEG2000 encoding is not supported for this channel combination");
-            
+
+            byte[] encoded = null;
             MarshalledImage marshalled = new MarshalledImage();
 
             // allocate and copy to input buffer
@@ -151,31 +163,34 @@ namespace OpenMetaverse.Imaging
             if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) marshalled.components++;
             if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) marshalled.components++;
 
-            if (!DotNetAllocDecoded(ref marshalled))
-                throw new Exception("LibslAllocDecoded failed");
-
-            int n = image.Width * image.Height;
-
-            if ((image.Channels & ManagedImage.ImageChannels.Color) != 0)
+            lock (OpenJPEGLock)
             {
-                Marshal.Copy(image.Red, 0, marshalled.decoded, n);
-                Marshal.Copy(image.Green, 0, (IntPtr)(marshalled.decoded.ToInt64() + n), n);
-                Marshal.Copy(image.Blue, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 2), n);
+                if (!DotNetAllocDecoded(ref marshalled))
+                    throw new Exception("LibslAllocDecoded failed");
+
+                int n = image.Width * image.Height;
+
+                if ((image.Channels & ManagedImage.ImageChannels.Color) != 0)
+                {
+                    Marshal.Copy(image.Red, 0, marshalled.decoded, n);
+                    Marshal.Copy(image.Green, 0, (IntPtr)(marshalled.decoded.ToInt64() + n), n);
+                    Marshal.Copy(image.Blue, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 2), n);
+                }
+
+                if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
+                if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
+
+                // codec will allocate output buffer
+                if (!DotNetEncode(ref marshalled, lossless))
+                    throw new Exception("LibslEncode failed");
+
+                // copy output buffer
+                encoded = new byte[marshalled.length];
+                Marshal.Copy(marshalled.encoded, encoded, 0, marshalled.length);
+
+                // free buffers
+                DotNetFree(ref marshalled);
             }
-
-            if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
-            if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
-
-            // codec will allocate output buffer
-            if (!DotNetEncode(ref marshalled, lossless))
-                throw new Exception("LibslEncode failed");
-
-            // copy output buffer
-            byte[] encoded = new byte[marshalled.length];
-            Marshal.Copy(marshalled.encoded, encoded, 0, marshalled.length);
-
-            // free buffers
-            DotNetFree(ref marshalled);
 
             return encoded;
         }
@@ -234,70 +249,75 @@ namespace OpenMetaverse.Imaging
 
             // Allocate and copy to input buffer
             marshalled.length = encoded.Length;
-            DotNetAllocEncoded(ref marshalled);
-            Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-            // Codec will allocate output buffer
-            DotNetDecode(ref marshalled);
-
-            int n = marshalled.width * marshalled.height;
-
-            switch (marshalled.components)
+            lock (OpenJPEGLock)
             {
-                case 1: // Grayscale
-                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                        ManagedImage.ImageChannels.Color);
-                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
-                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
-                    break;
+                DotNetAllocEncoded(ref marshalled);
+                Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-                case 2: // Grayscale + alpha
-                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
-                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
-                    Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Alpha, 0, n);
-                    break;
+                // Codec will allocate output buffer
+                DotNetDecode(ref marshalled);
 
-                case 3: // RGB
-                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                        ManagedImage.ImageChannels.Color);
-                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                    break;
+                int n = marshalled.width * marshalled.height;
 
-                case 4: // RGBA
-                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
-                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
-                    break;
+                switch (marshalled.components)
+                {
+                    case 1: // Grayscale
+                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                            ManagedImage.ImageChannels.Color);
+                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
+                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
+                        break;
 
-                case 5: // RGBBA
-                    managedImage = new ManagedImage(marshalled.width, marshalled.height,
-                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump);
-                    Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                    // Bump comes before alpha in 5 channel encode
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Bump, 0, n);
-                    Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 4)), managedImage.Alpha, 0, n);
-                    break;
+                    case 2: // Grayscale + alpha
+                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                            ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Green, 0, n);
+                        Buffer.BlockCopy(managedImage.Red, 0, managedImage.Blue, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Alpha, 0, n);
+                        break;
 
-                default:
-                    Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
-                        Helpers.LogLevel.Error);
-                    DotNetFree(ref marshalled);
-                    managedImage = null;
-                    return false;
+                    case 3: // RGB
+                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                            ManagedImage.ImageChannels.Color);
+                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
+                        break;
+
+                    case 4: // RGBA
+                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                            ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
+                        break;
+
+                    case 5: // RGBBA
+                        managedImage = new ManagedImage(marshalled.width, marshalled.height,
+                            ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump);
+                        Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
+                        // Bump comes before alpha in 5 channel encode
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Bump, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 4)), managedImage.Alpha, 0, n);
+                        break;
+
+                    default:
+                        Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
+                            Helpers.LogLevel.Error);
+                        DotNetFree(ref marshalled);
+                        managedImage = null;
+                        return false;
+                }
+
+                DotNetFree(ref marshalled);
             }
 
-            DotNetFree(ref marshalled);
             return true;
         }
 
@@ -317,79 +337,90 @@ namespace OpenMetaverse.Imaging
 
             // Allocate and copy to input buffer
             marshalled.length = encoded.Length;
-            DotNetAllocEncoded(ref marshalled);
-            Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-            // Run the decode
-            if (DotNetDecodeWithInfo(ref marshalled))
+            lock (OpenJPEGLock)
             {
-                components = marshalled.components;
+                DotNetAllocEncoded(ref marshalled);
+                Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
-                // Sanity check
-                if (marshalled.layers * marshalled.resolutions * marshalled.components == marshalled.packet_count)
+                // Run the decode
+                if (DotNetDecodeWithInfo(ref marshalled))
                 {
-                    // Manually marshal the array of opj_packet_info structs
-                    MarshalledPacket[] packets = new MarshalledPacket[marshalled.packet_count];
-                    int offset = 0;
+                    components = marshalled.components;
 
-                    for (int i = 0; i < marshalled.packet_count; i++)
+                    // Sanity check
+                    if (marshalled.layers * marshalled.resolutions * marshalled.components == marshalled.packet_count)
                     {
-                        MarshalledPacket packet;
-                        packet.start_pos = Marshal.ReadInt32(marshalled.packets, offset);
-                        offset += 4;
-                        packet.end_ph_pos = Marshal.ReadInt32(marshalled.packets, offset);
-                        offset += 4;
-                        packet.end_pos = Marshal.ReadInt32(marshalled.packets, offset);
-                        offset += 4;
-                        //double distortion = (double)Marshal.ReadInt64(marshalled.packets, offset);
-                        offset += 8;
+                        // Manually marshal the array of opj_packet_info structs
+                        MarshalledPacket[] packets = new MarshalledPacket[marshalled.packet_count];
+                        int offset = 0;
 
-                        packets[i] = packet;
-                    }
-
-                    layerInfo = new J2KLayerInfo[marshalled.layers];
-
-                    for (int i = 0; i < marshalled.layers; i++)
-                    {
-                        int packetsPerLayer = marshalled.packet_count / marshalled.layers;
-                        MarshalledPacket startPacket = packets[packetsPerLayer * i];
-                        MarshalledPacket endPacket = packets[(packetsPerLayer * (i + 1)) - 1];
-                        layerInfo[i].Start = startPacket.start_pos;
-                        layerInfo[i].End = endPacket.end_pos;
-                    }
-
-                    // More sanity checking
-                    if (layerInfo[layerInfo.Length - 1].End <= encoded.Length - 1)
-                    {
-                        success = true;
-
-                        for (int i = 0; i < layerInfo.Length; i++)
+                        for (int i = 0; i < marshalled.packet_count; i++)
                         {
-                            if (layerInfo[i].Start >= layerInfo[i].End ||
-                                (i > 0 && layerInfo[i].Start <= layerInfo[i - 1].End))
+                            MarshalledPacket packet;
+                            packet.start_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                            offset += 4;
+                            packet.end_ph_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                            offset += 4;
+                            packet.end_pos = Marshal.ReadInt32(marshalled.packets, offset);
+                            offset += 4;
+                            //double distortion = (double)Marshal.ReadInt64(marshalled.packets, offset);
+                            offset += 8;
+
+                            packets[i] = packet;
+                        }
+
+                        layerInfo = new J2KLayerInfo[marshalled.layers];
+
+                        for (int i = 0; i < marshalled.layers; i++)
+                        {
+                            int packetsPerLayer = marshalled.packet_count / marshalled.layers;
+                            MarshalledPacket startPacket = packets[packetsPerLayer * i];
+                            MarshalledPacket endPacket = packets[(packetsPerLayer * (i + 1)) - 1];
+                            layerInfo[i].Start = startPacket.start_pos;
+                            layerInfo[i].End = endPacket.end_pos;
+                        }
+
+                        // More sanity checking
+                        if (layerInfo[layerInfo.Length - 1].End <= encoded.Length - 1)
+                        {
+                            success = true;
+
+                            for (int i = 0; i < layerInfo.Length; i++)
                             {
-                                success = false;
-                                Logger.Log("Inconsistent packet data in JPEG2000 stream", Helpers.LogLevel.Warning);
+                                if (layerInfo[i].Start >= layerInfo[i].End ||
+                                    (i > 0 && layerInfo[i].Start <= layerInfo[i - 1].End))
+                                {
+                                    System.Text.StringBuilder output = new System.Text.StringBuilder(
+                                        "Inconsistent packet data in JPEG2000 stream:\n");
+                                    for (int j = 0; j < layerInfo.Length; j++)
+                                        output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start, layerInfo[j].End);
+                                    Logger.Log(output.ToString(), Helpers.LogLevel.Error);
+
+                                    success = false;
+                                    break;
+                                }
                             }
+                        }
+                        else
+                        {
+                            Logger.Log(String.Format(
+                                "Last packet end in JPEG2000 stream extends beyond the end of the file. filesize={0} layerend={1}",
+                                encoded.Length, layerInfo[layerInfo.Length - 1].End), Helpers.LogLevel.Warning);
                         }
                     }
                     else
                     {
                         Logger.Log(String.Format(
-                            "Last packet end in JPEG2000 stream extends beyond the end of the file. filesize={0} layerend={1}",
-                            encoded.Length, layerInfo[layerInfo.Length - 1].End), Helpers.LogLevel.Warning);
+                            "Packet count mismatch in JPEG2000 stream. layers={0} resolutions={1} components={2} packets={3}",
+                            marshalled.layers, marshalled.resolutions, marshalled.components, marshalled.packet_count),
+                            Helpers.LogLevel.Warning);
                     }
                 }
-                else
-                {
-                    Logger.Log(String.Format(
-                        "Packet count mismatch in JPEG2000 stream. layers={0} resolutions={1} components={2} packets={3}",
-                        marshalled.layers, marshalled.resolutions, marshalled.components, marshalled.packet_count),
-                        Helpers.LogLevel.Warning);
-                }
+
+                DotNetFree(ref marshalled);
             }
 
-            DotNetFree(ref marshalled);
             return success;
         }
 
