@@ -150,6 +150,12 @@ namespace OpenMetaverse.TestClient
         /// <returns></returns>
         public TestClient Login(string[] args)
         {
+            
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Usage: login firstname lastname password [simname] [login server url]");
+                return null;
+            }
             LoginDetails account = new LoginDetails();
             account.FirstName = args[0];
             account.LastName = args[1];
@@ -157,8 +163,10 @@ namespace OpenMetaverse.TestClient
 
             if (args.Length > 3)
                 account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+
             if (args.Length > 4)
-                account.URI = args[4];
+                if(args[4].StartsWith("http://"))
+                    account.URI = args[4];
 
             return Login(account);
         }
