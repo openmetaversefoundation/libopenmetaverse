@@ -202,7 +202,6 @@ namespace OpenMetaverse
     /// <summary>
     /// Some information about a parcel of land returned from a DirectoryManager search
     /// </summary>
-    [Serializable]
     public struct ParcelInfo
     {
         /// <summary>Global Key of record</summary>
