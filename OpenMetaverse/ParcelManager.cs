@@ -202,6 +202,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Some information about a parcel of land returned from a DirectoryManager search
     /// </summary>
+    [Serializable]
     public struct ParcelInfo
     {
         /// <summary>Global Key of record</summary>
@@ -1169,7 +1170,15 @@ namespace OpenMetaverse
         /// dictionary.</remarks>
         public int GetParcelLocalID(Simulator simulator, Vector3 position)
         {
-            return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+            if (simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4] > 0)
+            {
+                return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+            }
+            else
+            {
+                Logger.Log(String.Format("ParcelMap returned an default/invalid value for location {0}/{1} Did you use RequestAllSimParcels() to populate the dictionaries?", (byte)position.Y / 4, (byte)position.X / 4 ), Helpers.LogLevel.Warning);
+                return 0;
+            }
         }
 
         /// <summary>
