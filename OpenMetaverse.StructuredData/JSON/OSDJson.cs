@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using LitJson;
 
 namespace OpenMetaverse.StructuredData
 {
     public static partial class OSDParser
     {
+        public static OSD DeserializeJson(Stream json)
+        {
+            using (StreamReader streamReader = new StreamReader(json))
+            {
+                JsonReader reader = new JsonReader(streamReader);
+                return DeserializeJson(JsonMapper.ToObject(reader));
+            }
+        }
+
         public static OSD DeserializeJson(string json)
         {
             return DeserializeJson(JsonMapper.ToObject(json));
@@ -25,47 +35,55 @@ namespace OpenMetaverse.StructuredData
                     return OSD.FromReal((double)json);
                 case JsonType.String:
                     string str = (string)json;
-                    switch (str[0])
-                    {
-                        case 'd':
-                            if (str.StartsWith("date::"))
-                            {
-                                DateTime dt;
-                                if (DateTime.TryParse(str.Substring(6), out dt))
-                                    return OSD.FromDate(dt);
-                            }
-                            break;
-                        case 'u':
-                            if (str.StartsWith("uuid::"))
-                            {
-                                UUID id;
-                                if (UUID.TryParse(str.Substring(6), out id))
-                                    return OSD.FromUUID(id);
-                            }
-                            else if (str.StartsWith("uri::"))
-                            {
-                                try
-                                {
-                                    Uri uri = new Uri(str.Substring(5));
-                                    return OSD.FromUri(uri);
-                                }
-                                catch (UriFormatException) { }
-                            }
-                            break;
-                        case 'b':
-                            if (str.StartsWith("b64::"))
-                            {
-                                try
-                                {
-                                    byte[] data = Convert.FromBase64String(str.Substring(5));
-                                    return OSD.FromBinary(data);
-                                }
-                                catch (FormatException) { }
-                            }
-                            break;
-                    }
 
-                    return OSD.FromString((string)json);
+                    if (String.IsNullOrEmpty(str))
+                    {
+                        return new OSD();
+                    }
+                    else
+                    {
+                        switch (str[0])
+                        {
+                            case 'd':
+                                if (str.StartsWith("date::"))
+                                {
+                                    DateTime dt;
+                                    if (DateTime.TryParse(str.Substring(6), out dt))
+                                        return OSD.FromDate(dt);
+                                }
+                                break;
+                            case 'u':
+                                if (str.StartsWith("uuid::"))
+                                {
+                                    UUID id;
+                                    if (UUID.TryParse(str.Substring(6), out id))
+                                        return OSD.FromUUID(id);
+                                }
+                                else if (str.StartsWith("uri::"))
+                                {
+                                    try
+                                    {
+                                        Uri uri = new Uri(str.Substring(5));
+                                        return OSD.FromUri(uri);
+                                    }
+                                    catch (UriFormatException) { }
+                                }
+                                break;
+                            case 'b':
+                                if (str.StartsWith("b64::"))
+                                {
+                                    try
+                                    {
+                                        byte[] data = Convert.FromBase64String(str.Substring(5));
+                                        return OSD.FromBinary(data);
+                                    }
+                                    catch (FormatException) { }
+                                }
+                                break;
+                        }
+
+                        return OSD.FromString((string)json);
+                    }
                 case JsonType.Array:
                     OSDArray array = new OSDArray(json.Count);
                     for (int i = 0; i < json.Count; i++)

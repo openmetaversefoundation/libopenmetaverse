@@ -166,7 +166,7 @@ namespace OpenMetaverse.Imaging
             lock (OpenJPEGLock)
             {
                 if (!DotNetAllocDecoded(ref marshalled))
-                    throw new Exception("LibslAllocDecoded failed");
+                    throw new Exception("DotNetAllocDecoded failed");
 
                 int n = image.Width * image.Height;
 
@@ -182,7 +182,7 @@ namespace OpenMetaverse.Imaging
 
                 // codec will allocate output buffer
                 if (!DotNetEncode(ref marshalled, lossless))
-                    throw new Exception("LibslEncode failed");
+                    throw new Exception("DotNetEncode failed");
 
                 // copy output buffer
                 encoded = new byte[marshalled.length];
