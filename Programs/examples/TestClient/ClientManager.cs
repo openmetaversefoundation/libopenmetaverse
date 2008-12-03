@@ -168,6 +168,10 @@ namespace OpenMetaverse.TestClient
                 if(args[4].StartsWith("http://"))
                     account.URI = args[4];
 
+            if (string.IsNullOrEmpty(account.URI))
+                account.URI = Program.LoginURI;
+            Logger.Log("Using login URI " + account.URI, Helpers.LogLevel.Info);
+
             return Login(account);
         }
 

@@ -11,6 +11,8 @@ namespace OpenMetaverse.TestClient
 
     public class Program
     {
+        public static string LoginURI;
+
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
@@ -28,7 +30,6 @@ namespace OpenMetaverse.TestClient
             string masterName = String.Empty;
             UUID masterKey = UUID.Zero;
             string file = String.Empty;
-            string loginuri = String.Empty;
             bool getTextures = false;
             string scriptFile = String.Empty;
 
@@ -42,7 +43,10 @@ namespace OpenMetaverse.TestClient
                 masterName = arguments["master"];
 
             if (arguments["loginuri"] != null)
-                loginuri = arguments["loginuri"];
+                LoginURI = arguments["loginuri"];
+            if (String.IsNullOrEmpty(LoginURI))
+                LoginURI = Settings.AGNI_LOGIN_SERVER;
+            Logger.Log("Using login URI " + LoginURI, Helpers.LogLevel.Info);
 
             if (arguments["gettextures"] != null)
                 getTextures = true;
@@ -52,7 +56,7 @@ namespace OpenMetaverse.TestClient
                 scriptFile = arguments["scriptfile"];
                 if (!File.Exists(scriptFile))
                 {
-                    Console.WriteLine("File {0} Does not exist", scriptFile);
+                    Logger.Log(String.Format("File {0} Does not exist", scriptFile), Helpers.LogLevel.Error);
                     return;
                 }
             }
@@ -63,7 +67,7 @@ namespace OpenMetaverse.TestClient
 
                 if (!File.Exists(file))
                 {
-                    Console.WriteLine("File {0} Does not exist", file);
+                    Logger.Log(String.Format("File {0} Does not exist", file), Helpers.LogLevel.Error);
                     return;
                 }
 
@@ -106,10 +110,9 @@ namespace OpenMetaverse.TestClient
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Error reading from " + args[1]);
-                    Console.WriteLine(e.ToString());
+                    Logger.Log("Error reading from " + args[1], Helpers.LogLevel.Error, ex);
                     return;
                 }
             }
@@ -134,7 +137,7 @@ namespace OpenMetaverse.TestClient
                 a.GroupCommands = groupCommands;
                 a.MasterName = masterName;
                 a.MasterKey = masterKey;
-                a.URI = loginuri;
+                a.URI = LoginURI;
 
                 if (arguments["startpos"] != null)
                 {
