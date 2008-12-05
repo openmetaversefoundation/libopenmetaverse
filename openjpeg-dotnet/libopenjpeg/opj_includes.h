@@ -89,14 +89,7 @@ Most compilers implement their own version of this keyword ...
 /* MSVC does not have lrintf */
 #ifdef _MSC_VER
 static INLINE long lrintf(float f){
-	int i;
-
-	_asm{
-		fld f
-		fistp i
-	};
-
-	return i;
+	return (long)(f + (f > 0.0 ? + 0.5 : -0.5) );
 }
 #endif
 
