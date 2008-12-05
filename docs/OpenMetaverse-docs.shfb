@@ -2,6 +2,7 @@
     <assemblies>
         <assembly assemblyPath="..\bin\OpenMetaverse.dll" xmlCommentsPath="..\bin\OpenMetaverse.xml" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.GUI.dll" xmlCommentsPath="..\bin\OpenMetaverse.GUI.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\OpenMetaverse.StructuredData.dll" xmlCommentsPath="..\bin\OpenMetaverse.StructuredData.XML" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.Utilities.dll" xmlCommentsPath="..\bin\OpenMetaverse.Utilities.XML" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverseTypes.dll" xmlCommentsPath="..\bin\OpenMetaverseTypes.XML" commentsOnly="False" />
     </assemblies>
@@ -20,6 +21,7 @@
         <namespaceSummaryItem name="libsecondlife.TestClient.Commands.Movement" isDocumented="False">Commands which show various library functionality and example implementation of library features.</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.Utilities" isDocumented="False">Utilities Class</namespaceSummaryItem>
         <namespaceSummaryItem name="libsecondlife.Voice" isDocumented="False">Voice Classes</namespaceSummaryItem>
+        <namespaceSummaryItem name="LitJson" isDocumented="False" />
         <namespaceSummaryItem name="OpenJPEGNet" isDocumented="True">Image Encoding/Decoding</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse" isDocumented="True">The OpenMetaverse library primary namespace</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Capabilities" isDocumented="True">Capabilities is a method of transferring data between the client and Simulator, The Caps Client and EventQueue classes are contained within this namespace.</namespaceSummaryItem>
