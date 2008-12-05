@@ -675,8 +675,7 @@ namespace OpenMetaverse
             OutgoingPacket outgoingPacket = null;
             Simulator simulator = null;
             Packet packet = null;
-            int now;
-            int lastPacketTime = Environment.TickCount;
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
             while (connected)
             {
@@ -686,16 +685,15 @@ namespace OpenMetaverse
                     packet = outgoingPacket.Packet;
 
                     // Very primitive rate limiting, keeps a fixed buffer of time between each packet
-                    now = Environment.TickCount;
-                    int ms = now - lastPacketTime;
-                    if (ms < 75)
+                    stopwatch.Stop();
+                    if (stopwatch.ElapsedMilliseconds < 10)
                     {
                         //Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
-                        Thread.Sleep(75 - ms);
+                        Thread.Sleep(10 - (int)stopwatch.ElapsedMilliseconds);
                     }
-                    lastPacketTime = now;
 
                     simulator.SendPacketUnqueued(outgoingPacket);
+                    stopwatch.Start();
                 }
             }
         }

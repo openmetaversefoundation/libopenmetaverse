@@ -299,7 +299,8 @@ namespace GridProxy
             PacketType origType = packet.Type;
             foreach (PacketDelegate del in delegates[origType])
             {
-                packet = del(packet, remoteEndPoint);
+                try { packet = del(packet, remoteEndPoint); }
+                catch (Exception ex) { Console.WriteLine("Error in packet delegate: " + ex.ToString()); }
 
                 // FIXME: how should we handle the packet type changing?
                 if (packet == null || packet.Type != origType) break;

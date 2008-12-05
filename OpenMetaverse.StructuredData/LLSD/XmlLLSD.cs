@@ -71,13 +71,20 @@ namespace OpenMetaverse.StructuredData
         /// <returns></returns>
         public static OSD DeserializeLLSDXml(XmlTextReader xmlData)
         {
-            xmlData.Read();
-            SkipWhitespace(xmlData);
+            try
+            {
+                xmlData.Read();
+                SkipWhitespace(xmlData);
 
-            xmlData.Read();
-            OSD ret = ParseLLSDXmlElement(xmlData);
+                xmlData.Read();
+                OSD ret = ParseLLSDXmlElement(xmlData);
 
-            return ret;
+                return ret;
+            }
+            catch
+            {
+                return new OSD();
+            }
         }
 
         /// <summary>

@@ -342,8 +342,6 @@ namespace OpenMetaverse
         /// <returns>true if map is full (contains no 0's)</returns>
         public bool IsParcelMapFull()
         {
-            //int ny = this.ParcelMap.GetLength(0);
-            //int nx = this.ParcelMap.GetLength(1);
             for (int y = 0; y < 64; y++)
             {
                 for (int x = 0; x < 64; x++)
