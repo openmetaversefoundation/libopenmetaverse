@@ -78,12 +78,21 @@ namespace OpenMetaverse.StructuredData
 
         public virtual bool AsBoolean() { return false; }
         public virtual int AsInteger() { return 0; }
+        public virtual uint AsUInteger() { return 0; }
+        public virtual long AsLong() { return 0; }
+        public virtual ulong AsULong() { return 0; }
         public virtual double AsReal() { return 0d; }
         public virtual string AsString() { return String.Empty; }
         public virtual UUID AsUUID() { return UUID.Zero; }
         public virtual DateTime AsDate() { return Utils.Epoch; }
         public virtual Uri AsUri() { return new Uri(String.Empty); }
         public virtual byte[] AsBinary() { return new byte[0]; }
+        public virtual Vector2 AsVector2() { return Vector2.Zero; }
+        public virtual Vector3 AsVector3() { return Vector3.Zero; }
+        public virtual Vector3d AsVector3d() { return Vector3d.Zero; }
+        public virtual Vector4 AsVector4() { return Vector4.Zero; }
+        public virtual Quaternion AsQuaternion() { return Quaternion.Identity; }
+        public virtual Color4 AsColor4() { return Color4.Black; }
 
         public override string ToString() { return "undef"; }
 
@@ -592,6 +601,9 @@ namespace OpenMetaverse.StructuredData
 
         public override string AsString() { return Convert.ToBase64String(value); }
         public override byte[] AsBinary() { return value; }
+        public override uint AsUInteger() { return Utils.BytesToUInt(value); }
+        public override long AsLong() { return Utils.BytesToInt64(value); }
+        public override ulong AsULong() { return Utils.BytesToUInt64(value); }
 
         public override string ToString()
         {
@@ -744,7 +756,7 @@ namespace OpenMetaverse.StructuredData
                 this.value = new List<OSD>();
         }
 
-        public Vector2 AsVector2()
+        public override Vector2 AsVector2()
         {
             Vector2 vector = Vector2.Zero;
 
@@ -757,7 +769,7 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Vector3 AsVector3()
+        public override Vector3 AsVector3()
         {
             Vector3 vector = Vector3.Zero;
 
@@ -771,7 +783,7 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Vector3d AsVector3d()
+        public override Vector3d AsVector3d()
         {
             Vector3d vector = Vector3d.Zero;
 
@@ -785,7 +797,7 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Vector4 AsVector4()
+        public override Vector4 AsVector4()
         {
             Vector4 vector = Vector4.Zero;
 
@@ -800,7 +812,7 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Quaternion AsQuaternion()
+        public override Quaternion AsQuaternion()
         {
             Quaternion quaternion = Quaternion.Identity;
 
@@ -815,7 +827,7 @@ namespace OpenMetaverse.StructuredData
             return quaternion;
         }
 
-        public Color4 AsColor4()
+        public override Color4 AsColor4()
         {
             Color4 color = Color4.Black;
 

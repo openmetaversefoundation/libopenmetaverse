@@ -34,10 +34,36 @@ namespace OpenMetaverse
         #region BytesTo
 
         /// <summary>
+        /// Convert the first two bytes starting in the byte array in
+        /// little endian ordering to a signed short integer
+        /// </summary>
+        /// <param name="bytes">An array two bytes or longer</param>
+        /// <returns>A signed short integer, will be zero if a short can't be
+        /// read at the given position</returns>
+        public static short BytesToInt16(byte[] bytes)
+        {
+            return BytesToInt16(bytes, 0);
+        }
+
+        /// <summary>
+        /// Convert the first two bytes starting at the given position in
+        /// little endian ordering to a signed short integer
+        /// </summary>
+        /// <param name="bytes">An array two bytes or longer</param>
+        /// <param name="pos">Position in the array to start reading</param>
+        /// <returns>A signed short integer, will be zero if a short can't be
+        /// read at the given position</returns>
+        public static short BytesToInt16(byte[] bytes, int pos)
+        {
+            if (bytes.Length <= pos + 1) return 0;
+            return (short)(bytes[pos] + (bytes[pos + 1] << 8));
+        }
+
+        /// <summary>
         /// Convert the first four bytes starting at the given position in
         /// little endian ordering to a signed integer
         /// </summary>
-        /// <param name="bytes">Byte array containing the int</param>
+        /// <param name="bytes">An array four bytes or longer</param>
         /// <param name="pos">Position to start reading the int from</param>
         /// <returns>A signed integer, will be zero if an int can't be read
         /// at the given position</returns>
@@ -57,6 +83,40 @@ namespace OpenMetaverse
         public static int BytesToInt(byte[] bytes)
         {
             return BytesToInt(bytes, 0);
+        }
+
+        /// <summary>
+        /// Convert the first eight bytes of the given array in little endian
+        /// ordering to a signed long integer
+        /// </summary>
+        /// <param name="bytes">An array eight bytes or longer</param>
+        /// <returns>A signed long integer, will be zero if the array contains
+        /// less than eight bytes</returns>
+        public static long BytesToInt64(byte[] bytes)
+        {
+            return BytesToInt64(bytes, 0);
+        }
+
+        /// <summary>
+        /// Convert the first eight bytes starting at the given position in
+        /// little endian ordering to a signed long integer
+        /// </summary>
+        /// <param name="bytes">An array eight bytes or longer</param>
+        /// <param name="pos">Position to start reading the long from</param>
+        /// <returns>A signed long integer, will be zero if a long can't be read
+        /// at the given position</returns>
+        public static long BytesToInt64(byte[] bytes, int pos)
+        {
+            if (bytes.Length < 8) return 0;
+            return (long)
+                ((long)bytes[0] +
+                ((long)bytes[1] << 8) +
+                ((long)bytes[2] << 16) +
+                ((long)bytes[3] << 24) +
+                ((long)bytes[4] << 32) +
+                ((long)bytes[5] << 40) +
+                ((long)bytes[6] << 48) +
+                ((long)bytes[7] << 56));
         }
 
         /// <summary>

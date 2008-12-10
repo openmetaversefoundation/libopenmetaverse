@@ -105,6 +105,11 @@ namespace OpenMetaverse.StructuredData
             return SerializeJson(osd).ToJson();
         }
 
+        public static void SerializeJsonString(OSD osd, ref JsonWriter writer)
+        {
+            SerializeJson(osd).ToJson(writer);
+        }
+
         public static JsonData SerializeJson(OSD osd)
         {
             switch (osd.Type)
