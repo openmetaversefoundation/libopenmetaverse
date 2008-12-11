@@ -279,7 +279,7 @@ namespace OpenMetaverse
                         }
                         else
                         {
-                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)InventoryType.Category, InventoryRoot);
+                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)AssetType.Folder, InventoryRoot);
                         }
                         WriteXmlRpcArrayEnd(writer);
 
@@ -321,7 +321,7 @@ namespace OpenMetaverse
                         }
                         else
                         {
-                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)InventoryType.Category, LibraryRoot);
+                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)AssetType.Folder, LibraryRoot);
                         }
                         WriteXmlRpcArrayEnd(writer);
 
