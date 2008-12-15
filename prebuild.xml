@@ -110,6 +110,9 @@
           <Exclude name="Vector3.cs"/>
           <Exclude name="Vector3d.cs"/>
           <Exclude name="Vector4.cs"/>
+          <Exclude name="BlockingQueue.cs"/>
+          <Exclude name="DoubleDictionary.cs"/>
+          <Exclude name="ExpiringCache.cs"/>
         </Match>
       </Files>
     </Project>
