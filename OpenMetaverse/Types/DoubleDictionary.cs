@@ -76,6 +76,52 @@ namespace OpenMetaverse
             }
         }
 
+        public bool Remove(TKey1 key1)
+        {
+            // This is an O(n) operation!
+            lock (syncObject)
+            {
+                TValue value;
+                if (Dictionary1.TryGetValue(key1, out value))
+                {
+                    foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
+                    {
+                        if (kvp.Value.Equals(value))
+                        {
+                            Dictionary1.Remove(key1);
+                            Dictionary2.Remove(kvp.Key);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public bool Remove(TKey2 key2)
+        {
+            // This is an O(n) operation!
+            lock (syncObject)
+            {
+                TValue value;
+                if (Dictionary2.TryGetValue(key2, out value))
+                {
+                    foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
+                    {
+                        if (kvp.Value.Equals(value))
+                        {
+                            Dictionary2.Remove(key2);
+                            Dictionary1.Remove(kvp.Key);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public void Clear()
         {
             lock (syncObject)

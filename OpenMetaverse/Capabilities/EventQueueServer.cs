@@ -139,7 +139,7 @@ namespace OpenMetaverse.Capabilities
                         context.Request.Url), Helpers.LogLevel.Info);
                     Stop();
 
-                    context.Response.KeepAlive = false;
+                    context.Response.KeepAlive = context.Request.KeepAlive;
                     return true;
                 }
             }
@@ -148,7 +148,7 @@ namespace OpenMetaverse.Capabilities
                 Logger.Log(String.Format("[EventQueue] Received a request with invalid or missing LLSD at {0}, closing the connection",
                     context.Request.Url), Helpers.LogLevel.Warning);
 
-                context.Response.KeepAlive = false;
+                context.Response.KeepAlive = context.Request.KeepAlive;
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return true;
             }
@@ -213,6 +213,8 @@ namespace OpenMetaverse.Capabilities
 
         void SendResponse(HttpListenerContext httpContext, List<EventQueueEvent> eventsToSend)
         {
+            httpContext.Response.KeepAlive = httpContext.Request.KeepAlive;
+
             if (eventsToSend != null)
             {
                 OSDArray responseArray = new OSDArray(eventsToSend.Count);
@@ -235,7 +237,6 @@ namespace OpenMetaverse.Capabilities
 
                 // Serialize the events and send the response
                 byte[] buffer = OSDParser.SerializeLLSDXmlBytes(responseMap);
-                httpContext.Response.KeepAlive = true;
                 httpContext.Response.ContentType = "application/xml";
                 httpContext.Response.ContentLength64 = buffer.Length;
                 httpContext.Response.OutputStream.Write(buffer, 0, buffer.Length);
@@ -247,7 +248,6 @@ namespace OpenMetaverse.Capabilities
                 // The 502 response started as a bug in the LL event queue server implementation,
                 // but is now hardcoded into the protocol as the code to use for a timeout
                 httpContext.Response.StatusCode = (int)HttpStatusCode.BadGateway;
-                httpContext.Response.KeepAlive = true;
                 httpContext.Response.Close();
             }
         }
