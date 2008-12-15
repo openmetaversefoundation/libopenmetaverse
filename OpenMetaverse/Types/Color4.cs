@@ -259,32 +259,116 @@ namespace OpenMetaverse
                 // Achromatic, hue is undefined
                 return -1f;
             }
-            else
+            else if (R == max)
             {
-                if (R == max)
-                {
-                    float bDelta = (((max - B) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
-                    float gDelta = (((max - G) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
-                    return bDelta - gDelta;
-                }
-                else if (G == max)
-                {
-                    float rDelta = (((max - R) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
-                    float bDelta = (((max - B) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
-                    return (HUE_MAX / 3f) + rDelta - bDelta;
-                }
-                else // B == max
-                {
-                    float gDelta = (((max - G) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
-                    float rDelta = (((max - R) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
-                    return ((2f * HUE_MAX) / 3f) + gDelta - rDelta;
-                }
+                float bDelta = (((max - B) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                float gDelta = (((max - G) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                return bDelta - gDelta;
+            }
+            else if (G == max)
+            {
+                float rDelta = (((max - R) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                float bDelta = (((max - B) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                return (HUE_MAX / 3f) + rDelta - bDelta;
+            }
+            else // B == max
+            {
+                float gDelta = (((max - G) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                float rDelta = (((max - R) * (HUE_MAX / 6f)) + ((max - min) / 2f)) / (max - min);
+                return ((2f * HUE_MAX) / 3f) + gDelta - rDelta;
             }
         }
 
         #endregion Public Methods
 
         #region Static Methods
+
+        /// <summary>
+        /// Create an RGB color from a hue, saturation, value combination
+        /// </summary>
+        /// <param name="hue">Hue</param>
+        /// <param name="saturation">Saturation</param>
+        /// <param name="value">Value</param>
+        /// <returns>An fully opaque RGB color (alpha is 1.0)</returns>
+        public static Color4 FromHSV(double hue, double saturation, double value)
+        {
+            double r = 0d;
+            double g = 0d;
+            double b = 0d;
+
+            if (saturation == 0d)
+            {
+                // If s is 0, all colors are the same.
+                // This is some flavor of gray.
+                r = value;
+                g = value;
+                b = value;
+            }
+            else
+            {
+                double p;
+                double q;
+                double t;
+
+                double fractionalSector;
+                int sectorNumber;
+                double sectorPos;
+
+                // The color wheel consists of 6 sectors.
+                // Figure out which sector you//re in.
+                sectorPos = hue / 60d;
+                sectorNumber = (int)(Math.Floor(sectorPos));
+
+                // get the fractional part of the sector.
+                // That is, how many degrees into the sector
+                // are you?
+                fractionalSector = sectorPos - sectorNumber;
+
+                // Calculate values for the three axes
+                // of the color. 
+                p = value * (1d - saturation);
+                q = value * (1d - (saturation * fractionalSector));
+                t = value * (1d - (saturation * (1d - fractionalSector)));
+
+                // Assign the fractional colors to r, g, and b
+                // based on the sector the angle is in.
+                switch (sectorNumber)
+                {
+                    case 0:
+                        r = value;
+                        g = t;
+                        b = p;
+                        break;
+                    case 1:
+                        r = q;
+                        g = value;
+                        b = p;
+                        break;
+                    case 2:
+                        r = p;
+                        g = value;
+                        b = t;
+                        break;
+                    case 3:
+                        r = p;
+                        g = q;
+                        b = value;
+                        break;
+                    case 4:
+                        r = t;
+                        g = p;
+                        b = value;
+                        break;
+                    case 5:
+                        r = value;
+                        g = p;
+                        b = q;
+                        break;
+                }
+            }
+
+            return new Color4((float)r, (float)g, (float)b, 1f);
+        }
 
         #endregion Static Methods
 
@@ -331,10 +415,10 @@ namespace OpenMetaverse
 
         #endregion Operators
 
-        /// <summary>A Color4 with zero RGB values and full alpha (1.0)</summary>
+        /// <summary>A Color4 with zero RGB values and fully opaque (alpha 1.0)</summary>
         public readonly static Color4 Black = new Color4(0f, 0f, 0f, 1f);
 
-        /// <summary>A Color4 with full RGB values (1.0) and full alpha (1.0)</summary>
+        /// <summary>A Color4 with full RGB values (1.0) and fully opaque (alpha 1.0)</summary>
         public readonly static Color4 White = new Color4(1f, 1f, 1f, 1f);
     }
 }

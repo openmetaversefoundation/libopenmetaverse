@@ -149,22 +149,23 @@ namespace Simian
             HttpServer.Start();
         }
 
-        void LoginWebpageHeadHandler(HttpRequestSignature signature, ref HttpListenerContext context)
+        bool LoginWebpageHeadHandler(ref HttpListenerContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.StatusDescription = "OK";
-            context.Response.Close();
+            return true;
         }
 
-        void LoginWebpageGetHandler(HttpRequestSignature signature, ref HttpListenerContext context)
+        bool LoginWebpageGetHandler(ref HttpListenerContext context)
         {
             string pageContent = "<html><head><title>Simian</title></head><body><br/><h1>Welcome to Simian</h1></body></html>";
             byte[] pageData = Encoding.UTF8.GetBytes(pageContent);
             context.Response.OutputStream.Write(pageData, 0, pageData.Length);
-            context.Response.Close();
+            context.Response.OutputStream.Close();
+            return true;
         }
 
-        void LoginXmlRpcPostHandler(HttpRequestSignature signature, ref HttpListenerContext context)
+        bool LoginXmlRpcPostHandler(ref HttpListenerContext context)
         {
             string
                 firstName = String.Empty,
@@ -259,9 +260,11 @@ namespace Simian
             {
                 Logger.Log("XmlRpc login error: " + ex.Message, Helpers.LogLevel.Error, ex);
             }
+
+            return true;
         }
 
-        void LoginLLSDPostHandler(HttpRequestSignature signature, ref HttpListenerContext context)
+        bool LoginLLSDPostHandler(ref HttpListenerContext context)
         {
             string body = String.Empty;
 
@@ -270,7 +273,8 @@ namespace Simian
                 body = reader.ReadToEnd();
             }
 
-            Console.WriteLine(body);
+            Logger.DebugLog("LLSD login is not implemented:\n" + body);
+            return true;
         }
 
         LoginResponseData HandleLogin(string firstName, string lastName, string password, string start, string version, string channel)

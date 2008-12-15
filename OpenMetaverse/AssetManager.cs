@@ -208,45 +208,7 @@ namespace OpenMetaverse
     }
 
     #endregion Enums
-    /*
-    public static class AssetTypeParser
-    {
-        private static readonly ReversableDictionary<string, AssetType> AssetTypeMap = new ReversableDictionary<string, AssetType>();
-        static AssetTypeParser()
-        {
-            AssetTypeMap.Add("animatn", AssetType.Animation);
-            AssetTypeMap.Add("clothing", AssetType.Clothing);
-            AssetTypeMap.Add("callcard", AssetType.CallingCard);
-            AssetTypeMap.Add("object", AssetType.Object);
-            AssetTypeMap.Add("texture", AssetType.Texture);
-            AssetTypeMap.Add("sound", AssetType.Sound);
-            AssetTypeMap.Add("bodypart", AssetType.Bodypart);
-            AssetTypeMap.Add("gesture", AssetType.Gesture);
-            AssetTypeMap.Add("lsltext", AssetType.LSLText);
-            AssetTypeMap.Add("landmark", AssetType.Landmark);
-            AssetTypeMap.Add("notecard", AssetType.Notecard);
-            AssetTypeMap.Add("category", AssetType.Folder);
-        }
 
-        public static AssetType Parse(string str)
-        {
-            AssetType t;
-            if (AssetTypeMap.TryGetValue(str, out t))
-                return t;
-            else
-                return AssetType.Unknown;
-        }
-
-        public static string StringValueOf(AssetType type)
-        {
-            string str;
-            if (AssetTypeMap.TryGetKey(type, out str))
-                return str;
-            else
-                return "unknown";
-        }
-    }
-    */
     #region Transfer Classes
 
     /// <summary>
