@@ -297,14 +297,12 @@ namespace OpenMetaverse
         /// <returns>An MD5 hash in string format, with $1$ prepended</returns>
         public static string MD5(string password)
         {
-            StringBuilder digest = new StringBuilder();
+            StringBuilder digest = new StringBuilder(32);
             byte[] hash = MD5(ASCIIEncoding.Default.GetBytes(password));
 
             // Convert the hash to a hex string
             foreach (byte b in hash)
-            {
                 digest.AppendFormat(Utils.EnUsCulture, "{0:x2}", b);
-            }
 
             return "$1$" + digest.ToString();
         }

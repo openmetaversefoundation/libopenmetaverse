@@ -22,7 +22,7 @@ namespace Simian
         public const uint REGION_Y = 256000;
 
         public int UDPPort = 9000;
-        public int HttpPort = 9000;
+        public int HttpPort = 8002;
         public string DataDir = "SimianData/";
 
         public HttpServer HttpServer;
@@ -50,10 +50,8 @@ namespace Simian
         {
         }
 
-        public bool Start(int port, bool ssl)
+        public bool Start()
         {
-            HttpPort = port;
-            UDPPort = port;
             List<string> extensionList = null;
 
             try
@@ -69,7 +67,7 @@ namespace Simian
                 return false;
             }
 
-            InitHttpServer(HttpPort, ssl);
+            InitHttpServer(HttpPort, false);
 
             RegionHandle = Utils.UIntsToLong(REGION_X, REGION_Y);
 

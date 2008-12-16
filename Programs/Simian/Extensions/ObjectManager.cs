@@ -168,7 +168,7 @@ namespace Simian.Extensions
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAdd(this, agent, simObj, flags);
+            server.Scene.ObjectAdd(this, simObj, flags);
         }
 
         void ObjectDuplicateHandler(Packet packet, Agent agent)
@@ -189,7 +189,7 @@ namespace Simian.Extensions
                     newObj.Prim.Position += offset;
                     newObj.Prim.ID = UUID.Random();
 
-                    server.Scene.ObjectAdd(this, agent, newObj, flags);
+                    server.Scene.ObjectAdd(this, newObj, flags);
                 }
                 else
                 {

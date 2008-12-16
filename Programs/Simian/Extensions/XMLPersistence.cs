@@ -62,28 +62,31 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            OSDMap dictionary = new OSDMap(server.PersistentExtensions.Count);
-
-            for (int i = 0; i < server.PersistentExtensions.Count; i++)
+            if (server != null)
             {
-                IPersistable persistable = server.PersistentExtensions[i];
+                OSDMap dictionary = new OSDMap(server.PersistentExtensions.Count);
 
-                Logger.DebugLog("Storing persistant data for " + persistable.ToString());
-                dictionary.Add(persistable.ToString(), persistable.Serialize());
-            }
+                for (int i = 0; i < server.PersistentExtensions.Count; i++)
+                {
+                    IPersistable persistable = server.PersistentExtensions[i];
 
-            try
-            {
-                XmlTextWriter writer = new XmlTextWriter(server.DataDir + "simiandata.xml", System.Text.Encoding.UTF8);
-                writer.Formatting = Formatting.Indented;
-                writer.WriteStartElement("llsd");
-                OSDParser.SerializeLLSDXmlElement(writer, dictionary);
-                writer.WriteEndElement();
-                writer.Close();
-            }
-            catch (Exception ex)
-            {
-                Logger.Log("Failed to save persistance data: " + ex.Message, Helpers.LogLevel.Error);
+                    Logger.DebugLog("Storing persistant data for " + persistable.ToString());
+                    dictionary.Add(persistable.ToString(), persistable.Serialize());
+                }
+
+                try
+                {
+                    XmlTextWriter writer = new XmlTextWriter(server.DataDir + "simiandata.xml", System.Text.Encoding.UTF8);
+                    writer.Formatting = Formatting.Indented;
+                    writer.WriteStartElement("llsd");
+                    OSDParser.SerializeLLSDXmlElement(writer, dictionary);
+                    writer.WriteEndElement();
+                    writer.Close();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to save persistance data: " + ex.Message, Helpers.LogLevel.Error);
+                }
             }
         }
     }

@@ -57,13 +57,12 @@ namespace Simian.Extensions
         {
         }
 
-        public bool ObjectAdd(object sender, Agent creator, SimulationObject obj, PrimFlags creatorFlags)
+        public bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags)
         {
             // Check if the object already exists in the scene
             if (sceneObjects.ContainsKey(obj.Prim.ID))
             {
-                Logger.Log(String.Format("Attempting to add duplicate object {0} to the scene",
-                    obj.Prim.ID), Helpers.LogLevel.Warning);
+                ObjectModify(sender, obj, obj.Prim.PrimData);
                 return false;
             }
 
@@ -72,16 +71,19 @@ namespace Simian.Extensions
 
             if (OnObjectAdd != null)
             {
-                OnObjectAdd(sender, creator, obj, creatorFlags);
+                OnObjectAdd(sender, obj, creatorFlags);
             }
 
             // Add the object to the scene dictionary
             sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
 
             // Send an update out to the creator
-            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
-                obj.Prim.Flags | creatorFlags);
-            server.UDP.SendPacket(creator.AgentID, updateToOwner, PacketCategory.State);
+            if (server.Agents.ContainsKey(obj.Prim.OwnerID))
+            {
+                ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
+                    obj.Prim.Flags | creatorFlags);
+                server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
+            }
 
             // Send an update out to everyone else
             ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
@@ -90,7 +92,7 @@ namespace Simian.Extensions
             {
                 foreach (Agent recipient in server.Agents.Values)
                 {
-                    if (recipient != creator)
+                    if (recipient.AgentID != obj.Prim.OwnerID)
                         server.UDP.SendPacket(recipient.AgentID, updateToOthers, PacketCategory.State);
                 }
             }
@@ -262,7 +264,7 @@ namespace Simian.Extensions
             agent.Balance = 1000;
 
             // Add this avatar as an object in the scene
-            if (ObjectAdd(this, agent, new SimulationObject(agent.Avatar, server), PrimFlags.None))
+            if (ObjectAdd(this, new SimulationObject(agent.Avatar, server), PrimFlags.None))
             {
                 // Send a response back to the client
                 AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
