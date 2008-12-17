@@ -440,7 +440,7 @@ namespace Simian.Extensions
                     data.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
                     data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
-                    server.Scene.ObjectModify(this, obj, data);
+                    server.Scene.ObjectModify(this, obj.Prim.LocalID, data);
                 }
                 else
                 {
@@ -569,7 +569,7 @@ namespace Simian.Extensions
                                 server.Inventory.CreateItem(agent.AgentID, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
                                     AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
                                     obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0, true);
-                                server.Scene.ObjectRemove(this, obj);
+                                server.Scene.ObjectRemove(this, obj.Prim.LocalID);
 
                                 Logger.DebugLog(String.Format("Derezzed prim {0} to agent inventory trash", obj.Prim.LocalID));
                             }
@@ -606,6 +606,7 @@ namespace Simian.Extensions
 
             for (int i = 0; i < update.ObjectData.Length; i++)
             {
+                bool scaled = false;
                 MultipleObjectUpdatePacket.ObjectDataBlock block = update.ObjectData[i];
 
                 SimulationObject obj;
@@ -630,6 +631,7 @@ namespace Simian.Extensions
                     }
                     if ((type & UpdateType.Scale) != 0)
                     {
+                        scaled = true;
                         scale = new Vector3(block.Data, pos);
                         pos += 12;
 
@@ -637,12 +639,19 @@ namespace Simian.Extensions
                         bool uniform = ((type & UpdateType.Uniform) != 0);
                     }
 
-                    // Although the object has already been modified, we need
-                    // to inform the scene manager of the changes so they are
-                    // sent to clients and propagated to other extensions
-                    server.Scene.ObjectTransform(this, obj, position, rotation, 
-                        obj.Prim.Velocity, obj.Prim.Acceleration, obj.Prim.AngularVelocity,
-                        scale);
+                    if (scaled)
+                    {
+                        obj.Prim.Position = position;
+                        obj.Prim.Rotation = rotation;
+                        obj.Prim.Scale = scale;
+
+                        server.Scene.ObjectAdd(this, obj, PrimFlags.None);
+                    }
+                    else
+                    {
+                        server.Scene.ObjectTransform(this, obj.Prim.LocalID, position, rotation,
+                            obj.Prim.Velocity, obj.Prim.Acceleration, obj.Prim.AngularVelocity);
+                    }
                 }
                 else
                 {

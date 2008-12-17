@@ -215,6 +215,36 @@ namespace OpenMetaverse
 
         #region Properties
 
+        /// <summary>First name</summary>
+        public string FirstName
+        {
+            get
+            {
+                for (int i = 0; i < NameValues.Length; i++)
+                {
+                    if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
+                        return (string)NameValues[i].Value;
+                }
+
+                return String.Empty;
+            }
+        }
+
+        /// <summary>Last name</summary>
+        public string LastName
+        {
+            get
+            {
+                for (int i = 0; i < NameValues.Length; i++)
+                {
+                    if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
+                        return (string)NameValues[i].Value;
+                }
+
+                return String.Empty;
+            }
+        }
+        
         /// <summary>Full name</summary>
         public string Name
         {

@@ -62,6 +62,12 @@ namespace Simian.Extensions
             return agent.Animations.Remove(animID);
         }
 
+        public bool ClearAnimations(Agent agent)
+        {
+            agent.Animations.Clear();
+            return true;
+        }
+
         public void SendAnimations(Agent agent)
         {
             AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
@@ -104,7 +110,7 @@ namespace Simian.Extensions
             // Remove the avatar from the scene
             SimulationObject obj;
             if (server.Scene.TryGetObject(agent.AgentID, out obj))
-                server.Scene.ObjectRemove(this, obj);
+                server.Scene.ObjectRemove(this, obj.Prim.LocalID);
             else
                 Logger.Log("Disconnecting an agent that is not in the scene", Helpers.LogLevel.Warning);
 

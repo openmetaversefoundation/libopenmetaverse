@@ -197,14 +197,8 @@ namespace Simian
         {
             // Look up the UDPClient this is going to
             UDPClient client;
-            if (!clients.TryGetValue(agentID, out client))
-            {
-                Logger.Log("Attempted to send a packet to unknown UDP client " +
-                    agentID.ToString(), Helpers.LogLevel.Warning);
-                return;
-            }
-
-            SendPacket(client, new OutgoingPacket(packet, category));
+            if (clients.TryGetValue(agentID, out client))
+                SendPacket(client, new OutgoingPacket(packet, category));
         }
 
         void SendPacket(UDPClient client, OutgoingPacket outgoingPacket)

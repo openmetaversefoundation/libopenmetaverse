@@ -170,7 +170,7 @@ namespace PrimWorkshop
             // Initialize the texture download pipeline
             if (TextureDownloader != null)
                 TextureDownloader.Shutdown();
-            TextureDownloader = new TexturePipeline(Client);
+            TextureDownloader = new TexturePipeline(Client, 10);
             TextureDownloader.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(TextureDownloader_OnDownloadFinished);
             TextureDownloader.OnDownloadProgress += new TexturePipeline.DownloadProgressCallback(TextureDownloader_OnDownloadProgress);
 
@@ -970,7 +970,7 @@ namespace PrimWorkshop
                         if (!Textures.ContainsKey(teFace.TextureID))
                         {
                             // We haven't constructed this image in OpenGL yet, get ahold of it
-                            TextureDownloader.RequestTexture(teFace.TextureID);
+                            TextureDownloader.RequestTexture(teFace.TextureID, ImageType.Normal);
                         }
                     }
                 }

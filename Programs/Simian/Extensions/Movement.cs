@@ -310,7 +310,6 @@ namespace Simian.Extensions
                     if (animsChanged)
                         server.Avatars.SendAnimations(agent);
 
-
                     float maxVel = AVATAR_TERMINAL_VELOCITY * seconds;
 
                     // static acceleration when any control is held, otherwise none
@@ -339,7 +338,6 @@ namespace Simian.Extensions
                     else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
 
                     if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
-
                 }
             }
         }
@@ -403,6 +401,5 @@ namespace Simian.Extensions
             //Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
             //    heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
         }
-
     }
 }

@@ -7,7 +7,7 @@ namespace Simian
     public delegate void ObjectRemoveCallback(object sender, SimulationObject obj);
     public delegate void ObjectTransformCallback(object sender, SimulationObject obj,
         Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration,
-        Vector3 angularVelocity, Vector3 scale);
+        Vector3 angularVelocity);
     public delegate void ObjectFlagsCallback(object sender, SimulationObject obj, PrimFlags flags);
     public delegate void ObjectImageCallback(object sender, SimulationObject obj,
         string mediaURL, Primitive.TextureEntry textureEntry);
@@ -34,13 +34,12 @@ namespace Simian
         float WaterHeight { get; }
 
         bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags);
-        bool ObjectRemove(object sender, SimulationObject obj);
-        void ObjectTransform(object sender, SimulationObject obj, Vector3 position,
-            Quaternion rotation, Vector3 velocity, Vector3 acceleration,
-            Vector3 angularVelocity, Vector3 scale);
+        bool ObjectRemove(object sender, uint localID);
+        void ObjectTransform(object sender, uint localID, Vector3 position, Quaternion rotation, Vector3 velocity,
+            Vector3 acceleration, Vector3 angularVelocity);
         void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags);
         void ObjectImage(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
-        void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data);
+        void ObjectModify(object sender, uint localID, Primitive.ConstructionData data);
 
         void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
 

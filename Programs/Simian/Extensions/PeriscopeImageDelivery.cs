@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using ExtensionLoader;
@@ -7,118 +7,27 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
-    public class ImageDownload
-    {
-        public const int FIRST_IMAGE_PACKET_SIZE = 600;
-        public const int IMAGE_PACKET_SIZE = 1000;
-
-        public AssetTexture Texture;
-        public Agent Agent;
-        public int DiscardLevel;
-        public float Priority;
-        public int CurrentPacket;
-        public int StopPacket;
-
-        public ImageDownload(AssetTexture texture, Agent agent, int discardLevel, float priority, int packet)
-        {
-            Texture = texture;
-            Agent = agent;
-            Update(discardLevel, priority, packet);
-        }
-
-        /// <summary>
-        /// Updates an image transfer with new information and recalculates
-        /// offsets
-        /// </summary>
-        /// <param name="discardLevel">New requested discard level</param>
-        /// <param name="priority">New requested priority</param>
-        /// <param name="packet">New requested packet offset</param>
-        public void Update(int discardLevel, float priority, int packet)
-        {
-            Priority = priority;
-
-            if (Texture != null)
-            {
-                if (Texture.LayerInfo != null && Texture.LayerInfo.Length > 0)
-                {
-                    DiscardLevel = Utils.Clamp(discardLevel, 0, Texture.LayerInfo.Length - 1);
-                    StopPacket = GetPacketForBytePosition(Texture.LayerInfo[(Texture.LayerInfo.Length - 1) - DiscardLevel].End);
-                }
-                else
-                {
-                    DiscardLevel = 0;
-                    StopPacket = GetPacketForBytePosition(Texture.AssetData.Length);
-                }
-
-                CurrentPacket = Utils.Clamp(packet, 1, TexturePacketCount());
-            }
-            else
-            {
-                DiscardLevel = discardLevel;
-                Priority = priority;
-                CurrentPacket = packet;
-            }
-        }
-
-        /// <summary>
-        /// Returns the total number of packets needed to transfer this texture,
-        /// including the first packet of size FIRST_IMAGE_PACKET_SIZE
-        /// </summary>
-        /// <returns>Total number of packets needed to transfer this texture</returns>
-        public int TexturePacketCount()
-        {
-            return ((Texture.AssetData.Length - FIRST_IMAGE_PACKET_SIZE + IMAGE_PACKET_SIZE - 1) / IMAGE_PACKET_SIZE) + 1;
-        }
-
-        /// <summary>
-        /// Returns the current byte offset for this transfer, calculated from
-        /// the CurrentPacket
-        /// </summary>
-        /// <returns>Current byte offset for this transfer</returns>
-        public int CurrentBytePosition()
-        {
-            return FIRST_IMAGE_PACKET_SIZE + (CurrentPacket - 1) * IMAGE_PACKET_SIZE;
-        }
-
-        /// <summary>
-        /// Returns the size, in bytes, of the last packet. This will be somewhere
-        /// between 1 and IMAGE_PACKET_SIZE bytes
-        /// </summary>
-        /// <returns>Size of the last packet in the transfer</returns>
-        public int LastPacketSize()
-        {
-            return Texture.AssetData.Length - (FIRST_IMAGE_PACKET_SIZE + ((TexturePacketCount() - 2) * IMAGE_PACKET_SIZE));
-        }
-
-        /// <summary>
-        /// Find the packet number that contains a given byte position
-        /// </summary>
-        /// <param name="bytePosition">Byte position</param>
-        /// <returns>Packet number that contains the given byte position</returns>
-        int GetPacketForBytePosition(int bytePosition)
-        {
-            return ((bytePosition - FIRST_IMAGE_PACKET_SIZE + IMAGE_PACKET_SIZE - 1) / IMAGE_PACKET_SIZE);
-        }
-    }
-
-    public class ImageDelivery : IExtension<Simian>
+    public class PeriscopeImageDelivery
     {
         Simian server;
-        Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
+        GridClient client;
+        TexturePipeline pipeline;
+        Dictionary<UUID, ImageDownload> currentDownloads = new Dictionary<UUID, ImageDownload>();
 
-        public ImageDelivery()
-        {
-        }
-
-        public void Start(Simian server)
+        public PeriscopeImageDelivery(Simian server, GridClient client)
         {
             this.server = server;
+            this.client = client;
+
+            pipeline = new TexturePipeline(client, 10);
+            pipeline.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(pipeline_OnDownloadFinished);
 
             server.UDP.RegisterPacketCallback(PacketType.RequestImage, RequestImageHandler);
         }
 
         public void Stop()
         {
+            pipeline.Shutdown();
         }
 
         void RequestImageHandler(Packet packet, Agent agent)
@@ -130,30 +39,14 @@ namespace Simian.Extensions
                 RequestImagePacket.RequestImageBlock block = request.RequestImage[i];
 
                 ImageDownload download;
-                bool downloadFound = CurrentDownloads.TryGetValue(block.Image, out download);
+                bool downloadFound = currentDownloads.TryGetValue(block.Image, out download);
 
                 if (downloadFound)
                 {
                     lock (download)
                     {
                         if (block.DiscardLevel == -1 && block.DownloadPriority == 0.0f)
-                        {
                             Logger.DebugLog(String.Format("Image download {0} is aborting", block.Image));
-                        }
-                        else
-                        {
-                            if (block.DiscardLevel < download.DiscardLevel)
-                                Logger.DebugLog(String.Format("Image download {0} is changing from DiscardLevel {1} to {2}",
-                                    block.Image, download.DiscardLevel, block.DiscardLevel));
-
-                            if (block.DownloadPriority != download.Priority)
-                                Logger.DebugLog(String.Format("Image download {0} is changing from Priority {1} to {2}",
-                                    block.Image, download.Priority, block.DownloadPriority));
-
-                            if (block.Packet != download.CurrentPacket)
-                                Logger.DebugLog(String.Format("Image download {0} is changing from Packet {1} to {2}",
-                                    block.Image, download.CurrentPacket, block.Packet));
-                        }
 
                         // Update download
                         download.Update(block.DiscardLevel, block.DownloadPriority, (int)block.Packet);
@@ -175,13 +68,50 @@ namespace Simian.Extensions
                     }
                     else
                     {
-                        Logger.Log("Request for a missing texture " + block.Image.ToString(), Helpers.LogLevel.Warning);
+                        // We don't have this texture, add it to the download queue and see if the bot can get it for us
+                        download = new ImageDownload(null, agent, block.DiscardLevel, block.DownloadPriority, (int)block.Packet);
+                        lock (currentDownloads)
+                            currentDownloads[block.Image] = download;
 
-                        ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
-                        notfound.ImageID.ID = block.Image;
-                        server.UDP.SendPacket(agent.AgentID, notfound, PacketCategory.Texture);
+                        pipeline.RequestTexture(block.Image, (ImageType)block.Type);
                     }
                 }
+            }
+        }
+
+        void pipeline_OnDownloadFinished(UUID id, bool success)
+        {
+            ImageDownload download;
+            if (currentDownloads.TryGetValue(id, out download))
+            {
+                lock (currentDownloads)
+                    currentDownloads.Remove(id);
+
+                if (success)
+                {
+                    // Set the texture to the downloaded texture data
+                    AssetTexture texture = new AssetTexture(id, pipeline.GetTextureToRender(id).AssetData);
+                    download.Texture = texture;
+
+                    pipeline.RemoveFromPipeline(id);
+
+                    // Store this texture in the local asset store for later
+                    server.Assets.StoreAsset(texture);
+
+                    SendTexture(download.Agent, download.Texture, download.DiscardLevel, download.CurrentPacket, download.Priority);
+                }
+                else
+                {
+                    Logger.Log("[Periscope] Failed to download texture " + id.ToString(), Helpers.LogLevel.Warning);
+
+                    ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
+                    notfound.ImageID.ID = id;
+                    server.UDP.SendPacket(download.Agent.AgentID, notfound, PacketCategory.Texture);
+                }
+            }
+            else
+            {
+                Logger.Log("[Periscope] Pipeline downloaded a texture we're not tracking, " + id.ToString(), Helpers.LogLevel.Warning);
             }
         }
 
@@ -190,9 +120,8 @@ namespace Simian.Extensions
             ImageDownload download = new ImageDownload(texture, agent, discardLevel, priority, packet);
 
             Logger.DebugLog(String.Format(
-                "Starting new download for {0}, DiscardLevel: {1}, Priority: {2}, Start: {3}, End: {4}, Total: {5}",
-                texture.AssetID, discardLevel, priority, download.CurrentPacket, download.StopPacket,
-                download.TexturePacketCount()));
+                "[Periscope] Starting new texture transfer for {0}, DiscardLevel: {1}, Priority: {2}, Start: {3}, End: {4}, Total: {5}",
+                texture.AssetID, discardLevel, priority, download.CurrentPacket, download.StopPacket, download.TexturePacketCount()));
 
             // Send initial data
             ImageDataPacket data = new ImageDataPacket();
@@ -222,8 +151,8 @@ namespace Simian.Extensions
             if (download.CurrentPacket <= download.StopPacket)
             {
                 // Insert this download into the dictionary
-                lock (CurrentDownloads)
-                    CurrentDownloads[texture.AssetID] = download;
+                lock (currentDownloads)
+                    currentDownloads[texture.AssetID] = download;
 
                 // Send all of the remaining packets
                 ThreadPool.QueueUserWorkItem(
@@ -266,8 +195,8 @@ namespace Simian.Extensions
                         Logger.DebugLog("Completed image transfer for " + texture.AssetID.ToString());
 
                         // Transfer is complete, remove the reference
-                        lock (CurrentDownloads)
-                            CurrentDownloads.Remove(texture.AssetID);
+                        lock (currentDownloads)
+                            currentDownloads.Remove(texture.AssetID);
                     }
                 );
             }

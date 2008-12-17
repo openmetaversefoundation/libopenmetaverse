@@ -61,25 +61,23 @@ namespace Simian.Extensions
         {
             // Check if the object already exists in the scene
             if (sceneObjects.ContainsKey(obj.Prim.ID))
-            {
-                ObjectModify(sender, obj, obj.Prim.PrimData);
-                return false;
-            }
+                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
 
-            // Assign a unique LocalID to this object
-            obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+            if (obj.Prim.LocalID == 0)
+            {
+                // Assign a unique LocalID to this object
+                obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+            }
 
             if (OnObjectAdd != null)
-            {
                 OnObjectAdd(sender, obj, creatorFlags);
-            }
 
             // Add the object to the scene dictionary
             sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
 
-            // Send an update out to the creator
             if (server.Agents.ContainsKey(obj.Prim.OwnerID))
             {
+                // Send an update out to the creator
                 ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
                     obj.Prim.Flags | creatorFlags);
                 server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
@@ -100,45 +98,52 @@ namespace Simian.Extensions
             return true;
         }
 
-        public bool ObjectRemove(object sender, SimulationObject obj)
+        public bool ObjectRemove(object sender, uint localID)
         {
-            if (OnObjectRemove != null)
+            SimulationObject obj;
+            if (sceneObjects.TryGetValue(localID, out obj))
             {
-                OnObjectRemove(sender, obj);
+                if (OnObjectRemove != null)
+                    OnObjectRemove(sender, obj);
+
+                sceneObjects.Remove(localID, obj.Prim.ID);
+
+                KillObjectPacket kill = new KillObjectPacket();
+                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                return true;
             }
-
-            sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
-
-            KillObjectPacket kill = new KillObjectPacket();
-            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-            kill.ObjectData[0].ID = obj.Prim.LocalID;
-
-            server.UDP.BroadcastPacket(kill, PacketCategory.State);
-
-            return true;
+            else
+            {
+                return false;
+            }
         }
 
-        public void ObjectTransform(object sender, SimulationObject obj, Vector3 position,
-            Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity,
-            Vector3 scale)
+        public void ObjectTransform(object sender, uint localID, Vector3 position, Quaternion rotation,
+            Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity)
         {
-            if (OnObjectTransform != null)
+            SimulationObject obj;
+            if (sceneObjects.TryGetValue(localID, out obj))
             {
-                OnObjectTransform(sender, obj, position, rotation, velocity,
-                    acceleration, angularVelocity, scale);
+                if (OnObjectTransform != null)
+                {
+                    OnObjectTransform(sender, obj, position, rotation, velocity,
+                        acceleration, angularVelocity);
+                }
+
+                // Update the object
+                obj.Prim.Position = position;
+                obj.Prim.Rotation = rotation;
+                obj.Prim.Velocity = velocity;
+                obj.Prim.Acceleration = acceleration;
+                obj.Prim.AngularVelocity = angularVelocity;
+
+                // Inform clients
+                BroadcastObjectUpdate(obj);
             }
-
-            // Update the object
-            obj.Prim.Position = position;
-            obj.Prim.Rotation = rotation;
-            obj.Prim.Velocity = velocity;
-            obj.Prim.Acceleration = acceleration;
-            obj.Prim.AngularVelocity = angularVelocity;
-            obj.Prim.Scale = scale;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj);
         }
 
         public void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags)
@@ -170,18 +175,22 @@ namespace Simian.Extensions
             BroadcastObjectUpdate(obj);
         }
 
-        public void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
+        public void ObjectModify(object sender, uint localID, Primitive.ConstructionData data)
         {
-            if (OnObjectModify != null)
+            SimulationObject obj;
+            if (sceneObjects.TryGetValue(localID, out obj))
             {
-                OnObjectModify(sender, obj, data);
+                if (OnObjectModify != null)
+                {
+                    OnObjectModify(sender, obj, data);
+                }
+
+                // Update the object
+                obj.Prim.PrimData = data;
+
+                // Inform clients
+                BroadcastObjectUpdate(obj);
             }
-
-            // Update the object
-            obj.Prim.PrimData = data;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj);
         }
 
         public void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
@@ -191,24 +200,28 @@ namespace Simian.Extensions
                 OnAvatarAppearance(sender, agent, textures, visualParams);
             }
 
-            // Update the avatar
-            agent.Avatar.Textures = textures;
-            if (visualParams != null)
-                agent.VisualParams = visualParams;
-
-            // Broadcast the object update
+            // Broadcast an object update for this avatar
+            // TODO: Is this necessary here?
             ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
                 server.RegionHandle, agent.State, agent.Flags);
             server.UDP.BroadcastPacket(update, PacketCategory.State);
 
-            // Send the appearance packet to all other clients
-            AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
-            lock (server.Agents)
+            // Update the avatar
+            agent.Avatar.Textures = textures;
+            if (visualParams != null && visualParams.Length > 1)
+                agent.VisualParams = visualParams;
+
+            if (agent.VisualParams != null)
             {
-                foreach (Agent recipient in server.Agents.Values)
+                // Send the appearance packet to all other clients
+                AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
+                lock (server.Agents)
                 {
-                    if (recipient != agent)
-                        server.UDP.SendPacket(recipient.AgentID, appearance, PacketCategory.State);
+                    foreach (Agent recipient in server.Agents.Values)
+                    {
+                        if (recipient != agent)
+                            server.UDP.SendPacket(recipient.AgentID, appearance, PacketCategory.State);
+                    }
                 }
             }
         }
@@ -384,12 +397,16 @@ namespace Simian.Extensions
             appearance.Sender.ID = agent.AgentID;
             appearance.Sender.IsTrial = false;
 
-            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[218];
-            for (int i = 0; i < 218; i++)
+            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[agent.VisualParams.Length];
+            for (int i = 0; i < agent.VisualParams.Length; i++)
             {
                 appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
                 appearance.VisualParam[i].ParamValue = agent.VisualParams[i];
             }
+
+            if (agent.VisualParams.Length != 218)
+                Logger.Log("Built an appearance packet with VisualParams.Length=" + agent.VisualParams.Length,
+                    Helpers.LogLevel.Warning);
 
             return appearance;
         }
