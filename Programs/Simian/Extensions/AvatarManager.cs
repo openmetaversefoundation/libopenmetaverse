@@ -125,6 +125,13 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(offline, PacketCategory.State);
         }
 
+        public void SendAlert(Agent agent, string message)
+        {
+            AlertMessagePacket alert = new AlertMessagePacket();
+            alert.AlertData.Message = Utils.StringToBytes(message);
+            server.UDP.SendPacket(agent.AgentID, alert, PacketCategory.Transaction);
+        }
+
         void AgentAnimationHandler(Packet packet, Agent agent)
         {
             AgentAnimationPacket animPacket = (AgentAnimationPacket)packet;

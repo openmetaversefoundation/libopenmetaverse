@@ -162,7 +162,6 @@ namespace PrimWorkshop
             Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            Client.Objects.OnNewFoliage += new ObjectManager.NewFoliageCallback(Objects_OnNewFoliage);
             Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.OnSimParcelsDownloaded += new ParcelManager.SimParcelsDownloaded(Parcels_OnSimParcelsDownloaded);
@@ -926,6 +925,13 @@ namespace PrimWorkshop
 
         private void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
+            if (prim.PrimData.PCode == PCode.Grass || prim.PrimData.PCode == PCode.Tree || prim.PrimData.PCode == PCode.NewTree)
+            {
+                lock (RenderFoliageList)
+                    RenderFoliageList[prim.LocalID] = prim;
+                return;
+            }
+
             RenderablePrim render = new RenderablePrim();
             render.Prim = prim;
             render.Mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.High);
@@ -981,12 +987,6 @@ namespace PrimWorkshop
             }
 
             lock (RenderPrimList) RenderPrimList[prim.LocalID] = render;
-        }
-
-        private void Objects_OnNewFoliage(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
-        {
-            lock (RenderFoliageList)
-                RenderFoliageList[foliage.LocalID] = foliage;
         }
 
         private void Objects_OnObjectKilled(Simulator simulator, uint objectID)

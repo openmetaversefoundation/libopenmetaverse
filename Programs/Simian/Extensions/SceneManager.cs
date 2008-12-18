@@ -78,13 +78,13 @@ namespace Simian.Extensions
             if (server.Agents.ContainsKey(obj.Prim.OwnerID))
             {
                 // Send an update out to the creator
-                ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
+                ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle,
                     obj.Prim.Flags | creatorFlags);
                 server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
             }
 
             // Send an update out to everyone else
-            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0,
+            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle,
                 obj.Prim.Flags);
             lock (server.Agents)
             {
@@ -106,7 +106,31 @@ namespace Simian.Extensions
                 if (OnObjectRemove != null)
                     OnObjectRemove(sender, obj);
 
-                sceneObjects.Remove(localID, obj.Prim.ID);
+                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
+
+                KillObjectPacket kill = new KillObjectPacket();
+                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool ObjectRemove(object sender, UUID id)
+        {
+            SimulationObject obj;
+            if (sceneObjects.TryGetValue(id, out obj))
+            {
+                if (OnObjectRemove != null)
+                    OnObjectRemove(sender, obj);
+
+                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
 
                 KillObjectPacket kill = new KillObjectPacket();
                 kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
@@ -203,7 +227,7 @@ namespace Simian.Extensions
             // Broadcast an object update for this avatar
             // TODO: Is this necessary here?
             ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
-                server.RegionHandle, agent.State, agent.Flags);
+                server.RegionHandle, agent.Flags);
             server.UDP.BroadcastPacket(update, PacketCategory.State);
 
             // Update the avatar
@@ -236,10 +260,22 @@ namespace Simian.Extensions
             return sceneObjects.TryGetValue(id, out obj);
         }
 
+        public IDictionary<uint, SimulationObject> GetSceneCopy()
+        {
+            IDictionary<uint, SimulationObject> scene = new Dictionary<uint, SimulationObject>(sceneObjects.Count);
+
+            sceneObjects.ForEach(
+                delegate(SimulationObject obj)
+                { scene.Add(obj.Prim.LocalID, obj); }
+            );
+
+            return scene;
+        }
+
         void BroadcastObjectUpdate(SimulationObject obj)
         {
             ObjectUpdatePacket update =
-                SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, 0, obj.Prim.Flags);
+                SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, obj.Prim.Flags);
 
             server.UDP.BroadcastPacket(update, PacketCategory.State);
         }
@@ -318,7 +354,7 @@ namespace Simian.Extensions
             sceneObjects.ForEach(delegate(SimulationObject obj)
             {
                 ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim,
-                    obj.Prim.RegionHandle, 0, obj.Prim.Flags);
+                    obj.Prim.RegionHandle, obj.Prim.Flags);
                 server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
             });
 

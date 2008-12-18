@@ -84,9 +84,6 @@ namespace Simian
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
         [NonSerialized]
         public AnimationSet Animations = new AnimationSet();
-        // TODO: Replace byte with enum
-        [NonSerialized]
-        public byte State;
         [NonSerialized]
         public PrimFlags Flags;
 

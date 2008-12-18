@@ -107,14 +107,13 @@ namespace Simian
             }
         }
 
-        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, ulong regionHandle,
-            byte state, PrimFlags flags)
+        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, ulong regionHandle, PrimFlags flags)
         {
             ObjectUpdatePacket update = new ObjectUpdatePacket();
             update.RegionData.RegionHandle = regionHandle;
             update.RegionData.TimeDilation = UInt16.MaxValue;
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-            update.ObjectData[0] = BuildUpdateBlock(obj, regionHandle, state, flags);
+            update.ObjectData[0] = BuildUpdateBlock(obj, regionHandle, flags);
 
             return update;
         }
@@ -136,8 +135,7 @@ namespace Simian
             return objectData;
         }
 
-        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, ulong regionHandle,
-            byte state, PrimFlags flags)
+        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, ulong regionHandle, PrimFlags flags)
         {
             byte[] objectData = BuildObjectData(obj.Position, obj.Rotation, obj.Velocity,
                 obj.Acceleration, obj.AngularVelocity);
@@ -145,7 +143,7 @@ namespace Simian
             ObjectUpdatePacket.ObjectDataBlock update = new ObjectUpdatePacket.ObjectDataBlock();
             update.ClickAction = (byte)obj.ClickAction;
             update.CRC = 0;
-            update.ExtraParams = new byte[0]; //FIXME: Need a serializer for ExtraParams
+            update.ExtraParams = obj.GetExtraParamsBytes();
             update.Flags = (byte)flags;
             update.FullID = obj.ID;
             update.Gain = obj.SoundGain;
@@ -157,7 +155,7 @@ namespace Simian
             update.MediaURL = Utils.StringToBytes(obj.MediaURL);
             update.NameValue = Utils.StringToBytes(NameValue.NameValuesToString(obj.NameValues));
             update.ObjectData = objectData;
-            update.OwnerID = obj.Properties.OwnerID;
+            update.OwnerID = (obj.Properties != null ? obj.Properties.OwnerID : UUID.Zero);
             update.ParentID = obj.ParentID;
             update.PathBegin = Primitive.PackBeginCut(obj.PrimData.PathBegin);
             update.PathCurve = (byte)obj.PrimData.PathCurve;
@@ -178,17 +176,17 @@ namespace Simian
             update.ProfileCurve = (byte)obj.PrimData.ProfileCurve;
             update.ProfileEnd = Primitive.PackEndCut(obj.PrimData.ProfileEnd);
             update.ProfileHollow = Primitive.PackProfileHollow(obj.PrimData.ProfileHollow);
-            update.PSBlock = new byte[0]; // FIXME:
+            update.PSBlock = obj.ParticleSys.GetBytes();
             update.TextColor = obj.TextColor.GetBytes(true);
             update.TextureAnim = obj.TextureAnim.GetBytes();
             update.TextureEntry = obj.Textures == null ? new byte[0] : obj.Textures.ToBytes();
             update.Radius = obj.SoundRadius;
             update.Scale = obj.Scale;
             update.Sound = obj.Sound;
-            update.State = state;
+            update.State = obj.PrimData.State;
             update.Text = Utils.StringToBytes(obj.Text);
             update.UpdateFlags = (uint)flags;
-            update.Data = new byte[0]; // FIXME:
+            update.Data = obj.GenericData == null ? new byte[0] : obj.GenericData;
 
             return update;
         }

@@ -56,7 +56,6 @@ namespace SimExport
 
             client.Network.OnCurrentSimChanged += Network_OnCurrentSimChanged;
             client.Objects.OnNewPrim += Objects_OnNewPrim;
-            client.Objects.OnNewFoliage += Objects_OnNewPrim;
             client.Objects.OnObjectKilled += Objects_OnObjectKilled;
             client.Objects.OnObjectProperties += Objects_OnObjectProperties;
             client.Objects.OnObjectUpdated += Objects_OnObjectUpdated;

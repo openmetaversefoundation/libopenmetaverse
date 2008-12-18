@@ -220,25 +220,50 @@ namespace Simian.Extensions
                 {
                     //Logger.DebugLog("Selecting object " + obj.Prim.LocalID);
 
-                    properties.ObjectData[0].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
-                    properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
-                    properties.ObjectData[0].CreatorID = obj.Prim.Properties.CreatorID;
-                    properties.ObjectData[0].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
-                    properties.ObjectData[0].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
-                    properties.ObjectData[0].GroupID = obj.Prim.Properties.GroupID;
-                    properties.ObjectData[0].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
-                    properties.ObjectData[0].LastOwnerID = obj.Prim.Properties.LastOwnerID;
-                    properties.ObjectData[0].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
-                    properties.ObjectData[0].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
-                    properties.ObjectData[0].ObjectID = obj.Prim.ID;
-                    properties.ObjectData[0].OwnerID = obj.Prim.Properties.OwnerID;
-                    properties.ObjectData[0].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
-                    properties.ObjectData[0].OwnershipCost = obj.Prim.Properties.OwnershipCost;
-                    properties.ObjectData[0].SalePrice = obj.Prim.Properties.SalePrice;
-                    properties.ObjectData[0].SaleType = (byte)obj.Prim.Properties.SaleType;
-                    properties.ObjectData[0].SitName = new byte[0];
-                    properties.ObjectData[0].TextureID = new byte[0];
-                    properties.ObjectData[0].TouchName = new byte[0];
+                    if (obj.Prim.Properties != null)
+                    {
+                        properties.ObjectData[0].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                        properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
+                        properties.ObjectData[0].CreatorID = obj.Prim.Properties.CreatorID;
+                        properties.ObjectData[0].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                        properties.ObjectData[0].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                        properties.ObjectData[0].GroupID = obj.Prim.Properties.GroupID;
+                        properties.ObjectData[0].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                        properties.ObjectData[0].LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                        properties.ObjectData[0].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                        properties.ObjectData[0].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                        properties.ObjectData[0].ObjectID = obj.Prim.ID;
+                        properties.ObjectData[0].OwnerID = obj.Prim.Properties.OwnerID;
+                        properties.ObjectData[0].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                        properties.ObjectData[0].OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                        properties.ObjectData[0].SalePrice = obj.Prim.Properties.SalePrice;
+                        properties.ObjectData[0].SaleType = (byte)obj.Prim.Properties.SaleType;
+                        properties.ObjectData[0].SitName = new byte[0]; // FIXME: Finish these
+                        properties.ObjectData[0].TextureID = new byte[0];
+                        properties.ObjectData[0].TouchName = new byte[0];
+                    }
+                    else
+                    {
+                        properties.ObjectData[0].BaseMask = (uint)PermissionMask.All;
+                        properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(DateTime.Now);
+                        properties.ObjectData[0].CreatorID = agent.AgentID;
+                        properties.ObjectData[0].Description = Utils.StringToBytes(String.Empty);
+                        properties.ObjectData[0].EveryoneMask = (uint)PermissionMask.All;
+                        properties.ObjectData[0].GroupID = UUID.Zero;
+                        properties.ObjectData[0].GroupMask = (uint)PermissionMask.All;
+                        properties.ObjectData[0].LastOwnerID = UUID.Zero;
+                        properties.ObjectData[0].Name = Utils.StringToBytes(String.Empty);
+                        properties.ObjectData[0].NextOwnerMask = (uint)PermissionMask.All;
+                        properties.ObjectData[0].ObjectID = obj.Prim.ID;
+                        properties.ObjectData[0].OwnerID = agent.AgentID;
+                        properties.ObjectData[0].OwnerMask = (uint)PermissionMask.All;
+                        properties.ObjectData[0].OwnershipCost = 0;
+                        properties.ObjectData[0].SalePrice = 0;
+                        properties.ObjectData[0].SaleType = (byte)SaleType.Not;
+                        properties.ObjectData[0].SitName = new byte[0];
+                        properties.ObjectData[0].TextureID = new byte[0];
+                        properties.ObjectData[0].TouchName = new byte[0];
+                    }
 
                     server.UDP.SendPacket(agent.AgentID, properties, PacketCategory.Transaction);
                 }
@@ -315,8 +340,7 @@ namespace Simian.Extensions
 
                 update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
 
-                update.ObjectData[0] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, server.RegionHandle,
-                    linkSet[i].Prim.PrimData.State, linkSet[i].Prim.Flags);
+                update.ObjectData[0] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, server.RegionHandle, linkSet[i].Prim.Flags);
 
                 if (linkSet[i].Prim.ParentID > 0)
                 {
@@ -388,7 +412,7 @@ namespace Simian.Extensions
             for (int i = 0; i < linkSet.Count; i++)
             {
                 update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim,
-                    server.RegionHandle, 0, linkSet[i].Prim.Flags);
+                    server.RegionHandle, linkSet[i].Prim.Flags);
 
                 update.ObjectData[i].ParentID = 0;
                 linkSet[i].LinkNumber = 0;
@@ -675,22 +699,46 @@ namespace Simian.Extensions
             if (server.Scene.TryGetObject(request.ObjectData.ObjectID, out obj))
             {
                 ObjectPropertiesFamilyPacket props = new ObjectPropertiesFamilyPacket();
-                props.ObjectData.BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
-                props.ObjectData.Category = (uint)obj.Prim.Properties.Category;
-                props.ObjectData.Description = Utils.StringToBytes(obj.Prim.Properties.Description);
-                props.ObjectData.EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
-                props.ObjectData.GroupID = obj.Prim.Properties.GroupID;
-                props.ObjectData.GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
-                props.ObjectData.LastOwnerID = obj.Prim.Properties.LastOwnerID;
-                props.ObjectData.Name = Utils.StringToBytes(obj.Prim.Properties.Name);
-                props.ObjectData.NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
-                props.ObjectData.ObjectID = obj.Prim.ID;
-                props.ObjectData.OwnerID = obj.Prim.Properties.OwnerID;
-                props.ObjectData.OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
-                props.ObjectData.OwnershipCost = obj.Prim.Properties.OwnershipCost;
-                props.ObjectData.RequestFlags = (uint)type;
-                props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
-                props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
+
+                if (obj.Prim.Properties != null)
+                {
+                    props.ObjectData.BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                    props.ObjectData.Category = (uint)obj.Prim.Properties.Category;
+                    props.ObjectData.Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                    props.ObjectData.EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                    props.ObjectData.GroupID = obj.Prim.Properties.GroupID;
+                    props.ObjectData.GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                    props.ObjectData.LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                    props.ObjectData.Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                    props.ObjectData.NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                    props.ObjectData.ObjectID = obj.Prim.ID;
+                    props.ObjectData.OwnerID = obj.Prim.Properties.OwnerID;
+                    props.ObjectData.OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                    props.ObjectData.OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                    props.ObjectData.RequestFlags = (uint)type;
+                    props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
+                    props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
+                }
+                else
+                {
+                    // Make up some default properties for this prim
+                    props.ObjectData.BaseMask = (uint)PermissionMask.All;
+                    props.ObjectData.Category = (uint)ObjectCategory.None;
+                    props.ObjectData.Description = Utils.StringToBytes(String.Empty);
+                    props.ObjectData.EveryoneMask = (uint)PermissionMask.All;
+                    props.ObjectData.GroupID = UUID.Zero;
+                    props.ObjectData.GroupMask = (uint)PermissionMask.All;
+                    props.ObjectData.LastOwnerID = UUID.Zero;
+                    props.ObjectData.Name = Utils.StringToBytes(String.Empty);
+                    props.ObjectData.NextOwnerMask = (uint)PermissionMask.All;
+                    props.ObjectData.ObjectID = obj.Prim.ID;
+                    props.ObjectData.OwnerID = agent.AgentID;
+                    props.ObjectData.OwnerMask = (uint)PermissionMask.All;
+                    props.ObjectData.OwnershipCost = 0;
+                    props.ObjectData.RequestFlags = (uint)ReportType.None;
+                    props.ObjectData.SalePrice = 0;
+                    props.ObjectData.SaleType = (byte)SaleType.Not;
+                }
 
                 server.UDP.SendPacket(agent.AgentID, props, PacketCategory.Transaction);
             }

@@ -277,7 +277,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         Other,
         /// <summary></summary>
-        Selectected,
+        Selected,
         /// <summary></summary>
         Temporary
     }
@@ -651,7 +651,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Information on the flexible properties of a primitive
         /// </summary>
-        public struct FlexibleData
+        public class FlexibleData
         {
             /// <summary></summary>
             public int Softness;
@@ -665,6 +665,13 @@ namespace OpenMetaverse
             public float Tension;
             /// <summary></summary>
             public Vector3 Force;
+
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public FlexibleData()
+            {
+            }
 
             /// <summary>
             /// 
@@ -759,7 +766,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Information on the light properties of a primitive
         /// </summary>
-        public struct LightData
+        public class LightData
         {
             /// <summary></summary>
             public Color4 Color;
@@ -771,6 +778,13 @@ namespace OpenMetaverse
             public float Cutoff;
             /// <summary></summary>
             public float Falloff;
+
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public LightData()
+            {
+            }
 
             /// <summary>
             /// 
@@ -864,11 +878,23 @@ namespace OpenMetaverse
         /// <summary>
         /// Information on the sculpt properties of a sculpted primitive
         /// </summary>
-        public struct SculptData
+        public class SculptData
         {
             public UUID SculptTexture;
             public SculptType Type;
 
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public SculptData()
+            {
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="data"></param>
+            /// <param name="pos"></param>
             public SculptData(byte[] data, int pos)
             {
                 if (data.Length >= 17)
@@ -922,7 +948,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Extended properties to describe an object
         /// </summary>
-        public struct ObjectProperties
+        public class ObjectProperties
         {
             /// <summary></summary>
             public UUID ObjectID;
@@ -970,6 +996,17 @@ namespace OpenMetaverse
             public string SitName;
             /// <summary></summary>
             public UUID[] TextureIDs;
+
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public ObjectProperties()
+            {
+                Name = String.Empty;
+                Description = String.Empty;
+                TouchName = String.Empty;
+                SitName = String.Empty;
+            }
 
             /// <summary>
             /// Set the properties that are set in an ObjectPropertiesFamily packet
@@ -1074,10 +1111,6 @@ namespace OpenMetaverse
             // Default a few null property values to String.Empty
             Text = String.Empty;
             MediaURL = String.Empty;
-            Properties.Name = String.Empty;
-            Properties.Description = String.Empty;
-            Properties.TouchName = String.Empty;
-            Properties.SitName = String.Empty;
         }
 
         public Primitive(Primitive prim)
@@ -1266,6 +1299,10 @@ namespace OpenMetaverse
             int i = pos;
             int totalLength = 1;
 
+            Flexible = null;
+            Light = null;
+            Sculpt = null;
+
             if (data.Length == 0 || pos >= data.Length)
                 return 0;
 
@@ -1291,6 +1328,76 @@ namespace OpenMetaverse
             }
 
             return totalLength;
+        }
+
+        public byte[] GetExtraParamsBytes()
+        {
+            byte[] flexible = null;
+            byte[] light = null;
+            byte[] sculpt = null;
+            byte[] buffer = null;
+            int size = 1;
+            int pos = 0;
+            byte count = 0;
+
+            if (Flexible != null)
+            {
+                flexible = Flexible.GetBytes();
+                size += flexible.Length + 6;
+                ++count;
+            }
+            if (Light != null)
+            {
+                light = Light.GetBytes();
+                size += light.Length + 6;
+                ++count;
+            }
+            if (Sculpt != null)
+            {
+                sculpt = Sculpt.GetBytes();
+                size += sculpt.Length + 6;
+                ++count;
+            }
+
+            buffer = new byte[size];
+            buffer[0] = count;
+            ++pos;
+
+            if (flexible != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Flexible), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)flexible.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(flexible, 0, buffer, pos, flexible.Length);
+                pos += flexible.Length;
+            }
+            if (light != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Light), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)light.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(light, 0, buffer, pos, light.Length);
+                pos += light.Length;
+            }
+            if (sculpt != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Sculpt), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)sculpt.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(sculpt, 0, buffer, pos, sculpt.Length);
+                pos += sculpt.Length;
+            }
+
+            return buffer;
         }
 
         #endregion Public Methods

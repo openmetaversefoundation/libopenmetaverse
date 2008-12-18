@@ -238,8 +238,8 @@ namespace mapgenerator
                     writer.WriteLine("Utils.UInt64ToBytes(" + field.Name + ", bytes, i); i += 8;");
                     break;
                 case FieldType.Variable:
-                    writer.WriteLine("if(" + field.Name + " == null) { Console.WriteLine(\"Warning: " + field.Name + " is null, in \" + this.GetType()); }");
-                    writer.Write("                ");
+                    //writer.WriteLine("if(" + field.Name + " == null) { Console.WriteLine(\"Warning: " + field.Name + " is null, in \" + this.GetType()); }");
+                    //writer.Write("                ");
                     if (field.Count == 1)
                     {
                         writer.WriteLine("bytes[i++] = (byte)" + field.Name + ".Length;");
@@ -393,7 +393,7 @@ namespace mapgenerator
             writer.WriteLine("            }" + Environment.NewLine);
 
             // ToString() function
-            writer.WriteLine("            public override string ToString()" + Environment.NewLine + "            {");
+            /*writer.WriteLine("            public override string ToString()" + Environment.NewLine + "            {");
             writer.WriteLine("                StringBuilder output = new StringBuilder();");
             writer.WriteLine("                output.AppendLine(\"-- " + block.Name + " --\");");
 
@@ -413,7 +413,7 @@ namespace mapgenerator
                 }
             }
 
-            writer.WriteLine("                return output.ToString();" + Environment.NewLine + "            }");
+            writer.WriteLine("                return output.ToString();" + Environment.NewLine + "            }");*/
             writer.WriteLine("        }" + Environment.NewLine);
         }
 
@@ -676,7 +676,7 @@ namespace mapgenerator
 
             // ToString() function
             //writer.WriteLine("        /// <summary>Serialize this packet to a string</summary><returns>A string containing the serialized packet</returns>");
-            writer.WriteLine("        public override string ToString()" + Environment.NewLine + "        {");
+            /*writer.WriteLine("        public override string ToString()" + Environment.NewLine + "        {");
             writer.WriteLine("            string output = \"--- " + packet.Name + " ---\" + Environment.NewLine;");
 
             foreach (MapBlock block in packet.Blocks)
@@ -706,9 +706,8 @@ namespace mapgenerator
                 }
             }
 
-            writer.WriteLine("            return output;" + Environment.NewLine + "        }" + Environment.NewLine);
+            writer.WriteLine("            return output;" + Environment.NewLine + "        }" + Environment.NewLine);*/
 
-            // Closing function bracket
             writer.WriteLine("    }" + Environment.NewLine);
         }
 

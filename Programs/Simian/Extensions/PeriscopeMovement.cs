@@ -322,12 +322,12 @@ namespace Simian.Extensions
             {
                 agent.Avatar.Rotation = update.AgentData.BodyRotation;
                 agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
-                agent.State = update.AgentData.State;
+                agent.Avatar.PrimData.State = update.AgentData.State; // FIXME: Are these two different state variables?
                 agent.Flags = (PrimFlags)update.AgentData.Flags;
             }
 
             ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
-                server.RegionHandle, agent.State, agent.Flags);
+                server.RegionHandle, agent.Flags);
 
             server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }

@@ -255,16 +255,6 @@ namespace OpenMetaverse
         /// </remarks>
         public event NewAvatarCallback OnNewAvatar;
         /// <summary>
-        /// This event will be raised for every ObjectUpdate block that 
-        /// contains a new tree or grass patch.
-        /// </summary>
-        /// <remarks>Depending on the circumstances a client could 
-        /// receive two or more of these events for the same object, if you 
-        /// or the object left the current sim and returned for example. Client
-        /// applications are responsible for tracking and storing objects.
-        /// </remarks>
-        public event NewFoliageCallback OnNewFoliage;
-        /// <summary>
         /// This event will be raised when a terse object update packet is 
         /// received, containing the updated position, rotation, and 
         /// movement-related vectors
@@ -1310,8 +1300,6 @@ namespace OpenMetaverse
                         case PCode.Grass:
                         case PCode.Tree:
                         case PCode.NewTree:
-                            if (OnNewFoliage == null) continue;
-                            break;
                         case PCode.Prim:
                             if (OnNewPrim == null) continue;
                             break;
@@ -1565,11 +1553,8 @@ namespace OpenMetaverse
                         if (attachment)
                             FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
                                 update.RegionData.TimeDilation);
-                        else if (pcode == PCode.Prim)
-                            FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
-                                update.RegionData.TimeDilation);
                         else
-                            FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, 
+                            FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
                                 update.RegionData.TimeDilation);
 
                         break;
@@ -1817,6 +1802,7 @@ namespace OpenMetaverse
                     PCode pcode = (PCode)block.Data[i++];
 
                     #region Relevance check
+
                     if (!Client.Settings.ALWAYS_DECODE_OBJECTS)
                     {
                         switch (pcode)
@@ -1824,13 +1810,12 @@ namespace OpenMetaverse
                             case PCode.Grass:
                             case PCode.Tree:
                             case PCode.NewTree:
-                                if (OnNewFoliage == null) continue;
-                                break;
                             case PCode.Prim:
                                 if (OnNewPrim == null) continue;
                                 break;
                         }
                     }
+
                     #endregion Relevance check
 
                     Primitive prim = GetPrimitive(simulator, LocalID, FullID);
@@ -1840,251 +1825,206 @@ namespace OpenMetaverse
                     prim.Flags = (PrimFlags)block.UpdateFlags;
                     prim.PrimData.PCode = pcode;
 
-                    switch (pcode)
+                    #region Decode block and update Prim
+
+                    // State
+                    prim.PrimData.State = block.Data[i++];
+                    // CRC
+                    i += 4;
+                    // Material
+                    prim.PrimData.Material = (Material)block.Data[i++];
+                    // Click action
+                    prim.ClickAction = (ClickAction)block.Data[i++];
+                    // Scale
+                    prim.Scale = new Vector3(block.Data, i);
+                    i += 12;
+                    // Position
+                    prim.Position = new Vector3(block.Data, i);
+                    i += 12;
+                    // Rotation
+                    prim.Rotation = new Quaternion(block.Data, i, true);
+                    i += 12;
+                    // Compressed flags
+                    CompressedFlags flags = (CompressedFlags)Utils.BytesToUInt(block.Data, i);
+                    i += 4;
+
+                    prim.OwnerID = new UUID(block.Data, i);
+                    i += 16;
+
+                    // Angular velocity
+                    if ((flags & CompressedFlags.HasAngularVelocity) != 0)
                     {
-                        case PCode.Grass:
-                        case PCode.Tree:
-                        case PCode.NewTree:
-                            #region Foliage Decoding
-
-                            // State
-                            prim.PrimData.State = block.Data[i++];
-                            // CRC
-                            i += 4;
-                            // Material
-                            prim.PrimData.Material = (Material)block.Data[i++];
-                            // Click action
-                            prim.ClickAction = (ClickAction)block.Data[i++];
-                            // Scale
-                            prim.Scale = new Vector3(block.Data, i);
-                            i += 12;
-                            // Position
-                            prim.Position = new Vector3(block.Data, i);
-                            i += 12;
-                            // Rotation
-                            prim.Rotation = new Quaternion(block.Data, i, true);
-                            i += 12;
-
-                            #endregion Foliage Decoding
-
-                            // FIXME: We are leaving a lot of data left undecoded here, including the
-                            // tree species. Need to understand what is going on with these packets
-                            // and fix it soon!
-
-                            FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-
-                            break;
-                        case PCode.Prim:
-                            #region Decode block and update Prim
-                            // State
-                            prim.PrimData.State = block.Data[i++];
-                            // CRC
-                            i += 4;
-                            // Material
-                            prim.PrimData.Material = (Material)block.Data[i++];
-                            // Click action
-                            prim.ClickAction = (ClickAction)block.Data[i++];
-                            // Scale
-                            prim.Scale = new Vector3(block.Data, i);
-                            i += 12;
-                            // Position
-                            prim.Position = new Vector3(block.Data, i);
-                            i += 12;
-                            // Rotation
-                            prim.Rotation = new Quaternion(block.Data, i, true);
-                            i += 12;
-                            // Compressed flags
-                            CompressedFlags flags = (CompressedFlags)Utils.BytesToUInt(block.Data, i);
-                            i += 4;
-
-                            prim.OwnerID = new UUID(block.Data, i);
-                            i += 16;
-			    
-
-                            // Angular velocity
-                            if ((flags & CompressedFlags.HasAngularVelocity) != 0)
-                            {
-                                prim.AngularVelocity = new Vector3(block.Data, i);
-                                i += 12;
-                            }
-
-                            // Parent ID
-                            if ((flags & CompressedFlags.HasParent) != 0)
-                            {
-                                prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                            }
-                            else
-                            {
-                                prim.ParentID = 0;
-                            }
-
-                            // Tree data
-                            if ((flags & CompressedFlags.Tree) != 0)
-                            {
-                                prim.GenericData = new byte[1];
-                                prim.GenericData[0] = block.Data[i++];
-                            }
-                            // Scratch pad
-                            else if ((flags & CompressedFlags.ScratchPad) != 0)
-                            {
-                                int size = block.Data[i++];
-                                prim.GenericData = new byte[size];
-                                Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
-                                i += size;
-                            }
-
-                            // Floating text
-                            if ((flags & CompressedFlags.HasText) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
-                                {
-                                    text += (char)block.Data[i];
-                                    i++;
-                                }
-                                i++;
-
-                                // Floating text
-                                prim.Text = text;
-
-                                // Text color
-                                prim.TextColor = new Color4(block.Data, i, false);
-                                // FIXME: Is alpha inversed here as well?
-                                i += 4;
-                            }
-                            else
-                            {
-                                prim.Text = String.Empty;
-                            }
-
-                            // Media URL
-                            if ((flags & CompressedFlags.MediaURL) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
-                                {
-                                    text += (char)block.Data[i];
-                                    i++;
-                                }
-                                i++;
-
-                                prim.MediaURL = text;
-                            }
-
-                            // Particle system
-                            if ((flags & CompressedFlags.HasParticles) != 0)
-                            {
-                                prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
-                                i += 86;
-                            }
-
-                            // Extra parameters
-                            i += prim.SetExtraParamsFromBytes(block.Data, i);
-
-                            //Sound data
-                            if ((flags & CompressedFlags.HasSound) != 0)
-                            {
-                                prim.Sound = new UUID(block.Data, i);
-                                i += 16;
-
-                                prim.SoundGain = Utils.BytesToFloat(block.Data, i);
-                                i += 4;
-                                prim.SoundFlags = block.Data[i++];
-                                prim.SoundRadius = Utils.BytesToFloat(block.Data, i);
-                                i += 4;
-                            }
-
-                            // Name values
-                            if ((flags & CompressedFlags.HasNameValues) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
-                                {
-                                    text += (char)block.Data[i];
-                                    i++;
-                                }
-                                i++;
-
-                                // Parse the name values
-                                if (text.Length > 0)
-                                {
-                                    string[] lines = text.Split('\n');
-                                    prim.NameValues = new NameValue[lines.Length];
-
-                                    for (int j = 0; j < lines.Length; j++)
-                                    {
-                                        if (!String.IsNullOrEmpty(lines[j]))
-                                        {
-                                            NameValue nv = new NameValue(lines[j]);
-                                            prim.NameValues[j] = nv;
-                                        }
-                                    }
-                                }
-                            }
-
-                            prim.PrimData.PathCurve = (PathCurve)block.Data[i++];
-                            ushort pathBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.PathBegin = Primitive.UnpackBeginCut(pathBegin);
-                            ushort pathEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.PathEnd = Primitive.UnpackEndCut(pathEnd);
-                            prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.Data[i++]);
-                            prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.Data[i++]);
-                            prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
-                            prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTwist = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTaperX = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTaperY = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
-                            prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.Data[i++]);
-                            prim.PrimData.PathSkew = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-
-                            prim.PrimData.profileCurve = block.Data[i++];
-                            ushort profileBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(profileBegin);
-                            ushort profileEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(profileEnd);
-                            ushort profileHollow = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(profileHollow);
-
-                            // TextureEntry
-                            int textureEntryLength = (int)Utils.BytesToUInt(block.Data, i);
-                            i += 4;
-                            prim.Textures = new Primitive.TextureEntry(block.Data, i, textureEntryLength);
-                            i += textureEntryLength;
-
-                            // Texture animation
-                            if ((flags & CompressedFlags.TextureAnimation) != 0)
-                            {
-                                //int textureAnimLength = (int)Utils.BytesToUIntBig(block.Data, i);
-                                i += 4;
-                                prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
-                            }
-
-                            #endregion
-
-                            #region Fire Events
-
-                            // Fire the appropriate callback
-                            if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
-                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
-                                    update.RegionData.TimeDilation);
-                            else if ((flags & CompressedFlags.Tree) != 0)
-                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, 
-                                    update.RegionData.TimeDilation);
-                            else
-                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
-                                    update.RegionData.TimeDilation);
-
-                            #endregion
-
-                            break;
-                        default:
-                            Logger.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() +
-                                ", implement this!", Client);
-                            break;
+                        prim.AngularVelocity = new Vector3(block.Data, i);
+                        i += 12;
                     }
+
+                    // Parent ID
+                    if ((flags & CompressedFlags.HasParent) != 0)
+                    {
+                        prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                    }
+                    else
+                    {
+                        prim.ParentID = 0;
+                    }
+
+                    // Tree data
+                    if ((flags & CompressedFlags.Tree) != 0)
+                    {
+                        prim.GenericData = new byte[1];
+                        prim.GenericData[0] = block.Data[i++];
+                    }
+                    // Scratch pad
+                    else if ((flags & CompressedFlags.ScratchPad) != 0)
+                    {
+                        int size = block.Data[i++];
+                        prim.GenericData = new byte[size];
+                        Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
+                        i += size;
+                    }
+
+                    // Floating text
+                    if ((flags & CompressedFlags.HasText) != 0)
+                    {
+                        string text = String.Empty;
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        i++;
+
+                        // Floating text
+                        prim.Text = text;
+
+                        // Text color
+                        prim.TextColor = new Color4(block.Data, i, false);
+                        // FIXME: Is alpha inversed here as well?
+                        i += 4;
+                    }
+                    else
+                    {
+                        prim.Text = String.Empty;
+                    }
+
+                    // Media URL
+                    if ((flags & CompressedFlags.MediaURL) != 0)
+                    {
+                        string text = String.Empty;
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        i++;
+
+                        prim.MediaURL = text;
+                    }
+
+                    // Particle system
+                    if ((flags & CompressedFlags.HasParticles) != 0)
+                    {
+                        prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
+                        i += 86;
+                    }
+
+                    // Extra parameters
+                    i += prim.SetExtraParamsFromBytes(block.Data, i);
+
+                    //Sound data
+                    if ((flags & CompressedFlags.HasSound) != 0)
+                    {
+                        prim.Sound = new UUID(block.Data, i);
+                        i += 16;
+
+                        prim.SoundGain = Utils.BytesToFloat(block.Data, i);
+                        i += 4;
+                        prim.SoundFlags = block.Data[i++];
+                        prim.SoundRadius = Utils.BytesToFloat(block.Data, i);
+                        i += 4;
+                    }
+
+                    // Name values
+                    if ((flags & CompressedFlags.HasNameValues) != 0)
+                    {
+                        string text = String.Empty;
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        i++;
+
+                        // Parse the name values
+                        if (text.Length > 0)
+                        {
+                            string[] lines = text.Split('\n');
+                            prim.NameValues = new NameValue[lines.Length];
+
+                            for (int j = 0; j < lines.Length; j++)
+                            {
+                                if (!String.IsNullOrEmpty(lines[j]))
+                                {
+                                    NameValue nv = new NameValue(lines[j]);
+                                    prim.NameValues[j] = nv;
+                                }
+                            }
+                        }
+                    }
+
+                    prim.PrimData.PathCurve = (PathCurve)block.Data[i++];
+                    ushort pathBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.PathBegin = Primitive.UnpackBeginCut(pathBegin);
+                    ushort pathEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.PathEnd = Primitive.UnpackEndCut(pathEnd);
+                    prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.Data[i++]);
+                    prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.Data[i++]);
+                    prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
+                    prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTwist = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                    prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTaperX = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTaperY = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
+                    prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.Data[i++]);
+                    prim.PrimData.PathSkew = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+
+                    prim.PrimData.profileCurve = block.Data[i++];
+                    ushort profileBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(profileBegin);
+                    ushort profileEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(profileEnd);
+                    ushort profileHollow = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(profileHollow);
+
+                    // TextureEntry
+                    int textureEntryLength = (int)Utils.BytesToUInt(block.Data, i);
+                    i += 4;
+                    prim.Textures = new Primitive.TextureEntry(block.Data, i, textureEntryLength);
+                    i += textureEntryLength;
+
+                    // Texture animation
+                    if ((flags & CompressedFlags.TextureAnimation) != 0)
+                    {
+                        //int textureAnimLength = (int)Utils.BytesToUIntBig(block.Data, i);
+                        i += 4;
+                        prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
+                    }
+
+                    #endregion
+
+                    #region Fire Events
+
+                    // Fire the appropriate callback
+                    if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
+                        FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle,
+                            update.RegionData.TimeDilation);
+                    else
+                        FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle,
+                            update.RegionData.TimeDilation);
+
+                    #endregion
                 }
                 catch (IndexOutOfRangeException e)
                 {
@@ -2454,15 +2394,6 @@ namespace OpenMetaverse
             if (OnNewPrim != null)
             {
                 try { OnNewPrim(simulator, prim, RegionHandle, TimeDilation); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
-        {
-            if (OnNewFoliage != null)
-            {
-                try { OnNewFoliage(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

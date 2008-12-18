@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using OpenMetaverse;
 
 namespace Simian
@@ -35,15 +36,18 @@ namespace Simian
 
         bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags);
         bool ObjectRemove(object sender, uint localID);
+        bool ObjectRemove(object sender, UUID id);
         void ObjectTransform(object sender, uint localID, Vector3 position, Quaternion rotation, Vector3 velocity,
             Vector3 acceleration, Vector3 angularVelocity);
         void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags);
         void ObjectImage(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
         void ObjectModify(object sender, uint localID, Primitive.ConstructionData data);
-
+        
         void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
 
         bool TryGetObject(uint localID, out SimulationObject obj);
         bool TryGetObject(UUID id, out SimulationObject obj);
+
+        IDictionary<uint, SimulationObject> GetSceneCopy();
     }
 }
