@@ -254,6 +254,11 @@ namespace OpenMetaverse
         public Simulator Simulator;
 
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+
+        public AssetDownload()
+            : base()
+        {
+        }
     }
 
     public class XferDownload : Transfer
@@ -263,6 +268,11 @@ namespace OpenMetaverse
         public AssetType Type;
         public uint PacketNum;
         public string Filename = String.Empty;
+
+        public XferDownload()
+            : base()
+        {
+        }
     }
 
     /// <summary>
@@ -281,6 +291,11 @@ namespace OpenMetaverse
 
         internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+
+        public ImageDownload()
+            : base()
+        {
+        }
     }
 
     /// <summary>
@@ -292,7 +307,13 @@ namespace OpenMetaverse
         public AssetType Type;
         public ulong XferID;
         public uint PacketNum;
+
+        public AssetUpload()
+            : base()
+        {
+        }
     }
+
     public class ImageRequest
     {
         public ImageRequest(UUID imageid, ImageType type, float priority, int discardLevel)
@@ -900,6 +921,9 @@ namespace OpenMetaverse
                 case AssetType.Animation:
                     asset = new AssetAnimation();
                     break;
+                case AssetType.Sound:
+                    asset = new AssetSound();
+                    break;
                 default:
                     Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
                     return null;
@@ -911,9 +935,16 @@ namespace OpenMetaverse
         private Asset WrapAsset(AssetDownload download)
         {
             Asset asset = CreateAssetWrapper(download.AssetType);
-            asset.AssetID = download.AssetID;
-            asset.AssetData = download.AssetData;
-            return asset;
+            if (asset != null)
+            {
+                asset.AssetID = download.AssetID;
+                asset.AssetData = download.AssetData;
+                return asset;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void SendNextUploadPacket(AssetUpload upload)
@@ -1091,9 +1122,18 @@ namespace OpenMetaverse
 
                 // This assumes that every transfer packet except the last one is exactly 1000 bytes,
                 // hopefully that is a safe assumption to make
-                Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
-                    asset.TransferData.Data.Length);
-                download.Transferred += asset.TransferData.Data.Length;
+                try
+                {
+                    Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
+                        asset.TransferData.Data.Length);
+                    download.Transferred += asset.TransferData.Data.Length;
+                }
+                catch (ArgumentException)
+                {
+                    Logger.Log(String.Format("TransferPacket handling failed. TransferData.Data.Length={0}, AssetData.Length={1}, TransferData.Packet={2}",
+                        asset.TransferData.Data.Length, download.AssetData.Length, asset.TransferData.Packet), Helpers.LogLevel.Error);
+                    return;
+                }
 
                 //Client.DebugLog(String.Format("Transfer packet {0}, received {1}/{2}/{3} bytes for asset {4}",
                 //    asset.TransferData.Packet, asset.TransferData.Data.Length, transfer.Transferred, transfer.Size,

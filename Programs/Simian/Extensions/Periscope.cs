@@ -15,6 +15,7 @@ namespace Simian.Extensions
         GridClient client;
         PeriscopeImageDelivery imageDelivery;
         PeriscopeMovement movement;
+        PeriscopeTransferManager transferManager;
         object loginLock = new object();
 
         public Periscope()
@@ -30,13 +31,13 @@ namespace Simian.Extensions
             client.Settings.MULTIPLE_SIMS = false;
             client.Settings.SEND_AGENT_UPDATES = false;
 
-            client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
-            client.Objects.OnNewPrim += new OpenMetaverse.ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            client.Objects.OnNewAvatar += new OpenMetaverse.ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            client.Objects.OnNewAttachment += new OpenMetaverse.ObjectManager.NewAttachmentCallback(Objects_OnNewAttachment);
-            client.Objects.OnObjectKilled += new OpenMetaverse.ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
-            client.Objects.OnObjectUpdated += new OpenMetaverse.ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
-            client.Avatars.OnAvatarAppearance += new OpenMetaverse.AvatarManager.AvatarAppearanceCallback(Avatars_OnAvatarAppearance);
+            client.Network.OnCurrentSimChanged += Network_OnCurrentSimChanged;
+            client.Objects.OnNewPrim += Objects_OnNewPrim;
+            client.Objects.OnNewAvatar += Objects_OnNewAvatar;
+            client.Objects.OnNewAttachment += Objects_OnNewAttachment;
+            client.Objects.OnObjectKilled += Objects_OnObjectKilled;
+            client.Objects.OnObjectUpdated += Objects_OnObjectUpdated;
+            client.Avatars.OnAvatarAppearance += Avatars_OnAvatarAppearance;
             client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             client.Self.OnChat += new AgentManager.ChatCallback(Self_OnChat);
             client.Self.OnTeleport += new AgentManager.TeleportCallback(Self_OnTeleport);
@@ -45,13 +46,20 @@ namespace Simian.Extensions
 
             server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
             server.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, ChatFromViewerHandler);
+            server.UDP.RegisterPacketCallback(PacketType.ObjectGrab, ObjectGrabHandler);
+            server.UDP.RegisterPacketCallback(PacketType.ObjectGrabUpdate, ObjectGrabUpdateHandler);
+            server.UDP.RegisterPacketCallback(PacketType.ObjectDeGrab, ObjectDeGrabHandler);
+            server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, ViewerEffectHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, AgentAnimationHandler);
 
             imageDelivery = new PeriscopeImageDelivery(server, client);
             movement = new PeriscopeMovement(server, this);
+            transferManager = new PeriscopeTransferManager(server, client);
         }
 
         public void Stop()
         {
+            transferManager.Stop();
             movement.Stop();
             imageDelivery.Stop();
 
@@ -62,6 +70,8 @@ namespace Simian.Extensions
         void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             SimulationObject simObj = new SimulationObject(prim, server);
+            if (MasterAgent != null)
+                simObj.Prim.OwnerID = MasterAgent.AgentID;
             server.Scene.ObjectAdd(this, simObj, PrimFlags.None);
         }
 
@@ -244,7 +254,6 @@ namespace Simian.Extensions
                 switch (messageParts[0])
                 {
                     case "/teleport":
-                        //string simName;
                         float x, y, z;
 
                         if (messageParts.Length == 5 &&
@@ -261,6 +270,40 @@ namespace Simian.Extensions
                             server.Avatars.SendAlert(agent, "Usage: /teleport \"sim name\" x y z");
                         }
                         return;
+                    case "/stats":
+                        server.Avatars.SendAlert(agent, String.Format("Downloading textures: {0}, Queued textures: {1}",
+                            imageDelivery.Pipeline.CurrentCount, imageDelivery.Pipeline.QueuedCount));
+                        return;
+                    case "/nudemod":
+                        int count = 0;
+                        Dictionary<UUID, Agent> agents;
+                        lock (server.Agents)
+                            agents = new Dictionary<UUID, Agent>(server.Agents);
+
+                        foreach (Agent curAgent in agents.Values)
+                        {
+                            if (curAgent != agent && curAgent.VisualParams != null)
+                            {
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.LowerBaked] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.LowerJacket] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.LowerPants] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.LowerShoes] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.LowerSocks] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.LowerUnderpants] = null;
+
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperBaked] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperGloves] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperJacket] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperShirt] = null;
+                                curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperUndershirt] = null;
+
+                                server.Scene.AvatarAppearance(this, curAgent, curAgent.Avatar.Textures, curAgent.VisualParams);
+                                ++count;
+                            }
+                        }
+
+                        server.Avatars.SendAlert(agent, String.Format("Modified appearances for {0} avatar(s)", count));
+                        return;
                 }
             }
             
@@ -271,6 +314,12 @@ namespace Simian.Extensions
                 finalMessage = String.Format("<{0} {1}> {2}", agent.FirstName, agent.LastName, message);
 
             client.Self.Chat(finalMessage, chat.ChatData.Channel, (ChatType)chat.ChatData.Type);
+        }
+
+        static void EraseTexture(Avatar avatar, AppearanceManager.TextureIndex texture)
+        {
+            Primitive.TextureEntryFace face = avatar.Textures.FaceTextures[(int)texture];
+            if (face != null) face.TextureID = UUID.Zero;
         }
 
         void AgentUpdateHandler(Packet packet, Agent agent)
@@ -308,10 +357,74 @@ namespace Simian.Extensions
 
             if (MasterAgent == null || update.AgentData.AgentID == MasterAgent.AgentID)
             {
-                // Forward AgentUpdate packets with the AgentID/SessionID set to the bots ID
                 update.AgentData.AgentID = client.Self.AgentID;
                 update.AgentData.SessionID = client.Self.SessionID;
                 client.Network.SendPacket(update);
+            }
+        }
+
+        void ObjectGrabHandler(Packet packet, Agent agent)
+        {
+            ObjectGrabPacket grab = (ObjectGrabPacket)packet;
+
+            if (MasterAgent == null || grab.AgentData.AgentID == MasterAgent.AgentID)
+            {
+                grab.AgentData.AgentID = client.Self.AgentID;
+                grab.AgentData.SessionID = client.Self.SessionID;
+
+                client.Network.SendPacket(grab);
+            }
+        }
+
+        void ObjectGrabUpdateHandler(Packet packet, Agent agent)
+        {
+            ObjectGrabUpdatePacket grabUpdate = (ObjectGrabUpdatePacket)packet;
+
+            if (MasterAgent == null || grabUpdate.AgentData.AgentID == MasterAgent.AgentID)
+            {
+                grabUpdate.AgentData.AgentID = client.Self.AgentID;
+                grabUpdate.AgentData.SessionID = client.Self.SessionID;
+
+                client.Network.SendPacket(grabUpdate);
+            }
+        }
+
+        void ObjectDeGrabHandler(Packet packet, Agent agent)
+        {
+            ObjectDeGrabPacket degrab = (ObjectDeGrabPacket)packet;
+
+            if (MasterAgent == null || degrab.AgentData.AgentID == MasterAgent.AgentID)
+            {
+                degrab.AgentData.AgentID = client.Self.AgentID;
+                degrab.AgentData.SessionID = client.Self.SessionID;
+
+                client.Network.SendPacket(degrab);
+            }
+        }
+
+        void ViewerEffectHandler(Packet packet, Agent agent)
+        {
+            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
+
+            if (MasterAgent == null || effect.AgentData.AgentID == MasterAgent.AgentID)
+            {
+                effect.AgentData.AgentID = client.Self.AgentID;
+                effect.AgentData.SessionID = client.Self.SessionID;
+
+                client.Network.SendPacket(effect);
+            }
+        }
+
+        void AgentAnimationHandler(Packet packet, Agent agent)
+        {
+            AgentAnimationPacket animation = (AgentAnimationPacket)packet;
+
+            if (MasterAgent == null || animation.AgentData.AgentID == MasterAgent.AgentID)
+            {
+                animation.AgentData.AgentID = client.Self.AgentID;
+                animation.AgentData.SessionID = client.Self.SessionID;
+
+                client.Network.SendPacket(animation);
             }
         }
 

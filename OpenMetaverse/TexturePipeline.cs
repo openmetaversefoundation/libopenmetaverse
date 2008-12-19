@@ -57,19 +57,14 @@ namespace OpenMetaverse
         /// <summary>Fired when some texture data is received</summary>
         public event DownloadProgressCallback OnDownloadProgress;
 
-        /// <summary>For keeping track of active threads available/downloading
-        /// textures</summary>
-        public int[] ThreadpoolSlots
-        {
-            get { lock (threadpoolSlots) { return threadpoolSlots; } }
-            set { lock (threadpoolSlots) { threadpoolSlots = value; } }
-        }
+        public int CurrentCount { get { return currentRequests.Count; } }
+        public int QueuedCount { get { return requestQueue.Count; } }
 
         GridClient client;
         /// <summary>Maximum concurrent texture requests</summary>
         int maxTextureRequests;
         /// <summary>Queue for image requests that have not been sent out yet</summary>
-        Queue<KeyValuePair<UUID, ImageType>> requestQueue;
+        List<TaskInfo> requestQueue;
         /// <summary>Current texture downloads</summary>
         Dictionary<UUID, int> currentRequests;
         /// <summary>Storage for completed texture downloads</summary>
@@ -78,6 +73,7 @@ namespace OpenMetaverse
         int[] threadpoolSlots;
         Thread downloadMaster;
         bool running;
+        object syncObject = new object();
 
         /// <summary>
         /// Default constructor
@@ -90,7 +86,7 @@ namespace OpenMetaverse
             this.client = client;
             maxTextureRequests = maxRequests;
 
-            requestQueue = new Queue<KeyValuePair<UUID, ImageType>>();
+            requestQueue = new List<TaskInfo>();
             currentRequests = new Dictionary<UUID, int>(maxTextureRequests);
             completedDownloads = new Dictionary<UUID, ImageDownload>();
             resetEvents = new AutoResetEvent[maxTextureRequests];
@@ -133,11 +129,11 @@ namespace OpenMetaverse
         /// <param name="type">Type of the requested texture</param>
         public void RequestTexture(UUID textureID, ImageType type)
         {
-            if (client.Assets.Cache.HasImage(textureID))
+            lock (syncObject)
             {
-                // Add to rendering dictionary
-                lock (completedDownloads)
+                if (client.Assets.Cache.HasImage(textureID))
                 {
+                    // Add to rendering dictionary
                     if (!completedDownloads.ContainsKey(textureID))
                     {
                         completedDownloads.Add(textureID, client.Assets.Cache.GetCachedImage(textureID));
@@ -151,21 +147,18 @@ namespace OpenMetaverse
                         // This image has already been served up, ignore this request
                     }
                 }
-            }
-            else
-            {
-                lock (requestQueue)
+                else
                 {
                     // Make sure the request isn't already queued up
-                    foreach (KeyValuePair<UUID, ImageType> kvp in requestQueue)
-                        if (kvp.Key == textureID)
+                    foreach (TaskInfo task in requestQueue)
+                    {
+                        if (task.RequestID == textureID)
                             return;
+                    }
 
                     // Make sure we aren't already downloading the texture
                     if (!currentRequests.ContainsKey(textureID))
-                    {
-                        requestQueue.Enqueue(new KeyValuePair<UUID, ImageType>(textureID, type));
-                    }
+                        requestQueue.Add(new TaskInfo(textureID, 0, type));
                 }
             }
         }
@@ -177,18 +170,17 @@ namespace OpenMetaverse
         /// <returns>ImageDownload object</returns>
         public ImageDownload GetTextureToRender(UUID textureID)
         {
-            ImageDownload renderable = new ImageDownload();
-            lock (completedDownloads)
+            lock (syncObject)
             {
                 if (completedDownloads.ContainsKey(textureID))
                 {
-                    renderable = completedDownloads[textureID];
+                    return completedDownloads[textureID];
                 }
                 else
                 {
                     Logger.Log("Requested texture data for texture that does not exist in dictionary", Helpers.LogLevel.Warning);
+                    return null;
                 }
-                return renderable;
             }
         }
 
@@ -196,12 +188,35 @@ namespace OpenMetaverse
         /// Remove no longer necessary texture from dictionary
         /// </summary>
         /// <param name="textureID"></param>
-        public void RemoveFromPipeline(UUID textureID)
+        public bool RemoveFromPipeline(UUID textureID)
         {
-            lock (completedDownloads)
+            lock (syncObject)
+                return completedDownloads.Remove(textureID);
+        }
+
+        public void AbortDownload(UUID textureID)
+        {
+            lock (syncObject)
             {
-                if (completedDownloads.ContainsKey(textureID))
-                    completedDownloads.Remove(textureID);
+                for (int i = 0; i < requestQueue.Count; i++)
+                {
+                    TaskInfo task = requestQueue[i];
+
+                    if (task.RequestID == textureID)
+                    {
+                        requestQueue.RemoveAt(i);
+                        --i;
+                    }
+                }
+
+                int current;
+                if (currentRequests.TryGetValue(textureID, out current))
+                {
+                    currentRequests.Remove(textureID);
+                    resetEvents[current].Set();
+
+                    // FIXME: Send an abort packet
+                }
             }
         }
 
@@ -230,14 +245,24 @@ namespace OpenMetaverse
 
                     if (reqNbr != -1)
                     {
-                        KeyValuePair<UUID, ImageType> request;
-                        lock (requestQueue)
-                            request = requestQueue.Dequeue();
+                        TaskInfo task = null;
+                        lock (syncObject)
+                        {
+                            if (requestQueue.Count > 0)
+                            {
+                                task = requestQueue[0];
+                                requestQueue.RemoveAt(0);
+                            }
+                        }
 
-                        Logger.DebugLog(String.Format("Sending Worker thread new download request {0}", reqNbr));
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(TextureRequestDoWork), new TaskInfo(request.Key, reqNbr, request.Value));
+                        if (task != null)
+                        {
+                            task.RequestNbr = reqNbr;
 
-                        continue;
+                            Logger.DebugLog(String.Format("Sending Worker thread new download request {0}", reqNbr));
+                            ThreadPool.QueueUserWorkItem(TextureRequestDoWork, task);
+                            continue;
+                        }
                     }
                 }
 
@@ -252,7 +277,7 @@ namespace OpenMetaverse
         {
             TaskInfo ti = (TaskInfo)threadContext;
 
-            lock (currentRequests)
+            lock (syncObject)
             {
                 if (currentRequests.ContainsKey(ti.RequestID))
                 {
@@ -271,12 +296,12 @@ namespace OpenMetaverse
             client.Assets.RequestImage(ti.RequestID, ti.Type);
 
             // don't release this worker slot until texture is downloaded or timeout occurs
-            if (!resetEvents[ti.RequestNbr].WaitOne(30 * 1000, false))
+            if (!resetEvents[ti.RequestNbr].WaitOne(45 * 1000, false))
             {
                 // Timed out
                 Logger.Log("Worker " + ti.RequestNbr + " Timeout waiting for Texture " + ti.RequestID + " to Download", Helpers.LogLevel.Warning);
 
-                lock (currentRequests)
+                lock (syncObject)
                     currentRequests.Remove(ti.RequestID);
 
                 if (OnDownloadFinished != null)
@@ -292,7 +317,7 @@ namespace OpenMetaverse
             int requestNbr;
             bool found;
 
-            lock (currentRequests)
+            lock (syncObject)
                 found = currentRequests.TryGetValue(image.ID, out requestNbr);
 
             if (asset != null && found)
@@ -300,7 +325,7 @@ namespace OpenMetaverse
                 Logger.DebugLog(String.Format("Worker {0} Downloaded texture {1}", requestNbr, image.ID));
 
                 // Free up this slot in the ThreadPool
-                lock (currentRequests)
+                lock (syncObject)
                     currentRequests.Remove(image.ID);
 
                 resetEvents[requestNbr].Set();
@@ -308,7 +333,7 @@ namespace OpenMetaverse
                 if (image.Success)
                 {
                     // Add to the completed texture dictionary
-                    lock (completedDownloads)
+                    lock (syncObject)
                         completedDownloads[image.ID] = image;
                 }
                 else

@@ -9,9 +9,10 @@ namespace Simian.Extensions
 {
     public class PeriscopeImageDelivery
     {
+        public TexturePipeline Pipeline;
+
         Simian server;
         GridClient client;
-        TexturePipeline pipeline;
         Dictionary<UUID, ImageDownload> currentDownloads = new Dictionary<UUID, ImageDownload>();
 
         public PeriscopeImageDelivery(Simian server, GridClient client)
@@ -19,15 +20,15 @@ namespace Simian.Extensions
             this.server = server;
             this.client = client;
 
-            pipeline = new TexturePipeline(client, 10);
-            pipeline.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(pipeline_OnDownloadFinished);
+            Pipeline = new TexturePipeline(client, 12);
+            Pipeline.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(pipeline_OnDownloadFinished);
 
             server.UDP.RegisterPacketCallback(PacketType.RequestImage, RequestImageHandler);
         }
 
         public void Stop()
         {
-            pipeline.Shutdown();
+            Pipeline.Shutdown();
         }
 
         void RequestImageHandler(Packet packet, Agent agent)
@@ -54,7 +55,8 @@ namespace Simian.Extensions
                 }
                 else if (block.DiscardLevel == -1 && block.DownloadPriority == 0.0f)
                 {
-                    // Aborting a download we are not tracking, ignore
+                    // Aborting a download we are not tracking, this may be in the pipeline
+                    Pipeline.AbortDownload(block.Image);
                 }
                 else
                 {
@@ -73,7 +75,7 @@ namespace Simian.Extensions
                         lock (currentDownloads)
                             currentDownloads[block.Image] = download;
 
-                        pipeline.RequestTexture(block.Image, (ImageType)block.Type);
+                        Pipeline.RequestTexture(block.Image, (ImageType)block.Type);
                     }
                 }
             }
@@ -90,10 +92,10 @@ namespace Simian.Extensions
                 if (success)
                 {
                     // Set the texture to the downloaded texture data
-                    AssetTexture texture = new AssetTexture(id, pipeline.GetTextureToRender(id).AssetData);
+                    AssetTexture texture = new AssetTexture(id, Pipeline.GetTextureToRender(id).AssetData);
                     download.Texture = texture;
 
-                    pipeline.RemoveFromPipeline(id);
+                    Pipeline.RemoveFromPipeline(id);
 
                     // Store this texture in the local asset store for later
                     server.Assets.StoreAsset(texture);

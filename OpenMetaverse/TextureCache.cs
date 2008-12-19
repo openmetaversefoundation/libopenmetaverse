@@ -213,10 +213,9 @@ namespace OpenMetaverse
         public bool HasImage(UUID imageID)
         {
             if (!Operational())
-            {
                 return false;
-            }
-            return File.Exists(FileName(imageID));
+            else
+                return File.Exists(FileName(imageID));
         }
 
         /// <summary>

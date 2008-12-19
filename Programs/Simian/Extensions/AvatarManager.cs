@@ -23,15 +23,15 @@ namespace Simian.Extensions
         {
             this.server = server;
 
-            server.UDP.RegisterPacketCallback(PacketType.AvatarPropertiesRequest, new PacketCallback(AvatarPropertiesRequestHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AgentWearablesRequest, new PacketCallback(AgentWearablesRequestHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, new PacketCallback(AgentIsNowWearingHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, new PacketCallback(AgentSetAppearanceHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AgentCachedTexture, new PacketCallback(AgentCachedTextureHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
-            server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
-            server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AvatarPropertiesRequest, AvatarPropertiesRequestHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentWearablesRequest, AgentWearablesRequestHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, AgentIsNowWearingHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, AgentSetAppearanceHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentCachedTexture, AgentCachedTextureHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, AgentAnimationHandler);
+            server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, SoundTriggerHandler);
+            server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, ViewerEffectHandler);
+            server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, UUIDNameRequestHandler);
 
             if (CoarseLocationTimer != null) CoarseLocationTimer.Dispose();
             CoarseLocationTimer = new Timer(CoarseLocationTimer_Elapsed);

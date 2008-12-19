@@ -41,7 +41,7 @@ namespace SimExport
             running = true;
 
             client = new GridClient();
-            texturePipeline = new TexturePipeline(client);
+            texturePipeline = new TexturePipeline(client, 10);
             texturePipeline.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(texturePipeline_OnDownloadFinished);
             
             //Settings.LOG_LEVEL = Helpers.LogLevel.Info;
@@ -345,7 +345,7 @@ namespace SimExport
                 for (int i = 0; i < te.FaceTextures.Length; i++)
                 {
                     if (te.FaceTextures[i] != null && !texturesFinished.ContainsKey(te.FaceTextures[i].TextureID))
-                        texturePipeline.RequestTexture(te.FaceTextures[i].TextureID);
+                        texturePipeline.RequestTexture(te.FaceTextures[i].TextureID, ImageType.Normal);
                 }
             }
         }
