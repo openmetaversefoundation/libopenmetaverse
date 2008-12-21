@@ -776,7 +776,7 @@
       <Reference name="nunit.framework"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
-      <Reference name="Simian"/>
+      <Reference name="Simian.exe"/>
       <Reference name="ExtensionLoader"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
