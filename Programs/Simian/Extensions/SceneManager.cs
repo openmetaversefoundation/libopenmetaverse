@@ -90,8 +90,8 @@ namespace Simian.Extensions
             {
                 foreach (Agent recipient in server.Agents.Values)
                 {
-                    if (recipient.AgentID != obj.Prim.OwnerID)
-                        server.UDP.SendPacket(recipient.AgentID, updateToOthers, PacketCategory.State);
+                    if (recipient.Avatar.ID != obj.Prim.OwnerID)
+                        server.UDP.SendPacket(recipient.Avatar.ID, updateToOthers, PacketCategory.State);
                 }
             }
 
@@ -244,7 +244,7 @@ namespace Simian.Extensions
                     foreach (Agent recipient in server.Agents.Values)
                     {
                         if (recipient != agent)
-                            server.UDP.SendPacket(recipient.AgentID, appearance, PacketCategory.State);
+                            server.UDP.SendPacket(recipient.Avatar.ID, appearance, PacketCategory.State);
                     }
                 }
             }
@@ -286,7 +286,7 @@ namespace Simian.Extensions
 
             // Create a representation for this agent
             Avatar avatar = new Avatar();
-            avatar.ID = agent.AgentID;
+            avatar.ID = agent.Avatar.ID;
             avatar.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
             avatar.Position = new Vector3(128f, 128f, 25f);
             avatar.Rotation = Quaternion.Identity;
@@ -317,7 +317,7 @@ namespace Simian.Extensions
             {
                 // Send a response back to the client
                 AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
-                complete.AgentData.AgentID = agent.AgentID;
+                complete.AgentData.AgentID = agent.Avatar.ID;
                 complete.AgentData.SessionID = agent.SessionID;
                 complete.Data.LookAt = Vector3.UnitX;
                 complete.Data.Position = avatar.Position;
@@ -325,7 +325,7 @@ namespace Simian.Extensions
                 complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
                 complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
-                server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Transaction);
+                server.UDP.SendPacket(agent.Avatar.ID, complete, PacketCategory.Transaction);
 
                 // Send updates and appearances for every avatar to this new avatar
                 SynchronizeStateTo(agent);
@@ -334,7 +334,7 @@ namespace Simian.Extensions
                 OnlineNotificationPacket online = new OnlineNotificationPacket();
                 online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
                 online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
-                online.AgentBlock[0].AgentID = agent.AgentID;
+                online.AgentBlock[0].AgentID = agent.Avatar.ID;
                 server.UDP.BroadcastPacket(online, PacketCategory.State);
             }
             else
@@ -355,7 +355,7 @@ namespace Simian.Extensions
             {
                 ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim,
                     obj.Prim.RegionHandle, obj.Prim.Flags);
-                server.UDP.SendPacket(agent.AgentID, update, PacketCategory.State);
+                server.UDP.SendPacket(agent.Avatar.ID, update, PacketCategory.State);
             });
 
             // Send appearances for all avatars
@@ -367,7 +367,7 @@ namespace Simian.Extensions
                     {
                         // Send appearances for this avatar
                         AvatarAppearancePacket appearance = BuildAppearancePacket(otherAgent);
-                        server.UDP.SendPacket(agent.AgentID, appearance, PacketCategory.State);
+                        server.UDP.SendPacket(agent.Avatar.ID, appearance, PacketCategory.State);
                     }
                 }
             }
@@ -420,7 +420,7 @@ namespace Simian.Extensions
                         int[] patches = new int[1];
                         patches[0] = (y * 16) + x;
                         LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap, patches);
-                        server.UDP.SendPacket(agent.AgentID, layer, PacketCategory.Terrain);
+                        server.UDP.SendPacket(agent.Avatar.ID, layer, PacketCategory.Terrain);
                     }
                 }
             }
@@ -430,7 +430,7 @@ namespace Simian.Extensions
         {
             AvatarAppearancePacket appearance = new AvatarAppearancePacket();
             appearance.ObjectData.TextureEntry = agent.Avatar.Textures.ToBytes();
-            appearance.Sender.ID = agent.AgentID;
+            appearance.Sender.ID = agent.Avatar.ID;
             appearance.Sender.IsTrial = false;
 
             appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[agent.VisualParams.Length];

@@ -299,7 +299,7 @@ namespace Simian
                     IPAddress simIP = addresses.AddressList.Length > 0 ?
                         addresses.AddressList[addresses.AddressList.Length - 1] :IPAddress.Loopback;
 
-                    response.AgentID = agent.AgentID;
+                    response.AgentID = agent.Avatar.ID;
                     response.SecureSessionID = agent.SecureSessionID;
                     response.SessionID = agent.SessionID;
                     response.CircuitCode = agent.CircuitCode;

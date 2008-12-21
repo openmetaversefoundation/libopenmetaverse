@@ -47,20 +47,20 @@ namespace Simian.Extensions
                         sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
                         sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
                         sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
-                        sendIM.MessageBlock.ID = agent.AgentID;
+                        sendIM.MessageBlock.ID = agent.Avatar.ID;
                         sendIM.MessageBlock.Message = im.MessageBlock.Message;
                         sendIM.MessageBlock.BinaryBucket = new byte[0];
                         sendIM.MessageBlock.Timestamp = 0;
                         sendIM.MessageBlock.Position = agent.Avatar.Position;
 
-                        sendIM.AgentData.AgentID = agent.AgentID;
+                        sendIM.AgentData.AgentID = agent.Avatar.ID;
 
-                        server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
+                        server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Transaction);
 
                         if (dialog == InstantMessageDialog.FriendshipAccepted)
                         {
-                            bool receiverOnline = server.Agents.ContainsKey(agent.AgentID);
-                            bool senderOnline = server.Agents.ContainsKey(recipient.AgentID);
+                            bool receiverOnline = server.Agents.ContainsKey(agent.Avatar.ID);
+                            bool senderOnline = server.Agents.ContainsKey(recipient.Avatar.ID);
 
                             if (receiverOnline)
                             {
@@ -69,16 +69,16 @@ namespace Simian.Extensions
                                     OnlineNotificationPacket notify = new OnlineNotificationPacket();
                                     notify.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[0];
                                     notify.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
-                                    notify.AgentBlock[0].AgentID = agent.AgentID;
-                                    server.UDP.SendPacket(recipient.AgentID, notify, PacketCategory.State);
+                                    notify.AgentBlock[0].AgentID = agent.Avatar.ID;
+                                    server.UDP.SendPacket(recipient.Avatar.ID, notify, PacketCategory.State);
                                 }
                                 else
                                 {
                                     OfflineNotificationPacket notify = new OfflineNotificationPacket();
                                     notify.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[0];
                                     notify.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-                                    notify.AgentBlock[0].AgentID = agent.AgentID;
-                                    server.UDP.SendPacket(recipient.AgentID, notify, PacketCategory.State);
+                                    notify.AgentBlock[0].AgentID = agent.Avatar.ID;
+                                    server.UDP.SendPacket(recipient.Avatar.ID, notify, PacketCategory.State);
                                 }
                             }
 
@@ -89,16 +89,16 @@ namespace Simian.Extensions
                                     OnlineNotificationPacket notify = new OnlineNotificationPacket();
                                     notify.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[0];
                                     notify.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
-                                    notify.AgentBlock[0].AgentID = recipient.AgentID;
-                                    server.UDP.SendPacket(agent.AgentID, notify, PacketCategory.State);
+                                    notify.AgentBlock[0].AgentID = recipient.Avatar.ID;
+                                    server.UDP.SendPacket(agent.Avatar.ID, notify, PacketCategory.State);
                                 }
                                 else
                                 {
                                     OfflineNotificationPacket notify = new OfflineNotificationPacket();
                                     notify.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[0];
                                     notify.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-                                    notify.AgentBlock[0].AgentID = recipient.AgentID;
-                                    server.UDP.SendPacket(agent.AgentID, notify, PacketCategory.State);
+                                    notify.AgentBlock[0].AgentID = recipient.Avatar.ID;
+                                    server.UDP.SendPacket(agent.Avatar.ID, notify, PacketCategory.State);
                                 }
                             }
                         }   

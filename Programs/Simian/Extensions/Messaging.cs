@@ -39,8 +39,8 @@ namespace Simian.Extensions
             ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
             chat.ChatData.Audible = (byte)ChatAudibleLevel.Fully;
             chat.ChatData.ChatType = viewerChat.ChatData.Type;
-            chat.ChatData.OwnerID = agent.AgentID;
-            chat.ChatData.SourceID = agent.AgentID;
+            chat.ChatData.OwnerID = agent.Avatar.ID;
+            chat.ChatData.SourceID = agent.Avatar.ID;
             chat.ChatData.SourceType = (byte)ChatSourceType.Agent;
             chat.ChatData.Position = agent.Avatar.Position;
             chat.ChatData.FromName = Utils.StringToBytes(agent.Avatar.Name);
@@ -70,15 +70,15 @@ namespace Simian.Extensions
                         sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
                         sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
                         sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
-                        sendIM.MessageBlock.ID = agent.AgentID;
+                        sendIM.MessageBlock.ID = agent.Avatar.ID;
                         sendIM.MessageBlock.Message = im.MessageBlock.Message;
                         sendIM.MessageBlock.BinaryBucket = new byte[0];
                         sendIM.MessageBlock.Timestamp = 0;
                         sendIM.MessageBlock.Position = agent.Avatar.Position;
 
-                        sendIM.AgentData.AgentID = agent.AgentID;
+                        sendIM.AgentData.AgentID = agent.Avatar.ID;
 
-                        server.UDP.SendPacket(recipient.AgentID, sendIM, PacketCategory.Transaction);
+                        server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Transaction);
                     }
                 }
             }

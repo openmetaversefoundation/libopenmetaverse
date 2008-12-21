@@ -30,12 +30,12 @@ namespace Simian.Extensions
         void SendBalance(Agent agent, UUID transactionID, string message)
         {
             MoneyBalanceReplyPacket reply = new MoneyBalanceReplyPacket();
-            reply.MoneyData.AgentID = agent.AgentID;
+            reply.MoneyData.AgentID = agent.Avatar.ID;
             reply.MoneyData.MoneyBalance = agent.Balance;
             reply.MoneyData.TransactionID = transactionID;
             reply.MoneyData.Description = Utils.StringToBytes(message);
 
-            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
         }
 
         void MoneyBalanceRequestHandler(Packet packet, Agent agent)

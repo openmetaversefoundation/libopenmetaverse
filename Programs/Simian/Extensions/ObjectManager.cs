@@ -125,7 +125,7 @@ namespace Simian.Extensions
             prim.GroupID = add.AgentData.GroupID;
             prim.ID = UUID.Random();
             prim.MediaURL = String.Empty;
-            prim.OwnerID = agent.AgentID;
+            prim.OwnerID = agent.Avatar.ID;
             prim.Position = position;
 
             prim.PrimData.Material = (Material)add.ObjectData.Material;
@@ -150,10 +150,10 @@ namespace Simian.Extensions
             prim.PrimData.PCode = pcode;
 
             prim.Properties.CreationDate = DateTime.Now;
-            prim.Properties.CreatorID = agent.AgentID;
+            prim.Properties.CreatorID = agent.Avatar.ID;
             prim.Properties.Description = String.Empty;
             prim.Properties.GroupID = add.AgentData.GroupID;
-            prim.Properties.LastOwnerID = agent.AgentID;
+            prim.Properties.LastOwnerID = agent.Avatar.ID;
             prim.Properties.Name = "New Object";
             prim.Properties.ObjectID = prim.ID;
             prim.Properties.OwnerID = prim.OwnerID;
@@ -200,7 +200,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = dupeID;
-                    server.UDP.SendPacket(agent.AgentID, kill, PacketCategory.State);
+                    server.UDP.SendPacket(agent.Avatar.ID, kill, PacketCategory.State);
                 }
             }
         }
@@ -246,7 +246,7 @@ namespace Simian.Extensions
                     {
                         properties.ObjectData[0].BaseMask = (uint)PermissionMask.All;
                         properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(DateTime.Now);
-                        properties.ObjectData[0].CreatorID = agent.AgentID;
+                        properties.ObjectData[0].CreatorID = agent.Avatar.ID;
                         properties.ObjectData[0].Description = Utils.StringToBytes(String.Empty);
                         properties.ObjectData[0].EveryoneMask = (uint)PermissionMask.All;
                         properties.ObjectData[0].GroupID = UUID.Zero;
@@ -255,7 +255,7 @@ namespace Simian.Extensions
                         properties.ObjectData[0].Name = Utils.StringToBytes(String.Empty);
                         properties.ObjectData[0].NextOwnerMask = (uint)PermissionMask.All;
                         properties.ObjectData[0].ObjectID = obj.Prim.ID;
-                        properties.ObjectData[0].OwnerID = agent.AgentID;
+                        properties.ObjectData[0].OwnerID = agent.Avatar.ID;
                         properties.ObjectData[0].OwnerMask = (uint)PermissionMask.All;
                         properties.ObjectData[0].OwnershipCost = 0;
                         properties.ObjectData[0].SalePrice = 0;
@@ -265,7 +265,7 @@ namespace Simian.Extensions
                         properties.ObjectData[0].TouchName = new byte[0];
                     }
 
-                    server.UDP.SendPacket(agent.AgentID, properties, PacketCategory.Transaction);
+                    server.UDP.SendPacket(agent.Avatar.ID, properties, PacketCategory.Transaction);
                 }
                 else
                 {
@@ -282,7 +282,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = select.ObjectData[i].ObjectLocalID;
-                    server.UDP.SendPacket(agent.AgentID, kill, PacketCategory.State);
+                    server.UDP.SendPacket(agent.Avatar.ID, kill, PacketCategory.State);
                 }
             }
             
@@ -318,7 +318,7 @@ namespace Simian.Extensions
                     //TODO: send an error message
                     return;
                 }
-                else if (obj.Prim.OwnerID != agent.AgentID)
+                else if (obj.Prim.OwnerID != agent.Avatar.ID)
                 {
                     //TODO: send an error message
                     return;
@@ -391,7 +391,7 @@ namespace Simian.Extensions
                     //TODO: send an error message
                     return;
                 }
-                else if (obj.Prim.OwnerID != agent.AgentID)
+                else if (obj.Prim.OwnerID != agent.Avatar.ID)
                 {
                     //TODO: send an error message
                     return;
@@ -585,13 +585,13 @@ namespace Simian.Extensions
                             break;
                         case DeRezDestination.TrashFolder:
                             InventoryObject invObj;
-                            if (server.Inventory.TryGetInventory(agent.AgentID, derez.AgentBlock.DestinationID, out invObj) &&
+                            if (server.Inventory.TryGetInventory(agent.Avatar.ID, derez.AgentBlock.DestinationID, out invObj) &&
                                 invObj is InventoryFolder)
                             {
                                 // FIXME: Handle children
                                 InventoryFolder trash = (InventoryFolder)invObj;
-                                server.Inventory.CreateItem(agent.AgentID, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
-                                    AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.AgentID,
+                                server.Inventory.CreateItem(agent.Avatar.ID, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
+                                    AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.Avatar.ID,
                                     obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0, true);
                                 server.Scene.ObjectRemove(this, obj.Prim.LocalID);
 
@@ -685,7 +685,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = block.ObjectLocalID;
-                    server.UDP.SendPacket(agent.AgentID, kill, PacketCategory.State);
+                    server.UDP.SendPacket(agent.Avatar.ID, kill, PacketCategory.State);
                 }
             }
         }
@@ -732,7 +732,7 @@ namespace Simian.Extensions
                     props.ObjectData.Name = Utils.StringToBytes(String.Empty);
                     props.ObjectData.NextOwnerMask = (uint)PermissionMask.All;
                     props.ObjectData.ObjectID = obj.Prim.ID;
-                    props.ObjectData.OwnerID = agent.AgentID;
+                    props.ObjectData.OwnerID = agent.Avatar.ID;
                     props.ObjectData.OwnerMask = (uint)PermissionMask.All;
                     props.ObjectData.OwnershipCost = 0;
                     props.ObjectData.RequestFlags = (uint)ReportType.None;
@@ -740,7 +740,7 @@ namespace Simian.Extensions
                     props.ObjectData.SaleType = (byte)SaleType.Not;
                 }
 
-                server.UDP.SendPacket(agent.AgentID, props, PacketCategory.Transaction);
+                server.UDP.SendPacket(agent.Avatar.ID, props, PacketCategory.Transaction);
             }
             else
             {

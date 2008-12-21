@@ -57,7 +57,7 @@ namespace Simian.Extensions
             handshake.RegionInfo.TerrainStartHeight11 = 40f;
             handshake.RegionInfo2.RegionID = UUID.Random();
 
-            server.UDP.SendPacket(agent.AgentID, handshake, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.Avatar.ID, handshake, PacketCategory.Transaction);
         }
 
         void StartPingCheckHandler(Packet packet, Agent agent)
@@ -68,7 +68,7 @@ namespace Simian.Extensions
             complete.Header.Reliable = false;
             complete.PingID.PingID = start.PingID.PingID;
 
-            server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Overhead);
+            server.UDP.SendPacket(agent.Avatar.ID, complete, PacketCategory.Overhead);
         }
 
         void LogoutRequestHandler(Packet packet, Agent agent)
@@ -76,13 +76,13 @@ namespace Simian.Extensions
             LogoutRequestPacket request = (LogoutRequestPacket)packet;
 
             LogoutReplyPacket reply = new LogoutReplyPacket();
-            reply.AgentData.AgentID = agent.AgentID;
+            reply.AgentData.AgentID = agent.Avatar.ID;
             reply.AgentData.SessionID = agent.SessionID;
             reply.InventoryData = new LogoutReplyPacket.InventoryDataBlock[1];
             reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
             reply.InventoryData[0].ItemID = UUID.Zero;
 
-            server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
 
             server.Avatars.Disconnect(agent);
         }

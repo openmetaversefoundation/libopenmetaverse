@@ -26,7 +26,7 @@ namespace Simian.Extensions
 
         public void AddAccount(Agent agent)
         {
-            accounts.Add(agent.FullName, agent.AgentID, agent);
+            accounts.Add(agent.FullName, agent.Avatar.ID, agent);
         }
 
         public bool RemoveAccount(UUID agentID)
@@ -102,7 +102,7 @@ namespace Simian.Extensions
                 OSD.DeserializeMembers(ref agentRef, (OSDMap)array[i]);
                 agent = (Agent)agentRef;
 
-                accounts.Add(agent.FullName, agent.AgentID, agent);
+                accounts.Add(agent.FullName, agent.Avatar.ID, agent);
             }
 
             Logger.Log(String.Format("Deserialized the agent store with {0} entries", accounts.Count),

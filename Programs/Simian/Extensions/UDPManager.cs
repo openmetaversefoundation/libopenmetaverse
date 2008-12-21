@@ -76,6 +76,8 @@ namespace Simian
         Simian server;
         UDPServer udpServer;
 
+        public event OutgoingPacketCallback OnOutgoingPacket;
+
         public UDPManager()
         {
         }
@@ -108,12 +110,14 @@ namespace Simian
 
         public void SendPacket(UUID agentID, Packet packet, PacketCategory category)
         {
-            udpServer.SendPacket(agentID, packet, category);
+            if (OnOutgoingPacket == null || OnOutgoingPacket(packet, agentID, category))
+                udpServer.SendPacket(agentID, packet, category);
         }
 
         public void BroadcastPacket(Packet packet, PacketCategory category)
         {
-            udpServer.BroadcastPacket(packet, category);
+            if (OnOutgoingPacket == null || OnOutgoingPacket(packet, UUID.Zero, category))
+                udpServer.BroadcastPacket(packet, category);
         }
 
         public void RegisterPacketCallback(PacketType type, PacketCallback callback)
@@ -158,17 +162,17 @@ namespace Simian
         public void AddClient(Agent agent, IPEndPoint endpoint)
         {
             UDPClient client = new UDPClient(this, agent, endpoint);
-            clients.Add(agent.AgentID, endpoint, client);
+            clients.Add(agent.Avatar.ID, endpoint, client);
         }
 
         public bool RemoveClient(Agent agent)
         {
             UDPClient client;
-            if (clients.TryGetValue(agent.AgentID, out client))
+            if (clients.TryGetValue(agent.Avatar.ID, out client))
             {
                 client.Shutdown();
-                lock (server.Agents) server.Agents.Remove(agent.AgentID);
-                return clients.Remove(agent.AgentID, client.Address);
+                lock (server.Agents) server.Agents.Remove(agent.Avatar.ID);
+                return clients.Remove(agent.Avatar.ID, client.Address);
             }
             else
                 return false;
@@ -453,7 +457,7 @@ namespace Simian
                 {
                     // FIXME: Sanity check that the agent isn't already logged in here
                     AddClient(agent, address);
-                    if (clients.TryGetValue(agent.AgentID, out client))
+                    if (clients.TryGetValue(agent.Avatar.ID, out client))
                     {
                         Logger.Log("Activated UDP circuit " + useCircuitCode.CircuitCode.Code, Helpers.LogLevel.Info);
                     }
@@ -596,7 +600,7 @@ namespace Simian
                 if (unassociatedAgents.TryGetValue(circuitCode, out agent))
                 {
                     unassociatedAgents.Remove(circuitCode);
-                    lock (server.Agents) server.Agents[agent.AgentID] = agent;
+                    lock (server.Agents) server.Agents[agent.Avatar.ID] = agent;
                     return true;
                 }
                 else

@@ -10,7 +10,6 @@ namespace Simian
     public class Agent
     {
         // Account
-        public UUID AgentID;
         public string FirstName;
         public string LastName;
         public string PasswordHash;

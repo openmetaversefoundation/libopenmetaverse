@@ -65,7 +65,7 @@ namespace Simian.Extensions
                 complete.AssetBlock.Success = true;
                 complete.AssetBlock.Type = request.AssetBlock.Type;
                 complete.AssetBlock.UUID = assetID;
-                server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Inventory);
+                server.UDP.SendPacket(agent.Avatar.ID, complete, PacketCategory.Inventory);
             }
             else
             {
@@ -94,7 +94,7 @@ namespace Simian.Extensions
                 lock (CurrentUploads)
                     CurrentUploads[xfer.XferID.ID] = asset;
 
-                server.UDP.SendPacket(agent.AgentID, xfer, PacketCategory.Inventory);
+                server.UDP.SendPacket(agent.Avatar.ID, xfer, PacketCategory.Inventory);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Simian.Extensions
                     ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
                     confirm.XferID.ID = xfer.XferID.ID;
                     confirm.XferID.Packet = xfer.XferID.Packet;
-                    server.UDP.SendPacket(agent.AgentID, confirm, PacketCategory.Asset);
+                    server.UDP.SendPacket(agent.Avatar.ID, confirm, PacketCategory.Asset);
                 }
                 else
                 {
@@ -134,7 +134,7 @@ namespace Simian.Extensions
                     ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
                     confirm.XferID.ID = xfer.XferID.ID;
                     confirm.XferID.Packet = xfer.XferID.Packet;
-                    server.UDP.SendPacket(agent.AgentID, confirm, PacketCategory.Asset);
+                    server.UDP.SendPacket(agent.Avatar.ID, confirm, PacketCategory.Asset);
 
                     if ((xfer.XferID.Packet & (uint)0x80000000) != 0)
                     {
@@ -150,7 +150,7 @@ namespace Simian.Extensions
                         complete.AssetBlock.Success = true;
                         complete.AssetBlock.Type = (sbyte)asset.AssetType;
                         complete.AssetBlock.UUID = asset.AssetID;
-                        server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Asset);
+                        server.UDP.SendPacket(agent.Avatar.ID, complete, PacketCategory.Asset);
                     }
                 }
             }
@@ -221,7 +221,7 @@ namespace Simian.Extensions
                         lock (currentDownloads)
                         {
                             currentDownloads.Add(client.Assets.RequestAsset(assetID, type, false),
-                                new KeyValuePair<UUID, UUID>(agent.AgentID, request.TransferInfo.TransferID));
+                                new KeyValuePair<UUID, UUID>(agent.Avatar.ID, request.TransferInfo.TransferID));
                         }
                     }
                 }
@@ -286,7 +286,7 @@ namespace Simian.Extensions
             response.TransferInfo.Status = (int)StatusCode.OK;
             response.TransferInfo.TargetType = (int)TargetType.Unknown; // Doesn't seem to be used by the client
 
-            server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Asset);
+            server.UDP.SendPacket(agent.Avatar.ID, response, PacketCategory.Asset);
 
             // Transfer system does not wait for ACKs, just sends all of the
             // packets for this transfer out
@@ -310,7 +310,7 @@ namespace Simian.Extensions
                 else
                     transfer.TransferData.Status = (int)StatusCode.OK;
 
-                server.UDP.SendPacket(agent.AgentID, transfer, PacketCategory.Asset);
+                server.UDP.SendPacket(agent.Avatar.ID, transfer, PacketCategory.Asset);
             }
         }
 
@@ -349,7 +349,7 @@ namespace Simian.Extensions
                         response.TransferInfo.Status = (int)StatusCode.UnknownSource;
                         response.TransferInfo.TargetType = (int)TargetType.Unknown;
 
-                        server.UDP.SendPacket(agent.AgentID, response, PacketCategory.Asset);
+                        server.UDP.SendPacket(agent.Avatar.ID, response, PacketCategory.Asset);
                     }
                 }
                 else

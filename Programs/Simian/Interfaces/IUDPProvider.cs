@@ -31,9 +31,21 @@ namespace Simian
     /// of a registered type is received
     /// </summary>
     public delegate void PacketCallback(Packet packet, Agent agent);
+    /// <summary>
+    /// Triggered whenever a packet is going to be sent out to one or more
+    /// clients
+    /// </summary>
+    /// <param name="packet">The packet that will be sent out</param>
+    /// <param name="agentID">The UUID of the agent receiving this packet. Equal
+    /// to UUID.Zero if this packet will be broadcast to all connected agents</param>
+    /// <param name="category">The specified category of the outgoing packet</param>
+    /// <returns>True to continue sending this packet, otherwise false</returns>
+    public delegate bool OutgoingPacketCallback(Packet packet, UUID agentID, PacketCategory category);
 
     public interface IUDPProvider
     {
+        event OutgoingPacketCallback OnOutgoingPacket;
+
         void AddClient(Agent agent, IPEndPoint endpoint);
         bool RemoveClient(Agent agent);
         uint CreateCircuit(Agent agent);

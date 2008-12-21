@@ -79,10 +79,10 @@ namespace Simian.Extensions
                 parentID = agent.InventoryRoot;
 
             // Create the inventory item
-            CreateItem(agent.AgentID, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
+            CreateItem(agent.Avatar.ID, Utils.BytesToString(create.InventoryBlock.Name), "Created in Simian",
                 (InventoryType)create.InventoryBlock.InvType, assetType, assetID, parentID,
-                PermissionMask.All, (PermissionMask)create.InventoryBlock.NextOwnerMask, agent.AgentID,
-                agent.AgentID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID, true);
+                PermissionMask.All, (PermissionMask)create.InventoryBlock.NextOwnerMask, agent.Avatar.ID,
+                agent.Avatar.ID, create.InventoryBlock.TransactionID, create.InventoryBlock.CallbackID, true);
         }
 
         void CreateInventoryFolderHandler(Packet packet, Agent agent)
@@ -93,8 +93,8 @@ namespace Simian.Extensions
             if (folderID == UUID.Zero)
                 folderID = agent.InventoryRoot;
 
-            CreateFolder(agent.AgentID, folderID, Utils.BytesToString(create.FolderData.Name),
-                (AssetType)create.FolderData.Type, create.FolderData.ParentID, agent.AgentID);
+            CreateFolder(agent.Avatar.ID, folderID, Utils.BytesToString(create.FolderData.Name),
+                (AssetType)create.FolderData.Type, create.FolderData.ParentID, agent.Avatar.ID);
         }
 
         void UpdateInventoryItemHandler(Packet packet, Agent agent)
@@ -106,7 +106,7 @@ namespace Simian.Extensions
             for (int i = 0; i < update.InventoryData.Length; i++)
             {
                 UpdateInventoryItemPacket.InventoryDataBlock block = update.InventoryData[i];
-                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 
                 InventoryObject obj;
                 if (agentInventory.TryGetValue(block.ItemID, out obj) && obj is InventoryItem)
@@ -162,7 +162,7 @@ namespace Simian.Extensions
             bool sendItems = fetch.InventoryData.FetchItems;
             InventorySortOrder order = (InventorySortOrder)fetch.InventoryData.SortOrder;
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 
             // TODO: Use OwnerID
             // TODO: Do we need to obey InventorySortOrder?
@@ -271,7 +271,7 @@ namespace Simian.Extensions
                             folderBlocks.Length - splitPoints[i];
 
                         InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
-                        descendents.AgentData.AgentID = agent.AgentID;
+                        descendents.AgentData.AgentID = agent.Avatar.ID;
                         descendents.AgentData.FolderID = folder.ID;
                         descendents.AgentData.OwnerID = folder.OwnerID;
                         descendents.AgentData.Descendents = descendCount;
@@ -282,7 +282,7 @@ namespace Simian.Extensions
                         for (int j = 0; j < count; j++)
                             descendents.FolderData[j] = folderBlocks[splitPoints[i] + j];
 
-                        server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                        server.UDP.SendPacket(agent.Avatar.ID, descendents, PacketCategory.Inventory);
                     }
                 }
                 else
@@ -290,7 +290,7 @@ namespace Simian.Extensions
                     Logger.DebugLog("Sending a single InventoryDescendents for folders");
 
                     InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
-                    descendents.AgentData.AgentID = agent.AgentID;
+                    descendents.AgentData.AgentID = agent.Avatar.ID;
                     descendents.AgentData.FolderID = folder.ID;
                     descendents.AgentData.OwnerID = folder.OwnerID;
                     descendents.AgentData.Descendents = descendCount;
@@ -298,7 +298,7 @@ namespace Simian.Extensions
                     descendents.FolderData = new InventoryDescendentsPacket.FolderDataBlock[0];
                     descendents.ItemData = new InventoryDescendentsPacket.ItemDataBlock[0];
 
-                    server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                    server.UDP.SendPacket(agent.Avatar.ID, descendents, PacketCategory.Inventory);
                 }
 
                 if (itemBlocks.Length > 0)
@@ -313,7 +313,7 @@ namespace Simian.Extensions
                             itemBlocks.Length - splitPoints[i];
 
                         InventoryDescendentsPacket descendents = new InventoryDescendentsPacket();
-                        descendents.AgentData.AgentID = agent.AgentID;
+                        descendents.AgentData.AgentID = agent.Avatar.ID;
                         descendents.AgentData.FolderID = folder.ID;
                         descendents.AgentData.OwnerID = folder.OwnerID;
                         descendents.AgentData.Descendents = descendCount;
@@ -324,7 +324,7 @@ namespace Simian.Extensions
                         for (int j = 0; j < count; j++)
                             descendents.ItemData[j] = itemBlocks[splitPoints[i] + j];
 
-                        server.UDP.SendPacket(agent.AgentID, descendents, PacketCategory.Inventory);
+                        server.UDP.SendPacket(agent.Avatar.ID, descendents, PacketCategory.Inventory);
                     }
                 }
             }
@@ -349,7 +349,7 @@ namespace Simian.Extensions
             for (int i = 0; i < fetch.InventoryData.Length; i++)
             {
                 UUID itemID = fetch.InventoryData[i].ItemID;
-                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 
                 blocks[i] = new FetchInventoryReplyPacket.InventoryDataBlock();
                 blocks[i].ItemID = itemID;
@@ -398,13 +398,13 @@ namespace Simian.Extensions
                     blocks.Length - splitPoints[i];
 
                 FetchInventoryReplyPacket reply = new FetchInventoryReplyPacket();
-                reply.AgentData.AgentID = agent.AgentID;
+                reply.AgentData.AgentID = agent.Avatar.ID;
                 reply.InventoryData = new FetchInventoryReplyPacket.InventoryDataBlock[count];
 
                 for (int j = 0; j < count; j++)
                     reply.InventoryData[j] = blocks[splitPoints[i] + j];
 
-                server.UDP.SendPacket(agent.AgentID, reply, PacketCategory.Inventory);
+                server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Inventory);
             }
         }
 
@@ -436,9 +436,9 @@ namespace Simian.Extensions
                             newName = item.Name;
 
                         // Create the copy
-                        CreateItem(agent.AgentID, newName, item.Description, item.InventoryType, item.AssetType,
+                        CreateItem(agent.Avatar.ID, newName, item.Description, item.InventoryType, item.AssetType,
                             item.AssetID, folderObj.ID, item.Permissions.OwnerMask, item.Permissions.NextOwnerMask,
-                            agent.AgentID, item.CreatorID, UUID.Zero, block.CallbackID, true);
+                            agent.Avatar.ID, item.CreatorID, UUID.Zero, block.CallbackID, true);
                     }
                     else
                     {
@@ -460,7 +460,7 @@ namespace Simian.Extensions
             MoveInventoryItemPacket move = (MoveInventoryItemPacket)packet;
             // TODO: What is move.AgentData.Stamp for?
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 
             for (int i = 0; i < move.InventoryData.Length; i++)
             {
@@ -478,7 +478,7 @@ namespace Simian.Extensions
             MoveInventoryFolderPacket move = (MoveInventoryFolderPacket)packet;
             // TODO: What is move.AgentData.Stamp for?
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 
             for (int i = 0; i < move.InventoryData.Length; i++)
             {
@@ -493,7 +493,7 @@ namespace Simian.Extensions
         void SendBulkUpdate(Agent agent, InventoryObject obj, UUID transactionID, uint callbackID)
         {
             BulkUpdateInventoryPacket update = new BulkUpdateInventoryPacket();
-            update.AgentData.AgentID = agent.AgentID;
+            update.AgentData.AgentID = agent.Avatar.ID;
             update.AgentData.TransactionID = transactionID;
 
             if (obj is InventoryItem)
@@ -541,7 +541,7 @@ namespace Simian.Extensions
 
             Logger.DebugLog("Sending bulk update for inventory object " + obj.ID);
 
-            server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
+            server.UDP.SendPacket(agent.Avatar.ID, update, PacketCategory.Inventory);
         }
 
         void MoveInventory(Agent agent, Dictionary<UUID, InventoryObject> agentInventory, UUID objectID,
@@ -593,7 +593,7 @@ namespace Simian.Extensions
         {
             PurgeInventoryDescendentsPacket purge = (PurgeInventoryDescendentsPacket)packet;
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 
             InventoryObject obj;
             if (agentInventory.TryGetValue(purge.InventoryData.FolderID, out obj) && obj is InventoryFolder)
