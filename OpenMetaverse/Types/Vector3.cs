@@ -266,6 +266,11 @@ namespace OpenMetaverse
                 Utils.Lerp(value1.Z, value2.Z, amount));
         }
 
+        public static float Mag(Vector3 value)
+        {
+            return (float)Math.Sqrt((value.X * value.X) + (value.Y * value.Y) + (value.Z * value.Z));
+        }
+
         public static Vector3 Max(Vector3 value1, Vector3 value2)
         {
             return new Vector3(
