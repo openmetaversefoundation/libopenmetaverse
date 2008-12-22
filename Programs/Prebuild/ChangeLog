@@ -1,3 +1,14 @@
+2008-12-09T02:15	D. Moonfire <d.moonfire@mfgames.com>
+	* src/Core/Kernel.cs
+	- Added a /ppi target to get the results of processing but before
+	processing the actual results.
+	* src/Core/Preprocessor.cs
+	- Applied the patch from kanato with formatting changes.
+	- Uses the <?include file="" ?> format.
+	* tests/
+	- Added some lightweight tests to test the functionality of the
+	include patch.
+	
 2008-06-19T09:37	John Anderson <sontek@gmail.com>
 	* src/Core/Kernel.cs
 	- Only Loop through targets that are not abstract.

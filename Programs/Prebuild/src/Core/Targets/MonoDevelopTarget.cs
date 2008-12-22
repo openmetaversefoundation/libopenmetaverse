@@ -26,9 +26,9 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 #region CVS Information
 /*
  * $Source$
- * $Author: cjcollier $
- * $Date: 2007-04-10 22:10:35 +0000 (Tue, 10 Apr 2007) $
- * $Revision: 231 $
+ * $Author: dmoonfire $
+ * $Date: 2008-12-14 13:35:55 -0800 (Sun, 14 Dec 2008) $
+ * $Revision: 283 $
  */
 #endregion
 
@@ -245,7 +245,7 @@ namespace Prebuild.Core.Targets
 					ss.WriteLine(" />");
 					
 					ss.Write("      <Execution");
-					ss.Write(" runwithwarnings=\"True\"");
+					ss.Write(" runwithwarnings=\"{0}\"", !conf.Options.WarningsAsErrors);
 					ss.Write(" consolepause=\"True\"");
 					ss.Write(" runtime=\"{0}\"", netRuntime);
                     ss.Write(" clr-version=\"Net_2_0\"");
