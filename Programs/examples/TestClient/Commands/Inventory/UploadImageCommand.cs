@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Drawing;
 using OpenMetaverse;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.Imaging;
 
 namespace OpenMetaverse.TestClient

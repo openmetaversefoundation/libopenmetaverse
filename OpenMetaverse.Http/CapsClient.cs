@@ -26,9 +26,10 @@
 
 using System;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.StructuredData;
 
-namespace OpenMetaverse.Capabilities
+namespace OpenMetaverse.Http
 {
     public class CapsClient
     {
@@ -48,7 +49,17 @@ namespace OpenMetaverse.Capabilities
 
         public CapsClient(Uri capability)
         {
-            _Client = new CapsBase(capability);
+            Init(capability, null);
+        }
+
+        public CapsClient(Uri capability, X509Certificate2 clientCert)
+        {
+            Init(capability, clientCert);
+        }
+
+        void Init(Uri capability, X509Certificate2 clientCert)
+        {
+            _Client = new CapsBase(capability, clientCert);
             _Client.DownloadProgressChanged += new CapsBase.DownloadProgressChangedEventHandler(Client_DownloadProgressChanged);
             _Client.UploadProgressChanged += new CapsBase.UploadProgressChangedEventHandler(Client_UploadProgressChanged);
             _Client.UploadDataCompleted += new CapsBase.UploadDataCompletedEventHandler(Client_UploadDataCompleted);
@@ -77,15 +88,7 @@ namespace OpenMetaverse.Capabilities
             _ContentType = contentType;
 
             if (_Client.IsBusy)
-            {
-                Logger.Log("New CAPS request to " + _Client.Location +
-                    " initiated, closing previous request", Helpers.LogLevel.Warning);
                 _Client.CancelAsync();
-            }
-            else
-            {
-                Logger.DebugLog("New CAPS request to " + _Client.Location + " initiated");
-            }
 
             _Client.Headers.Clear();
 
@@ -118,7 +121,7 @@ namespace OpenMetaverse.Capabilities
             if (OnProgress != null)
             {
                 try { OnProgress(this, e.BytesReceived, 0, e.TotalBytesToReceive, 0); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
             }
         }
 
@@ -127,7 +130,7 @@ namespace OpenMetaverse.Capabilities
             if (OnProgress != null)
             {
                 try { OnProgress(this, e.BytesReceived, e.BytesSent, e.TotalBytesToReceive, e.TotalBytesToSend); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
             }
         }
 
@@ -140,7 +143,7 @@ namespace OpenMetaverse.Capabilities
                     OSD result = OSDParser.DeserializeLLSDXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                 }
                 else
                 {
@@ -161,24 +164,24 @@ namespace OpenMetaverse.Capabilities
                     else if (code != HttpStatusCode.OK)
                     {
                         // Status code was set to something unknown, this is a failure
-                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, code));
+                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, code);
 
                         try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                     }
                     else
                     {
                         // Status code was not set, some other error occurred. This is a failure
-                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, e.Error.Message));
+                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, e.Error.Message);
 
                         try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                     }
                 }
             }
             else if (e.Cancelled)
             {
-                Logger.DebugLog("Capability action at " + _Client.Location + " cancelled");
+                Logger.Log.Debug("Capability action at " + _Client.Location + " cancelled");
             }
         }
 
@@ -191,7 +194,7 @@ namespace OpenMetaverse.Capabilities
                     OSD result = OSDParser.DeserializeLLSDXml(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                 }
                 else
                 {
@@ -212,24 +215,24 @@ namespace OpenMetaverse.Capabilities
                     else if (code != HttpStatusCode.OK)
                     {
                         // Status code was set to something unknown, this is a failure
-                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, code));
+                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, code);
 
                         try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                     }
                     else
                     {
                         // Status code was not set, some other error occurred. This is a failure
-                        Logger.DebugLog(String.Format("Caps error at {0}: {1}", _Client.Location, e.Error.Message));
+                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, e.Error.Message);
 
                         try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                     }
                 }
             }
             else if (e.Cancelled)
             {
-                Logger.DebugLog("Capability action at " + _Client.Location + " cancelled");
+                Logger.Log.Debug("Capability action at " + _Client.Location + " cancelled");
             }
         }
 

@@ -8,8 +8,9 @@ using System.Threading;
 using System.Reflection;
 using ExtensionLoader;
 using ExtensionLoader.Config;
+using HttpServer;
 using OpenMetaverse;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 
 namespace Simian
 {
@@ -25,7 +26,7 @@ namespace Simian
         public int HttpPort = 8002;
         public string DataDir = "SimianData/";
 
-        public HttpServer HttpServer;
+        public WebServer HttpServer;
         public IniConfigSource ConfigFile;
         public ulong RegionHandle;
 
@@ -39,6 +40,7 @@ namespace Simian
         public IInventoryProvider Inventory;
         public IParcelProvider Parcels;
         public IMeshingProvider Mesher;
+        //public ICapabilitiesProvider Capabilities;
 
         // Persistent extensions
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();
@@ -67,7 +69,7 @@ namespace Simian
                 return false;
             }
 
-            InitHttpServer(HttpPort, false);
+            InitHttpServer(HttpPort, true);
 
             RegionHandle = Utils.UIntsToLong(REGION_X, REGION_Y);
 
@@ -130,7 +132,7 @@ namespace Simian
 
         void InitHttpServer(int port, bool ssl)
         {
-            HttpServer = new HttpServer(port, ssl);
+            HttpServer = new WebServer(IPAddress.Any, port);
 
             // Login webpage HEAD request, used to check if the login webpage is alive
             HttpServer.AddHandler("head", null, "^/$", LoginWebpageHeadHandler);
@@ -147,23 +149,21 @@ namespace Simian
             HttpServer.Start();
         }
 
-        bool LoginWebpageHeadHandler(ref HttpListenerContext context)
+        bool LoginWebpageHeadHandler(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.StatusDescription = "OK";
             return true;
         }
 
-        bool LoginWebpageGetHandler(ref HttpListenerContext context)
+        bool LoginWebpageGetHandler(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
         {
             string pageContent = "<html><head><title>Simian</title></head><body><br/><h1>Welcome to Simian</h1></body></html>";
             byte[] pageData = Encoding.UTF8.GetBytes(pageContent);
-            context.Response.OutputStream.Write(pageData, 0, pageData.Length);
-            context.Response.OutputStream.Close();
+            response.Body.Write(pageData, 0, pageData.Length);
+            response.Body.Flush();
             return true;
         }
 
-        bool LoginXmlRpcPostHandler(ref HttpListenerContext context)
+        bool LoginXmlRpcPostHandler(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
         {
             string
                 firstName = String.Empty,
@@ -176,7 +176,7 @@ namespace Simian
             try
             {
                 // Parse the incoming XML
-                XmlReader reader = XmlReader.Create(context.Request.InputStream);
+                XmlReader reader = XmlReader.Create(request.Body);
 
                 reader.ReadStartElement("methodCall");
                 {
@@ -247,12 +247,14 @@ namespace Simian
                 reader.Close();
 
                 LoginResponseData responseData = HandleLogin(firstName, lastName, password, start, version, channel);
+                
                 if (responseData.Success)
                     responseData.InventorySkeleton = Inventory.CreateInventorySkeleton(responseData.AgentID);
-                XmlWriter writer = XmlWriter.Create(context.Response.OutputStream);
+                
+                XmlWriter writer = XmlWriter.Create(response.Body);
                 responseData.ToXmlRpc(writer);
+                writer.Flush();
                 writer.Close();
-                context.Response.Close();
             }
             catch (Exception ex)
             {
@@ -262,11 +264,11 @@ namespace Simian
             return true;
         }
 
-        bool LoginLLSDPostHandler(ref HttpListenerContext context)
+        bool LoginLLSDPostHandler(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
         {
             string body = String.Empty;
 
-            using (StreamReader reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
+            using (StreamReader reader = new StreamReader(request.Body, request.ContentEncoding))
             {
                 body = reader.ReadToEnd();
             }

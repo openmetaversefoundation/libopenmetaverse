@@ -29,10 +29,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Threading;
-using System.Xml;
 using OpenMetaverse.StructuredData;
+using HttpServer;
 
-namespace OpenMetaverse.Capabilities
+namespace OpenMetaverse.Http
 {
     public class EventQueueEvent
     {
@@ -58,7 +58,7 @@ namespace OpenMetaverse.Capabilities
         /// client and completing the HTTP request. The interval also specifies the 
         /// maximum time that can pass before the queue shuts down after Stop() or the
         /// class destructor is called</summary>
-        const int BATCH_WAIT_INTERVAL = 100;
+        const int BATCH_WAIT_INTERVAL = 200;
 
         /// <summary>Since multiple events can be batched together and sent in the same
         /// response, this prevents the event queue thread from infinitely dequeueing 
@@ -66,16 +66,14 @@ namespace OpenMetaverse.Capabilities
         /// events</summary>
         const int MAX_EVENTS_PER_RESPONSE = 5;
 
-        HttpServer server;
-        HttpServer.HttpRequestHandler handler;
+        WebServer server;
         BlockingQueue<EventQueueEvent> eventQueue = new BlockingQueue<EventQueueEvent>();
         int currentID = 0;
         bool running = true;
 
-        public EventQueueServer(HttpServer server, HttpServer.HttpRequestHandler handler)
+        public EventQueueServer(WebServer server)
         {
             this.server = server;
-            this.handler = handler;
         }
 
         ~EventQueueServer()
@@ -86,8 +84,6 @@ namespace OpenMetaverse.Capabilities
         public void Stop()
         {
             running = false;
-            try { server.RemoveHandler(handler); }
-            catch (Exception) { }
         }
 
         public void SendEvent(string eventName, OSDMap body)
@@ -97,11 +93,17 @@ namespace OpenMetaverse.Capabilities
 
         public void SendEvent(EventQueueEvent eventQueueEvent)
         {
+            if (!running)
+                throw new InvalidOperationException("Cannot add event while the queue is stopped");
+
             eventQueue.Enqueue(eventQueueEvent);
         }
 
         public void SendEvents(IList<EventQueueEvent> events)
         {
+            if (!running)
+                throw new InvalidOperationException("Cannot add event while the queue is stopped");
+
             for (int i = 0; i < events.Count; i++)
                 eventQueue.Enqueue(events[i]);
         }
@@ -111,7 +113,7 @@ namespace OpenMetaverse.Capabilities
             // Decode the request
             OSD request = null;
 
-            try { request = OSDParser.DeserializeLLSDXml(new XmlTextReader(context.Request.InputStream)); }
+            try { request = OSDParser.DeserializeLLSDXml(context.Request.InputStream); }
             catch (Exception) { }
 
             if (request != null && request.Type == OSDType.Map)
@@ -122,8 +124,8 @@ namespace OpenMetaverse.Capabilities
 
                 if (ack != currentID - 1)
                 {
-                    Logger.Log(String.Format("[EventQueue] Received an ack for id {0}, last id sent was {1}",
-                        ack, currentID - 1), Helpers.LogLevel.Warning);
+                    Logger.Log.WarnFormat("[EventQueue] Received an ack for id {0}, last id sent was {1}",
+                        ack, currentID - 1);
                 }
 
                 if (!done)
@@ -135,8 +137,8 @@ namespace OpenMetaverse.Capabilities
                 }
                 else
                 {
-                    Logger.Log(String.Format("[EventQueue] Shutting down the event queue {0} at the client's request",
-                        context.Request.Url), Helpers.LogLevel.Info);
+                    Logger.Log.InfoFormat("[EventQueue] Shutting down the event queue {0} at the client's request",
+                        context.Request.Url);
                     Stop();
 
                     context.Response.KeepAlive = context.Request.KeepAlive;
@@ -145,8 +147,8 @@ namespace OpenMetaverse.Capabilities
             }
             else
             {
-                Logger.Log(String.Format("[EventQueue] Received a request with invalid or missing LLSD at {0}, closing the connection",
-                    context.Request.Url), Helpers.LogLevel.Warning);
+                Logger.Log.WarnFormat("[EventQueue] Received a request with invalid or missing LLSD at {0}, closing the connection",
+                    context.Request.Url);
 
                 context.Response.KeepAlive = context.Request.KeepAlive;
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -197,14 +199,16 @@ namespace OpenMetaverse.Capabilities
 
                             if (totalMsPassed >= CONNECTION_TIMEOUT)
                             {
-                                Logger.DebugLog(String.Format(
+                                Logger.Log.DebugFormat(
                                     "[EventQueue] {0}ms passed without an event, timing out the event queue",
-                                    totalMsPassed));
+                                    totalMsPassed);
                                 SendResponse(httpContext, null);
                                 return;
                             }
                         }
                     }
+
+                    Logger.Log.Info("[EventQueue] Handler thread is no longer running");
                 }
             ));
 

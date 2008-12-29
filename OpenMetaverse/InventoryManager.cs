@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 

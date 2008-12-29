@@ -29,7 +29,7 @@ using System.Net;
 using System.Threading;
 using OpenMetaverse.StructuredData;
 
-namespace OpenMetaverse.Capabilities
+namespace OpenMetaverse.Http
 {
     public class EventQueueClient
     {
@@ -59,7 +59,7 @@ namespace OpenMetaverse.Capabilities
 
         public EventQueueClient(Uri eventQueueLocation)
         {
-            _Client = new CapsBase(eventQueueLocation);
+            _Client = new CapsBase(eventQueueLocation, null);
             _Client.OpenWriteCompleted += new CapsBase.OpenWriteCompletedEventHandler(Client_OpenWriteCompleted);
             _Client.UploadDataCompleted += new CapsBase.UploadDataCompletedEventHandler(Client_UploadDataCompleted);
         }
@@ -78,14 +78,7 @@ namespace OpenMetaverse.Capabilities
                 _Running = false;
 
             if (_Client.IsBusy)
-            {
-                Logger.DebugLog("Stopping a running event queue");
                 _Client.CancelAsync();
-            }
-            else
-            {
-                Logger.DebugLog("Stopping an already dead event queue");
-            }
         }
 
         #region Callback Handlers
@@ -113,13 +106,13 @@ namespace OpenMetaverse.Capabilities
 
             if (raiseEvent)
             {
-                Logger.DebugLog("Capabilities event queue connected");
+                Logger.Log.Debug("Capabilities event queue connected");
 
                 // The event queue is starting up for the first time
                 if (OnConnected != null)
                 {
                     try { OnConnected(); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                 }
             }
         }
@@ -137,8 +130,7 @@ namespace OpenMetaverse.Capabilities
 
                 if (code == HttpStatusCode.NotFound || code == HttpStatusCode.Gone)
                 {
-                    Logger.Log(String.Format("Closing event queue at {0} due to missing caps URI", _Client.Location),
-                        Helpers.LogLevel.Info);
+                    Logger.Log.InfoFormat("Closing event queue at {0} due to missing caps URI", _Client.Location);
 
                     _Running = false;
                     _Dead = true;
@@ -156,18 +148,18 @@ namespace OpenMetaverse.Capabilities
                     // Try to log a meaningful error message
                     if (code != HttpStatusCode.OK)
                     {
-                        Logger.Log(String.Format("Unrecognized caps connection problem from {0}: {1}",
-                            _Client.Location, code), Helpers.LogLevel.Warning);
+                        Logger.Log.WarnFormat("Unrecognized caps connection problem from {0}: {1}",
+                            _Client.Location, code);
                     }
                     else if (e.Error.InnerException != null)
                     {
-                        Logger.Log(String.Format("Unrecognized caps exception from {0}: {1}",
-                            _Client.Location, e.Error.InnerException.Message), Helpers.LogLevel.Warning);
+                        Logger.Log.WarnFormat("Unrecognized caps exception from {0}: {1}",
+                            _Client.Location, e.Error.InnerException.Message);
                     }
                     else
                     {
-                        Logger.Log(String.Format("Unrecognized caps exception from {0}: {1}",
-                            _Client.Location, e.Error.Message), Helpers.LogLevel.Warning);
+                        Logger.Log.WarnFormat("Unrecognized caps exception from {0}: {1}",
+                            _Client.Location, e.Error.Message);
                     }
                 }
             }
@@ -187,7 +179,7 @@ namespace OpenMetaverse.Capabilities
             else if (e.Cancelled)
             {
                 // Connection was cancelled
-                Logger.DebugLog("Cancelled connection to event queue at " + _Client.Location);
+                Logger.Log.Debug("Cancelled connection to event queue at " + _Client.Location);
             }
 
             if (_Running)
@@ -206,7 +198,7 @@ namespace OpenMetaverse.Capabilities
                 if (_Dead)
                 {
                     _Running = false;
-                    Logger.DebugLog("Sent event queue shutdown message");
+                    Logger.Log.Debug("Sent event queue shutdown message");
                 }
             }
 
@@ -219,7 +211,7 @@ namespace OpenMetaverse.Capabilities
                     OSDMap body = (OSDMap)evt["body"];
 
                     try { OnEvent(msg, body); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
+                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
                 }
             }
         }

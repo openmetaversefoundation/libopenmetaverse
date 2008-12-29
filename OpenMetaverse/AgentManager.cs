@@ -31,7 +31,7 @@ using System.Threading;
 using System.Text;
 using System.Reflection;
 using OpenMetaverse.StructuredData;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.Packets;
 
 namespace OpenMetaverse

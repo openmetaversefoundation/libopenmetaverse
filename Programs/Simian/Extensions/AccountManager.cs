@@ -80,7 +80,9 @@ namespace Simian.Extensions
 
             accounts.ForEach(delegate(Agent agent)
             {
-                array.Add(OSD.SerializeMembers(agent));
+                OSDMap agentMap = OSD.SerializeMembers(agent);
+                agentMap["AgentID"] = OSD.FromUUID(agent.Avatar.ID);
+                array.Add(agentMap);
             });
 
             Logger.Log(String.Format("Serializing the agent store with {0} entries", accounts.Count),
@@ -99,8 +101,10 @@ namespace Simian.Extensions
             {
                 Agent agent = new Agent();
                 object agentRef = (object)agent;
-                OSD.DeserializeMembers(ref agentRef, (OSDMap)array[i]);
+                OSDMap map = array[i] as OSDMap;
+                OSD.DeserializeMembers(ref agentRef, map);
                 agent = (Agent)agentRef;
+                agent.Avatar.ID = map["AgentID"].AsUUID();
 
                 accounts.Add(agent.FullName, agent.Avatar.ID, agent);
             }

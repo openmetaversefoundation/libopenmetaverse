@@ -12,7 +12,6 @@ namespace Simian.Extensions
 
         public FriendManager()
         {
-            
         }
 
         public void Start(Simian server)

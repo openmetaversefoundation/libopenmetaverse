@@ -30,7 +30,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.StructuredData;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.Packets;
 
 namespace OpenMetaverse

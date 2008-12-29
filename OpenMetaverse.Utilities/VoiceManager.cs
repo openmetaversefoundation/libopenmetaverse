@@ -33,7 +33,7 @@ using System.Xml;
 using System.Threading;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 
 namespace OpenMetaverse.Utilities
 {

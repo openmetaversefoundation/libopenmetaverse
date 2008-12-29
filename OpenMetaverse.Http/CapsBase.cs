@@ -28,8 +28,9 @@ using System;
 using System.Net;
 using System.IO;
 using System.Threading;
+using System.Security.Cryptography.X509Certificates;
 
-namespace OpenMetaverse.Capabilities
+namespace OpenMetaverse.Http
 {
     public class CapsBase
     {
@@ -145,6 +146,7 @@ namespace OpenMetaverse.Capabilities
 
         public WebHeaderCollection Headers = new WebHeaderCollection();
         public IWebProxy Proxy;
+        public X509Certificate2 ClientCertificate;
 
         public Uri Location { get { return location; } }
         public bool IsBusy { get { return isBusy; } }
@@ -156,9 +158,10 @@ namespace OpenMetaverse.Capabilities
         protected Thread asyncThread;
         protected System.Text.Encoding encoding = System.Text.Encoding.Default;
 
-        public CapsBase(Uri location)
+        public CapsBase(Uri location, X509Certificate2 clientCert)
         {
             this.location = location;
+            ClientCertificate = clientCert;
         }
 
         public void OpenWriteAsync(Uri address)
@@ -178,36 +181,35 @@ namespace OpenMetaverse.Capabilities
 
             SetBusy();
 
-            asyncThread = new Thread(delegate(object state)
-            {
-                object[] args = (object[])state;
-                WebRequest request = null;
-
-                try
+            asyncThread = new Thread(
+                delegate()
                 {
-                    request = SetupRequest((Uri)args[0]);
-                    Stream stream = request.GetRequestStream();
+                    WebRequest request = null;
 
-                    OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
-                        stream, null, false, args[2]));
-                }
-                catch (ThreadInterruptedException)
-                {
-                    if (request != null)
-                        request.Abort();
+                    try
+                    {
+                        request = SetupRequest(address);
+                        Stream stream = request.GetRequestStream();
 
-                    OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
-                        null, null, true, args[2]));
-                }
-                catch (Exception e)
-                {
-                    OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
-                        null, e, false, args[2]));
-                }
-            });
+                        OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
+                            stream, null, false, userToken));
+                    }
+                    catch (ThreadInterruptedException)
+                    {
+                        if (request != null)
+                            request.Abort();
 
-            object[] cbArgs = new object[] { address, method, userToken };
-            asyncThread.Start(cbArgs);
+                        OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
+                            null, null, true, userToken));
+                    }
+                    catch (Exception e)
+                    {
+                        OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
+                            null, e, false, userToken));
+                    }
+                }
+            );
+            asyncThread.Start();
         }
 
         public void UploadDataAsync(Uri address, byte[] data)
@@ -269,30 +271,28 @@ namespace OpenMetaverse.Capabilities
 
             SetBusy();
 
-            asyncThread = new Thread(delegate(object state)
-            {
-                object[] args = (object[])state;
-
-                try
+            asyncThread = new Thread(
+                delegate()
                 {
-                    string data = encoding.GetString(DownloadDataCore((Uri)args[0], args[1]));
-                    OnDownloadStringCompleted(
-                        new DownloadStringCompletedEventArgs(location, data, null, false, args[1]));
+                    try
+                    {
+                        string data = encoding.GetString(DownloadDataCore(address, userToken));
+                        OnDownloadStringCompleted(
+                            new DownloadStringCompletedEventArgs(location, data, null, false, userToken));
+                    }
+                    catch (ThreadInterruptedException)
+                    {
+                        OnDownloadStringCompleted(
+                            new DownloadStringCompletedEventArgs(location, null, null, true, userToken));
+                    }
+                    catch (Exception e)
+                    {
+                        OnDownloadStringCompleted(
+                            new DownloadStringCompletedEventArgs(location, null, e, false, userToken));
+                    }
                 }
-                catch (ThreadInterruptedException)
-                {
-                    OnDownloadStringCompleted(
-                        new DownloadStringCompletedEventArgs(location, null, null, true, args[1]));
-                }
-                catch (Exception e)
-                {
-                    OnDownloadStringCompleted(
-                        new DownloadStringCompletedEventArgs(location, null, e, false, args[1]));
-                }
-            });
-
-            object[] cbArgs = new object[] { address, userToken };
-            asyncThread.Start(cbArgs);
+            );
+            asyncThread.Start();
         }
 
         public void CancelAsync()
@@ -391,6 +391,9 @@ namespace OpenMetaverse.Capabilities
             if (Proxy != null)
                 request.Proxy = Proxy;
 
+            if (ClientCertificate != null)
+                request.ClientCertificates.Add(ClientCertificate);
+
             request.Method = "POST";
 
             if (Headers != null && Headers.Count != 0)
@@ -428,7 +431,7 @@ namespace OpenMetaverse.Capabilities
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
             // Crank up the max number of connections (default is 2!)
-            request.ServicePoint.ConnectionLimit = 20;
+            request.ServicePoint.ConnectionLimit = Int32.MaxValue;
 
             return request;
         }

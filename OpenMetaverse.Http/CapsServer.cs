@@ -28,39 +28,50 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.StructuredData;
+using HttpServer;
 
-namespace OpenMetaverse.Capabilities
+namespace OpenMetaverse.Http
 {
     public class CapsServer
     {
-        private struct CapsRedirector
+        struct CapsRedirector
         {
-            public HttpServer.HttpRequestCallback LocalCallback;
-            public Uri RemoteResource;
+            public HttpRequestCallback LocalCallback;
+            public Uri RemoteHandler;
+            public bool ClientCertRequired;
 
-            public CapsRedirector(HttpServer.HttpRequestCallback localCallback, Uri remoteResource)
+            public CapsRedirector(HttpRequestCallback localCallback, Uri remoteHandler, bool clientCertRequired)
             {
                 LocalCallback = localCallback;
-                RemoteResource = remoteResource;
+                RemoteHandler = remoteHandler;
+                ClientCertRequired = clientCertRequired;
             }
         }
 
-        HttpServer server;
+        WebServer server;
         bool serverOwned;
-        HttpServer.HttpRequestHandler capsHandler;
+        HttpRequestHandler capsHandler;
         ExpiringCache<UUID, CapsRedirector> expiringCaps = new ExpiringCache<UUID, CapsRedirector>();
         Dictionary<UUID, CapsRedirector> fixedCaps = new Dictionary<UUID, CapsRedirector>();
         object syncRoot = new object();
 
-        public CapsServer(List<string> listeningPrefixes)
+        public CapsServer(IPAddress address, int port)
         {
             serverOwned = true;
             capsHandler = BuildCapsHandler("^/");
-            server = new HttpServer(listeningPrefixes);
+            server = new WebServer(address, port);
         }
 
-        public CapsServer(HttpServer httpServer, string handlerPath)
+        public CapsServer(IPAddress address, int port, X509Certificate sslCertificate, X509Certificate rootCA, bool requireClientCertificate)
+        {
+            serverOwned = true;
+            capsHandler = BuildCapsHandler("^/");
+            server = new WebServer(address, port, sslCertificate, rootCA, requireClientCertificate);
+        }
+
+        public CapsServer(WebServer httpServer, string handlerPath)
         {
             serverOwned = false;
             capsHandler = BuildCapsHandler(handlerPath);
@@ -83,10 +94,10 @@ namespace OpenMetaverse.Capabilities
             server.RemoveHandler(capsHandler);
         }
 
-        public UUID CreateCapability(HttpServer.HttpRequestCallback localHandler)
+        public UUID CreateCapability(HttpRequestCallback localHandler, bool clientCertRequired)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(localHandler, null);
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired);
 
             lock (syncRoot)
                 fixedCaps.Add(id, redirector);
@@ -94,10 +105,10 @@ namespace OpenMetaverse.Capabilities
             return id;
         }
 
-        public UUID CreateCapability(Uri remoteResource)
+        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(null, remoteResource);
+            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired);
 
             lock (syncRoot)
                 fixedCaps.Add(id, redirector);
@@ -105,10 +116,10 @@ namespace OpenMetaverse.Capabilities
             return id;
         }
 
-        public UUID CreateCapability(HttpServer.HttpRequestCallback localHandler, double ttlSeconds)
+        public UUID CreateCapability(HttpRequestCallback localHandler, bool clientCertRequired, double ttlSeconds)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(localHandler, null);
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired);
 
             lock (syncRoot)
                 expiringCaps.Add(id, redirector, DateTime.Now + TimeSpan.FromSeconds(ttlSeconds));
@@ -116,10 +127,10 @@ namespace OpenMetaverse.Capabilities
             return id;
         }
 
-        public UUID CreateCapability(Uri remoteResource, double ttlSeconds)
+        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired, double ttlSeconds)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(null, remoteResource);
+            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired);
 
             lock (syncRoot)
                 expiringCaps.Add(id, redirector, DateTime.Now + TimeSpan.FromSeconds(ttlSeconds));
@@ -138,12 +149,12 @@ namespace OpenMetaverse.Capabilities
             }
         }
 
-        bool CapsCallback(ref HttpListenerContext context)
+        bool CapsCallback(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
         {
             UUID capsID;
             CapsRedirector redirector;
             bool success;
-            string uuidString = context.Request.Url.Segments[context.Request.Url.Segments.Length - 1];
+            string uuidString = request.UriParts[request.UriParts.Length - 1];
 
             if (UUID.TryParse(uuidString, out capsID))
             {
@@ -152,60 +163,72 @@ namespace OpenMetaverse.Capabilities
 
                 if (success)
                 {
-                    if (redirector.RemoteResource != null)
-                        ProxyCapCallback(ref context, redirector.RemoteResource);
+                    if (redirector.ClientCertRequired)
+                    {
+                        success = false;
+                        // FIXME: Implement this
+                        /*X509Certificate2 clientCert = request.GetClientCertificate();
+                        if (clientCert != null)
+                        {
+                            Logger.Log.Info(clientCert.ToString());
+                        }*/
+                    }
+
+                    if (redirector.RemoteHandler != null)
+                        ProxyCapCallback(client, request, response, redirector.RemoteHandler);
                     else
-                        redirector.LocalCallback(ref context);
+                        return redirector.LocalCallback(client, request, response);
 
                     return true;
                 }
             }
 
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            response.Status = HttpStatusCode.NotFound;
             return true;
         }
 
-        void ProxyCapCallback(ref HttpListenerContext context, Uri remoteResource)
+        void ProxyCapCallback(IHttpClientContext client, IHttpRequest request, IHttpResponse response, Uri remoteHandler)
         {
             const int BUFFER_SIZE = 2048;
             int numBytes;
             byte[] buffer = new byte[BUFFER_SIZE];
 
             // Proxy the request
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(remoteResource);
+            HttpWebRequest remoteRequest = (HttpWebRequest)HttpWebRequest.Create(remoteHandler);
 
-            request.Method = context.Request.HttpMethod;
-            request.Headers.Add(context.Request.Headers);
+            remoteRequest.Method = request.Method;
+            remoteRequest.Headers.Add(request.Headers);
 
-            if (context.Request.HasEntityBody)
+            // TODO: Support for using our own client certificate during the proxy
+
+            if (request.Body.Length > 0)
             {
                 // Copy the request stream
-                using (Stream writeStream = request.GetRequestStream())
+                using (Stream writeStream = remoteRequest.GetRequestStream())
                 {
-                    while ((numBytes = context.Request.InputStream.Read(buffer, 0, BUFFER_SIZE)) > 0)
+                    while ((numBytes = request.Body.Read(buffer, 0, BUFFER_SIZE)) > 0)
                         writeStream.Write(buffer, 0, numBytes);
 
-                    context.Request.InputStream.Close();
+                    request.Body.Close();
                 }
             }
 
-            System.Security.Cryptography.X509Certificates.X509Certificate2 cert = context.Request.GetClientCertificate();
-            ;
-
             // Proxy the response
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            HttpWebResponse remoteResponse = (HttpWebResponse)remoteRequest.GetResponse();
 
-            context.Response.StatusCode = (int)response.StatusCode;
-            context.Response.StatusDescription = response.StatusDescription;
-            context.Response.Headers = response.Headers;
+            response.Status = remoteResponse.StatusCode;
+            response.Reason = remoteResponse.StatusDescription;
+
+            for (int i = 0; i < remoteResponse.Headers.Count; i++)
+                response.AddHeader(remoteResponse.Headers.GetKey(i), remoteResponse.Headers[i]);
 
             // Copy the response stream
-            using (Stream readStream = response.GetResponseStream())
+            using (Stream readStream = remoteResponse.GetResponseStream())
             {
                 while ((numBytes = readStream.Read(buffer, 0, BUFFER_SIZE)) > 0)
-                    context.Response.OutputStream.Write(buffer, 0, numBytes);
+                    response.Body.Write(buffer, 0, numBytes);
 
-                context.Response.OutputStream.Close();
+                response.Body.Close();
             }
         }
 

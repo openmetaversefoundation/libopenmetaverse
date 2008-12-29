@@ -53,6 +53,11 @@ namespace OpenMetaverse.StructuredData
             return DeserializeLLSDXml(new XmlTextReader(new MemoryStream(xmlData, false)));
         }
 
+        public static OSD DeserializeLLSDXml(Stream xmlStream)
+        {
+            return DeserializeLLSDXml(new XmlTextReader(xmlStream));
+        }
+
         /// <summary>
         /// 
         /// </summary>

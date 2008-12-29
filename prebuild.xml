@@ -31,6 +31,47 @@
         <NoStdLib>false</NoStdLib>
       </Options>
     </Configuration>
+    
+    <!-- External Libraries -->
+    
+    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library" guid="F0CCD62E-8055-4419-8171-F2C5FD7C8B6D">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+    
+    <Project name="HttpServer" path="HttpServer" type="Library" guid="455E7D70-1C85-4D7F-9F01-DC801B8B8C34">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Web"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
     <!-- Libraries -->
     
@@ -75,6 +116,32 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
+    
+    <Project name="OpenMetaverse.Http" path="OpenMetaverse.Http" type="Library" rootNamespace="OpenMetaverse.Http">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+          <XmlDocFile>OpenMetaverse.Http.XML</XmlDocFile>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="OpenMetaverseTypes"/>
+      <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="HttpServer"/>
+      <Reference name="log4net"/>
+      <Reference name="Mono.Security"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
     <Project name="OpenMetaverse" path="OpenMetaverse" type="Library" rootNamespace="OpenMetaverse">
       <Configuration name="Debug">
@@ -97,6 +164,7 @@
       <Reference name="log4net"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="OpenMetaverse.Http"/>
       <Files>
         <Match pattern="*.cs" recurse="true">
           <Exclude name="Color4.cs"/>
@@ -137,6 +205,7 @@
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="OpenMetaverse.Http"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -166,25 +235,6 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
-    
-    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library" guid="F0CCD62E-8055-4419-8171-F2C5FD7C8B6D">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
 
     <Project name="GridProxy" path="Programs/GridProxy" type="Library">
       <Configuration name="Debug">
@@ -204,6 +254,7 @@
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
       	<Match pattern="*.cs" recurse="true">
@@ -375,6 +426,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
+      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -506,6 +558,7 @@
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
+      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -727,6 +780,7 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Utilities"/>
       <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -750,9 +804,11 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Xml"/>
       <Reference name="ExtensionLoader"/>
+      <Reference name="HttpServer"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>

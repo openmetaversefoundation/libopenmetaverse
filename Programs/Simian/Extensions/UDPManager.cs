@@ -90,7 +90,8 @@ namespace Simian
 
         public void Stop()
         {
-            udpServer.Stop();
+            if (udpServer != null)
+                udpServer.Stop();
         }
 
         public void AddClient(Agent agent, IPEndPoint endpoint)

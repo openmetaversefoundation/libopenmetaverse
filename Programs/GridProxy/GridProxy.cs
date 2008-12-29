@@ -45,7 +45,7 @@ using System.Threading;
 using System.Xml;
 using Nwc.XmlRpc;
 using OpenMetaverse;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 

@@ -32,7 +32,7 @@ using System.Net;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.StructuredData;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
