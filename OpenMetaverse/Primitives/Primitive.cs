@@ -1215,9 +1215,14 @@ namespace OpenMetaverse
             if (ParentID != 0)
                 prim["parentid"] = OSD.FromInteger(ParentID);
 
-            prim["light"] = Light.GetOSD();
-            prim["flex"] = Flexible.GetOSD();
-            prim["sculpt"] = Sculpt.GetOSD();
+            if (Light != null)
+                prim["light"] = Light.GetOSD();
+
+            if (Flexible != null)
+                prim["flex"] = Flexible.GetOSD();
+
+            if (Sculpt != null)
+                prim["sculpt"] = Sculpt.GetOSD();
 
             return prim;
         }
@@ -1281,6 +1286,8 @@ namespace OpenMetaverse
             prim.Light = LightData.FromOSD(map["light"]);
             prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
             prim.Textures = TextureEntry.FromOSD(map["textures"]);
+            prim.Properties = new ObjectProperties();
+
             if (!string.IsNullOrEmpty(map["name"].AsString()))
             {
                 prim.Properties.Name = map["name"].AsString();

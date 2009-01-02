@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -98,6 +98,22 @@ namespace OpenMetaverse.GUI
                 else if (type == ChatType.Whisper) volume = " whispers";
                 else volume = string.Empty;
                 _rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}{4}: {5}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), name, volume, text);
+                _rtfOutput.ScrollToCaret();
+            }
+        }
+
+        public void LogText(string text, Color color)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((MethodInvoker)delegate { LogText(text, color); });
+            }
+            else
+            {
+                _rtfOutput.SelectionStart = _rtfOutput.Text.Length;
+                _rtfOutput.SelectionColor = color;
+                DateTime now = DateTime.Now;
+                _rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), text);
                 _rtfOutput.ScrollToCaret();
             }
         }

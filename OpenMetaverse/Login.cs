@@ -972,6 +972,7 @@ namespace OpenMetaverse
             CapsClient loginRequest = new CapsClient(loginUri);
             loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
             loginRequest.UserData = CurrentContext;
+            UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
             loginRequest.StartRequest(OSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
         }
 
