@@ -62,6 +62,7 @@ namespace OpenMetaverse.Http
             serverOwned = true;
             capsHandler = BuildCapsHandler("^/");
             server = new WebServer(address, port);
+            server.LogWriter = new log4netLogWriter(Logger.Log);
         }
 
         public CapsServer(IPAddress address, int port, X509Certificate sslCertificate, X509Certificate rootCA, bool requireClientCertificate)
@@ -69,6 +70,7 @@ namespace OpenMetaverse.Http
             serverOwned = true;
             capsHandler = BuildCapsHandler("^/");
             server = new WebServer(address, port, sslCertificate, rootCA, requireClientCertificate);
+            server.LogWriter = new log4netLogWriter(Logger.Log);
         }
 
         public CapsServer(WebServer httpServer, string handlerPath)
