@@ -131,7 +131,8 @@ namespace OpenMetaverse.TestClient
                             }
                         }
 
-                        if (prim.Sculpt.SculptTexture != UUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture)) {
+                        if (prim.Sculpt != null && prim.Sculpt.SculptTexture != UUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture))
+                        {
                             Textures.Add(prim.Sculpt.SculptTexture);
                         }
                     }
@@ -219,6 +220,7 @@ namespace OpenMetaverse.TestClient
         void Objects_OnObjectPropertiesFamily(Simulator simulator, Primitive.ObjectProperties properties,
             ReportType type)
         {
+            Properties = new Primitive.ObjectProperties();
             Properties.SetFamilyProperties(properties);
             GotPermissions = true;
             GotPermissionsEvent.Set();

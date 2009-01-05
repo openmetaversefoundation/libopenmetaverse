@@ -2233,7 +2233,11 @@ namespace OpenMetaverse
                     lock (sim.ObjectsPrimitives.Dictionary)
                     {
                         if (sim.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
+                        {
+                            if (sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties == null)
+                                sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties = new Primitive.ObjectProperties();
                             sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties.SetFamilyProperties(props);
+                        }
                     }
                 }
             }
