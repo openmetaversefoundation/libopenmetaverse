@@ -2,6 +2,7 @@
     <assemblies>
         <assembly assemblyPath="..\bin\OpenMetaverse.dll" xmlCommentsPath="..\bin\OpenMetaverse.xml" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.GUI.dll" xmlCommentsPath="..\bin\OpenMetaverse.GUI.XML" commentsOnly="False" />
+        <assembly assemblyPath="..\bin\OpenMetaverse.Http.dll" xmlCommentsPath="..\bin\OpenMetaverse.Http.XML" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.StructuredData.dll" xmlCommentsPath="..\bin\OpenMetaverse.StructuredData.XML" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverse.Utilities.dll" xmlCommentsPath="..\bin\OpenMetaverse.Utilities.XML" commentsOnly="False" />
         <assembly assemblyPath="..\bin\OpenMetaverseTypes.dll" xmlCommentsPath="..\bin\OpenMetaverseTypes.XML" commentsOnly="False" />
@@ -26,6 +27,7 @@
         <namespaceSummaryItem name="OpenMetaverse" isDocumented="True">The OpenMetaverse library primary namespace</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Capabilities" isDocumented="True">Capabilities is a method of transferring data between the client and Simulator, The Caps Client and EventQueue classes are contained within this namespace.</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.GUI" isDocumented="True">GUI Abstraction Layer for using the library in a winforms based application</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Http" isDocumented="True">Contains capabilities client/server related classes</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Imaging" isDocumented="True">Classes for dealing with images (Textures), including encoding/decoding and our wrapper class for OpenJpeg</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Packets" isDocumented="True">Packet information classes</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Rendering" isDocumented="True">Prim Rendering</namespaceSummaryItem>
@@ -38,6 +40,7 @@
     </namespaceSummaries>
     <dependencies>
         <dependencyItem depPath="..\bin\log4net.dll" />
+        <dependencyItem depPath="..\bin\HttpServer.dll" />
     </dependencies>
     <componentConfigurations>
         <component id="Code Block Component" enabled="True" configuration="&lt;component id=&quot;Code Block Component&quot; type=&quot;SandcastleBuilder.Components.CodeBlockComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot;&gt;&lt;!-- Base path for relative filenames in source attributes&#xD;&#xA;                 (optional) --&gt;&lt;basePath value=&quot;{@ProjectFolder}&quot; /&gt;&lt;!-- Connect to language filter (optional).  If omitted,&#xD;&#xA;                 language filtering is enabled by default. --&gt;&lt;languageFilter value=&quot;true&quot; /&gt;&lt;!-- Code colorizer options (required).&#xD;&#xA;                 Attributes:&#xD;&#xA;                    Language syntax configuration file (required)&#xD;&#xA;                    XSLT style file (required)&#xD;&#xA;                    &quot;Copy&quot; image file URL (required)&#xD;&#xA;                    Default language (optional)&#xD;&#xA;                    Enable line numbering (optional)&#xD;&#xA;                    Enable outlining (optional)&#xD;&#xA;                    Keep XML comment &quot;see&quot; tags within the code (optional)&#xD;&#xA;                    Tab size override (optional, 0 = Use syntax file setting)&#xD;&#xA;                    Use language name as default title (optional) --&gt;&lt;colorizer syntaxFile=&quot;{@SHFBFolder}Colorizer\highlight.xml&quot; styleFile=&quot;{@SHFBFolder}Colorizer\highlight.xsl&quot; copyImageUrl=&quot;../icons/CopyCode.gif&quot; language=&quot;cs&quot; numberLines=&quot;false&quot; outlining=&quot;true&quot; keepSeeTags=&quot;false&quot; tabSize=&quot;4&quot; defaultTitle=&quot;true&quot; /&gt;&lt;/component&gt;" />

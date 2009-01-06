@@ -22,8 +22,9 @@ If you want to generate these documents locally you will need to do the followin
    If you set these in control panel->System->Advanced->Environment Variables you will either need to 
    restart your computer, or close and restart visual studio for those changes to be go into effect.
 
-3) double click the builddocs.bat file in the directory you unpacked the file, this will recompile the 
-   library and generate the XML comments file required for SandCastle, and compile the documentation
+3) We use prebuild to configure and build this project, see the readme.txt in the projects root directory for 
+   more information. To build with docs: from the project root directory run: "runprebuild.bat msbuild docs" followed
+   by compile.bat, this will generate the necessary xml documentation and assemblies, then create the html project documentation
 
 
 Additionally if you have 7-Zip installed in the path, a zip archive will be created in the documentation tree
