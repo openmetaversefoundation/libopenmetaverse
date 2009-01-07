@@ -748,7 +748,7 @@ namespace OpenMetaverse
         /// the given timestamp</returns>
         public static DateTime UnixTimeToDateTime(uint timestamp)
         {
-            System.DateTime dateTime = Epoch;
+            DateTime dateTime = Epoch;
 
             // Add the number of seconds in our UNIX timestamp
             dateTime = dateTime.AddSeconds(timestamp);
@@ -765,7 +765,7 @@ namespace OpenMetaverse
         /// the given timestamp</returns>
         public static DateTime UnixTimeToDateTime(int timestamp)
         {
-            return DateTime.FromBinary(timestamp);
+            return UnixTimeToDateTime((uint)timestamp);
         }
 
         /// <summary>
