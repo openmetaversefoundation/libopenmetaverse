@@ -14,17 +14,21 @@ AR = ar
 
 OSNAME = $(shell uname -s)
 ifeq ($(OSNAME), Linux)
-  ARCH = $(shell uname -m)
+  ARCH = $(shell arch)
   ifeq ($(ARCH), x86_64)
     ARCH=-x86_64
+    ARCHFLAGS=
   else
-    ARCH=
+    ARCH=-i686
+    ARCHFLAGS=-m32
   endif
 endif
+
+
 # Converts cr/lf to just lf
 DOS2UNIX = dos2unix
 
-COMPILERFLAGS = -O3 -fPIC
+COMPILERFLAGS = -O3 -fPIC $(ARCHFLAGS)
 LIBRARIES = -lstdc++
 
 MODULES = $(SRCS:.c=.o)
@@ -35,8 +39,10 @@ TARGET  = openjpeg-dotnet
 SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR)$(ARCH).so
 LIBNAME = lib$(TARGET).so.$(VER_MAJOR)
 
-
 default: all
+
+# Force 32 bit binary on 64 bit platform
+32bit: OpenJPEG
 
 all: OpenJPEG
 
@@ -56,7 +62,7 @@ $(CPPMODULES): %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(SHAREDLIB): $(MODULES) $(CPPMODULES)
-	$(CC) -s -shared -Wl,-soname,$(LIBNAME) -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
+	$(CC) $(ARCHFLAGS) -s -shared -Wl,-soname,$(LIBNAME) -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
 
 install: OpenJPEG
 	install -d ../bin
