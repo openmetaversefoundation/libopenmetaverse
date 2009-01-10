@@ -379,7 +379,7 @@ namespace Prebuild.Core.Targets
 						string autogen_name = file.Substring(0, file.LastIndexOf('.')) + ".Designer.cs";
                         string dependent_name = file.Substring(0, file.LastIndexOf('.')) + ".cs";
 
-						ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", autogen_name);
+						ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
 
                         // Check for a parent .cs file with the same name as this designer file
                         if (File.Exists(dependent_name))
@@ -477,7 +477,11 @@ namespace Prebuild.Core.Targets
 							{
 								if (project.Files.GetBuildAction(file) != BuildAction.EmbeddedResource)
 								{
-									ps.WriteLine("      <SubType>{0}</SubType>", subType);
+                                    //HACK: Ugly method of supporting WinForms
+                                    if (file.Contains("frm"))
+                                        ps.WriteLine("      <SubType>Form</SubType>");
+                                    else
+                                        ps.WriteLine("      <SubType>{0}</SubType>", subType);
 								}
 							}
 
