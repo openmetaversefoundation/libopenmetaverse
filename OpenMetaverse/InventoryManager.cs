@@ -1830,13 +1830,14 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Request a copy of an asset embedded within a notecard
         /// </summary>
-        /// <param name="objectID"></param>
-        /// <param name="notecardID"></param>
-        /// <param name="folderID"></param>
-        /// <param name="itemID"></param>
-        public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID)
+        /// <param name="objectID">Usually UUID.Zero for copying an asset from a notecard</param>
+        /// <param name="notecardID">UUID of the notecard to request an asset from</param>
+        /// <param name="folderID">Target folder for asset to go to in your inventory</param>
+        /// <param name="itemID">UUID of the embedded asset</param>
+        /// <param name="callback">callback to run when item is copied to inventory</param>
+        public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID, ItemCopiedCallback callback)
         {
             CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
             copy.AgentData.AgentID = _Client.Self.AgentID;
@@ -1849,6 +1850,8 @@ namespace OpenMetaverse
             copy.InventoryData[0] = new CopyInventoryFromNotecardPacket.InventoryDataBlock();
             copy.InventoryData[0].FolderID = folderID;
             copy.InventoryData[0].ItemID = itemID;
+           
+            _ItemCopiedCallbacks[0] = callback; //Notecards always use callback ID 0
 
             _Client.Network.SendPacket(copy);
         }
