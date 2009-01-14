@@ -848,6 +848,8 @@ namespace OpenMetaverse
                     String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
                     upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
 
+                    Transfers[upload.ID]=upload;         
+                
                 // The whole asset will fit in this packet, makes things easy
                 request.AssetBlock.AssetData = data;
                 upload.Transferred = data.Length;

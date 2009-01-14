@@ -694,8 +694,9 @@ namespace OpenMetaverse
                                 }
                                 else if (face.TextureID != AgentTextures[i])
                                 {
+                                    Logger.DebugLog("*** FACE is "+face.TextureID.ToString()+" Agent Texture is "+AgentTextures[i].ToString());
                                     match = false;
-                                    break;
+                                    //break;
                                 }
                             }
 
@@ -1060,12 +1061,6 @@ namespace OpenMetaverse
 
         private void UploadBake(Baker bake)
         {
-            if(bake.BakedTexture.AssetID==UUID.Zero)
-            {
-                Logger.Log("UploadBake(): Warning possible Linden Default textures in use, skipping this baked upload",Helpers.LogLevel.Warning, Client);
-                return;
-            }
-
             lock (PendingUploads)
             {
                 if(PendingUploads.ContainsKey(bake.BakedTexture.AssetID))
@@ -1074,12 +1069,10 @@ namespace OpenMetaverse
                     return;
                 }
 
-             // Add it to a pending uploads list
-             PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
-             }
-
-            // Upload the completed layer data
-            Assets.RequestUpload(bake.BakedTexture, true);
+                    // Upload the completed layer data and Add it to a pending uploads list
+                    UUID id=Assets.RequestUpload(bake.BakedTexture, true);
+                    PendingUploads.Add(UUID.Combine(id, Client.Self.SecureSessionID), BakeTypeToAgentTextureIndex(bake.BakeType));
+            }
 
             Logger.DebugLog(String.Format("Bake {0} completed. Uploading asset {1}", bake.BakeType,
                 bake.BakedTexture.AssetID.ToString()), Client);
@@ -1140,8 +1133,13 @@ namespace OpenMetaverse
 
             lock (AgentTextures)
             {
+                //If we are here then the user has tried to wear stuff or we are at login
+                // In either case the existing uploads of this class are very shortly going to be no good
+                PendingUploads.Clear();
+
                 foreach (AgentCachedTextureResponsePacket.WearableDataBlock block in response.WearableData)
                 {
+                    UUID hash=new UUID();
                     // For each missing element we need to bake our own texture
                     Logger.DebugLog("Cache response, index: " + block.TextureIndex + ", ID: " +
                         block.TextureID.ToString(), Client);
@@ -1152,8 +1150,11 @@ namespace OpenMetaverse
 
                     BakeType bakeType = (BakeType)block.TextureIndex;
                     
+                    // Note, still should handle block.TextureID != UUID.Zero && host.Length == 0
+                    // Not sure what we should do as yet with that.
+
                     // Convert the baked index to an AgentTexture index
-                    if (block.TextureID != UUID.Zero && host.Length == 0)
+                    if (block.TextureID != UUID.Zero && host.Length != 0)
                     {
                         TextureIndex index = BakeTypeToAgentTextureIndex(bakeType);
                         AgentTextures[(int)index] = block.TextureID;
@@ -1226,7 +1227,10 @@ namespace OpenMetaverse
                             else
                             {
                                 lock (PendingBakes)
-                                    PendingBakes.Add(bakeType, new Baker(Client, bakeType, imageCount, paramValues));
+                                {
+                                    Baker bake=new Baker(Client, bakeType, imageCount,paramValues);
+                                    PendingBakes.Add(bakeType,bake);
+                                }
                             }
                         }
                         else if (!PendingBakes.ContainsKey(bakeType))
