@@ -83,6 +83,12 @@ namespace OpenMetaverse
     public class AvatarManager
     {
         /// <summary>
+        /// Triggered when an avatar animation signal is received
+        /// </summary>
+        /// <param name="avatarID">UUID of the avatar sending the animation</param>
+        /// <param name="anims">UUID of the animation, and animation sequence number</param>
+        public delegate void AvatarAnimationCallback(UUID avatarID, InternalDictionary<UUID, int> anims);
+        /// <summary>
         /// Triggered when AvatarAppearance is received
         /// </summary>
         /// <param name="defaultTexture"></param>
@@ -165,6 +171,8 @@ namespace OpenMetaverse
         /// <param name="pickid"></param>
         /// <param name="pick"></param>
         public delegate void PickInfoCallback(UUID pickid, ProfilePick pick);
+        /// <summary></summary>
+        public event AvatarAnimationCallback OnAvatarAnimation;
         /// <summary></summary>
         public event AvatarAppearanceCallback OnAvatarAppearance;
         /// <summary></summary>
@@ -373,6 +381,27 @@ namespace OpenMetaverse
                 }
                 
                 OnAvatarNames(names);
+            }
+        }
+
+        /// <summary>
+        /// Process incoming avatar animations
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="sim"></param>
+        private void AvatarAnimationHandler(Packet packet, Simulator sim)
+        {
+            if (OnAvatarAnimation != null)
+            {
+                AvatarAnimationPacket anims = (AvatarAnimationPacket)packet;
+
+                InternalDictionary<UUID, int> signaledAnims = new InternalDictionary<UUID, int>();
+                
+                for(int i=0; i < anims.AnimationList.Length; i++)
+                    signaledAnims.Add(anims.AnimationList[i].AnimID, anims.AnimationList[i].AnimSequenceID);
+
+                try { OnAvatarAnimation(anims.Sender.ID, signaledAnims); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
@@ -695,11 +724,6 @@ namespace OpenMetaverse
             } catch (Exception ex) {
                 Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
             }
-        }
-
-        protected void AvatarAnimationHandler(Packet packet, Simulator sim)
-        {
-            //FIXME
         }
 
         #endregion Packet Handlers
