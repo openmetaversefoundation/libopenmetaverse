@@ -1227,8 +1227,6 @@ namespace OpenMetaverse
                 // If nothing is registered to receive this RequestID drop the data
                 if (GroupMembersRequests.Contains(members.GroupData.RequestID))
                 {
-                    GroupMembersRequests.Remove(members.GroupData.RequestID);
-
                     lock (GroupMembersCaches)
                     {
                         if (!GroupMembersCaches.TryGetValue(members.GroupData.RequestID, out groupMemberCache))
@@ -1250,6 +1248,9 @@ namespace OpenMetaverse
 
                             groupMemberCache[block.AgentID] = groupMember;
                         }
+
+                        if(groupMemberCache.Count >= members.GroupData.MemberCount)
+                            GroupMembersRequests.Remove(members.GroupData.RequestID);
                     }
                 }
             }
