@@ -30,6 +30,7 @@ using System.Threading;
 using System.Reflection;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Http;
 
 namespace OpenMetaverse
 {
@@ -602,36 +603,93 @@ namespace OpenMetaverse
         /// the update with a reply packet or not</param>
         public void Update(Simulator simulator, bool wantReply)
         {
-            ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
+            Uri url = simulator.Caps.CapabilityURI("ParcelPropertiesUpdate");
 
-            request.AgentData.AgentID = simulator.Client.Self.AgentID;
-            request.AgentData.SessionID = simulator.Client.Self.SessionID;
+            if (url != null)
+            {
+                OSDMap body = new OSDMap();
+                body["auth_buyer_id"] =  OSD.FromUUID(this.AuthBuyerID);
+                body["auto_scale"] =  OSD.FromInteger(this.Media.MediaAutoScale);
+                body["category"] = OSD.FromInteger((byte)this.Category);
+                body["description"] = OSD.FromString(this.Desc);
+                body["flags"] =  OSD.FromBinary(new byte[0]);
+                body["group_id"] = OSD.FromUUID(this.GroupID);
+                body["landing_type"] = OSD.FromInteger((byte)this.Landing);
+                body["local_id"] = OSD.FromInteger(this.LocalID);
+                body["media_desc"] = OSD.FromString(this.Media.MediaDesc);
+                body["media_height"] = OSD.FromInteger(this.Media.MediaHeight);
+                body["media_id"] = OSD.FromUUID(this.Media.MediaID);
+                body["media_loop"] = OSD.FromInteger(this.Media.MediaLoop ? 1 : 0);
+                body["media_type"] = OSD.FromString(this.Media.MediaType);
+                body["media_url"] = OSD.FromString(this.Media.MediaURL);
+                body["media_width"] = OSD.FromInteger(this.Media.MediaWidth);
+                body["music_url"] = OSD.FromString(this.MusicURL);
+                body["name"] = OSD.FromString(this.Name);
+                body["obscure_media"]= OSD.FromInteger(this.ObscureMedia ? 1 : 0);
+                body["obscure_music"] = OSD.FromInteger(this.ObscureMusic ? 1 : 0);
 
-            request.ParcelData.LocalID = this.LocalID;
+                byte[] flags = Utils.IntToBytes((int)this.Flags); ;
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(flags);
+                body["parcel_flags"] = OSD.FromBinary(flags);
 
-            request.ParcelData.AuthBuyerID = this.AuthBuyerID;
-            request.ParcelData.Category = (byte)this.Category;
-            request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
-            request.ParcelData.GroupID = this.GroupID;
-            request.ParcelData.LandingType = (byte)this.Landing;
+                body["pass_hours"] = OSD.FromReal(this.PassHours);
+                body["pass_price"] = OSD.FromInteger(this.PassPrice);
+                body["sale_price"] = OSD.FromInteger(this.SalePrice);
+                body["snapshot_id"] = OSD.FromUUID(this.SnapshotID);
+                OSDArray uloc = new OSDArray();
+                uloc.Add(OSD.FromReal(this.UserLocation.X));
+                uloc.Add(OSD.FromReal(this.UserLocation.Y));
+                uloc.Add(OSD.FromReal(this.UserLocation.Z));
+                body["user_location"] = uloc;
+                OSDArray ulat = new OSDArray();
+                ulat.Add(OSD.FromReal(this.UserLocation.X));
+                ulat.Add(OSD.FromReal(this.UserLocation.Y));
+                ulat.Add(OSD.FromReal(this.UserLocation.Z));
+                body["user_look_at"] = ulat;
 
-            request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
-            request.ParcelData.MediaID = this.Media.MediaID;
-            request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
-            request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
-            request.ParcelData.Name = Utils.StringToBytes(this.Name);
-            if (wantReply) request.ParcelData.Flags = 1;
-            request.ParcelData.ParcelFlags = (uint)this.Flags;
-            request.ParcelData.PassHours = this.PassHours;
-            request.ParcelData.PassPrice = this.PassPrice;
-            request.ParcelData.SalePrice = this.SalePrice;
-            request.ParcelData.SnapshotID = this.SnapshotID;
-            request.ParcelData.UserLocation = this.UserLocation;
-            request.ParcelData.UserLookAt = this.UserLookAt;
+                //Console.WriteLine("OSD REQUEST\n{0}", body.ToString());
 
-            simulator.SendPacket(request, true);
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(body);
+                //Console.WriteLine("{0}", OSDParser.SerializeLLSDXmlString(body));
+                CapsClient capsPost = new CapsClient(url);
+                capsPost.StartRequest(postData);
+
+            }
+            else
+            {
+
+                ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
+
+                request.AgentData.AgentID = simulator.Client.Self.AgentID;
+                request.AgentData.SessionID = simulator.Client.Self.SessionID;
+
+                request.ParcelData.LocalID = this.LocalID;
+
+                request.ParcelData.AuthBuyerID = this.AuthBuyerID;
+                request.ParcelData.Category = (byte)this.Category;
+                request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
+                request.ParcelData.GroupID = this.GroupID;
+                request.ParcelData.LandingType = (byte)this.Landing;
+                request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
+                request.ParcelData.MediaID = this.Media.MediaID;
+                request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
+                request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
+                request.ParcelData.Name = Utils.StringToBytes(this.Name);
+                if (wantReply) request.ParcelData.Flags = 1;
+                request.ParcelData.ParcelFlags = (uint)this.Flags;
+                request.ParcelData.PassHours = this.PassHours;
+                request.ParcelData.PassPrice = this.PassPrice;
+                request.ParcelData.SalePrice = this.SalePrice;
+                request.ParcelData.SnapshotID = this.SnapshotID;
+                request.ParcelData.UserLocation = this.UserLocation;
+                request.ParcelData.UserLookAt = this.UserLookAt;
+
+                simulator.SendPacket(request, true);
+            }
 
             UpdateOtherCleanTime(simulator);
+            
         }
 
         /// <summary>
