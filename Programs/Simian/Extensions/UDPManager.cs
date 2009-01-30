@@ -108,7 +108,7 @@ namespace Simian
             return udpServer.CreateCircuit(agent);
         }
 
-        public void SendPacket(UUID agentID, Packet packet, PacketCategory category)
+        public void SendPacket(Guid agentID, Packet packet, PacketCategory category)
         {
             udpServer.SendPacket(agentID, packet, category);
         }
@@ -134,7 +134,7 @@ namespace Simian
         /// <summary>Incoming packets that are awaiting handling</summary>
         BlockingQueue<IncomingPacket> packetInbox = new BlockingQueue<IncomingPacket>(Settings.PACKET_INBOX_SIZE);
         /// <summary></summary>
-        DoubleDictionary<UUID, IPEndPoint, UDPClient> clients = new DoubleDictionary<UUID, IPEndPoint, UDPClient>();
+        DoubleDictionary<Guid, IPEndPoint, UDPClient> clients = new DoubleDictionary<Guid, IPEndPoint, UDPClient>();
         /// <summary></summary>
         Dictionary<uint, Agent> unassociatedAgents = new Dictionary<uint, Agent>();
         /// <summary></summary>
@@ -200,7 +200,7 @@ namespace Simian
                 delegate(UDPClient client) { SendPacket(client, packet, category, true); });
         }
 
-        public void SendPacket(UUID agentID, Packet packet, PacketCategory category)
+        public void SendPacket(Guid agentID, Packet packet, PacketCategory category)
         {
             // Look up the UDPClient this is going to
             UDPClient client;

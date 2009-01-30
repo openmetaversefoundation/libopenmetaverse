@@ -27,7 +27,7 @@ namespace Simian.Extensions
         {
         }
 
-        void SendBalance(Agent agent, UUID transactionID, string message)
+        void SendBalance(Agent agent, Guid transactionID, string message)
         {
             MoneyBalanceReplyPacket reply = new MoneyBalanceReplyPacket();
             reply.MoneyData.AgentID = agent.AgentID;
@@ -61,8 +61,8 @@ namespace Simian.Extensions
                         agent.Balance -= request.MoneyData.Amount;
                         recipient.Balance += request.MoneyData.Amount;
 
-                        SendBalance(agent, UUID.Zero, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.Avatar.Name));
-                        SendBalance(agent, UUID.Zero, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.Avatar.Name));
+                        SendBalance(agent, Guid.Empty, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.Avatar.Name));
+                        SendBalance(agent, Guid.Empty, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.Avatar.Name));
 
                         break;
                     }

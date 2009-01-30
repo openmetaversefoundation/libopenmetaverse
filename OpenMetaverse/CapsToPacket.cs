@@ -28,6 +28,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Mono.Simd;
+using Mono.Simd.Math;
 using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse.Packets
@@ -218,23 +220,23 @@ namespace OpenMetaverse.Packets
                     {
                         field.SetValue(block, blockData[field.Name].AsInteger());
                     }
-                    else if (fieldType == typeof(UUID))
+                    else if (fieldType == typeof(Guid))
                     {
-                        field.SetValue(block, blockData[field.Name].AsUUID());
+                        field.SetValue(block, blockData[field.Name].AsGuid());
                     }
-                    else if (fieldType == typeof(Vector3))
+                    else if (fieldType == typeof(Vector3f))
                     {
-                        Vector3 vec = ((OSDArray)blockData[field.Name]).AsVector3();
+                        Vector3f vec = ((OSDArray)blockData[field.Name]).AsVector3();
                         field.SetValue(block, vec);
                     }
-                    else if (fieldType == typeof(Vector4))
+                    else if (fieldType == typeof(Vector4f))
                     {
-                        Vector4 vec = ((OSDArray)blockData[field.Name]).AsVector4();
+                        Vector4f vec = ((OSDArray)blockData[field.Name]).AsVector4();
                         field.SetValue(block, vec);
                     }
-                    else if (fieldType == typeof(Quaternion))
+                    else if (fieldType == typeof(Quaternionf))
                     {
-                        Quaternion quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
+                        Quaternionf quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
                         field.SetValue(block, quat);
                     }
                 }

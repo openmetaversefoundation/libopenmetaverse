@@ -87,18 +87,18 @@ namespace OpenMetaverse.GUI
             _Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
         }
 
-        private void RefreshGroups(Dictionary<UUID, Group> groups)
+        private void RefreshGroups(Dictionary<Guid, Group> groups)
         {
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RefreshGroups(groups); });
             else
             {
                 this.Items.Clear();
-                foreach (KeyValuePair<UUID, Group> group in groups)
+                foreach (KeyValuePair<Guid, Group> group in groups)
                     this.Items.Add(group.Key.ToString(), group.Value.Name, null).Tag = group.Value;
             }
         }
 
-        private void Groups_OnCurrentGroups(Dictionary<UUID, Group> groups)
+        private void Groups_OnCurrentGroups(Dictionary<Guid, Group> groups)
         {
             RefreshGroups(groups);
         }

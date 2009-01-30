@@ -9,27 +9,27 @@ namespace OpenMetaverse.TestClient
 {
     public class DumpOutfitCommand : Command
     {
-        List<UUID> OutfitAssets = new List<UUID>();
+        List<Guid> OutfitAssets = new List<Guid>();
         AssetManager.ImageReceivedCallback ImageReceivedHandler;
 
         public DumpOutfitCommand(TestClient testClient)
         {
             Name = "dumpoutfit";
-            Description = "Dumps all of the textures from an avatars outfit to the hard drive. Usage: dumpoutfit [avatar-uuid]";
+            Description = "Dumps all of the textures from an avatars outfit to the hard drive. Usage: dumpoutfit [avatar-Guid]";
             Category = CommandCategory.Inventory;
 
             ImageReceivedHandler = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
-                return "Usage: dumpoutfit [avatar-uuid]";
+                return "Usage: dumpoutfit [avatar-Guid]";
 
-            UUID target;
+            Guid target;
 
-            if (!UUID.TryParse(args[0], out target))
-                return "Usage: dumpoutfit [avatar-uuid]";
+            if (!GuidExtensions.TryParse(args[0], out target))
+                return "Usage: dumpoutfit [avatar-Guid]";
 
             lock (Client.Network.Simulators)
             {

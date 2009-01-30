@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using Mono.Simd.Math;
 using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
@@ -234,7 +235,7 @@ namespace OpenMetaverse
         /// is attached to</summary>
         public GridClient Client;
         /// <summary></summary>
-        public UUID ID = UUID.Zero;
+        public Guid ID = Guid.Empty;
         /// <summary>The capabilities for this simulator</summary>
         public Caps Caps = null;
         /// <summary></summary>
@@ -267,23 +268,23 @@ namespace OpenMetaverse
         /// <summary></summary>
         public float WaterHeight;
         /// <summary></summary>
-        public UUID SimOwner = UUID.Zero;
+        public Guid SimOwner = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainBase0 = UUID.Zero;
+        public Guid TerrainBase0 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainBase1 = UUID.Zero;
+        public Guid TerrainBase1 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainBase2 = UUID.Zero;
+        public Guid TerrainBase2 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainBase3 = UUID.Zero;
+        public Guid TerrainBase3 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainDetail0 = UUID.Zero;
+        public Guid TerrainDetail0 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainDetail1 = UUID.Zero;
+        public Guid TerrainDetail1 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainDetail2 = UUID.Zero;
+        public Guid TerrainDetail2 = Guid.Empty;
         /// <summary></summary>
-        public UUID TerrainDetail3 = UUID.Zero;
+        public Guid TerrainDetail3 = Guid.Empty;
         /// <summary></summary>
         public bool IsEstateManager;
         /// <summary></summary>
@@ -365,7 +366,7 @@ namespace OpenMetaverse
         /// not</summary>
         public bool Connected { get { return connected; } }
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        public List<Vector3> AvatarPositions { get { return avatarPositions; } }
+        public List<Vector3f> AvatarPositions { get { return avatarPositions; } }
         /// <summary>AvatarPositions index representing your avatar</summary>
         public int PositionIndexYou { get { return positionIndexYou; } }
         /// <summary>AvatarPositions index representing TrackAgent target</summary>
@@ -383,7 +384,7 @@ namespace OpenMetaverse
         /// to the property Connected</summary>
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        internal List<Vector3> avatarPositions = new List<Vector3>();
+        internal List<Vector3f> avatarPositions = new List<Vector3f>();
         /// <summary>AvatarPositions index representing your avatar</summary>
         internal int positionIndexYou = -1;
         /// <summary>AvatarPositions index representing TrackAgent target</summary>

@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Other;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
 
@@ -27,7 +27,7 @@ namespace OpenMetaverse.TestClient
                         delegate(Avatar av)
                         {
                             result.AppendLine();
-                            result.AppendFormat("{0} (Group: {1}, Location: {2}, UUID: {3})",
+                            result.AppendFormat("{0} (Group: {1}, Location: {2}, Guid: {3})",
                                 av.Name, av.GroupName, av.Position, av.ID.ToString());
                         }
                     );

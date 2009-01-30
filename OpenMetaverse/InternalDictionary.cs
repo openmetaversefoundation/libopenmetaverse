@@ -73,16 +73,16 @@ namespace OpenMetaverse
         /// to copy initial values from</param>
         /// <example>
         /// <code>
-        /// // initialize a new InternalDictionary named testAvName with a UUID as the key and an string as the value.
+        /// // initialize a new InternalDictionary named testAvName with a Guid as the key and an string as the value.
         /// // populates with copied values from example KeyNameCache Dictionary.
         /// 
         /// // create source dictionary
-        /// Dictionary&lt;UUID, string&gt; KeyNameCache = new Dictionary&lt;UUID, string&gt;();
+        /// Dictionary&lt;Guid, string&gt; KeyNameCache = new Dictionary&lt;Guid, string&gt;();
         /// KeyNameCache.Add("8300f94a-7970-7810-cf2c-fc9aa6cdda24", "Jack Avatar");
         /// KeyNameCache.Add("27ba1e40-13f7-0708-3e98-5819d780bd62", "Jill Avatar");
         /// 
         /// // Initialize new dictionary.
-        /// public InternalDictionary&lt;UUID, string&gt; testAvName = new InternalDictionary&lt;UUID, string&gt;(KeyNameCache);
+        /// public InternalDictionary&lt;Guid, string&gt; testAvName = new InternalDictionary&lt;Guid, string&gt;(KeyNameCache);
         /// </code>
         /// </example>
         public InternalDictionary(IDictionary<TKey, TValue> dictionary)

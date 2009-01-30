@@ -12,10 +12,10 @@ namespace Simian.Extensions
         Simian server;
         /// <summary>Dictionary of inventories for each agent. Each inventory
         /// is also a dictionary itself</summary>
-        Dictionary<UUID, Dictionary<UUID, InventoryObject>> Inventory =
-            new Dictionary<UUID, Dictionary<UUID, InventoryObject>>();
+        Dictionary<Guid, Dictionary<Guid, InventoryObject>> Inventory =
+            new Dictionary<Guid, Dictionary<Guid, InventoryObject>>();
         /// <summary>Global shared inventory for all agent</summary>
-        Dictionary<UUID, InventoryObject> Library = new Dictionary<UUID, InventoryObject>();
+        Dictionary<Guid, InventoryObject> Library = new Dictionary<Guid, InventoryObject>();
 
         public InventoryManager()
         {
@@ -40,15 +40,15 @@ namespace Simian.Extensions
         {
         }
 
-        Dictionary<UUID, InventoryObject> GetAgentInventory(UUID agentID)
+        Dictionary<Guid, InventoryObject> GetAgentInventory(Guid agentID)
         {
-            Dictionary<UUID, InventoryObject> agentInventory;
+            Dictionary<Guid, InventoryObject> agentInventory;
             if (!Inventory.TryGetValue(agentID, out agentInventory))
             {
                 Logger.Log("Creating an empty inventory store for agent " + agentID.ToString(),
                     Helpers.LogLevel.Info);
 
-                agentInventory = new Dictionary<UUID, InventoryObject>();
+                agentInventory = new Dictionary<Guid, InventoryObject>();
                 lock (Inventory)
                     Inventory[agentID] = agentInventory;
             }
@@ -59,13 +59,13 @@ namespace Simian.Extensions
         void CreateInventoryItemHandler(Packet packet, Agent agent)
         {
             CreateInventoryItemPacket create = (CreateInventoryItemPacket)packet;
-            UUID assetID;
-            if (create.InventoryBlock.TransactionID != UUID.Zero)
-                assetID = UUID.Combine(create.InventoryBlock.TransactionID, agent.SecureSessionID);
+            Guid assetID;
+            if (create.InventoryBlock.TransactionID != Guid.Empty)
+                assetID = Guid.Combine(create.InventoryBlock.TransactionID, agent.SecureSessionID);
             else
-                assetID = UUID.Random();
+                assetID = Guid.NewGuid();
 
-            UUID parentID = (create.InventoryBlock.FolderID != UUID.Zero) ? create.InventoryBlock.FolderID : agent.InventoryRoot;
+            Guid parentID = (create.InventoryBlock.FolderID != Guid.Empty) ? create.InventoryBlock.FolderID : agent.InventoryRoot;
             AssetType assetType = (AssetType)create.InventoryBlock.Type;
 
             switch (assetType)
@@ -75,7 +75,7 @@ namespace Simian.Extensions
                     break;
             }
 
-            if (parentID == UUID.Zero)
+            if (parentID == Guid.Empty)
                 parentID = agent.InventoryRoot;
 
             // Create the inventory item
@@ -89,8 +89,8 @@ namespace Simian.Extensions
         {
             CreateInventoryFolderPacket create = (CreateInventoryFolderPacket)packet;
 
-            UUID folderID = create.FolderData.FolderID;
-            if (folderID == UUID.Zero)
+            Guid folderID = create.FolderData.FolderID;
+            if (folderID == Guid.Empty)
                 folderID = agent.InventoryRoot;
 
             CreateFolder(agent.AgentID, folderID, Utils.BytesToString(create.FolderData.Name),
@@ -106,7 +106,7 @@ namespace Simian.Extensions
             for (int i = 0; i < update.InventoryData.Length; i++)
             {
                 UpdateInventoryItemPacket.InventoryDataBlock block = update.InventoryData[i];
-                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+                Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
                 InventoryObject obj;
                 if (agentInventory.TryGetValue(block.ItemID, out obj) && obj is InventoryItem)
@@ -138,7 +138,7 @@ namespace Simian.Extensions
                     item.SalePrice = block.SalePrice;
                     item.SaleType = (SaleType)block.SaleType;
                     item.AssetType = (AssetType)block.Type;
-                    item.AssetID = UUID.Combine(block.TransactionID, agent.SecureSessionID);
+                    item.AssetID = Guid.Combine(block.TransactionID, agent.SecureSessionID);
 
                     Logger.DebugLog(String.Format(
                         "UpdateInventoryItem: CallbackID: {0}, TransactionID: {1}",
@@ -162,7 +162,7 @@ namespace Simian.Extensions
             bool sendItems = fetch.InventoryData.FetchItems;
             InventorySortOrder order = (InventorySortOrder)fetch.InventoryData.SortOrder;
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
             // TODO: Use OwnerID
             // TODO: Do we need to obey InventorySortOrder?
@@ -348,8 +348,8 @@ namespace Simian.Extensions
 
             for (int i = 0; i < fetch.InventoryData.Length; i++)
             {
-                UUID itemID = fetch.InventoryData[i].ItemID;
-                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+                Guid itemID = fetch.InventoryData[i].ItemID;
+                Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
                 blocks[i] = new FetchInventoryReplyPacket.InventoryDataBlock();
                 blocks[i].ItemID = itemID;
@@ -419,7 +419,7 @@ namespace Simian.Extensions
                 // TODO: This allows someone to copy objects from another
                 // agent's inventory. Should we allow that, or do any 
                 // permission checks?
-                Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(block.OldAgentID);
+                Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(block.OldAgentID);
 
                 // Get the original object
                 InventoryObject obj;
@@ -438,7 +438,7 @@ namespace Simian.Extensions
                         // Create the copy
                         CreateItem(agent.AgentID, newName, item.Description, item.InventoryType, item.AssetType,
                             item.AssetID, folderObj.ID, item.Permissions.OwnerMask, item.Permissions.NextOwnerMask,
-                            agent.AgentID, item.CreatorID, UUID.Zero, block.CallbackID, true);
+                            agent.AgentID, item.CreatorID, Guid.Empty, block.CallbackID, true);
                     }
                     else
                     {
@@ -460,16 +460,16 @@ namespace Simian.Extensions
             MoveInventoryItemPacket move = (MoveInventoryItemPacket)packet;
             // TODO: What is move.AgentData.Stamp for?
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
             for (int i = 0; i < move.InventoryData.Length; i++)
             {
                 MoveInventoryItemPacket.InventoryDataBlock block = move.InventoryData[i];
-                UUID newFolderID = block.FolderID;
-                if (newFolderID == UUID.Zero)
+                Guid newFolderID = block.FolderID;
+                if (newFolderID == Guid.Empty)
                     newFolderID = agent.InventoryRoot;
                 MoveInventory(agent, agentInventory, block.ItemID, newFolderID, Utils.BytesToString(block.NewName),
-                    UUID.Zero, 0);
+                    Guid.Empty, 0);
             }
         }
 
@@ -478,19 +478,19 @@ namespace Simian.Extensions
             MoveInventoryFolderPacket move = (MoveInventoryFolderPacket)packet;
             // TODO: What is move.AgentData.Stamp for?
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
             for (int i = 0; i < move.InventoryData.Length; i++)
             {
                 MoveInventoryFolderPacket.InventoryDataBlock block = move.InventoryData[i];
-                UUID newFolderID = block.ParentID;
-                if (newFolderID == UUID.Zero)
+                Guid newFolderID = block.ParentID;
+                if (newFolderID == Guid.Empty)
                     newFolderID = agent.InventoryRoot;
-                MoveInventory(agent, agentInventory, block.FolderID, newFolderID, null, UUID.Zero, 0);
+                MoveInventory(agent, agentInventory, block.FolderID, newFolderID, null, Guid.Empty, 0);
             }
         }
 
-        void SendBulkUpdate(Agent agent, InventoryObject obj, UUID transactionID, uint callbackID)
+        void SendBulkUpdate(Agent agent, InventoryObject obj, Guid transactionID, uint callbackID)
         {
             BulkUpdateInventoryPacket update = new BulkUpdateInventoryPacket();
             update.AgentData.AgentID = agent.AgentID;
@@ -544,8 +544,8 @@ namespace Simian.Extensions
             server.UDP.SendPacket(agent.AgentID, update, PacketCategory.Inventory);
         }
 
-        void MoveInventory(Agent agent, Dictionary<UUID, InventoryObject> agentInventory, UUID objectID,
-            UUID newFolderID, string newName, UUID transactionID, uint callbackID)
+        void MoveInventory(Agent agent, Dictionary<Guid, InventoryObject> agentInventory, Guid objectID,
+            Guid newFolderID, string newName, Guid transactionID, uint callbackID)
         {
             InventoryObject obj;
             if (agentInventory.TryGetValue(objectID, out obj))
@@ -593,7 +593,7 @@ namespace Simian.Extensions
         {
             PurgeInventoryDescendentsPacket purge = (PurgeInventoryDescendentsPacket)packet;
 
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agent.AgentID);
 
             InventoryObject obj;
             if (agentInventory.TryGetValue(purge.InventoryData.FolderID, out obj) && obj is InventoryFolder)
@@ -608,7 +608,7 @@ namespace Simian.Extensions
             }
         }
 
-        void PurgeFolder(Dictionary<UUID, InventoryObject> inventory, InventoryFolder folder)
+        void PurgeFolder(Dictionary<Guid, InventoryObject> inventory, InventoryFolder folder)
         {
             folder.Children.ForEach(
                 delegate(InventoryObject child)
@@ -627,9 +627,9 @@ namespace Simian.Extensions
                 folder.Children.Dictionary.Clear();
         }
 
-        public bool CreateRootFolder(UUID agentID, UUID folderID, string name, UUID ownerID)
+        public bool CreateRootFolder(Guid agentID, Guid folderID, string name, Guid ownerID)
         {
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
             lock (agentInventory)
             {
@@ -638,7 +638,7 @@ namespace Simian.Extensions
                     InventoryFolder folder = new InventoryFolder();
                     folder.Name = name;
                     folder.OwnerID = agentID;
-                    folder.ParentID = UUID.Zero;
+                    folder.ParentID = Guid.Empty;
                     folder.Parent = null;
                     folder.PreferredType = AssetType.Folder;
                     folder.ID = folderID;
@@ -660,10 +660,10 @@ namespace Simian.Extensions
             return false;
         }
 
-        public bool CreateFolder(UUID agentID, UUID folderID, string name, AssetType preferredType,
-            UUID parentID, UUID ownerID)
+        public bool CreateFolder(Guid agentID, Guid folderID, string name, AssetType preferredType,
+            Guid parentID, Guid ownerID)
         {
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
             lock (agentInventory)
             {
@@ -709,11 +709,11 @@ namespace Simian.Extensions
             return false;
         }
 
-        public UUID CreateItem(UUID agentID, string name, string description, InventoryType invType, AssetType type,
-            UUID assetID, UUID parentID, PermissionMask ownerMask, PermissionMask nextOwnerMask, UUID ownerID,
-            UUID creatorID, UUID transactionID, uint callbackID, bool sendPacket)
+        public Guid CreateItem(Guid agentID, string name, string description, InventoryType invType, AssetType type,
+            Guid assetID, Guid parentID, PermissionMask ownerMask, PermissionMask nextOwnerMask, Guid ownerID,
+            Guid creatorID, Guid transactionID, uint callbackID, bool sendPacket)
         {
-            Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agentID);
+            Dictionary<Guid, InventoryObject> agentInventory = GetAgentInventory(agentID);
 
             lock (agentInventory)
             {
@@ -724,7 +724,7 @@ namespace Simian.Extensions
 
                     // Create an item
                     InventoryItem item = new InventoryItem();
-                    item.ID = UUID.Random();
+                    item.ID = Guid.NewGuid();
                     item.InventoryType = invType;
                     item.ParentID = parentID;
                     item.Parent = parentFolder;
@@ -755,10 +755,10 @@ namespace Simian.Extensions
                     UpdateCreateInventoryItemPacket update = new UpdateCreateInventoryItemPacket();
                     update.AgentData.AgentID = agentID;
                     update.AgentData.SimApproved = true;
-                    if (transactionID != UUID.Zero)
+                    if (transactionID != Guid.Empty)
                         update.AgentData.TransactionID = transactionID;
                     else
-                        update.AgentData.TransactionID = UUID.Random();
+                        update.AgentData.TransactionID = Guid.NewGuid();
                     update.InventoryData = new UpdateCreateInventoryItemPacket.InventoryDataBlock[1];
                     update.InventoryData[0] = new UpdateCreateInventoryItemPacket.InventoryDataBlock();
                     update.InventoryData[0].AssetID = assetID;
@@ -795,14 +795,14 @@ namespace Simian.Extensions
                         "Cannot create new inventory item, folder {0} does not exist",
                         parentID), Helpers.LogLevel.Warning);
 
-                    return UUID.Zero;
+                    return Guid.Empty;
                 }
             }
         }
 
-        public bool TryGetInventory(UUID agentID, UUID objectID, out InventoryObject obj)
+        public bool TryGetInventory(Guid agentID, Guid objectID, out InventoryObject obj)
         {
-            Dictionary<UUID, InventoryObject> inventory;
+            Dictionary<Guid, InventoryObject> inventory;
 
             if (Inventory.TryGetValue(agentID, out inventory))
             {
@@ -814,9 +814,9 @@ namespace Simian.Extensions
             return false;
         }
 
-        public OpenMetaverse.InventoryFolder[] CreateInventorySkeleton(UUID agentID)
+        public OpenMetaverse.InventoryFolder[] CreateInventorySkeleton(Guid agentID)
         {
-            Dictionary<UUID, InventoryObject> inventory;
+            Dictionary<Guid, InventoryObject> inventory;
             if (Inventory.TryGetValue(agentID, out inventory))
             {
                 List<InventoryFolder> folderList = new List<InventoryFolder>();
@@ -840,7 +840,7 @@ namespace Simian.Extensions
                     folders[i].DescendentCount = folder.Children.Count;
                     folders[i].Name = folder.Name;
                     folders[i].OwnerID = folder.OwnerID;
-                    folders[i].ParentUUID = folder.ParentID;
+                    folders[i].ParentGuid = folder.ParentID;
                     folders[i].PreferredType = folder.PreferredType;
                     folders[i].Version = folder.Version;
                 }
@@ -860,15 +860,15 @@ namespace Simian.Extensions
         OSDMap SerializeItem(InventoryItem item)
         {
             OSDMap itemMap = new OSDMap(16);
-            itemMap.Add("ID", OSD.FromUUID(item.ID));
-            itemMap.Add("ParentID", OSD.FromUUID(item.ParentID));
+            itemMap.Add("ID", OSD.FromGuid(item.ID));
+            itemMap.Add("ParentID", OSD.FromGuid(item.ParentID));
             itemMap.Add("Name", OSD.FromString(item.Name));
-            itemMap.Add("OwnerID", OSD.FromUUID(item.OwnerID));
-            itemMap.Add("AssetID", OSD.FromUUID(item.AssetID));
+            itemMap.Add("OwnerID", OSD.FromGuid(item.OwnerID));
+            itemMap.Add("AssetID", OSD.FromGuid(item.AssetID));
             itemMap.Add("AssetType", OSD.FromInteger((sbyte)item.AssetType));
             itemMap.Add("InventoryType", OSD.FromInteger((sbyte)item.InventoryType));
-            itemMap.Add("CreatorID", OSD.FromUUID(item.CreatorID));
-            itemMap.Add("GroupID", OSD.FromUUID(item.GroupID));
+            itemMap.Add("CreatorID", OSD.FromGuid(item.CreatorID));
+            itemMap.Add("GroupID", OSD.FromGuid(item.GroupID));
             itemMap.Add("Description", OSD.FromString(item.Description));
             itemMap.Add("GroupOwned", OSD.FromBoolean(item.GroupOwned));
             itemMap.Add("Permissions", item.Permissions.GetOSD());
@@ -882,20 +882,20 @@ namespace Simian.Extensions
         OSDMap SerializeFolder(InventoryFolder folder)
         {
             OSDMap folderMap = new OSDMap(6);
-            folderMap.Add("ID", OSD.FromUUID(folder.ID));
-            folderMap.Add("ParentID", OSD.FromUUID(folder.ParentID));
+            folderMap.Add("ID", OSD.FromGuid(folder.ID));
+            folderMap.Add("ParentID", OSD.FromGuid(folder.ParentID));
             folderMap.Add("Name", OSD.FromString(folder.Name));
-            folderMap.Add("OwnerID", OSD.FromUUID(folder.OwnerID));
+            folderMap.Add("OwnerID", OSD.FromGuid(folder.OwnerID));
             folderMap.Add("PreferredType", OSD.FromInteger((sbyte)folder.PreferredType));
             folderMap.Add("Version", OSD.FromInteger(folder.Version));
             return folderMap;
         }
 
-        OSDMap SerializeInventory(Dictionary<UUID, InventoryObject> agentInventory)
+        OSDMap SerializeInventory(Dictionary<Guid, InventoryObject> agentInventory)
         {
             OSDMap map = new OSDMap(agentInventory.Count);
 
-            foreach (KeyValuePair<UUID, InventoryObject> kvp in agentInventory)
+            foreach (KeyValuePair<Guid, InventoryObject> kvp in agentInventory)
             {
                 OSD value;
                 if (kvp.Value is InventoryItem)
@@ -916,7 +916,7 @@ namespace Simian.Extensions
 
             lock (Inventory)
             {
-                foreach (KeyValuePair<UUID, Dictionary<UUID, InventoryObject>> kvp in Inventory)
+                foreach (KeyValuePair<Guid, Dictionary<Guid, InventoryObject>> kvp in Inventory)
                 {
                     map.Add(kvp.Key.ToString(), SerializeInventory(kvp.Value));
                     itemCount += kvp.Value.Count;
@@ -932,15 +932,15 @@ namespace Simian.Extensions
         InventoryItem DeserializeItem(OSDMap itemMap)
         {
             InventoryItem item = new InventoryItem();
-            item.ID = itemMap["ID"].AsUUID();
-            item.ParentID = itemMap["ParentID"].AsUUID();
+            item.ID = itemMap["ID"].AsGuid();
+            item.ParentID = itemMap["ParentID"].AsGuid();
             item.Name = itemMap["Name"].AsString();
-            item.OwnerID = itemMap["OwnerID"].AsUUID();
-            item.AssetID = itemMap["AssetID"].AsUUID();
+            item.OwnerID = itemMap["OwnerID"].AsGuid();
+            item.AssetID = itemMap["AssetID"].AsGuid();
             item.AssetType = (AssetType)itemMap["AssetType"].AsInteger();
             item.InventoryType = (InventoryType)itemMap["InventoryType"].AsInteger();
-            item.CreatorID = itemMap["CreatorID"].AsUUID();
-            item.GroupID = itemMap["GroupID"].AsUUID();
+            item.CreatorID = itemMap["CreatorID"].AsGuid();
+            item.GroupID = itemMap["GroupID"].AsGuid();
             item.Description = itemMap["Description"].AsString();
             item.GroupOwned = itemMap["GroupOwned"].AsBoolean();
             item.Permissions = Permissions.FromOSD(itemMap["Permissions"]);
@@ -954,22 +954,22 @@ namespace Simian.Extensions
         InventoryFolder DeserializeFolder(OSDMap folderMap)
         {
             InventoryFolder folder = new InventoryFolder();
-            folder.ID = folderMap["ID"].AsUUID();
-            folder.ParentID = folderMap["ParentID"].AsUUID();
+            folder.ID = folderMap["ID"].AsGuid();
+            folder.ParentID = folderMap["ParentID"].AsGuid();
             folder.Name = folderMap["Name"].AsString();
-            folder.OwnerID = folderMap["OwnerID"].AsUUID();
+            folder.OwnerID = folderMap["OwnerID"].AsGuid();
             folder.PreferredType = (AssetType)folderMap["PreferredType"].AsInteger();
             folder.Version = folderMap["Version"].AsInteger();
             return folder;
         }
 
-        Dictionary<UUID, InventoryObject> DeserializeInventory(OSDMap map)
+        Dictionary<Guid, InventoryObject> DeserializeInventory(OSDMap map)
         {
-            Dictionary<UUID, InventoryObject> inventory = new Dictionary<UUID, InventoryObject>();
+            Dictionary<Guid, InventoryObject> inventory = new Dictionary<Guid, InventoryObject>();
 
             foreach (KeyValuePair<string, OSD> kvp in map)
             {
-                UUID objectID = (UUID)kvp.Key;
+                Guid objectID = (Guid)kvp.Key;
                 OSDMap objectMap = (OSDMap)kvp.Value;
                 InventoryObject obj;
 
@@ -995,19 +995,19 @@ namespace Simian.Extensions
 
                 foreach (KeyValuePair<string, OSD> kvp in map)
                 {
-                    UUID agentID = (UUID)kvp.Key;
-                    Dictionary<UUID, InventoryObject> agentInventory = DeserializeInventory((OSDMap)kvp.Value);
+                    Guid agentID = (Guid)kvp.Key;
+                    Dictionary<Guid, InventoryObject> agentInventory = DeserializeInventory((OSDMap)kvp.Value);
                     itemCount += agentInventory.Count;
 
                     Inventory[agentID] = agentInventory;
                 }
 
                 // Iterate over the inventory objects and connect them to each other
-                foreach (Dictionary<UUID, InventoryObject> inventory in Inventory.Values)
+                foreach (Dictionary<Guid, InventoryObject> inventory in Inventory.Values)
                 {
                     foreach (InventoryObject obj in inventory.Values)
                     {
-                        if (obj.ParentID != UUID.Zero)
+                        if (obj.ParentID != Guid.Empty)
                         {
                             InventoryObject parentObj;
                             if (inventory.TryGetValue(obj.ParentID, out parentObj) && parentObj is InventoryFolder)

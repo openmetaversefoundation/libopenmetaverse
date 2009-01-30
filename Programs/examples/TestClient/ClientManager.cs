@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
         public string StartLocation;
         public bool GroupCommands;
         public string MasterName;
-        public UUID MasterKey;
+        public Guid MasterKey;
         public string URI;
     }
 
@@ -44,7 +44,7 @@ namespace OpenMetaverse.TestClient
 
     public class ClientManager
     {
-        public Dictionary<UUID, TestClient> Clients = new Dictionary<UUID, TestClient>();
+        public Dictionary<Guid, TestClient> Clients = new Dictionary<Guid, TestClient>();
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
@@ -93,7 +93,7 @@ namespace OpenMetaverse.TestClient
             client.GroupCommands = account.GroupCommands;
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
-            client.AllowObjectMaster = client.MasterKey != UUID.Zero; // Require UUID for object master.
+            client.AllowObjectMaster = client.MasterKey != Guid.Empty; // Require Guid for object master.
 
             LoginParams loginParams = client.Network.DefaultLoginParams(
                     account.FirstName, account.LastName, account.Password, "TestClient", version);
@@ -108,11 +108,11 @@ namespace OpenMetaverse.TestClient
             {
                 Clients[client.Self.AgentID] = client;
 
-                if (client.MasterKey == UUID.Zero)
+                if (client.MasterKey == Guid.Empty)
                 {
-                    UUID query = UUID.Random();
+                    Guid query = Guid.NewGuid();
                     DirectoryManager.DirPeopleReplyCallback peopleDirCallback =
-                        delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                        delegate(Guid queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
                         {
                             if (queryID == query)
                             {
@@ -174,7 +174,7 @@ namespace OpenMetaverse.TestClient
             {
                 PrintPrompt();
                 string input = Console.ReadLine();
-                DoCommandAll(input, UUID.Zero);
+                DoCommandAll(input, Guid.Empty);
             }
 
             foreach (GridClient client in Clients.Values)
@@ -202,7 +202,7 @@ namespace OpenMetaverse.TestClient
         /// <param name="cmd"></param>
         /// <param name="fromAgentID"></param>
         /// <param name="imSessionID"></param>
-        public void DoCommandAll(string cmd, UUID fromAgentID)
+        public void DoCommandAll(string cmd, Guid fromAgentID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
             if (tokens.Length == 0)
@@ -231,7 +231,7 @@ namespace OpenMetaverse.TestClient
                 {
                     foreach (TestClient client in Clients.Values)
                     {
-                        Console.WriteLine(client.Commands["help"].Execute(args, UUID.Zero));
+                        Console.WriteLine(client.Commands["help"].Execute(args, Guid.Empty));
                         break;
                     }
                 }
@@ -244,12 +244,12 @@ namespace OpenMetaverse.TestClient
             {
                 // No reason to pass this to all bots, and we also want to allow it when there are no bots
                 ScriptCommand command = new ScriptCommand(null);
-                Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+                Logger.Log(command.Execute(args, Guid.Empty), Helpers.LogLevel.Info);
             }
             else
             {
                 // Make an immutable copy of the Clients dictionary to safely iterate over
-                Dictionary<UUID, TestClient> clientsCopy = new Dictionary<UUID, TestClient>(Clients);
+                Dictionary<Guid, TestClient> clientsCopy = new Dictionary<Guid, TestClient>(Clients);
 
                 int completed = 0;
 

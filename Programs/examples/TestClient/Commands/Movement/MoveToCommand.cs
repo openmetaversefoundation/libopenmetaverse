@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             Category = CommandCategory.Movement;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 3)
                 return "Usage: moveto x y z";

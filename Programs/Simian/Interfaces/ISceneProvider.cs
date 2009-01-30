@@ -45,6 +45,6 @@ namespace Simian
         void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
 
         bool TryGetObject(uint localID, out SimulationObject obj);
-        bool TryGetObject(UUID id, out SimulationObject obj);
+        bool TryGetObject(Guid id, out SimulationObject obj);
     }
 }

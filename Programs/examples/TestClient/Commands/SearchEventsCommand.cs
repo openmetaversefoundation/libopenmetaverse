@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient.Commands
             Category = CommandCategory.Other;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: searchevents [search text]";
@@ -28,7 +28,7 @@ namespace OpenMetaverse.TestClient.Commands
             waitQuery.Reset();
 
             Client.Directory.OnEventsReply += new DirectoryManager.EventReplyCallback(Directory_OnEventsReply);
-            Client.Directory.StartEventsSearch(searchText, true, "u", 0, DirectoryManager.EventCategories.All, UUID.Random());
+            Client.Directory.StartEventsSearch(searchText, true, "u", 0, DirectoryManager.EventCategories.All, Guid.NewGuid());
             string result;
             if (waitQuery.WaitOne(20000, false) && Client.Network.Connected)
             {
@@ -42,7 +42,7 @@ namespace OpenMetaverse.TestClient.Commands
             return result;
         }
 
-        void Directory_OnEventsReply(UUID queryID, List<DirectoryManager.EventsSearchData> matchedEvents)
+        void Directory_OnEventsReply(Guid queryID, List<DirectoryManager.EventsSearchData> matchedEvents)
         {
             if (matchedEvents[0].ID == 0 && matchedEvents.Count == 1)
             {

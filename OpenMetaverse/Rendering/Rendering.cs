@@ -28,6 +28,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using Mono.Simd.Math;
 
 // The common elements shared between rendering plugins are defined here
 
@@ -78,9 +79,9 @@ namespace OpenMetaverse.Rendering
 
     public struct Vertex
     {
-        public Vector3 Position;
-        public Vector3 Normal;
-        public Vector3 Binormal;
+        public Vector3f Position;
+        public Vector3f Normal;
+        public Vector3f Binormal;
         public Vector2 TexCoord;
 
         public override string ToString()
@@ -111,15 +112,15 @@ namespace OpenMetaverse.Rendering
         public bool Open;
         public bool Concave;
         public int TotalOutsidePoints;
-        public List<Vector3> Positions;
+        public List<Vector3f> Positions;
         public List<ProfileFace> Faces;
     }
 
     public struct PathPoint
     {
-        public Vector3 Position;
+        public Vector3f Position;
         public Vector2 Scale;
-        public Quaternion Rotation;
+        public Quaternionf Rotation;
         public float TexT;
     }
 
@@ -138,9 +139,9 @@ namespace OpenMetaverse.Rendering
         public int NumT;
 
         public int ID;
-        public Vector3 Center;
-        public Vector3 MinExtent;
-        public Vector3 MaxExtent;
+        public Vector3f Center;
+        public Vector3f MinExtent;
+        public Vector3f MaxExtent;
         public List<Vertex> Vertices;
         public List<ushort> Indices;
         public List<int> Edge;

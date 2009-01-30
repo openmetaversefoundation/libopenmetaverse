@@ -11,18 +11,18 @@ namespace OpenMetaverse.TestClient
         public SitOnCommand(TestClient testClient)
         {
             Name = "siton";
-            Description = "Attempt to sit on a particular prim, with specified UUID";
+            Description = "Attempt to sit on a particular prim, with specified Guid";
             Category = CommandCategory.Movement;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
-                return "Usage: siton UUID";
+                return "Usage: siton Guid";
 
-            UUID target;
+            Guid target;
 
-            if (UUID.TryParse(args[0], out target))
+            if (GuidExtensions.TryParse(args[0], out target))
             {
                 Primitive targetPrim = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim)
@@ -40,7 +40,7 @@ namespace OpenMetaverse.TestClient
                 }
             }
 
-            return "Couldn't find a prim to sit on with UUID " + args[0];
+            return "Couldn't find a prim to sit on with Guid " + args[0];
         }
     }
 }

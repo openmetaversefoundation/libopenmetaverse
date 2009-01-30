@@ -20,7 +20,7 @@ namespace OpenMetaverse.TestClient
             testClient.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
             // Construct the target name from the passed arguments
 			string target = String.Empty;
@@ -75,7 +75,7 @@ namespace OpenMetaverse.TestClient
             return false;
         }
 
-        bool Follow(UUID id)
+        bool Follow(Guid id)
         {
             lock (Client.Network.Simulators)
             {

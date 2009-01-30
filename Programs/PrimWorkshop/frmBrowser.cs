@@ -28,7 +28,7 @@ namespace PrimWorkshop
         Camera Camera;
         Dictionary<uint, Primitive> RenderFoliageList = new Dictionary<uint, Primitive>();
         Dictionary<uint, RenderablePrim> RenderPrimList = new Dictionary<uint, RenderablePrim>();
-        Dictionary<UUID, GlacialComponents.Controls.GLItem> DownloadList = new Dictionary<UUID, GlacialComponents.Controls.GLItem>();
+        Dictionary<Guid, GlacialComponents.Controls.GLItem> DownloadList = new Dictionary<Guid, GlacialComponents.Controls.GLItem>();
         EventHandler IdleEvent;
 
         System.Timers.Timer ProgressTimer;
@@ -36,7 +36,7 @@ namespace PrimWorkshop
 
         // Textures
         TexturePipeline TextureDownloader;
-        Dictionary<UUID, TextureInfo> Textures = new Dictionary<UUID, TextureInfo>();
+        Dictionary<Guid, TextureInfo> Textures = new Dictionary<Guid, TextureInfo>();
 
         // Terrain
         float MaxHeight = 0.1f;
@@ -329,7 +329,7 @@ namespace PrimWorkshop
 
         private bool ExportObjects(List<Primitive> primList, string fileName, out int prims, out int textures, out string error)
         {
-            List<UUID> textureList = new List<UUID>();
+            List<Guid> textureList = new List<Guid>();
             prims = 0;
             textures = 0;
             
@@ -351,7 +351,7 @@ namespace PrimWorkshop
                     for (int i = 0; i < prim.Textures.FaceTextures.Length; i++)
                     {
                         Primitive.TextureEntryFace face = prim.Textures.FaceTextures[i];
-                        if (face != null && face.TextureID != UUID.Zero && face.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
+                        if (face != null && face.TextureID != Guid.Empty && face.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                         {
                             if (!textureList.Contains(face.TextureID))
                                 textureList.Add(face.TextureID);
@@ -360,7 +360,7 @@ namespace PrimWorkshop
                 }
 
                 // Copy all of relevant textures from the cache to the temp directory
-                foreach (UUID texture in textureList)
+                foreach (Guid texture in textureList)
                 {
                     string tempFileName = Client.Assets.Cache.ImageFileName(texture);
 
@@ -962,7 +962,7 @@ namespace PrimWorkshop
                 }
 
                 // Texture for this face
-                if (teFace.TextureID != UUID.Zero &&
+                if (teFace.TextureID != Guid.Empty &&
                     teFace.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                 { 
                     lock (Textures)
@@ -1322,7 +1322,7 @@ StartRender:
                             else
                             {
                                 if (face.TextureFace.TextureID == Primitive.TextureEntry.WHITE_TEXTURE ||
-                                    face.TextureFace.TextureID == UUID.Zero)
+                                    face.TextureFace.TextureID == Guid.Empty)
                                 {
                                     Gl.glPolygonMode(Gl.GL_FRONT, Gl.GL_FILL);
                                 }
@@ -1401,7 +1401,7 @@ StartRender:
 
         #region Texture Downloading
 
-        private void TextureDownloader_OnDownloadFinished(UUID id, bool success)
+        private void TextureDownloader_OnDownloadFinished(Guid id, bool success)
         {
             bool alpha = false;
             ManagedImage imgData = null;
@@ -1490,7 +1490,7 @@ StartRender:
             }
         }
 
-        private void TextureDownloader_OnDownloadProgress(UUID image, int recieved, int total)
+        private void TextureDownloader_OnDownloadProgress(Guid image, int recieved, int total)
         {
             lock (DownloadList)
             {

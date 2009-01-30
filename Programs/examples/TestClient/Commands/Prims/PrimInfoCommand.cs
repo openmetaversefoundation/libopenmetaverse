@@ -8,18 +8,18 @@ namespace OpenMetaverse.TestClient
         public PrimInfoCommand(TestClient testClient)
         {
             Name = "priminfo";
-            Description = "Dumps information about a specified prim. " + "Usage: priminfo [prim-uuid]";
+            Description = "Dumps information about a specified prim. " + "Usage: priminfo [prim-Guid]";
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
-            UUID primID;
+            Guid primID;
 
             if (args.Length != 1)
-                return "Usage: priminfo [prim-uuid]";
+                return "Usage: priminfo [prim-Guid]";
 
-            if (UUID.TryParse(args[0], out primID))
+            if (GuidExtensions.TryParse(args[0], out primID))
             {
                 Primitive target = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim) { return prim.ID == primID; }
@@ -63,7 +63,7 @@ namespace OpenMetaverse.TestClient
             }
             else
             {
-                return "Usage: priminfo [prim-uuid]";
+                return "Usage: priminfo [prim-Guid]";
             }
         }
     }

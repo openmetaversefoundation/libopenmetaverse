@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Description = "Lists the contents of the current working inventory folder.";
             Category = CommandCategory.Inventory;
         }
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length > 1)
                 return "Usage: ls [-l]";
@@ -38,13 +38,13 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                     // It kinda looks like the output of the unix ls.
                     // starts with 'd' if the inventory is a folder, '-' if not.
                     // 9 character permissions string
-                    // UUID of object
+                    // Guid of object
                     // Name of object
                     if (b is InventoryFolder)
                     {
                         InventoryFolder folder = b as InventoryFolder;
                         displayString += "d--------- ";
-                        displayString += folder.UUID;
+                        displayString += folder.Guid;
                         displayString += " " + folder.Name;
                     }
                     else if (b is InventoryItem)
@@ -54,10 +54,10 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                         displayString += PermMaskString(item.Permissions.OwnerMask);
                         displayString += PermMaskString(item.Permissions.GroupMask);
                         displayString += PermMaskString(item.Permissions.EveryoneMask);
-                        displayString += " " + item.UUID;
+                        displayString += " " + item.Guid;
                         displayString += " " + item.Name;
                         displayString += nl;
-                        displayString += "  AssetID: " + item.AssetUUID;
+                        displayString += "  AssetID: " + item.AssetGuid;
                     }
                 }
                 else

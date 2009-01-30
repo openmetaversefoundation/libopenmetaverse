@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: debug [level] where level is one of None, Debug, Error, Info, Warn";

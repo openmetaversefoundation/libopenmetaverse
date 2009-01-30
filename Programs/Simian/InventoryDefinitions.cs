@@ -26,14 +26,14 @@ namespace Simian
     /// </summary>
     public abstract class InventoryObject
     {
-        /// <summary><seealso cref="OpenMetaverse.UUID"/> of the inventory item</summary>
-        public UUID ID;
-        /// <summary><seealso cref="OpenMetaverse.UUID"/> of the parent folder</summary>
-        public UUID ParentID;
+        /// <summary><seealso cref="OpenMetaverse.Guid"/> of the inventory item</summary>
+        public Guid ID;
+        /// <summary><seealso cref="OpenMetaverse.Guid"/> of the parent folder</summary>
+        public Guid ParentID;
         /// <summary>Item name</summary>
         public string Name = String.Empty;
-        /// <summary>Item owner <seealso cref="OpenMetaverse.UUID"/></summary>
-        public UUID OwnerID;
+        /// <summary>Item owner <seealso cref="OpenMetaverse.Guid"/></summary>
+        public Guid OwnerID;
         /// <summary>Parent folder</summary>
         public InventoryObject Parent;
 
@@ -48,16 +48,16 @@ namespace Simian
     /// </summary>
     public class InventoryItem : InventoryObject
     {
-        /// <summary><seealso cref="OpenMetaverse.UUID"/> of the asset this item points to</summary>
-        public UUID AssetID;
+        /// <summary><seealso cref="OpenMetaverse.Guid"/> of the asset this item points to</summary>
+        public Guid AssetID;
         /// <summary>The type of item from <seealso cref="OpenMetaverse.AssetType"/></summary>
         public AssetType AssetType;
         /// <summary>The type of item from the <seealso cref="OpenMetaverse.InventoryType"/> enum</summary>
         public InventoryType InventoryType;
-        /// <summary>The <seealso cref="OpenMetaverse.UUID"/> of the creator of this item</summary>
-        public UUID CreatorID;
-        /// <summary>The <seealso cref="OpenMetaverse.Group"/>s <seealso cref="OpenMetaverse.UUID"/> this item is set to or owned by</summary>
-        public UUID GroupID;
+        /// <summary>The <seealso cref="OpenMetaverse.Guid"/> of the creator of this item</summary>
+        public Guid CreatorID;
+        /// <summary>The <seealso cref="OpenMetaverse.Group"/>s <seealso cref="OpenMetaverse.Guid"/> this item is set to or owned by</summary>
+        public Guid GroupID;
         /// <summary>A Description of this item</summary>
         public string Description = String.Empty;
         /// <summary>If true, item is owned by a group</summary>
@@ -123,7 +123,7 @@ namespace Simian
         /// <summary>The Version of this folder</summary>
         public int Version;
         /// <summary>Number of child items this folder contains</summary>
-        public InternalDictionary<UUID, InventoryObject> Children = new InternalDictionary<UUID, InventoryObject>();
+        public InternalDictionary<Guid, InventoryObject> Children = new InternalDictionary<Guid, InventoryObject>();
 
         public override int GetHashCode()
         {

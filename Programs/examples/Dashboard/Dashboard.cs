@@ -74,7 +74,7 @@ namespace Dashboard
 
         private void friendsList1_OnFriendDoubleClick(FriendInfo friend)
         {
-            MessageBox.Show(friend.Name + " = " + friend.UUID);
+            MessageBox.Show(friend.Name + " = " + friend.Guid);
         }
 
         private void groupList1_OnGroupDoubleClick(Group group)

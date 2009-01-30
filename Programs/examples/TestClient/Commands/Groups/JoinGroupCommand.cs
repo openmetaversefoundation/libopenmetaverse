@@ -10,8 +10,8 @@ namespace OpenMetaverse.TestClient
     public class JoinGroupCommand : Command
     {
         ManualResetEvent GetGroupsSearchEvent = new ManualResetEvent(false);
-        private UUID queryID = UUID.Zero;
-        private UUID resolvedGroupID;
+        private Guid queryID = Guid.Empty;
+        private Guid resolvedGroupID;
         private string groupName;
         private string resolvedGroupName;
         private bool joinedGroup;
@@ -19,26 +19,26 @@ namespace OpenMetaverse.TestClient
         public JoinGroupCommand(TestClient testClient)
         {
             Name = "joingroup";
-            Description = "join a group. Usage: joingroup GroupName | joingroup UUID GroupId";
+            Description = "join a group. Usage: joingroup GroupName | joingroup Guid GroupId";
             Category = CommandCategory.Groups;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 1)
                 return Description;
 
             groupName = String.Empty;
-            resolvedGroupID = UUID.Zero;
+            resolvedGroupID = Guid.Empty;
             resolvedGroupName = String.Empty;
 
-            if (args[0].ToLower() == "uuid")
+            if (args[0].ToLower() == "Guid")
             {
                 if (args.Length < 2)
                     return Description;
 
-                if (!UUID.TryParse((resolvedGroupName = groupName = args[1]), out resolvedGroupID))
-                    return resolvedGroupName + " doesn't seem a valid UUID";
+                if (!GuidExtensions.TryParse((resolvedGroupName = groupName = args[1]), out resolvedGroupID))
+                    return resolvedGroupName + " doesn't seem a valid Guid";
             }
             else
             {
@@ -55,10 +55,10 @@ namespace OpenMetaverse.TestClient
                 GetGroupsSearchEvent.Reset();
             }
 
-            if (resolvedGroupID == UUID.Zero)
+            if (resolvedGroupID == Guid.Empty)
             {
                 if (string.IsNullOrEmpty(resolvedGroupName))
-                    return "Unable to obtain UUID for group " + groupName;
+                    return "Unable to obtain Guid for group " + groupName;
                 else
                     return resolvedGroupName;
             }
@@ -81,7 +81,7 @@ namespace OpenMetaverse.TestClient
             return "Unable to join the group " + resolvedGroupName;
         }
 
-        void Groups_OnGroupJoined(UUID groupID, bool success)
+        void Groups_OnGroupJoined(Guid groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") + groupID.ToString());
 
@@ -103,11 +103,11 @@ namespace OpenMetaverse.TestClient
             GetGroupsSearchEvent.Set();
         }
 
-        void Directory_OnDirGroupsReply(UUID queryid, List<DirectoryManager.GroupSearchData> matchedGroups)
+        void Directory_OnDirGroupsReply(Guid queryid, List<DirectoryManager.GroupSearchData> matchedGroups)
         {
             if (queryID == queryid)
             {
-                queryID = UUID.Zero;
+                queryID = Guid.Empty;
                 if (matchedGroups.Count < 1)
                 {
                     Console.WriteLine("ERROR: Got an empty reply");
@@ -121,13 +121,13 @@ namespace OpenMetaverse.TestClient
                          * It'll give back to you a long list of groups even if the 
                          * searchText (groupName) matches esactly one of the groups 
                          * names present on the server, so we need to check each result.
-                         * UUIDs of the matching groups are written on the console.
+                         * Guids of the matching groups are written on the console.
                          */
                         Console.WriteLine("Matching groups are:\n");
                         foreach (DirectoryManager.GroupSearchData groupRetrieved in matchedGroups)
                         {
                             Console.WriteLine(groupRetrieved.GroupName + "\t\t\t(" +
-                                Name + " UUID " + groupRetrieved.GroupID.ToString() + ")");
+                                Name + " Guid " + groupRetrieved.GroupID.ToString() + ")");
 
                             if (groupRetrieved.GroupName.ToLower() == groupName.ToLower())
                             {
@@ -137,7 +137,7 @@ namespace OpenMetaverse.TestClient
                             }
                         }
                         if (string.IsNullOrEmpty(resolvedGroupName))
-                            resolvedGroupName = "Ambiguous name. Found " + matchedGroups.Count.ToString() + " groups (UUIDs on console)";
+                            resolvedGroupName = "Ambiguous name. Found " + matchedGroups.Count.ToString() + " groups (Guids on console)";
                     }
 
                 }

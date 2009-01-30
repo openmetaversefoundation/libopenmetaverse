@@ -15,9 +15,9 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Other;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
-			if (fromAgentID == UUID.Zero)
+			if (fromAgentID == Guid.Empty)
 				return "Unable to send money to console.  This command only works when IMed.";
 
 		    int amount = Client.Self.Balance;

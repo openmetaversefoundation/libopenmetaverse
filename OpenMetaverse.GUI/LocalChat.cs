@@ -102,7 +102,7 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType, string fromName, UUID id, UUID ownerid, Vector3 position)
+        void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType, string fromName, Guid id, Guid ownerid, Vector3 position)
         {
             if (audible == ChatAudibleLevel.Fully && type != ChatType.StartTyping && type != ChatType.StopTyping)
             {

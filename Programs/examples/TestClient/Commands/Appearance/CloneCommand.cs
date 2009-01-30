@@ -17,7 +17,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Appearance;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             string targetName = String.Empty;
             List<DirectoryManager.AgentSearchData> matches;
@@ -32,7 +32,7 @@ namespace OpenMetaverse.TestClient
             if (Client.Directory.PeopleSearch(DirectoryManager.DirFindFlags.People, targetName, 0, 1000 * 10,
                 out matches) && matches.Count > 0)
             {
-                UUID target = matches[0].AgentID;
+                Guid target = matches[0].AgentID;
                 targetName += String.Format(" ({0})", target);
 
                 if (Client.Appearances.ContainsKey(target))

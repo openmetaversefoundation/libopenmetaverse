@@ -65,7 +65,7 @@ namespace GridAccountant
 		private System.Windows.Forms.ListView lstFind;
 		private System.Windows.Forms.ColumnHeader colName;
 		private System.Windows.Forms.ColumnHeader colOnline;
-		private System.Windows.Forms.ColumnHeader colUuid;
+		private System.Windows.Forms.ColumnHeader colGuid;
 
 		private GridClient Client;
 
@@ -122,7 +122,7 @@ namespace GridAccountant
 			this.lstFind = new System.Windows.Forms.ListView();
 			this.colName = new System.Windows.Forms.ColumnHeader();
 			this.colOnline = new System.Windows.Forms.ColumnHeader();
-			this.colUuid = new System.Windows.Forms.ColumnHeader();
+			this.colGuid = new System.Windows.Forms.ColumnHeader();
 			this.grpLogin.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -293,7 +293,7 @@ namespace GridAccountant
 			this.lstFind.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
 																					  this.colName,
 																					  this.colOnline,
-																					  this.colUuid});
+																					  this.colGuid});
 			this.lstFind.FullRowSelect = true;
 			this.lstFind.HideSelection = false;
 			this.lstFind.Location = new System.Drawing.Point(16, 88);
@@ -313,10 +313,10 @@ namespace GridAccountant
 			this.colOnline.Text = "Online";
 			this.colOnline.Width = 50;
 			// 
-			// colUuid
+			// colGuid
 			// 
-			this.colUuid.Text = "UUID";
-			this.colUuid.Width = 150;
+			this.colGuid.Text = "Guid";
+			this.colGuid.Width = 150;
 			// 
 			// frmGridAccountant
 			// 
@@ -483,7 +483,7 @@ namespace GridAccountant
             query.AgentData.AgentID = Client.Self.AgentID;
             query.AgentData.SessionID = Client.Self.SessionID;
             query.QueryData.QueryFlags = 1;
-            query.QueryData.QueryID = UUID.Random();
+            query.QueryData.QueryID = Guid.NewGuid();
             query.QueryData.QueryStart = 0;
             query.QueryData.QueryText = Utils.StringToBytes(txtFind.Text);
             query.Header.Reliable = true;
@@ -512,7 +512,7 @@ namespace GridAccountant
 				return;
 			}
 			
-			Client.Self.GiveAvatarMoney(new UUID(lstFind.SelectedItems[0].SubItems[2].Text),
+			Client.Self.GiveAvatarMoney(new Guid(lstFind.SelectedItems[0].SubItems[2].Text),
 			    amount, "GridAccountant payment");
 		}
 	}

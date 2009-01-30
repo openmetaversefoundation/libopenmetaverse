@@ -5,9 +5,9 @@ namespace Simian
 {
     public interface IAvatarProvider
     {
-        bool SetDefaultAnimation(Agent agent, UUID animID);
-        bool AddAnimation(Agent agent, UUID animID);
-        bool RemoveAnimation(Agent agent, UUID animID);
+        bool SetDefaultAnimation(Agent agent, Guid animID);
+        bool AddAnimation(Agent agent, Guid animID);
+        bool RemoveAnimation(Agent agent, Guid animID);
         void SendAnimations(Agent agent);
     }
 }

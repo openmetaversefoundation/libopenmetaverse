@@ -200,37 +200,37 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(binaryReal, binaryRealSerialized);
         }
 
-        private static byte[] binaryAUUIDValue = { 0x75, 0x97, 0xf4, 0xae, 0xca, 0x88, 0xa1, 0x42, 0xa1, 
+        private static byte[] binaryAGuidValue = { 0x75, 0x97, 0xf4, 0xae, 0xca, 0x88, 0xa1, 0x42, 0xa1, 
                                         0xb3, 0x85, 0xb9, 0x7b, 0x18, 0xab, 0xb2, 0x55 };
-        private static byte[] binaryAUUID = (byte[])ConcatenateArrays(binaryHead, binaryAUUIDValue);
+        private static byte[] binaryAGuid = (byte[])ConcatenateArrays(binaryHead, binaryAGuidValue);
 
-        private static byte[] binaryZeroUUIDValue = { 0x75, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
-        private static byte[] binaryZeroUUID = (byte[])ConcatenateArrays(binaryHead, binaryZeroUUIDValue);
+        private static byte[] binaryZeroGuidValue = { 0x75, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+        private static byte[] binaryZeroGuid = (byte[])ConcatenateArrays(binaryHead, binaryZeroGuidValue);
 
 
         [Test()]
-        public void DeserializeUUID()
+        public void DeserializeGuid()
         {
-            OSD llsdAUUID = OSDParser.DeserializeLLSDBinary(binaryAUUID);
-            Assert.AreEqual(OSDType.UUID, llsdAUUID.Type);
-            Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdAUUID.AsString());
+            OSD llsdAGuid = OSDParser.DeserializeLLSDBinary(binaryAGuid);
+            Assert.AreEqual(OSDType.Guid, llsdAGuid.Type);
+            Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdAGuid.AsString());
 
-            OSD llsdZeroUUID = OSDParser.DeserializeLLSDBinary(binaryZeroUUID);
-            Assert.AreEqual(OSDType.UUID, llsdZeroUUID.Type);
-            Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdZeroUUID.AsString());
+            OSD llsdZeroGuid = OSDParser.DeserializeLLSDBinary(binaryZeroGuid);
+            Assert.AreEqual(OSDType.Guid, llsdZeroGuid.Type);
+            Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdZeroGuid.AsString());
 
         }
 
         [Test()]
-        public void SerializeUUID()
+        public void SerializeGuid()
         {
-            OSD llsdAUUID = OSD.FromUUID(new UUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
-            byte[] binaryAUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdAUUID);
-            Assert.AreEqual(binaryAUUID, binaryAUUIDSerialized);
+            OSD llsdAGuid = OSD.FromGuid(new Guid("97f4aeca-88a1-42a1-b385-b97b18abb255"));
+            byte[] binaryAGuidSerialized = OSDParser.SerializeLLSDBinary(llsdAGuid);
+            Assert.AreEqual(binaryAGuid, binaryAGuidSerialized);
 
-            OSD llsdZeroUUID = OSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
-            byte[] binaryZeroUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdZeroUUID);
-            Assert.AreEqual(binaryZeroUUID, binaryZeroUUIDSerialized);
+            OSD llsdZeroGuid = OSD.FromGuid(new Guid("00000000-0000-0000-0000-000000000000"));
+            byte[] binaryZeroGuidSerialized = OSDParser.SerializeLLSDBinary(llsdZeroGuid);
+            Assert.AreEqual(binaryZeroGuid, binaryZeroGuidSerialized);
         }
 
         private static byte[] binaryBinStringValue = { 0x62, 0x0, 0x0, 0x0, 0x34, // this line is the encoding header

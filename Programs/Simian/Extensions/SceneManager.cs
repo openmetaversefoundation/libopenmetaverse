@@ -15,7 +15,7 @@ namespace Simian.Extensions
     public class SceneManager : IExtension<Simian>, ISceneProvider
     {
         Simian server;
-        DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
+        DoubleDictionary<uint, Guid, SimulationObject> sceneObjects = new DoubleDictionary<uint, Guid, SimulationObject>();
         int currentLocalID = 1;
         float[] heightmap = new float[256 * 256];
 
@@ -216,7 +216,7 @@ namespace Simian.Extensions
             return sceneObjects.TryGetValue(localID, out obj);
         }
 
-        public bool TryGetObject(UUID id, out SimulationObject obj)
+        public bool TryGetObject(Guid id, out SimulationObject obj)
         {
             return sceneObjects.TryGetValue(id, out obj);
         }
@@ -244,7 +244,7 @@ namespace Simian.Extensions
             avatar.PrimData.PCode = PCode.Avatar;
 
             // Create a default outfit for the avatar
-            Primitive.TextureEntry te = new Primitive.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
+            Primitive.TextureEntry te = new Primitive.TextureEntry(new Guid("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
             avatar.Textures = te;
 
             // Set the avatar name

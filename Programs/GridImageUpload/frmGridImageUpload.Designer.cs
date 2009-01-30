@@ -156,7 +156,7 @@ namespace GridImageUpload
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(66, 13);
             this.label4.TabIndex = 79;
-            this.label4.Text = "Asset UUID:";
+            this.label4.Text = "Asset Guid:";
             // 
             // lblSize
             // 

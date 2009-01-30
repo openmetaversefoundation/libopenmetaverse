@@ -65,7 +65,7 @@ namespace PrimWorkshop
                         mtl.AppendLine("Tr " + tex.RGBA.A);
                         mtl.AppendLine("Ns " + shiny);
                         mtl.AppendLine("illum 1");
-                        if (tex.TextureID != UUID.Zero && tex.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
+                        if (tex.TextureID != Guid.Empty && tex.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
                             mtl.AppendLine("map_Kd ./" + texName);
                         mtl.AppendLine();
                         

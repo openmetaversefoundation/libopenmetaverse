@@ -26,6 +26,7 @@
 
 using System;
 using System.Threading;
+using Mono.Simd.Math;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
@@ -431,23 +432,23 @@ namespace OpenMetaverse
             /// typing and editing</summary>
             public AgentState State = AgentState.None;
             /// <summary></summary>
-            public Quaternion BodyRotation = Quaternion.Identity;
+            public Quaternionf BodyRotation = Quaternionf.Identity;
             /// <summary></summary>
-            public Quaternion HeadRotation = Quaternion.Identity;
+            public Quaternionf HeadRotation = Quaternionf.Identity;
 
             #region Change tracking
             /// <summary></summary>
-            private Quaternion LastBodyRotation;
+            private Quaternionf LastBodyRotation;
             /// <summary></summary>
-            private Quaternion LastHeadRotation;
+            private Quaternionf LastHeadRotation;
             /// <summary></summary>
-            private Vector3 LastCameraCenter;
+            private Vector3f LastCameraCenter;
             /// <summary></summary>
-            private Vector3 LastCameraXAxis;
+            private Vector3f LastCameraXAxis;
             /// <summary></summary>
-            private Vector3 LastCameraYAxis;
+            private Vector3f LastCameraYAxis;
             /// <summary></summary>
-            private Vector3 LastCameraZAxis;
+            private Vector3f LastCameraZAxis;
             /// <summary></summary>
             private float LastFar;
             #endregion Change tracking
@@ -497,11 +498,11 @@ namespace OpenMetaverse
             /// This will also anchor the camera position on the avatar
             /// </summary>
             /// <param name="target">Region coordinates to turn toward</param>
-            public bool TurnToward(Vector3 target)
+            public bool TurnToward(Vector3f target)
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
-                    Quaternion parentRot = Quaternion.Identity;
+                    Quaternionf parentRot = Quaternionf.Identity;
 
                     if (Client.Self.SittingOn > 0)
                     {
@@ -513,8 +514,11 @@ namespace OpenMetaverse
                         else parentRot = Client.Network.CurrentSim.ObjectsPrimitives[Client.Self.SittingOn].Rotation;
                     }
 
-                    Quaternion between = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Client.Self.SimPosition));
-                    Quaternion rot = between * (Quaternion.Identity / parentRot);
+                    Vector3f norm = target - Client.Self.SimPosition;
+                    norm.Normalize();
+                    Quaternionf rotBetween = Vector3f.UnitX.RotationBetween(ref norm);
+
+                    Quaternionf rot = rotBetween * (Quaternionf.Identity / parentRot);
 
                     BodyRotation = rot;
                     HeadRotation = rot;
@@ -560,10 +564,10 @@ namespace OpenMetaverse
             /// <param name="simulator">Simulator to send the update to</param>
             public void SendUpdate(bool reliable, Simulator simulator)
             {
-                Vector3 origin = Camera.Position;
-                Vector3 xAxis = Camera.LeftAxis;
-                Vector3 yAxis = Camera.AtAxis;
-                Vector3 zAxis = Camera.UpAxis;
+                Vector3f origin = Camera.Position;
+                Vector3f xAxis = Camera.LeftAxis;
+                Vector3f yAxis = Camera.AtAxis;
+                Vector3f zAxis = Camera.UpAxis;
 
                 // Attempted to sort these in a rough order of how often they might change
                 if (agentControls == 0 &&
@@ -636,8 +640,8 @@ namespace OpenMetaverse
             /// <param name="reliable"></param>
             /// <param name="flags"></param>
             /// <param name="state"></param>
-            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, Vector3 position, Vector3 forwardAxis,
-                Vector3 leftAxis, Vector3 upAxis, Quaternion bodyRotation, Quaternion headRotation, float farClip,
+            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, Vector3f position, Vector3f forwardAxis,
+                Vector3f leftAxis, Vector3f upAxis, Quaternionf bodyRotation, Quaternionf headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();

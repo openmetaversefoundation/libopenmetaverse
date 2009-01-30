@@ -11,18 +11,18 @@ namespace OpenMetaverse.TestClient
         public ExportParticlesCommand(TestClient testClient)
         {
             Name = "exportparticles";
-            Description = "Reverse engineers a prim with a particle system to an LSL script. Usage: exportscript [prim-uuid]";
+            Description = "Reverse engineers a prim with a particle system to an LSL script. Usage: exportscript [prim-Guid]";
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
-                return "Usage: exportparticles [prim-uuid]";
+                return "Usage: exportparticles [prim-Guid]";
 
-            UUID id;
-            if (!UUID.TryParse(args[0], out id))
-                return "Usage: exportparticles [prim-uuid]";
+            Guid id;
+            if (!GuidExtensions.TryParse(args[0], out id))
+                return "Usage: exportparticles [prim-Guid]";
 
             lock (Client.Network.Simulators)
             {

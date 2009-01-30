@@ -45,7 +45,7 @@ namespace Simian
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();
 
         /// <summary>All of the agents currently connected to this UDP server</summary>
-        public Dictionary<UUID, Agent> Agents = new Dictionary<UUID, Agent>();
+        public Dictionary<Guid, Agent> Agents = new Dictionary<Guid, Agent>();
 
         public Simian()
         {
@@ -299,8 +299,8 @@ namespace Simian
             LoginResponseData response = new LoginResponseData();
             Agent agent;
 
-            UUID agentID = Authentication.Authenticate(firstName, lastName, password);
-            if (agentID != UUID.Zero)
+            Guid agentID = Authentication.Authenticate(firstName, lastName, password);
+            if (agentID != Guid.Empty)
             {
                 // Authentication successful, create a login instance of this agent
                 agent = Accounts.CreateInstance(agentID);

@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Description = "Changes the current working inventory folder.";
             Category = CommandCategory.Inventory;
         }
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             Manager = Client.Inventory;
             Inventory = Client.Inventory.Store;
@@ -52,7 +52,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                 if (nextName == ".." && currentFolder != Inventory.RootFolder)
                 {
                     // If we encounter .., move to the parent folder.
-                    currentFolder = Inventory[currentFolder.ParentUUID] as InventoryFolder;
+                    currentFolder = Inventory[currentFolder.ParentGuid] as InventoryFolder;
                 }
                 else
                 {
@@ -61,8 +61,8 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                     bool found = false;
                     foreach (InventoryBase item in currentContents)
                     {
-                        // Allow lookup by UUID as well as name:
-                        if (item.Name == nextName || item.UUID.ToString() == nextName)
+                        // Allow lookup by Guid as well as name:
+                        if (item.Name == nextName || item.Guid.ToString() == nextName)
                         {
                             found = true;
                             if (item is InventoryFolder)

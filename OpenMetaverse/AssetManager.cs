@@ -254,7 +254,7 @@ namespace OpenMetaverse
     /// </summary>
     public class Transfer
     {
-        public UUID ID;
+        public Guid ID;
         public int Size;
         public byte[] AssetData = new byte[0];
         public int Transferred;
@@ -283,7 +283,7 @@ namespace OpenMetaverse
     /// </summary>
     public class AssetDownload : Transfer
     {
-        public UUID AssetID;
+        public Guid AssetID;
         public ChannelType Channel;
         public SourceType Source;
         public TargetType Target;
@@ -297,7 +297,7 @@ namespace OpenMetaverse
     public class XferDownload : Transfer
     {
         public ulong XferID;
-        public UUID VFileID;
+        public Guid VFileID;
         public AssetType Type;
         public uint PacketNum;
         public string Filename = String.Empty;
@@ -326,21 +326,21 @@ namespace OpenMetaverse
     /// </summary>
     public class AssetUpload : Transfer
     {
-        public UUID AssetID;
+        public Guid AssetID;
         public AssetType Type;
         public ulong XferID;
         public uint PacketNum;
     }
     public class ImageRequest
     {
-        public ImageRequest(UUID imageid, ImageType type, float priority, int discardLevel)
+        public ImageRequest(Guid imageid, ImageType type, float priority, int discardLevel)
         {
             ImageID = imageid;
             Type = type;
             Priority = priority;
             DiscardLevel = discardLevel;
         }
-        public UUID ImageID;
+        public Guid ImageID;
         public ImageType Type;
         public float Priority;
         public int DiscardLevel;
@@ -374,7 +374,7 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        public delegate void ImageReceiveProgressCallback(UUID image, int lastPacket, int recieved, int total);
+        public delegate void ImageReceiveProgressCallback(Guid image, int lastPacket, int recieved, int total);
         /// <summary>
         /// 
         /// </summary>
@@ -409,7 +409,7 @@ namespace OpenMetaverse
         public TextureCache Cache;
 
         private GridClient Client;
-        private Dictionary<UUID, Transfer> Transfers = new Dictionary<UUID, Transfer>();
+        private Dictionary<Guid, Transfer> Transfers = new Dictionary<Guid, Transfer>();
         private AssetUpload PendingUpload;
         private object PendingUploadLock = new object();
         private volatile bool WaitingForUploadConfirm = false;
@@ -503,14 +503,14 @@ namespace OpenMetaverse
         /// <summary>
         /// Request an asset download
         /// </summary>
-        /// <param name="assetID">Asset UUID</param>
+        /// <param name="assetID">Asset Guid</param>
         /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
         /// <param name="priority">Whether to give this transfer an elevated priority</param>
         /// <returns>The transaction ID generated for this transfer</returns>
-        public UUID RequestAsset(UUID assetID, AssetType type, bool priority)
+        public Guid RequestAsset(Guid assetID, AssetType type, bool priority)
         {
             AssetDownload transfer = new AssetDownload();
-            transfer.ID = UUID.Random();
+            transfer.ID = Guid.NewGuid();
             transfer.AssetID = assetID;
             //transfer.AssetType = type; // Set in TransferInfoHandler.
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
@@ -544,19 +544,18 @@ namespace OpenMetaverse
         /// <param name="deleteOnCompletion">Whether or not to delete the asset
         /// off the server after it is retrieved</param>
         /// <param name="useBigPackets">Use large transfer packets or not</param>
-        /// <param name="vFileID">UUID of the file to request, if filename is
+        /// <param name="vFileID">Guid of the file to request, if filename is
         /// left empty</param>
         /// <param name="vFileType">Asset type of <code>vFileID</code>, or
         /// <code>AssetType.Unknown</code> if filename is not empty</param>
         /// <returns></returns>
-        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, UUID vFileID, AssetType vFileType)
+        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, Guid vFileID, AssetType vFileType)
         {
-            UUID uuid = UUID.Random();
-            ulong id = uuid.GetULong();
-
             XferDownload transfer = new XferDownload();
+            transfer.ID = Guid.NewGuid();
+            ulong id = transfer.ID.GetULong();
             transfer.XferID = id;
-            transfer.ID = new UUID(id); // Our dictionary tracks transfers with UUIDs, so convert the ulong back
+            transfer.ID.FromULong(id); // Our dictionary tracks transfers with Guids, so convert the ulong back
             transfer.Filename = filename;
             transfer.VFileID = vFileID;
             transfer.AssetType = vFileType;
@@ -582,18 +581,18 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="assetID">Use UUID.Zero if you do not have the 
+        /// <param name="assetID">Use Guid.Empty if you do not have the 
         /// asset ID but have all the necessary permissions</param>
         /// <param name="itemID">The item ID of this asset in the inventory</param>
-        /// <param name="taskID">Use UUID.Zero if you are not requesting an 
+        /// <param name="taskID">Use Guid.Empty if you are not requesting an 
         /// asset from an object inventory</param>
         /// <param name="ownerID">The owner of this asset</param>
         /// <param name="type">Asset type</param>
         /// <param name="priority">Whether to prioritize this asset download or not</param>
-        public UUID RequestInventoryAsset(UUID assetID, UUID itemID, UUID taskID, UUID ownerID, AssetType type, bool priority)
+        public Guid RequestInventoryAsset(Guid assetID, Guid itemID, Guid taskID, Guid ownerID, AssetType type, bool priority)
         {
             AssetDownload transfer = new AssetDownload();
-            transfer.ID = UUID.Random();
+            transfer.ID = Guid.NewGuid();
             transfer.AssetID = assetID;
             //transfer.AssetType = type; // Set in TransferInfoHandler.
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
@@ -625,9 +624,9 @@ namespace OpenMetaverse
             return transfer.ID;
         }
 
-        public UUID RequestInventoryAsset(InventoryItem item, bool priority)
+        public Guid RequestInventoryAsset(InventoryItem item, bool priority)
         {
-            return RequestInventoryAsset(item.AssetUUID, item.UUID, UUID.Zero, item.OwnerID, item.AssetType, priority);
+            return RequestInventoryAsset(item.AssetGuid, item.Guid, Guid.Empty, item.OwnerID, item.AssetType, priority);
         }
 
         public void RequestEstateAsset()
@@ -641,7 +640,7 @@ namespace OpenMetaverse
         /// <param name="imageID">The image to download</param>
         /// <param name="type">Type of the image to download, either a baked
         /// avatar texture or a normal texture</param>
-        public void RequestImage(UUID imageID, ImageType type)
+        public void RequestImage(Guid imageID, ImageType type)
         {
             RequestImage(imageID, type, 1013000.0f, 0, 0);
         }
@@ -660,7 +659,7 @@ namespace OpenMetaverse
         /// This controls the start marker of the data sent</param>
         /// <remarks>Sending a priority of 0 and a discardlevel of -1 aborts
         /// download</remarks>
-        public void RequestImage(UUID imageID, ImageType type, float priority, int discardLevel, uint packetNum)
+        public void RequestImage(Guid imageID, ImageType type, float priority, int discardLevel, uint packetNum)
         {
             if (Cache.HasImage(imageID))
             {
@@ -812,20 +811,20 @@ namespace OpenMetaverse
             }
         }
 
-        public UUID RequestUpload(Asset asset, bool storeLocal)
+        public Guid RequestUpload(Asset asset, bool storeLocal)
         {
             if (asset.AssetData == null)
                 throw new ArgumentException("Can't upload an asset with no data (did you forget to call Encode?)");
 
-            UUID assetID;
-            UUID transferID = RequestUpload(out assetID, asset.AssetType, asset.AssetData, storeLocal);
+            Guid assetID;
+            Guid transferID = RequestUpload(out assetID, asset.AssetType, asset.AssetData, storeLocal);
             asset.AssetID = assetID;
             return transferID;
         }
         
-        public UUID RequestUpload(AssetType type, byte[] data, bool storeLocal)
+        public Guid RequestUpload(AssetType type, byte[] data, bool storeLocal)
         {
-            UUID assetID;
+            Guid assetID;
             return RequestUpload(out assetID, type, data, storeLocal);
         }
 
@@ -839,13 +838,14 @@ namespace OpenMetaverse
         /// <param name="storeLocal">Whether to store this asset on the local
         /// simulator or the grid-wide asset server</param>
         /// <returns>The transaction ID of this transfer</returns>
-        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal)
+        public Guid RequestUpload(out Guid assetID, AssetType type, byte[] data, bool storeLocal)
         {
             AssetUpload upload = new AssetUpload();
             upload.AssetData = data;
             upload.AssetType = type;
-            upload.ID = UUID.Random();
-            assetID = UUID.Combine(upload.ID, Client.Self.SecureSessionID);
+            upload.ID = Guid.NewGuid();
+            assetID = upload.ID;
+            assetID.Combine(Client.Self.SecureSessionID);
             upload.AssetID = assetID;
             upload.Size = data.Length;
             upload.XferID = 0;
@@ -1046,7 +1046,7 @@ namespace OpenMetaverse
 
                         if (download.Source == SourceType.Asset && info.TransferInfo.Params.Length == 20)
                         {
-                            download.AssetID = new UUID(info.TransferInfo.Params, 0);
+                            download.AssetID.FromBytes(info.TransferInfo.Params, 0);
                             download.AssetType = (AssetType)(sbyte)info.TransferInfo.Params[16];
 
                             //Client.DebugLog(String.Format("TransferInfo packet received. AssetID: {0} Type: {1}",
@@ -1055,12 +1055,12 @@ namespace OpenMetaverse
                         else if (download.Source == SourceType.SimInventoryItem && info.TransferInfo.Params.Length == 100)
                         {
                             // TODO: Can we use these?
-                            //UUID agentID = new UUID(info.TransferInfo.Params, 0);
-                            //UUID sessionID = new UUID(info.TransferInfo.Params, 16);
-                            //UUID ownerID = new UUID(info.TransferInfo.Params, 32);
-                            //UUID taskID = new UUID(info.TransferInfo.Params, 48);
-                            //UUID itemID = new UUID(info.TransferInfo.Params, 64);
-                            download.AssetID = new UUID(info.TransferInfo.Params, 80);
+                            //Guid agentID = new Guid(info.TransferInfo.Params, 0);
+                            //Guid sessionID = new Guid(info.TransferInfo.Params, 16);
+                            //Guid ownerID = new Guid(info.TransferInfo.Params, 32);
+                            //Guid taskID = new Guid(info.TransferInfo.Params, 48);
+                            //Guid itemID = new Guid(info.TransferInfo.Params, 64);
+                            download.AssetID.FromBytes(info.TransferInfo.Params, 80);
                             download.AssetType = (AssetType)(sbyte)info.TransferInfo.Params[96];
 
                             //Client.DebugLog(String.Format("TransferInfo packet received. AgentID: {0} SessionID: {1} " + 
@@ -1170,7 +1170,8 @@ namespace OpenMetaverse
                 upload.XferID = request.XferID.ID;
                 upload.Type = (AssetType)request.XferID.VFileType;
 
-                UUID transferID = new UUID(upload.XferID);
+                Guid transferID = new Guid();
+                transferID.FromULong(upload.XferID);
                 Transfers[transferID] = upload;
 
                 // Send the first packet containing actual asset data
@@ -1182,9 +1183,10 @@ namespace OpenMetaverse
         {
             ConfirmXferPacketPacket confirm = (ConfirmXferPacketPacket)packet;
 
-            // Building a new UUID every time an ACK is received for an upload is a horrible
+            // Building a new Guid every time an ACK is received for an upload is a horrible
             // thing, but this whole Xfer system is horrible
-            UUID transferID = new UUID(confirm.XferID.ID);
+            Guid transferID = new Guid();
+            transferID.FromULong(confirm.XferID.ID);
             Transfer transfer;
             AssetUpload upload = null;
 
@@ -1217,12 +1219,12 @@ namespace OpenMetaverse
             if (OnAssetUploaded != null)
             {
                 bool found = false;
-                KeyValuePair<UUID, Transfer> foundTransfer = new KeyValuePair<UUID, Transfer>();
+                KeyValuePair<Guid, Transfer> foundTransfer = new KeyValuePair<Guid, Transfer>();
 
                 // Xfer system sucks really really bad. Where is the damn XferID?
                 lock (Transfers)
                 {
-                    foreach (KeyValuePair<UUID, Transfer> transfer in Transfers)
+                    foreach (KeyValuePair<Guid, Transfer> transfer in Transfers)
                     {
                         if (transfer.Value.GetType() == typeof(AssetUpload))
                         {
@@ -1261,8 +1263,9 @@ namespace OpenMetaverse
         {
             SendXferPacketPacket xfer = (SendXferPacketPacket)packet;
 
-            // Lame ulong to UUID conversion, please go away Xfer system
-            UUID transferID = new UUID(xfer.XferID.ID);
+            // Lame ulong to Guid conversion, please go away Xfer system
+            Guid transferID = new Guid();
+            transferID.FromULong(xfer.XferID.ID);
             Transfer transfer;
             XferDownload download = null;
 
@@ -1567,9 +1570,9 @@ namespace OpenMetaverse
         /// <summary>
         /// Return bytes read from the local image cache, null if it does not exist
         /// </summary>
-        /// <param name="imageID">UUID of the image we want to get</param>
+        /// <param name="imageID">Guid of the image we want to get</param>
         /// <returns>Raw bytes of the image, or null on failure</returns>
-        public byte[] GetCachedImageBytes(UUID imageID)
+        public byte[] GetCachedImageBytes(Guid imageID)
         {
             if (!Operational()) {
                 return null;
@@ -1588,9 +1591,9 @@ namespace OpenMetaverse
         /// Returns ImageDownload object of the
         /// image from the local image cache, null if it does not exist
         /// </summary>
-        /// <param name="imageID">UUID of the image we want to get</param>
+        /// <param name="imageID">Guid of the image we want to get</param>
         /// <returns>ImageDownload object containing the image, or null on failure</returns>
-        public ImageDownload GetCachedImage(UUID imageID)
+        public ImageDownload GetCachedImage(Guid imageID)
         {
             if (!Operational())
                 return null;
@@ -1612,9 +1615,9 @@ namespace OpenMetaverse
         /// <summary>
         /// Constructs a file name of the cached image
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
+        /// <param name="imageID">Guid of the image</param>
         /// <returns>String with the file name of the cahced image</returns>
-        private string FileName(UUID imageID)
+        private string FileName(Guid imageID)
         {
             return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
         }
@@ -1622,10 +1625,10 @@ namespace OpenMetaverse
         /// <summary>
         /// Saves an image to the local cache
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
+        /// <param name="imageID">Guid of the image</param>
         /// <param name="imageData">Raw bytes the image consists of</param>
         /// <returns>Weather the operation was successfull</returns>
-        public bool SaveImageToCache(UUID imageID, byte[] imageData)
+        public bool SaveImageToCache(Guid imageID, byte[] imageData)
         {
             if (!Operational()) {
                 return false;
@@ -1648,11 +1651,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Get the file name of the asset stored with gived UUID
+        /// Get the file name of the asset stored with gived Guid
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <returns>Null if we don't have that UUID cached on disk, file name if found in the cache folder</returns>
-        public string ImageFileName(UUID imageID)
+        /// <param name="imageID">Guid of the image</param>
+        /// <returns>Null if we don't have that Guid cached on disk, file name if found in the cache folder</returns>
+        public string ImageFileName(Guid imageID)
         {
             if (!Operational())
             {
@@ -1670,9 +1673,9 @@ namespace OpenMetaverse
         /// <summary>
         /// Checks if the image exists in the local cache
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
+        /// <param name="imageID">Guid of the image</param>
         /// <returns>True is the image is stored in the cache, otherwise false</returns>
-        public bool HasImage(UUID imageID)
+        public bool HasImage(Guid imageID)
         {
             if (!Operational()) {
                 return false;
@@ -1691,7 +1694,7 @@ namespace OpenMetaverse
             }
 
             DirectoryInfo di = new DirectoryInfo(cacheDir);
-            // We save file with UUID as file name, only delete those
+            // We save file with Guid as file name, only delete those
             FileInfo[] files = di.GetFiles("????????-????-????-????-????????????", SearchOption.TopDirectoryOnly);
 
             int num = 0;
@@ -1713,7 +1716,7 @@ namespace OpenMetaverse
                 return;
             }
             DirectoryInfo di = new DirectoryInfo(cacheDir);
-            // We save file with UUID as file name, only count those
+            // We save file with Guid as file name, only count those
             FileInfo[] files = di.GetFiles("????????-????-????-????-????????????", SearchOption.TopDirectoryOnly);
 
             long size = GetFileSize(files);

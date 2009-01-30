@@ -10,7 +10,7 @@ namespace OpenMetaverse.TestClient
     {
         Avatar.AvatarProperties Properties;
         Avatar.Interests Interests;
-        List<UUID> Groups = new List<UUID>();
+        List<Guid> Groups = new List<Guid>();
         bool ReceivedProperties = false;
         bool ReceivedInterests = false;
         bool ReceivedGroups = false;
@@ -25,23 +25,23 @@ namespace OpenMetaverse.TestClient
 
             Name = "cloneprofile";
             Description = "Clones another avatars profile as closely as possible. WARNING: This command will " +
-                "destroy your existing profile! Usage: cloneprofile [targetuuid]";
+                "destroy your existing profile! Usage: cloneprofile [targetGuid]";
             Category = CommandCategory.Other;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
                 return Description;
 
-            UUID targetID;
+            Guid targetID;
             ReceivedProperties = false;
             ReceivedInterests = false;
             ReceivedGroups = false;
 
             try
             {
-                targetID = new UUID(args[0]);
+                targetID = new Guid(args[0]);
             }
             catch (Exception)
             {
@@ -57,7 +57,7 @@ namespace OpenMetaverse.TestClient
 
             // Check if everything showed up
             if (!ReceivedInterests || !ReceivedProperties || !ReceivedGroups)
-                return "Failed to retrieve a complete profile for that UUID";
+                return "Failed to retrieve a complete profile for that Guid";
 
             // Synchronize our profile
             Client.Self.UpdateInterests(Interests);
@@ -67,7 +67,7 @@ namespace OpenMetaverse.TestClient
             // break TestClient connectivity that might be relying on group authentication
 
             // Attempt to join all the groups
-            foreach (UUID groupID in Groups)
+            foreach (Guid groupID in Groups)
             {
                 Client.Groups.RequestJoinGroup(groupID);
             }
@@ -75,7 +75,7 @@ namespace OpenMetaverse.TestClient
             return "Synchronized our profile to the profile of " + targetID.ToString();
         }
 
-        void Avatars_OnAvatarProperties(UUID avatarID, Avatar.AvatarProperties properties)
+        void Avatars_OnAvatarProperties(Guid avatarID, Avatar.AvatarProperties properties)
         {
             lock (ReceivedProfileEvent)
             {
@@ -87,7 +87,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarInterests(UUID avatarID, Avatar.Interests interests)
+        void Avatars_OnAvatarInterests(Guid avatarID, Avatar.Interests interests)
         {
             lock (ReceivedProfileEvent)
             {
@@ -99,7 +99,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarGroups(UUID avatarID, List<AvatarGroup> groups)
+        void Avatars_OnAvatarGroups(Guid avatarID, List<AvatarGroup> groups)
         {
             lock (ReceivedProfileEvent)
             {
@@ -115,7 +115,7 @@ namespace OpenMetaverse.TestClient
             }
         }
         
-        void Groups_OnGroupJoined(UUID groupID, bool success)
+        void Groups_OnGroupJoined(Guid groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
                 groupID.ToString());

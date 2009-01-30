@@ -24,8 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using OpenMetaverse.Packets;
 using System.Collections.Generic;
+using Mono.Simd.Math;
+using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
 {
@@ -57,7 +58,7 @@ namespace OpenMetaverse
         /// <param name="managers"></param>
         /// <param name="count"></param>
         /// <param name="estateID"></param>
-        public delegate void EstateManagersReply(uint estateID, int count, List<UUID> managers);
+        public delegate void EstateManagersReply(uint estateID, int count, List<Guid> managers);
 
         /// <summary>
         /// FIXME - Enumerate all params from EstateOwnerMessage packet
@@ -66,17 +67,17 @@ namespace OpenMetaverse
         /// <param name="estateID"></param>
         /// <param name="estateName"></param>
         /// <param name="estateOwner"></param>
-        public delegate void EstateUpdateInfoReply(string estateName, UUID estateOwner, uint estateID, bool denyNoPaymentInfo);
+        public delegate void EstateUpdateInfoReply(string estateName, Guid estateOwner, uint estateID, bool denyNoPaymentInfo);
 
-        public delegate void EstateManagersListReply(uint estateID, List<UUID> managers);
+        public delegate void EstateManagersListReply(uint estateID, List<Guid> managers);
 
-        public delegate void EstateBansReply(uint estateID, int count, List<UUID> banned);
+        public delegate void EstateBansReply(uint estateID, int count, List<Guid> banned);
 
-        public delegate void EstateUsersReply(uint estateID, int count, List<UUID> allowedUsers);
+        public delegate void EstateUsersReply(uint estateID, int count, List<Guid> allowedUsers);
 
-        public delegate void EstateGroupsReply(uint estateID, int count, List<UUID> allowedGroups);
+        public delegate void EstateGroupsReply(uint estateID, int count, List<Guid> allowedGroups);
 
-        public delegate void EstateCovenantReply(UUID covenantID, long timestamp, string estateName, UUID estateOwnerID);
+        public delegate void EstateCovenantReply(Guid covenantID, long timestamp, string estateName, Guid estateOwnerID);
 
 
         // <summary>Callback for LandStatReply packets</summary>
@@ -113,9 +114,9 @@ namespace OpenMetaverse
         /// <summary>Describes tasks returned in LandStatReply</summary>
         public class EstateTask
         {
-            public Vector3 Position;
+            public Vector3f Position;
             public float Score;
-            public UUID TaskID;
+            public Guid TaskID;
             public uint TaskLocalID;
             public string TaskName;
             public string OwnerName;
@@ -148,7 +149,7 @@ namespace OpenMetaverse
         /// <summary>Used by GroundTextureSettings</summary>
         public class GroundTextureRegion
         {
-            public UUID TextureID;
+            public Guid TextureID;
             public float Low;
             public float High;
         }
@@ -231,7 +232,7 @@ namespace OpenMetaverse
             if (method == "estateupdateinfo")
             {
                 string estateName = Utils.BytesToString(message.ParamList[0].Parameter);
-                UUID estateOwner = new UUID(Utils.BytesToString(message.ParamList[1].Parameter));
+                Guid estateOwner = new Guid(Utils.BytesToString(message.ParamList[1].Parameter));
                 estateID = Utils.BytesToUInt(message.ParamList[2].Parameter);
                 /*
                 foreach (EstateOwnerMessagePacket.ParamListBlock param in message.ParamList)
@@ -273,12 +274,13 @@ namespace OpenMetaverse
                                 if (message.ParamList.Length > 5)
                                 {
                                     if (!int.TryParse(Utils.BytesToString(message.ParamList[5].Parameter), out count)) return;
-                                    List<UUID> managers = new List<UUID>();
+                                    List<Guid> managers = new List<Guid>();
                                     for (int i = 6; i < message.ParamList.Length; i++)
                                     {
                                         try
                                         {
-                                            UUID managerID = new UUID(message.ParamList[i].Parameter, 0);
+                                            Guid managerID = new Guid();
+                                            managerID.FromBytes(message.ParamList[i].Parameter, 0);
                                             managers.Add(managerID);
                                         }
                                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -295,12 +297,13 @@ namespace OpenMetaverse
                                 if (message.ParamList.Length > 6)
                                 {
                                     if (!int.TryParse(Utils.BytesToString(message.ParamList[4].Parameter), out count)) return;
-                                    List<UUID> bannedUsers = new List<UUID>();
+                                    List<Guid> bannedUsers = new List<Guid>();
                                     for (int i = 7; i < message.ParamList.Length; i++)
                                     {
                                         try
                                         {
-                                            UUID bannedID = new UUID(message.ParamList[i].Parameter, 0);
+                                            Guid bannedID = new Guid();
+                                            bannedID.FromBytes(message.ParamList[i].Parameter, 0);
                                             bannedUsers.Add(bannedID);
                                         }
                                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -317,12 +320,13 @@ namespace OpenMetaverse
                                 if (message.ParamList.Length > 5)
                                 {
                                     if (!int.TryParse(Utils.BytesToString(message.ParamList[2].Parameter), out count)) return;
-                                    List<UUID> allowedUsers = new List<UUID>();
+                                    List<Guid> allowedUsers = new List<Guid>();
                                     for (int i = 6; i < message.ParamList.Length; i++)
                                     {
                                         try
                                         {
-                                            UUID allowedID = new UUID(message.ParamList[i].Parameter, 0);
+                                            Guid allowedID = new Guid();
+                                            allowedID.FromBytes(message.ParamList[i].Parameter, 0);
                                             allowedUsers.Add(allowedID);
                                         }
                                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -339,12 +343,13 @@ namespace OpenMetaverse
                                 if (message.ParamList.Length > 5)
                                 {
                                     if (!int.TryParse(Utils.BytesToString(message.ParamList[3].Parameter), out count)) return;
-                                    List<UUID> allowedGroups = new List<UUID>();
+                                    List<Guid> allowedGroups = new List<Guid>();
                                     for (int i = 5; i < message.ParamList.Length; i++)
                                     {
                                         try
                                         {
-                                            UUID groupID = new UUID(message.ParamList[i].Parameter, 0);
+                                            Guid groupID = new Guid();
+                                            groupID.FromBytes(message.ParamList[i].Parameter, 0);
                                             allowedGroups.Add(groupID);
                                         }
                                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -382,7 +387,7 @@ namespace OpenMetaverse
                 foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
                 {
                     EstateTask task = new EstateTask();
-                    task.Position = new Vector3(rep.LocationX, rep.LocationY, rep.LocationZ);
+                    task.Position = new Vector3f(rep.LocationX, rep.LocationY, rep.LocationZ);
                     task.Score = rep.Score;
                     task.TaskID = rep.TaskID;
                     task.TaskLocalID = rep.TaskLocalID;
@@ -437,8 +442,8 @@ namespace OpenMetaverse
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
             estate.AgentData.AgentID = Client.Self.AgentID;
             estate.AgentData.SessionID = Client.Self.SessionID;
-            estate.AgentData.TransactionID = UUID.Zero;
-            estate.MethodData.Invoice = UUID.Random();
+            estate.AgentData.TransactionID = Guid.Empty;
+            estate.MethodData.Invoice = Guid.NewGuid();
             estate.MethodData.Method = Utils.StringToBytes(method);
             estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[listParams.Count];
             for (int i = 0; i < listParams.Count; i++)
@@ -453,7 +458,7 @@ namespace OpenMetaverse
         /// Kick an avatar from an estate
         /// </summary>
         /// <param name="userID">Key of Agent to remove</param>
-		public void KickUser(UUID userID) 
+		public void KickUser(Guid userID) 
 		{
             EstateOwnerMessage("kickestate", userID.ToString());
 		}
@@ -462,7 +467,7 @@ namespace OpenMetaverse
         /// Ban an avatar from an estate</summary>
         /// <param name="userID">Key of Agent to remove</param>
         /// <param name="allEstates">Ban user from this estate and all others owned by the estate owner</param>
-        public void BanUser(UUID userID, bool allEstates)
+        public void BanUser(Guid userID, bool allEstates)
         {
             List<string> listParams = new List<string>();
             uint flag = allEstates ? (uint)EstateAccessDelta.BanUserAllEstates : (uint)EstateAccessDelta.BanUser;
@@ -475,7 +480,7 @@ namespace OpenMetaverse
         /// <summary>Unban an avatar from an estate</summary>
         /// <param name="userID">Key of Agent to remove</param>
         ///  /// <param name="allEstates">Unban user from this estate and all others owned by the estate owner</param>
-        public void UnbanUser(UUID userID, bool allEstates)
+        public void UnbanUser(Guid userID, bool allEstates)
         {
             List<string> listParams = new List<string>();
             uint flag = allEstates ? (uint)EstateAccessDelta.UnbanUserAllEstates : (uint)EstateAccessDelta.UnbanUser;
@@ -516,7 +521,7 @@ namespace OpenMetaverse
         /// Send an avatar back to their home location
         /// </summary>
         /// <param name="pest">Key of avatar to send home</param>
-        public void TeleportHomeUser(UUID pest)
+        public void TeleportHomeUser(Guid pest)
         {
             List<string> listParams = new List<string>();
             listParams.Add(Client.Self.AgentID.ToString());

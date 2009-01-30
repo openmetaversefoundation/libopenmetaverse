@@ -14,16 +14,16 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Description = "Gives items from the current working directory to an avatar.";
             Category = CommandCategory.Inventory;
         }
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 2)
             {
-                return "Usage: give <agent uuid> <item1> [item2] [item3] [...]";
+                return "Usage: give <agent Guid> <item1> [item2] [item3] [...]";
             }
-            UUID dest;
-            if (!UUID.TryParse(args[0], out dest))
+            Guid dest;
+            if (!GuidExtensions.TryParse(args[0], out dest))
             {
-                return "First argument expected agent UUID.";
+                return "First argument expected agent Guid.";
             }
             Manager = Client.Inventory;
             Inventory = Manager.Store;
@@ -37,13 +37,13 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                 bool found = false;
                 foreach (InventoryBase b in contents)
                 {
-                    if (inventoryName == b.Name || inventoryName == b.UUID.ToString())
+                    if (inventoryName == b.Name || inventoryName == b.Guid.ToString())
                     {
                         found = true;
                         if (b is InventoryItem)
                         {
                             InventoryItem item = b as InventoryItem;
-                            Manager.GiveItem(item.UUID, item.Name, item.AssetType, dest, true);
+                            Manager.GiveItem(item.Guid, item.Name, item.AssetType, dest, true);
                             ret += "Gave " + item.Name + nl;
                         }
                         else

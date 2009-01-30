@@ -25,6 +25,7 @@
  */
 
 using System;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
@@ -47,25 +48,25 @@ namespace OpenMetaverse
                 private CoordinateFrame Frame;
 
                 /// <summary></summary>
-                public Vector3 Position
+                public Vector3f Position
                 {
                     get { return Frame.Origin; }
                     set { Frame.Origin = value; }
                 }
                 /// <summary></summary>
-                public Vector3 AtAxis
+                public Vector3f AtAxis
                 {
                     get { return Frame.YAxis; }
                     set { Frame.YAxis = value; }
                 }
                 /// <summary></summary>
-                public Vector3 LeftAxis
+                public Vector3f LeftAxis
                 {
                     get { return Frame.XAxis; }
                     set { Frame.XAxis = value; }
                 }
                 /// <summary></summary>
-                public Vector3 UpAxis
+                public Vector3f UpAxis
                 {
                     get { return Frame.ZAxis; }
                     set { Frame.ZAxis = value; }
@@ -76,7 +77,7 @@ namespace OpenMetaverse
                 /// </summary>
                 public AgentCamera()
                 {
-                    Frame = new CoordinateFrame(new Vector3(128f, 128f, 20f));
+                    Frame = new CoordinateFrame(new Vector3f(128f, 128f, 20f));
                     Far = 128f;
                 }
 
@@ -95,12 +96,12 @@ namespace OpenMetaverse
                     Frame.Yaw(angle);
                 }
 
-                public void LookDirection(Vector3 target)
+                public void LookDirection(Vector3f target)
                 {
                     Frame.LookDirection(target);
                 }
 
-                public void LookDirection(Vector3 target, Vector3 upDirection)
+                public void LookDirection(Vector3f target, Vector3f upDirection)
                 {
                     Frame.LookDirection(target, upDirection);
                 }
@@ -110,17 +111,17 @@ namespace OpenMetaverse
                     Frame.LookDirection(heading);
                 }
 
-                public void LookAt(Vector3 position, Vector3 target)
+                public void LookAt(Vector3f position, Vector3f target)
                 {
                     Frame.LookAt(position, target);
                 }
 
-                public void LookAt(Vector3 position, Vector3 target, Vector3 upDirection)
+                public void LookAt(Vector3f position, Vector3f target, Vector3f upDirection)
                 {
                     Frame.LookAt(position, target, upDirection);
                 }
 
-                public void SetPositionOrientation(Vector3 position, float roll, float pitch, float yaw)
+                public void SetPositionOrientation(Vector3f position, float roll, float pitch, float yaw)
                 {
                     Frame.Origin = position;
 

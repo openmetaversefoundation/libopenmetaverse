@@ -14,23 +14,23 @@ namespace OpenMetaverse.TestClient
         public MapFriendCommand(TestClient testClient)
         {
             Name = "mapfriend";
-            Description = "Show a friends location. Usage: mapfriend UUID";
+            Description = "Show a friends location. Usage: mapfriend Guid";
             Category = CommandCategory.Friends;
         }
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
                 return Description;
 
-            UUID targetID;
+            Guid targetID;
 
-            if (!UUID.TryParse(args[0], out targetID))
+            if (!GuidExtensions.TryParse(args[0], out targetID))
                 return Description;
 
             StringBuilder sb = new StringBuilder();
 
             FriendsManager.FriendFoundEvent del = 
-                delegate(UUID agentID, ulong regionHandle, Vector3 location) 
+                delegate(Guid agentID, ulong regionHandle, Vector3 location) 
                 {
                     if (!regionHandle.Equals(0))
                         sb.AppendFormat("Found Friend {0} in {1} at {2}/{3}", agentID, regionHandle, location.X, location.Y);

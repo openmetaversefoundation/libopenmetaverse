@@ -197,7 +197,7 @@ namespace OpenMetaverse
             private float rotation;
             private float glow;
             private TextureAttributes hasAttribute;
-            private UUID textureID;
+            private Guid textureID;
             private TextureEntryFace DefaultTexture;
 
             internal byte material;
@@ -427,7 +427,7 @@ namespace OpenMetaverse
             }
 
             /// <summary></summary>
-            public UUID TextureID
+            public Guid TextureID
             {
                 get
                 {
@@ -480,9 +480,9 @@ namespace OpenMetaverse
                 tex["glow"] = OSD.FromReal(Glow);
 
                 if (TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
-                    tex["imageid"] = OSD.FromUUID(TextureID);
+                    tex["imageid"] = OSD.FromGuid(TextureID);
                 else
-                    tex["imageid"] = OSD.FromUUID(UUID.Zero);
+                    tex["imageid"] = OSD.FromGuid(Guid.Empty);
 
                 return tex;
             }
@@ -507,7 +507,7 @@ namespace OpenMetaverse
                 face.MediaFlags = map["media_flags"].AsBoolean();
                 face.TexMapType = (MappingType)map["mapping"].AsInteger();
                 face.Glow = (float)map["glow"].AsReal();
-                face.TextureID = map["imageid"].AsUUID();
+                face.TextureID = map["imageid"].AsGuid();
 
                 return face;
             }
@@ -530,14 +530,14 @@ namespace OpenMetaverse
         /// </summary>
         /// <remarks>Grid objects have infinite faces, with each face
         /// using the properties of the default face unless set otherwise. So if
-        /// you have a TextureEntry with a default texture uuid of X, and face 18
-        /// has a texture UUID of Y, every face would be textured with X except for
+        /// you have a TextureEntry with a default texture Guid of X, and face 18
+        /// has a texture Guid of Y, every face would be textured with X except for
         /// face 18 that uses Y. In practice however, primitives utilize a maximum
         /// of nine faces</remarks>
         public class TextureEntry
         {
             public const int MAX_FACES = 32;
-            public static readonly UUID WHITE_TEXTURE = new UUID("5748decc-f629-461c-9a36-a35a221fe21f");
+            public static readonly Guid WHITE_TEXTURE = new Guid("5748decc-f629-461c-9a36-a35a221fe21f");
 
             /// <summary></summary>
             public TextureEntryFace DefaultTexture;
@@ -545,10 +545,10 @@ namespace OpenMetaverse
             public TextureEntryFace[] FaceTextures = new TextureEntryFace[MAX_FACES];
 
             /// <summary>
-            /// Constructor that takes a default texture UUID
+            /// Constructor that takes a default texture Guid
             /// </summary>
-            /// <param name="defaultTextureID">Texture UUID to use as the default texture</param>
-            public TextureEntry(UUID defaultTextureID)
+            /// <param name="defaultTextureID">Texture Guid to use as the default texture</param>
+            public TextureEntry(Guid defaultTextureID)
             {
                 DefaultTexture = new TextureEntryFace(null);
                 DefaultTexture.TextureID = defaultTextureID;
@@ -688,17 +688,19 @@ namespace OpenMetaverse
                 int i = pos;
 
                 #region Texture
-                DefaultTexture.TextureID = new UUID(data, i);
+                DefaultTexture.TextureID = new Guid();
+                DefaultTexture.TextureID.FromBytes(data, i);
                 i += 16;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref bitfieldSize))
                 {
-                    UUID tmpUUID = new UUID(data, i);
+                    Guid tmpGuid = new Guid();
+                    tmpGuid.FromBytes(data, i);
                     i += 16;
 
                     for (uint face = 0, bit = 1; face < bitfieldSize; face++, bit <<= 1)
                         if ((faceBits & bit) != 0)
-                            CreateFace(face).TextureID = tmpUUID;
+                            CreateFace(face).TextureID = tmpGuid;
                 }
                 #endregion Texture
 

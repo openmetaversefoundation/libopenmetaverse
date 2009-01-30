@@ -10,14 +10,14 @@ namespace OpenMetaverse.TestClient
 {
     public class TestClient : GridClient
     {
-        public UUID GroupID = UUID.Zero;
-        public Dictionary<UUID, GroupMember> GroupMembers;
-        public Dictionary<UUID, AvatarAppearancePacket> Appearances = new Dictionary<UUID, AvatarAppearancePacket>();
+        public Guid GroupID = Guid.Empty;
+        public Dictionary<Guid, GroupMember> GroupMembers;
+        public Dictionary<Guid, AvatarAppearancePacket> Appearances = new Dictionary<Guid, AvatarAppearancePacket>();
         public Dictionary<string, Command> Commands = new Dictionary<string, Command>();
         public bool Running = true;
         public bool GroupCommands = false;
         public string MasterName = String.Empty;
-        public UUID MasterKey = UUID.Zero;
+        public Guid MasterKey = Guid.Empty;
         public bool AllowObjectMaster = false;
         public ClientManager ClientManager;
         public VoiceManager VoiceManager;
@@ -108,7 +108,7 @@ namespace OpenMetaverse.TestClient
         }
 
         //breaks up large responses to deal with the max IM size
-        private void SendResponseIM(GridClient client, UUID fromAgentID, string data)
+        private void SendResponseIM(GridClient client, Guid fromAgentID, string data)
         {
             for (int i = 0; i < data.Length; i += 1024)
             {
@@ -145,7 +145,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(Dictionary<Guid, GroupMember> members)
         {
             Console.WriteLine("Got " + members.Count + " group members.");
             GroupMembers = members;
@@ -196,9 +196,9 @@ namespace OpenMetaverse.TestClient
         }
 
         private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
-            UUID objectID, bool fromTask)
+            Guid objectID, bool fromTask)
         {
-            if (MasterKey != UUID.Zero)
+            if (MasterKey != Guid.Empty)
             {
                 if (offer.FromAgentID != MasterKey)
                     return false;

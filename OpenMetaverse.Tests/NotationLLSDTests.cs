@@ -266,32 +266,32 @@ namespace OpenMetaverse.Tests
         }
 
         [Test()]
-        public void DeserializeUUID()
+        public void DeserializeGuid()
         {
-            String uuidOne = "u97f4aeca-88a1-42a1-b385-b97b18abb255";
-            OSD llsdOne = OSDParser.DeserializeLLSDNotation(uuidOne);
-            Assert.AreEqual(OSDType.UUID, llsdOne.Type);
+            String GuidOne = "u97f4aeca-88a1-42a1-b385-b97b18abb255";
+            OSD llsdOne = OSDParser.DeserializeLLSDNotation(GuidOne);
+            Assert.AreEqual(OSDType.Guid, llsdOne.Type);
             Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdOne.AsString());
 
-            String uuidTwo = "u00000000-0000-0000-0000-000000000000";
-            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(uuidTwo);
-            Assert.AreEqual(OSDType.UUID, llsdTwo.Type);
+            String GuidTwo = "u00000000-0000-0000-0000-000000000000";
+            OSD llsdTwo = OSDParser.DeserializeLLSDNotation(GuidTwo);
+            Assert.AreEqual(OSDType.Guid, llsdTwo.Type);
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdTwo.AsString());
         }
 
         [Test()]
-        public void SerializeUUID()
+        public void SerializeGuid()
         {
-            OSD llsdOne = OSD.FromUUID(new UUID("97f4aeca-88a1-42a1-b385-b97b18abb255"));
+            OSD llsdOne = OSD.FromGuid(new Guid("97f4aeca-88a1-42a1-b385-b97b18abb255"));
             string sOne = OSDParser.SerializeLLSDNotation(llsdOne);
             OSD llsdOneDS = OSDParser.DeserializeLLSDNotation(sOne);
-            Assert.AreEqual(OSDType.UUID, llsdOneDS.Type);
+            Assert.AreEqual(OSDType.Guid, llsdOneDS.Type);
             Assert.AreEqual("97f4aeca-88a1-42a1-b385-b97b18abb255", llsdOneDS.AsString());
 
-            OSD llsdTwo = OSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
+            OSD llsdTwo = OSD.FromGuid(new Guid("00000000-0000-0000-0000-000000000000"));
             string sTwo = OSDParser.SerializeLLSDNotation(llsdTwo);
             OSD llsdTwoDS = OSDParser.DeserializeLLSDNotation(sTwo);
-            Assert.AreEqual(OSDType.UUID, llsdTwoDS.Type);
+            Assert.AreEqual(OSDType.Guid, llsdTwoDS.Type);
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", llsdTwoDS.AsString());
         }
 
@@ -697,9 +697,9 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(1, llsdMapTwo["version"].AsInteger());
 
             OSDMap llsdMapThree = (OSDMap)llsdArray[2];
-            Assert.AreEqual(OSDType.UUID, llsdMapThree["session_id"].Type);
+            Assert.AreEqual(OSDType.Guid, llsdMapThree["session_id"].Type);
             Assert.AreEqual("2c585cec-038c-40b0-b42e-a25ebab4d132", llsdMapThree["session_id"].AsString());
-            Assert.AreEqual(OSDType.UUID, llsdMapThree["agent_id"].Type);
+            Assert.AreEqual(OSDType.Guid, llsdMapThree["agent_id"].Type);
             Assert.AreEqual("3c115e51-04f4-523c-9fa6-98aff1034730", llsdMapThree["agent_id"].AsString());
 
         }

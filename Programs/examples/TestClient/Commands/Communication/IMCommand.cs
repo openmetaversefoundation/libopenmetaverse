@@ -10,7 +10,7 @@ namespace OpenMetaverse.TestClient
     {
         string ToAvatarName = String.Empty;
         ManualResetEvent NameSearchEvent = new ManualResetEvent(false);
-        Dictionary<string, UUID> Name2Key = new Dictionary<string, UUID>();
+        Dictionary<string, Guid> Name2Key = new Dictionary<string, Guid>();
 
         public ImCommand(TestClient testClient)
         {
@@ -21,7 +21,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Communication;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 3)
                 return "Usage: im [firstname] [lastname] [message]";
@@ -38,14 +38,14 @@ namespace OpenMetaverse.TestClient
             if (!Name2Key.ContainsKey(ToAvatarName.ToLower()))
             {
                 // Send the Query
-                Client.Avatars.RequestAvatarNameSearch(ToAvatarName, UUID.Random());
+                Client.Avatars.RequestAvatarNameSearch(ToAvatarName, Guid.NewGuid());
 
                 NameSearchEvent.WaitOne(6000, false);
             }
 
             if (Name2Key.ContainsKey(ToAvatarName.ToLower()))
             {
-                UUID id = Name2Key[ToAvatarName.ToLower()];
+                Guid id = Name2Key[ToAvatarName.ToLower()];
 
                 Client.Self.InstantMessage(id, message);
                 return "Instant Messaged " + id.ToString() + " with message: " + message;
@@ -56,9 +56,9 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarNameSearch(UUID queryID, Dictionary<UUID, string> avatars)
+        void Avatars_OnAvatarNameSearch(Guid queryID, Dictionary<Guid, string> avatars)
         {
-            foreach (KeyValuePair<UUID, string> kvp in avatars)
+            foreach (KeyValuePair<Guid, string> kvp in avatars)
             {
                 if (kvp.Value.ToLower() == ToAvatarName.ToLower())
                 {

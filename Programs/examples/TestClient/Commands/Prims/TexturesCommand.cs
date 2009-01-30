@@ -6,7 +6,7 @@ namespace OpenMetaverse.TestClient
 {
     public class TexturesCommand : Command
     {
-        Dictionary<UUID, UUID> alreadyRequested = new Dictionary<UUID, UUID>();
+        Dictionary<Guid, Guid> alreadyRequested = new Dictionary<Guid, Guid>();
         bool enabled = false;
 
         public TexturesCommand(TestClient testClient)
@@ -22,7 +22,7 @@ namespace OpenMetaverse.TestClient
             testClient.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: textures [on/off]";

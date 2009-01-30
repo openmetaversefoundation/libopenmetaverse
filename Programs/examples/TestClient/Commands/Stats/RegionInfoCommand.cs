@@ -13,11 +13,11 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Simulator;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             StringBuilder output = new StringBuilder();
             output.AppendLine(Client.Network.CurrentSim.ToString());
-            output.Append("UUID: ");
+            output.Append("Guid: ");
             output.AppendLine(Client.Network.CurrentSim.ID.ToString());
             uint x, y;
             Utils.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);

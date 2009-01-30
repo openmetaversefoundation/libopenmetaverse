@@ -17,9 +17,9 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
-            Client.MasterKey = UUID.Parse(args[0]);
+            Client.MasterKey = new Guid(args[0]);
 
             lock (Client.Network.Simulators)
             {

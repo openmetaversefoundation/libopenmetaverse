@@ -23,7 +23,7 @@ namespace Simian.Extensions
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
 
-        static readonly UUID BIG_SPLASH_SOUND = new UUID("486475b9-1460-4969-871e-fad973b38015");
+        static readonly Guid BIG_SPLASH_SOUND = new Guid("486475b9-1460-4969-871e-fad973b38015");
 
         const float SQRT_TWO = 1.41421356f;
 

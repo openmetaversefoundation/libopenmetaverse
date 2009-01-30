@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Mono.Simd.Math;
 using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
@@ -44,8 +45,8 @@ namespace Simian.Extensions
         {
             ObjectAddPacket add = (ObjectAddPacket)packet;
 
-            Vector3 position = Vector3.Zero;
-            Vector3 scale = add.ObjectData.Scale;
+            Vector3f position = Vector3f.Zero;
+            Vector3f scale = add.ObjectData.Scale;
             PCode pcode = (PCode)add.ObjectData.PCode;
             PrimFlags flags = (PrimFlags)add.ObjectData.AddFlags;
             bool bypassRaycast = (add.ObjectData.BypassRaycast == 1);
@@ -60,7 +61,7 @@ namespace Simian.Extensions
             }
             else
             {
-                if (add.ObjectData.RayTargetID != UUID.Zero)
+                if (add.ObjectData.RayTargetID != Guid.Empty)
                 {
                     SimulationObject obj;
                     if (server.Scene.TryGetObject(add.ObjectData.RayTargetID, out obj))
@@ -123,7 +124,7 @@ namespace Simian.Extensions
                 PrimFlags.ObjectOwnerModify;
             // TODO: Security check
             prim.GroupID = add.AgentData.GroupID;
-            prim.ID = UUID.Random();
+            prim.ID = Guid.NewGuid();
             prim.MediaURL = String.Empty;
             prim.OwnerID = agent.AgentID;
             prim.Position = position;
@@ -187,7 +188,7 @@ namespace Simian.Extensions
                 {
                     SimulationObject newObj = new SimulationObject(obj);
                     newObj.Prim.Position += offset;
-                    newObj.Prim.ID = UUID.Random();
+                    newObj.Prim.ID = Guid.NewGuid();
 
                     server.Scene.ObjectAdd(this, agent, newObj, flags);
                 }
@@ -325,7 +326,9 @@ namespace Simian.Extensions
                     if (server.Scene.TryGetObject(linkSet[i].Prim.ParentID, out parent))
                     {
                         //re-add old root orientation
-                        linkSet[i].Prim.Position = parent.Prim.Position + Vector3.Transform(linkSet[i].Prim.Position, Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
+                        Matrix4f rotation = new Matrix4f();
+                        rotation.FromQuaternion(parent.Prim.Rotation);
+                        linkSet[i].Prim.Position = parent.Prim.Position + linkSet[i].Prim.Position.Transform(ref rotation);
                         linkSet[i].Prim.Rotation *= parent.Prim.Rotation;
                     }
                 }
@@ -333,7 +336,9 @@ namespace Simian.Extensions
                 if (i > 0)
                 {
                     //subtract root prim orientation
-                    linkSet[i].Prim.Position = Vector3.Transform(linkSet[i].Prim.Position - linkSet[0].Prim.Position, Matrix4.CreateFromQuaternion(Quaternion.Identity / linkSet[0].Prim.Rotation));
+                    Matrix4f rotation = new Matrix4f();
+                    rotation.FromQuaternion(Quaternionf.Identity / linkSet[0].Prim.Rotation);
+                    linkSet[i].Prim.Position = (linkSet[i].Prim.Position - linkSet[0].Prim.Position).Transform(ref rotation);
                     linkSet[i].Prim.Rotation /= linkSet[0].Prim.Rotation;
 
                     //set parent ID
@@ -347,7 +352,7 @@ namespace Simian.Extensions
 
                 update.ObjectData[0].ObjectData = SimulationObject.BuildObjectData(
                     linkSet[i].Prim.Position, linkSet[i].Prim.Rotation,
-                    Vector3.Zero, Vector3.Zero, Vector3.Zero);
+                    Vector3f.Zero, Vector3f.Zero, Vector3f.Zero);
 
                 server.UDP.BroadcastPacket(update, PacketCategory.State);
             }

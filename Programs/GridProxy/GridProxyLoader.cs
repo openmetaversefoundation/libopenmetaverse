@@ -18,9 +18,9 @@ namespace GridProxy
     {
         public Proxy proxy;
         private Dictionary<string, CommandDelegate> commandDelegates = new Dictionary<string, CommandDelegate>();
-        private UUID agentID;
-        private UUID sessionID;
-        private UUID inventoryRoot;
+        private Guid agentID;
+        private Guid sessionID;
+        private Guid inventoryRoot;
         private bool logLogin = false;
         private string[] args;
 
@@ -31,17 +31,17 @@ namespace GridProxy
             get { return args; }
         }
 
-        public UUID AgentID
+        public Guid AgentID
         {
             get { return agentID; }
         }
 
-        public UUID SessionID
+        public Guid SessionID
         {
             get { return sessionID; }
         }
 
-        public UUID InventoryRoot
+        public Guid InventoryRoot
         {
             get { return inventoryRoot; }
         }
@@ -144,12 +144,12 @@ namespace GridProxy
         {
             System.Collections.Hashtable values = (System.Collections.Hashtable)response.Value;
             if (values.Contains("agent_id"))
-                agentID = new UUID((string)values["agent_id"]);
+                agentID = new Guid((string)values["agent_id"]);
             if (values.Contains("session_id"))
-                sessionID = new UUID((string)values["session_id"]);
+                sessionID = new Guid((string)values["session_id"]);
             if (values.Contains("inventory-root")) 
             {
-                inventoryRoot = new UUID(
+                inventoryRoot = new Guid(
                     (string)((System.Collections.Hashtable)(((System.Collections.ArrayList)values["inventory-root"])[0]))["folder_id"]
                     );
                 Console.WriteLine("inventory root: " + inventoryRoot);
@@ -188,7 +188,7 @@ namespace GridProxy
         {
             ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
             packet.ChatData.FromName = Utils.StringToBytes("GridProxy");
-            packet.ChatData.SourceID = UUID.Random();
+            packet.ChatData.SourceID = Guid.NewGuid();
             packet.ChatData.OwnerID = agentID;
             packet.ChatData.SourceType = (byte)2;
             packet.ChatData.ChatType = (byte)1;

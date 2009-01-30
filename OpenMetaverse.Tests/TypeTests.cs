@@ -38,30 +38,30 @@ namespace OpenMetaverse.Tests
     public class TypeTests : Assert
     {
         [Test]
-        public void UUIDs()
+        public void Guids()
         {
             // Creation
-            UUID a = new UUID();
+            Guid a = new Guid();
             byte[] bytes = a.GetBytes();
             for (int i = 0; i < 16; i++)
                 Assert.IsTrue(bytes[i] == 0x00);
 
             // Comparison
-            a = new UUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+            a = new Guid(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
                 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0xFF, 0xFF }, 0);
-            UUID b = new UUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+            Guid b = new Guid(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
                 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }, 0);
 
-            Assert.IsTrue(a == b, "UUID comparison operator failed, " + a.ToString() + " should equal " + 
+            Assert.IsTrue(a == b, "Guid comparison operator failed, " + a.ToString() + " should equal " + 
                 b.ToString());
 
             // From string
-            a = new UUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+            a = new Guid(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
                 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }, 0);
             string zeroonetwo = "00010203-0405-0607-0809-0a0b0c0d0e0f";
-            b = new UUID(zeroonetwo);
+            b = new Guid(zeroonetwo);
 
-            Assert.IsTrue(a == b, "UUID hyphenated string constructor failed, should have " + a.ToString() + 
+            Assert.IsTrue(a == b, "Guid hyphenated string constructor failed, should have " + a.ToString() + 
                 " but we got " + b.ToString());
 
             // ToString()
@@ -71,7 +71,7 @@ namespace OpenMetaverse.Tests
             one = a.ToString();
             two = b.ToString();
             Assert.IsTrue(a == b);
-            Assert.IsTrue(a == (UUID)zeroonetwo);
+            Assert.IsTrue(a == (Guid)zeroonetwo);
 
             // TODO: CRC test
         }

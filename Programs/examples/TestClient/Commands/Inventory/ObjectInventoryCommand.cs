@@ -13,14 +13,14 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Inventory;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: objectinventory [objectID]";
 
             uint objectLocalID;
-            UUID objectID;
-            if (!UUID.TryParse(args[0], out objectID))
+            Guid objectID;
+            if (!GuidExtensions.TryParse(args[0], out objectID))
                 return "Usage: objectinventory [objectID]";
 
             Primitive found = Client.Network.CurrentSim.ObjectsPrimitives.Find(delegate(Primitive prim) { return prim.ID == objectID; });

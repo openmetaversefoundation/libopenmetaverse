@@ -31,7 +31,7 @@ namespace Simian.Extensions
             server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, new PacketCallback(AgentAnimationHandler));
             server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, new PacketCallback(SoundTriggerHandler));
             server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, new PacketCallback(ViewerEffectHandler));
-            server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(UUIDNameRequestHandler));
+            server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, new PacketCallback(GuidNameRequestHandler));
 
             if (CoarseLocationTimer != null) CoarseLocationTimer.Dispose();
             CoarseLocationTimer = new Timer(CoarseLocationTimer_Elapsed);
@@ -47,17 +47,17 @@ namespace Simian.Extensions
             }
         }
 
-        public bool SetDefaultAnimation(Agent agent, UUID animID)
+        public bool SetDefaultAnimation(Agent agent, Guid animID)
         {
             return agent.Animations.SetDefaultAnimation(animID, ref currentAnimSequenceNum);
         }
 
-        public bool AddAnimation(Agent agent, UUID animID)
+        public bool AddAnimation(Agent agent, Guid animID)
         {
             return agent.Animations.Add(animID, ref currentAnimSequenceNum);
         }
 
-        public bool RemoveAnimation(Agent agent, UUID animID)
+        public bool RemoveAnimation(Agent agent, Guid animID)
         {
             return agent.Animations.Remove(animID);
         }
@@ -70,7 +70,7 @@ namespace Simian.Extensions
             sendAnim.AnimationSourceList[0] = new AvatarAnimationPacket.AnimationSourceListBlock();
             sendAnim.AnimationSourceList[0].ObjectID = agent.AgentID;
 
-            UUID[] animIDS;
+            Guid[] animIDS;
             int[] sequenceNums;
             agent.Animations.GetArrays(out animIDS, out sequenceNums);
 
@@ -85,7 +85,7 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
         }
 
-        public void TriggerSound(Agent agent, UUID soundID, float gain)
+        public void TriggerSound(Agent agent, Guid soundID, float gain)
         {
             SoundTriggerPacket sound = new SoundTriggerPacket();
             sound.SoundData.Handle = server.RegionHandle;
@@ -128,8 +128,8 @@ namespace Simian.Extensions
         {
             ViewerEffectPacket effect = (ViewerEffectPacket)packet;
 
-            effect.AgentData.AgentID = UUID.Zero;
-            effect.AgentData.SessionID = UUID.Zero;
+            effect.AgentData.AgentID = Guid.Empty;
+            effect.AgentData.SessionID = Guid.Empty;
 
             server.UDP.BroadcastPacket(effect, PacketCategory.State);
         }
@@ -163,10 +163,10 @@ namespace Simian.Extensions
             }
         }
 
-        bool TryAddWearable(UUID agentID, Dictionary<WearableType, InventoryItem> wearables, WearableType type, UUID itemID)
+        bool TryAddWearable(Guid agentID, Dictionary<WearableType, InventoryItem> wearables, WearableType type, Guid itemID)
         {
             InventoryObject obj;
-            if (itemID != UUID.Zero && server.Inventory.TryGetInventory(agentID, itemID, out obj) &&
+            if (itemID != Guid.Empty && server.Inventory.TryGetInventory(agentID, itemID, out obj) &&
                 obj is InventoryItem)
             {
                 wearables.Add(type, (InventoryItem)obj);
@@ -237,7 +237,7 @@ namespace Simian.Extensions
 
             for (int i = 0; i < wearing.WearableData.Length; i++)
             {
-                UUID itemID = wearing.WearableData[i].ItemID;
+                Guid itemID = wearing.WearableData[i].ItemID;
 
                 #region Update Wearables
 
@@ -301,7 +301,7 @@ namespace Simian.Extensions
             for (int i = 0; i < set.WearableData.Length; i++)
             {
                 AppearanceManager.TextureIndex index = (AppearanceManager.TextureIndex)set.WearableData[i].TextureIndex;
-                UUID cacheID = set.WearableData[i].CacheID;
+                Guid cacheID = set.WearableData[i].CacheID;
 
                 Logger.DebugLog(String.Format("WearableData: {0} is now {1}", index, cacheID));
             }
@@ -333,7 +333,7 @@ namespace Simian.Extensions
             {
                 response.WearableData[i] = new AgentCachedTextureResponsePacket.WearableDataBlock();
                 response.WearableData[i].TextureIndex = cached.WearableData[i].TextureIndex;
-                response.WearableData[i].TextureID = UUID.Zero;
+                response.WearableData[i].TextureID = Guid.Empty;
                 response.WearableData[i].HostName = new byte[0];
             }
 
@@ -348,30 +348,30 @@ namespace Simian.Extensions
             TriggerSound(agent, trigger.SoundData.SoundID, trigger.SoundData.Gain);
         }
 
-        void UUIDNameRequestHandler(Packet packet, Agent agent)
+        void GuidNameRequestHandler(Packet packet, Agent agent)
         {
             UUIDNameRequestPacket request = (UUIDNameRequestPacket)packet;
 
-            UUIDNameReplyPacket reply = new UUIDNameReplyPacket();
-            reply.UUIDNameBlock = new UUIDNameReplyPacket.UUIDNameBlockBlock[request.UUIDNameBlock.Length];
+            GuidNameReplyPacket reply = new GuidNameReplyPacket();
+            reply.GuidNameBlock = new GuidNameReplyPacket.GuidNameBlockBlock[request.GuidNameBlock.Length];
 
-            for (int i = 0; i < request.UUIDNameBlock.Length; i++)
+            for (int i = 0; i < request.GuidNameBlock.Length; i++)
             {
-                UUID id = request.UUIDNameBlock[i].ID;
+                Guid id = request.GuidNameBlock[i].ID;
 
-                reply.UUIDNameBlock[i] = new UUIDNameReplyPacket.UUIDNameBlockBlock();
-                reply.UUIDNameBlock[i].ID = id;
+                reply.GuidNameBlock[i] = new GuidNameReplyPacket.GuidNameBlockBlock();
+                reply.GuidNameBlock[i].ID = id;
 
                 Agent foundAgent;
                 if (server.Agents.TryGetValue(id, out foundAgent))
                 {
-                    reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(foundAgent.FirstName);
-                    reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(foundAgent.LastName);
+                    reply.GuidNameBlock[i].FirstName = Utils.StringToBytes(foundAgent.FirstName);
+                    reply.GuidNameBlock[i].LastName = Utils.StringToBytes(foundAgent.LastName);
                 }
                 else
                 {
-                    reply.UUIDNameBlock[i].FirstName = new byte[0];
-                    reply.UUIDNameBlock[i].LastName = new byte[0];
+                    reply.GuidNameBlock[i].FirstName = new byte[0];
+                    reply.GuidNameBlock[i].LastName = new byte[0];
                 }
             }
 

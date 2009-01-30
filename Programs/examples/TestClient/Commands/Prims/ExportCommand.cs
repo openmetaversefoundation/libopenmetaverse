@@ -9,13 +9,13 @@ namespace OpenMetaverse.TestClient
 {
     public class ExportCommand : Command
     {
-        List<UUID> Textures = new List<UUID>();
+        List<Guid> Textures = new List<Guid>();
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
         Primitive.ObjectProperties Properties;
         bool GotPermissions = false;
-        UUID SelectedObject = UUID.Zero;
+        Guid SelectedObject = Guid.Empty;
 
-        Dictionary<UUID, Primitive> PrimsWaiting = new Dictionary<UUID, Primitive>();
+        Dictionary<Guid, Primitive> PrimsWaiting = new Dictionary<Guid, Primitive>();
         AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
 
         public ExportCommand(TestClient testClient)
@@ -26,24 +26,24 @@ namespace OpenMetaverse.TestClient
             testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
 
             Name = "export";
-            Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
+            Description = "Exports an object to an xml file. Usage: export Guid outputfile.xml";
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
-            if (args.Length != 2 && !(args.Length == 1 && SelectedObject != UUID.Zero))
-                return "Usage: export uuid outputfile.xml";
+            if (args.Length != 2 && !(args.Length == 1 && SelectedObject != Guid.Empty))
+                return "Usage: export Guid outputfile.xml";
 
-            UUID id;
+            Guid id;
             uint localid;
             string file;
 
             if (args.Length == 2)
             {
                 file = args[1];
-                if (!UUID.TryParse(args[0], out id))
-                    return "Usage: export uuid outputfile.xml";
+                if (!GuidExtensions.TryParse(args[0], out id))
+                    return "Usage: export Guid outputfile.xml";
             }
             else
             {
@@ -96,8 +96,8 @@ namespace OpenMetaverse.TestClient
                 if (!complete)
                 {
                     Logger.Log("Warning: Unable to retrieve full properties for:", Helpers.LogLevel.Warning, Client);
-                    foreach (UUID uuid in PrimsWaiting.Keys)
-                        Logger.Log(uuid.ToString(), Helpers.LogLevel.Warning, Client);
+                    foreach (Guid Guid in PrimsWaiting.Keys)
+                        Logger.Log(Guid.ToString(), Helpers.LogLevel.Warning, Client);
                 }
 
                 string output = OSDParser.SerializeLLSDXmlString(Helpers.PrimListToOSD(prims));
@@ -131,7 +131,7 @@ namespace OpenMetaverse.TestClient
                             }
                         }
 
-                        if (prim.Sculpt.SculptTexture != UUID.Zero && !Textures.Contains(prim.Sculpt.SculptTexture)) {
+                        if (prim.Sculpt.SculptTexture != Guid.Empty && !Textures.Contains(prim.Sculpt.SculptTexture)) {
                             Textures.Add(prim.Sculpt.SculptTexture);
                         }
                     }
@@ -148,7 +148,7 @@ namespace OpenMetaverse.TestClient
             }
             else
             {
-                return "Couldn't find UUID " + id.ToString() + " in the " + 
+                return "Couldn't find Guid " + id.ToString() + " in the " + 
                     Client.Network.CurrentSim.ObjectsPrimitives.Count + 
                     "objects currently indexed in the current simulator";
             }
@@ -206,8 +206,8 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnPointAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            PointAtType pointType, float duration, UUID id)
+        void Avatars_OnPointAt(Guid sourceID, Guid targetID, Vector3d targetPos, 
+            PointAtType pointType, float duration, Guid id)
         {
             if (sourceID == Client.MasterKey)
             {

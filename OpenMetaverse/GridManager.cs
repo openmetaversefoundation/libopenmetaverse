@@ -29,6 +29,7 @@ using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using Mono.Simd.Math;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.Packets;
@@ -94,8 +95,8 @@ namespace OpenMetaverse
 		public byte WaterHeight;
         /// <summary></summary>
 		public byte Agents;
-        /// <summary>UUID of the World Map image</summary>
-		public UUID MapImageID;
+        /// <summary>Guid of the World Map image</summary>
+		public Guid MapImageID;
         /// <summary>Unique identifier for this region, a combination of the X 
         /// and Y position</summary>
 		public ulong RegionHandle;
@@ -157,7 +158,7 @@ namespace OpenMetaverse
         public int Left;
         public int Top;
         public int Right;
-        public UUID ImageID;
+        public Guid ImageID;
 
         public bool ContainsRegion(int x, int y)
         {
@@ -224,7 +225,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="regionID"></param>
         /// <param name="regionHandle"></param>
-        public delegate void RegionHandleReplyCallback(UUID regionID, ulong regionHandle);
+        public delegate void RegionHandleReplyCallback(Guid regionID, ulong regionHandle);
 
         #endregion Delegates
 
@@ -246,9 +247,9 @@ namespace OpenMetaverse
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
 		/// <summary>Current direction of the sun</summary>
-        public Vector3 SunDirection { get { return sunDirection; } }
+        public Vector3f SunDirection { get { return sunDirection; } }
         /// <summary>Current angular velocity of the sun</summary>
-        public Vector3 SunAngVelocity { get { return sunAngVelocity; } }
+        public Vector3f SunAngVelocity { get { return sunAngVelocity; } }
 
         /// <summary>A dictionary of all the regions, indexed by region name</summary>
         internal Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
@@ -257,8 +258,8 @@ namespace OpenMetaverse
 
 		private GridClient Client;
         private float sunPhase;
-        private Vector3 sunDirection;
-        private Vector3 sunAngVelocity;
+        private Vector3f sunDirection;
+        private Vector3f sunAngVelocity;
 
         /// <summary>
         /// Constructor
@@ -405,10 +406,10 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Request the region handle for the specified region UUID
+        /// Request the region handle for the specified region Guid
         /// </summary>
-        /// <param name="regionID">UUID of the region to look up</param>
-        public void RequestRegionHandle(UUID regionID)
+        /// <param name="regionID">Guid of the region to look up</param>
+        public void RequestRegionHandle(Guid regionID)
         {
             RegionHandleRequestPacket request = new RegionHandleRequestPacket();
             request.RequestBlock = new RegionHandleRequestPacket.RequestBlockBlock();
@@ -491,7 +492,7 @@ namespace OpenMetaverse
                     layer.Left = thisLayerData["Left"].AsInteger();
                     layer.Top = thisLayerData["Top"].AsInteger();
                     layer.Right = thisLayerData["Right"].AsInteger();
-                    layer.ImageID = thisLayerData["ImageID"].AsUUID();
+                    layer.ImageID = thisLayerData["ImageID"].AsGuid();
 
                     try { OnGridLayer(layer); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
@@ -636,7 +637,7 @@ namespace OpenMetaverse
                     {
                         simulator.positionIndexPrey = i;
                     }
-                    simulator.avatarPositions.Add(new Vector3(coarse.Location[i].X, coarse.Location[i].Y,
+                    simulator.avatarPositions.Add(new Vector3f(coarse.Location[i].X, coarse.Location[i].Y,
                         coarse.Location[i].Z * 4));
                 }
 

@@ -22,7 +22,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Inventory;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             Manager = Client.Inventory;
             Inventory = Manager.Store;
@@ -37,14 +37,14 @@ namespace OpenMetaverse.TestClient
 
         void PrintFolder(InventoryFolder f, StringBuilder result, int indent)
         {
-            List<InventoryBase> contents = Manager.FolderContents(f.UUID, Client.Self.AgentID,
+            List<InventoryBase> contents = Manager.FolderContents(f.Guid, Client.Self.AgentID,
                 true, true, InventorySortOrder.ByName, 3000);
 
             if (contents != null)
             {
                 foreach (InventoryBase i in contents)
                 {
-                    result.AppendFormat("{0}{1} ({2})\n", new String(' ', indent * 2), i.Name, i.UUID);
+                    result.AppendFormat("{0}{1} ({2})\n", new String(' ', indent * 2), i.Name, i.Guid);
                     if (i is InventoryFolder)
                     {
                         InventoryFolder folder = (InventoryFolder)i;

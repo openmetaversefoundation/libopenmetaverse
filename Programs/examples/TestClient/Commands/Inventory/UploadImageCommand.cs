@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
     public class UploadImageCommand : Command
     {
         AutoResetEvent UploadCompleteEvent = new AutoResetEvent(false);
-        UUID TextureID = UUID.Zero;
+        Guid TextureID = Guid.Empty;
         DateTime start;
 
         public UploadImageCommand(TestClient testClient)
@@ -22,7 +22,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Inventory;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             string inventoryName;
             uint timeout;
@@ -31,7 +31,7 @@ namespace OpenMetaverse.TestClient
             if (args.Length != 3)
                 return "Usage: uploadimage [inventoryname] [timeout] [filename]";
 
-            TextureID = UUID.Zero;
+            TextureID = Guid.Empty;
             inventoryName = args[0];
             fileName = args[2];
             if (!UInt32.TryParse(args[1], out timeout))
@@ -47,7 +47,7 @@ namespace OpenMetaverse.TestClient
 
             if (UploadCompleteEvent.WaitOne((int)timeout, false))
             {
-                return String.Format("Texture upload {0}: {1}", (TextureID != UUID.Zero) ? "succeeded" : "failed",
+                return String.Format("Texture upload {0}: {1}", (TextureID != Guid.Empty) ? "succeeded" : "failed",
                     TextureID);
             }
             else
@@ -71,7 +71,7 @@ namespace OpenMetaverse.TestClient
                             Console.WriteLine(String.Format("Texture upload: {0} / {1}", bytesSent, totalBytesToSend));
                     },
 
-                    delegate(bool success, string status, UUID itemID, UUID assetID)
+                    delegate(bool success, string status, Guid itemID, Guid assetID)
                     {
                         Console.WriteLine(String.Format(
                             "RequestCreateItemFromAsset() returned: Success={0}, Status={1}, ItemID={2}, AssetID={3}",

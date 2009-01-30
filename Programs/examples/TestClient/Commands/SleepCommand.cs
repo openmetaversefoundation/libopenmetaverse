@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             int seconds;
             if (args.Length != 1 || !Int32.TryParse(args[0], out seconds))

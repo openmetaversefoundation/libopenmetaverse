@@ -101,8 +101,8 @@ namespace OpenMetaverse
         public byte[] AssetData;
         public bool Temporary;
 
-        private UUID _AssetID;
-        public UUID AssetID
+        private Guid _AssetID;
+        public Guid AssetID
         {
             get { return _AssetID; }
             internal set { _AssetID = value; }
@@ -115,7 +115,7 @@ namespace OpenMetaverse
 
         public Asset() { }
 
-        public Asset(UUID assetID, byte[] assetData)
+        public Asset(Guid assetID, byte[] assetData)
         {
             _AssetID = assetID;
             AssetData = assetData;
@@ -141,7 +141,7 @@ namespace OpenMetaverse
 
         public AssetAnimation() { }
 
-        public AssetAnimation(UUID assetID, byte[] assetData)
+        public AssetAnimation(Guid assetID, byte[] assetData)
             : base(assetID, assetData)
         {
             AssetData = assetData;
@@ -159,7 +159,7 @@ namespace OpenMetaverse
 
         public AssetNotecard() { }
         
-        public AssetNotecard(UUID assetID, byte[] assetData) : base(assetID, assetData) 
+        public AssetNotecard(Guid assetID, byte[] assetData) : base(assetID, assetData) 
         {
             Decode();
         }
@@ -195,7 +195,7 @@ namespace OpenMetaverse
 
         public AssetScriptText() { }
 
-        public AssetScriptText(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+        public AssetScriptText(Guid assetID, byte[] assetData) : base(assetID, assetData) { }
         
         public AssetScriptText(string source)
         {
@@ -220,7 +220,7 @@ namespace OpenMetaverse
 
         public AssetScriptBinary() { }
 
-        public AssetScriptBinary(UUID assetID, byte[] assetData)
+        public AssetScriptBinary(Guid assetID, byte[] assetData)
             : base(assetID, assetData)
         {
             AssetData = assetData;
@@ -236,7 +236,7 @@ namespace OpenMetaverse
 
         public AssetSound() { }
 
-        public AssetSound(UUID assetID, byte[] assetData)
+        public AssetSound(Guid assetID, byte[] assetData)
             : base(assetID, assetData)
         {
             AssetData = assetData;
@@ -256,7 +256,7 @@ namespace OpenMetaverse
         
         public AssetTexture() { }
 
-        public AssetTexture(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+        public AssetTexture(Guid assetID, byte[] assetData) : base(assetID, assetData) { }
         
         public AssetTexture(ManagedImage image)
         {
@@ -337,18 +337,18 @@ namespace OpenMetaverse
         public WearableType WearableType = WearableType.Shape;
         public SaleType ForSale;
         public int SalePrice;
-        public UUID Creator;
-        public UUID Owner;
-        public UUID LastOwner;
-        public UUID Group;
+        public Guid Creator;
+        public Guid Owner;
+        public Guid LastOwner;
+        public Guid Group;
         public bool GroupOwned;
         public Permissions Permissions;
         public Dictionary<int, float> Params = new Dictionary<int, float>();
-        public Dictionary<AppearanceManager.TextureIndex, UUID> Textures = new Dictionary<AppearanceManager.TextureIndex, UUID>();
+        public Dictionary<AppearanceManager.TextureIndex, Guid> Textures = new Dictionary<AppearanceManager.TextureIndex, Guid>();
 
         public AssetWearable() { }
 
-        public AssetWearable(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+        public AssetWearable(Guid assetID, byte[] assetData) : base(assetID, assetData) { }
 
         public AssetWearable(string source)
         {
@@ -419,7 +419,7 @@ namespace OpenMetaverse
                                 fields = line.Split(' ');
 
                                 AppearanceManager.TextureIndex id = (AppearanceManager.TextureIndex)Int32.Parse(fields[0]);
-                                UUID texture = new UUID(fields[1]);
+                                Guid texture = new Guid(fields[1]);
 
                                 Textures[id] = texture;
                             }
@@ -454,16 +454,16 @@ namespace OpenMetaverse
                                 Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
                                 break;
                             case "creator_id":
-                                Creator = new UUID(fields[1]);
+                                Creator = new Guid(fields[1]);
                                 break;
                             case "owner_id":
-                                Owner = new UUID(fields[1]);
+                                Owner = new Guid(fields[1]);
                                 break;
                             case "last_owner_id":
-                                LastOwner = new UUID(fields[1]);
+                                LastOwner = new Guid(fields[1]);
                                 break;
                             case "group_id":
-                                Group = new UUID(fields[1]);
+                                Group = new Guid(fields[1]);
                                 break;
                             case "group_owned":
                                 GroupOwned = (Int32.Parse(fields[1]) != 0);
@@ -519,7 +519,7 @@ namespace OpenMetaverse
             }
 
             data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
-            foreach (KeyValuePair<AppearanceManager.TextureIndex, UUID> texture in Textures)
+            foreach (KeyValuePair<AppearanceManager.TextureIndex, Guid> texture in Textures)
             {
                 data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
             }
@@ -533,7 +533,7 @@ namespace OpenMetaverse
         public override AssetType AssetType { get { return AssetType.Clothing; } }
 
         public AssetClothing() { }
-        public AssetClothing(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+        public AssetClothing(Guid assetID, byte[] assetData) : base(assetID, assetData) { }
         public AssetClothing(string source) : base(source) { }
     }
 
@@ -542,7 +542,7 @@ namespace OpenMetaverse
         public override AssetType AssetType { get { return AssetType.Bodypart; } }
 
         public AssetBodypart() { }
-        public AssetBodypart(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+        public AssetBodypart(Guid assetID, byte[] assetData) : base(assetID, assetData) { }
         public AssetBodypart(string source) : base(source) { }
     }
 }

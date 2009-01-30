@@ -67,7 +67,7 @@ namespace OpenMetaverse
         /// <summary></summary>
 		F64,
         /// <summary></summary>
-		UUID,
+		Guid,
         /// <summary></summary>
 		BOOL,
         /// <summary></summary>
@@ -236,7 +236,7 @@ namespace OpenMetaverse
 			TypeSizes.Add(FieldType.S32, 4);
 			TypeSizes.Add(FieldType.F32, 4);
 			TypeSizes.Add(FieldType.F64, 8);
-			TypeSizes.Add(FieldType.UUID, 16);
+			TypeSizes.Add(FieldType.Guid, 16);
 			TypeSizes.Add(FieldType.BOOL, 1);
 			TypeSizes.Add(FieldType.Vector3, 12);
 			TypeSizes.Add(FieldType.Vector3d, 24);

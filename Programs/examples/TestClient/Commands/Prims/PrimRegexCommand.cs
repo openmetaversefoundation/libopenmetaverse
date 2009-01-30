@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: primregex [text predicat]";

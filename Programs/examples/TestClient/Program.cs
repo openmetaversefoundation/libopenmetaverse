@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe --first firstname --last lastname --pass password [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] [--gettextures] [--scriptfile \"filename\"]");
+                    "TestClient.exe --first firstname --last lastname --pass password [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master Guid\"] [--gettextures] [--scriptfile \"filename\"]");
         }
 
         static void Main(string[] args)
@@ -26,7 +26,7 @@ namespace OpenMetaverse.TestClient
             LoginDetails account;
             bool groupCommands = false;
             string masterName = String.Empty;
-            UUID masterKey = UUID.Zero;
+            Guid masterKey = Guid.Empty;
             string file = String.Empty;
             string loginuri = String.Empty;
             bool getTextures = false;
@@ -36,7 +36,7 @@ namespace OpenMetaverse.TestClient
                 groupCommands = true;
 
             if (arguments["masterkey"] != null)
-                masterKey = UUID.Parse(arguments["masterkey"]);
+                masterKey = Guid.Parse(arguments["masterkey"]);
 
             if (arguments["master"] != null)
                 masterName = arguments["master"];
@@ -149,7 +149,7 @@ namespace OpenMetaverse.TestClient
             manager = new ClientManager(accounts, getTextures);
 
             if (!String.IsNullOrEmpty(scriptFile))
-                manager.DoCommandAll("script " + scriptFile, UUID.Zero);
+                manager.DoCommandAll("script " + scriptFile, Guid.Empty);
 
             // Then Run the ClientManager normally
             manager.Run();

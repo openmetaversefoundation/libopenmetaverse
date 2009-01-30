@@ -91,7 +91,7 @@ namespace OpenMetaverse
             set 
             {
                 UpdateNodeFor(value);
-                _RootNode = Items[value.UUID];
+                _RootNode = Items[value.Guid];
             }
         }
 
@@ -104,7 +104,7 @@ namespace OpenMetaverse
             set
             {
                 UpdateNodeFor(value);
-                _LibraryRootNode = Items[value.UUID];
+                _LibraryRootNode = Items[value.Guid];
             }
         }
 
@@ -137,41 +137,41 @@ namespace OpenMetaverse
             }
         }
 
-        public UUID Owner {
+        public Guid Owner {
             get { return _Owner; }
         }
 
-        private UUID _Owner;
+        private Guid _Owner;
 
         private GridClient Client;
         //private InventoryManager Manager;
-        private Dictionary<UUID, InventoryNode> Items = new Dictionary<UUID, InventoryNode>();
+        private Dictionary<Guid, InventoryNode> Items = new Dictionary<Guid, InventoryNode>();
 
         public Inventory(GridClient client, InventoryManager manager)
             : this(client, manager, client.Self.AgentID) { }
 
-        public Inventory(GridClient client, InventoryManager manager, UUID owner)
+        public Inventory(GridClient client, InventoryManager manager, Guid owner)
         {
             Client = client;
             //Manager = manager;
             _Owner = owner;
-            if (owner == UUID.Zero)
+            if (owner == Guid.Empty)
                 Logger.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning, Client);
-            Items = new Dictionary<UUID, InventoryNode>();
+            Items = new Dictionary<Guid, InventoryNode>();
         }
 
         public List<InventoryBase> GetContents(InventoryFolder folder)
         {
-            return GetContents(folder.UUID);
+            return GetContents(folder.Guid);
         }
 
         /// <summary>
         /// Returns the contents of the specified folder
         /// </summary>
-        /// <param name="folder">A folder's UUID</param>
+        /// <param name="folder">A folder's Guid</param>
         /// <returns>The contents of the folder corresponding to <code>folder</code></returns>
         /// <exception cref="InventoryException">When <code>folder</code> does not exist in the inventory</exception>
-        public List<InventoryBase> GetContents(UUID folder)
+        public List<InventoryBase> GetContents(Guid folder)
         {
             InventoryNode folderNode;
             if (!Items.TryGetValue(folder, out folderNode))
@@ -191,8 +191,8 @@ namespace OpenMetaverse
         /// Updates the state of the InventoryNode and inventory data structure that
         /// is responsible for the InventoryObject. If the item was previously not added to inventory,
         /// it adds the item, and updates structure accordingly. If it was, it updates the 
-        /// InventoryNode, changing the parent node if <code>item.parentUUID</code> does 
-        /// not match <code>node.Parent.Data.UUID</code>.
+        /// InventoryNode, changing the parent node if <code>item.parentGuid</code> does 
+        /// not match <code>node.Parent.Data.Guid</code>.
         /// 
         /// You can not set the inventory root folder using this method
         /// </summary>
@@ -202,44 +202,44 @@ namespace OpenMetaverse
             lock (Items)
             {
                 InventoryNode itemParent = null;
-                if (item.ParentUUID != UUID.Zero && !Items.TryGetValue(item.ParentUUID, out itemParent))
+                if (item.ParentGuid != Guid.Empty && !Items.TryGetValue(item.ParentGuid, out itemParent))
                 {
                     // OK, we have no data on the parent, let's create a fake one.
-                    InventoryFolder fakeParent = new InventoryFolder(item.ParentUUID);
+                    InventoryFolder fakeParent = new InventoryFolder(item.ParentGuid);
                     fakeParent.DescendentCount = 1; // Dear god, please forgive me.
                     itemParent = new InventoryNode(fakeParent);
-                    Items[item.ParentUUID] = itemParent;
+                    Items[item.ParentGuid] = itemParent;
                     // Unfortunately, this breaks the nice unified tree
                     // while we're waiting for the parent's data to come in.
                     // As soon as we get the parent, the tree repairs itself.
                     Logger.DebugLog("Attempting to update inventory child of " +
-                        item.ParentUUID.ToString() + " when we have no local reference to that folder", Client);
+                        item.ParentGuid.ToString() + " when we have no local reference to that folder", Client);
 
                     if (Client.Settings.FETCH_MISSING_INVENTORY)
                     {
                         // Fetch the parent
-                        List<UUID> fetchreq = new List<UUID>(1);
-                        fetchreq.Add(item.ParentUUID);
+                        List<Guid> fetchreq = new List<Guid>(1);
+                        fetchreq.Add(item.ParentGuid);
                         //Manager.FetchInventory(fetchreq); // we cant fetch folder data! :-O
                     }
                 }
 
                 InventoryNode itemNode;
-                if (Items.TryGetValue(item.UUID, out itemNode)) // We're updating.
+                if (Items.TryGetValue(item.Guid, out itemNode)) // We're updating.
                 {
                     InventoryNode oldParent = itemNode.Parent;
                     // Handle parent change
-                    if (oldParent == null || itemParent == null || itemParent.Data.UUID != oldParent.Data.UUID)
+                    if (oldParent == null || itemParent == null || itemParent.Data.Guid != oldParent.Data.Guid)
                     {
                         if (oldParent != null)
                         {
                             lock (oldParent.Nodes.SyncRoot)
-                                oldParent.Nodes.Remove(item.UUID);
+                                oldParent.Nodes.Remove(item.Guid);
                         }
                         if (itemParent != null)
                         {
                             lock (itemParent.Nodes.SyncRoot)
-                                itemParent.Nodes[item.UUID] = itemNode;
+                                itemParent.Nodes[item.Guid] = itemNode;
                         }
                     }
 
@@ -253,15 +253,15 @@ namespace OpenMetaverse
                 else // We're adding.
                 {
                     itemNode = new InventoryNode(item, itemParent);
-                    Items.Add(item.UUID, itemNode);
+                    Items.Add(item.Guid, itemNode);
                     FireOnInventoryObjectAdded(item);
                 }
             }
         }
 
-        public InventoryNode GetNodeFor(UUID uuid)
+        public InventoryNode GetNodeFor(Guid Guid)
         {
-            return Items[uuid];
+            return Items[Guid];
         }
 
         /// <summary>
@@ -273,74 +273,74 @@ namespace OpenMetaverse
             lock (Items)
             {
                 InventoryNode node;
-                if (Items.TryGetValue(item.UUID, out node))
+                if (Items.TryGetValue(item.Guid, out node))
                 {
                     if (node.Parent != null)
                         lock (node.Parent.Nodes.SyncRoot)
-                            node.Parent.Nodes.Remove(item.UUID);
-                    Items.Remove(item.UUID);
+                            node.Parent.Nodes.Remove(item.Guid);
+                    Items.Remove(item.Guid);
                     FireOnInventoryObjectRemoved(item);
                 }
 
                 // In case there's a new parent:
                 InventoryNode newParent;
-                if (Items.TryGetValue(item.ParentUUID, out newParent))
+                if (Items.TryGetValue(item.ParentGuid, out newParent))
                 {
                     lock (newParent.Nodes.SyncRoot)
-                        newParent.Nodes.Remove(item.UUID);
+                        newParent.Nodes.Remove(item.Guid);
                 }
             }
         }
 
         /// <summary>
         /// Used to find out if Inventory contains the InventoryObject
-        /// specified by <code>uuid</code>.
+        /// specified by <code>Guid</code>.
         /// </summary>
-        /// <param name="uuid">The UUID to check.</param>
-        /// <returns>true if inventory contains uuid, false otherwise</returns>
-        public bool Contains(UUID uuid)
+        /// <param name="Guid">The Guid to check.</param>
+        /// <returns>true if inventory contains Guid, false otherwise</returns>
+        public bool Contains(Guid Guid)
         {
-            return Items.ContainsKey(uuid);
+            return Items.ContainsKey(Guid);
         }
 
         public bool Contains(InventoryBase obj)
         {
-            return Contains(obj.UUID);
+            return Contains(obj.Guid);
         }
 
         #region Operators
 
         /// <summary>
         /// By using the bracket operator on this class, the program can get the 
-        /// InventoryObject designated by the specified uuid. If the value for the corresponding
-        /// UUID is null, the call is equivelant to a call to <code>RemoveNodeFor(this[uuid])</code>.
+        /// InventoryObject designated by the specified Guid. If the value for the corresponding
+        /// Guid is null, the call is equivelant to a call to <code>RemoveNodeFor(this[Guid])</code>.
         /// If the value is non-null, it is equivelant to a call to <code>UpdateNodeFor(value)</code>,
-        /// the uuid parameter is ignored.
+        /// the Guid parameter is ignored.
         /// </summary>
-        /// <param name="uuid">The UUID of the InventoryObject to get or set, ignored if set to non-null value.</param>
-        /// <returns>The InventoryObject corresponding to <code>uuid</code>.</returns>
-        public InventoryBase this[UUID uuid]
+        /// <param name="Guid">The Guid of the InventoryObject to get or set, ignored if set to non-null value.</param>
+        /// <returns>The InventoryObject corresponding to <code>Guid</code>.</returns>
+        public InventoryBase this[Guid Guid]
         {
             get
             {
-                InventoryNode node = Items[uuid];
+                InventoryNode node = Items[Guid];
                 return node.Data;
             }
             set
             {
                 if (value != null)
                 {
-                    // Log a warning if there is a UUID mismatch, this will cause problems
-                    if (value.UUID != uuid)
-                        Logger.Log("Inventory[uuid]: uuid " + uuid.ToString() + " is not equal to value.UUID " +
-                            value.UUID.ToString(), Helpers.LogLevel.Warning, Client);
+                    // Log a warning if there is a Guid mismatch, this will cause problems
+                    if (value.Guid != Guid)
+                        Logger.Log("Inventory[Guid]: Guid " + Guid.ToString() + " is not equal to value.Guid " +
+                            value.Guid.ToString(), Helpers.LogLevel.Warning, Client);
 
                     UpdateNodeFor(value);
                 }
                 else
                 {
                     InventoryNode node;
-                    if (Items.TryGetValue(uuid, out node))
+                    if (Items.TryGetValue(Guid, out node))
                     {
                         RemoveNodeFor(node.Data);
                     }

@@ -27,6 +27,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
@@ -71,7 +72,7 @@ namespace OpenMetaverse
             FromBytes(byteArray, pos);
         }
 
-        public Vector3d(Vector3 vector)
+        public Vector3d(Vector3f vector)
         {
             X = vector.X;
             Y = vector.Y;

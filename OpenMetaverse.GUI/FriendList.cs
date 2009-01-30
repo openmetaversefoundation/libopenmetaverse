@@ -103,7 +103,7 @@ namespace OpenMetaverse.GUI
             {
                 Client.Friends.FriendList.ForEach(delegate(FriendInfo friend)
                 {
-                    string key = friend.UUID.ToString();
+                    string key = friend.Guid.ToString();
                     string onlineText;
                     string name = friend.Name == null ? "(loading...)" : friend.Name;
                     int image;
@@ -152,7 +152,7 @@ namespace OpenMetaverse.GUI
             RefreshFriends();
         }
 
-        private void Friends_OnFriendNamesReceived(Dictionary<UUID, string> names)
+        private void Friends_OnFriendNamesReceived(Dictionary<Guid, string> names)
         {
             RefreshFriends();
         }

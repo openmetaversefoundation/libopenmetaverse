@@ -54,7 +54,7 @@ namespace OpenMetaverse.StructuredData
 
         private const char integerNotationMarker = 'i';
         private const char realNotationMarker = 'r';
-        private const char uuidNotationMarker = 'u';
+        private const char GuidNotationMarker = 'u';
         private const char binaryNotationMarker = 'b';
         private const char stringNotationMarker = 's';
         private const char uriNotationMarker = 'l';
@@ -176,14 +176,14 @@ namespace OpenMetaverse.StructuredData
                 case realNotationMarker:
                     osd = DeserializeLLSDNotationReal(reader);
                     break;
-                case uuidNotationMarker:
-                    char[] uuidBuf = new char[36];
-                    if (reader.Read(uuidBuf, 0, 36) < 36)
-                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in UUID.");
-                    UUID lluuid;
-                    if (!UUID.TryParse(new String(uuidBuf), out lluuid))
-                        throw new OSDException("Notation LLSD parsing: Invalid UUID discovered.");
-                    osd = OSD.FromUUID(lluuid);
+                case GuidNotationMarker:
+                    char[] GuidBuf = new char[36];
+                    if (reader.Read(GuidBuf, 0, 36) < 36)
+                        throw new OSDException("Notation LLSD parsing: Unexpected end of stream in Guid.");
+                    Guid guid;
+                    if (!GuidExtensions.TryParse(new string(GuidBuf), out guid))
+                        throw new OSDException("Notation LLSD parsing: Invalid Guid discovered.");
+                    osd = OSD.FromGuid(guid);
                     break;
                 case binaryNotationMarker:
                     byte[] bytes = new byte[0];
@@ -398,8 +398,8 @@ namespace OpenMetaverse.StructuredData
                     writer.Write(realNotationMarker);
                     writer.Write(osd.AsString());
                     break;
-                case OSDType.UUID:
-                    writer.Write(uuidNotationMarker);
+                case OSDType.Guid:
+                    writer.Write(GuidNotationMarker);
                     writer.Write(osd.AsString());
                     break;
                 case OSDType.String:
@@ -494,8 +494,8 @@ namespace OpenMetaverse.StructuredData
                     writer.Write(realNotationMarker);
                     writer.Write(osd.AsString());
                     break;
-                case OSDType.UUID:
-                    writer.Write(uuidNotationMarker);
+                case OSDType.Guid:
+                    writer.Write(GuidNotationMarker);
                     writer.Write(osd.AsString());
                     break;
                 case OSDType.String:

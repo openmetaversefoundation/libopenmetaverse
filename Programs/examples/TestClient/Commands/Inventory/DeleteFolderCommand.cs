@@ -21,7 +21,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Inventory;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             // parse the command line
             string target = String.Empty;
@@ -34,11 +34,11 @@ namespace OpenMetaverse.TestClient
             try
             {
                 // find the folder
-                found = Client.Inventory.LocalFind(Client.Inventory.Store.RootFolder.UUID, target.Split('/'), 0, true);
+                found = Client.Inventory.LocalFind(Client.Inventory.Store.RootFolder.Guid, target.Split('/'), 0, true);
                 if (found.Count.Equals(1))
                 {
                     // move the folder to the trash folder
-                    Client.Inventory.MoveFolder(found[0].UUID, Client.Inventory.FindFolderForType(AssetType.TrashFolder));
+                    Client.Inventory.MoveFolder(found[0].Guid, Client.Inventory.FindFolderForType(AssetType.TrashFolder));
                     return String.Format("Moved folder {0} to Trash", found[0].Name);
                 }
             }

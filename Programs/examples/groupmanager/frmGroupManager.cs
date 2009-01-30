@@ -13,7 +13,7 @@ namespace groupmanager
     public partial class frmGroupManager : Form
     {
         GridClient Client;
-        Dictionary<UUID, Group> Groups;
+        Dictionary<Guid, Group> Groups;
 
         public frmGroupManager()
         {
@@ -132,7 +132,7 @@ namespace groupmanager
             }
         }
 
-        private void Groups_OnCurrentGroups(Dictionary<UUID, Group> groups)
+        private void Groups_OnCurrentGroups(Dictionary<Guid, Group> groups)
         {
             Groups = groups;
 

@@ -51,7 +51,7 @@ namespace OpenMetaverse.Tests
             OSD theSD = null;
             OSDMap map = null;
             OSD tempSD = null;
-            OSDUUID tempUUID = null;
+            OSDGuid tempGuid = null;
             OSDString tempStr = null;
             OSDReal tempReal = null;
 
@@ -59,7 +59,7 @@ namespace OpenMetaverse.Tests
             <llsd>
                 <map>
 	                <key>region_id</key>
-	                <uuid>67153d5b-3659-afb4-8510-adda2c034649</uuid>
+	                <Guid>67153d5b-3659-afb4-8510-adda2c034649</Guid>
 	                <key>scale</key>
 	                <string>one minute</string>
 	                <key>simulator statistics</key>
@@ -92,10 +92,10 @@ namespace OpenMetaverse.Tests
 
             tempSD = map["region_id"];
             Assert.IsNotNull(tempSD);
-            Assert.IsTrue(tempSD is OSDUUID);
-            Assert.IsTrue(tempSD.Type == OSDType.UUID);
-            tempUUID = (OSDUUID)tempSD;
-            Assert.AreEqual(new UUID("67153d5b-3659-afb4-8510-adda2c034649"), tempUUID.AsUUID());
+            Assert.IsTrue(tempSD is OSDGuid);
+            Assert.IsTrue(tempSD.Type == OSDType.Guid);
+            tempGuid = (OSDGuid)tempSD;
+            Assert.AreEqual(new Guid("67153d5b-3659-afb4-8510-adda2c034649"), tempGuid.AsGuid());
 
             tempSD = map["scale"];
             Assert.IsNotNull(tempSD);
@@ -301,20 +301,20 @@ namespace OpenMetaverse.Tests
         }
 
         /// <summary>
-        /// Test that various UUID representations are parsed correctly.
+        /// Test that various Guid representations are parsed correctly.
         /// </summary>
         [Test]
-        public void DeserializeUUID()
+        public void DeserializeGuid()
         {
             OSD theSD = null;
             OSDArray array = null;
-            OSDUUID tempUUID = null;
+            OSDGuid tempGuid = null;
 
             String testSD = @"<?xml version='1.0' encoding='UTF-8'?>
             <llsd>
                 <array>
-                    <uuid>d7f4aeca-88f1-42a1-b385-b9db18abb255</uuid>
-                    <uuid/>
+                    <Guid>d7f4aeca-88f1-42a1-b385-b9db18abb255</Guid>
+                    <Guid/>
                 </array>
             </llsd>";
             //Deserialize the string
@@ -324,13 +324,13 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(theSD is OSDArray);
             array = (OSDArray)theSD;
 
-            Assert.AreEqual(OSDType.UUID, array[0].Type);
-            tempUUID = (OSDUUID)array[0];
-            Assert.AreEqual(new UUID("d7f4aeca-88f1-42a1-b385-b9db18abb255"), tempUUID.AsUUID());
+            Assert.AreEqual(OSDType.Guid, array[0].Type);
+            tempGuid = (OSDGuid)array[0];
+            Assert.AreEqual(new Guid("d7f4aeca-88f1-42a1-b385-b9db18abb255"), tempGuid.AsGuid());
 
-            Assert.AreEqual(OSDType.UUID, array[1].Type);
-            tempUUID = (OSDUUID)array[1];
-            Assert.AreEqual(UUID.Zero, tempUUID.AsUUID());
+            Assert.AreEqual(OSDType.Guid, array[1].Type);
+            tempGuid = (OSDGuid)array[1];
+            Assert.AreEqual(Guid.Empty, tempGuid.AsGuid());
         }
 
         /// <summary>

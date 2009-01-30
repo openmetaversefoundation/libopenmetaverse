@@ -6,6 +6,6 @@ namespace Simian
     public interface IAssetProvider
     {
         void StoreAsset(Asset asset);
-        bool TryGetAsset(UUID id, out Asset asset);
+        bool TryGetAsset(Guid id, out Asset asset);
     }
 }

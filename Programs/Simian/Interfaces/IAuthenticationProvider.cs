@@ -5,6 +5,6 @@ namespace Simian
 {
     public interface IAuthenticationProvider
     {
-        UUID Authenticate(string firstName, string lastName, string password);
+        Guid Authenticate(string firstName, string lastName, string password);
     }
 }

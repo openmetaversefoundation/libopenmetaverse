@@ -27,6 +27,8 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
+using Mono.Simd;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
@@ -275,17 +277,16 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="val">A string representation of a 2D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
-        public static Vector3 Parse(string val)
+        public static Vector2 Parse(string val)
         {
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new Vector3(
+            return new Vector2(
                 float.Parse(split[0].Trim(), Utils.EnUsCulture),
-                float.Parse(split[1].Trim(), Utils.EnUsCulture),
-                float.Parse(split[2].Trim(), Utils.EnUsCulture));
+                float.Parse(split[1].Trim(), Utils.EnUsCulture));
         }
 
-        public static bool TryParse(string val, out Vector3 result)
+        public static bool TryParse(string val, out Vector2 result)
         {
             try
             {
@@ -294,7 +295,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = Vector3.Zero;
+                result = Vector2.Zero;
                 return false;
             }
         }
@@ -316,14 +317,14 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector2 Transform(Vector2 position, Matrix4 matrix)
+        public static Vector2 Transform(Vector2 position, Matrix4f matrix)
         {
             position.X = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M41;
             position.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M42;
             return position;
         }
 
-        public static Vector2 TransformNormal(Vector2 position, Matrix4 matrix)
+        public static Vector2 TransformNormal(Vector2 position, Matrix4f matrix)
         {
             position.X = (position.X * matrix.M11) + (position.Y * matrix.M21);
             position.Y = (position.X * matrix.M12) + (position.Y * matrix.M22);

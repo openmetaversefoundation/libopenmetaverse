@@ -274,8 +274,8 @@ namespace OpenMetaverse
         /// The error codes can be found here: https://wiki.secondlife.com/wiki/RegAPIError
         /// </summary>
         /// <param name="user">New user account to create</param>
-        /// <returns>The UUID of the new user account</returns>
-        public UUID CreateUser(CreateUserParam user)
+        /// <returns>The Guid of the new user account</returns>
+        public Guid CreateUser(CreateUserParam user)
         {
             if (Initializing)
                 throw new InvalidOperationException("still initializing");
@@ -319,7 +319,7 @@ namespace OpenMetaverse
             request.StartRequest();
 
             // FIXME: Block
-            return UUID.Zero;
+            return Guid.Empty;
         }
 
         private void CreateUserResponse(CapsClient client, OSD response, Exception error)
@@ -328,7 +328,7 @@ namespace OpenMetaverse
             {
                 // everything is okay
                 // FIXME:
-                //return new UUID(((Dictionary<string, object>)response)["agent_id"].ToString());
+                //return new Guid(((Dictionary<string, object>)response)["agent_id"].ToString());
             }
             else
             {

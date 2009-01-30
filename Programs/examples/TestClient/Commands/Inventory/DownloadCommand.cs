@@ -7,7 +7,7 @@ namespace OpenMetaverse.TestClient
 {
     public class DownloadCommand : Command
     {
-        UUID AssetID;
+        Guid AssetID;
         AssetType assetType;
         AutoResetEvent DownloadHandle = new AutoResetEvent(false);
         bool Success;
@@ -15,23 +15,23 @@ namespace OpenMetaverse.TestClient
         public DownloadCommand(TestClient testClient)
         {
             Name = "download";
-            Description = "Downloads the specified asset. Usage: download [uuid] [assetType]";
+            Description = "Downloads the specified asset. Usage: download [Guid] [assetType]";
             Category = CommandCategory.Inventory;
 
             testClient.Assets.OnAssetReceived += new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 2)
-                return "Usage: download [uuid] [assetType]";
+                return "Usage: download [Guid] [assetType]";
 
             Success = false;
-            AssetID = UUID.Zero;
+            AssetID = Guid.Empty;
             assetType = AssetType.Unknown;
             DownloadHandle.Reset();
 
-            if (UUID.TryParse(args[0], out AssetID))
+            if (GuidExtensions.TryParse(args[0], out AssetID))
             {
                 int typeInt;
                 if (Int32.TryParse(args[1], out typeInt) && typeInt >= 0 && typeInt <= 22)
@@ -56,12 +56,12 @@ namespace OpenMetaverse.TestClient
                 }
                 else
                 {
-                    return "Usage: download [uuid] [assetType]";
+                    return "Usage: download [Guid] [assetType]";
                 }
             }
             else
             {
-                return "Usage: download [uuid] [assetType]";
+                return "Usage: download [Guid] [assetType]";
             }
         }
 

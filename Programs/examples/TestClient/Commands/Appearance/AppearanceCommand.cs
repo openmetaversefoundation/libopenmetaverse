@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Appearance;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             bool success = false;
 

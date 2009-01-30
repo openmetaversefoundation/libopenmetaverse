@@ -26,6 +26,8 @@
 
 using System;
 using System.Text;
+using Mono.Simd;
+using Mono.Simd.Math;
 using OpenMetaverse;
 
 namespace OpenMetaverse.Packets
@@ -1857,8 +1859,8 @@ namespace OpenMetaverse.Packets
         public class CircuitCodeBlock : PacketBlock
         {
             public uint Code;
-            public UUID SessionID;
-            public UUID ID;
+            public Guid SessionID;
+            public Guid ID;
 
             public override int Length
             {
@@ -1981,7 +1983,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TelehubBlockBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             private byte[] _objectname;
             public byte[] ObjectName
             {
@@ -1993,8 +1995,8 @@ namespace OpenMetaverse.Packets
                     else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
-            public Vector3 TelehubPos;
-            public Quaternion TelehubRot;
+            public Vector3f TelehubPos;
+            public Quaternionf TelehubRot;
 
             public override int Length
             {
@@ -2056,7 +2058,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SpawnPointBlockBlock : PacketBlock
         {
-            public Vector3 SpawnPointPos;
+            public Vector3f SpawnPointPos;
 
             public override int Length
             {
@@ -2445,9 +2447,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID QueryID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -2638,8 +2640,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID QueryID;
+            public Guid AgentID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -2687,7 +2689,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID AvatarID;
+            public Guid AvatarID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -2869,9 +2871,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID QueryID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -2922,7 +2924,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -3142,8 +3144,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID QueryID;
+            public Guid AgentID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -3191,7 +3193,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -3236,7 +3238,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -3276,7 +3278,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             public float Dwell;
             public int Price;
 
@@ -3482,8 +3484,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -3531,7 +3533,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -3685,8 +3687,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -3734,7 +3736,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -3912,7 +3914,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -3957,7 +3959,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -4002,7 +4004,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID ParcelID;
+            public Guid ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -4202,7 +4204,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -4247,7 +4249,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -4292,7 +4294,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -4510,7 +4512,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -4555,7 +4557,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -4600,7 +4602,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -4802,7 +4804,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -4847,7 +4849,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -4892,7 +4894,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -5070,8 +5072,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -5119,7 +5121,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -5277,7 +5279,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -5322,7 +5324,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -5367,7 +5369,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID ClassifiedID;
+            public Guid ClassifiedID;
             private byte[] _name;
             public byte[] Name
             {
@@ -5553,8 +5555,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID TargetID;
+            public Guid AgentID;
+            public Guid TargetID;
 
             public override int Length
             {
@@ -5602,7 +5604,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ClassifiedID;
+            public Guid ClassifiedID;
             private byte[] _name;
             public byte[] Name
             {
@@ -5764,8 +5766,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -5813,7 +5815,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ClassifiedID;
+            public Guid ClassifiedID;
 
             public override int Length
             {
@@ -5937,7 +5939,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -5982,8 +5984,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ClassifiedID;
-            public UUID CreatorID;
+            public Guid ClassifiedID;
+            public Guid CreatorID;
             public uint CreationDate;
             public uint ExpirationDate;
             public uint Category;
@@ -6009,9 +6011,9 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public UUID ParcelID;
+            public Guid ParcelID;
             public uint ParentEstate;
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             private byte[] _simname;
             public byte[] SimName
             {
@@ -6228,8 +6230,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -6277,7 +6279,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ClassifiedID;
+            public Guid ClassifiedID;
             public uint Category;
             private byte[] _name;
             public byte[] Name
@@ -6301,9 +6303,9 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public UUID ParcelID;
+            public Guid ParcelID;
             public uint ParentEstate;
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             public Vector3d PosGlobal;
             public byte ClassifiedFlags;
             public int PriceForListing;
@@ -6471,8 +6473,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -6520,7 +6522,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ClassifiedID;
+            public Guid ClassifiedID;
 
             public override int Length
             {
@@ -6643,8 +6645,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -6692,8 +6694,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ClassifiedID;
-            public UUID QueryID;
+            public Guid ClassifiedID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -6819,8 +6821,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -6868,7 +6870,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
             public uint QueryFlags;
             public uint SearchType;
             public int Price;
@@ -7012,7 +7014,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -7057,7 +7059,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -7102,7 +7104,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID ParcelID;
+            public Guid ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -7288,8 +7290,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -7337,7 +7339,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
             public uint QueryFlags;
 
             public override int Length
@@ -7465,7 +7467,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -7510,7 +7512,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -7555,7 +7557,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryRepliesBlock : PacketBlock
         {
-            public UUID ParcelID;
+            public Guid ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -7729,8 +7731,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -7778,7 +7780,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ParcelID;
+            public Guid ParcelID;
 
             public override int Length
             {
@@ -7901,7 +7903,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -7946,8 +7948,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ParcelID;
-            public UUID OwnerID;
+            public Guid ParcelID;
+            public Guid OwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -7987,7 +7989,7 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             public float Dwell;
             public int SalePrice;
             public int AuctionID;
@@ -8176,8 +8178,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -8348,7 +8350,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
             public bool IsGroupOwned;
             public int Count;
             public bool OnlineStatus;
@@ -8496,8 +8498,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -8545,7 +8547,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -8668,8 +8670,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -8717,7 +8719,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID NoticeID;
+            public Guid NoticeID;
             public uint Timestamp;
             private byte[] _fromname;
             public byte[] FromName
@@ -8914,8 +8916,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -8963,7 +8965,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupNoticeID;
+            public Guid GroupNoticeID;
 
             public override int Length
             {
@@ -9086,8 +9088,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -9135,9 +9137,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID RegionID;
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public Guid RegionID;
+            public Vector3f Position;
+            public Vector3f LookAt;
 
             public override int Length
             {
@@ -9266,8 +9268,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -9316,8 +9318,8 @@ namespace OpenMetaverse.Packets
         public class InfoBlock : PacketBlock
         {
             public ulong RegionHandle;
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public Vector3f Position;
+            public Vector3f LookAt;
 
             public override int Length
             {
@@ -9446,10 +9448,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public uint LocationID;
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public Vector3f Position;
+            public Vector3f LookAt;
             public uint TeleportFlags;
 
             public override int Length
@@ -9579,9 +9581,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID LandmarkID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid LandmarkID;
 
             public override int Length
             {
@@ -9705,7 +9707,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -9894,7 +9896,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public uint LocationID;
             public uint SimIP;
             public ushort SimPort;
@@ -10059,8 +10061,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -10174,7 +10176,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TargetDataBlock : PacketBlock
         {
-            public UUID TargetID;
+            public Guid TargetID;
 
             public override int Length
             {
@@ -10321,9 +10323,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID LureID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid LureID;
             public uint TeleportFlags;
 
             public override int Length
@@ -10450,8 +10452,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -10688,7 +10690,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             private byte[] _reason;
             public byte[] Reason
             {
@@ -10826,9 +10828,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -10879,7 +10881,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -11020,9 +11022,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -11073,7 +11075,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -11214,8 +11216,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -11335,8 +11337,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint SerialNum;
 
             public override int Length
@@ -11460,8 +11462,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint SerialNum;
 
             public override int Length
@@ -11585,8 +11587,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -11785,8 +11787,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint CircuitCode;
 
             public override int Length
@@ -11983,8 +11985,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint CircuitCode;
 
             public override int Length
@@ -12163,8 +12165,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint CircuitCode;
 
             public override int Length
@@ -12349,10 +12351,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint SerialNum;
-            public Vector3 Size;
+            public Vector3f Size;
 
             public override int Length
             {
@@ -12406,7 +12408,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock : PacketBlock
         {
-            public UUID CacheID;
+            public Guid CacheID;
             public byte TextureIndex;
 
             public override int Length
@@ -12690,8 +12692,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -12862,7 +12864,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageIDBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
 
             public override int Length
             {
@@ -12979,7 +12981,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TextureDataBlock : PacketBlock
         {
-            public UUID TextureID;
+            public Guid TextureID;
 
             public override int Length
             {
@@ -13096,8 +13098,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public bool AlwaysRun;
 
             public override int Length
@@ -13221,8 +13223,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public bool Force;
 
             public override int Length
@@ -13416,9 +13418,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -13469,7 +13471,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SharedDataBlock : PacketBlock
         {
-            public Vector3 Offset;
+            public Vector3f Offset;
             public uint DuplicateFlags;
 
             public override int Length
@@ -13666,16 +13668,16 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
+            public Vector3f RayStart;
+            public Vector3f RayEnd;
             public bool BypassRaycast;
             public bool RayEndIsIntersection;
             public bool CopyCenters;
             public bool CopyRotates;
-            public UUID RayTargetID;
+            public Guid RayTargetID;
             public uint DuplicateFlags;
 
             public override int Length
@@ -13893,8 +13895,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -13943,7 +13945,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Vector3 Scale;
+            public Vector3f Scale;
 
             public override int Length
             {
@@ -14088,8 +14090,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -14138,7 +14140,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Quaternion Rotation;
+            public Quaternionf Rotation;
 
             public override int Length
             {
@@ -14283,8 +14285,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint ObjectLocalID;
             public bool UsePhysics;
             public bool IsTemporary;
@@ -14425,8 +14427,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -14620,8 +14622,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -14853,8 +14855,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -15048,8 +15050,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -15316,8 +15318,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -15541,8 +15543,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -15591,8 +15593,8 @@ namespace OpenMetaverse.Packets
         public class HeaderDataBlock : PacketBlock
         {
             public bool Override;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid OwnerID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -15791,9 +15793,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -15986,10 +15988,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
-            public UUID CategoryID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
+            public Guid CategoryID;
 
             public override int Length
             {
@@ -16193,8 +16195,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -16242,9 +16244,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID ItemID;
-            public UUID FolderID;
+            public Guid ObjectID;
+            public Guid ItemID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -16374,7 +16376,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             public bool Delete;
 
             public override int Length
@@ -16496,8 +16498,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -16750,8 +16752,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -16949,8 +16951,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -17161,8 +17163,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -17373,8 +17375,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -17568,8 +17570,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -17759,8 +17761,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -17950,8 +17952,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public byte AttachmentPoint;
 
             public override int Length
@@ -18004,7 +18006,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Quaternion Rotation;
+            public Quaternionf Rotation;
 
             public override int Length
             {
@@ -18149,8 +18151,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -18339,8 +18341,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -18529,8 +18531,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -18719,8 +18721,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -18909,8 +18911,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -18959,7 +18961,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
-            public Vector3 GrabOffset;
+            public Vector3f GrabOffset;
 
             public override int Length
             {
@@ -19007,12 +19009,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SurfaceInfoBlock : PacketBlock
         {
-            public Vector3 UVCoord;
-            public Vector3 STCoord;
+            public Vector3f UVCoord;
+            public Vector3f STCoord;
             public int FaceIndex;
-            public Vector3 Position;
-            public Vector3 Normal;
-            public Vector3 Binormal;
+            public Vector3f Position;
+            public Vector3f Normal;
+            public Vector3f Binormal;
 
             public override int Length
             {
@@ -19175,8 +19177,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -19224,9 +19226,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public Vector3 GrabOffsetInitial;
-            public Vector3 GrabPosition;
+            public Guid ObjectID;
+            public Vector3f GrabOffsetInitial;
+            public Vector3f GrabPosition;
             public uint TimeSinceLast;
 
             public override int Length
@@ -19281,12 +19283,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SurfaceInfoBlock : PacketBlock
         {
-            public Vector3 UVCoord;
-            public Vector3 STCoord;
+            public Vector3f UVCoord;
+            public Vector3f STCoord;
             public int FaceIndex;
-            public Vector3 Position;
-            public Vector3 Normal;
-            public Vector3 Binormal;
+            public Vector3f Position;
+            public Vector3f Normal;
+            public Vector3f Binormal;
 
             public override int Length
             {
@@ -19449,8 +19451,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -19543,12 +19545,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SurfaceInfoBlock : PacketBlock
         {
-            public Vector3 UVCoord;
-            public Vector3 STCoord;
+            public Vector3f UVCoord;
+            public Vector3f STCoord;
             public int FaceIndex;
-            public Vector3 Position;
-            public Vector3 Normal;
-            public Vector3 Binormal;
+            public Vector3f Position;
+            public Vector3f Normal;
+            public Vector3f Binormal;
 
             public override int Length
             {
@@ -19710,8 +19712,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -19759,7 +19761,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -19883,8 +19885,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -19932,8 +19934,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public Quaternion Rotation;
+            public Guid ObjectID;
+            public Quaternionf Rotation;
 
             public override int Length
             {
@@ -20060,8 +20062,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -20109,7 +20111,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -20233,8 +20235,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID RequestID;
+            public Guid AgentID;
+            public Guid RequestID;
             public short VolumeDetail;
 
             public override int Length
@@ -20287,7 +20289,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -20429,8 +20431,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -20699,8 +20701,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -20820,8 +20822,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -20941,8 +20943,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -21251,8 +21253,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -21300,7 +21302,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            public UUID TargetID;
+            public Guid TargetID;
             public uint Flags;
 
             public override int Length
@@ -21427,8 +21429,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -21476,7 +21478,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TargetDataBlock : PacketBlock
         {
-            public UUID PreyID;
+            public Guid PreyID;
 
             public override int Length
             {
@@ -21599,8 +21601,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint IP;
             public uint StartTime;
             public float RunTime;
@@ -22102,8 +22104,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -22151,8 +22153,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID TaskID;
-            public UUID ItemID;
+            public Guid TaskID;
+            public Guid ItemID;
             public int Questions;
 
             public override int Length
@@ -22282,8 +22284,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -22333,11 +22335,11 @@ namespace OpenMetaverse.Packets
         {
             public byte ReportType;
             public byte Category;
-            public Vector3 Position;
+            public Vector3f Position;
             public byte CheckFlags;
-            public UUID ScreenshotID;
-            public UUID ObjectID;
-            public UUID AbuserID;
+            public Guid ScreenshotID;
+            public Guid ObjectID;
+            public Guid AbuserID;
             private byte[] _abuseregionname;
             public byte[] AbuseRegionName
             {
@@ -22349,7 +22351,7 @@ namespace OpenMetaverse.Packets
                     else { _abuseregionname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abuseregionname, 0, value.Length); }
                 }
             }
-            public UUID AbuseRegionID;
+            public Guid AbuseRegionID;
             private byte[] _summary;
             public byte[] Summary
             {
@@ -22699,7 +22701,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -22888,8 +22890,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MeanCollisionBlock : PacketBlock
         {
-            public UUID Victim;
-            public UUID Perp;
+            public Guid Victim;
+            public Guid Perp;
             public uint Time;
             public float Mag;
             public byte Type;
@@ -23286,12 +23288,12 @@ namespace OpenMetaverse.Packets
                     else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
                 }
             }
-            public UUID SourceID;
-            public UUID OwnerID;
+            public Guid SourceID;
+            public Guid OwnerID;
             public byte SourceType;
             public byte ChatType;
             public byte Audible;
-            public Vector3 Position;
+            public Vector3f Position;
             private byte[] _message;
             public byte[] Message
             {
@@ -23707,8 +23709,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -23828,8 +23830,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -24079,8 +24081,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -24428,19 +24430,19 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public UUID SimOwner;
+            public Guid SimOwner;
             public bool IsEstateManager;
             public float WaterHeight;
             public float BillableFactor;
-            public UUID CacheID;
-            public UUID TerrainBase0;
-            public UUID TerrainBase1;
-            public UUID TerrainBase2;
-            public UUID TerrainBase3;
-            public UUID TerrainDetail0;
-            public UUID TerrainDetail1;
-            public UUID TerrainDetail2;
-            public UUID TerrainDetail3;
+            public Guid CacheID;
+            public Guid TerrainBase0;
+            public Guid TerrainBase1;
+            public Guid TerrainBase2;
+            public Guid TerrainBase3;
+            public Guid TerrainDetail0;
+            public Guid TerrainDetail1;
+            public Guid TerrainDetail2;
+            public Guid TerrainDetail3;
             public float TerrainStartHeight00;
             public float TerrainStartHeight01;
             public float TerrainStartHeight10;
@@ -24570,7 +24572,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RegionInfo2Block : PacketBlock
         {
-            public UUID RegionID;
+            public Guid RegionID;
 
             public override int Length
             {
@@ -24694,8 +24696,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -24870,9 +24872,9 @@ namespace OpenMetaverse.Packets
             public ulong UsecSinceStart;
             public uint SecPerDay;
             public uint SecPerYear;
-            public Vector3 SunDirection;
+            public Vector3f SunDirection;
             public float SunPhase;
-            public Vector3 SunAngVelocity;
+            public Vector3f SunAngVelocity;
 
             public override int Length
             {
@@ -25196,7 +25198,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferInfoBlock : PacketBlock
         {
-            public UUID TransferID;
+            public Guid TransferID;
             public int ChannelType;
             public int SourceType;
             public float Priority;
@@ -25348,7 +25350,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferInfoBlock : PacketBlock
         {
-            public UUID TransferID;
+            public Guid TransferID;
             public int ChannelType;
             public int TargetType;
             public int Status;
@@ -25504,7 +25506,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferInfoBlock : PacketBlock
         {
-            public UUID TransferID;
+            public Guid TransferID;
             public int ChannelType;
 
             public override int Length
@@ -25641,7 +25643,7 @@ namespace OpenMetaverse.Packets
             public byte FilePath;
             public bool DeleteOnCompletion;
             public bool UseBigPackets;
-            public UUID VFileID;
+            public Guid VFileID;
             public short VFileType;
 
             public override int Length
@@ -25908,7 +25910,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SenderBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             public bool IsTrial;
 
             public override int Length
@@ -26168,7 +26170,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -26358,7 +26360,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -26475,7 +26477,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -26592,7 +26594,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             public int DefaultPayPrice;
 
             public override int Length
@@ -26832,8 +26834,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UserInfoBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             private byte[] _reason;
             public byte[] Reason
             {
@@ -26981,7 +26983,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UserInfoBlock : PacketBlock
         {
-            public UUID SessionID;
+            public Guid SessionID;
             public uint Flags;
 
             public override int Length
@@ -27102,9 +27104,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UserInfoBlock : PacketBlock
         {
-            public UUID GodID;
-            public UUID GodSessionID;
-            public UUID AgentID;
+            public Guid GodID;
+            public Guid GodSessionID;
+            public Guid AgentID;
             public uint KickFlags;
             private byte[] _reason;
             public byte[] Reason
@@ -27253,8 +27255,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -27302,7 +27304,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID TargetID;
+            public Guid TargetID;
             public uint Flags;
 
             public override int Length
@@ -27429,8 +27431,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -27478,7 +27480,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID TargetID;
+            public Guid TargetID;
             public uint Flags;
 
             public override int Length
@@ -27605,9 +27607,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID AvatarID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid AvatarID;
 
             public override int Length
             {
@@ -27730,8 +27732,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID AvatarID;
+            public Guid AgentID;
+            public Guid AvatarID;
 
             public override int Length
             {
@@ -27779,9 +27781,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class PropertiesDataBlock : PacketBlock
         {
-            public UUID ImageID;
-            public UUID FLImageID;
-            public UUID PartnerID;
+            public Guid ImageID;
+            public Guid FLImageID;
+            public Guid PartnerID;
             private byte[] _abouttext;
             public byte[] AboutText
             {
@@ -28018,8 +28020,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID AvatarID;
+            public Guid AgentID;
+            public Guid AvatarID;
 
             public override int Length
             {
@@ -28256,8 +28258,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID AvatarID;
+            public Guid AgentID;
+            public Guid AvatarID;
 
             public override int Length
             {
@@ -28318,7 +28320,7 @@ namespace OpenMetaverse.Packets
                     else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
-            public UUID GroupID;
+            public Guid GroupID;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -28330,7 +28332,7 @@ namespace OpenMetaverse.Packets
                     else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
-            public UUID GroupInsigniaID;
+            public Guid GroupInsigniaID;
 
             public override int Length
             {
@@ -28552,8 +28554,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -28601,8 +28603,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class PropertiesDataBlock : PacketBlock
         {
-            public UUID ImageID;
-            public UUID FLImageID;
+            public Guid ImageID;
+            public Guid FLImageID;
             private byte[] _abouttext;
             public byte[] AboutText
             {
@@ -28799,8 +28801,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -29037,7 +29039,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -29082,7 +29084,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID TargetID;
+            public Guid TargetID;
             private byte[] _notes;
             public byte[] Notes
             {
@@ -29227,8 +29229,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -29276,7 +29278,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID TargetID;
+            public Guid TargetID;
             private byte[] _notes;
             public byte[] Notes
             {
@@ -29421,8 +29423,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID TargetID;
+            public Guid AgentID;
+            public Guid TargetID;
 
             public override int Length
             {
@@ -29470,7 +29472,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID PickID;
+            public Guid PickID;
             private byte[] _pickname;
             public byte[] PickName
             {
@@ -29632,8 +29634,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -29804,7 +29806,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -30119,8 +30121,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -30291,8 +30293,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -30463,8 +30465,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -30557,7 +30559,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
+            public Guid QueryID;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -30716,7 +30718,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -30761,10 +30763,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID PickID;
-            public UUID CreatorID;
+            public Guid PickID;
+            public Guid CreatorID;
             public bool TopPick;
-            public UUID ParcelID;
+            public Guid ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -30787,7 +30789,7 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             private byte[] _user;
             public byte[] User
             {
@@ -31015,8 +31017,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -31064,10 +31066,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID PickID;
-            public UUID CreatorID;
+            public Guid PickID;
+            public Guid CreatorID;
             public bool TopPick;
-            public UUID ParcelID;
+            public Guid ParcelID;
             private byte[] _name;
             public byte[] Name
             {
@@ -31090,7 +31092,7 @@ namespace OpenMetaverse.Packets
                     else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             public Vector3d PosGlobal;
             public int SortOrder;
             public bool Enabled;
@@ -31258,8 +31260,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -31307,7 +31309,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID PickID;
+            public Guid PickID;
 
             public override int Length
             {
@@ -31430,8 +31432,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -31479,8 +31481,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID PickID;
-            public UUID QueryID;
+            public Guid PickID;
+            public Guid QueryID;
 
             public override int Length
             {
@@ -31606,8 +31608,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID TaskID;
-            public UUID ItemID;
+            public Guid TaskID;
+            public Guid ItemID;
             private byte[] _objectname;
             public byte[] ObjectName
             {
@@ -31916,7 +31918,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -31962,7 +31964,7 @@ namespace OpenMetaverse.Packets
                 }
             }
             public int ChatChannel;
-            public UUID ImageID;
+            public Guid ImageID;
 
             public override int Length
             {
@@ -32211,8 +32213,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -32260,7 +32262,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             public int ChatChannel;
             public int ButtonIndex;
             private byte[] _buttonlabel;
@@ -32413,8 +32415,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -32534,8 +32536,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -32583,7 +32585,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             public uint ObjectPermissions;
 
             public override int Length
@@ -32721,8 +32723,8 @@ namespace OpenMetaverse.Packets
                     else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
-            public UUID ObjectID;
-            public UUID OwnerID;
+            public Guid ObjectID;
+            public Guid OwnerID;
             public bool OwnerIsGroup;
             private byte[] _message;
             public byte[] Message
@@ -32918,8 +32920,8 @@ namespace OpenMetaverse.Packets
                     else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
-            public Vector3 SimPosition;
-            public Vector3 LookAt;
+            public Vector3f SimPosition;
+            public Vector3f LookAt;
 
             public override int Length
             {
@@ -33199,8 +33201,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -33376,8 +33378,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -33473,16 +33475,16 @@ namespace OpenMetaverse.Packets
                     else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
-            public UUID MediaID;
+            public Guid MediaID;
             public byte MediaAutoScale;
-            public UUID GroupID;
+            public Guid GroupID;
             public int PassPrice;
             public float PassHours;
             public byte Category;
-            public UUID AuthBuyerID;
-            public UUID SnapshotID;
-            public Vector3 UserLocation;
-            public Vector3 UserLookAt;
+            public Guid AuthBuyerID;
+            public Guid SnapshotID;
+            public Vector3f UserLocation;
+            public Vector3f UserLookAt;
             public byte LandingType;
 
             public override int Length
@@ -33687,8 +33689,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -33785,7 +33787,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TaskIDsBlock : PacketBlock
         {
-            public UUID TaskID;
+            public Guid TaskID;
 
             public override int Length
             {
@@ -33830,7 +33832,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class OwnerIDsBlock : PacketBlock
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
 
             public override int Length
             {
@@ -34002,8 +34004,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -34179,8 +34181,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -34277,7 +34279,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TaskIDsBlock : PacketBlock
         {
-            public UUID TaskID;
+            public Guid TaskID;
 
             public override int Length
             {
@@ -34322,7 +34324,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class OwnerIDsBlock : PacketBlock
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
 
             public override int Length
             {
@@ -34494,8 +34496,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -34592,7 +34594,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReturnIDsBlock : PacketBlock
         {
-            public UUID ReturnID;
+            public Guid ReturnID;
 
             public override int Length
             {
@@ -34740,8 +34742,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -34861,7 +34863,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID CovenantID;
+            public Guid CovenantID;
             public uint CovenantTimestamp;
             private byte[] _estatename;
             public byte[] EstateName
@@ -34874,7 +34876,7 @@ namespace OpenMetaverse.Packets
                     else { _estatename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _estatename, 0, value.Length); }
                 }
             }
-            public UUID EstateOwnerID;
+            public Guid EstateOwnerID;
 
             public override int Length
             {
@@ -35194,8 +35196,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -35366,8 +35368,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -35415,7 +35417,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public int LocalID;
 
             public override int Length
@@ -35542,8 +35544,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -35714,8 +35716,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -35763,7 +35765,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public bool IsGroupOwned;
             public bool Final;
 
@@ -35976,8 +35978,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -36160,8 +36162,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -36344,8 +36346,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -36516,8 +36518,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -36565,7 +36567,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public bool IsGroupOwned;
             public bool RemoveContribution;
             public int LocalID;
@@ -36760,8 +36762,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -36809,7 +36811,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
             public int LocalID;
 
             public override int Length
@@ -36937,8 +36939,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -37118,7 +37120,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public int SequenceID;
             public uint Flags;
             public int LocalID;
@@ -37175,7 +37177,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ListBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             public int Time;
             public uint Flags;
 
@@ -37325,8 +37327,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -37376,7 +37378,7 @@ namespace OpenMetaverse.Packets
         {
             public uint Flags;
             public int LocalID;
-            public UUID TransactionID;
+            public Guid TransactionID;
             public int SequenceID;
             public int Sections;
 
@@ -37435,7 +37437,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ListBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             public int Time;
             public uint Flags;
 
@@ -37591,8 +37593,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -37641,7 +37643,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public int LocalID;
-            public UUID ParcelID;
+            public Guid ParcelID;
 
             public override int Length
             {
@@ -37767,7 +37769,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -37813,7 +37815,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public int LocalID;
-            public UUID ParcelID;
+            public Guid ParcelID;
             public float Dwell;
 
             public override int Length
@@ -37943,8 +37945,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -38115,8 +38117,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -38165,7 +38167,7 @@ namespace OpenMetaverse.Packets
         public class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
-            public UUID SnapshotID;
+            public Guid SnapshotID;
 
             public override int Length
             {
@@ -38291,7 +38293,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
 
             public override int Length
             {
@@ -38426,7 +38428,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -38602,7 +38604,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
 
             public override int Length
             {
@@ -38737,7 +38739,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -38893,8 +38895,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -39015,8 +39017,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -39136,8 +39138,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID ItemID;
+            public Guid ObjectID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -39257,8 +39259,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID ItemID;
+            public Guid ObjectID;
+            public Guid ItemID;
             public bool Running;
 
             public override int Length
@@ -39382,8 +39384,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -39431,8 +39433,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID ItemID;
+            public Guid ObjectID;
+            public Guid ItemID;
             public bool Running;
 
             public override int Length
@@ -39562,8 +39564,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -39611,8 +39613,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ScriptBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID ItemID;
+            public Guid ObjectID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -39738,11 +39740,11 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequesterBlock : PacketBlock
         {
-            public UUID SourceID;
-            public UUID RequestID;
-            public UUID SearchID;
-            public Vector3 SearchPos;
-            public Quaternion SearchDir;
+            public Guid SourceID;
+            public Guid RequestID;
+            public Guid SearchID;
+            public Vector3f SearchPos;
+            public Quaternionf SearchDir;
             private byte[] _searchname;
             public byte[] SearchName
             {
@@ -39914,7 +39916,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequesterBlock : PacketBlock
         {
-            public UUID SourceID;
+            public Guid SourceID;
 
             public override int Length
             {
@@ -39959,12 +39961,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SensedDataBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID OwnerID;
-            public UUID GroupID;
-            public Vector3 Position;
-            public Vector3 Velocity;
-            public Quaternion Rotation;
+            public Guid ObjectID;
+            public Guid OwnerID;
+            public Guid GroupID;
+            public Vector3f Position;
+            public Vector3f Velocity;
+            public Quaternionf Rotation;
             private byte[] _name;
             public byte[] Name
             {
@@ -40151,8 +40153,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint CircuitCode;
 
             public override int Length
@@ -40276,8 +40278,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -40325,8 +40327,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public Vector3f Position;
+            public Vector3f LookAt;
             public ulong RegionHandle;
             public uint Timestamp;
 
@@ -40529,8 +40531,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -40650,8 +40652,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -40699,7 +40701,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -40841,8 +40843,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -40891,13 +40893,13 @@ namespace OpenMetaverse.Packets
         public class MessageBlockBlock : PacketBlock
         {
             public bool FromGroup;
-            public UUID ToAgentID;
+            public Guid ToAgentID;
             public uint ParentEstateID;
-            public UUID RegionID;
-            public Vector3 Position;
+            public Guid RegionID;
+            public Vector3f Position;
             public byte Offline;
             public byte Dialog;
-            public UUID ID;
+            public Guid ID;
             public uint Timestamp;
             private byte[] _fromagentname;
             public byte[] FromAgentName
@@ -41109,8 +41111,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -41230,8 +41232,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
         {
-            public UUID Hunter;
-            public UUID Prey;
+            public Guid Hunter;
+            public Guid Prey;
             public uint SpaceIP;
 
             public override int Length
@@ -41428,8 +41430,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -41478,7 +41480,7 @@ namespace OpenMetaverse.Packets
         public class RequestBlockBlock : PacketBlock
         {
             public bool Godlike;
-            public UUID Token;
+            public Guid Token;
 
             public override int Length
             {
@@ -41604,8 +41606,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -41654,7 +41656,7 @@ namespace OpenMetaverse.Packets
         public class GrantDataBlock : PacketBlock
         {
             public byte GodLevel;
-            public UUID Token;
+            public Guid Token;
 
             public override int Length
             {
@@ -41780,9 +41782,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -41844,7 +41846,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public UUID Invoice;
+            public Guid Invoice;
 
             public override int Length
             {
@@ -42065,9 +42067,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -42129,7 +42131,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public UUID Invoice;
+            public Guid Invoice;
 
             public override int Length
             {
@@ -42350,9 +42352,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -42414,7 +42416,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public UUID Invoice;
+            public Guid Invoice;
 
             public override int Length
             {
@@ -42635,8 +42637,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -42807,8 +42809,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -42856,7 +42858,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MuteDataBlock : PacketBlock
         {
-            public UUID MuteID;
+            public Guid MuteID;
             private byte[] _mutename;
             public byte[] MuteName
             {
@@ -43009,8 +43011,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -43058,7 +43060,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MuteDataBlock : PacketBlock
         {
-            public UUID MuteID;
+            public Guid MuteID;
             private byte[] _mutename;
             public byte[] MuteName
             {
@@ -43202,8 +43204,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -43251,8 +43253,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class NotecardDataBlock : PacketBlock
         {
-            public UUID NotecardItemID;
-            public UUID ObjectID;
+            public Guid NotecardItemID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -43300,8 +43302,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
+            public Guid ItemID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -43452,9 +43454,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -43505,19 +43507,19 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
+            public Guid ItemID;
+            public Guid FolderID;
             public uint CallbackID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID TransactionID;
+            public Guid TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -43765,9 +43767,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public bool SimApproved;
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -43818,19 +43820,19 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
+            public Guid ItemID;
+            public Guid FolderID;
             public uint CallbackID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID AssetID;
+            public Guid AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -44078,8 +44080,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public bool Stamp;
 
             public override int Length
@@ -44131,8 +44133,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
+            public Guid ItemID;
+            public Guid FolderID;
             private byte[] _newname;
             public byte[] NewName
             {
@@ -44298,8 +44300,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -44348,9 +44350,9 @@ namespace OpenMetaverse.Packets
         public class InventoryDataBlock : PacketBlock
         {
             public uint CallbackID;
-            public UUID OldAgentID;
-            public UUID OldItemID;
-            public UUID NewFolderID;
+            public Guid OldAgentID;
+            public Guid OldItemID;
+            public Guid NewFolderID;
             private byte[] _newname;
             public byte[] NewName
             {
@@ -44522,8 +44524,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -44571,7 +44573,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -44712,8 +44714,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -44761,7 +44763,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
             public uint Flags;
 
             public override int Length
@@ -44906,7 +44908,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -44951,8 +44953,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID NewAssetID;
+            public Guid ItemID;
+            public Guid NewAssetID;
 
             public override int Length
             {
@@ -45078,8 +45080,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -45127,8 +45129,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
-            public UUID ParentID;
+            public Guid FolderID;
+            public Guid ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -45279,8 +45281,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -45328,8 +45330,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
-            public UUID ParentID;
+            public Guid FolderID;
+            public Guid ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -45498,8 +45500,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public bool Stamp;
 
             public override int Length
@@ -45551,8 +45553,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID FolderID;
-            public UUID ParentID;
+            public Guid FolderID;
+            public Guid ParentID;
 
             public override int Length
             {
@@ -45697,8 +45699,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -45746,7 +45748,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -45887,8 +45889,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -45936,8 +45938,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID FolderID;
-            public UUID OwnerID;
+            public Guid FolderID;
+            public Guid OwnerID;
             public int SortOrder;
             public bool FetchFolders;
             public bool FetchItems;
@@ -46076,9 +46078,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID FolderID;
-            public UUID OwnerID;
+            public Guid AgentID;
+            public Guid FolderID;
+            public Guid OwnerID;
             public int Version;
             public int Descendents;
 
@@ -46137,8 +46139,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
-            public UUID ParentID;
+            public Guid FolderID;
+            public Guid ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -46211,18 +46213,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ItemDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ItemID;
+            public Guid FolderID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID AssetID;
+            public Guid AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -46491,8 +46493,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -46540,8 +46542,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID OwnerID;
-            public UUID ItemID;
+            public Guid OwnerID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -46686,7 +46688,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -46731,18 +46733,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ItemID;
+            public Guid FolderID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID AssetID;
+            public Guid AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -46987,8 +46989,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -47036,8 +47038,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
-            public UUID ParentID;
+            public Guid FolderID;
+            public Guid ParentID;
             public sbyte Type;
             private byte[] _name;
             public byte[] Name
@@ -47110,19 +47112,19 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ItemDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
             public uint CallbackID;
-            public UUID FolderID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid FolderID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID AssetID;
+            public Guid AssetID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -47394,10 +47396,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
-            public UUID AgentID;
-            public UUID OwnerID;
-            public UUID ItemID;
+            public Guid QueryID;
+            public Guid AgentID;
+            public Guid OwnerID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -47523,8 +47525,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            public UUID QueryID;
-            public UUID AssetID;
+            public Guid QueryID;
+            public Guid AssetID;
             public bool IsReadable;
 
             public override int Length
@@ -47648,8 +47650,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -47697,7 +47699,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -47742,7 +47744,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ItemDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -47907,8 +47909,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -47956,7 +47958,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID FolderID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -48080,8 +48082,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -48178,18 +48180,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ItemID;
+            public Guid FolderID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID TransactionID;
+            public Guid TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -48422,8 +48424,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -48472,7 +48474,7 @@ namespace OpenMetaverse.Packets
         public class InventoryDataBlock : PacketBlock
         {
             public uint LocalID;
-            public UUID ItemID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -48599,9 +48601,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID FolderID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -48653,7 +48655,7 @@ namespace OpenMetaverse.Packets
         public class InventoryDataBlock : PacketBlock
         {
             public uint LocalID;
-            public UUID ItemID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -48779,8 +48781,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -48951,7 +48953,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID TaskID;
+            public Guid TaskID;
             public short Serial;
             private byte[] _filename;
             public byte[] Filename
@@ -49095,8 +49097,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -49144,10 +49146,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public byte Destination;
-            public UUID DestinationID;
-            public UUID TransactionID;
+            public Guid DestinationID;
+            public Guid TransactionID;
             public byte PacketCount;
             public byte PacketNumber;
 
@@ -49357,7 +49359,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
             public bool Success;
 
             public override int Length
@@ -49478,9 +49480,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -49531,11 +49533,11 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RezDataBlock : PacketBlock
         {
-            public UUID FromTaskID;
+            public Guid FromTaskID;
             public byte BypassRaycast;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
-            public UUID RayTargetID;
+            public Vector3f RayStart;
+            public Vector3f RayEnd;
+            public Guid RayTargetID;
             public bool RayEndIsIntersection;
             public bool RezSelected;
             public bool RemoveItem;
@@ -49620,18 +49622,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ItemID;
+            public Guid FolderID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID TransactionID;
+            public Guid TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -49864,9 +49866,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -49917,11 +49919,11 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RezDataBlock : PacketBlock
         {
-            public UUID FromTaskID;
+            public Guid FromTaskID;
             public byte BypassRaycast;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
-            public UUID RayTargetID;
+            public Vector3f RayStart;
+            public Vector3f RayEnd;
+            public Guid RayTargetID;
             public bool RayEndIsIntersection;
             public bool RezSelected;
             public bool RemoveItem;
@@ -50006,8 +50008,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class NotecardDataBlock : PacketBlock
         {
-            public UUID NotecardItemID;
-            public UUID ObjectID;
+            public Guid NotecardItemID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -50055,7 +50057,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -50209,8 +50211,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -50258,7 +50260,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -50303,7 +50305,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -50450,8 +50452,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -50499,7 +50501,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -50622,8 +50624,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
         {
-            public UUID SourceID;
-            public UUID DestID;
+            public Guid SourceID;
+            public Guid DestID;
 
             public override int Length
             {
@@ -50743,8 +50745,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -50792,7 +50794,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ExBlockBlock : PacketBlock
         {
-            public UUID OtherID;
+            public Guid OtherID;
 
             public override int Length
             {
@@ -50915,8 +50917,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -50964,8 +50966,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
         {
-            public UUID DestID;
-            public UUID TransactionID;
+            public Guid DestID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -51091,8 +51093,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -51140,7 +51142,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -51185,7 +51187,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FolderDataBlock : PacketBlock
         {
-            public UUID FolderID;
+            public Guid FolderID;
 
             public override int Length
             {
@@ -51332,8 +51334,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -51381,7 +51383,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionBlockBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -51504,9 +51506,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -51606,18 +51608,18 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryBlockBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID FolderID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ItemID;
+            public Guid FolderID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
             public bool GroupOwned;
-            public UUID TransactionID;
+            public Guid TransactionID;
             public sbyte Type;
             public sbyte InvType;
             public uint Flags;
@@ -51850,8 +51852,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -51900,8 +51902,8 @@ namespace OpenMetaverse.Packets
         public class InventoryBlockBlock : PacketBlock
         {
             public uint CallbackID;
-            public UUID FolderID;
-            public UUID TransactionID;
+            public Guid FolderID;
+            public Guid TransactionID;
             public uint NextOwnerMask;
             public sbyte Type;
             public sbyte InvType;
@@ -52088,8 +52090,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -52182,7 +52184,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InventoryBlockBlock : PacketBlock
         {
-            public UUID FolderID;
+            public Guid FolderID;
             private byte[] _name;
             public byte[] Name
             {
@@ -52333,7 +52335,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequestBlockBlock : PacketBlock
         {
-            public UUID RegionID;
+            public Guid RegionID;
 
             public override int Length
             {
@@ -52450,7 +52452,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReplyBlockBlock : PacketBlock
         {
-            public UUID RegionID;
+            public Guid RegionID;
             public ulong RegionHandle;
 
             public override int Length
@@ -52571,8 +52573,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -52620,8 +52622,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID SourceID;
-            public UUID DestID;
+            public Guid SourceID;
+            public Guid DestID;
             public byte Flags;
             public int Amount;
             public byte AggregatePermNextOwner;
@@ -52789,8 +52791,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -52838,7 +52840,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -52962,8 +52964,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid TransactionID;
             public bool TransactionSuccess;
             public int MoneyBalance;
             public int SquareMetersCredit;
@@ -53171,8 +53173,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID TransactionID;
+            public Guid AgentID;
+            public Guid TransactionID;
             public bool TransactionSuccess;
             public int MoneyBalance;
             public int SquareMetersCredit;
@@ -53336,8 +53338,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint Flags;
 
             public override int Length
@@ -53389,8 +53391,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID AssetID;
+            public Guid ItemID;
+            public Guid AssetID;
             public uint GestureFlags;
 
             public override int Length
@@ -53538,8 +53540,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint Flags;
 
             public override int Length
@@ -53591,7 +53593,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
             public uint GestureFlags;
 
             public override int Length
@@ -53736,7 +53738,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MuteDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             private byte[] _filename;
             public byte[] Filename
             {
@@ -53874,7 +53876,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -53991,8 +53993,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -54040,7 +54042,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RightsBlock : PacketBlock
         {
-            public UUID AgentRelated;
+            public Guid AgentRelated;
             public int RelatedRights;
 
             public override int Length
@@ -54185,7 +54187,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -54230,7 +54232,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RightsBlock : PacketBlock
         {
-            public UUID AgentRelated;
+            public Guid AgentRelated;
             public int RelatedRights;
 
             public override int Length
@@ -54375,7 +54377,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -54510,7 +54512,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -54645,8 +54647,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -54706,8 +54708,8 @@ namespace OpenMetaverse.Packets
                 }
             }
             public uint LocationID;
-            public Vector3 LocationPos;
-            public Vector3 LocationLookAt;
+            public Vector3f LocationPos;
+            public Vector3f LocationLookAt;
 
             public override int Length
             {
@@ -54848,7 +54850,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AssetBlockBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
             public sbyte Type;
             public bool Tempfile;
             public bool StoreLocal;
@@ -54999,7 +55001,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AssetBlockBlock : PacketBlock
         {
-            public UUID UUID;
+            public Guid UUID;
             public sbyte Type;
             public bool Success;
 
@@ -55124,8 +55126,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -55196,7 +55198,7 @@ namespace OpenMetaverse.Packets
                 }
             }
             public bool ShowInList;
-            public UUID InsigniaID;
+            public Guid InsigniaID;
             public int MembershipFee;
             public bool OpenEnrollment;
             public bool AllowPublish;
@@ -55360,7 +55362,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -55405,7 +55407,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReplyDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public bool Success;
             private byte[] _message;
             public byte[] Message
@@ -55553,8 +55555,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -55602,7 +55604,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             private byte[] _charter;
             public byte[] Charter
             {
@@ -55615,7 +55617,7 @@ namespace OpenMetaverse.Packets
                 }
             }
             public bool ShowInList;
-            public UUID InsigniaID;
+            public Guid InsigniaID;
             public int MembershipFee;
             public bool OpenEnrollment;
             public bool AllowPublish;
@@ -55773,9 +55775,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -55826,8 +55828,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RoleChangeBlock : PacketBlock
         {
-            public UUID RoleID;
-            public UUID MemberID;
+            public Guid RoleID;
+            public Guid MemberID;
             public uint Change;
 
             public override int Length
@@ -55975,8 +55977,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -56024,7 +56026,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -56148,7 +56150,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -56193,7 +56195,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public bool Success;
 
             public override int Length
@@ -56320,8 +56322,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -56369,7 +56371,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -56414,7 +56416,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class EjectDataBlock : PacketBlock
         {
-            public UUID EjecteeID;
+            public Guid EjecteeID;
 
             public override int Length
             {
@@ -56561,7 +56563,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -56606,7 +56608,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -56780,8 +56782,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -56829,7 +56831,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -56952,7 +56954,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -56997,7 +56999,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public bool Success;
 
             public override int Length
@@ -57124,8 +57126,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -57173,7 +57175,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -57218,8 +57220,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InviteDataBlock : PacketBlock
         {
-            public UUID InviteeID;
-            public UUID RoleID;
+            public Guid InviteeID;
+            public Guid RoleID;
 
             public override int Length
             {
@@ -57369,8 +57371,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -57418,7 +57420,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -57541,7 +57543,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -57586,7 +57588,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             private byte[] _name;
             public byte[] Name
             {
@@ -57622,8 +57624,8 @@ namespace OpenMetaverse.Packets
                 }
             }
             public ulong PowersMask;
-            public UUID InsigniaID;
-            public UUID FounderID;
+            public Guid InsigniaID;
+            public Guid FounderID;
             public int MembershipFee;
             public bool OpenEnrollment;
             public int Money;
@@ -57631,7 +57633,7 @@ namespace OpenMetaverse.Packets
             public int GroupRolesCount;
             public bool AllowPublish;
             public bool MaturePublish;
-            public UUID OwnerRole;
+            public Guid OwnerRole;
 
             public override int Length
             {
@@ -57821,9 +57823,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -57874,7 +57876,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID RequestID;
+            public Guid RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
@@ -58006,8 +58008,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -58055,7 +58057,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID RequestID;
+            public Guid RequestID;
             public int IntervalDays;
             public int CurrentInterval;
             private byte[] _startdate;
@@ -58304,9 +58306,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -58357,7 +58359,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID RequestID;
+            public Guid RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
@@ -58489,8 +58491,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -58538,7 +58540,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID RequestID;
+            public Guid RequestID;
             public int IntervalDays;
             public int CurrentInterval;
             private byte[] _startdate;
@@ -58782,9 +58784,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -58835,7 +58837,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID RequestID;
+            public Guid RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
@@ -58967,8 +58969,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -59016,7 +59018,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
         {
-            public UUID RequestID;
+            public Guid RequestID;
             public int IntervalDays;
             public int CurrentInterval;
             private byte[] _startdate;
@@ -59304,8 +59306,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -59353,7 +59355,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -59398,7 +59400,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -59527,8 +59529,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -59576,7 +59578,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
             public uint TotalNumItems;
 
             public override int Length
@@ -59625,8 +59627,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ProposalDataBlock : PacketBlock
         {
-            public UUID VoteID;
-            public UUID VoteInitiator;
+            public Guid VoteID;
+            public Guid VoteInitiator;
             private byte[] _tersedateid;
             public byte[] TerseDateID
             {
@@ -59890,8 +59892,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -59939,7 +59941,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -59984,7 +59986,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
 
             public override int Length
             {
@@ -60113,8 +60115,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -60162,7 +60164,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
         {
-            public UUID TransactionID;
+            public Guid TransactionID;
             public uint TotalNumItems;
 
             public override int Length
@@ -60211,7 +60213,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HistoryItemDataBlock : PacketBlock
         {
-            public UUID VoteID;
+            public Guid VoteID;
             private byte[] _tersedateid;
             public byte[] TerseDateID
             {
@@ -60245,7 +60247,7 @@ namespace OpenMetaverse.Packets
                     else { _enddatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _enddatetime, 0, value.Length); }
                 }
             }
-            public UUID VoteInitiator;
+            public Guid VoteInitiator;
             private byte[] _votetype;
             public byte[] VoteType
             {
@@ -60390,7 +60392,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class VoteItemBlock : PacketBlock
         {
-            public UUID CandidateID;
+            public Guid CandidateID;
             private byte[] _votecast;
             public byte[] VoteCast
             {
@@ -60570,8 +60572,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -60619,7 +60621,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ProposalDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public int Quorum;
             public float Majority;
             public int Duration;
@@ -60776,8 +60778,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -60825,8 +60827,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ProposalDataBlock : PacketBlock
         {
-            public UUID ProposalID;
-            public UUID GroupID;
+            public Guid ProposalID;
+            public Guid GroupID;
             private byte[] _votecast;
             public byte[] VoteCast
             {
@@ -60973,8 +60975,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -61022,8 +61024,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid GroupID;
+            public Guid RequestID;
 
             public override int Length
             {
@@ -61149,7 +61151,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -61194,8 +61196,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid GroupID;
+            public Guid RequestID;
             public int MemberCount;
 
             public override int Length
@@ -61247,7 +61249,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MemberDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public int Contribution;
             private byte[] _onlinestatus;
             public byte[] OnlineStatus
@@ -61449,9 +61451,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -61575,8 +61577,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -61624,7 +61626,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public int Contribution;
 
             public override int Length
@@ -61751,8 +61753,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -61800,7 +61802,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public bool AcceptNotices;
 
             public override int Length
@@ -61978,8 +61980,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -62027,8 +62029,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid GroupID;
+            public Guid RequestID;
 
             public override int Length
             {
@@ -62154,7 +62156,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -62199,8 +62201,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid GroupID;
+            public Guid RequestID;
             public int RoleCount;
 
             public override int Length
@@ -62252,7 +62254,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RoleDataBlock : PacketBlock
         {
-            public UUID RoleID;
+            public Guid RoleID;
             private byte[] _name;
             public byte[] Name
             {
@@ -62469,8 +62471,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -62518,8 +62520,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid GroupID;
+            public Guid RequestID;
 
             public override int Length
             {
@@ -62645,9 +62647,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid AgentID;
+            public Guid GroupID;
+            public Guid RequestID;
             public uint TotalPairs;
 
             public override int Length
@@ -62702,8 +62704,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MemberDataBlock : PacketBlock
         {
-            public UUID RoleID;
-            public UUID MemberID;
+            public Guid RoleID;
+            public Guid MemberID;
 
             public override int Length
             {
@@ -62847,10 +62849,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
+            public Guid RequestID;
 
             public override int Length
             {
@@ -62976,9 +62978,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
-            public UUID RequestID;
+            public Guid AgentID;
+            public Guid GroupID;
+            public Guid RequestID;
 
             public override int Length
             {
@@ -63040,7 +63042,7 @@ namespace OpenMetaverse.Packets
                     else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
                 }
             }
-            public UUID RoleID;
+            public Guid RoleID;
             public bool Selected;
 
             public override int Length
@@ -63197,10 +63199,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
-            public UUID TitleRoleID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
+            public Guid TitleRoleID;
 
             public override int Length
             {
@@ -63326,9 +63328,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -63379,7 +63381,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RoleDataBlock : PacketBlock
         {
-            public UUID RoleID;
+            public Guid RoleID;
             private byte[] _name;
             public byte[] Name
             {
@@ -63590,8 +63592,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequestDataBlock : PacketBlock
         {
-            public UUID RequestID;
-            public UUID AgentID;
+            public Guid RequestID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -63711,8 +63713,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ReplyDataBlock : PacketBlock
         {
-            public UUID RequestID;
-            public UUID GroupID;
+            public Guid RequestID;
+            public Guid GroupID;
             private byte[] _selection;
             public byte[] Selection
             {
@@ -63853,8 +63855,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -63974,8 +63976,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint SerialNum;
 
             public override int Length
@@ -64027,8 +64029,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID AssetID;
+            public Guid ItemID;
+            public Guid AssetID;
             public byte WearableType;
 
             public override int Length
@@ -64177,8 +64179,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -64226,7 +64228,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock : PacketBlock
         {
-            public UUID ItemID;
+            public Guid ItemID;
             public byte WearableType;
 
             public override int Length
@@ -64372,8 +64374,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public int SerialNum;
 
             public override int Length
@@ -64425,7 +64427,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             public byte TextureIndex;
 
             public override int Length
@@ -64570,8 +64572,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public int SerialNum;
 
             public override int Length
@@ -64623,7 +64625,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class WearableDataBlock : PacketBlock
         {
-            public UUID TextureID;
+            public Guid TextureID;
             public byte TextureIndex;
             private byte[] _hostname;
             public byte[] HostName
@@ -64789,8 +64791,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -64910,7 +64912,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             private byte[] _firstname;
             public byte[] FirstName
             {
@@ -64944,7 +64946,7 @@ namespace OpenMetaverse.Packets
                     else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
-            public UUID ActiveGroupID;
+            public Guid ActiveGroupID;
             public ulong GroupPowers;
             private byte[] _groupname;
             public byte[] GroupName
@@ -65117,8 +65119,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentGroupDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
             public ulong AgentPowers;
             private byte[] _grouptitle;
             public byte[] GroupTitle
@@ -65282,7 +65284,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -65327,10 +65329,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public ulong GroupPowers;
             public bool AcceptNotices;
-            public UUID GroupInsigniaID;
+            public Guid GroupInsigniaID;
             public int Contribution;
             private byte[] _groupname;
             public byte[] GroupName
@@ -65506,8 +65508,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -65628,7 +65630,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            public UUID EndPointID;
+            public Guid EndPointID;
             public byte[] Digest;
 
             public override int Length
@@ -65750,7 +65752,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            public UUID EndPointID;
+            public Guid EndPointID;
 
             public override int Length
             {
@@ -65933,8 +65935,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -65982,8 +65984,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID OwnerID;
+            public Guid ItemID;
+            public Guid OwnerID;
             public byte AttachmentPt;
             public uint ItemFlags;
             public uint GroupMask;
@@ -66171,8 +66173,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -66220,7 +66222,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HeaderDataBlock : PacketBlock
         {
-            public UUID CompoundMsgID;
+            public Guid CompoundMsgID;
             public byte TotalObjects;
             public bool FirstDetachAll;
 
@@ -66273,8 +66275,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ItemID;
-            public UUID OwnerID;
+            public Guid ItemID;
+            public Guid OwnerID;
             public byte AttachmentPt;
             public uint ItemFlags;
             public uint GroupMask;
@@ -66486,8 +66488,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID ItemID;
+            public Guid AgentID;
+            public Guid ItemID;
 
             public override int Length
             {
@@ -66607,8 +66609,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -66656,7 +66658,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HeaderDataBlock : PacketBlock
         {
-            public UUID NewFolderID;
+            public Guid NewFolderID;
 
             public override int Length
             {
@@ -66701,8 +66703,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID OldItemID;
-            public UUID OldFolderID;
+            public Guid OldItemID;
+            public Guid OldFolderID;
 
             public override int Length
             {
@@ -66852,8 +66854,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -66973,7 +66975,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -67183,8 +67185,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -67376,7 +67378,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -67592,7 +67594,7 @@ namespace OpenMetaverse.Packets
                     else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
-            public UUID Invoice;
+            public Guid Invoice;
             public byte[] Digest;
 
             public override int Length
@@ -67812,8 +67814,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -67945,7 +67947,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public uint Flags;
 
             public override int Length
@@ -67998,7 +68000,7 @@ namespace OpenMetaverse.Packets
             public uint Right;
             public uint Top;
             public uint Bottom;
-            public UUID ImageID;
+            public Guid ImageID;
 
             public override int Length
             {
@@ -68151,8 +68153,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -68351,8 +68353,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -68552,7 +68554,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public uint Flags;
 
             public override int Length
@@ -68618,7 +68620,7 @@ namespace OpenMetaverse.Packets
             public uint RegionFlags;
             public byte WaterHeight;
             public byte Agents;
-            public UUID MapImageID;
+            public Guid MapImageID;
 
             public override int Length
             {
@@ -68790,8 +68792,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
             public uint Flags;
             public uint EstateID;
             public bool Godlike;
@@ -68978,7 +68980,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
             public uint Flags;
 
             public override int Length
@@ -69074,7 +69076,7 @@ namespace OpenMetaverse.Packets
         {
             public uint X;
             public uint Y;
-            public UUID ID;
+            public Guid ID;
             public int Extra;
             public int Extra2;
             private byte[] _name;
@@ -69256,9 +69258,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID AssetID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid AssetID;
             public Vector3d PosGlobal;
             private byte[] _to;
             public byte[] To
@@ -69632,7 +69634,7 @@ namespace OpenMetaverse.Packets
                     else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
-            public UUID MediaID;
+            public Guid MediaID;
             public byte MediaAutoScale;
 
             public override int Length
@@ -69865,8 +69867,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -70121,7 +70123,7 @@ namespace OpenMetaverse.Packets
         public class ReportDataBlock : PacketBlock
         {
             public uint TaskLocalID;
-            public UUID TaskID;
+            public Guid TaskID;
             public float LocationX;
             public float LocationY;
             public float LocationZ;
@@ -70322,7 +70324,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -70379,7 +70381,7 @@ namespace OpenMetaverse.Packets
                     else { _token = new byte[value.Length]; Buffer.BlockCopy(value, 0, _token, 0, value.Length); }
                 }
             }
-            public UUID ID;
+            public Guid ID;
             private byte[] _system;
             public byte[] System
             {
@@ -70578,8 +70580,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -71095,9 +71097,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public UUID GroupID;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Guid GroupID;
 
             public override int Length
             {
@@ -71170,12 +71172,12 @@ namespace OpenMetaverse.Packets
             public ushort ProfileEnd;
             public ushort ProfileHollow;
             public byte BypassRaycast;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
-            public UUID RayTargetID;
+            public Vector3f RayStart;
+            public Vector3f RayEnd;
+            public Guid RayTargetID;
             public byte RayEndIsIntersection;
-            public Vector3 Scale;
-            public Quaternion Rotation;
+            public Vector3f Scale;
+            public Quaternionf Rotation;
             public byte State;
 
             public override int Length
@@ -71389,8 +71391,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -71605,8 +71607,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -71800,8 +71802,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -71850,7 +71852,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Vector3 Position;
+            public Vector3f Position;
 
             public override int Length
             {
@@ -71995,8 +71997,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -72045,7 +72047,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint RequestFlags;
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -72276,7 +72278,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
+            public Guid AgentID;
 
             public override int Length
             {
@@ -72441,8 +72443,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -72566,8 +72568,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class InfoBlock : PacketBlock
         {
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public Vector3f Position;
+            public Vector3f LookAt;
 
             public override int Length
             {
@@ -72699,8 +72701,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -72820,10 +72822,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID CreatorID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ObjectID;
+            public Guid CreatorID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public ulong CreationDate;
             public uint BaseMask;
             public uint OwnerMask;
@@ -72838,10 +72840,10 @@ namespace OpenMetaverse.Packets
             public byte AggregatePermTexturesOwner;
             public uint Category;
             public short InventorySerial;
-            public UUID ItemID;
-            public UUID FolderID;
-            public UUID FromTaskID;
-            public UUID LastOwnerID;
+            public Guid ItemID;
+            public Guid FolderID;
+            public Guid FromTaskID;
+            public Guid LastOwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -73143,9 +73145,9 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint RequestFlags;
-            public UUID ObjectID;
-            public UUID OwnerID;
-            public UUID GroupID;
+            public Guid ObjectID;
+            public Guid OwnerID;
+            public Guid GroupID;
             public uint BaseMask;
             public uint OwnerMask;
             public uint GroupMask;
@@ -73155,7 +73157,7 @@ namespace OpenMetaverse.Packets
             public byte SaleType;
             public int SalePrice;
             public uint Category;
-            public UUID LastOwnerID;
+            public Guid LastOwnerID;
             private byte[] _name;
             public byte[] Name
             {
@@ -73353,8 +73355,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -73546,9 +73548,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            public UUID SoundID;
-            public UUID ObjectID;
-            public UUID OwnerID;
+            public Guid SoundID;
+            public Guid ObjectID;
+            public Guid OwnerID;
             public float Gain;
             public byte Flags;
 
@@ -73679,7 +73681,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
             public float Gain;
 
             public override int Length
@@ -73800,9 +73802,9 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            public UUID ObjectID;
-            public UUID OwnerID;
-            public UUID SoundID;
+            public Guid ObjectID;
+            public Guid OwnerID;
+            public Guid SoundID;
 
             public override int Length
             {
@@ -73943,8 +73945,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -73992,8 +73994,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class EffectBlock : PacketBlock
         {
-            public UUID ID;
-            public UUID AgentID;
+            public Guid ID;
+            public Guid AgentID;
             public byte Type;
             public float Duration;
             public byte[] Color;
@@ -74411,15 +74413,15 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
-            public Quaternion BodyRotation;
-            public Quaternion HeadRotation;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Quaternionf BodyRotation;
+            public Quaternionf HeadRotation;
             public byte State;
-            public Vector3 CameraCenter;
-            public Vector3 CameraAtAxis;
-            public Vector3 CameraLeftAxis;
-            public Vector3 CameraUpAxis;
+            public Vector3f CameraCenter;
+            public Vector3f CameraAtAxis;
+            public Vector3f CameraLeftAxis;
+            public Vector3f CameraUpAxis;
             public float Far;
             public uint ControlFlags;
             public byte Flags;
@@ -74573,8 +74575,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -74622,7 +74624,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationListBlock : PacketBlock
         {
-            public UUID AnimID;
+            public Guid AnimID;
             public bool StartAnim;
 
             public override int Length
@@ -74853,8 +74855,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -74902,8 +74904,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TargetObjectBlock : PacketBlock
         {
-            public UUID TargetID;
-            public Vector3 Offset;
+            public Guid TargetID;
+            public Vector3f Offset;
 
             public override int Length
             {
@@ -75030,8 +75032,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -75151,8 +75153,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
         {
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -75200,7 +75202,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RequestImageBlock : PacketBlock
         {
-            public UUID Image;
+            public Guid Image;
             public sbyte DiscardLevel;
             public float DownloadPriority;
             public uint Packet;
@@ -75357,7 +75359,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageIDBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             public byte Codec;
             public uint Size;
             public ushort Packets;
@@ -75556,7 +75558,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageIDBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
             public ushort Packet;
 
             public override int Length
@@ -75985,12 +75987,12 @@ namespace OpenMetaverse.Packets
         {
             public uint ID;
             public byte State;
-            public UUID FullID;
+            public Guid FullID;
             public uint CRC;
             public byte PCode;
             public byte Material;
             public byte ClickAction;
-            public Vector3 Scale;
+            public Vector3f Scale;
             private byte[] _objectdata;
             public byte[] ObjectData
             {
@@ -76111,14 +76113,14 @@ namespace OpenMetaverse.Packets
                     else { _extraparams = new byte[value.Length]; Buffer.BlockCopy(value, 0, _extraparams, 0, value.Length); }
                 }
             }
-            public UUID Sound;
-            public UUID OwnerID;
+            public Guid Sound;
+            public Guid OwnerID;
             public float Gain;
             public byte Flags;
             public float Radius;
             public byte JointType;
-            public Vector3 JointPivot;
-            public Vector3 JointAxisOrAnchor;
+            public Vector3f JointPivot;
+            public Vector3f JointAxisOrAnchor;
 
             public override int Length
             {
@@ -77237,7 +77239,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class TransferDataBlock : PacketBlock
         {
-            public UUID TransferID;
+            public Guid TransferID;
             public int ChannelType;
             public int Packet;
             public int Status;
@@ -77699,7 +77701,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SenderBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
 
             public override int Length
             {
@@ -77744,7 +77746,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationListBlock : PacketBlock
         {
-            public UUID AnimID;
+            public Guid AnimID;
             public int AnimSequenceID;
 
             public override int Length
@@ -77793,7 +77795,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationSourceListBlock : PacketBlock
         {
-            public UUID ObjectID;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -78044,7 +78046,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SitObjectBlock : PacketBlock
         {
-            public UUID ID;
+            public Guid ID;
 
             public override int Length
             {
@@ -78090,10 +78092,10 @@ namespace OpenMetaverse.Packets
         public class SitTransformBlock : PacketBlock
         {
             public bool AutoPilot;
-            public Vector3 SitPosition;
-            public Quaternion SitRotation;
-            public Vector3 CameraEyeOffset;
-            public Vector3 CameraAtOffset;
+            public Vector3f SitPosition;
+            public Quaternionf SitRotation;
+            public Vector3f CameraEyeOffset;
+            public Vector3f CameraAtOffset;
             public bool ForceMouselook;
 
             public override int Length
@@ -78233,7 +78235,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class CameraCollidePlaneBlock : PacketBlock
         {
-            public Vector4 Plane;
+            public Vector4f Plane;
 
             public override int Length
             {
@@ -78358,14 +78360,14 @@ namespace OpenMetaverse.Packets
             public int OtherCount;
             public int PublicCount;
             public int LocalID;
-            public UUID OwnerID;
+            public Guid OwnerID;
             public bool IsGroupOwned;
             public uint AuctionID;
             public int ClaimDate;
             public int ClaimPrice;
             public int RentPrice;
-            public Vector3 AABBMin;
-            public Vector3 AABBMax;
+            public Vector3f AABBMin;
+            public Vector3f AABBMax;
             private byte[] _bitmap;
             public byte[] Bitmap
             {
@@ -78435,16 +78437,16 @@ namespace OpenMetaverse.Packets
                     else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
-            public UUID MediaID;
+            public Guid MediaID;
             public byte MediaAutoScale;
-            public UUID GroupID;
+            public Guid GroupID;
             public int PassPrice;
             public float PassHours;
             public byte Category;
-            public UUID AuthBuyerID;
-            public UUID SnapshotID;
-            public Vector3 UserLocation;
-            public Vector3 UserLookAt;
+            public Guid AuthBuyerID;
+            public Guid SnapshotID;
+            public Vector3f UserLocation;
+            public Vector3f UserLookAt;
             public byte LandingType;
             public bool RegionPushOverride;
             public bool RegionDenyAnonymous;
@@ -78797,15 +78799,15 @@ namespace OpenMetaverse.Packets
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
-            public UUID AgentID;
-            public UUID SessionID;
-            public Vector3 AgentPos;
-            public Vector3 AgentVel;
-            public Vector3 Center;
-            public Vector3 Size;
-            public Vector3 AtAxis;
-            public Vector3 LeftAxis;
-            public Vector3 UpAxis;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Vector3f AgentPos;
+            public Vector3f AgentVel;
+            public Vector3f Center;
+            public Vector3f Size;
+            public Vector3f AtAxis;
+            public Vector3f LeftAxis;
+            public Vector3f UpAxis;
             public bool ChangedGrid;
             public float Far;
             public float Aspect;
@@ -78821,13 +78823,13 @@ namespace OpenMetaverse.Packets
                 }
             }
             public uint LocomotionState;
-            public Quaternion HeadRotation;
-            public Quaternion BodyRotation;
+            public Quaternionf HeadRotation;
+            public Quaternionf BodyRotation;
             public uint ControlFlags;
             public float EnergyLevel;
             public byte GodLevel;
             public bool AlwaysRun;
-            public UUID PreyAgent;
+            public Guid PreyAgent;
             public byte AgentAccess;
             private byte[] _agenttextures;
             public byte[] AgentTextures
@@ -78840,7 +78842,7 @@ namespace OpenMetaverse.Packets
                     else { _agenttextures = new byte[value.Length]; Buffer.BlockCopy(value, 0, _agenttextures, 0, value.Length); }
                 }
             }
-            public UUID ActiveGroupID;
+            public Guid ActiveGroupID;
 
             public override int Length
             {
@@ -78975,7 +78977,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public ulong GroupPowers;
             public bool AcceptNotices;
 
@@ -79028,8 +79030,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AnimationDataBlock : PacketBlock
         {
-            public UUID Animation;
-            public UUID ObjectID;
+            public Guid Animation;
+            public Guid ObjectID;
 
             public override int Length
             {
@@ -79077,7 +79079,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GranterBlockBlock : PacketBlock
         {
-            public UUID GranterID;
+            public Guid GranterID;
 
             public override int Length
             {
@@ -79425,8 +79427,8 @@ namespace OpenMetaverse.Packets
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
-            public UUID AgentID;
-            public UUID SessionID;
+            public Guid AgentID;
+            public Guid SessionID;
 
             public override int Length
             {
@@ -79554,15 +79556,15 @@ namespace OpenMetaverse.Packets
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
-            public UUID AgentID;
-            public UUID SessionID;
-            public Vector3 AgentPos;
-            public Vector3 AgentVel;
-            public Vector3 Center;
-            public Vector3 Size;
-            public Vector3 AtAxis;
-            public Vector3 LeftAxis;
-            public Vector3 UpAxis;
+            public Guid AgentID;
+            public Guid SessionID;
+            public Vector3f AgentPos;
+            public Vector3f AgentVel;
+            public Vector3f Center;
+            public Vector3f Size;
+            public Vector3f AtAxis;
+            public Vector3f LeftAxis;
+            public Vector3f UpAxis;
             public bool ChangedGrid;
 
             public override int Length
@@ -79713,12 +79715,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SoundDataBlock : PacketBlock
         {
-            public UUID SoundID;
-            public UUID OwnerID;
-            public UUID ObjectID;
-            public UUID ParentID;
+            public Guid SoundID;
+            public Guid OwnerID;
+            public Guid ObjectID;
+            public Guid ParentID;
             public ulong Handle;
-            public Vector3 Position;
+            public Vector3f Position;
             public float Gain;
 
             public override int Length

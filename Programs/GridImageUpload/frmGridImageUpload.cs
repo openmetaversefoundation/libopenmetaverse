@@ -18,8 +18,8 @@ namespace GridImageUpload
         private byte[] UploadData = null;
         private int Transferred = 0;
         private string FileName = String.Empty;
-        private UUID SendToID;
-        private UUID AssetID;
+        private Guid SendToID;
+        private Guid AssetID;
 
         public frmGridImageUpload()
         {
@@ -244,17 +244,17 @@ namespace GridImageUpload
 
         private void cmdUpload_Click(object sender, EventArgs e)
         {
-            SendToID = UUID.Zero;
+            SendToID = Guid.Empty;
             string sendTo = txtSendtoName.Text.Trim();
 
             if (sendTo.Length > 0)
             {
                 AutoResetEvent lookupEvent = new AutoResetEvent(false);
-                UUID thisQueryID = UUID.Random();
+                Guid thisQueryID = Guid.NewGuid();
                 bool lookupSuccess = false;
 
                 DirectoryManager.DirPeopleReplyCallback callback =
-                    delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                    delegate(Guid queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
                     {
                         if (queryID == thisQueryID)
                         {
@@ -306,7 +306,7 @@ namespace GridImageUpload
                         }
                     },
 
-                    delegate(bool success, string status, UUID itemID, UUID assetID)
+                    delegate(bool success, string status, Guid itemID, Guid assetID)
                     {
                         if (this.InvokeRequired)
                             BeginInvoke(new MethodInvoker(EnableControls));
@@ -336,7 +336,7 @@ namespace GridImageUpload
                                 // FIXME: We should be watching the callback for RequestUpdateItem instead of a dumb sleep
                                 System.Threading.Thread.Sleep(2000);
 
-                                if (SendToID != UUID.Zero)
+                                if (SendToID != Guid.Empty)
                                 {
                                     Logger.Log("Sending item to " + SendToID.ToString(), Helpers.LogLevel.Info, Client);
                                     Client.Inventory.GiveItem(itemID, name, AssetType.Texture, SendToID, true);

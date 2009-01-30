@@ -143,8 +143,8 @@ namespace OpenMetaverse.StructuredData
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
-                case OSDType.UUID:
-                    writer.WriteStartElement(String.Empty, "uuid", String.Empty);
+                case OSDType.Guid:
+                    writer.WriteStartElement(String.Empty, "Guid", String.Empty);
                     writer.WriteString(data.AsString());
                     writer.WriteEndElement();
                     break;
@@ -324,22 +324,22 @@ namespace OpenMetaverse.StructuredData
 
                     ret = OSD.FromReal(0d);
                     break;
-                case "uuid":
+                case "Guid":
                     if (reader.IsEmptyElement)
                     {
                         reader.Read();
-                        return OSD.FromUUID(UUID.Zero);
+                        return OSD.FromGuid(Guid.Empty);
                     }
 
                     if (reader.Read())
                     {
-                        UUID value = UUID.Zero;
-                        UUID.TryParse(reader.ReadString().Trim(), out value);
-                        ret = OSD.FromUUID(value);
+                        Guid value = Guid.Empty;
+                        GuidExtensions.TryParse(reader.ReadString().Trim(), out value);
+                        ret = OSD.FromGuid(value);
                         break;
                     }
 
-                    ret = OSD.FromUUID(UUID.Zero);
+                    ret = OSD.FromGuid(Guid.Empty);
                     break;
                 case "date":
                     if (reader.IsEmptyElement)
@@ -531,7 +531,7 @@ namespace OpenMetaverse.StructuredData
 <xs:schema elementFormDefault=""qualified"" xmlns:xs=""http://www.w3.org/2001/XMLSchema"">
   <xs:import schemaLocation=""xml.xsd"" namespace=""http://www.w3.org/XML/1998/namespace"" />
   <xs:element name=""uri"" type=""xs:string"" />
-  <xs:element name=""uuid"" type=""xs:string"" />
+  <xs:element name=""Guid"" type=""xs:string"" />
   <xs:element name=""KEYDATA"">
     <xs:complexType>
       <xs:sequence>
@@ -565,7 +565,7 @@ namespace OpenMetaverse.StructuredData
         <xs:element ref=""boolean"" />
         <xs:element ref=""integer"" />
         <xs:element ref=""real"" />
-        <xs:element ref=""uuid"" />
+        <xs:element ref=""Guid"" />
         <xs:element ref=""string"" />
         <xs:element ref=""date"" />
         <xs:element ref=""uri"" />

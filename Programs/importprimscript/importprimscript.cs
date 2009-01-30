@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Drawing;
+using Mono.Simd.Math;
 using OpenMetaverse;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.Imaging;
@@ -13,9 +14,9 @@ namespace importprimscript
     {
         public string Name;
         public string TextureFile;
-        public UUID TextureID;
+        public Guid TextureID;
         public string SculptFile;
-        public UUID SculptID;
+        public Guid SculptID;
         public Vector3 Scale;
         public Vector3 Offset;
     }
@@ -25,9 +26,9 @@ namespace importprimscript
         static GridClient Client = new GridClient();
         static Sculpt CurrentSculpt = null;
         static AutoResetEvent RezzedEvent = new AutoResetEvent(false);
-        static Vector3 RootPosition = Vector3.Zero;
+        static Vector3 RootPosition = Vector3f.Zero;
         static List<uint> RezzedPrims = new List<uint>();
-        static UUID UploadFolderID = UUID.Zero;
+        static Guid UploadFolderID = Guid.Empty;
 
         static void Main(string[] args)
         {
@@ -130,7 +131,7 @@ namespace importprimscript
             //
 
             // Create a folder to hold all of our texture uploads
-            UploadFolderID = Client.Inventory.CreateFolder(Client.Inventory.Store.RootFolder.UUID, scriptfilename);
+            UploadFolderID = Client.Inventory.CreateFolder(Client.Inventory.Store.RootFolder.Guid, scriptfilename);
 
             // Loop through each sculpty and do what we need to do
             for (int i = 0; i < sculpties.Count; i++)
@@ -140,12 +141,12 @@ namespace importprimscript
                 sculpties[i].TextureID = UploadImage(sculpties[i].TextureFile, false);
 
                 // Check for failed uploads
-                if (sculpties[i].SculptID == UUID.Zero)
+                if (sculpties[i].SculptID == Guid.Empty)
                 {
                     Console.WriteLine("Sculpt map " + sculpties[i].SculptFile + " failed to upload, skipping " + sculpties[i].Name);
                     continue;
                 }
-                else if (sculpties[i].TextureID == UUID.Zero)
+                else if (sculpties[i].TextureID == Guid.Empty)
                 {
                     Console.WriteLine("Texture " + sculpties[i].TextureFile + " failed to upload, skipping " + sculpties[i].Name);
                     continue;
@@ -162,8 +163,8 @@ namespace importprimscript
 
                 // Rez this prim
                 CurrentSculpt = sculpties[i];
-                Client.Objects.AddPrim(Client.Network.CurrentSim, volume, UUID.Zero, 
-                    RootPosition + CurrentSculpt.Offset, CurrentSculpt.Scale, Quaternion.Identity);
+                Client.Objects.AddPrim(Client.Network.CurrentSim, volume, Guid.Empty, 
+                    RootPosition + CurrentSculpt.Offset, CurrentSculpt.Scale, Quaternionf.Identity);
 
                 // Wait for the prim to rez and the properties be set for it
                 if (!RezzedEvent.WaitOne(1000 * 10, false))
@@ -196,9 +197,9 @@ namespace importprimscript
                 Console.WriteLine(level + ": " + message);
         }
 
-        static UUID UploadImage(string filename, bool lossless)
+        static Guid UploadImage(string filename, bool lossless)
         {
-            UUID newAssetID = UUID.Zero;
+            Guid newAssetID = Guid.Empty;
             byte[] jp2data = null;
 
             try
@@ -209,7 +210,7 @@ namespace importprimscript
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to encode image file " + filename + ": " + ex.ToString());
-                return UUID.Zero;
+                return Guid.Empty;
             }
 
             AutoResetEvent uploadEvent = new AutoResetEvent(false);
@@ -221,7 +222,7 @@ namespace importprimscript
                     // FIXME: Do something with progress?
                 },
 
-                delegate(bool success, string status, UUID itemID, UUID assetID)
+                delegate(bool success, string status, Guid itemID, Guid assetID)
                 {
                     if (success)
                     {
@@ -307,7 +308,7 @@ namespace importprimscript
                             switch (words[0])
                             {
                                 case "newPrim":
-                                    if (current.Scale != Vector3.Zero &&
+                                    if (current.Scale != Vector3f.Zero &&
                                         !String.IsNullOrEmpty(current.SculptFile) &&
                                         !String.IsNullOrEmpty(current.TextureFile))
                                     {
@@ -342,12 +343,12 @@ namespace importprimscript
                                         x = Single.Parse(words[2]);
                                         y = Single.Parse(words[3]);
                                         z = Single.Parse(words[4]);
-                                        current.Scale = new Vector3(x, y, z);
+                                        current.Scale = new Vector3f(x, y, z);
 
                                         x = Single.Parse(words[6]);
                                         y = Single.Parse(words[7]);
                                         z = Single.Parse(words[8]);
-                                        current.Offset = new Vector3(x, y, z);
+                                        current.Offset = new Vector3f(x, y, z);
                                     }
                                     break;
                             }
@@ -361,7 +362,7 @@ namespace importprimscript
                 }
 
                 // Add the final prim
-                if (current != null && current.Scale != Vector3.Zero &&
+                if (current != null && current.Scale != Vector3f.Zero &&
                     !String.IsNullOrEmpty(current.SculptFile) &&
                     !String.IsNullOrEmpty(current.TextureFile))
                 {

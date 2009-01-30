@@ -10,9 +10,9 @@ namespace OpenMetaverse.TestClient
     public class SetMasterCommand: Command
     {
 		public DateTime Created = DateTime.Now;
-        private UUID resolvedMasterKey = UUID.Zero;
+        private Guid resolvedMasterKey = Guid.Empty;
         private ManualResetEvent keyResolution = new ManualResetEvent(false);
-        private UUID query = UUID.Zero;
+        private Guid query = Guid.Empty;
 
         public SetMasterCommand(TestClient testClient)
 		{
@@ -21,7 +21,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
 			string masterName = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)
@@ -46,7 +46,7 @@ namespace OpenMetaverse.TestClient
             {
                 keyResolution.Reset();
                 Client.Directory.OnDirPeopleReply -= callback;
-                return "Unable to obtain UUID for \"" + masterName + "\". Master unchanged.";
+                return "Unable to obtain Guid for \"" + masterName + "\". Master unchanged.";
             }
             
             // Send an Online-only IM to the new master
@@ -56,14 +56,14 @@ namespace OpenMetaverse.TestClient
             return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToString());
 		}
 
-        private void KeyResolvHandler(UUID queryid, List<DirectoryManager.AgentSearchData> matches)
+        private void KeyResolvHandler(Guid queryid, List<DirectoryManager.AgentSearchData> matches)
         {
             if (query != queryid)
                 return;
 
             resolvedMasterKey = matches[0].AgentID;
             keyResolution.Set();
-            query = UUID.Zero;
+            query = Guid.Empty;
         }
     }
 }

@@ -31,6 +31,7 @@ using System.IO;
 using System.Net;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
+using Mono.Simd.Math;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Capabilities;
 using OpenMetaverse.Packets;
@@ -104,17 +105,17 @@ namespace OpenMetaverse
         public bool Success;
         public string Reason;
         public string Message;
-        public UUID AgentID;
-        public UUID SessionID;
-        public UUID SecureSessionID;
+        public Guid AgentID;
+        public Guid SessionID;
+        public Guid SecureSessionID;
         public string FirstName;
         public string LastName;
         public string StartLocation;
         public string AgentAccess;
-        public Vector3 LookAt;
+        public Vector3f LookAt;
         public ulong HomeRegion;
-        public Vector3 HomePosition;
-        public Vector3 HomeLookAt;
+        public Vector3f HomePosition;
+        public Vector3f HomeLookAt;
         public uint CircuitCode;
         public uint RegionX;
         public uint RegionY;
@@ -123,19 +124,19 @@ namespace OpenMetaverse
         public string SeedCapability;
         public FriendInfo[] BuddyList;
         public DateTime SecondsSinceEpoch;
-        public UUID InventoryRoot;
-        public UUID LibraryRoot;
+        public Guid InventoryRoot;
+        public Guid LibraryRoot;
         public InventoryFolder[] InventorySkeleton;
         public InventoryFolder[] LibrarySkeleton;
-        public UUID LibraryOwner;
+        public Guid LibraryOwner;
 
         public void Parse(OSDMap reply)
         {
             try
             {
-                AgentID = ParseUUID("agent_id", reply);
-                SessionID = ParseUUID("session_id", reply);
-                SecureSessionID = ParseUUID("secure_session_id", reply);
+                AgentID = ParseGuid("agent_id", reply);
+                SessionID = ParseGuid("session_id", reply);
+                SecureSessionID = ParseGuid("secure_session_id", reply);
                 FirstName = ParseString("first_name", reply).Trim('"');
                 LastName = ParseString("last_name", reply).Trim('"');
                 StartLocation = ParseString("start_location", reply);
@@ -171,8 +172,8 @@ namespace OpenMetaverse
             else
             {
                 HomeRegion = 0;
-                HomePosition = Vector3.Zero;
-                HomeLookAt = Vector3.Zero;
+                HomePosition = Vector3f.Zero;
+                HomeLookAt = Vector3f.Zero;
             }
 
             CircuitCode = ParseUInt("circuit_code", reply);
@@ -196,7 +197,7 @@ namespace OpenMetaverse
                     {
                         OSDMap buddy = (OSDMap)buddyArray[i];
                         BuddyList[i] = new FriendInfo(
-                            ParseUUID("buddy_id", buddy),
+                            ParseGuid("buddy_id", buddy),
                             (FriendRights)ParseUInt("buddy_rights_given", buddy),
                             (FriendRights)ParseUInt("buddy_rights_has", buddy));
                     }
@@ -204,10 +205,10 @@ namespace OpenMetaverse
             }
 
             SecondsSinceEpoch = Utils.UnixTimeToDateTime(ParseUInt("seconds_since_epoch", reply));
-            InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
+            InventoryRoot = ParseMappedGuid("inventory-root", "folder_id", reply);
             InventorySkeleton = ParseInventoryFolders("inventory-skeleton", AgentID, reply);
-            LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
-            LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
+            LibraryRoot = ParseMappedGuid("inventory-lib-root", "folder_id", reply);
+            LibraryOwner = ParseMappedGuid("inventory-lib-owner", "agent_id", reply);
             LibrarySkeleton = ParseInventoryFolders("inventory-skel-lib", LibraryOwner, reply);
         }
 
@@ -275,11 +276,11 @@ namespace OpenMetaverse
                         if (InventorySkeleton != null)
                         {
                             foreach (InventoryFolder folder in InventorySkeleton)
-                                WriteXmlRpcInventoryItem(writer, folder.Name, folder.ParentUUID, (uint)folder.Version, (uint)folder.PreferredType, folder.UUID);
+                                WriteXmlRpcInventoryItem(writer, folder.Name, folder.ParentGuid, (uint)folder.Version, (uint)folder.PreferredType, folder.Guid);
                         }
                         else
                         {
-                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)InventoryType.Category, InventoryRoot);
+                            WriteXmlRpcInventoryItem(writer, "Inventory", Guid.Empty, 1, (uint)InventoryType.Category, InventoryRoot);
                         }
                         WriteXmlRpcArrayEnd(writer);
 
@@ -288,11 +289,11 @@ namespace OpenMetaverse
                         if (BuddyList != null)
                         {
                             foreach (FriendInfo friend in BuddyList)
-                                WriteXmlRpcBuddy(writer, (uint)friend.MyFriendRights, (uint)friend.TheirFriendRights, friend.UUID);
+                                WriteXmlRpcBuddy(writer, (uint)friend.MyFriendRights, (uint)friend.TheirFriendRights, friend.Guid);
                         }
                         else
                         {
-                            //WriteXmlRpcBuddy(writer, 0, 0, UUID.Random());
+                            //WriteXmlRpcBuddy(writer, 0, 0, Guid.NewGuid());
                         }
                         WriteXmlRpcArrayEnd(writer);
 
@@ -317,11 +318,11 @@ namespace OpenMetaverse
                         if (LibrarySkeleton != null)
                         {
                             foreach (InventoryFolder folder in LibrarySkeleton)
-                                WriteXmlRpcInventoryItem(writer, folder.Name, folder.ParentUUID, (uint)folder.Version, (uint)folder.PreferredType, folder.UUID);
+                                WriteXmlRpcInventoryItem(writer, folder.Name, folder.ParentGuid, (uint)folder.Version, (uint)folder.PreferredType, folder.Guid);
                         }
                         else
                         {
-                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)InventoryType.Category, LibraryRoot);
+                            WriteXmlRpcInventoryItem(writer, "Library", Guid.Empty, 1, (uint)InventoryType.Category, LibraryRoot);
                         }
                         WriteXmlRpcArrayEnd(writer);
 
@@ -330,7 +331,7 @@ namespace OpenMetaverse
 
                         // gestures
                         WriteXmlRpcArrayStart(writer, "gestures");
-                        WriteXmlRpcGesture(writer, UUID.Random(), UUID.Random());
+                        WriteXmlRpcGesture(writer, Guid.NewGuid(), Guid.NewGuid());
                         WriteXmlRpcArrayEnd(writer);
 
                         // sim_ip
@@ -432,13 +433,13 @@ namespace OpenMetaverse
                 return 0;
         }
 
-        public static UUID ParseUUID(string key, OSDMap reply)
+        public static Guid ParseGuid(string key, OSDMap reply)
         {
             OSD osd;
             if (reply.TryGetValue(key, out osd))
-                return osd.AsUUID();
+                return osd.AsGuid();
             else
-                return UUID.Zero;
+                return Guid.Empty;
         }
 
         public static string ParseString(string key, OSDMap reply)
@@ -450,7 +451,7 @@ namespace OpenMetaverse
                 return String.Empty;
         }
 
-        public static Vector3 ParseVector3(string key, OSDMap reply)
+        public static Vector3f ParseVector3(string key, OSDMap reply)
         {
             OSD osd;
             if (reply.TryGetValue(key, out osd))
@@ -466,10 +467,10 @@ namespace OpenMetaverse
                 }
             }
 
-            return Vector3.Zero;
+            return Vector3f.Zero;
         }
 
-        public static UUID ParseMappedUUID(string key, string key2, OSDMap reply)
+        public static Guid ParseMappedGuid(string key, string key2, OSDMap reply)
         {
             OSD folderOSD;
             if (reply.TryGetValue(key, out folderOSD) && folderOSD.Type == OSDType.Array)
@@ -480,14 +481,14 @@ namespace OpenMetaverse
                     OSDMap map = (OSDMap)array[0];
                     OSD folder;
                     if (map.TryGetValue(key2, out folder))
-                        return folder.AsUUID();
+                        return folder.AsGuid();
                 }
             }
 
-            return UUID.Zero;
+            return Guid.Empty;
         }
 
-        public static InventoryFolder[] ParseInventoryFolders(string key, UUID owner, OSDMap reply)
+        public static InventoryFolder[] ParseInventoryFolders(string key, Guid owner, OSDMap reply)
         {
             List<InventoryFolder> folders = new List<InventoryFolder>();
 
@@ -501,11 +502,11 @@ namespace OpenMetaverse
                     if (array[i].Type == OSDType.Map)
                     {
                         OSDMap map = (OSDMap)array[i];
-                        InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
+                        InventoryFolder folder = new InventoryFolder(map["folder_id"].AsGuid());
                         folder.PreferredType = (AssetType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
                         folder.OwnerID = owner;
-                        folder.ParentUUID = map["parent_id"].AsUUID();
+                        folder.ParentGuid = map["parent_id"].AsGuid();
                         folder.Name = map["name"].AsString();
 
                         folders.Add(folder);
@@ -605,8 +606,8 @@ namespace OpenMetaverse
             writer.WriteEndElement();
         }
 
-        public static void WriteXmlRpcInventoryItem(XmlWriter writer, string name, UUID parentID,
-            uint version, uint typeDefault, UUID folderID)
+        public static void WriteXmlRpcInventoryItem(XmlWriter writer, string name, Guid parentID,
+            uint version, uint typeDefault, Guid folderID)
         {
             writer.WriteStartElement("value");
             writer.WriteStartElement("struct");
@@ -621,7 +622,7 @@ namespace OpenMetaverse
             writer.WriteEndElement();
         }
 
-        public static void WriteXmlRpcBuddy(XmlWriter writer, uint rightsHas, uint rightsGiven, UUID buddyID)
+        public static void WriteXmlRpcBuddy(XmlWriter writer, uint rightsHas, uint rightsGiven, Guid buddyID)
         {
             writer.WriteStartElement("value");
             writer.WriteStartElement("struct");
@@ -634,7 +635,7 @@ namespace OpenMetaverse
             writer.WriteEndElement();
         }
 
-        public static void WriteXmlRpcGesture(XmlWriter writer, UUID assetID, UUID itemID)
+        public static void WriteXmlRpcGesture(XmlWriter writer, Guid assetID, Guid itemID)
         {
             writer.WriteStartElement("value");
             writer.WriteStartElement("struct");

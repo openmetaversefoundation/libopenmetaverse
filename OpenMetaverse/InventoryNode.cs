@@ -87,7 +87,7 @@ namespace OpenMetaverse
             if (parent != null)
             {
                 // Add this node to the collection of parent nodes
-                lock (parent.Nodes.SyncRoot) parent.Nodes.Add(data.UUID, this);
+                lock (parent.Nodes.SyncRoot) parent.Nodes.Add(data.Guid, this);
             }
         }
 

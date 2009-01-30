@@ -40,7 +40,7 @@ namespace Simian.Extensions
                         if (recipient.AgentID == im.MessageBlock.ToAgentID)
                         {
                             ImprovedInstantMessagePacket sendIM = new ImprovedInstantMessagePacket();
-                            sendIM.MessageBlock.RegionID = UUID.Random(); //FIXME
+                            sendIM.MessageBlock.RegionID = Guid.NewGuid(); //FIXME
                             sendIM.MessageBlock.ParentEstateID = 1;
                             sendIM.MessageBlock.FromGroup = false;
                             sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.Avatar.Name);

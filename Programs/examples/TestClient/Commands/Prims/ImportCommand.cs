@@ -50,13 +50,13 @@ namespace OpenMetaverse.TestClient
             testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: import inputfile.xml [usegroup]";
 
             string filename = args[0];
-            UUID GroupID = (args.Length > 1) ? Client.GroupID : UUID.Zero;
+            Guid GroupID = (args.Length > 1) ? Client.GroupID : Guid.Empty;
             string xml;
             List<Primitive> prims;
 
@@ -206,7 +206,7 @@ namespace OpenMetaverse.TestClient
 
                         Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
  
-                        if (currentPrim.Sculpt.SculptTexture != UUID.Zero) {
+                        if (currentPrim.Sculpt.SculptTexture != Guid.Empty) {
                             Client.Objects.SetSculpt(simulator, prim.LocalID, currentPrim.Sculpt);
                         }
 

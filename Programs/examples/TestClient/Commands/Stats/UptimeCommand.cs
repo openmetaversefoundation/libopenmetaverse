@@ -17,7 +17,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             string name = Client.ToString();
             return "I am " + name + ", Up Since: " + Created + " (" + (DateTime.Now - Created) + ")";

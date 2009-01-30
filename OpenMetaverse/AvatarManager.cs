@@ -42,9 +42,9 @@ namespace OpenMetaverse
         /// <summary>true of Avatar accepts group notices</summary>
         public bool AcceptNotices;
         /// <summary>Groups Key</summary>
-        public UUID GroupID;
+        public Guid GroupID;
         /// <summary>Texture Key for groups insignia</summary>
-        public UUID GroupInsigniaID;
+        public Guid GroupInsigniaID;
         /// <summary>Name of the group</summary>
         public string GroupName;
         /// <summary>Powers avatar has in the group</summary>
@@ -60,13 +60,13 @@ namespace OpenMetaverse
     /// </summary>
     public struct ProfilePick
     {
-        public UUID PickID;
-        public UUID CreatorID;
+        public Guid PickID;
+        public Guid CreatorID;
         public bool TopPick;
-        public UUID ParcelID;
+        public Guid ParcelID;
         public string Name;
         public string Desc;
-        public UUID SnapshotID;
+        public Guid SnapshotID;
         public string User;
         public string OriginalName;
         public string SimName;
@@ -90,36 +90,36 @@ namespace OpenMetaverse
         /// <param name="avatarID"></param>
         /// <param name="isTrial"></param>
         /// <param name="visualParams"></param>
-        public delegate void AvatarAppearanceCallback(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams);
+        public delegate void AvatarAppearanceCallback(Guid avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams);
         /// <summary>
-        /// Triggered when a UUIDNameReply is received
+        /// Triggered when a GuidNameReply is received
         /// </summary>
         /// <param name="names"></param>
-        public delegate void AvatarNamesCallback(Dictionary<UUID, string> names);
+        public delegate void AvatarNamesCallback(Dictionary<Guid, string> names);
         /// <summary>
         /// Triggered when a response for avatar interests is returned
         /// </summary>
         /// <param name="avatarID"></param>
         /// <param name="interests"></param>
-        public delegate void AvatarInterestsCallback(UUID avatarID, Avatar.Interests interests);
+        public delegate void AvatarInterestsCallback(Guid avatarID, Avatar.Interests interests);
         /// <summary>
         /// Triggered when avatar properties are received (AvatarPropertiesReply)
         /// </summary>
         /// <param name="avatarID"></param>
         /// <param name="properties"></param>
-        public delegate void AvatarPropertiesCallback(UUID avatarID, Avatar.AvatarProperties properties);
+        public delegate void AvatarPropertiesCallback(Guid avatarID, Avatar.AvatarProperties properties);
         /// <summary>
         /// Triggered when an avatar group list is received (AvatarGroupsReply)
         /// </summary>
         /// <param name="avatarID"></param>
         /// <param name="avatarGroups"></param>
-        public delegate void AvatarGroupsCallback(UUID avatarID, List<AvatarGroup> avatarGroups);
+        public delegate void AvatarGroupsCallback(Guid avatarID, List<AvatarGroup> avatarGroups);
         /// <summary>
         /// Triggered when a name search reply is received (AvatarPickerReply)
         /// </summary>
         /// <param name="queryID"></param>
         /// <param name="avatars"></param>
-        public delegate void AvatarNameSearchCallback(UUID queryID, Dictionary<UUID, string> avatars);
+        public delegate void AvatarNameSearchCallback(Guid queryID, Dictionary<Guid, string> avatars);
         /// <summary>
         /// 
         /// </summary>
@@ -129,8 +129,8 @@ namespace OpenMetaverse
         /// <param name="pointType"></param>
         /// <param name="duration"></param>
         /// <param name="id"></param>
-        public delegate void PointAtCallback(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            PointAtType pointType, float duration, UUID id);
+        public delegate void PointAtCallback(Guid sourceID, Guid targetID, Vector3d targetPos, 
+            PointAtType pointType, float duration, Guid id);
         /// <summary>
         /// 
         /// </summary>
@@ -140,8 +140,8 @@ namespace OpenMetaverse
         /// <param name="lookType"></param>
         /// <param name="duration"></param>
         /// <param name="id"></param>
-        public delegate void LookAtCallback(UUID sourceID, UUID targetID, Vector3d targetPos,
-            LookAtType lookType, float duration, UUID id);
+        public delegate void LookAtCallback(Guid sourceID, Guid targetID, Vector3d targetPos,
+            LookAtType lookType, float duration, Guid id);
         /// <summary>
         /// 
         /// </summary>
@@ -151,20 +151,20 @@ namespace OpenMetaverse
         /// <param name="targetPos"></param>
         /// <param name="duration"></param>
         /// <param name="id"></param>
-        public delegate void EffectCallback(EffectType type, UUID sourceID, UUID targetID,
-            Vector3d targetPos, float duration, UUID id);
+        public delegate void EffectCallback(EffectType type, Guid sourceID, Guid targetID,
+            Vector3d targetPos, float duration, Guid id);
         /// <summary>
         /// Callback returning a dictionary of avatar's picks
         /// </summary>
         /// <param name="avatarid"></param>
         /// <param name="picks"></param>
-        public delegate void AvatarPicksCallback(UUID avatarid, Dictionary<UUID, string> picks);
+        public delegate void AvatarPicksCallback(Guid avatarid, Dictionary<Guid, string> picks);
         /// <summary>
         /// Callback returning a details of a specifick pick
         /// </summary>
         /// <param name="pickid"></param>
         /// <param name="pick"></param>
-        public delegate void PickInfoCallback(UUID pickid, ProfilePick pick);
+        public delegate void PickInfoCallback(Guid pickid, ProfilePick pick);
         /// <summary></summary>
         public event AvatarAppearanceCallback OnAvatarAppearance;
         /// <summary></summary>
@@ -224,7 +224,7 @@ namespace OpenMetaverse
 
         /// <summary>Tracks the specified avatar on your map</summary>
         /// <param name="preyID">Avatar ID to track</param>
-        public void TrackAvatar(UUID preyID)
+        public void TrackAvatar(Guid preyID)
         {
             TrackAgentPacket p = new TrackAgentPacket();
             p.AgentData.AgentID = Client.Self.AgentID;
@@ -237,9 +237,9 @@ namespace OpenMetaverse
         /// Request a single avatar name
         /// </summary>
         /// <param name="id">The avatar key to retrieve a name for</param>
-        public void RequestAvatarName(UUID id)
+        public void RequestAvatarName(Guid id)
         {
-            Console.WriteLine("AvatarManager requesting UUID for {0}", id);
+            Console.WriteLine("AvatarManager requesting Guid for {0}", id);
             UUIDNameRequestPacket request = new UUIDNameRequestPacket();
             request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[1];
             request.UUIDNameBlock[0] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
@@ -252,9 +252,9 @@ namespace OpenMetaverse
         /// Request a list of avatar names
         /// </summary>
         /// <param name="ids">The avatar keys to retrieve names for</param>
-        public void RequestAvatarNames(List<UUID> ids)
+        public void RequestAvatarNames(List<Guid> ids)
         {
-            Logger.Log("AvatarManager requesting UUIDs count " + ids.Count, Helpers.LogLevel.Debug);
+            Logger.Log("AvatarManager requesting Guids count " + ids.Count, Helpers.LogLevel.Debug);
             if (ids.Count > 0)
             {
                 UUIDNameRequestPacket request = new UUIDNameRequestPacket();
@@ -279,7 +279,7 @@ namespace OpenMetaverse
         /// Start a request for Avatar Properties
         /// </summary>
         /// <param name="avatarid"></param>
-        public void RequestAvatarProperties(UUID avatarid)
+        public void RequestAvatarProperties(Guid avatarid)
         {
             AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();
             
@@ -291,11 +291,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Search for an avatar (first name, last name, and uuid)
+        /// Search for an avatar (first name, last name, and Guid)
         /// </summary>
         /// <param name="name">The name to search for</param>
         /// <param name="queryID">An ID to associate with this query</param>
-        public void RequestAvatarNameSearch(string name, UUID queryID)
+        public void RequestAvatarNameSearch(string name, Guid queryID)
         {
             AvatarPickerRequestPacket aprp = new AvatarPickerRequestPacket();
 
@@ -310,17 +310,17 @@ namespace OpenMetaverse
         /// <summary>
         /// Start a request for Avatar Picks
         /// </summary>
-        /// <param name="avatarid">UUID of the avatar</param>
-        public void RequestAvatarPicks(UUID avatarid)
+        /// <param name="avatarid">Guid of the avatar</param>
+        public void RequestAvatarPicks(Guid avatarid)
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
 
             gmp.AgentData.AgentID = Client.Self.AgentID;
             gmp.AgentData.SessionID = Client.Self.SessionID;
-            gmp.AgentData.TransactionID = UUID.Zero;
+            gmp.AgentData.TransactionID = Guid.Empty;
 
             gmp.MethodData.Method = Utils.StringToBytes("avatarpicksrequest");
-            gmp.MethodData.Invoice = UUID.Zero;
+            gmp.MethodData.Invoice = Guid.Empty;
             gmp.ParamList = new GenericMessagePacket.ParamListBlock[1];
             gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
             gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
@@ -331,18 +331,18 @@ namespace OpenMetaverse
         /// <summary>
         /// Start a request for details of a specific profile pick
         /// </summary>
-        /// <param name="avatarid">UUID of the avatar</param>
-        /// <param name="pickid">UUID of the profile pick</param>
-        public void RequestPickInfo(UUID avatarid, UUID pickid)
+        /// <param name="avatarid">Guid of the avatar</param>
+        /// <param name="pickid">Guid of the profile pick</param>
+        public void RequestPickInfo(Guid avatarid, Guid pickid)
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
 
             gmp.AgentData.AgentID = Client.Self.AgentID;
             gmp.AgentData.SessionID = Client.Self.SessionID;
-            gmp.AgentData.TransactionID = UUID.Zero;
+            gmp.AgentData.TransactionID = Guid.Empty;
 
             gmp.MethodData.Method = Utils.StringToBytes("pickinforequest");
-            gmp.MethodData.Invoice = UUID.Zero;
+            gmp.MethodData.Invoice = Guid.Empty;
             gmp.ParamList = new GenericMessagePacket.ParamListBlock[2];
             gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
             gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
@@ -355,7 +355,7 @@ namespace OpenMetaverse
         #region Packet Handlers
 
         /// <summary>
-        /// Process an incoming UUIDNameReply Packet and insert Full Names into the Avatars Dictionary
+        /// Process an incoming GuidNameReply Packet and insert Full Names into the Avatars Dictionary
         /// </summary>
         /// <param name="packet">Incoming Packet to process</param>
         /// <param name="simulator">Unused</param>
@@ -363,7 +363,7 @@ namespace OpenMetaverse
         {
             if (OnAvatarNames != null)
             {
-                Dictionary<UUID, string> names = new Dictionary<UUID, string>();
+                Dictionary<Guid, string> names = new Dictionary<Guid, string>();
                 UUIDNameReplyPacket reply = (UUIDNameReplyPacket)packet;
 
                 foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
@@ -498,7 +498,7 @@ namespace OpenMetaverse
             if (OnAvatarNameSearch != null)
             {
                 AvatarPickerReplyPacket reply = (AvatarPickerReplyPacket)packet;
-                Dictionary<UUID, string> avatars = new Dictionary<UUID, string>();
+                Dictionary<Guid, string> avatars = new Dictionary<Guid, string>();
 
                 foreach (AvatarPickerReplyPacket.DataBlock block in reply.Data)
                 {
@@ -579,8 +579,10 @@ namespace OpenMetaverse
                         {
                             if (block.TypeData.Length == 56)
                             {
-                                UUID sourceAvatar = new UUID(block.TypeData, 0);
-                                UUID targetObject = new UUID(block.TypeData, 16);
+                                Guid sourceAvatar = new Guid();
+                                sourceAvatar.FromBytes(block.TypeData, 0);
+                                Guid targetObject = new Guid();
+                                targetObject.FromBytes(block.TypeData, 16);
                                 Vector3d targetPos = new Vector3d(block.TypeData, 32);
 
                                 try { OnEffect(type, sourceAvatar, targetObject, targetPos, block.Duration, block.ID); }
@@ -599,8 +601,10 @@ namespace OpenMetaverse
                         {
                             if (block.TypeData.Length == 57)
                             {
-                                UUID sourceAvatar = new UUID(block.TypeData, 0);
-                                UUID targetObject = new UUID(block.TypeData, 16);
+                                Guid sourceAvatar = new Guid();
+                                sourceAvatar.FromBytes(block.TypeData, 0);
+                                Guid targetObject = new Guid();
+                                targetObject.FromBytes(block.TypeData, 16);
                                 Vector3d targetPos = new Vector3d(block.TypeData, 32);
                                 LookAtType lookAt = (LookAtType)block.TypeData[56];
 
@@ -620,8 +624,10 @@ namespace OpenMetaverse
                         {
                             if (block.TypeData.Length == 57)
                             {
-                                UUID sourceAvatar = new UUID(block.TypeData, 0);
-                                UUID targetObject = new UUID(block.TypeData, 16);
+                                Guid sourceAvatar = new Guid();
+                                sourceAvatar.FromBytes(block.TypeData, 0);
+                                Guid targetObject = new Guid();
+                                targetObject.FromBytes(block.TypeData, 16);
                                 Vector3d targetPos = new Vector3d(block.TypeData, 32);
                                 PointAtType pointAt = (PointAtType)block.TypeData[56];
 
@@ -652,7 +658,7 @@ namespace OpenMetaverse
                 return;
             }
             AvatarPicksReplyPacket p = (AvatarPicksReplyPacket)packet;
-            Dictionary<UUID, string> picks = new Dictionary<UUID,string>();
+            Dictionary<Guid, string> picks = new Dictionary<Guid,string>();
 
             foreach (AvatarPicksReplyPacket.DataBlock b in p.Data) {
                 picks.Add(b.PickID, Utils.BytesToString(b.PickName));

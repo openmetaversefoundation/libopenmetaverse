@@ -32,7 +32,7 @@ namespace OpenMetaverse
 {
     public class InventoryNodeDictionary
     {
-        protected Dictionary<UUID, InventoryNode> Dictionary = new Dictionary<UUID, InventoryNode>();
+        protected Dictionary<Guid, InventoryNode> Dictionary = new Dictionary<Guid, InventoryNode>();
         protected InventoryNode parent;
         protected object syncRoot = new object();
 
@@ -51,7 +51,7 @@ namespace OpenMetaverse
             parent = parentNode;
         }
 
-        public InventoryNode this[UUID key]
+        public InventoryNode this[Guid key]
         {
             get { return (InventoryNode)this.Dictionary[key]; }
             set
@@ -61,21 +61,21 @@ namespace OpenMetaverse
             }
         }
 
-        public ICollection<UUID> Keys { get { return this.Dictionary.Keys; } }
+        public ICollection<Guid> Keys { get { return this.Dictionary.Keys; } }
         public ICollection<InventoryNode> Values { get { return this.Dictionary.Values; } }
 
-        public void Add(UUID key, InventoryNode value)
+        public void Add(Guid key, InventoryNode value)
         {
             value.Parent = parent;
             lock (syncRoot) this.Dictionary.Add(key, value); 
         }
 
-        public void Remove(UUID key)
+        public void Remove(Guid key)
         {
             lock (syncRoot) this.Dictionary.Remove(key);
         }
 
-        public bool Contains(UUID key)
+        public bool Contains(Guid key)
         {
             return this.Dictionary.ContainsKey(key);
         }

@@ -133,7 +133,7 @@ namespace OpenMetaverse.Utilities
         private int participantType = 0;
         private float energy = 0f;
         private string statusString = String.Empty;
-        //private string uuidString = String.Empty;
+        //private string GuidString = String.Empty;
         private string actionString = String.Empty;
         private string connectorHandle = String.Empty;
         private string accountHandle = String.Empty;
@@ -216,13 +216,13 @@ namespace OpenMetaverse.Utilities
             return new List<string>(_RenderDevices);
         }
 
-        public string VoiceAccountFromUUID(UUID id)
+        public string VoiceAccountFromGuid(Guid id)
         {
             string result = "x" + Convert.ToBase64String(id.GetBytes());
             return result.Replace('+', '-').Replace('/', '_');
         }
 
-        public UUID UUIDFromVoiceAccount(string accountName)
+        public Guid GuidFromVoiceAccount(string accountName)
         {
             if (accountName.Length == 25 && accountName[0] == 'x' && accountName[23] == '=' && accountName[24] == '=')
             {
@@ -230,13 +230,19 @@ namespace OpenMetaverse.Utilities
                 byte[] idBytes = Convert.FromBase64String(accountName);
 
                 if (idBytes.Length == 16)
-                    return new UUID(idBytes, 0);
+                {
+                    Guid guid = new Guid();
+                    guid.FromBytes(idBytes, 0);
+                    return guid;
+                }
                 else
-                    return UUID.Zero;
+                {
+                    return Guid.Empty;
+                }
             }
             else
             {
-                return UUID.Zero;
+                return Guid.Empty;
             }
         }
 
@@ -607,7 +613,7 @@ namespace OpenMetaverse.Utilities
                                     switch (reader.Name)
                                     {
 //                                         case "requestId":
-//                                             uuidString = reader.Value;
+//                                             GuidString = reader.Value;
 //                                             break;
                                         case "action":
                                             actionString = reader.Value;

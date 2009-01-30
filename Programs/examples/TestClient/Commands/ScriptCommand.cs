@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: script [filename]";
@@ -29,7 +29,7 @@ namespace OpenMetaverse.TestClient
                 string line = lines[i].Trim();
 
                 if (line.Length > 0)
-                    ClientManagerRef.ClientManager.DoCommandAll(line, UUID.Zero);
+                    ClientManagerRef.ClientManager.DoCommandAll(line, Guid.Empty);
             }
 
             return "Finished executing " + lines.Length + " commands";

@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Movement;
 		}
 
-		public override string Execute(string[] args, UUID fromAgentID)
+		public override string Execute(string[] args, Guid fromAgentID)
 		{
             return "CurrentSim: '" + Client.Network.CurrentSim.ToString() + "' Position: " + 
                 Client.Self.SimPosition.ToString();

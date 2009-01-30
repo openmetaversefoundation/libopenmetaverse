@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
+using Mono.Simd.Math;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 
@@ -205,9 +206,9 @@ namespace OpenMetaverse
     public struct ParcelInfo
     {
         /// <summary>Global Key of record</summary>
-        public UUID ID;
-        /// <summary>Parcel Owners <seealso cref="UUID"/></summary>
-        public UUID OwnerID;
+        public Guid ID;
+        /// <summary>Parcel Owners <seealso cref="Guid"/></summary>
+        public Guid OwnerID;
         /// <summary>Name field of parcel, limited to 128 characters</summary>
         public string Name;
         /// <summary>Description field of parcel, limited to 256 characters</summary>
@@ -226,8 +227,8 @@ namespace OpenMetaverse
         public float GlobalZ;
         /// <summary>Name of simulator parcel is located in</summary>
         public string SimName;
-        /// <summary>Texture <seealso cref="T:OpenMetaverse.UUID"/> of parcels display picture</summary>
-        public UUID SnapshotID;
+        /// <summary>Texture <seealso cref="T:OpenMetaverse.Guid"/> of parcels display picture</summary>
+        public Guid SnapshotID;
         /// <summary>Float representing calculated traffic based on time spent on parcel by avatars</summary>
         public float Dwell;
         /// <summary>Sale price of parcel (not used)</summary>
@@ -245,9 +246,9 @@ namespace OpenMetaverse
         public byte MediaAutoScale;
         /// <summary>A boolean, if true the viewer should loop the media</summary>
         public bool MediaLoop;
-        /// <summary>The Asset UUID of the Texture which when applied to a 
+        /// <summary>The Asset Guid of the Texture which when applied to a 
         /// primitive will display the media</summary>
-        public UUID MediaID;
+        public Guid MediaID;
         /// <summary>A URL which points to any Quicktime supported media type</summary>
         public string MediaURL;
         /// <summary>A description of the media</summary>
@@ -427,8 +428,8 @@ namespace OpenMetaverse
         public int PublicCount;
         /// <summary>Simulator-local ID of this parcel</summary>
         public int LocalID;
-        /// <summary>UUID of the owner of this parcel</summary>
-        public UUID OwnerID;
+        /// <summary>Guid of the owner of this parcel</summary>
+        public Guid OwnerID;
         /// <summary>Whether the land is deeded to a group or not</summary>
         public bool IsGroupOwned;
         /// <summary></summary>
@@ -441,10 +442,10 @@ namespace OpenMetaverse
         public int RentPrice;
         /// <summary>Minimum corner of the axis-aligned bounding box for this
         /// parcel</summary>
-        public Vector3 AABBMin;
+        public Vector3f AABBMin;
         /// <summary>Maximum corner of the axis-aligned bounding box for this
         /// parcel</summary>
-        public Vector3 AABBMax;
+        public Vector3f AABBMax;
         /// <summary>Bitmap describing land layout in 4x4m squares across the 
         /// entire region</summary>
         public byte[] Bitmap;
@@ -486,7 +487,7 @@ namespace OpenMetaverse
         /// <summary>URL For Music Stream</summary>
         public string MusicURL;
         /// <summary></summary>
-        public UUID GroupID;
+        public Guid GroupID;
         /// <summary>Price for a temporary pass</summary>
         public int PassPrice;
         /// <summary>How long is pass valid for</summary>
@@ -494,13 +495,13 @@ namespace OpenMetaverse
         /// <summary></summary>
         public ParcelCategory Category;
         /// <summary>Key of authorized buyer</summary>
-        public UUID AuthBuyerID;
+        public Guid AuthBuyerID;
         /// <summary>Key of parcel snapshot</summary>
-        public UUID SnapshotID;
+        public Guid SnapshotID;
         /// <summary></summary>
-        public Vector3 UserLocation;
+        public Vector3f UserLocation;
         /// <summary></summary>
-        public Vector3 UserLookAt;
+        public Vector3f UserLookAt;
         /// <summary></summary>
         public LandingType Landing;
         /// <summary></summary>
@@ -549,14 +550,14 @@ namespace OpenMetaverse
             SelfCount = 0;
             OtherCount = 0;
             PublicCount = 0;
-            OwnerID = UUID.Zero;
+            OwnerID = Guid.Empty;
             IsGroupOwned = false;
             AuctionID = 0;
             ClaimDate = Utils.Epoch;
             ClaimPrice = 0;
             RentPrice = 0;
-            AABBMin = Vector3.Zero;
-            AABBMax = Vector3.Zero;
+            AABBMin = Vector3f.Zero;
+            AABBMax = Vector3f.Zero;
             Bitmap = new byte[0];
             Area = 0;
             Status = ParcelStatus.None;
@@ -574,14 +575,14 @@ namespace OpenMetaverse
             Name = String.Empty;
             Desc = String.Empty;
             MusicURL = String.Empty;
-            GroupID = UUID.Zero;
+            GroupID = Guid.Empty;
             PassPrice = 0;
             PassHours = 0;
             Category = ParcelCategory.None;
-            AuthBuyerID = UUID.Zero;
-            SnapshotID = UUID.Zero;
-            UserLocation = Vector3.Zero;
-            UserLookAt = Vector3.Zero;
+            AuthBuyerID = Guid.Empty;
+            SnapshotID = Guid.Empty;
+            UserLocation = Vector3f.Zero;
+            UserLookAt = Vector3f.Zero;
             Landing = LandingType.None;
             Dwell = 0;
             RegionDenyAnonymous = false;
@@ -664,8 +665,8 @@ namespace OpenMetaverse
         /// </summary>
         public struct ParcelAccessEntry
         {
-            /// <summary>Agents <seealso cref="T:OpenMetaverse.UUID"/></summary>
-            public UUID AgentID;
+            /// <summary>Agents <seealso cref="T:OpenMetaverse.Guid"/></summary>
+            public Guid AgentID;
             /// <summary></summary>
             public DateTime Time;
             /// <summary>Flags for specific entry in white/black lists</summary>
@@ -677,8 +678,8 @@ namespace OpenMetaverse
         /// </summary>
         public struct ParcelPrimOwners
         {
-            /// <summary>Prim Owners <seealso cref="T:OpenMetaverse.UUID"/></summary>
-            public UUID OwnerID;
+            /// <summary>Prim Owners <seealso cref="T:OpenMetaverse.Guid"/></summary>
+            public Guid OwnerID;
             /// <summary>True of owner is group</summary>
             public bool IsGroupOwned;
             /// <summary>Total count of prims owned by OwnerID</summary>
@@ -698,10 +699,10 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="parcelID">UUID of the requested parcel</param>
+        /// <param name="parcelID">Guid of the requested parcel</param>
         /// <param name="localID">Simulator-local ID of the requested parcel</param>
         /// <param name="dwell">Dwell value of the requested parcel</param>
-        public delegate void ParcelDwellCallback(UUID parcelID, int localID, float dwell);
+        public delegate void ParcelDwellCallback(Guid parcelID, int localID, float dwell);
         /// <summary>
         /// 
         /// </summary>
@@ -821,7 +822,7 @@ namespace OpenMetaverse
         /// Request basic information for a single parcel
         /// </summary>
         /// <param name="parcelID">Simulator-local ID of the parcel</param>
-        public void InfoRequest(UUID parcelID)
+        public void InfoRequest(Guid parcelID)
         {
             ParcelInfoRequestPacket request = new ParcelInfoRequestPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -991,7 +992,7 @@ namespace OpenMetaverse
             request.AgentData.AgentID = Client.Self.AgentID;
             request.AgentData.SessionID = Client.Self.SessionID;
             request.Data.LocalID = localID;
-            request.Data.ParcelID = UUID.Zero; // Not used by clients
+            request.Data.ParcelID = Guid.Empty; // Not used by clients
 
             Client.Network.SendPacket(request, simulator);
         }
@@ -1002,12 +1003,12 @@ namespace OpenMetaverse
         /// <param name="simulator">The Simulator the parcel is located in</param>
         /// <param name="localID">The parcels region specific local ID</param>
         /// <param name="forGroup">true if this parcel is being purchased by a group</param>
-        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.UUID"/></param>
+        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.Guid"/></param>
         /// <param name="removeContribution">true to remove tier contribution if purchase is successful</param>
         /// <param name="parcelArea">The parcels size</param>
         /// <param name="parcelPrice">The purchase price of the parcel</param>
         /// <returns></returns>
-        public void Buy(Simulator simulator, int localID, bool forGroup, UUID groupID,
+        public void Buy(Simulator simulator, int localID, bool forGroup, Guid groupID,
             bool removeContribution, int parcelArea, int parcelPrice)
         {
             ParcelBuyPacket request = new ParcelBuyPacket();
@@ -1048,8 +1049,8 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">The simulator the parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
-        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.UUID"/></param>
-        public void DeedToGroup(Simulator simulator, int localID, UUID groupID)
+        /// <param name="groupID">The groups <seealso cref="T:OpenMetaverse.Guid"/></param>
+        public void DeedToGroup(Simulator simulator, int localID, Guid groupID)
         {
             ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -1083,8 +1084,8 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
         /// <param name="type">the type of objects to return, <seealso cref="T:OpenMetaverse.ObjectReturnType"/></param>
-        /// <param name="ownerIDs">A list containing object owners <seealso cref="OpenMetaverse.UUID"/>s to return</param>
-        public void ReturnObjects(Simulator simulator, int localID, ObjectReturnType type, List<UUID> ownerIDs)
+        /// <param name="ownerIDs">A list containing object owners <seealso cref="OpenMetaverse.Guid"/>s to return</param>
+        public void ReturnObjects(Simulator simulator, int localID, ObjectReturnType type, List<Guid> ownerIDs)
         {
             ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -1096,9 +1097,9 @@ namespace OpenMetaverse
             // A single null TaskID is (not) used for parcel object returns
             request.TaskIDs = new ParcelReturnObjectsPacket.TaskIDsBlock[1];
             request.TaskIDs[0] = new ParcelReturnObjectsPacket.TaskIDsBlock();
-            request.TaskIDs[0].TaskID = UUID.Zero;
+            request.TaskIDs[0].TaskID = Guid.Empty;
 
-            // Convert the list of owner UUIDs to packet blocks if a list is given
+            // Convert the list of owner Guids to packet blocks if a list is given
             if (ownerIDs != null)
             {
                 request.OwnerIDs = new ParcelReturnObjectsPacket.OwnerIDsBlock[ownerIDs.Count];
@@ -1167,7 +1168,7 @@ namespace OpenMetaverse
         /// <returns>0 on failure, or parcel LocalID on success.</returns>
         /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map and
         /// dictionary.</remarks>
-        public int GetParcelLocalID(Simulator simulator, Vector3 position)
+        public int GetParcelLocalID(Simulator simulator, Vector3f position)
         {
             return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
         }
@@ -1299,7 +1300,7 @@ namespace OpenMetaverse
         /// <param name="ownerID">List containing keys of avatars objects to select; 
         /// if List is null will return Objects of type <c>selectType</c></param>
         /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
-        public void SelectObjects(int localID, ObjectReturnType selectType, UUID ownerID)
+        public void SelectObjects(int localID, ObjectReturnType selectType, Guid ownerID)
         {
             if (OnParcelSelectedObjects != null)
             {
@@ -1322,7 +1323,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="targetID">target key of avatar to eject</param>
         /// <param name="ban">true to also ban target</param>
-        public void EjectUser(UUID targetID, bool ban)
+        public void EjectUser(Guid targetID, bool ban)
         {
             EjectUserPacket eject = new EjectUserPacket();
             eject.AgentData.AgentID = Client.Self.AgentID;
@@ -1339,7 +1340,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="targetID">target key to freeze</param>
         /// <param name="freeze">true to freeze, false to unfreeze</param>
-        public void FreezeUser(UUID targetID, bool freeze)
+        public void FreezeUser(Guid targetID, bool freeze)
         {
             FreezeUserPacket frz = new FreezeUserPacket();
             frz.AgentData.AgentID = Client.Self.AgentID;
@@ -1442,7 +1443,7 @@ namespace OpenMetaverse
                 parcel.AABBMin = ((OSDArray)parcelDataBlock["AABBMin"]).AsVector3();
                 parcel.Area = parcelDataBlock["Area"].AsInteger();
                 parcel.AuctionID = (uint)parcelDataBlock["AuctionID"].AsInteger();
-                parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
+                parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsGuid();
                 parcel.Bitmap = parcelDataBlock["Bitmap"].AsBinary();
                 parcel.Category = (Parcel.ParcelCategory)parcelDataBlock["Category"].AsInteger();
                 parcel.ClaimDate = Utils.UnixTimeToDateTime((uint)parcelDataBlock["ClaimDate"].AsInteger());
@@ -1454,21 +1455,21 @@ namespace OpenMetaverse
                 if (BitConverter.IsLittleEndian)
                     Array.Reverse(bytes);
                 parcel.Flags = (Parcel.ParcelFlags)BitConverter.ToUInt32(bytes, 0);
-                parcel.GroupID = parcelDataBlock["GroupID"].AsUUID();
+                parcel.GroupID = parcelDataBlock["GroupID"].AsGuid();
                 parcel.GroupPrims = parcelDataBlock["GroupPrims"].AsInteger();
                 parcel.IsGroupOwned = parcelDataBlock["IsGroupOwned"].AsBoolean();
                 parcel.Landing = (Parcel.LandingType)(byte)parcelDataBlock["LandingType"].AsInteger();
                 parcel.LocalID = parcelDataBlock["LocalID"].AsInteger();
                 parcel.MaxPrims = parcelDataBlock["MaxPrims"].AsInteger();
                 parcel.Media.MediaAutoScale = (byte)parcelDataBlock["MediaAutoScale"].AsInteger(); 
-                parcel.Media.MediaID = parcelDataBlock["MediaID"].AsUUID();
+                parcel.Media.MediaID = parcelDataBlock["MediaID"].AsGuid();
                 parcel.Media.MediaURL = parcelDataBlock["MediaURL"].AsString();
                 parcel.MusicURL = parcelDataBlock["MusicURL"].AsString();
                 parcel.Name = parcelDataBlock["Name"].AsString();
                 parcel.OtherCleanTime = parcelDataBlock["OtherCleanTime"].AsInteger();
                 parcel.OtherCount = parcelDataBlock["OtherCount"].AsInteger();
                 parcel.OtherPrims = parcelDataBlock["OtherPrims"].AsInteger();
-                parcel.OwnerID = parcelDataBlock["OwnerID"].AsUUID();
+                parcel.OwnerID = parcelDataBlock["OwnerID"].AsGuid();
                 parcel.OwnerPrims = parcelDataBlock["OwnerPrims"].AsInteger();
                 parcel.ParcelPrimBonus = (float)parcelDataBlock["ParcelPrimBonus"].AsReal();
                 parcel.PassHours = (float)parcelDataBlock["PassHours"].AsReal();
@@ -1486,7 +1487,7 @@ namespace OpenMetaverse
                 parcel.SimWideMaxPrims = parcelDataBlock["SimWideMaxPrims"].AsInteger();
                 parcel.SimWideTotalPrims = parcelDataBlock["SimWideTotalPrims"].AsInteger();
                 bool snapSelection = parcelDataBlock["SnapSelection"].AsBoolean();
-                parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsUUID();
+                parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsGuid();
                 parcel.Status = (Parcel.ParcelStatus)parcelDataBlock["Status"].AsInteger();
                 parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
                 parcel.UserLocation = ((OSDArray)parcelDataBlock["UserLocation"]).AsVector3();
@@ -1623,7 +1624,7 @@ namespace OpenMetaverse
                     for (int i = 0; i < dataBlock.Count; i++)
                     {
                         ParcelPrimOwners poe = new ParcelPrimOwners();
-                        poe.OwnerID = ((OSDMap)dataBlock[i])["OwnerID"].AsUUID();
+                        poe.OwnerID = ((OSDMap)dataBlock[i])["OwnerID"].AsGuid();
                         poe.Count = ((OSDMap)dataBlock[i])["Count"].AsInteger();
                         poe.IsGroupOwned = ((OSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
                         poe.OnlineStatus = ((OSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();

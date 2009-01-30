@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
@@ -216,6 +217,10 @@ namespace OpenMetaverse
             if (values == null || values.Length == 0)
                 return String.Empty;
 
+            // Set the culture to en-US to print out values in the format SL is expecting them
+            System.Globalization.CultureInfo culture = System.Threading.Thread.CurrentThread.CurrentCulture;
+            System.Threading.Thread.CurrentThread.CurrentCulture = Utils.EnUsCulture;
+
             StringBuilder output = new StringBuilder();
 
             for (int i = 0; i < values.Length; i++)
@@ -230,11 +235,18 @@ namespace OpenMetaverse
                 }
             }
 
+            // Set the culture back
+            System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+
             return output.ToString();
         }
 
         private void SetValue(string value)
         {
+            // Set the culture to en-US to parse values in the format SL is sending them
+            System.Globalization.CultureInfo culture = System.Threading.Thread.CurrentThread.CurrentCulture;
+            System.Threading.Thread.CurrentThread.CurrentCulture = Utils.EnUsCulture;
+
             switch (Type)
             {
                 case ValueType.Asset:
@@ -271,8 +283,8 @@ namespace OpenMetaverse
                 }
                 case ValueType.VEC3:
                 {
-                    Vector3 temp;
-                    Vector3.TryParse(value, out temp);
+                    Vector3f temp;
+                    Vector3f.TryParse(value, out temp);
                     Value = temp;
                     break;
                 }
@@ -280,6 +292,9 @@ namespace OpenMetaverse
                     Value = null;
                     break;
             }
+
+            // Set the culture back
+            System.Threading.Thread.CurrentThread.CurrentCulture = culture;
         }
 
         private static ValueType GetValueType(string value)

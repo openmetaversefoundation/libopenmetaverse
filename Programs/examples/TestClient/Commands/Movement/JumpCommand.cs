@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Movement;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
             Client.Self.Jump(true);
             return "Jumped";

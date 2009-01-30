@@ -78,11 +78,11 @@ namespace Simian.Extensions
                             tempByte = (byte)ParcelOverlayType.OwnedBySelf;
                         else if (parcel.AuctionID != 0)
                             tempByte = (byte)ParcelOverlayType.Auction;
-                        else if (parcel.SalePrice > 0 && (parcel.AuthBuyerID == UUID.Zero || parcel.AuthBuyerID == agent.AgentID))
+                        else if (parcel.SalePrice > 0 && (parcel.AuthBuyerID == Guid.Empty || parcel.AuthBuyerID == agent.AgentID))
                             tempByte = (byte)ParcelOverlayType.ForSale;
-                        else if (parcel.GroupID != UUID.Zero)
+                        else if (parcel.GroupID != Guid.Empty)
                             tempByte = (byte)ParcelOverlayType.OwnedByGroup;
-                        else if (parcel.OwnerID != UUID.Zero)
+                        else if (parcel.OwnerID != Guid.Empty)
                             tempByte = (byte)ParcelOverlayType.OwnedByOther;
                         else
                             tempByte = (byte)ParcelOverlayType.Public;

@@ -16,10 +16,10 @@ namespace groupmanager
         Group Group;
         GridClient Client;
         Group Profile = new Group();
-        Dictionary<UUID, GroupMember> Members = new Dictionary<UUID,GroupMember>();
-        Dictionary<UUID, GroupTitle> Titles = new Dictionary<UUID,GroupTitle>();
-        Dictionary<UUID, GroupMemberData> MemberData = new Dictionary<UUID, GroupMemberData>();
-        Dictionary<UUID, string> Names = new Dictionary<UUID, string>();
+        Dictionary<Guid, GroupMember> Members = new Dictionary<Guid,GroupMember>();
+        Dictionary<Guid, GroupTitle> Titles = new Dictionary<Guid,GroupTitle>();
+        Dictionary<Guid, GroupMemberData> MemberData = new Dictionary<Guid, GroupMemberData>();
+        Dictionary<Guid, string> Names = new Dictionary<Guid, string>();
         GroupManager.GroupProfileCallback GroupProfileCallback;
         GroupManager.GroupMembersCallback GroupMembersCallback;
         GroupManager.GroupTitlesCallback GroupTitlesCallback;
@@ -72,7 +72,7 @@ namespace groupmanager
         {
             Profile = profile;
 
-            if (Group.InsigniaID != UUID.Zero)
+            if (Group.InsigniaID != Guid.Empty)
                 Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0, 0);
 
             if (this.InvokeRequired)
@@ -105,11 +105,11 @@ namespace groupmanager
             Client.Avatars.RequestAvatarName(Profile.FounderID);
         }
 
-        private void AvatarNamesHandler(Dictionary<UUID, string> names)
+        private void AvatarNamesHandler(Dictionary<Guid, string> names)
         {
             lock (Names)
             {
-                foreach (KeyValuePair<UUID, string> agent in names)
+                foreach (KeyValuePair<Guid, string> agent in names)
                 {
                     Names[agent.Key] = agent.Value;
                 }
@@ -128,14 +128,14 @@ namespace groupmanager
             {
                 lock (Names)
                 {
-                    if (Profile.FounderID != UUID.Zero && Names.ContainsKey(Profile.FounderID))
+                    if (Profile.FounderID != Guid.Empty && Names.ContainsKey(Profile.FounderID))
                     {
                         lblFoundedBy.Text = "Founded by " + Names[Profile.FounderID];
                     }
 
                     lock (MemberData)
                     {
-                        foreach (KeyValuePair<UUID, string> name in Names)
+                        foreach (KeyValuePair<Guid, string> name in Names)
                         {
                             if (!MemberData.ContainsKey(name.Key))
                             {
@@ -198,7 +198,7 @@ namespace groupmanager
             }
         }
 
-        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(Dictionary<Guid, GroupMember> members)
         {
             Members = members;
 
@@ -213,7 +213,7 @@ namespace groupmanager
             }
             else
             {
-                List<UUID> requestids = new List<UUID>();
+                List<Guid> requestids = new List<Guid>();
 
                 lock (Members)
                 {
@@ -241,7 +241,7 @@ namespace groupmanager
             }
         }
 
-        private void GroupTitlesHandler(Dictionary<UUID, GroupTitle> titles)
+        private void GroupTitlesHandler(Dictionary<Guid, GroupTitle> titles)
         {
             Titles = titles;
 
@@ -258,7 +258,7 @@ namespace groupmanager
             {
                 lock (Titles)
                 {
-                    foreach (KeyValuePair<UUID, GroupTitle> kvp in Titles)
+                    foreach (KeyValuePair<Guid, GroupTitle> kvp in Titles)
                     {
                         Console.Write("Title: " + kvp.Value.Title + " = " + kvp.Key.ToString());
                         if (kvp.Value.Selected)
@@ -273,7 +273,7 @@ namespace groupmanager
 
     public class GroupMemberData
     {
-        public UUID ID;
+        public Guid ID;
         public string Name;
         public string Title;
         public string LastOnline;

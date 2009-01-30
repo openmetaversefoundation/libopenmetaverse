@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Movement;
 		}
 			
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
             Primitive closest = null;
 		    double closestDistance = Double.MaxValue;

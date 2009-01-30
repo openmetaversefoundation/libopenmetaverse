@@ -26,6 +26,8 @@
 
 using System;
 using System.Collections.Generic;
+using Mono.Simd;
+using Mono.Simd.Math;
 using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
@@ -664,7 +666,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public float Tension;
             /// <summary></summary>
-            public Vector3 Force;
+            public Vector3f Force;
 
             /// <summary>
             /// 
@@ -681,7 +683,8 @@ namespace OpenMetaverse
                     Drag = (float)(data[pos++] & 0x7F) / 10.0f;
                     Gravity = (float)(data[pos++] / 10.0f) - 10.0f;
                     Wind = (float)data[pos++] / 10.0f;
-                    Force = new Vector3(data, pos);
+                    Force = new Vector3f();
+                    Force.FromBytes(data, pos);
                 }
                 else
                 {
@@ -691,7 +694,7 @@ namespace OpenMetaverse
                     Drag = 0.0f;
                     Gravity = 0.0f;
                     Wind = 0.0f;
-                    Force = Vector3.Zero;
+                    Force = Vector3f.Zero;
                 }
             }
 
@@ -866,19 +869,20 @@ namespace OpenMetaverse
         /// </summary>
         public struct SculptData
         {
-            public UUID SculptTexture;
+            public Guid SculptTexture;
             public SculptType Type;
 
             public SculptData(byte[] data, int pos)
             {
                 if (data.Length >= 17)
                 {
-                    SculptTexture = new UUID(data, pos);
+                    SculptTexture = new Guid();
+                    SculptTexture.FromBytes(data, pos);
                     Type = (SculptType)data[pos + 16];
                 }
                 else
                 {
-                    SculptTexture = UUID.Zero;
+                    SculptTexture = Guid.Empty;
                     Type = SculptType.None;
                 }
             }
@@ -897,7 +901,7 @@ namespace OpenMetaverse
             {
                 OSDMap map = new OSDMap();
 
-                map["texture"] = OSD.FromUUID(SculptTexture);
+                map["texture"] = OSD.FromGuid(SculptTexture);
                 map["type"] = OSD.FromInteger((int)Type);
 
                 return map;
@@ -911,7 +915,7 @@ namespace OpenMetaverse
                 {
                     OSDMap map = (OSDMap)osd;
 
-                    sculpt.SculptTexture = map["texture"].AsUUID();
+                    sculpt.SculptTexture = map["texture"].AsGuid();
                     sculpt.Type = (SculptType)map["type"].AsInteger();
                 }
 
@@ -925,13 +929,13 @@ namespace OpenMetaverse
         public struct ObjectProperties
         {
             /// <summary></summary>
-            public UUID ObjectID;
+            public Guid ObjectID;
             /// <summary></summary>
-            public UUID CreatorID;
+            public Guid CreatorID;
             /// <summary></summary>
-            public UUID OwnerID;
+            public Guid OwnerID;
             /// <summary></summary>
-            public UUID GroupID;
+            public Guid GroupID;
             /// <summary></summary>
             public DateTime CreationDate;
             /// <summary></summary>
@@ -953,13 +957,13 @@ namespace OpenMetaverse
             /// <summary></summary>
             public short InventorySerial;
             /// <summary></summary>
-            public UUID ItemID;
+            public Guid ItemID;
             /// <summary></summary>
-            public UUID FolderID;
+            public Guid FolderID;
             /// <summary></summary>
-            public UUID FromTaskID;
+            public Guid FromTaskID;
             /// <summary></summary>
-            public UUID LastOwnerID;
+            public Guid LastOwnerID;
             /// <summary></summary>
             public string Name;
             /// <summary></summary>
@@ -969,7 +973,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public string SitName;
             /// <summary></summary>
-            public UUID[] TextureIDs;
+            public Guid[] TextureIDs;
 
             /// <summary>
             /// Set the properties that are set in an ObjectPropertiesFamily packet
@@ -997,9 +1001,9 @@ namespace OpenMetaverse
         #region Public Members
 
         /// <summary></summary>
-        public UUID ID;
+        public Guid ID;
         /// <summary></summary>
-        public UUID GroupID;
+        public Guid GroupID;
         /// <summary></summary>
         public uint LocalID;
         /// <summary></summary>
@@ -1011,19 +1015,19 @@ namespace OpenMetaverse
         /// <summary>Unknown</summary>
         public byte[] GenericData;
         /// <summary></summary>
-        public Vector3 Position;
+        public Vector3f Position;
         /// <summary></summary>
-        public Vector3 Scale;
+        public Vector3f Scale;
         /// <summary></summary>
-        public Quaternion Rotation;
+        public Quaternionf Rotation;
         /// <summary></summary>
-        public Vector3 Velocity;
+        public Vector3f Velocity;
         /// <summary></summary>
-        public Vector3 AngularVelocity;
+        public Vector3f AngularVelocity;
         /// <summary></summary>
-        public Vector3 Acceleration;
+        public Vector3f Acceleration;
         /// <summary></summary>
-        public Vector4 CollisionPlane;
+        public Vector4f CollisionPlane;
         /// <summary></summary>
         public FlexibleData Flexible;
         /// <summary></summary>
@@ -1033,10 +1037,10 @@ namespace OpenMetaverse
         /// <summary></summary>
         public ClickAction ClickAction;
         /// <summary></summary>
-        public UUID Sound;
+        public Guid Sound;
         /// <summary>Identifies the owner if audio or a particle system is
         /// active</summary>
-        public UUID OwnerID;
+        public Guid OwnerID;
         /// <summary></summary>
         public byte SoundFlags;
         /// <summary></summary>
@@ -1052,9 +1056,9 @@ namespace OpenMetaverse
         /// <summary></summary>
         public JointType Joint;
         /// <summary></summary>
-        public Vector3 JointPivot;
+        public Vector3f JointPivot;
         /// <summary></summary>
-        public Vector3 JointAxisOrAnchor;
+        public Vector3f JointAxisOrAnchor;
         /// <summary></summary>
         public NameValue[] NameValues;
         /// <summary></summary>

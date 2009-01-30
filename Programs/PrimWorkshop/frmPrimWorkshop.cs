@@ -43,7 +43,7 @@ namespace PrimWorkshop
         bool DraggingTexture = false;
         bool Wireframe = true;
         int[] TexturePointers = new int[1];
-        Dictionary<UUID, Image> Textures = new Dictionary<UUID, Image>();
+        Dictionary<Guid, Image> Textures = new Dictionary<Guid, Image>();
 
         #endregion Form Globals
 
@@ -281,7 +281,7 @@ namespace PrimWorkshop
                     for (int i = 0; i < primList.Count; i++)
                     {
                         // TODO: Can't render sculpted prims without the textures
-                        if (primList[i].Sculpt.SculptTexture != UUID.Zero)
+                        if (primList[i].Sculpt.SculptTexture != Guid.Empty)
                             continue;
 
                         Primitive prim = primList[i];
@@ -363,7 +363,7 @@ namespace PrimWorkshop
             }
         }
 
-        private bool LoadTexture(string basePath, UUID textureID, ref System.Drawing.Image texture)
+        private bool LoadTexture(string basePath, Guid textureID, ref System.Drawing.Image texture)
         {
             if (Textures.ContainsKey(textureID))
             {

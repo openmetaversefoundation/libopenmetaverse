@@ -30,10 +30,10 @@ namespace OpenMetaverse.TestClient
         /// Get a list of current friends
         /// </summary>
         /// <param name="args">optional testClient command arguments</param>
-        /// <param name="fromAgentID">The <seealso cref="OpenMetaverse.UUID"/> 
+        /// <param name="fromAgentID">The <seealso cref="OpenMetaverse.Guid"/> 
         /// of the agent making the request</param>
         /// <returns></returns>
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             // initialize a StringBuilder object used to return the results
             StringBuilder sb = new StringBuilder();

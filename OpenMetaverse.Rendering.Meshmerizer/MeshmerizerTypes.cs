@@ -1024,7 +1024,7 @@ namespace OpenMetaverse.Rendering
         private HollowShape _hollowShape;
 
         // Sculpted
-        private UUID _sculptTexture = UUID.Zero;
+        private Guid _sculptTexture = Guid.Empty;
         private byte _sculptType = (byte)0;
         private byte[] _sculptData = new byte[0];
 
@@ -1222,10 +1222,10 @@ namespace OpenMetaverse.Rendering
             _pathEnd = Primitive.PackEndCut(pathRange.Y);
         }
 
-        public void SetSculptData(byte sculptType, UUID SculptTextureUUID)
+        public void SetSculptData(byte sculptType, Guid SculptTextureGuid)
         {
             _sculptType = sculptType;
-            _sculptTexture = SculptTextureUUID;
+            _sculptTexture = SculptTextureGuid;
         }
 
         public void SetProfileRange(Vector3 profileRange)
@@ -1510,7 +1510,7 @@ namespace OpenMetaverse.Rendering
             }
         }
 
-        public UUID SculptTexture
+        public Guid SculptTexture
         {
             get
             {
@@ -1964,22 +1964,22 @@ namespace OpenMetaverse.Rendering
 
         public void ReadSculptData(byte[] data, int pos)
         {
-            byte[] SculptTextureUUID = new byte[16];
-            UUID SculptUUID = UUID.Zero;
+            byte[] SculptTextureGuid = new byte[16];
+            Guid SculptGuid = Guid.Empty;
             byte SculptTypel = data[16 + pos];
 
             if (data.Length + pos >= 17)
             {
                 _sculptEntry = true;
-                SculptTextureUUID = new byte[16];
+                SculptTextureGuid = new byte[16];
                 SculptTypel = data[16 + pos];
-                Array.Copy(data, pos, SculptTextureUUID, 0, 16);
-                SculptUUID = new UUID(SculptTextureUUID, 0);
+                Array.Copy(data, pos, SculptTextureGuid, 0, 16);
+                SculptGuid = new Guid(SculptTextureGuid, 0);
             }
             else
             {
                 _sculptEntry = false;
-                SculptUUID = UUID.Zero;
+                SculptGuid = Guid.Empty;
                 SculptTypel = 0x00;
             }
 
@@ -1988,9 +1988,9 @@ namespace OpenMetaverse.Rendering
                 if (_sculptType != (byte)1 && _sculptType != (byte)2 && _sculptType != (byte)3 && _sculptType != (byte)4)
                     _sculptType = 4;
             }
-            _sculptTexture = SculptUUID;
+            _sculptTexture = SculptGuid;
             _sculptType = SculptTypel;
-            //m_log.Info("[SCULPT]:" + SculptUUID.ToString());
+            //m_log.Info("[SCULPT]:" + SculptGuid.ToString());
         }
 
         public byte[] GetSculptBytes()

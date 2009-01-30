@@ -19,7 +19,7 @@ namespace OpenMetaverse.TestClient
             testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             StringBuilder sb = new StringBuilder();
             string result;
@@ -47,12 +47,12 @@ namespace OpenMetaverse.TestClient
                         parcel.LocalID, parcel.Name, parcel.Desc, parcel.AccessBlackList.Count, parcel.Dwell, parcel.AccessWhiteList.Count);
                     //foreach (ParcelManager.ParcelAccessEntry white in parcel.AccessWhiteList)
                     //{
-                    //    if(white.AgentID != UUID.Zero)
+                    //    if(white.AgentID != Guid.Empty)
                     //        sb.AppendFormat("\tAllowed Avatar {0}" + System.Environment.NewLine, white.AgentID);
                     //}
                     //foreach (ParcelManager.ParcelAccessEntry black in parcel.AccessBlackList)
                     //{
-                    //    if(black.AgentID != UUID.Zero)
+                    //    if(black.AgentID != Guid.Empty)
                     //        sb.AppendFormat("\t Banned Avatar {0}" + System.Environment.NewLine, black.AgentID);
                     //}
                 });

@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient.Commands.Appearance
             Category = CommandCategory.Appearance;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length != 2)
                 return "Usage: avatarinfo [firstname] [lastname]";

@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Other;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
             System.Threading.AutoResetEvent waitBalance = new System.Threading.AutoResetEvent(false);
             AgentManager.BalanceCallback del = delegate(int balance) { waitBalance.Set(); };

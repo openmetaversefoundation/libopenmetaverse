@@ -9,20 +9,20 @@ namespace OpenMetaverse.TestClient
         {
             Name = "findtexture";
             Description = "Checks if a specified texture is currently visible on a specified face. " +
-                "Usage: findtexture [face-index] [texture-uuid]";
+                "Usage: findtexture [face-index] [texture-Guid]";
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             int faceIndex;
-            UUID textureID;
+            Guid textureID;
 
             if (args.Length != 2)
-                return "Usage: findtexture [face-index] [texture-uuid]";
+                return "Usage: findtexture [face-index] [texture-Guid]";
 
             if (Int32.TryParse(args[0], out faceIndex) &&
-                UUID.TryParse(args[1], out textureID))
+                GuidExtensions.TryParse(args[1], out textureID))
             {
                 Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                     delegate(Primitive prim)
@@ -43,7 +43,7 @@ namespace OpenMetaverse.TestClient
             }
             else
             {
-                return "Usage: findtexture [face-index] [texture-uuid]";
+                return "Usage: findtexture [face-index] [texture-Guid]";
             }
         }
     }

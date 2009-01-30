@@ -24,17 +24,17 @@ namespace OpenMetaverse.TestClient
         /// <param name="args"></param>
         /// <param name="fromAgentID"></param>
         /// <returns></returns>
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
 
             if (args.Length < 1)
             {
-                return "Usage: viewnote [notecard asset uuid]";
+                return "Usage: viewnote [notecard asset Guid]";
             }
-            UUID note;
-            if (!UUID.TryParse(args[0], out note))
+            Guid note;
+            if (!GuidExtensions.TryParse(args[0], out note))
             {
-                return "First argument expected agent UUID.";
+                return "First argument expected agent Guid.";
             }
 
             System.Threading.AutoResetEvent waitEvent = new System.Threading.AutoResetEvent(false);

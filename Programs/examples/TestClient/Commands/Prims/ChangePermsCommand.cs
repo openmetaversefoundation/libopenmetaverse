@@ -7,8 +7,8 @@ namespace OpenMetaverse.TestClient
     public class ChangePermsCommand : Command
     {
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
-        UUID SelectedObject = UUID.Zero;
-        Dictionary<UUID, Primitive> Objects = new Dictionary<UUID, Primitive>();
+        Guid SelectedObject = Guid.Empty;
+        Dictionary<Guid, Primitive> Objects = new Dictionary<Guid, Primitive>();
         PermissionMask Perms = PermissionMask.None;
         bool PermsSent = false;
         int PermCount = 0;
@@ -18,13 +18,13 @@ namespace OpenMetaverse.TestClient
             testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
 
             Name = "changeperms";
-            Description = "Recursively changes all of the permissions for child and task inventory objects. Usage prim-uuid [copy] [mod] [xfer]";
+            Description = "Recursively changes all of the permissions for child and task inventory objects. Usage prim-Guid [copy] [mod] [xfer]";
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
-            UUID rootID;
+            Guid rootID;
             Primitive rootPrim;
             List<Primitive> childPrims;
             List<uint> localIDs = new List<uint>();
@@ -36,10 +36,10 @@ namespace OpenMetaverse.TestClient
             PermCount = 0;
 
             if (args.Length < 1 || args.Length > 4)
-                return "Usage prim-uuid [copy] [mod] [xfer]";
+                return "Usage prim-Guid [copy] [mod] [xfer]";
 
-            if (!UUID.TryParse(args[0], out rootID))
-                return "Usage prim-uuid [copy] [mod] [xfer]";
+            if (!GuidExtensions.TryParse(args[0], out rootID))
+                return "Usage prim-Guid [copy] [mod] [xfer]";
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -55,7 +55,7 @@ namespace OpenMetaverse.TestClient
                         Perms |= PermissionMask.Transfer;
                         break;
                     default:
-                        return "Usage prim-uuid [copy] [mod] [xfer]";
+                        return "Usage prim-Guid [copy] [mod] [xfer]";
                 }
             }
 

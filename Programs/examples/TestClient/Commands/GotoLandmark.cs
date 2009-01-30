@@ -11,19 +11,19 @@ namespace OpenMetaverse.TestClient
         public GotoLandmarkCommand(TestClient testClient)
         {
             Name = "goto_landmark";
-            Description = "Teleports to a Landmark. Usage: goto_landmark [UUID]";
+            Description = "Teleports to a Landmark. Usage: goto_landmark [Guid]";
             Category = CommandCategory.Movement;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 1)
             {
-                return "Usage: goto_landmark [UUID]";
+                return "Usage: goto_landmark [Guid]";
             }
 
-            UUID landmark = new UUID();
-            if (!UUID.TryParse(args[0], out landmark))
+            Guid landmark = new Guid();
+            if (!GuidExtensions.TryParse(args[0], out landmark))
             {
                 return "Invalid LLUID";
             }

@@ -18,7 +18,7 @@ namespace OpenMetaverse.TestClient
             testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length == 0)
             {
@@ -44,8 +44,8 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        private void Avatars_OnPointAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            PointAtType pointType, float duration, UUID id)
+        private void Avatars_OnPointAt(Guid sourceID, Guid targetID, Vector3d targetPos, 
+            PointAtType pointType, float duration, Guid id)
         {
             if (ShowEffects)
                 Console.WriteLine(
@@ -54,8 +54,8 @@ namespace OpenMetaverse.TestClient
                 id.ToString());
         }
 
-        private void Avatars_OnLookAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            LookAtType lookType, float duration, UUID id)
+        private void Avatars_OnLookAt(Guid sourceID, Guid targetID, Vector3d targetPos, 
+            LookAtType lookType, float duration, Guid id)
         {
             if (ShowEffects)
                 Console.WriteLine(
@@ -64,8 +64,8 @@ namespace OpenMetaverse.TestClient
                 id.ToString());
         }
 
-        private void Avatars_OnEffect(EffectType type, UUID sourceID, UUID targetID, 
-            Vector3d targetPos, float duration, UUID id)
+        private void Avatars_OnEffect(EffectType type, Guid sourceID, Guid targetID, 
+            Vector3d targetPos, float duration, Guid id)
         {
             if (ShowEffects)
                 Console.WriteLine(

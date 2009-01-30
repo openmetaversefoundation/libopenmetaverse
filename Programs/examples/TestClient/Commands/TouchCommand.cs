@@ -11,18 +11,18 @@ namespace OpenMetaverse.TestClient
         public TouchCommand(TestClient testClient)
 		{
 			Name = "touch";
-			Description = "Attempt to touch a prim with specified UUID";
+			Description = "Attempt to touch a prim with specified Guid";
             Category = CommandCategory.Objects;
 		}
 		
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
-            UUID target;
+            Guid target;
 
             if (args.Length != 1)
-                return "Usage: touch UUID";
+                return "Usage: touch Guid";
             
-            if (UUID.TryParse(args[0], out target))
+            if (GuidExtensions.TryParse(args[0], out target))
             {
                 Primitive targetPrim = Client.Network.CurrentSim.ObjectsPrimitives.Find(
                     delegate(Primitive prim)
@@ -38,7 +38,7 @@ namespace OpenMetaverse.TestClient
                 }
             }
 
-            return "Couldn't find a prim to touch with UUID " + args[0];
+            return "Couldn't find a prim to touch with Guid " + args[0];
 		}
     }
 }

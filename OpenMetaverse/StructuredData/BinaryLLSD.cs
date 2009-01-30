@@ -59,7 +59,7 @@ namespace OpenMetaverse.StructuredData
         private const byte falseBinaryValue = (byte)'0';
         private const byte integerBinaryMarker = (byte)'i';
         private const byte realBinaryMarker = (byte)'r';
-        private const byte uuidBinaryMarker = (byte)'u';
+        private const byte GuidBinaryMarker = (byte)'u';
         private const byte binaryBinaryMarker = (byte)'b';
         private const byte stringBinaryMarker = (byte)'s';
         private const byte uriBinaryMarker = (byte)'l';
@@ -149,8 +149,8 @@ namespace OpenMetaverse.StructuredData
                     stream.WriteByte(realBinaryMarker);
                     stream.Write(osd.AsBinary(), 0, doubleLength);
                     break;
-                case OSDType.UUID:
-                    stream.WriteByte(uuidBinaryMarker);
+                case OSDType.Guid:
+                    stream.WriteByte(GuidBinaryMarker);
                     stream.Write(osd.AsBinary(), 0, 16);
                     break;
                 case OSDType.String:
@@ -249,8 +249,10 @@ namespace OpenMetaverse.StructuredData
                     double dbl = NetworkToHostDouble(ConsumeBytes(stream, doubleLength));
                     osd = OSD.FromReal(dbl);
                     break;
-                case uuidBinaryMarker:
-                    osd = OSD.FromUUID(new UUID(ConsumeBytes(stream, 16), 0));
+                case GuidBinaryMarker:
+                    Guid guid = new Guid();
+                    guid.FromBytes(ConsumeBytes(stream, 16), 0);
+                    osd = OSD.FromGuid(guid);
                     break;
                 case binaryBinaryMarker:
                     int binaryLength = NetworkToHostInt(ConsumeBytes(stream, int32Length));

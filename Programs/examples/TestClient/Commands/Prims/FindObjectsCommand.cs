@@ -9,7 +9,7 @@ namespace OpenMetaverse.TestClient
 {
     public class FindObjectsCommand : Command
     {
-        Dictionary<UUID, Primitive> PrimsWaiting = new Dictionary<UUID, Primitive>();
+        Dictionary<Guid, Primitive> PrimsWaiting = new Dictionary<Guid, Primitive>();
         AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
 
         public FindObjectsCommand(TestClient testClient)
@@ -22,7 +22,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Objects;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             // *** parse arguments ***
             if ((args.Length < 1) || (args.Length > 2))
@@ -52,8 +52,8 @@ namespace OpenMetaverse.TestClient
 
             if (!complete) {
                 Console.WriteLine("Warning: Unable to retrieve full properties for:");
-                foreach (UUID uuid in PrimsWaiting.Keys)
-                    Console.WriteLine(uuid);
+                foreach (Guid Guid in PrimsWaiting.Keys)
+                    Console.WriteLine(Guid);
             }
 
             return "Done searching";

@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using Mono.Simd.Math;
 using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
@@ -34,10 +35,10 @@ namespace OpenMetaverse
     {
         public readonly GridClient Client;
 
-        public delegate void AttachSoundCallback(UUID soundID, UUID ownerID, UUID objectID, float gain, byte flags);
-        public delegate void AttachedSoundGainChangeCallback(UUID objectID, float gain);
-        public delegate void SoundTriggerCallback(UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, Vector3 position);
-        public delegate void PreloadSoundCallback(UUID soundID, UUID ownerID, UUID objectID);
+        public delegate void AttachSoundCallback(Guid soundID, Guid ownerID, Guid objectID, float gain, byte flags);
+        public delegate void AttachedSoundGainChangeCallback(Guid objectID, float gain);
+        public delegate void SoundTriggerCallback(Guid soundID, Guid ownerID, Guid objectID, Guid parentID, float gain, ulong regionHandle, Vector3f position);
+        public delegate void PreloadSoundCallback(Guid soundID, Guid ownerID, Guid objectID);
 
         public event AttachSoundCallback OnAttachSound;
         public event AttachedSoundGainChangeCallback OnAttachSoundGainChange;
@@ -59,8 +60,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Plays a sound in the current region at full volume from avatar position
         /// </summary>
-        /// <param name="soundID">UUID of the sound to be played</param>
-        public void SoundTrigger(UUID soundID)
+        /// <param name="soundID">Guid of the sound to be played</param>
+        public void SoundTrigger(Guid soundID)
         {
             SoundTrigger(soundID, Client.Self.SimPosition, 1.0f);
         }
@@ -68,9 +69,9 @@ namespace OpenMetaverse
         /// <summary>
         /// Plays a sound in the current region at full volume
         /// </summary>
-        /// <param name="soundID">UUID of the sound to be played.</param>
+        /// <param name="soundID">Guid of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
-        public void SoundTrigger(UUID soundID, Vector3 position)
+        public void SoundTrigger(Guid soundID, Vector3f position)
         {
             SoundTrigger(soundID, Client.Self.SimPosition, 1.0f);
         }
@@ -78,21 +79,21 @@ namespace OpenMetaverse
         /// <summary>
         /// Plays a sound in the current region
         /// </summary>
-        /// <param name="soundID">UUID of the sound to be played.</param>
+        /// <param name="soundID">Guid of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SoundTrigger(UUID soundID, Vector3 position, float gain)
+        public void SoundTrigger(Guid soundID, Vector3f position, float gain)
         {
             SoundTrigger(soundID, Client.Network.CurrentSim.Handle, position, 1.0f);
         }
         /// <summary>
         /// Plays a sound in the specified sim
         /// </summary>
-        /// <param name="soundID">UUID of the sound to be played.</param>
-        /// <param name="sim">UUID of the sound to be played.</param>
+        /// <param name="soundID">Guid of the sound to be played.</param>
+        /// <param name="sim">Guid of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SoundTrigger(UUID soundID, Simulator sim, Vector3 position, float gain)
+        public void SoundTrigger(Guid soundID, Simulator sim, Vector3f position, float gain)
         {
             SoundTrigger(soundID, sim.Handle, position, 1.0f);
         }
@@ -100,18 +101,18 @@ namespace OpenMetaverse
         /// <summary>
         /// Plays a sound
         /// </summary>
-        /// <param name="soundID">UUID of the sound to be played.</param>
+        /// <param name="soundID">Guid of the sound to be played.</param>
         /// <param name="handle">handle id for the sim to be played in.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SoundTrigger(UUID soundID, ulong handle, Vector3 position, float gain)
+        public void SoundTrigger(Guid soundID, ulong handle, Vector3f position, float gain)
         {
             SoundTriggerPacket soundtrigger = new SoundTriggerPacket();
             soundtrigger.SoundData = new SoundTriggerPacket.SoundDataBlock();
             soundtrigger.SoundData.SoundID = soundID;
-            soundtrigger.SoundData.ObjectID = UUID.Zero;
-            soundtrigger.SoundData.OwnerID = UUID.Zero;
-            soundtrigger.SoundData.ParentID = UUID.Zero;
+            soundtrigger.SoundData.ObjectID = Guid.Empty;
+            soundtrigger.SoundData.OwnerID = Guid.Empty;
+            soundtrigger.SoundData.ParentID = Guid.Empty;
             soundtrigger.SoundData.Handle = handle;
             soundtrigger.SoundData.Position = position;
             soundtrigger.SoundData.Gain = gain;

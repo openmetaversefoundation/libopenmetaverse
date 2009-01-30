@@ -7,10 +7,10 @@ namespace Simian
 {
     public struct Animation
     {
-        public UUID ID;
+        public Guid ID;
         public int SequenceNum;
 
-        public Animation(UUID id, int sequenceNum)
+        public Animation(Guid id, int sequenceNum)
         {
             ID = id;
             SequenceNum = sequenceNum;
@@ -27,7 +27,7 @@ namespace Simian
             ResetDefaultAnimation();
         }
 
-        public bool HasAnimation(UUID animID)
+        public bool HasAnimation(Guid animID)
         {
             if (defaultAnimation.ID == animID)
                 return true;
@@ -44,7 +44,7 @@ namespace Simian
             return false;
         }
 
-        public bool Add(UUID animID, ref int sequenceCounter)
+        public bool Add(Guid animID, ref int sequenceCounter)
         {
             lock (animations)
             {
@@ -59,7 +59,7 @@ namespace Simian
             return false;
         }
 
-        public bool Add(UUID animID, int sequenceNum)
+        public bool Add(Guid animID, int sequenceNum)
         {
             lock (animations)
             {
@@ -73,7 +73,7 @@ namespace Simian
             return false;
         }
 
-        public bool Remove(UUID animID)
+        public bool Remove(Guid animID)
         {
             if (defaultAnimation.ID == animID)
             {
@@ -104,7 +104,7 @@ namespace Simian
             lock (animations) animations.Clear();
         }
 
-        public bool SetDefaultAnimation(UUID animID, ref int sequenceCounter)
+        public bool SetDefaultAnimation(Guid animID, ref int sequenceCounter)
         {
             if (defaultAnimation.ID != animID)
             {
@@ -118,7 +118,7 @@ namespace Simian
             }
         }
 
-        public bool SetDefaultAnimation(UUID animID, int sequenceNum)
+        public bool SetDefaultAnimation(Guid animID, int sequenceNum)
         {
             if (defaultAnimation.ID != animID)
             {
@@ -131,11 +131,11 @@ namespace Simian
             }
         }
 
-        public void GetArrays(out UUID[] animIDs, out int[] sequenceNums)
+        public void GetArrays(out Guid[] animIDs, out int[] sequenceNums)
         {
             lock (animations)
             {
-                animIDs = new UUID[animations.Count + 1];
+                animIDs = new Guid[animations.Count + 1];
                 sequenceNums = new int[animations.Count + 1];
 
                 animIDs[0] = defaultAnimation.ID;

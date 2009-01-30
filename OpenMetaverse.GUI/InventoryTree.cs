@@ -94,10 +94,10 @@ namespace OpenMetaverse.GUI
         }
 
         /// <summary>
-        /// Thread-safe method for updating the contents of the specified folder UUID
+        /// Thread-safe method for updating the contents of the specified folder Guid
         /// </summary>
         /// <param name="folderID"></param>
-        public void UpdateFolder(UUID folderID)
+        public void UpdateFolder(Guid folderID)
         {
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateFolder(folderID); });
             else
@@ -105,7 +105,7 @@ namespace OpenMetaverse.GUI
                 TreeNode node = null;
                 TreeNodeCollection children;
 
-                if (folderID != Client.Inventory.Store.RootFolder.UUID)
+                if (folderID != Client.Inventory.Store.RootFolder.Guid)
                 {
                     TreeNode[] found = Nodes.Find(folderID.ToString(), true);
                     if (found.Length > 0)
@@ -133,7 +133,7 @@ namespace OpenMetaverse.GUI
                 {
                     foreach (InventoryBase inv in contents)
                     {
-                        string key = inv.UUID.ToString();
+                        string key = inv.Guid.ToString();
                         children.Add(key, inv.Name);
                         children[key].Tag = inv;
                         if (inv is InventoryFolder)
@@ -148,17 +148,17 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Inventory.OnFolderUpdated += new InventoryManager.FolderUpdatedCallback(Inventory_OnFolderUpdated);
+            _Client.Inventory.OnFolderUpdated += Inventory_OnFolderUpdated;
             _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
         }
 
         void Network_OnLogin(LoginStatus login, string message)
         {
             if (login == LoginStatus.Success)
-                UpdateFolder(Client.Inventory.Store.RootFolder.UUID);
+                UpdateFolder(Client.Inventory.Store.RootFolder.Guid);
         }
 
-        void Inventory_OnFolderUpdated(UUID folderID)
+        void Inventory_OnFolderUpdated(Guid folderID)
         {
             UpdateFolder(folderID);
         }
@@ -166,7 +166,7 @@ namespace OpenMetaverse.GUI
         private void InventoryTree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             InventoryFolder folder = (InventoryFolder)e.Node.Tag;
-            Client.Inventory.RequestFolderContents(folder.UUID, _Client.Self.AgentID, true, true, InventorySortOrder.ByDate | InventorySortOrder.FoldersByName);
+            Client.Inventory.RequestFolderContents(folder.Guid, _Client.Self.AgentID, true, true, InventorySortOrder.ByDate | InventorySortOrder.FoldersByName);
         }
 
     }

@@ -84,7 +84,7 @@ namespace Simian.Extensions
     public class ImageDelivery : IExtension<Simian>
     {
         Simian server;
-        Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
+        Dictionary<Guid, ImageDownload> CurrentDownloads = new Dictionary<Guid, ImageDownload>();
         BlockingQueue<ImageDownload> CurrentDownloadQueue = new BlockingQueue<ImageDownload>();
 
         public ImageDelivery()

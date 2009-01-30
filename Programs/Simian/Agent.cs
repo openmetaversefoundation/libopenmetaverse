@@ -10,7 +10,7 @@ namespace Simian
     public class Agent
     {
         // Account
-        public UUID AgentID;
+        public Guid AgentID;
         public string FirstName;
         public string LastName;
         public string PasswordHash;
@@ -21,9 +21,9 @@ namespace Simian
         public int Balance;
 
         // Inventory
-        public UUID InventoryRoot;
-        public UUID InventoryLibraryRoot;
-        public UUID InventoryLibraryOwner;
+        public Guid InventoryRoot;
+        public Guid InventoryLibraryRoot;
+        public Guid InventoryLibraryOwner;
 
         // Location
         public ulong HomeRegionHandle;
@@ -34,42 +34,42 @@ namespace Simian
         public Vector3 CurrentLookAt;
 
         // Profile
-        public UUID PartnerID;
+        public Guid PartnerID;
         public int ProfileCanDo;
         public int ProfileWantDo;
         public string ProfileAboutText;
         public string ProfileFirstText;
         public string ProfileBornOn;
         public string ProfileURL;
-        public UUID ProfileImage;
-        public UUID ProfileFirstImage;
+        public Guid ProfileImage;
+        public Guid ProfileFirstImage;
         public ProfileFlags ProfileFlags;
 
         // Appearance
         public byte[] VisualParams;
         //public byte[] Texture;
         public float Height;
-        public UUID ShapeItem;
-        public UUID SkinItem;
-        public UUID HairItem;
-        public UUID EyesItem;
-        public UUID ShirtItem;
-        public UUID PantsItem;
-        public UUID ShoesItem;
-        public UUID SocksItem;
-        public UUID JacketItem;
-        public UUID GlovesItem;
-        public UUID UndershirtItem;
-        public UUID UnderpantsItem;
-        public UUID SkirtItem;
+        public Guid ShapeItem;
+        public Guid SkinItem;
+        public Guid HairItem;
+        public Guid EyesItem;
+        public Guid ShirtItem;
+        public Guid PantsItem;
+        public Guid ShoesItem;
+        public Guid SocksItem;
+        public Guid JacketItem;
+        public Guid GlovesItem;
+        public Guid UndershirtItem;
+        public Guid UnderpantsItem;
+        public Guid SkirtItem;
 
         // Temporary
         [NonSerialized]
         public Avatar Avatar = new Avatar();
         [NonSerialized]
-        public UUID SessionID;
+        public Guid SessionID;
         [NonSerialized]
-        public UUID SecureSessionID;
+        public Guid SecureSessionID;
         [NonSerialized]
         public uint CircuitCode;
         [NonSerialized]

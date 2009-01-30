@@ -25,17 +25,18 @@
  */
 
 using System;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
     public class CoordinateFrame
     {
-        public static readonly Vector3 X_AXIS = new Vector3(1f, 0f, 0f);
-        public static readonly Vector3 Y_AXIS = new Vector3(0f, 1f, 0f);
-        public static readonly Vector3 Z_AXIS = new Vector3(0f, 0f, 1f);
+        public static readonly Vector3f X_AXIS = new Vector3f(1f, 0f, 0f);
+        public static readonly Vector3f Y_AXIS = new Vector3f(0f, 1f, 0f);
+        public static readonly Vector3f Z_AXIS = new Vector3f(0f, 0f, 1f);
 
         /// <summary>Origin position of this coordinate frame</summary>
-        public Vector3 Origin
+        public Vector3f Origin
         {
             get { return origin; }
             set
@@ -46,7 +47,7 @@ namespace OpenMetaverse
             }
         }
         /// <summary>X axis of this coordinate frame, or Forward/At in grid terms</summary>
-        public Vector3 XAxis
+        public Vector3f XAxis
         {
             get { return xAxis; }
             set
@@ -57,7 +58,7 @@ namespace OpenMetaverse
             }
         }
         /// <summary>Y axis of this coordinate frame, or Left in grid terms</summary>
-        public Vector3 YAxis
+        public Vector3f YAxis
         {
             get { return yAxis; }
             set
@@ -68,7 +69,7 @@ namespace OpenMetaverse
             }
         }
         /// <summary>Z axis of this coordinate frame, or Up in grid terms</summary>
-        public Vector3 ZAxis
+        public Vector3f ZAxis
         {
             get { return zAxis; }
             set
@@ -79,14 +80,14 @@ namespace OpenMetaverse
             }
         }
 
-        protected Vector3 origin;
-        protected Vector3 xAxis;
-        protected Vector3 yAxis;
-        protected Vector3 zAxis;
+        protected Vector3f origin;
+        protected Vector3f xAxis;
+        protected Vector3f yAxis;
+        protected Vector3f zAxis;
 
         #region Constructors
 
-        public CoordinateFrame(Vector3 origin)
+        public CoordinateFrame(Vector3f origin)
         {
             this.origin = origin;
             xAxis = X_AXIS;
@@ -97,7 +98,7 @@ namespace OpenMetaverse
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
-        public CoordinateFrame(Vector3 origin, Vector3 direction)
+        public CoordinateFrame(Vector3f origin, Vector3f direction)
         {
             this.origin = origin;
             LookDirection(direction);
@@ -106,7 +107,7 @@ namespace OpenMetaverse
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
-        public CoordinateFrame(Vector3 origin, Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
+        public CoordinateFrame(Vector3f origin, Vector3f xAxis, Vector3f yAxis, Vector3f zAxis)
         {
             this.origin = origin;
             this.xAxis = xAxis;
@@ -117,25 +118,26 @@ namespace OpenMetaverse
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
-        public CoordinateFrame(Vector3 origin, Matrix4 rotation)
+        public CoordinateFrame(Vector3f origin, Matrix4f rotation)
         {
             this.origin = origin;
-            xAxis = rotation.AtAxis;
-            yAxis = rotation.LeftAxis;
-            zAxis = rotation.UpAxis;
+            xAxis = new Vector3f(rotation.M11, rotation.M21, rotation.M31);
+            yAxis = new Vector3f(rotation.M12, rotation.M22, rotation.M32);
+            zAxis = new Vector3f(rotation.M13, rotation.M23, rotation.M33);
 
             if (!IsFinite())
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
-        public CoordinateFrame(Vector3 origin, Quaternion rotation)
+        public CoordinateFrame(Vector3f origin, Quaternionf rotation)
         {
-            Matrix4 m = Matrix4.CreateFromQuaternion(rotation);
+            Matrix4f m = new Matrix4f();
+            m.FromQuaternion(rotation);
 
             this.origin = origin;
-            xAxis = m.AtAxis;
-            yAxis = m.LeftAxis;
-            zAxis = m.UpAxis;
+            xAxis = new Vector3f(m.M11, m.M21, m.M31);
+            yAxis = new Vector3f(m.M12, m.M22, m.M32);
+            zAxis = new Vector3f(m.M13, m.M23, m.M33);
 
             if (!IsFinite())
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
@@ -152,22 +154,24 @@ namespace OpenMetaverse
             zAxis = Z_AXIS;
         }
 
-        public void Rotate(float angle, Vector3 rotationAxis)
+        public void Rotate(float angle, Vector3f rotationAxis)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(rotationAxis, angle);
+            Quaternionf q = new Quaternionf();
+            q.FromAxisAngle(rotationAxis, angle);
             Rotate(q);
         }
 
-        public void Rotate(Quaternion q)
+        public void Rotate(Quaternionf q)
         {
-            Matrix4 m = Matrix4.CreateFromQuaternion(q);
+            Matrix4f m = new Matrix4f();
+            m.FromQuaternion(q);
             Rotate(m);
         }
 
-        public void Rotate(Matrix4 m)
+        public void Rotate(Matrix4f m)
         {
-            xAxis = Vector3.Transform(xAxis, m);
-            yAxis = Vector3.Transform(yAxis, m);
+            xAxis = xAxis.Transform(ref m);
+            yAxis = yAxis.Transform(ref m);
 
             Orthonormalize();
 
@@ -177,8 +181,10 @@ namespace OpenMetaverse
 
         public void Roll(float angle)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(xAxis, angle);
-            Matrix4 m = Matrix4.CreateFromQuaternion(q);
+            Quaternionf q = new Quaternionf();
+            q.FromAxisAngle(xAxis, angle);
+            Matrix4f m = new Matrix4f();
+            m.FromQuaternion(q);
             Rotate(m);
 
             if (!yAxis.IsFinite() || !zAxis.IsFinite())
@@ -187,8 +193,10 @@ namespace OpenMetaverse
 
         public void Pitch(float angle)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(yAxis, angle);
-            Matrix4 m = Matrix4.CreateFromQuaternion(q);
+            Quaternionf q = new Quaternionf();
+            q.FromAxisAngle(yAxis, angle);
+            Matrix4f m = new Matrix4f();
+            m.FromQuaternion(q);
             Rotate(m);
 
             if (!xAxis.IsFinite() || !zAxis.IsFinite())
@@ -197,15 +205,17 @@ namespace OpenMetaverse
 
         public void Yaw(float angle)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(zAxis, angle);
-            Matrix4 m = Matrix4.CreateFromQuaternion(q);
+            Quaternionf q = new Quaternionf();
+            q.FromAxisAngle(zAxis, angle);
+            Matrix4f m = new Matrix4f();
+            m.FromQuaternion(q);
             Rotate(m);
 
             if (!xAxis.IsFinite() || !yAxis.IsFinite())
                 throw new Exception("Non-finite in CoordinateFrame.Yaw()");
         }
 
-        public void LookDirection(Vector3 at)
+        public void LookDirection(Vector3f at)
         {
             LookDirection(at, Z_AXIS);
         }
@@ -215,22 +225,22 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="at">Looking direction, must be a normalized vector</param>
         /// <param name="upDirection">Up direction, must be a normalized vector</param>
-        public void LookDirection(Vector3 at, Vector3 upDirection)
+        public void LookDirection(Vector3f at, Vector3f upDirection)
         {
             // The two parameters cannot be parallel
-            Vector3 left = Vector3.Cross(upDirection, at);
-            if (left == Vector3.Zero)
+            Vector3f left = upDirection.Cross(ref at);
+            if (left == Vector3f.Zero)
             {
                 // Prevent left from being zero
                 at.X += 0.01f;
                 at.Normalize();
-                left = Vector3.Cross(upDirection, at);
+                left = upDirection.Cross(ref at);
             }
             left.Normalize();
 
             xAxis = at;
             yAxis = left;
-            zAxis = Vector3.Cross(at, left);
+            zAxis = at.Cross(ref left);
         }
 
         /// <summary>
@@ -247,15 +257,15 @@ namespace OpenMetaverse
             xAxis.Y = (float)Math.Cos(heading);
         }
 
-        public void LookAt(Vector3 origin, Vector3 target)
+        public void LookAt(Vector3f origin, Vector3f target)
         {
-            LookAt(origin, target, new Vector3(0f, 0f, 1f));
+            LookAt(origin, target, new Vector3f(0f, 0f, 1f));
         }
 
-        public void LookAt(Vector3 origin, Vector3 target, Vector3 upDirection)
+        public void LookAt(Vector3f origin, Vector3f target, Vector3f upDirection)
         {
             this.origin = origin;
-            Vector3 at = new Vector3(target - origin);
+            Vector3f at = target - origin;
             at.Normalize();
 
             LookDirection(at, upDirection);
@@ -277,7 +287,7 @@ namespace OpenMetaverse
             xAxis.Normalize();
             yAxis -= xAxis * (xAxis * yAxis);
             yAxis.Normalize();
-            zAxis = Vector3.Cross(xAxis, yAxis);
+            zAxis = xAxis.Cross(ref yAxis);
         }
     }
 }

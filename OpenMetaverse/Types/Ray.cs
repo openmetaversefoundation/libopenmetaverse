@@ -25,15 +25,16 @@
  */
 
 using System;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
     public struct Ray
     {
-        public Vector3 Origin;
-        public Vector3 Direction;
+        public Vector3f Origin;
+        public Vector3f Direction;
 
-        public Ray(Vector3 origin, Vector3 direction)
+        public Ray(Vector3f origin, Vector3f direction)
         {
             Origin = origin;
             Direction = direction;

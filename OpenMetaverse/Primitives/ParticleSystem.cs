@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse
 {
@@ -141,13 +142,13 @@ namespace OpenMetaverse
             /// <summary>A <see langword="byte"/> representing the maximum number of particles emitted per burst</summary>
             public byte BurstPartCount;
             /// <summary>A <see cref="T:Vector3"/> which represents the velocity (speed) from the source which particles are emitted</summary>
-            public Vector3 AngularVelocity;
+            public Vector3f AngularVelocity;
             /// <summary>A <see cref="T:Vector3"/> which represents the Acceleration from the source which particles are emitted</summary>
-            public Vector3 PartAcceleration;
-            /// <summary>The <see cref="T:UUID"/> Key of the texture displayed on the particle</summary>
-            public UUID Texture;
-            /// <summary>The <see cref="T:UUID"/> Key of the specified target object or avatar particles will follow</summary>
-            public UUID Target;
+            public Vector3f PartAcceleration;
+            /// <summary>The <see cref="T:Guid"/> Key of the texture displayed on the particle</summary>
+            public Guid Texture;
+            /// <summary>The <see cref="T:Guid"/> Key of the specified target object or avatar particles will follow</summary>
+            public Guid Target;
             /// <summary>Flags of particle from <seealso cref="T:ParticleDataFlags"/></summary>
             public ParticleDataFlags PartDataFlags;
             /// <summary>Max Age particle system will emit particles for</summary>
@@ -197,13 +198,13 @@ namespace OpenMetaverse
                     float x = pack.UnpackFixed(true, 8, 7);
                     float y = pack.UnpackFixed(true, 8, 7);
                     float z = pack.UnpackFixed(true, 8, 7);
-                    AngularVelocity = new Vector3(x, y, z);
+                    AngularVelocity = new Vector3f(x, y, z);
                     x = pack.UnpackFixed(true, 8, 7);
                     y = pack.UnpackFixed(true, 8, 7);
                     z = pack.UnpackFixed(true, 8, 7);
-                    PartAcceleration = new Vector3(x, y, z);
-                    Texture = pack.UnpackUUID();
-                    Target = pack.UnpackUUID();
+                    PartAcceleration = new Vector3f(x, y, z);
+                    Texture = pack.UnpackGuid();
+                    Target = pack.UnpackGuid();
 
                     PartDataFlags = (ParticleDataFlags)pack.UnpackUBits(32);
                     PartMaxAge = pack.UnpackFixed(false, 8, 8);
@@ -229,8 +230,8 @@ namespace OpenMetaverse
                     MaxAge = StartAge = InnerAngle = OuterAngle = BurstRate = BurstRadius = BurstSpeedMin =
                         BurstSpeedMax = 0.0f;
                     BurstPartCount = 0;
-                    AngularVelocity = PartAcceleration = Vector3.Zero;
-                    Texture = Target = UUID.Zero;
+                    AngularVelocity = PartAcceleration = Vector3f.Zero;
+                    Texture = Target = Guid.Empty;
                     PartDataFlags = ParticleDataFlags.None;
                     PartMaxAge = 0.0f;
                     PartStartColor = PartEndColor = Color4.Black;
@@ -265,8 +266,8 @@ namespace OpenMetaverse
                 pack.PackFixed(PartAcceleration.X, true, 8, 7);
                 pack.PackFixed(PartAcceleration.Y, true, 8, 7);
                 pack.PackFixed(PartAcceleration.Z, true, 8, 7);
-                pack.PackUUID(Texture);
-                pack.PackUUID(Target);
+                pack.PackGuid(Texture);
+                pack.PackGuid(Target);
 
                 pack.PackBits((uint)PartDataFlags, 32);
                 pack.PackFixed(PartMaxAge, false, 8, 8);

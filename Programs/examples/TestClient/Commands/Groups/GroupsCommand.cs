@@ -10,7 +10,7 @@ namespace OpenMetaverse.TestClient
     public class GroupsCommand : Command
     {        
         ManualResetEvent GetCurrentGroupsEvent = new ManualResetEvent(false);
-        Dictionary<UUID, Group> groups = new Dictionary<UUID, Group>();
+        Dictionary<Guid, Group> groups = new Dictionary<Guid, Group>();
 
         public GroupsCommand(TestClient testClient)
         {
@@ -20,7 +20,7 @@ namespace OpenMetaverse.TestClient
             Description = "List avatar groups. Usage: groups";
             Category = CommandCategory.Groups;
         }
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (groups.Count == 0)
             {
@@ -37,7 +37,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Groups_OnCurrentGroups(Dictionary<UUID, Group> pGroups)
+        void Groups_OnCurrentGroups(Dictionary<Guid, Group> pGroups)
         {
             groups = pGroups;
             GetCurrentGroupsEvent.Set();

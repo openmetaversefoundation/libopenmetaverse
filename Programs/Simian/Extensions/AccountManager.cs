@@ -9,7 +9,7 @@ namespace Simian.Extensions
     public class AccountManager : IExtension<Simian>, IAccountProvider, IPersistable
     {
         Simian server;
-        DoubleDictionary<string, UUID, Agent> accounts = new DoubleDictionary<string, UUID, Agent>();
+        DoubleDictionary<string, Guid, Agent> accounts = new DoubleDictionary<string, Guid, Agent>();
 
         public AccountManager()
         {
@@ -29,7 +29,7 @@ namespace Simian.Extensions
             accounts.Add(agent.FullName, agent.AgentID, agent);
         }
 
-        public bool RemoveAccount(UUID agentID)
+        public bool RemoveAccount(Guid agentID)
         {
             Agent agent;
             if (accounts.TryGetValue(agentID, out agent))
@@ -38,14 +38,14 @@ namespace Simian.Extensions
                 return false;
         }
 
-        public Agent CreateInstance(UUID agentID)
+        public Agent CreateInstance(Guid agentID)
         {
             Agent agent;
             if (accounts.TryGetValue(agentID, out agent))
             {
                 // Random session IDs
-                agent.SessionID = UUID.Random();
-                agent.SecureSessionID = UUID.Random();
+                agent.SessionID = Guid.NewGuid();
+                agent.SecureSessionID = Guid.NewGuid();
 
                 // Avatar flags
                 agent.Flags = PrimFlags.Physics | PrimFlags.ObjectModify | PrimFlags.ObjectCopy |
@@ -62,7 +62,7 @@ namespace Simian.Extensions
             }
         }
 
-        public bool TryGetAccount(UUID agentID, out Agent agent)
+        public bool TryGetAccount(Guid agentID, out Agent agent)
         {
             return accounts.TryGetValue(agentID, out agent);
         }

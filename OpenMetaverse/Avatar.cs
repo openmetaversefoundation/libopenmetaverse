@@ -88,9 +88,9 @@ namespace OpenMetaverse
             /// <summary>First Life about text</summary>
             public string FirstLifeText;
             /// <summary>First Life image ID</summary>
-            public UUID FirstLifeImage;
+            public Guid FirstLifeImage;
             /// <summary></summary>
-            public UUID Partner;
+            public Guid Partner;
             /// <summary></summary>
             public string AboutText;
             /// <summary></summary>
@@ -98,7 +98,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public string CharterMember;
             /// <summary>Profile image ID</summary>
-            public UUID ProfileImage;
+            public Guid ProfileImage;
             /// <summary>Flags of the profile</summary>
             public ProfileFlags Flags;
             /// <summary>Web URL for this profile</summary>
@@ -195,7 +195,7 @@ namespace OpenMetaverse
         #region Public Members
 
         /// <summary>Groups that this avatar is a member of</summary>
-        public List<UUID> Groups = new List<UUID>();
+        public List<Guid> Groups = new List<Guid>();
         /// <summary>Positive and negative ratings</summary>
         public Statistics ProfileStatistics;
         /// <summary>Avatar properties including about text, profile URL, image IDs and 

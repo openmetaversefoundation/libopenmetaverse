@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient
     public class ActivateGroupCommand : Command
     {
         ManualResetEvent GroupsEvent = new ManualResetEvent(false);
-        Dictionary<UUID, Group> groups = new Dictionary<UUID, Group>();
+        Dictionary<Guid, Group> groups = new Dictionary<Guid, Group>();
         string activeGroup;
 
         public ActivateGroupCommand(TestClient testClient)
@@ -22,7 +22,7 @@ namespace OpenMetaverse.TestClient
             Description = "Set a group as active. Usage: activategroup GroupName";
             Category = CommandCategory.Groups;
         }
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 1)
                 return Description;
@@ -74,7 +74,7 @@ namespace OpenMetaverse.TestClient
             return Client.ToString() + " doesn't seem member of any group";
         }
 
-        void Groups_OnCurrentGroups(Dictionary<UUID, Group> cGroups)
+        void Groups_OnCurrentGroups(Dictionary<Guid, Group> cGroups)
         {
             groups = cGroups;
             GroupsEvent.Set();

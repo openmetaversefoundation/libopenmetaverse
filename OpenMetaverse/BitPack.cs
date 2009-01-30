@@ -152,7 +152,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="data"></param>
-        public void PackUUID(UUID data)
+        public void PackGuid(Guid data)
         {
             byte[] bytes = data.GetBytes();
 
@@ -297,11 +297,12 @@ namespace OpenMetaverse
             return str;
         }
 
-        public UUID UnpackUUID()
+        public Guid UnpackGuid()
         {
             if (bitPos != 0) throw new IndexOutOfRangeException();
 
-            UUID val = new UUID(Data, bytePos);
+            Guid val = new Guid();
+            val.FromBytes(Data, bytePos);
             bytePos += 16;
             return val;
         }

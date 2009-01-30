@@ -132,7 +132,7 @@ namespace OpenMetaverse.Tests
         [Test]
         public void TextureEntry()
         {
-            Primitive.TextureEntry te = new Primitive.TextureEntry(UUID.Random());
+            Primitive.TextureEntry te = new Primitive.TextureEntry(Guid.NewGuid());
             Primitive.TextureEntryFace face = te.CreateFace(0);
             face.Bump = Bumpiness.Concrete;
             face.Fullbright = true;
@@ -145,7 +145,7 @@ namespace OpenMetaverse.Tests
             face.Rotation = 1.5f;
             face.Shiny = Shininess.Medium;
             face.TexMapType = MappingType.Planar;
-            face.TextureID = UUID.Random();
+            face.TextureID = Guid.NewGuid();
 
             byte[] teBytes = te.ToBytes();
 

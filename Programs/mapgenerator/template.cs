@@ -26,6 +26,8 @@
 
 using System;
 using System.Text;
+using Mono.Simd;
+using Mono.Simd.Math;
 using OpenMetaverse;
 
 namespace OpenMetaverse.Packets

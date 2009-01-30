@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
             testClient.Grid.OnGridLayer += new GridManager.GridLayerCallback(Grid_OnGridLayer);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             Client.Grid.RequestMapLayer(GridLayerType.Objects);
 

@@ -13,7 +13,7 @@ namespace Simian.Extensions
         public const string UPLOAD_DIR = "uploadedAssets";
 
         Simian server;
-        Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
+        Dictionary<Guid, Asset> AssetStore = new Dictionary<Guid, Asset>();
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
         string UploadDir;
 
@@ -88,7 +88,7 @@ namespace Simian.Extensions
             }
         }
 
-        public bool TryGetAsset(UUID id, out Asset asset)
+        public bool TryGetAsset(Guid id, out Asset asset)
         {
             return AssetStore.TryGetValue(id, out asset);
         }
@@ -98,7 +98,7 @@ namespace Simian.Extensions
         void AssetUploadRequestHandler(Packet packet, Agent agent)
         {
             AssetUploadRequestPacket request = (AssetUploadRequestPacket)packet;
-            UUID assetID = UUID.Combine(request.AssetBlock.TransactionID, agent.SecureSessionID);
+            Guid assetID = Guid.Combine(request.AssetBlock.TransactionID, agent.SecureSessionID);
 
             // Check if the asset is small enough to fit in a single packet
             if (request.AssetBlock.AssetData.Length != 0)
@@ -122,7 +122,7 @@ namespace Simian.Extensions
                 AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
                 complete.AssetBlock.Success = true;
                 complete.AssetBlock.Type = request.AssetBlock.Type;
-                complete.AssetBlock.UUID = assetID;
+                complete.AssetBlock.Guid = assetID;
                 server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Inventory);
             }
             else
@@ -207,7 +207,7 @@ namespace Simian.Extensions
                         AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
                         complete.AssetBlock.Success = true;
                         complete.AssetBlock.Type = (sbyte)asset.AssetType;
-                        complete.AssetBlock.UUID = asset.AssetID;
+                        complete.AssetBlock.Guid = asset.AssetID;
                         server.UDP.SendPacket(agent.AgentID, complete, PacketCategory.Asset);
                     }
                 }
@@ -260,7 +260,7 @@ namespace Simian.Extensions
                 if (source == SourceType.Asset)
                 {
                     // Parse the request
-                    UUID assetID = new UUID(request.TransferInfo.Params, 0);
+                    Guid assetID = new Guid(request.TransferInfo.Params, 0);
                     AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 16);
 
                     // Set the response channel type
@@ -333,23 +333,23 @@ namespace Simian.Extensions
                 }
                 else if (source == SourceType.SimEstate)
                 {
-                    UUID agentID = new UUID(request.TransferInfo.Params, 0);
-                    UUID sessionID = new UUID(request.TransferInfo.Params, 16);
+                    Guid agentID = new Guid(request.TransferInfo.Params, 0);
+                    Guid sessionID = new Guid(request.TransferInfo.Params, 16);
                     EstateAssetType type = (EstateAssetType)Utils.BytesToInt(request.TransferInfo.Params, 32);
 
                     Logger.Log("Please implement estate asset transfers", Helpers.LogLevel.Warning);
                 }
                 else if (source == SourceType.SimInventoryItem)
                 {
-                    UUID agentID = new UUID(request.TransferInfo.Params, 0);
-                    UUID sessionID = new UUID(request.TransferInfo.Params, 16);
-                    UUID ownerID = new UUID(request.TransferInfo.Params, 32);
-                    UUID taskID = new UUID(request.TransferInfo.Params, 48);
-                    UUID itemID = new UUID(request.TransferInfo.Params, 64);
-                    UUID assetID = new UUID(request.TransferInfo.Params, 80);
+                    Guid agentID = new Guid(request.TransferInfo.Params, 0);
+                    Guid sessionID = new Guid(request.TransferInfo.Params, 16);
+                    Guid ownerID = new Guid(request.TransferInfo.Params, 32);
+                    Guid taskID = new Guid(request.TransferInfo.Params, 48);
+                    Guid itemID = new Guid(request.TransferInfo.Params, 64);
+                    Guid assetID = new Guid(request.TransferInfo.Params, 80);
                     AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 96);
 
-                    if (taskID != UUID.Zero)
+                    if (taskID != Guid.Empty)
                     {
                         // Task (prim) inventory request
                         Logger.Log("Please implement task inventory transfers", Helpers.LogLevel.Warning);
@@ -390,7 +390,7 @@ namespace Simian.Extensions
             }
         }
 
-        Asset CreateAsset(AssetType type, UUID assetID, byte[] data)
+        Asset CreateAsset(AssetType type, Guid assetID, byte[] data)
         {
             switch (type)
             {
@@ -442,7 +442,7 @@ namespace Simian.Extensions
 
                 for (int i = 0; i < textures.Length; i++)
                 {
-                    UUID assetID = ParseUUIDFromFilename(textures[i]);
+                    Guid assetID = ParseGuidFromFilename(textures[i]);
                     Asset asset = new AssetTexture(assetID, File.ReadAllBytes(textures[i]));
                     asset.Temporary = true;
                     StoreAsset(asset);
@@ -450,7 +450,7 @@ namespace Simian.Extensions
 
                 for (int i = 0; i < clothing.Length; i++)
                 {
-                    UUID assetID = ParseUUIDFromFilename(clothing[i]);
+                    Guid assetID = ParseGuidFromFilename(clothing[i]);
                     Asset asset = new AssetClothing(assetID, File.ReadAllBytes(clothing[i]));
                     asset.Temporary = true;
                     StoreAsset(asset);
@@ -458,7 +458,7 @@ namespace Simian.Extensions
 
                 for (int i = 0; i < bodyparts.Length; i++)
                 {
-                    UUID assetID = ParseUUIDFromFilename(bodyparts[i]);
+                    Guid assetID = ParseGuidFromFilename(bodyparts[i]);
                     Asset asset = new AssetBodypart(assetID, File.ReadAllBytes(bodyparts[i]));
                     asset.Temporary = true;
                     StoreAsset(asset);
@@ -466,7 +466,7 @@ namespace Simian.Extensions
 
                 for (int i = 0; i < sounds.Length; i++)
                 {
-                    UUID assetID = ParseUUIDFromFilename(sounds[i]);
+                    Guid assetID = ParseGuidFromFilename(sounds[i]);
                     Asset asset = new AssetSound(assetID, File.ReadAllBytes(sounds[i]));
                     asset.Temporary = true;
                     StoreAsset(asset);
@@ -478,21 +478,21 @@ namespace Simian.Extensions
             }
         }
 
-        static UUID ParseUUIDFromFilename(string filename)
+        static Guid ParseGuidFromFilename(string filename)
         {
             int dot = filename.LastIndexOf('.');
 
             if (dot > 35)
             {
                 // Grab the last 36 characters of the filename
-                string uuidString = filename.Substring(dot - 36, 36);
-                UUID uuid;
-                UUID.TryParse(uuidString, out uuid);
-                return uuid;
+                string GuidString = filename.Substring(dot - 36, 36);
+                Guid Guid;
+                GuidExtensions.TryParse(GuidString, out Guid);
+                return Guid;
             }
             else
             {
-                return UUID.Zero;
+                return Guid.Empty;
             }
         }
     }

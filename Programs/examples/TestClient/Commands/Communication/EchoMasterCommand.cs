@@ -15,7 +15,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Communication;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
 			if (!Active)
 			{
@@ -32,7 +32,7 @@ namespace OpenMetaverse.TestClient
 		}
 
 		void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, 
-            ChatSourceType sourcetype, string fromName, UUID id, UUID ownerid, Vector3 position)
+            ChatSourceType sourcetype, string fromName, Guid id, Guid ownerid, Vector3 position)
 		{
 			if (message.Length > 0 && (Client.MasterKey == id || (Client.MasterName == fromName && !Client.AllowObjectMaster)))
 			    Client.Self.Chat(message, 0, ChatType.Normal);

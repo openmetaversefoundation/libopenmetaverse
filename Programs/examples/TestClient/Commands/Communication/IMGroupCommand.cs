@@ -8,24 +8,24 @@ namespace OpenMetaverse.TestClient
 {
     public class ImGroupCommand : Command
     {
-        UUID ToGroupID = UUID.Zero;
+        Guid ToGroupID = Guid.Empty;
         ManualResetEvent WaitForSessionStart = new ManualResetEvent(false);
         public ImGroupCommand(TestClient testClient)
         {
 
             Name = "imgroup";
-            Description = "Send an instant message to a group. Usage: imgroup [group_uuid] [message]";
+            Description = "Send an instant message to a group. Usage: imgroup [group_Guid] [message]";
             Category = CommandCategory.Communication;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 2)
-                return "Usage: imgroup [group_uuid] [message]";
+                return "Usage: imgroup [group_Guid] [message]";
 
 
 
-            if (UUID.TryParse(args[0], out ToGroupID))
+            if (GuidExtensions.TryParse(args[0], out ToGroupID))
             {
                 string message = String.Empty;
                 for (int ct = 1; ct < args.Length; ct++)
@@ -62,7 +62,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Self_OnGroupChatJoin(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success)
+        void Self_OnGroupChatJoin(Guid groupChatSessionID, string sessionName, Guid tmpSessionID, bool success)
         {
             if (success)
             {

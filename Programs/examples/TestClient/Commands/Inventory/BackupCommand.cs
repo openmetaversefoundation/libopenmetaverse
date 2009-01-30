@@ -14,17 +14,17 @@ namespace OpenMetaverse.TestClient
 {
     public class QueuedDownloadInfo
     {
-        public UUID TransferID;
-        public UUID AssetID;
-        public UUID ItemID;
-        public UUID TaskID;
-        public UUID OwnerID;
+        public Guid TransferID;
+        public Guid AssetID;
+        public Guid ItemID;
+        public Guid TaskID;
+        public Guid OwnerID;
         public AssetType Type;
         public string FileName;
         public DateTime WhenRequested;
         public bool IsRequested;
 
-        public QueuedDownloadInfo(string file, UUID asset, UUID item, UUID task, UUID owner, AssetType type)
+        public QueuedDownloadInfo(string file, Guid asset, Guid item, Guid task, Guid owner, AssetType type)
         {
             FileName = file;
             AssetID = asset;
@@ -32,7 +32,7 @@ namespace OpenMetaverse.TestClient
             TaskID = task;
             OwnerID = owner;
             Type = type;
-            TransferID = UUID.Zero;
+            TransferID = Guid.Empty;
             WhenRequested = DateTime.Now;
             IsRequested = false;
         }
@@ -116,7 +116,7 @@ namespace OpenMetaverse.TestClient
             testClient.Assets.OnAssetReceived += new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             StringBuilder sbResult = new StringBuilder();
 
@@ -234,7 +234,7 @@ namespace OpenMetaverse.TestClient
             lock (CurrentDownloads) CurrentDownloads.Clear();
 
             // FIXME:
-            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, 
+            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.Guid, Client.Self.AgentID, 
             //    true, true, false, InventorySortOrder.ByName);
 
             DirectoryInfo di = new DirectoryInfo(args[1]);
@@ -253,7 +253,7 @@ namespace OpenMetaverse.TestClient
             StringBuilder sbRequests = new StringBuilder();
 
             // FIXME:
-            //Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Self.AgentID, true, true, false, 
+            //Client.Inventory.RequestFolderContents(folder.Data.Guid, Client.Self.AgentID, true, true, false, 
             //    InventorySortOrder.ByName);
 
             // first scan this folder for text
@@ -281,7 +281,7 @@ namespace OpenMetaverse.TestClient
                         string sPath = sPathSoFar + @"\" + MakeValid(ii.Name.Trim()) + sExtension;
 
                         // create the new qdi
-                        QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.AssetUUID, iNode.Data.UUID, UUID.Zero,
+                        QueuedDownloadInfo qdi = new QueuedDownloadInfo(sPath, ii.AssetGuid, iNode.Data.Guid, Guid.Empty,
                             Client.Self.AgentID, ii.AssetType);
 
                         // add it to the queue

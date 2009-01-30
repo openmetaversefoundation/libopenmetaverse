@@ -30,19 +30,19 @@ namespace mapgenerator
                     type = "uint";
                     break;
                 case FieldType.LLQuaternion:
-                    type = "Quaternion";
+                    type = "Quaternionf";
                     break;
                 case FieldType.LLUUID:
-                    type = "UUID";
+                    type = "Guid";
                     break;
                 case FieldType.LLVector3:
-                    type = "Vector3";
+                    type = "Vector3f";
                     break;
                 case FieldType.LLVector3d:
                     type = "Vector3d";
                     break;
                 case FieldType.LLVector4:
-                    type = "Vector4";
+                    type = "Vector4f";
                     break;
                 case FieldType.S16:
                     type = "short";

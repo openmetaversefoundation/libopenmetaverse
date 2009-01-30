@@ -164,9 +164,9 @@ namespace OpenMetaverse
         /// </summary>
         public struct Classified
         {
-            /// <summary>UUID for this ad, useful for looking up detailed
+            /// <summary>Guid for this ad, useful for looking up detailed
             /// information about it</summary>
-            public UUID ID;
+            public Guid ID;
             /// <summary>The title of this classified ad</summary>
             public string Name;
             /// <summary>Unknown</summary>
@@ -186,7 +186,7 @@ namespace OpenMetaverse
         public struct DirectoryParcel
         {
             /// <summary></summary>
-            public UUID ID;
+            public Guid ID;
             /// <summary></summary>
             public string Name;
             /// <summary></summary>
@@ -210,15 +210,15 @@ namespace OpenMetaverse
             public string FirstName;
             /// <summary>Agents last name</summary>
             public string LastName;
-            /// <summary>Agents <seealso cref="T:OpenMetaverse.UUID"/></summary>
-            public UUID AgentID;
+            /// <summary>Agents <seealso cref="T:OpenMetaverse.Guid"/></summary>
+            public Guid AgentID;
         }
         /// <summary>
         ///  Response to a "Groups" Search
         /// </summary>
         public struct GroupSearchData
         {
-            public UUID GroupID;
+            public Guid GroupID;
             public string GroupName;
             public int Members;
         }
@@ -229,7 +229,7 @@ namespace OpenMetaverse
         /// </summary>
         public struct PlacesSearchData
         {
-            public UUID OwnerID;
+            public Guid OwnerID;
             public string Name;
             public string Desc;
             public int ActualArea;
@@ -239,7 +239,7 @@ namespace OpenMetaverse
             public float GlobalY;
             public float GlobalZ;
             public string SimName;
-            public UUID SnapshotID;
+            public Guid SnapshotID;
             public float Dwell;
             public int Price;   
         }
@@ -249,7 +249,7 @@ namespace OpenMetaverse
         /// </summary>
         public struct EventsSearchData
         {
-            public UUID Owner;
+            public Guid Owner;
             public string Name;
             public uint ID;
             public string Date;
@@ -264,7 +264,7 @@ namespace OpenMetaverse
         public struct EventInfo
         {
 			public uint ID;
-			public UUID Creator;
+			public Guid Creator;
             public string Name;
             public EventCategories Category;
             public string Desc;
@@ -294,28 +294,28 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="queryID"></param>
         /// <param name="matchedPeople"></param>
-        public delegate void DirPeopleReplyCallback(UUID queryID, List<AgentSearchData> matchedPeople);
+        public delegate void DirPeopleReplyCallback(Guid queryID, List<AgentSearchData> matchedPeople);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="queryID"></param>
         /// <param name="matchedGroups"></param>
-        public delegate void DirGroupsReplyCallback(UUID queryID, List<GroupSearchData> matchedGroups);
+        public delegate void DirGroupsReplyCallback(Guid queryID, List<GroupSearchData> matchedGroups);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="queryID"></param>
         /// <param name="matchedPlaces"></param>
-        public delegate void PlacesReplyCallback(UUID queryID, List<PlacesSearchData> matchedPlaces);
+        public delegate void PlacesReplyCallback(Guid queryID, List<PlacesSearchData> matchedPlaces);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="queryID"></param>
         /// <param name="matchedEvents"></param>
-        public delegate void EventReplyCallback(UUID queryID, List<EventsSearchData> matchedEvents);
+        public delegate void EventReplyCallback(Guid queryID, List<EventsSearchData> matchedEvents);
 
         /// <summary>
         /// 
@@ -361,10 +361,10 @@ namespace OpenMetaverse
 
         }
 
-        public UUID StartClassifiedSearch(string searchText, ClassifiedCategories categories, bool mature)
+        public Guid StartClassifiedSearch(string searchText, ClassifiedCategories categories, bool mature)
         {
             DirClassifiedQueryPacket query = new DirClassifiedQueryPacket();
-            UUID queryID = UUID.Random();
+            Guid queryID = Guid.NewGuid();
 
             query.AgentData.AgentID = Client.Self.AgentID;
             query.AgentData.SessionID = Client.Self.SessionID;
@@ -390,7 +390,7 @@ namespace OpenMetaverse
         /// results will be returned, or how many times the callback will be 
         /// fired other than you won't get more than 100 total parcels from 
         /// each query.</remarks>
-        public UUID StartLandSearch(SearchTypeFlags typeFlags)
+        public Guid StartLandSearch(SearchTypeFlags typeFlags)
         {
             return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort, typeFlags, 0, 0, 0);
         }
@@ -412,7 +412,7 @@ namespace OpenMetaverse
         /// results will be returned, or how many times the callback will be 
         /// fired other than you won't get more than 100 total parcels from 
         /// each query.</remarks>
-        public UUID StartLandSearch(SearchTypeFlags typeFlags, int priceLimit, int areaLimit, int queryStart)
+        public Guid StartLandSearch(SearchTypeFlags typeFlags, int priceLimit, int areaLimit, int queryStart)
         {
             return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort | DirFindFlags.LimitByPrice | 
                 DirFindFlags.LimitByArea, typeFlags, priceLimit, areaLimit, queryStart);
@@ -440,10 +440,10 @@ namespace OpenMetaverse
         /// results will be returned, or how many times the callback will be 
         /// fired other than you won't get more than 100 total parcels from 
         /// each query.</remarks>
-        public UUID StartLandSearch(DirFindFlags findFlags, SearchTypeFlags typeFlags, int priceLimit,
+        public Guid StartLandSearch(DirFindFlags findFlags, SearchTypeFlags typeFlags, int priceLimit,
             int areaLimit, int queryStart)
         {
-            UUID queryID = UUID.Random();
+            Guid queryID = Guid.NewGuid();
 
             DirLandQueryPacket query = new DirLandQueryPacket();
             query.AgentData.AgentID = Client.Self.AgentID;
@@ -474,12 +474,12 @@ namespace OpenMetaverse
         /// results will be returned, or how many times the callback will be 
         /// fired other than you won't get more than 100 total parcels from 
         /// each query.</remarks>
-        public UUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart)
+        public Guid StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart)
         {
-            return StartGroupSearch(findFlags, searchText, queryStart, UUID.Random());
+            return StartGroupSearch(findFlags, searchText, queryStart, Guid.NewGuid());
         }
 
-        public UUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart, UUID queryID)
+        public Guid StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart, Guid queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;
@@ -492,12 +492,12 @@ namespace OpenMetaverse
             return queryID;
         }
 
-        public UUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
+        public Guid StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
         {
-            return StartPeopleSearch(findFlags, searchText, queryStart, UUID.Random());
+            return StartPeopleSearch(findFlags, searchText, queryStart, Guid.NewGuid());
         }
 
-        public UUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart, UUID queryID)
+        public Guid StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart, Guid queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;
@@ -515,10 +515,10 @@ namespace OpenMetaverse
         /// <summary>
         /// Search "places" for Land you personally own
         /// </summary>
-        public UUID StartPlacesSearch()
+        public Guid StartPlacesSearch()
         {
             return StartPlacesSearch(DirFindFlags.AgentOwned, Parcel.ParcelCategory.Any, String.Empty, String.Empty, 
-                UUID.Zero, UUID.Zero);
+                Guid.Empty, Guid.Empty);
         }
 
         /// <summary>
@@ -528,10 +528,10 @@ namespace OpenMetaverse
         /// <param name="groupID">LLUID of group you want to recieve land list for (You must be in group), or
         /// LLUID.Zero for Your own land</param>
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
-        public UUID StartPlacesSearch(DirFindFlags findFlags, UUID groupID)
+        public Guid StartPlacesSearch(DirFindFlags findFlags, Guid groupID)
         {
             return StartPlacesSearch(findFlags, Parcel.ParcelCategory.Any, String.Empty, String.Empty, groupID, 
-                UUID.Random());
+                Guid.NewGuid());
         }
 
         /// <summary>
@@ -542,7 +542,7 @@ namespace OpenMetaverse
         /// <param name="groupID">LLUID of group you want to recieve results for</param>
         /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
-        public UUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, UUID groupID, UUID transactionID)
+        public Guid StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, Guid groupID, Guid transactionID)
         {
             return StartPlacesSearch(findFlags, searchCategory, String.Empty, String.Empty, groupID, transactionID);
         }
@@ -557,7 +557,7 @@ namespace OpenMetaverse
         /// <param name="groupID">LLUID of group you want to recieve results for</param>
         /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
-        public UUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, string searchText, string simulatorName, UUID groupID, UUID transactionID)
+        public Guid StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, string searchText, string simulatorName, Guid groupID, Guid transactionID)
         {
             PlacesQueryPacket find = new PlacesQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;
@@ -580,8 +580,8 @@ namespace OpenMetaverse
         /// Search All Events with specifid searchText in all categories, includes Mature
         /// </summary>
         /// <param name="searchText">Text to search for</param>
-        /// <returns>UUID of query to correlate results in callback.</returns>
-        public UUID StartEventsSearch(string searchText)
+        /// <returns>Guid of query to correlate results in callback.</returns>
+        public Guid StartEventsSearch(string searchText)
         {
             return StartEventsSearch(searchText, true, EventCategories.All);
         }
@@ -592,10 +592,10 @@ namespace OpenMetaverse
         /// <param name="searchText">Text to search for</param>
         /// <param name="showMature">true to include Mature events</param>
         /// <param name="category">category to search</param>
-        /// <returns>UUID of query to correlate results in callback.</returns>
-        public UUID StartEventsSearch(string searchText, bool showMature, EventCategories category)
+        /// <returns>Guid of query to correlate results in callback.</returns>
+        public Guid StartEventsSearch(string searchText, bool showMature, EventCategories category)
         {
-            return StartEventsSearch(searchText, showMature, "u", 0, category, UUID.Random());
+            return StartEventsSearch(searchText, showMature, "u", 0, category, Guid.NewGuid());
         }
 
         /// <summary>
@@ -607,9 +607,9 @@ namespace OpenMetaverse
         /// For example "0" = Today, "1" = tomorrow, "2" = following day, "-1" = yesterday, etc.</param>
         /// <param name="queryStart">Page # to show, 0 for First Page</param>
         /// <param name="category">EventCategory event is listed under.</param>
-        /// <param name="queryID">a UUID that can be used to track queries with results.</param>
-        /// <returns>UUID of query to correlate results in callback.</returns>
-        public UUID StartEventsSearch(string searchText, bool showMature, string eventDay, uint queryStart, EventCategories category, UUID queryID)
+        /// <param name="queryID">a Guid that can be used to track queries with results.</param>
+        /// <returns>Guid of query to correlate results in callback.</returns>
+        public Guid StartEventsSearch(string searchText, bool showMature, string eventDay, uint queryStart, EventCategories category, Guid queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;
@@ -643,11 +643,11 @@ namespace OpenMetaverse
             int timeoutMS, out List<AgentSearchData> results)
         {
             AutoResetEvent searchEvent = new AutoResetEvent(false);
-            UUID id = UUID.Random();
+            Guid id = Guid.NewGuid();
             List<AgentSearchData> people = null;
 
             DirPeopleReplyCallback callback =
-                delegate(UUID queryid, List<AgentSearchData> matches)
+                delegate(Guid queryid, List<AgentSearchData> matches)
                 {
                     if (id == queryid)
                     {
@@ -826,7 +826,7 @@ namespace OpenMetaverse
                 evinfo.Amount = eventReply.EventData.Amount;
                 evinfo.Category = (EventCategories)Utils.BytesToUInt(eventReply.EventData.Category);
                 evinfo.Cover = eventReply.EventData.Cover;
-                evinfo.Creator = (UUID)Utils.BytesToString(eventReply.EventData.Creator);
+                evinfo.Creator = new Guid(Utils.BytesToString(eventReply.EventData.Creator));
                 evinfo.Date = Utils.BytesToString(eventReply.EventData.Date);
                 evinfo.DateUTC = eventReply.EventData.DateUTC;
                 evinfo.Duration = eventReply.EventData.Duration;

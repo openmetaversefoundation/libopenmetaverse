@@ -405,8 +405,8 @@ namespace OpenMetaverse
         /// <param name="ownerMask">Owner mask (permisions)</param>
         /// <returns>The calculated CRC</returns>
         public static uint InventoryCRC(int creationDate, byte saleType, sbyte invType, sbyte type,
-            UUID assetID, UUID groupID, int salePrice, UUID ownerID, UUID creatorID,
-            UUID itemID, UUID folderID, uint everyoneMask, uint flags, uint nextOwnerMask,
+            Guid assetID, Guid groupID, int salePrice, Guid ownerID, Guid creatorID,
+            Guid itemID, Guid folderID, uint everyoneMask, uint flags, uint nextOwnerMask,
             uint groupMask, uint ownerMask)
         {
             uint CRC = 0;
@@ -421,7 +421,7 @@ namespace OpenMetaverse
             CRC += ownerID.CRC(); // OwnerID
             CRC += groupID.CRC(); // GroupID
 
-            // CRC += another 4 words which always seem to be zero -- unclear if this is a UUID or what
+            // CRC += another 4 words which always seem to be zero -- unclear if this is a Guid or what
             CRC += ownerMask;
             CRC += nextOwnerMask;
             CRC += everyoneMask;

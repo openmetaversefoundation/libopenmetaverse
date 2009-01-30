@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Simulator;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             // Get the agent's current "patch" position, where each patch of
             // wind data is a 16x16m square

@@ -6,7 +6,7 @@ using System.Threading;
 using OpenMetaverse;
 
 /*
- * [14:09]	<jhurliman>	the onnewprim function will add missing texture uuids to the download queue, 
+ * [14:09]	<jhurliman>	the onnewprim function will add missing texture Guids to the download queue, 
  * and a separate thread will pull entries off that queue. 
  * if they exist in the cache it will add that texture to a dictionary that the rendering loop accesses, 
  * otherwise it will start the download. 
@@ -25,11 +25,11 @@ namespace PrimWorkshop
 {
     class TaskInfo
     {
-        public UUID RequestID;
+        public Guid RequestID;
         public int RequestNbr;
 
 
-        public TaskInfo(UUID reqID, int reqNbr)
+        public TaskInfo(Guid reqID, int reqNbr)
         {
             RequestID = reqID;
             RequestNbr = reqNbr;
@@ -44,10 +44,10 @@ namespace PrimWorkshop
         private static GridClient Client;
 
         // queue for requested images
-        private Queue<UUID> RequestQueue;
+        private Queue<Guid> RequestQueue;
 
         // list of current requests in process
-        private Dictionary<UUID, int> CurrentRequests;
+        private Dictionary<Guid, int> CurrentRequests;
 
         private static AutoResetEvent[] resetEvents;
 
@@ -63,7 +63,7 @@ namespace PrimWorkshop
         }
 
         // storage for images ready to render
-        private Dictionary<UUID, ImageDownload> RenderReady;
+        private Dictionary<Guid, ImageDownload> RenderReady;
 
         // maximum allowed concurrent requests at once
         const int MAX_TEXTURE_REQUESTS = 10;
@@ -73,14 +73,14 @@ namespace PrimWorkshop
         /// </summary>
         /// <param name="id"></param>
         /// <param name="success"></param>
-        public delegate void DownloadFinishedCallback(UUID id, bool success);
+        public delegate void DownloadFinishedCallback(Guid id, bool success);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="id"></param>
         /// <param name="received"></param>
         /// <param name="total"></param>
-        public delegate void DownloadProgressCallback(UUID image, int recieved, int total);
+        public delegate void DownloadProgressCallback(Guid image, int recieved, int total);
 
         /// <summary>Fired when a texture download completes</summary>
         public event DownloadFinishedCallback OnDownloadFinished;
@@ -101,10 +101,10 @@ namespace PrimWorkshop
         {
             Running = true;
 
-            RequestQueue = new Queue<UUID>();
-            CurrentRequests = new Dictionary<UUID, int>(MAX_TEXTURE_REQUESTS);
+            RequestQueue = new Queue<Guid>();
+            CurrentRequests = new Dictionary<Guid, int>(MAX_TEXTURE_REQUESTS);
 
-            RenderReady = new Dictionary<UUID, ImageDownload>();
+            RenderReady = new Dictionary<Guid, ImageDownload>();
 
             resetEvents = new AutoResetEvent[MAX_TEXTURE_REQUESTS];
             threadpoolSlots = new int[MAX_TEXTURE_REQUESTS];
@@ -147,7 +147,7 @@ namespace PrimWorkshop
         /// containing texture key which can be used to retrieve texture with GetTextureToRender method
         /// </summary>
         /// <param name="textureID">id of Texture to request</param>
-        public void RequestTexture(UUID textureID)
+        public void RequestTexture(Guid textureID)
         {
             if (Client.Assets.Cache.HasImage(textureID))
             {
@@ -188,7 +188,7 @@ namespace PrimWorkshop
         /// </summary>
         /// <param name="textureID">Texture ID</param>
         /// <returns>ImageDownload object</returns>
-        public ImageDownload GetTextureToRender(UUID textureID)
+        public ImageDownload GetTextureToRender(Guid textureID)
         {
             ImageDownload renderable = new ImageDownload();
             lock (RenderReady)
@@ -209,7 +209,7 @@ namespace PrimWorkshop
         /// Remove no longer necessary texture from dictionary
         /// </summary>
         /// <param name="textureID"></param>
-        public void RemoveFromPipeline(UUID textureID)
+        public void RemoveFromPipeline(Guid textureID)
         {
             lock (RenderReady)
             {
@@ -243,7 +243,7 @@ namespace PrimWorkshop
 
                     if (reqNbr != -1)
                     {
-                        UUID requestID;
+                        Guid requestID;
                         lock (RequestQueue)
                             requestID = RequestQueue.Dequeue();
 
@@ -332,7 +332,7 @@ namespace PrimWorkshop
             }
         }
 
-        private void Assets_OnImageReceiveProgress(UUID image, int lastPacket, int recieved, int total)
+        private void Assets_OnImageReceiveProgress(Guid image, int lastPacket, int recieved, int total)
         {
             if (OnDownloadProgress != null)
             {

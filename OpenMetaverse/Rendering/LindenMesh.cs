@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse.Rendering
 {
@@ -44,9 +45,9 @@ namespace OpenMetaverse.Rendering
 
         public struct Vertex
         {
-            public Vector3 Coord;
-            public Vector3 Normal;
-            public Vector3 BiNormal;
+            public Vector3f Coord;
+            public Vector3f Normal;
+            public Vector3f BiNormal;
             public Vector2 TexCoord;
             public Vector2 DetailTexCoord;
             public float Weight;
@@ -60,9 +61,9 @@ namespace OpenMetaverse.Rendering
         public struct MorphVertex
         {
             public uint VertexIndex;
-            public Vector3 Coord;
-            public Vector3 Normal;
-            public Vector3 BiNormal;
+            public Vector3f Coord;
+            public Vector3f Normal;
+            public Vector3f BiNormal;
             public Vector2 TexCoord;
 
             public override string ToString()
@@ -106,10 +107,10 @@ namespace OpenMetaverse.Rendering
             protected string _header;
             protected bool _hasWeights;
             protected bool _hasDetailTexCoords;
-            protected Vector3 _position;
-            protected Vector3 _rotationAngles;
+            protected Vector3f _position;
+            protected Vector3f _rotationAngles;
             protected byte _rotationOrder;
-            protected Vector3 _scale;
+            protected Vector3f _scale;
             protected ushort _numFaces;
             protected Face[] _faces;
 
@@ -125,10 +126,10 @@ namespace OpenMetaverse.Rendering
                 // Populate base mesh variables
                 _hasWeights = (input.UnpackByte() != 0);
                 _hasDetailTexCoords = (input.UnpackByte() != 0);
-                _position = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                _rotationAngles = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _position = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _rotationAngles = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
                 _rotationOrder = input.UnpackByte();
-                _scale = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _scale = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
                 _numFaces = (ushort)input.UnpackUShort();
 
                 _faces = new Face[_numFaces];
@@ -144,10 +145,10 @@ namespace OpenMetaverse.Rendering
         public string Header { get { return _header; } }
         public bool HasWeights { get { return _hasWeights; } }
         public bool HasDetailTexCoords { get { return _hasDetailTexCoords; } }
-        public Vector3 Position { get { return _position; } }
-        public Vector3 RotationAngles { get { return _rotationAngles; } }
+        public Vector3f Position { get { return _position; } }
+        public Vector3f RotationAngles { get { return _rotationAngles; } }
         //public byte RotationOrder
-        public Vector3 Scale { get { return _scale; } }
+        public Vector3f Scale { get { return _scale; } }
         public ushort NumVertices { get { return _numVertices; } }
         public Vertex[] Vertices { get { return _vertices; } }
         public ushort NumFaces { get { return _numFaces; } }
@@ -163,10 +164,10 @@ namespace OpenMetaverse.Rendering
         protected string _header;
         protected bool _hasWeights;
         protected bool _hasDetailTexCoords;
-        protected Vector3 _position;
-        protected Vector3 _rotationAngles;
+        protected Vector3f _position;
+        protected Vector3f _rotationAngles;
         protected byte _rotationOrder;
-        protected Vector3 _scale;
+        protected Vector3f _scale;
         protected ushort _numVertices;
         protected Vertex[] _vertices;
         protected ushort _numFaces;
@@ -196,23 +197,23 @@ namespace OpenMetaverse.Rendering
             // Populate base mesh variables
             _hasWeights = (input.UnpackByte() != 0);
             _hasDetailTexCoords = (input.UnpackByte() != 0);
-            _position = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-            _rotationAngles = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+            _position = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+            _rotationAngles = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
             _rotationOrder = input.UnpackByte();
-            _scale = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+            _scale = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
             _numVertices = (ushort)input.UnpackUShort();
 
             // Populate the vertex array
             _vertices = new Vertex[_numVertices];
 
             for (int i = 0; i < _numVertices; i++)
-                _vertices[i].Coord = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _vertices[i].Coord = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
 
             for (int i = 0; i < _numVertices; i++)
-                _vertices[i].Normal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _vertices[i].Normal = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
 
             for (int i = 0; i < _numVertices; i++)
-                _vertices[i].BiNormal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _vertices[i].BiNormal = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
 
             for (int i = 0; i < _numVertices; i++)
                 _vertices[i].TexCoord = new Vector2(input.UnpackFloat(), input.UnpackFloat());
@@ -267,9 +268,9 @@ namespace OpenMetaverse.Rendering
                 {
                     MorphVertex vertex;
                     vertex.VertexIndex = input.UnpackUInt();
-                    vertex.Coord = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                    vertex.Normal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                    vertex.BiNormal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                    vertex.Coord = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                    vertex.Normal = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                    vertex.BiNormal = new Vector3f(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
                     vertex.TexCoord = new Vector2(input.UnpackFloat(), input.UnpackFloat());
                 }
 

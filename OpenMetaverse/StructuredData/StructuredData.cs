@@ -29,6 +29,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Mono.Simd;
+using Mono.Simd.Math;
 
 namespace OpenMetaverse.StructuredData
 {
@@ -48,7 +50,7 @@ namespace OpenMetaverse.StructuredData
         /// <summary></summary>
         String,
         /// <summary></summary>
-        UUID,
+        Guid,
         /// <summary></summary>
         Date,
         /// <summary></summary>
@@ -80,7 +82,7 @@ namespace OpenMetaverse.StructuredData
         public virtual int AsInteger() { return 0; }
         public virtual double AsReal() { return 0d; }
         public virtual string AsString() { return String.Empty; }
-        public virtual UUID AsUUID() { return UUID.Zero; }
+        public virtual Guid AsGuid() { return Guid.Empty; }
         public virtual DateTime AsDate() { return Utils.Epoch; }
         public virtual Uri AsUri() { return new Uri(String.Empty); }
         public virtual byte[] AsBinary() { return new byte[0]; }
@@ -98,7 +100,7 @@ namespace OpenMetaverse.StructuredData
         public static OSD FromReal(double value) { return new OSDReal(value); }
         public static OSD FromReal(float value) { return new OSDReal((double)value); }
         public static OSD FromString(string value) { return new OSDString(value); }
-        public static OSD FromUUID(UUID value) { return new OSDUUID(value); }
+        public static OSD FromGuid(Guid value) { return new OSDGuid(value); }
         public static OSD FromDate(DateTime value) { return new OSDDate(value); }
         public static OSD FromUri(Uri value) { return new OSDURI(value); }
         public static OSD FromBinary(byte[] value) { return new OSDBinary(value); }
@@ -113,7 +115,7 @@ namespace OpenMetaverse.StructuredData
             return array;
         }
 
-        public static OSD FromVector3(Vector3 value)
+        public static OSD FromVector3(Vector3f value)
         {
             OSDArray array = new OSDArray();
             array.Add(OSD.FromReal(value.X));
@@ -131,7 +133,7 @@ namespace OpenMetaverse.StructuredData
             return array;
         }
 
-        public static OSD FromVector4(Vector4 value)
+        public static OSD FromVector4(Vector4f value)
         {
             OSDArray array = new OSDArray();
             array.Add(OSD.FromReal(value.X));
@@ -141,7 +143,7 @@ namespace OpenMetaverse.StructuredData
             return array;
         }
 
-        public static OSD FromQuaternion(Quaternion value)
+        public static OSD FromQuaternion(Quaternionf value)
         {
             OSDArray array = new OSDArray();
             array.Add(OSD.FromReal(value.X));
@@ -174,17 +176,17 @@ namespace OpenMetaverse.StructuredData
             else if (value is double) { return new OSDReal((double)value); }
             else if (value is float) { return new OSDReal((double)(float)value); }
             else if (value is string) { return new OSDString((string)value); }
-            else if (value is UUID) { return new OSDUUID((UUID)value); }
+            else if (value is Guid) { return new OSDGuid((Guid)value); }
             else if (value is DateTime) { return new OSDDate((DateTime)value); }
             else if (value is Uri) { return new OSDURI((Uri)value); }
             else if (value is byte[]) { return new OSDBinary((byte[])value); }
             else if (value is long) { return new OSDBinary((long)value); }
             else if (value is ulong) { return new OSDBinary((ulong)value); }
             else if (value is Vector2) { return FromVector2((Vector2)value); }
-            else if (value is Vector3) { return FromVector3((Vector3)value); }
+            else if (value is Vector3f) { return FromVector3((Vector3f)value); }
             else if (value is Vector3d) { return FromVector3d((Vector3d)value); }
-            else if (value is Vector4) { return FromVector4((Vector4)value); }
-            else if (value is Quaternion) { return FromQuaternion((Quaternion)value); }
+            else if (value is Vector4f) { return FromVector4((Vector4f)value); }
+            else if (value is Quaternionf) { return FromQuaternion((Quaternionf)value); }
             else if (value is Color4) { return FromColor4((Color4)value); }
             else return new OSD();
         }
@@ -247,30 +249,30 @@ namespace OpenMetaverse.StructuredData
             {
                 return value.AsInteger();
             }
-            else if (type == typeof(UUID))
+            else if (type == typeof(Guid))
             {
-                return value.AsUUID();
+                return value.AsGuid();
             }
-            else if (type == typeof(Vector3))
+            else if (type == typeof(Vector3f))
             {
                 if (value.Type == OSDType.Array)
                     return ((OSDArray)value).AsVector3();
                 else
-                    return Vector3.Zero;
+                    return Vector3f.Zero;
             }
-            else if (type == typeof(Vector4))
+            else if (type == typeof(Vector4f))
             {
                 if (value.Type == OSDType.Array)
                     return ((OSDArray)value).AsVector4();
                 else
-                    return Vector4.Zero;
+                    return Vector4f.Zero;
             }
-            else if (type == typeof(Quaternion))
+            else if (type == typeof(Quaternionf))
             {
                 if (value.Type == OSDType.Array)
                     return ((OSDArray)value).AsQuaternion();
                 else
-                    return Quaternion.Identity;
+                    return Quaternionf.Identity;
             }
             else
             {
@@ -460,13 +462,13 @@ namespace OpenMetaverse.StructuredData
         }
         public override string AsString() { return value; } 
         public override byte[] AsBinary() { return Encoding.UTF8.GetBytes( value ); }
-        public override UUID AsUUID()
+        public override Guid AsGuid()
         {
-            UUID uuid;
-            if (UUID.TryParse(value, out uuid))
-                return uuid;
+            Guid Guid;
+            if (GuidExtensions.TryParse(value, out Guid))
+                return Guid;
             else
-                return UUID.Zero;
+                return Guid.Empty;
         }
         public override DateTime AsDate()
         {
@@ -484,20 +486,20 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDUUID : OSD
+    public class OSDGuid : OSD
     {
-        private UUID value;
+        private Guid value;
 
-        public override OSDType Type { get { return OSDType.UUID; } }
+        public override OSDType Type { get { return OSDType.Guid; } }
 
-        public OSDUUID(UUID value)
+        public OSDGuid(Guid value)
         {
             this.value = value;
         }
 
-        public override bool AsBoolean() { return (value == UUID.Zero) ? false : true; }
+        public override bool AsBoolean() { return (value == Guid.Empty) ? false : true; }
         public override string AsString() { return value.ToString(); }
-        public override UUID AsUUID() { return value; }
+        public override Guid AsGuid() { return value; }
         public override byte[] AsBinary() { return value.GetBytes(); }
         public override string ToString() { return AsString(); }
     }
@@ -755,9 +757,9 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Vector3 AsVector3()
+        public Vector3f AsVector3()
         {
-            Vector3 vector = Vector3.Zero;
+            Vector3f vector = Vector3f.Zero;
 
             if (this.Count == 3)
             {
@@ -783,9 +785,9 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Vector4 AsVector4()
+        public Vector4f AsVector4()
         {
-            Vector4 vector = Vector4.Zero;
+            Vector4f vector = Vector4f.Zero;
 
             if (this.Count == 4)
             {
@@ -798,9 +800,9 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public Quaternion AsQuaternion()
+        public Quaternionf AsQuaternion()
         {
-            Quaternion quaternion = Quaternion.Identity;
+            Quaternionf quaternion = Quaternionf.Identity;
 
             if (this.Count == 4)
             {

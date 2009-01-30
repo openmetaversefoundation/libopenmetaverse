@@ -389,8 +389,8 @@ public class Analyst : ProxyPlugin
                             //FIXME: use of MagicCast inefficient
                             if (lineValue == "$Value")
                                 fval = MagicCast(name, block, lineField, value);
-                            else if (lineValue == "$UUID")
-                                fval = UUID.Random();
+                            else if (lineValue == "$Guid")
+                                fval = Guid.NewGuid();
                             else if (lineValue == "$AgentID")
                                 fval = frame.AgentID;
                             else if (lineValue == "$SessionID")
@@ -440,7 +440,7 @@ public class Analyst : ProxyPlugin
     {
         ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
         packet.ChatData.FromName = Utils.StringToBytes("Analyst");
-        packet.ChatData.SourceID = UUID.Random();
+        packet.ChatData.SourceID = Guid.NewGuid();
         packet.ChatData.OwnerID = frame.AgentID;
         packet.ChatData.SourceType = (byte)2;
         packet.ChatData.ChatType = (byte)1;
@@ -549,9 +549,9 @@ public class Analyst : ProxyPlugin
             {
                 return Convert.ToDouble(value);
             }
-            else if (fieldClass == typeof(UUID))
+            else if (fieldClass == typeof(Guid))
             {
-                return new UUID(value);
+                return new Guid(value);
             }
             else if (fieldClass == typeof(bool))
             {

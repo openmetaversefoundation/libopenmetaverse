@@ -12,7 +12,7 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.TestClient;
 		}
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
 		{
             int count = 0;
 

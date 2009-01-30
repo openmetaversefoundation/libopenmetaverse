@@ -11,23 +11,23 @@ namespace OpenMetaverse.TestClient
         public ParcelSelectObjectsCommand(TestClient testClient)
         {
             Name = "selectobjects";
-            Description = "Displays a list of prim localIDs on a given parcel with a specific owner. Usage: selectobjects parcelID OwnerUUID";
+            Description = "Displays a list of prim localIDs on a given parcel with a specific owner. Usage: selectobjects parcelID OwnerGuid";
             Category = CommandCategory.Parcel;
         }
 
-        public override string Execute(string[] args, UUID fromAgentID)
+        public override string Execute(string[] args, Guid fromAgentID)
         {
             if (args.Length < 2)
-                return "Usage: selectobjects parcelID OwnerUUID (use parcelinfo to get ID, use parcelprimowners to get ownerUUID)";
+                return "Usage: selectobjects parcelID OwnerGuid (use parcelinfo to get ID, use parcelprimowners to get ownerGuid)";
 
             int parcelID;
-            UUID ownerUUID;
+            Guid ownerGuid;
 
             int counter = 0;
             StringBuilder result = new StringBuilder();
             // test argument that is is a valid integer, then verify we have that parcel data stored in the dictionary
             if (Int32.TryParse(args[0], out parcelID) 
-                && UUID.TryParse(args[1], out ownerUUID))
+                && GuidExtensions.TryParse(args[1], out ownerGuid))
             {
                 AutoResetEvent wait = new AutoResetEvent(false);
                 ParcelManager.ForceSelectObjects callback = delegate(Simulator simulator, List<uint> objectIDs, bool resetList)
@@ -44,7 +44,7 @@ namespace OpenMetaverse.TestClient
                 };
 
                 Client.Parcels.OnParcelSelectedObjects += callback;
-                Client.Parcels.SelectObjects(parcelID, (ObjectReturnType)16, ownerUUID);
+                Client.Parcels.SelectObjects(parcelID, (ObjectReturnType)16, ownerGuid);
                 
 
                 Client.Parcels.ObjectOwnersRequest(Client.Network.CurrentSim, parcelID);
