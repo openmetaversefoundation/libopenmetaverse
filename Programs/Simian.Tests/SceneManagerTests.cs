@@ -28,10 +28,10 @@ namespace SimianTests
             sceneManager.Start(simian);
 
             agent = CreateDummyAgent();
-            simian.Agents.Add(agent.Avatar.ID, agent);
+            simian.Scene.AgentAdd(this, agent, PrimFlags.None);
 
             observer = CreateDummyAgent();
-            simian.Agents.Add(observer.Avatar.ID, observer);
+            simian.Scene.AgentAdd(this, observer, PrimFlags.None);
         }
 
         [TearDown]
@@ -74,7 +74,7 @@ namespace SimianTests
             );
 
             simian.UDP.OnOutgoingPacket += callback;
-            sceneManager.AvatarAppearance(this, agent, textures, visualParams);
+            sceneManager.AgentAppearance(this, agent, textures, visualParams);
 
             Assert.IsTrue(callbackEvent.WaitOne(1000, false), "Timed out waiting for callback");
             simian.UDP.OnOutgoingPacket -= callback;

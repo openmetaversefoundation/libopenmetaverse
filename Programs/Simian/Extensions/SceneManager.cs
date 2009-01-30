@@ -16,6 +16,7 @@ namespace Simian.Extensions
     {
         Simian server;
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
+        DoubleDictionary<uint, UUID, Agent> sceneAgents = new DoubleDictionary<uint, UUID, Agent>();
         int currentLocalID = 1;
         float[] heightmap = new float[256 * 256];
 
@@ -25,7 +26,9 @@ namespace Simian.Extensions
         public event ObjectFlagsCallback OnObjectFlags;
         public event ObjectImageCallback OnObjectImage;
         public event ObjectModifyCallback OnObjectModify;
-        public event AvatarAppearanceCallback OnAvatarAppearance;
+        public event AgentAddCallback OnAgentAdd;
+        public event AgentRemoveCallback OnAgentRemove;
+        public event AgentAppearanceCallback OnAgentAppearance;
         public event TerrainUpdatedCallback OnTerrainUpdated;
 
         public float[] Heightmap
@@ -75,7 +78,7 @@ namespace Simian.Extensions
             // Add the object to the scene dictionary
             sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
 
-            if (server.Agents.ContainsKey(obj.Prim.OwnerID))
+            if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
             {
                 // Send an update out to the creator
                 ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle,
@@ -86,14 +89,13 @@ namespace Simian.Extensions
             // Send an update out to everyone else
             ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle,
                 obj.Prim.Flags);
-            lock (server.Agents)
-            {
-                foreach (Agent recipient in server.Agents.Values)
+            server.Scene.ForEachAgent(
+                delegate(Agent recipient)
                 {
                     if (recipient.Avatar.ID != obj.Prim.OwnerID)
                         server.UDP.SendPacket(recipient.Avatar.ID, updateToOthers, PacketCategory.State);
                 }
-            }
+            );
 
             return true;
         }
@@ -217,11 +219,116 @@ namespace Simian.Extensions
             }
         }
 
-        public void AvatarAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
+        public bool ContainsObject(uint localID)
         {
-            if (OnAvatarAppearance != null)
+            return sceneObjects.ContainsKey(localID);
+        }
+
+        public bool ContainsObject(UUID id)
+        {
+            return sceneObjects.ContainsKey(id);
+        }
+
+        public bool TryGetObject(uint localID, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(localID, out obj);
+        }
+
+        public bool TryGetObject(UUID id, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(id, out obj);
+        }
+
+        public bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags)
+        {
+            // Check if the agent already exists in the scene
+            if (sceneAgents.ContainsKey(agent.Avatar.ID))
+                sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
+
+            if (agent.Avatar.LocalID == 0)
             {
-                OnAvatarAppearance(sender, agent, textures, visualParams);
+                // Assign a unique LocalID to this agent
+                agent.Avatar.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+            }
+
+            if (OnAgentAdd != null)
+                OnAgentAdd(sender, agent, creatorFlags);
+
+            // Add the agent to the scene dictionary
+            sceneAgents.Add(agent.Avatar.LocalID, agent.Avatar.ID, agent);
+
+            // Send an update out to the agent
+            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(agent.Avatar, server.RegionHandle,
+                agent.Avatar.Flags | creatorFlags);
+            server.UDP.SendPacket(agent.Avatar.ID, updateToOwner, PacketCategory.State);
+
+            // Send an update out to everyone else
+            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(agent.Avatar, server.RegionHandle,
+                agent.Avatar.Flags);
+            server.Scene.ForEachAgent(
+                delegate(Agent recipient)
+                {
+                    if (recipient.Avatar.ID != agent.Avatar.ID)
+                        server.UDP.SendPacket(recipient.Avatar.ID, updateToOthers, PacketCategory.State);
+                }
+            );
+
+            return true;
+        }
+
+        public bool AgentRemove(object sender, uint localID)
+        {
+            Agent agent;
+            if (sceneAgents.TryGetValue(localID, out agent))
+            {
+                if (OnAgentRemove != null)
+                    OnAgentRemove(sender, agent);
+
+                sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
+
+                KillObjectPacket kill = new KillObjectPacket();
+                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                kill.ObjectData[0].ID = agent.Avatar.LocalID;
+
+                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool AgentRemove(object sender, UUID id)
+        {
+            Agent agent;
+            if (sceneAgents.TryGetValue(id, out agent))
+            {
+                if (OnAgentRemove != null)
+                    OnAgentRemove(sender, agent);
+
+                sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
+
+                KillObjectPacket kill = new KillObjectPacket();
+                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                kill.ObjectData[0].ID = agent.Avatar.LocalID;
+
+                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
+        {
+            if (OnAgentAppearance != null)
+            {
+                OnAgentAppearance(sender, agent, textures, visualParams);
             }
 
             // Broadcast an object update for this avatar
@@ -239,37 +346,44 @@ namespace Simian.Extensions
             {
                 // Send the appearance packet to all other clients
                 AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
-                lock (server.Agents)
-                {
-                    foreach (Agent recipient in server.Agents.Values)
+                sceneAgents.ForEach(
+                    delegate(Agent recipient)
                     {
                         if (recipient != agent)
                             server.UDP.SendPacket(recipient.Avatar.ID, appearance, PacketCategory.State);
                     }
-                }
+                );
             }
         }
 
-        public bool TryGetObject(uint localID, out SimulationObject obj)
+        public void ForEachObject(Action<SimulationObject> action)
         {
-            return sceneObjects.TryGetValue(localID, out obj);
+            sceneObjects.ForEach(action);
         }
 
-        public bool TryGetObject(UUID id, out SimulationObject obj)
+        public bool ContainsAgent(uint localID)
         {
-            return sceneObjects.TryGetValue(id, out obj);
+            return sceneAgents.ContainsKey(localID);
         }
 
-        public IDictionary<uint, SimulationObject> GetSceneCopy()
+        public bool ContainsAgent(UUID id)
         {
-            IDictionary<uint, SimulationObject> scene = new Dictionary<uint, SimulationObject>(sceneObjects.Count);
+            return sceneAgents.ContainsKey(id);
+        }
 
-            sceneObjects.ForEach(
-                delegate(SimulationObject obj)
-                { scene.Add(obj.Prim.LocalID, obj); }
-            );
+        public bool TryGetAgent(uint localID, out Agent agent)
+        {
+            return sceneAgents.TryGetValue(localID, out agent);
+        }
 
-            return scene;
+        public bool TryGetAgent(UUID id, out Agent agent)
+        {
+            return sceneAgents.TryGetValue(id, out agent);
+        }
+
+        public void ForEachAgent(Action<Agent> action)
+        {
+            sceneAgents.ForEach(action);
         }
 
         void BroadcastObjectUpdate(SimulationObject obj)
@@ -359,9 +473,8 @@ namespace Simian.Extensions
             });
 
             // Send appearances for all avatars
-            lock (server.Agents)
-            {
-                foreach (Agent otherAgent in server.Agents.Values)
+            sceneAgents.ForEach(
+                delegate(Agent otherAgent)
                 {
                     if (otherAgent != agent)
                     {
@@ -370,7 +483,7 @@ namespace Simian.Extensions
                         server.UDP.SendPacket(agent.Avatar.ID, appearance, PacketCategory.State);
                     }
                 }
-            }
+            );
 
             // Send terrain data
             SendLayerData(agent);

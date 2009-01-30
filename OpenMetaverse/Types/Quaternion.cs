@@ -275,7 +275,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Conver this quaternion to an angle around an axis
+        /// Convert this quaternion to an angle around an axis
         /// </summary>
         /// <param name="axis">Unit vector describing the axis</param>
         /// <param name="angle">Angle around the axis, in radians</param>
@@ -317,7 +317,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Returns the conjugate (spatial inverse) of a quaternion
         /// </summary>
-        private static Quaternion Conjugate(Quaternion quaternion)
+        public static Quaternion Conjugate(Quaternion quaternion)
         {
             quaternion.X = -quaternion.X;
             quaternion.Y = -quaternion.Y;

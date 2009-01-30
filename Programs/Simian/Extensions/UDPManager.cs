@@ -172,7 +172,6 @@ namespace Simian
             if (clients.TryGetValue(agent.Avatar.ID, out client))
             {
                 client.Shutdown();
-                lock (server.Agents) server.Agents.Remove(agent.Avatar.ID);
                 return clients.Remove(agent.Avatar.ID, client.Address);
             }
             else
@@ -601,7 +600,7 @@ namespace Simian
                 if (unassociatedAgents.TryGetValue(circuitCode, out agent))
                 {
                     unassociatedAgents.Remove(circuitCode);
-                    lock (server.Agents) server.Agents[agent.Avatar.ID] = agent;
+                    server.Scene.AgentAdd(this, agent, PrimFlags.None);
                     return true;
                 }
                 else

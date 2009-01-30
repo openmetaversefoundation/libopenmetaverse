@@ -66,9 +66,8 @@ namespace Simian.Extensions
             float seconds = (float)((tick - LastTick) / 1000f);
             LastTick = tick;
 
-            lock (server.Agents)
-            {
-                foreach (Agent agent in server.Agents.Values)
+            server.Scene.ForEachAgent(
+                delegate(Agent agent)
                 {
                     // Don't handle movement for the master agent or foreign agents
                     if (agent != periscope.MasterAgent && agent.SessionID != UUID.Zero)
@@ -310,7 +309,7 @@ namespace Simian.Extensions
                         if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
                     }
                 }
-            }
+            );
         }
 
         void AgentUpdateHandler(Packet packet, Agent agent)

@@ -324,7 +324,7 @@ namespace Simian.Extensions
             {
                 currentDownloads.Remove(transfer.ID);
 
-                if (server.Agents.TryGetValue(kvp.Key, out agent))
+                if (server.Scene.TryGetAgent(kvp.Key, out agent))
                 {
                     if (transfer.Success)
                     {

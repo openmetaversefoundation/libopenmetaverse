@@ -69,9 +69,8 @@ namespace Simian.Extensions
             float seconds = (float)((tick  - LastTick) / 1000f);
             LastTick = tick;
 
-            lock (server.Agents)
-            {
-                foreach (Agent agent in server.Agents.Values)
+            server.Scene.ForEachAgent(
+                delegate(Agent agent)
                 {
                     bool animsChanged = false;
 
@@ -118,7 +117,7 @@ namespace Simian.Extensions
 
                     // least possible distance from avatar to the ground
                     // TODO: calculate to get rid of "bot squat"
-                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;                    
+                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
 
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
@@ -231,7 +230,7 @@ namespace Simian.Extensions
 
                         //friction
                         agent.Avatar.Acceleration *= 0.2f;
-                        agent.Avatar.Velocity *= 0.2f;                        
+                        agent.Avatar.Velocity *= 0.2f;
 
                         agent.Avatar.Position.Z = lowerLimit;
 
@@ -243,7 +242,7 @@ namespace Simian.Extensions
                                 if (server.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
                                     animsChanged = true;
 
-                                agent.TickJump = Environment.TickCount;                                
+                                agent.TickJump = Environment.TickCount;
                             }
                             else if (Environment.TickCount - agent.TickJump > PREJUMP_DELAY * 1000)
                             { //start actual jump
@@ -339,7 +338,7 @@ namespace Simian.Extensions
 
                     if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
                 }
-            }
+            );
         }
 
         void AgentUpdateHandler(Packet packet, Agent agent)

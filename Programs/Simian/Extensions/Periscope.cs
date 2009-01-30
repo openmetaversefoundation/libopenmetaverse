@@ -90,12 +90,8 @@ namespace Simian.Extensions
             agent.CurrentRegionHandle = server.RegionHandle;
             agent.FirstName = avatar.FirstName;
             agent.LastName = avatar.LastName;
-            
-            lock (server.Agents)
-                server.Agents[agent.Avatar.ID] = agent;
 
-            SimulationObject simObj = new SimulationObject(avatar, server);
-            server.Scene.ObjectAdd(this, simObj, avatar.Flags);
+            server.Scene.AgentAdd(this, agent, avatar.Flags);
         }
 
         void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
@@ -126,7 +122,7 @@ namespace Simian.Extensions
             Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
         {
             Agent agent;
-            if (server.Agents.TryGetValue(avatarID, out agent))
+            if (server.Scene.TryGetAgent(avatarID, out agent))
             {
                 Primitive.TextureEntry te = new Primitive.TextureEntry(defaultTexture);
                 te.FaceTextures = faceTextures;
@@ -135,10 +131,10 @@ namespace Simian.Extensions
 
                 Logger.Log("[Periscope] Updating foreign avatar appearance for " + agent.FirstName + " " + agent.LastName, Helpers.LogLevel.Info);
 
-                server.Scene.AvatarAppearance(this, agent, te, vp);
+                server.Scene.AgentAppearance(this, agent, te, vp);
 
                 if (agent.Avatar.ID == client.Self.AgentID)
-                    server.Scene.AvatarAppearance(this, MasterAgent, te, vp);
+                    server.Scene.AgentAppearance(this, MasterAgent, te, vp);
             }
             else
             {
@@ -177,14 +173,27 @@ namespace Simian.Extensions
         {
             if (status == AgentManager.TeleportStatus.Finished)
             {
-                // Kill off any prims from the previous sim
-                IDictionary<uint, SimulationObject> scene = server.Scene.GetSceneCopy();
+                server.Scene.ForEachObject(
+                    delegate(SimulationObject obj)
+                    {
+                        if (obj.Prim.RegionHandle != client.Network.CurrentSim.Handle)
+                            server.Scene.ObjectRemove(this, obj.Prim.ID);
+                    }
+                );
 
-                foreach (SimulationObject obj in scene.Values)
-                {
-                    if (obj.Prim.RegionHandle != client.Network.CurrentSim.Handle)
-                        server.Scene.ObjectRemove(this, obj.Prim.ID);
-                }
+                // FIXME: Use the scene region handle when it has one
+                ulong regionHandle = Utils.UIntsToLong(Simian.REGION_X, Simian.REGION_Y);
+
+                server.Scene.ForEachAgent(
+                    delegate(Agent agent)
+                    {
+                        if (agent.Avatar.RegionHandle != regionHandle &&
+                            agent.Avatar.RegionHandle != client.Network.CurrentSim.Handle)
+                        {
+                            server.Scene.AgentRemove(this, agent.Avatar.ID);
+                        }
+                    }
+                );
             }
         }
 
@@ -199,7 +208,7 @@ namespace Simian.Extensions
             AvatarAnimationPacket animations = (AvatarAnimationPacket)packet;
 
             Agent agent;
-            if (server.Agents.TryGetValue(animations.Sender.ID, out agent))
+            if (server.Scene.TryGetAgent(animations.Sender.ID, out agent))
             {
                 agent.Animations.Clear();
 
@@ -275,12 +284,9 @@ namespace Simian.Extensions
                             imageDelivery.Pipeline.CurrentCount, imageDelivery.Pipeline.QueuedCount));
                         return;
                     case "/nudemod":
-                        int count = 0;
-                        Dictionary<UUID, Agent> agents;
-                        lock (server.Agents)
-                            agents = new Dictionary<UUID, Agent>(server.Agents);
-
-                        foreach (Agent curAgent in agents.Values)
+                        //int count = 0;
+                        // FIXME: AvatarAppearance locks the agents dictionary. Need to be able to copy the agents dictionary?
+                        /*foreach (Agent curAgent in agents.Values)
                         {
                             if (curAgent != agent && curAgent.VisualParams != null)
                             {
@@ -302,7 +308,7 @@ namespace Simian.Extensions
                             }
                         }
 
-                        server.Avatars.SendAlert(agent, String.Format("Modified appearances for {0} avatar(s)", count));
+                        server.Avatars.SendAlert(agent, String.Format("Modified appearances for {0} avatar(s)", count));*/
                         return;
                 }
             }
@@ -331,13 +337,13 @@ namespace Simian.Extensions
                 lock (loginLock)
                 {
                     // Double-checked locking to avoid hitting the loginLock each time
-                    if (MasterAgent == null &&
-                        server.Agents.TryGetValue(update.AgentData.AgentID, out MasterAgent))
+                    if (MasterAgent == null && server.Scene.TryGetAgent(update.AgentData.AgentID, out MasterAgent))
                     {
                         Logger.Log(String.Format("[Periscope] {0} {1} is the controlling agent",
                             MasterAgent.FirstName, MasterAgent.LastName), Helpers.LogLevel.Info);
 
-                        LoginParams login = client.Network.DefaultLoginParams(agent.FirstName, agent.LastName, agent.PasswordHash, "Simian Periscope", "1.0.0");
+                        LoginParams login = client.Network.DefaultLoginParams(agent.FirstName, agent.LastName, agent.PasswordHash,
+                            "Simian Periscope", "1.0.0");
                         login.Start = "last";
                         client.Network.Login(login);
 

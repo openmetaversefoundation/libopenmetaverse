@@ -56,30 +56,27 @@ namespace Simian.Extensions
 
             if (dialog == InstantMessageDialog.MessageFromAgent)
             {
-                lock (server.Agents)
+                // HACK: Only works for agents currently online
+                Agent recipient;
+                if (server.Scene.TryGetAgent(im.MessageBlock.ToAgentID, out recipient))
                 {
-                    // HACK: Only works for agents currently online
-                    Agent recipient;
-                    if (server.Agents.TryGetValue(im.MessageBlock.ToAgentID, out recipient))
-                    {
-                        ImprovedInstantMessagePacket sendIM = new ImprovedInstantMessagePacket();
-                        sendIM.MessageBlock.RegionID = UUID.Random(); //FIXME
-                        sendIM.MessageBlock.ParentEstateID = 1;
-                        sendIM.MessageBlock.FromGroup = false;
-                        sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.Avatar.Name);
-                        sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
-                        sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
-                        sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
-                        sendIM.MessageBlock.ID = agent.Avatar.ID;
-                        sendIM.MessageBlock.Message = im.MessageBlock.Message;
-                        sendIM.MessageBlock.BinaryBucket = new byte[0];
-                        sendIM.MessageBlock.Timestamp = 0;
-                        sendIM.MessageBlock.Position = agent.Avatar.Position;
+                    ImprovedInstantMessagePacket sendIM = new ImprovedInstantMessagePacket();
+                    sendIM.MessageBlock.RegionID = UUID.Random(); //FIXME
+                    sendIM.MessageBlock.ParentEstateID = 1;
+                    sendIM.MessageBlock.FromGroup = false;
+                    sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.Avatar.Name);
+                    sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
+                    sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
+                    sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
+                    sendIM.MessageBlock.ID = agent.Avatar.ID;
+                    sendIM.MessageBlock.Message = im.MessageBlock.Message;
+                    sendIM.MessageBlock.BinaryBucket = new byte[0];
+                    sendIM.MessageBlock.Timestamp = 0;
+                    sendIM.MessageBlock.Position = agent.Avatar.Position;
 
-                        sendIM.AgentData.AgentID = agent.Avatar.ID;
+                    sendIM.AgentData.AgentID = agent.Avatar.ID;
 
-                        server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Transaction);
-                    }
+                    server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Transaction);
                 }
             }
         }

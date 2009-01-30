@@ -1052,7 +1052,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public Vector3 Scale;
         /// <summary></summary>
-        public Quaternion Rotation;
+        public Quaternion Rotation = Quaternion.Identity;
         /// <summary></summary>
         public Vector3 Velocity;
         /// <summary></summary>

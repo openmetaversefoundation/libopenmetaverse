@@ -52,18 +52,15 @@ namespace Simian.Extensions
             if (request.MoneyData.Amount < 0 || request.MoneyData.Amount > agent.Balance)
                 return;
 
-            lock (server.Agents)
+            // HACK: Only works for sending money to someone who is online
+            Agent recipient;
+            if (server.Scene.TryGetAgent(request.MoneyData.DestID, out recipient))
             {
-                // HACK: Only works for sending money to someone who is online
-                Agent recipient;
-                if (server.Agents.TryGetValue(request.MoneyData.DestID, out recipient))
-                {
-                    agent.Balance -= request.MoneyData.Amount;
-                    recipient.Balance += request.MoneyData.Amount;
+                agent.Balance -= request.MoneyData.Amount;
+                recipient.Balance += request.MoneyData.Amount;
 
-                    SendBalance(agent, UUID.Zero, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.Avatar.Name));
-                    SendBalance(agent, UUID.Zero, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.Avatar.Name));
-                }
+                SendBalance(agent, UUID.Zero, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.Avatar.Name));
+                SendBalance(agent, UUID.Zero, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.Avatar.Name));
             }
         }
         

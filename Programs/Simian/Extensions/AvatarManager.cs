@@ -172,7 +172,7 @@ namespace Simian.Extensions
             AvatarPropertiesRequestPacket request = (AvatarPropertiesRequestPacket)packet;
 
             Agent foundAgent;
-            if (server.Agents.TryGetValue(request.AgentData.AvatarID, out foundAgent))
+            if (server.Scene.TryGetAgent(request.AgentData.AvatarID, out foundAgent))
             {
                 AvatarPropertiesReplyPacket reply = new AvatarPropertiesReplyPacket();
                 reply.AgentData.AgentID = agent.Avatar.ID;
@@ -348,7 +348,7 @@ namespace Simian.Extensions
             for (int i = 0; i < set.VisualParam.Length; i++)
                 visualParams[i] = set.VisualParam[i].ParamValue;
 
-            server.Scene.AvatarAppearance(this, agent, textureEntry, visualParams);
+            server.Scene.AgentAppearance(this, agent, textureEntry, visualParams);
         }
 
         void AgentCachedTextureHandler(Packet packet, Agent agent)
@@ -396,7 +396,7 @@ namespace Simian.Extensions
                 reply.UUIDNameBlock[i].ID = id;
 
                 Agent foundAgent;
-                if (server.Agents.TryGetValue(id, out foundAgent))
+                if (server.Scene.TryGetAgent(id, out foundAgent))
                 {
                     reply.UUIDNameBlock[i].FirstName = Utils.StringToBytes(foundAgent.FirstName);
                     reply.UUIDNameBlock[i].LastName = Utils.StringToBytes(foundAgent.LastName);
@@ -413,45 +413,50 @@ namespace Simian.Extensions
 
         void CoarseLocationTimer_Elapsed(object sender)
         {
-            lock (server.Agents)
-            {
-                foreach (Agent recipient in server.Agents.Values)
+            // Create lists containing all of the agent blocks
+            List<CoarseLocationUpdatePacket.AgentDataBlock> agentDatas = new List<CoarseLocationUpdatePacket.AgentDataBlock>();
+            List<CoarseLocationUpdatePacket.LocationBlock> agentLocations = new List<CoarseLocationUpdatePacket.LocationBlock>();
+            
+            server.Scene.ForEachAgent(
+                delegate(Agent agent)
                 {
-                    int i = 0;
+                    CoarseLocationUpdatePacket.AgentDataBlock dataBlock = new CoarseLocationUpdatePacket.AgentDataBlock();
+                    dataBlock.AgentID = agent.Avatar.ID;
+                    CoarseLocationUpdatePacket.LocationBlock locationBlock = new CoarseLocationUpdatePacket.LocationBlock();
+                    locationBlock.X = (byte)agent.Avatar.Position.X;
+                    locationBlock.Y = (byte)agent.Avatar.Position.Y;
+                    locationBlock.Z = (byte)((int)agent.Avatar.Position.Z / 4);
 
+                    agentDatas.Add(dataBlock);
+                    agentLocations.Add(locationBlock);
+                }
+            );
+
+            // Send location updates out to each agent
+            server.Scene.ForEachAgent(
+                delegate(Agent agent)
+                {
                     CoarseLocationUpdatePacket update = new CoarseLocationUpdatePacket();
                     update.Index.Prey = -1;
                     update.Index.You = 0;
 
-                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[server.Agents.Count];
-                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[server.Agents.Count];
+                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[agentDatas.Count - 1];
+                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[agentDatas.Count - 1];
 
-                    // Fill in this avatar
-                    update.AgentData[0] = new CoarseLocationUpdatePacket.AgentDataBlock();
-                    update.AgentData[0].AgentID = recipient.Avatar.ID;
-                    update.Location[0] = new CoarseLocationUpdatePacket.LocationBlock();
-                    update.Location[0].X = (byte)((int)recipient.Avatar.Position.X);
-                    update.Location[0].Y = (byte)((int)recipient.Avatar.Position.Y);
-                    update.Location[0].Z = (byte)((int)recipient.Avatar.Position.Z / 4);
-                    ++i;
-
-                    foreach (Agent agent in server.Agents.Values)
+                    int j = 0;
+                    for (int i = 0; i < update.AgentData.Length; i++)
                     {
-                        if (agent != recipient)
+                        if (agentDatas[i].AgentID != agent.Avatar.ID)
                         {
-                            update.AgentData[i] = new CoarseLocationUpdatePacket.AgentDataBlock();
-                            update.AgentData[i].AgentID = agent.Avatar.ID;
-                            update.Location[i] = new CoarseLocationUpdatePacket.LocationBlock();
-                            update.Location[i].X = (byte)((int)agent.Avatar.Position.X);
-                            update.Location[i].Y = (byte)((int)agent.Avatar.Position.Y);
-                            update.Location[i].Z = (byte)((int)agent.Avatar.Position.Z / 4);
-                            ++i;
+                            update.AgentData[j] = agentDatas[i];
+                            update.Location[j] = agentLocations[i];
+                            ++j;
                         }
                     }
 
-                    server.UDP.SendPacket(recipient.Avatar.ID, update, PacketCategory.State);
+                    server.UDP.SendPacket(agent.Avatar.ID, update, PacketCategory.State);
                 }
-            }
+            );
         }
     }
 }
