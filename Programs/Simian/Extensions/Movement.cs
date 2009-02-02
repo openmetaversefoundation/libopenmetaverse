@@ -18,7 +18,7 @@ namespace Simian.Extensions
         const float FALL_DELAY = 0.33f; //seconds before starting animation
         const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
         const float JUMP_IMPULSE_VERTICAL = 8.5f; //boost amount in meters/sec
-        const float JUMP_IMPULSE_HORIZONTAL = 10f; //boost amount in meters/sec (no clue why this is so high) 
+        const float JUMP_IMPULSE_HORIZONTAL = 10f; //boost amount in meters/sec
         const float INITIAL_HOVER_IMPULSE = 2f; //boost amount in meters/sec
         const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
@@ -30,6 +30,7 @@ namespace Simian.Extensions
         Simian server;
         Timer updateTimer;
         long lastTick;
+        TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
 
         public int LastTick
         {
@@ -44,6 +45,8 @@ namespace Simian.Extensions
         public void Start(Simian server)
         {
             this.server = server;
+
+            server.Scene.OnTerrainUpdate += Scene_OnTerrainUpdate;
 
             server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, new PacketCallback(AgentUpdateHandler));
             server.UDP.RegisterPacketCallback(PacketType.AgentHeightWidth, new PacketCallback(AgentHeightWidthHandler));
@@ -61,6 +64,13 @@ namespace Simian.Extensions
                 updateTimer.Dispose();
                 updateTimer = null;
             }
+        }
+
+        void Scene_OnTerrainUpdate(object sender, uint x, uint y, float[,] patchData)
+        {
+            TerrainPatch patch = new TerrainPatch(16, 16);
+            patch.Height = patchData;
+            heightmap[y, x] = patch;
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -118,6 +128,11 @@ namespace Simian.Extensions
                     // least possible distance from avatar to the ground
                     // TODO: calculate to get rid of "bot squat"
                     float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
+
+                    // TODO: check our Z (minus height/2) compared to all the prim
+                    // bounding boxes, and define a new lowerLimit as a hack for platforms
+
+
 
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
@@ -351,7 +366,7 @@ namespace Simian.Extensions
             agent.Flags = (PrimFlags)update.AgentData.Flags;
 
             ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
-                server.RegionHandle, agent.Flags);
+                server.Scene.RegionHandle, agent.Flags);
 
             server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }
@@ -373,23 +388,54 @@ namespace Simian.Extensions
             if (y > 255) y = 255;
             else if (y < 0) y = 0;
 
-            float center = server.Scene.Heightmap[y * 256 + x];
-            float distX = position.X - (int)position.X;
-            float distY = position.Y - (int)position.Y;
+            int patchX = x / 16;
+            int patchY = y / 16;
 
-            float nearestX;
-            float nearestY;
+            if (heightmap[patchY, patchX] != null)
+            {
+                float center = heightmap[patchY, patchX].Height[y - (patchY * 16), x - (patchX * 16)];
 
-            if (distX > 0) nearestX = server.Scene.Heightmap[y * 256 + x + (x < 255 ? 1 : 0)];
-            else nearestX = server.Scene.Heightmap[y * 256 + x - (x > 0 ? 1 : 0)];
+                float distX = position.X - (int)position.X;
+                float distY = position.Y - (int)position.Y;
 
-            if (distY > 0) nearestY = server.Scene.Heightmap[(y + (y < 255 ? 1 : 0)) * 256 + x];
-            else nearestY = server.Scene.Heightmap[(y - (y > 0 ? 1 : 0)) * 256 + x];
+                float nearestX;
+                float nearestY;
 
-            float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
-            float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
+                if (distX > 0f)
+                {
+                    int i = x < 255 ? 1 : 0;
+                    int newPatchX = (x + i) / 16;
+                    nearestX = heightmap[patchY, newPatchX].Height[y - (patchY * 16), (x + i) - (newPatchX * 16)];
+                }
+                else
+                {
+                    int i = x > 0 ? 1 : 0;
+                    int newPatchX = (x - i) / 16;
+                    nearestX = heightmap[patchY, newPatchX].Height[y - (patchY * 16), (x - i) - (newPatchX * 16)];
+                }
 
-            return ((lerpX + lerpY) / 2);
+                if (distY > 0f)
+                {
+                    int i = y < 255 ? 1 : 0;
+                    int newPatchY = (y + i) / 16;
+                    nearestY = heightmap[newPatchY, patchX].Height[(y + i) - (newPatchY * 16), x - (patchX * 16)];
+                }
+                else
+                {
+                    int i = y > 0 ? 1 : 0;
+                    int newPatchY = (y - i) / 16;
+                    nearestY = heightmap[newPatchY, patchX].Height[(y - i) - (newPatchY * 16), x - (patchX * 16)];
+                }
+
+                float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
+                float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
+
+                return ((lerpX + lerpY) / 2);
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         void AgentHeightWidthHandler(Packet packet, Agent agent)

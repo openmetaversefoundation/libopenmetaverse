@@ -4,6 +4,16 @@ using OpenMetaverse;
 
 namespace Simian
 {
+    public class TerrainPatch
+    {
+        public float[,] Height;
+
+        public TerrainPatch(uint width, uint height)
+        {
+            Height = new float[height, width];
+        }
+    }
+
     public delegate void ObjectAddCallback(object sender, SimulationObject obj, PrimFlags creatorFlags);
     public delegate void ObjectRemoveCallback(object sender, SimulationObject obj);
     public delegate void ObjectTransformCallback(object sender, SimulationObject obj, Vector3 position,
@@ -16,8 +26,7 @@ namespace Simian
     public delegate void AgentRemoveCallback(object sender, Agent agent);
     public delegate void AgentAppearanceCallback(object sender, Agent agent, Primitive.TextureEntry textures,
         byte[] visualParams);
-    // TODO: Convert terrain to a patch-based system
-    public delegate void TerrainUpdatedCallback(object sender);
+    public delegate void TerrainUpdateCallback(object sender, uint x, uint y, float[,] patchData);
 
     public interface ISceneProvider
     {
@@ -29,12 +38,20 @@ namespace Simian
         event AgentAddCallback OnAgentAdd;
         event AgentRemoveCallback OnAgentRemove;
         event AgentAppearanceCallback OnAgentAppearance;
-        event TerrainUpdatedCallback OnTerrainUpdated;
+        event TerrainUpdateCallback OnTerrainUpdate;
 
-        // TODO: Convert to a patch-based system, and expose terrain editing
-        // through functions instead of a property
-        float[] Heightmap { get; set; }
+        uint RegionX { get; }
+        uint RegionY { get; }
+        ulong RegionHandle { get; }
+        UUID RegionID { get; }
+
         float WaterHeight { get; }
+
+        uint TerrainPatchWidth { get; }
+        uint TerrainPatchHeight { get; }
+
+        float[,] GetTerrainPatch(uint x, uint y);
+        void SetTerrainPatch(object sender, uint x, uint y, float[,] patchData);
 
         bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags);
         bool ObjectRemove(object sender, uint localID);

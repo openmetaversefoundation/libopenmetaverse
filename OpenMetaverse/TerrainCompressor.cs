@@ -174,7 +174,49 @@ namespace OpenMetaverse
             return layer;
         }
 
+        public static LayerDataPacket CreateLandPacket(float[,] patchData, int x, int y)
+        {
+            LayerDataPacket layer = new LayerDataPacket();
+            layer.LayerID.Type = (byte)TerrainPatch.LayerType.Land;
+
+            TerrainPatch.GroupHeader header = new TerrainPatch.GroupHeader();
+            header.Stride = STRIDE;
+            header.PatchSize = 16;
+            header.Type = TerrainPatch.LayerType.Land;
+
+            byte[] data = new byte[1536];
+            BitPack bitpack = new BitPack(data, 0);
+            bitpack.PackBits(header.Stride, 16);
+            bitpack.PackBits(header.PatchSize, 8);
+            bitpack.PackBits((int)header.Type, 8);
+
+            CreatePatch(bitpack, patchData, x, y);
+
+            bitpack.PackBits(END_OF_PATCHES, 8);
+
+            layer.LayerData.Data = new byte[bitpack.BytePos + 1];
+            Buffer.BlockCopy(bitpack.Data, 0, layer.LayerData.Data, 0, bitpack.BytePos + 1);
+
+            return layer;
+        }
+
         public static void CreatePatch(BitPack output, float[] patchData, int x, int y)
+        {
+            if (patchData.Length != 16 * 16)
+                throw new ArgumentException("Patch data must be a 16x16 array");
+
+            TerrainPatch.Header header = PrescanPatch(patchData);
+            header.QuantWBits = 136;
+            header.PatchIDs = (y & 0x1F);
+            header.PatchIDs += (x << 5);
+
+            // NOTE: No idea what prequant and postquant should be or what they do
+            int[] patch = CompressPatch(patchData, header, 10);
+            int wbits = EncodePatchHeader(output, header, patch);
+            EncodePatch(output, patch, 0, wbits);
+        }
+
+        public static void CreatePatch(BitPack output, float[,] patchData, int x, int y)
         {
             if (patchData.Length != 16 * 16)
                 throw new ArgumentException("Patch data must be a 16x16 array");
@@ -230,6 +272,28 @@ namespace OpenMetaverse
                 for (int i = 0; i < 16; i++)
                 {
                     float val = patch[j * 16 + i];
+                    if (val > zmax) zmax = val;
+                    if (val < zmin) zmin = val;
+                }
+            }
+
+            header.DCOffset = zmin;
+            header.Range = (int)((zmax - zmin) + 1.0f);
+
+            return header;
+        }
+
+        private static TerrainPatch.Header PrescanPatch(float[,] patch)
+        {
+            TerrainPatch.Header header = new TerrainPatch.Header();
+            float zmax = -99999999.0f;
+            float zmin = 99999999.0f;
+
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    float val = patch[j, i];
                     if (val > zmax) zmax = val;
                     if (val < zmin) zmin = val;
                 }
@@ -592,6 +656,36 @@ namespace OpenMetaverse
             {
                 for (int i = 0; i < 16; i++)
                     block[k++] = patchData[j * 16 + i] * premult - sub;
+            }
+
+            float[] ftemp = new float[16 * 16];
+            int[] itemp = new int[16 * 16];
+
+            for (int o = 0; o < 16; o++)
+                DCTLine16(block, ftemp, o);
+            for (int o = 0; o < 16; o++)
+                DCTColumn16(ftemp, itemp, o);
+
+            return itemp;
+        }
+
+        private static int[] CompressPatch(float[,] patchData, TerrainPatch.Header header, int prequant)
+        {
+            float[] block = new float[16 * 16];
+            int wordsize = prequant;
+            float oozrange = 1.0f / (float)header.Range;
+            float range = (float)(1 << prequant);
+            float premult = oozrange * range;
+            float sub = (float)(1 << (prequant - 1)) + header.DCOffset * premult;
+
+            header.QuantWBits = wordsize - 2;
+            header.QuantWBits |= (prequant - 2) << 4;
+
+            int k = 0;
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                    block[k++] = patchData[j, i] * premult - sub;
             }
 
             float[] ftemp = new float[16 * 16];

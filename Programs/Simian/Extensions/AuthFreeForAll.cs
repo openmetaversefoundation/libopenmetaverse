@@ -34,9 +34,9 @@ namespace Simian.Extensions
                 agent.Avatar.ID = UUID.Random();
                 agent.Balance = 1000;
                 agent.CreationTime = Utils.DateTimeToUnixTime(DateTime.Now);
-                agent.CurrentLookAt = Vector3.Zero;
+                agent.CurrentLookAt = Vector3.UnitZ;
                 agent.CurrentPosition = new Vector3(128f, 128f, 25f);
-                agent.CurrentRegionHandle = Utils.UIntsToLong(Simian.REGION_X, Simian.REGION_Y);
+                agent.CurrentRegionHandle = Utils.UIntsToLong(256 * server.Scene.RegionX, 256 * server.Scene.RegionY);
                 agent.FirstName = firstName;
                 agent.GodLevel = 0;
                 agent.HomeLookAt = agent.CurrentLookAt;

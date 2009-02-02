@@ -94,7 +94,7 @@ namespace Simian.Extensions
         public void TriggerSound(Agent agent, UUID soundID, float gain)
         {
             SoundTriggerPacket sound = new SoundTriggerPacket();
-            sound.SoundData.Handle = server.RegionHandle;
+            sound.SoundData.Handle = server.Scene.RegionHandle;
             sound.SoundData.ObjectID = agent.Avatar.ID;
             sound.SoundData.ParentID = agent.Avatar.ID;
             sound.SoundData.OwnerID = agent.Avatar.ID;

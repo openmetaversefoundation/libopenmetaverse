@@ -55,7 +55,7 @@ namespace Simian.Extensions
             handshake.RegionInfo.TerrainStartHeight01 = 40f;
             handshake.RegionInfo.TerrainStartHeight10 = 0f;
             handshake.RegionInfo.TerrainStartHeight11 = 40f;
-            handshake.RegionInfo2.RegionID = UUID.Random();
+            handshake.RegionInfo2.RegionID = server.Scene.RegionID;
 
             server.UDP.SendPacket(agent.Avatar.ID, handshake, PacketCategory.Transaction);
         }

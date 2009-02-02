@@ -12,13 +12,17 @@ using OpenMetaverse.Packets;
 
 namespace Simian.Extensions
 {
+    
+
     public class SceneManager : IExtension<Simian>, ISceneProvider
     {
         Simian server;
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
         DoubleDictionary<uint, UUID, Agent> sceneAgents = new DoubleDictionary<uint, UUID, Agent>();
         int currentLocalID = 1;
-        float[] heightmap = new float[256 * 256];
+        ulong regionHandle;
+        UUID regionID = UUID.Random();
+        TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
 
         public event ObjectAddCallback OnObjectAdd;
         public event ObjectRemoveCallback OnObjectRemove;
@@ -29,23 +33,21 @@ namespace Simian.Extensions
         public event AgentAddCallback OnAgentAdd;
         public event AgentRemoveCallback OnAgentRemove;
         public event AgentAppearanceCallback OnAgentAppearance;
-        public event TerrainUpdatedCallback OnTerrainUpdated;
+        public event TerrainUpdateCallback OnTerrainUpdate;
 
-        public float[] Heightmap
-        {
-            get { return heightmap; }
-            set
-            {
-                if (value.Length != (256 * 256))
-                    throw new ArgumentException("Heightmap must be 256x256");
-                heightmap = value;
-            }
-        }
+        public uint RegionX { get { return 1000; } }
+        public uint RegionY { get { return 1000; } }
+        public ulong RegionHandle { get { return regionHandle; } }
+        public UUID RegionID { get { return regionID; } }
 
-        public float WaterHeight { get { return 35f; } }
+        public float WaterHeight { get { return 20f; } }
+
+        public uint TerrainPatchWidth { get { return 16; } }
+        public uint TerrainPatchHeight { get { return 16; } }
 
         public SceneManager()
         {
+            regionHandle = Utils.UIntsToLong(RegionX * 256, RegionY * 256);
         }
 
         public void Start(Simian server)
@@ -58,6 +60,26 @@ namespace Simian.Extensions
 
         public void Stop()
         {
+        }
+
+        public float[,] GetTerrainPatch(uint x, uint y)
+        {
+            float[,] copy = new float[16, 16];
+            Buffer.BlockCopy(heightmap[y, x].Height, 0, copy, 0, 16 * 16 * sizeof(float));
+            return copy;
+        }
+
+        public void SetTerrainPatch(object sender, uint x, uint y, float[,] patchData)
+        {
+            if (OnTerrainUpdate != null)
+                OnTerrainUpdate(sender, x, y, patchData);
+
+            float[,] copy = new float[16, 16];
+            Buffer.BlockCopy(patchData, 0, copy, 0, 16 * 16 * sizeof(float));
+            heightmap[y, x].Height = copy;
+
+            LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap[y, x].Height, (int)x, (int)y);
+            server.UDP.BroadcastPacket(layer, PacketCategory.Terrain);
         }
 
         public bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags)
@@ -81,13 +103,13 @@ namespace Simian.Extensions
             if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
             {
                 // Send an update out to the creator
-                ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle,
+                ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
                     obj.Prim.Flags | creatorFlags);
                 server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
             }
 
             // Send an update out to everyone else
-            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle,
+            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
                 obj.Prim.Flags);
             server.Scene.ForEachAgent(
                 delegate(Agent recipient)
@@ -258,12 +280,12 @@ namespace Simian.Extensions
             sceneAgents.Add(agent.Avatar.LocalID, agent.Avatar.ID, agent);
 
             // Send an update out to the agent
-            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(agent.Avatar, server.RegionHandle,
+            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(agent.Avatar, regionHandle,
                 agent.Avatar.Flags | creatorFlags);
             server.UDP.SendPacket(agent.Avatar.ID, updateToOwner, PacketCategory.State);
 
             // Send an update out to everyone else
-            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(agent.Avatar, server.RegionHandle,
+            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(agent.Avatar, regionHandle,
                 agent.Avatar.Flags);
             server.Scene.ForEachAgent(
                 delegate(Agent recipient)
@@ -334,7 +356,7 @@ namespace Simian.Extensions
             // Broadcast an object update for this avatar
             // TODO: Is this necessary here?
             ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
-                server.RegionHandle, agent.Flags);
+                regionHandle, agent.Flags);
             server.UDP.BroadcastPacket(update, PacketCategory.State);
 
             // Update the avatar
@@ -389,7 +411,7 @@ namespace Simian.Extensions
         void BroadcastObjectUpdate(SimulationObject obj)
         {
             ObjectUpdatePacket update =
-                SimulationObject.BuildFullUpdate(obj.Prim, server.RegionHandle, obj.Prim.Flags);
+                SimulationObject.BuildFullUpdate(obj.Prim, regionHandle, obj.Prim.Flags);
 
             server.UDP.BroadcastPacket(update, PacketCategory.State);
         }
@@ -435,7 +457,7 @@ namespace Simian.Extensions
                 complete.AgentData.SessionID = agent.SessionID;
                 complete.Data.LookAt = Vector3.UnitX;
                 complete.Data.Position = avatar.Position;
-                complete.Data.RegionHandle = server.RegionHandle;
+                complete.Data.RegionHandle = regionHandle;
                 complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
                 complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
@@ -491,50 +513,80 @@ namespace Simian.Extensions
 
         void LoadTerrain(string mapFile)
         {
+            byte[] rgbValues = new byte[256 * 256 * 3];
+
             if (File.Exists(mapFile))
             {
                 lock (heightmap)
                 {
                     Bitmap bmp = LoadTGAClass.LoadTGA(mapFile);
 
-                    Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                    BitmapData bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-                    IntPtr ptr = bmpData.Scan0;
-                    int bytes = bmpData.Stride * bmp.Height;
-                    byte[] rgbValues = new byte[bytes];
-                    Marshal.Copy(ptr, rgbValues, 0, bytes);
-                    bmp.UnlockBits(bmpData);
-
-                    for (int i = 1, pos = 0; i < heightmap.Length; i++, pos += 3)
-                        heightmap[i] = (float)rgbValues[pos];
-
-                    if (OnTerrainUpdated != null)
-                        OnTerrainUpdated(this);
+                    if (bmp.Width == 256 && bmp.Height == 256)
+                    {
+                        Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                        BitmapData bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                        Marshal.Copy(bmpData.Scan0, rgbValues, 0, rgbValues.Length);
+                        bmp.UnlockBits(bmpData);
+                    }
+                    else
+                    {
+                        Logger.Log("Map file " + mapFile + " has the wrong dimensions or wrong pixel format (must be 256x256 RGB). Defaulting to 25m",
+                            Helpers.LogLevel.Warning);
+                        for (int i = 0; i < rgbValues.Length; i++)
+                            rgbValues[i] = 25;
+                    }
                 }
             }
             else
             {
                 Logger.Log("Map file " + mapFile + " not found, defaulting to 25m", Helpers.LogLevel.Info);
+                for (int i = 0; i < rgbValues.Length; i++)
+                    rgbValues[i] = 25;
+            }
 
-                server.Scene.Heightmap = new float[65536];
-                for (int i = 0; i < server.Scene.Heightmap.Length; i++)
-                    server.Scene.Heightmap[i] = 25f;
+            uint patchX = 0, patchY = 0, x = 0, y = 0;
+            for (int i = 0; i < rgbValues.Length; i += 3)
+            {
+                if (heightmap[patchY, patchX] == null)
+                    heightmap[patchY, patchX] = new TerrainPatch(16, 16);
+
+                heightmap[patchY, patchX].Height[y, x] = (float)rgbValues[i];
+
+                ++x;
+                if (x > 15)
+                {
+                    if (y == 15)
+                    {
+                        if (OnTerrainUpdate != null)
+                            OnTerrainUpdate(this, patchX, patchY, heightmap[patchY, patchX].Height);
+                    }
+
+                    x = 0;
+                    ++patchX;
+                }
+
+                if (patchX > 15)
+                {
+                    patchX = 0;
+                    ++y;
+                }
+
+                if (y > 15)
+                {
+                    y = 0;
+                    ++patchY;
+                }
             }
         }
 
         void SendLayerData(Agent agent)
         {
-            lock (heightmap)
+            for (int y = 0; y < 16; y++)
             {
-                for (int y = 0; y < 16; y++)
+                for (int x = 0; x < 16; x++)
                 {
-                    for (int x = 0; x < 16; x++)
-                    {
-                        int[] patches = new int[1];
-                        patches[0] = (y * 16) + x;
-                        LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap, patches);
-                        server.UDP.SendPacket(agent.Avatar.ID, layer, PacketCategory.Terrain);
-                    }
+                    LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap[y, x].Height, x, y);
+                    server.UDP.SendPacket(agent.Avatar.ID, layer, PacketCategory.Terrain);
                 }
             }
         }

@@ -83,11 +83,13 @@ namespace Simian.Extensions
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
+            ulong localRegionHandle = Utils.UIntsToLong(256 * server.Scene.RegionX, 256 * server.Scene.RegionY);
+
             // Add the avatar to both the agents list and the scene objects
             Agent agent = new Agent();
             agent.Avatar.ID = avatar.ID;
             agent.Avatar = avatar;
-            agent.CurrentRegionHandle = server.RegionHandle;
+            agent.CurrentRegionHandle = localRegionHandle;
             agent.FirstName = avatar.FirstName;
             agent.LastName = avatar.LastName;
 
@@ -144,12 +146,16 @@ namespace Simian.Extensions
 
         void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)
         {
-            // TODO: When Simian gets a terrain editing interface, switch this over to
-            // edit the scene heightmap instead of sending packets direct to clients
-            int[] patches = new int[1];
-            patches[0] = (y * 16) + x;
-            LayerDataPacket layer = TerrainCompressor.CreateLandPacket(data, x, y);
-            server.UDP.BroadcastPacket(layer, PacketCategory.Terrain);
+            float[,] patchData = new float[16, 16];
+            for (int py = 0; py < 16; py++)
+            {
+                for (int px = 0; px < 16; px++)
+                {
+                    patchData[py, px] = data[py * 16 + px];
+                }
+            }
+
+            server.Scene.SetTerrainPatch(this, (uint)x, (uint)y, patchData);
         }
 
         void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType,
@@ -181,13 +187,12 @@ namespace Simian.Extensions
                     }
                 );
 
-                // FIXME: Use the scene region handle when it has one
-                ulong regionHandle = Utils.UIntsToLong(Simian.REGION_X, Simian.REGION_Y);
+                ulong localRegionHandle = Utils.UIntsToLong(256 * server.Scene.RegionX, 256 * server.Scene.RegionY);
 
                 server.Scene.ForEachAgent(
                     delegate(Agent agent)
                     {
-                        if (agent.Avatar.RegionHandle != regionHandle &&
+                        if (agent.Avatar.RegionHandle != localRegionHandle &&
                             agent.Avatar.RegionHandle != client.Network.CurrentSim.Handle)
                         {
                             server.Scene.AgentRemove(this, agent.Avatar.ID);
@@ -240,6 +245,8 @@ namespace Simian.Extensions
             RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
 
             handshake.RegionInfo.SimOwner = (MasterAgent != null ? MasterAgent.Avatar.ID : UUID.Zero);
+            handshake.RegionInfo.RegionFlags &= ~(uint)RegionFlags.NoFly;
+            handshake.RegionInfo2.RegionID = server.Scene.RegionID;
 
             // TODO: Need more methods to manipulate the scene so we can apply these properties.
             // Right now this only gets sent out to people who are logged in when the master avatar

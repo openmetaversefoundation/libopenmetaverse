@@ -18,17 +18,12 @@ namespace Simian
     {
         public const string CONFIG_FILE = "Simian.ini";
 
-        // TODO: Don't hard-code these
-        public const uint REGION_X = 256000;
-        public const uint REGION_Y = 256000;
-
         public int UDPPort = 9000;
         public int HttpPort = 8002;
         public string DataDir = "SimianData/";
 
         public WebServer HttpServer;
         public IniConfigSource ConfigFile;
-        public ulong RegionHandle;
 
         // Interfaces
         public IAuthenticationProvider Authentication;
@@ -67,8 +62,6 @@ namespace Simian
             }
 
             InitHttpServer(HttpPort, true);
-
-            RegionHandle = Utils.UIntsToLong(REGION_X, REGION_Y);
 
             try
             {
