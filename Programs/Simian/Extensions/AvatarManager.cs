@@ -416,7 +416,7 @@ namespace Simian.Extensions
             // Create lists containing all of the agent blocks
             List<CoarseLocationUpdatePacket.AgentDataBlock> agentDatas = new List<CoarseLocationUpdatePacket.AgentDataBlock>();
             List<CoarseLocationUpdatePacket.LocationBlock> agentLocations = new List<CoarseLocationUpdatePacket.LocationBlock>();
-            
+
             server.Scene.ForEachAgent(
                 delegate(Agent agent)
                 {
@@ -444,7 +444,7 @@ namespace Simian.Extensions
                     update.Location = new CoarseLocationUpdatePacket.LocationBlock[agentDatas.Count - 1];
 
                     int j = 0;
-                    for (int i = 0; i < update.AgentData.Length; i++)
+                    for (int i = 0; i < agentDatas.Count; i++)
                     {
                         if (agentDatas[i].AgentID != agent.Avatar.ID)
                         {
