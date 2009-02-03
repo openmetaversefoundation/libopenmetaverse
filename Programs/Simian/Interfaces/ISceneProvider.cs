@@ -44,6 +44,8 @@ namespace Simian
         uint RegionY { get; }
         ulong RegionHandle { get; }
         UUID RegionID { get; }
+        string RegionName { get; }
+        RegionFlags RegionFlags { get; }
 
         float WaterHeight { get; }
 
@@ -63,12 +65,14 @@ namespace Simian
         void ObjectModify(object sender, uint localID, Primitive.ConstructionData data);
         bool ContainsObject(uint localID);
         bool ContainsObject(UUID id);
+        int ObjectCount();
         bool TryGetObject(uint localID, out SimulationObject obj);
         bool TryGetObject(UUID id, out SimulationObject obj);
         void ForEachObject(Action<SimulationObject> obj);
 
         bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags);
         void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
+        int AgentCount();
         bool TryGetAgent(uint localID, out Agent agent);
         bool TryGetAgent(UUID id, out Agent agent);
         void ForEachAgent(Action<Agent> action);

@@ -33,7 +33,6 @@ namespace Simian.Extensions
             server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, SoundTriggerHandler);
             server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, ViewerEffectHandler);
             server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, UUIDNameRequestHandler);
-            server.UDP.RegisterPacketCallback(PacketType.TeleportRequest, TeleportRequestHandler);
 
             if (CoarseLocationTimer != null) CoarseLocationTimer.Dispose();
             CoarseLocationTimer = new Timer(CoarseLocationTimer_Elapsed);
@@ -420,22 +419,6 @@ namespace Simian.Extensions
             }
 
             server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
-        }
-
-        void TeleportRequestHandler(Packet packet, Agent agent)
-        {
-            TeleportRequestPacket request = (TeleportRequestPacket)packet;
-
-            if (request.Info.RegionID == server.Scene.RegionID)
-            {
-                // Local teleport
-                agent.Avatar.Position = request.Info.Position;
-                agent.CurrentLookAt = request.Info.LookAt;
-            }
-            else
-            {
-                Logger.Log("Ignoring teleport request to " + request.Info.RegionID, Helpers.LogLevel.Warning);
-            }
         }
 
         void CoarseLocationTimer_Elapsed(object sender)

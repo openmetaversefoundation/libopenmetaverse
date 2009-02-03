@@ -175,9 +175,9 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(chat, PacketCategory.Transaction);
         }
 
-        void Self_OnTeleport(string message, AgentManager.TeleportStatus status, AgentManager.TeleportFlags flags)
+        void Self_OnTeleport(string message, TeleportStatus status, TeleportFlags flags)
         {
-            if (status == AgentManager.TeleportStatus.Finished)
+            if (status == TeleportStatus.Finished)
             {
                 server.Scene.ForEachObject(
                     delegate(SimulationObject obj)

@@ -39,6 +39,8 @@ namespace Simian.Extensions
         public uint RegionY { get { return 1000; } }
         public ulong RegionHandle { get { return regionHandle; } }
         public UUID RegionID { get { return regionID; } }
+        public string RegionName { get { return "Simian"; } }
+        public RegionFlags RegionFlags { get { return RegionFlags.None; } }
 
         public float WaterHeight { get { return 20f; } }
 
@@ -309,6 +311,11 @@ namespace Simian.Extensions
             return sceneObjects.ContainsKey(id) || sceneAgents.ContainsKey(id);
         }
 
+        public int ObjectCount()
+        {
+            return sceneObjects.Count;
+        }
+
         public bool TryGetObject(uint localID, out SimulationObject obj)
         {
             return sceneObjects.TryGetValue(localID, out obj);
@@ -401,6 +408,11 @@ namespace Simian.Extensions
         public bool TryGetAgent(UUID id, out Agent agent)
         {
             return sceneAgents.TryGetValue(id, out agent);
+        }
+
+        public int AgentCount()
+        {
+            return sceneAgents.Count;
         }
 
         public void ForEachAgent(Action<Agent> action)
