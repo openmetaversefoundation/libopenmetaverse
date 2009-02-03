@@ -142,7 +142,26 @@ namespace Simian.Extensions
             }
             else
             {
-                return false;
+                Agent agent;
+                if (sceneAgents.TryGetValue(localID, out agent))
+                {
+                    if (OnAgentRemove != null)
+                        OnAgentRemove(sender, agent);
+
+                    sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
+
+                    KillObjectPacket kill = new KillObjectPacket();
+                    kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                    kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                    kill.ObjectData[0].ID = agent.Avatar.LocalID;
+
+                    server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -166,7 +185,26 @@ namespace Simian.Extensions
             }
             else
             {
-                return false;
+                Agent agent;
+                if (sceneAgents.TryGetValue(id, out agent))
+                {
+                    if (OnAgentRemove != null)
+                        OnAgentRemove(sender, agent);
+
+                    sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
+
+                    KillObjectPacket kill = new KillObjectPacket();
+                    kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                    kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                    kill.ObjectData[0].ID = agent.Avatar.LocalID;
+
+                    server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -174,6 +212,8 @@ namespace Simian.Extensions
             Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity)
         {
             SimulationObject obj;
+            Agent agent;
+
             if (sceneObjects.TryGetValue(localID, out obj))
             {
                 if (OnObjectTransform != null)
@@ -190,7 +230,25 @@ namespace Simian.Extensions
                 obj.Prim.AngularVelocity = angularVelocity;
 
                 // Inform clients
-                BroadcastObjectUpdate(obj);
+                BroadcastObjectUpdate(obj.Prim);
+            }
+            else if (sceneAgents.TryGetValue(localID, out agent))
+            {
+                if (OnObjectTransform != null)
+                {
+                    OnObjectTransform(sender, obj, position, rotation, velocity,
+                        acceleration, angularVelocity);
+                }
+
+                // Update the avatar
+                agent.Avatar.Position = position;
+                agent.Avatar.Rotation = rotation;
+                agent.Avatar.Velocity = velocity;
+                agent.Avatar.Acceleration = acceleration;
+                agent.Avatar.AngularVelocity = angularVelocity;
+
+                // Inform clients
+                BroadcastObjectUpdate(agent.Avatar);
             }
         }
 
@@ -205,7 +263,7 @@ namespace Simian.Extensions
             obj.Prim.Flags = flags;
 
             // Inform clients
-            BroadcastObjectUpdate(obj);
+            BroadcastObjectUpdate(obj.Prim);
         }
 
         public void ObjectImage(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry)
@@ -220,7 +278,7 @@ namespace Simian.Extensions
             obj.Prim.MediaURL = mediaURL;
 
             // Inform clients
-            BroadcastObjectUpdate(obj);
+            BroadcastObjectUpdate(obj.Prim);
         }
 
         public void ObjectModify(object sender, uint localID, Primitive.ConstructionData data)
@@ -237,18 +295,18 @@ namespace Simian.Extensions
                 obj.Prim.PrimData = data;
 
                 // Inform clients
-                BroadcastObjectUpdate(obj);
+                BroadcastObjectUpdate(obj.Prim);
             }
         }
 
         public bool ContainsObject(uint localID)
         {
-            return sceneObjects.ContainsKey(localID);
+            return sceneObjects.ContainsKey(localID) || sceneAgents.ContainsKey(localID);
         }
 
         public bool ContainsObject(UUID id)
         {
-            return sceneObjects.ContainsKey(id);
+            return sceneObjects.ContainsKey(id) || sceneAgents.ContainsKey(id);
         }
 
         public bool TryGetObject(uint localID, out SimulationObject obj)
@@ -298,54 +356,6 @@ namespace Simian.Extensions
             return true;
         }
 
-        public bool AgentRemove(object sender, uint localID)
-        {
-            Agent agent;
-            if (sceneAgents.TryGetValue(localID, out agent))
-            {
-                if (OnAgentRemove != null)
-                    OnAgentRemove(sender, agent);
-
-                sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
-
-                KillObjectPacket kill = new KillObjectPacket();
-                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                kill.ObjectData[0].ID = agent.Avatar.LocalID;
-
-                server.UDP.BroadcastPacket(kill, PacketCategory.State);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool AgentRemove(object sender, UUID id)
-        {
-            Agent agent;
-            if (sceneAgents.TryGetValue(id, out agent))
-            {
-                if (OnAgentRemove != null)
-                    OnAgentRemove(sender, agent);
-
-                sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
-
-                KillObjectPacket kill = new KillObjectPacket();
-                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                kill.ObjectData[0].ID = agent.Avatar.LocalID;
-
-                server.UDP.BroadcastPacket(kill, PacketCategory.State);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
         {
             if (OnAgentAppearance != null)
@@ -383,16 +393,6 @@ namespace Simian.Extensions
             sceneObjects.ForEach(action);
         }
 
-        public bool ContainsAgent(uint localID)
-        {
-            return sceneAgents.ContainsKey(localID);
-        }
-
-        public bool ContainsAgent(UUID id)
-        {
-            return sceneAgents.ContainsKey(id);
-        }
-
         public bool TryGetAgent(uint localID, out Agent agent)
         {
             return sceneAgents.TryGetValue(localID, out agent);
@@ -408,10 +408,10 @@ namespace Simian.Extensions
             sceneAgents.ForEach(action);
         }
 
-        void BroadcastObjectUpdate(SimulationObject obj)
+        void BroadcastObjectUpdate(Primitive prim)
         {
             ObjectUpdatePacket update =
-                SimulationObject.BuildFullUpdate(obj.Prim, regionHandle, obj.Prim.Flags);
+                SimulationObject.BuildFullUpdate(prim, regionHandle, prim.Flags);
 
             server.UDP.BroadcastPacket(update, PacketCategory.State);
         }

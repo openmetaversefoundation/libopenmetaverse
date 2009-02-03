@@ -149,6 +149,7 @@ namespace Simian.Extensions
             prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(add.ObjectData.ProfileHollow);
             prim.PrimData.PCode = pcode;
 
+            prim.Properties = new Primitive.ObjectProperties();
             prim.Properties.CreationDate = DateTime.Now;
             prim.Properties.CreatorID = agent.Avatar.ID;
             prim.Properties.Description = String.Empty;

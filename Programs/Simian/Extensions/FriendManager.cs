@@ -56,8 +56,8 @@ namespace Simian.Extensions
 
                     if (dialog == InstantMessageDialog.FriendshipAccepted)
                     {
-                        bool receiverOnline = server.Scene.ContainsAgent(agent.Avatar.ID);
-                        bool senderOnline = server.Scene.ContainsAgent(recipient.Avatar.ID);
+                        bool receiverOnline = server.Scene.ContainsObject(agent.Avatar.ID);
+                        bool senderOnline = server.Scene.ContainsObject(recipient.Avatar.ID);
 
                         if (receiverOnline)
                         {

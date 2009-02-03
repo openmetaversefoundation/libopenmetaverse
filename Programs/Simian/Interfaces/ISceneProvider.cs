@@ -68,11 +68,7 @@ namespace Simian
         void ForEachObject(Action<SimulationObject> obj);
 
         bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags);
-        bool AgentRemove(object sender, uint localID);
-        bool AgentRemove(object sender, UUID id);
         void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
-        bool ContainsAgent(uint localID);
-        bool ContainsAgent(UUID id);
         bool TryGetAgent(uint localID, out Agent agent);
         bool TryGetAgent(UUID id, out Agent agent);
         void ForEachAgent(Action<Agent> action);

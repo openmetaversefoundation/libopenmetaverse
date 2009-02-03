@@ -28,9 +28,8 @@ namespace Simian
         public ulong HomeRegionHandle;
         public Vector3 HomePosition;
         public Vector3 HomeLookAt;
-        public ulong CurrentRegionHandle;
-        public Vector3 CurrentPosition;
         public Vector3 CurrentLookAt;
+        public ulong CurrentRegionHandle;
 
         // Profile
         public UUID PartnerID;

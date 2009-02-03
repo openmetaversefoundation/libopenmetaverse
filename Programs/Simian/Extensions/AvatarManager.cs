@@ -28,10 +28,12 @@ namespace Simian.Extensions
             server.UDP.RegisterPacketCallback(PacketType.AgentIsNowWearing, AgentIsNowWearingHandler);
             server.UDP.RegisterPacketCallback(PacketType.AgentSetAppearance, AgentSetAppearanceHandler);
             server.UDP.RegisterPacketCallback(PacketType.AgentCachedTexture, AgentCachedTextureHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentHeightWidth, AgentHeightWidthHandler);
             server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, AgentAnimationHandler);
             server.UDP.RegisterPacketCallback(PacketType.SoundTrigger, SoundTriggerHandler);
             server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, ViewerEffectHandler);
             server.UDP.RegisterPacketCallback(PacketType.UUIDNameRequest, UUIDNameRequestHandler);
+            server.UDP.RegisterPacketCallback(PacketType.TeleportRequest, TeleportRequestHandler);
 
             if (CoarseLocationTimer != null) CoarseLocationTimer.Dispose();
             CoarseLocationTimer = new Timer(CoarseLocationTimer_Elapsed);
@@ -375,6 +377,15 @@ namespace Simian.Extensions
             server.UDP.SendPacket(agent.Avatar.ID, response, PacketCategory.Transaction);
         }
 
+        void AgentHeightWidthHandler(Packet packet, Agent agent)
+        {
+            AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
+
+            // TODO: These are the screen size dimensions. Useful when we start doing frustum culling
+            //Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
+            //    heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
+        }
+
         void SoundTriggerHandler(Packet packet, Agent agent)
         {
             SoundTriggerPacket trigger = (SoundTriggerPacket)packet;
@@ -409,6 +420,22 @@ namespace Simian.Extensions
             }
 
             server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
+        }
+
+        void TeleportRequestHandler(Packet packet, Agent agent)
+        {
+            TeleportRequestPacket request = (TeleportRequestPacket)packet;
+
+            if (request.Info.RegionID == server.Scene.RegionID)
+            {
+                // Local teleport
+                agent.Avatar.Position = request.Info.Position;
+                agent.CurrentLookAt = request.Info.LookAt;
+            }
+            else
+            {
+                Logger.Log("Ignoring teleport request to " + request.Info.RegionID, Helpers.LogLevel.Warning);
+            }
         }
 
         void CoarseLocationTimer_Elapsed(object sender)

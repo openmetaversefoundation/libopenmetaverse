@@ -195,7 +195,7 @@ namespace Simian.Extensions
                         if (agent.Avatar.RegionHandle != localRegionHandle &&
                             agent.Avatar.RegionHandle != client.Network.CurrentSim.Handle)
                         {
-                            server.Scene.AgentRemove(this, agent.Avatar.ID);
+                            server.Scene.ObjectRemove(this, agent.Avatar.ID);
                         }
                     }
                 );

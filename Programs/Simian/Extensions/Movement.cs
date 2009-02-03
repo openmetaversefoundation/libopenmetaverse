@@ -48,9 +48,8 @@ namespace Simian.Extensions
 
             server.Scene.OnTerrainUpdate += Scene_OnTerrainUpdate;
 
-            server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, new PacketCallback(AgentUpdateHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AgentHeightWidth, new PacketCallback(AgentHeightWidthHandler));
-            server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, new PacketCallback(SetAlwaysRunHandler));
+            server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
+            server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
 
             updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             LastTick = Environment.TickCount;
@@ -436,15 +435,6 @@ namespace Simian.Extensions
             {
                 return 0f;
             }
-        }
-
-        void AgentHeightWidthHandler(Packet packet, Agent agent)
-        {
-            AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
-
-            // TODO: These are the screen size dimensions. Useful when we start doing frustum culling
-            //Logger.Log(String.Format("Agent wants to set height={0}, width={1}",
-            //    heightWidth.HeightWidthBlock.Height, heightWidth.HeightWidthBlock.Width), Helpers.LogLevel.Info);
         }
     }
 }

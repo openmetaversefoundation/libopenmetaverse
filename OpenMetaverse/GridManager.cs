@@ -259,11 +259,12 @@ namespace OpenMetaverse
 		{
 			Client = client;
 
-            Client.Network.RegisterCallback(PacketType.MapBlockReply, new NetworkManager.PacketCallback(MapBlockReplyHandler));
-            Client.Network.RegisterCallback(PacketType.MapItemReply, new NetworkManager.PacketCallback(MapItemReplyHandler));
-            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new NetworkManager.PacketCallback(TimeMessageHandler));
-            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
-            Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, new NetworkManager.PacketCallback(RegionHandleReplyHandler));
+            //Client.Network.RegisterCallback(PacketType.MapLayerReply, MapLayerReplyHandler);
+            Client.Network.RegisterCallback(PacketType.MapBlockReply, MapBlockReplyHandler);
+            Client.Network.RegisterCallback(PacketType.MapItemReply, MapItemReplyHandler);
+            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, TimeMessageHandler);
+            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler);
+            Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, RegionHandleReplyHandler);
 		}
 
         /// <summary>
