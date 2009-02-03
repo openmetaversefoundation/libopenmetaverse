@@ -501,6 +501,131 @@ namespace OpenMetaverse
         /// <summary>Left Mouse button in MouseLook</summary>
         MouseLookLeftButton = 1073741824
     }
+
+    /// <summary>
+    /// Currently only used to hide your group title
+    /// </summary>
+    [Flags]
+    public enum AgentFlags : byte
+    {
+        /// <summary>No flags set</summary>
+        None = 0,
+        /// <summary>Hide your group title</summary>
+        HideTitle = 0x01,
+    }
+
+    /// <summary>
+    /// Action state of the avatar, which can currently be typing and
+    /// editing
+    /// </summary>
+    [Flags]
+    public enum AgentState : byte
+    {
+        /// <summary></summary>
+        None = 0x00,
+        /// <summary></summary>
+        Typing = 0x04,
+        /// <summary></summary>
+        Editing = 0x10
+    }
+
+    /// <summary>
+    /// Current teleport status
+    /// </summary>
+    public enum TeleportStatus
+    {
+        /// <summary>Unknown status</summary>
+        None,
+        /// <summary>Teleport initialized</summary>
+        Start,
+        /// <summary>Teleport in progress</summary>
+        Progress,
+        /// <summary>Teleport failed</summary>
+        Failed,
+        /// <summary>Teleport completed</summary>
+        Finished,
+        /// <summary>Teleport cancelled</summary>
+        Cancelled
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum TeleportFlags : uint
+    {
+        /// <summary>No flags set, or teleport failed</summary>
+        Default = 0,
+        /// <summary>Set when newbie leaves help island for first time</summary>
+        SetHomeToTarget = 1 << 0,
+        /// <summary></summary>
+        SetLastToTarget = 1 << 1,
+        /// <summary>Via Lure</summary>
+        ViaLure = 1 << 2,
+        /// <summary>Via Landmark</summary>
+        ViaLandmark = 1 << 3,
+        /// <summary>Via Location</summary>
+        ViaLocation = 1 << 4,
+        /// <summary>Via Home</summary>
+        ViaHome = 1 << 5,
+        /// <summary>Via Telehub</summary>
+        ViaTelehub = 1 << 6,
+        /// <summary>Via Login</summary>
+        ViaLogin = 1 << 7,
+        /// <summary>Linden Summoned</summary>
+        ViaGodlikeLure = 1 << 8,
+        /// <summary>Linden Forced me</summary>
+        Godlike = 1 << 9,
+        /// <summary></summary>
+        NineOneOne = 1 << 10,
+        /// <summary>Agent Teleported Home via Script</summary>
+        DisableCancel = 1 << 11,
+        /// <summary></summary>
+        ViaRegionID = 1 << 12,
+        /// <summary></summary>
+        IsFlying = 1 << 13,
+        /// <summary></summary>
+        ResetHome = 1 << 14,
+        /// <summary>forced to new location for example when avatar is banned or ejected</summary>
+        ForceRedirect = 1 << 15,
+        /// <summary>Teleport Finished via a Lure</summary>
+        FinishedViaLure = 1 << 26,
+        /// <summary>Finished, Sim Changed</summary>
+        FinishedViaNewSim = 1 << 28,
+        /// <summary>Finished, Same Sim</summary>
+        FinishedViaSameSim = 1 << 29
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum TeleportLureFlags
+    {
+        /// <summary></summary>
+        NormalLure = 0,
+        /// <summary></summary>
+        GodlikeLure = 1,
+        /// <summary></summary>
+        GodlikePursuit = 2
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum ScriptSensorTypeFlags
+    {
+        /// <summary></summary>
+        Agent = 1,
+        /// <summary></summary>
+        Active = 2,
+        /// <summary></summary>
+        Passive = 4,
+        /// <summary></summary>
+        Scripted = 8,
+    }
+
     #endregion Enums
 
     #region Structs
@@ -558,134 +683,6 @@ namespace OpenMetaverse
     /// </summary>
     public partial class AgentManager
     {
-        #region Enums
-
-        /// <summary>
-        /// Currently only used to hide your group title
-        /// </summary>
-        [Flags]
-        public enum AgentFlags : byte
-        {
-            /// <summary>No flags set</summary>
-            None = 0,
-            /// <summary>Hide your group title</summary>
-            HideTitle = 0x01,
-        }
-
-        /// <summary>
-        /// Action state of the avatar, which can currently be typing and
-        /// editing
-        /// </summary>
-        [Flags]
-        public enum AgentState : byte
-        {
-            /// <summary></summary>
-            None = 0x00,
-            /// <summary></summary>
-            Typing = 0x04,
-            /// <summary></summary>
-            Editing = 0x10
-        }
-
-        /// <summary>
-        /// Current teleport status
-        /// </summary>
-        public enum TeleportStatus
-        {
-            /// <summary>Unknown status</summary>
-            None,
-            /// <summary>Teleport initialized</summary>
-            Start,
-            /// <summary>Teleport in progress</summary>
-            Progress,
-            /// <summary>Teleport failed</summary>
-            Failed,
-            /// <summary>Teleport completed</summary>
-            Finished,
-            /// <summary>Teleport cancelled</summary>
-            Cancelled
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum TeleportFlags : uint
-        {
-            /// <summary>No flags set, or teleport failed</summary>
-            Default = 0,
-            /// <summary>Set when newbie leaves help island for first time</summary>
-            SetHomeToTarget = 1 << 0,
-            /// <summary></summary>
-            SetLastToTarget = 1 << 1,
-            /// <summary>Via Lure</summary>
-            ViaLure = 1 << 2,
-            /// <summary>Via Landmark</summary>
-            ViaLandmark = 1 << 3,
-            /// <summary>Via Location</summary>
-            ViaLocation = 1 << 4,
-            /// <summary>Via Home</summary>
-            ViaHome = 1 << 5,
-            /// <summary>Via Telehub</summary>
-            ViaTelehub = 1 << 6,
-            /// <summary>Via Login</summary>
-            ViaLogin = 1 << 7,
-            /// <summary>Linden Summoned</summary>
-            ViaGodlikeLure = 1 << 8,
-            /// <summary>Linden Forced me</summary>
-            Godlike = 1 << 9,
-            /// <summary></summary>
-            NineOneOne = 1 << 10,
-            /// <summary>Agent Teleported Home via Script</summary>
-            DisableCancel = 1 << 11,
-            /// <summary></summary>
-            ViaRegionID = 1 << 12,
-            /// <summary></summary>
-            IsFlying = 1 << 13,
-            /// <summary></summary>
-            ResetHome = 1 << 14,
-            /// <summary>forced to new location for example when avatar is banned or ejected</summary>
-            ForceRedirect = 1 << 15,
-            /// <summary>Teleport Finished via a Lure</summary>
-            FinishedViaLure = 1 << 26,
-            /// <summary>Finished, Sim Changed</summary>
-            FinishedViaNewSim = 1 << 28,
-            /// <summary>Finished, Same Sim</summary>
-            FinishedViaSameSim = 1 << 29
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum TeleportLureFlags
-        {
-            /// <summary></summary>
-            NormalLure = 0,
-            /// <summary></summary>
-            GodlikeLure = 1,
-            /// <summary></summary>
-            GodlikePursuit = 2
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum ScriptSensorTypeFlags
-        {
-            /// <summary></summary>
-            Agent = 1,
-            /// <summary></summary>
-            Active = 2,
-            /// <summary></summary>
-            Passive = 4,
-            /// <summary></summary>
-            Scripted = 8,
-        }
-
-        #endregion Enums
-
         #region Callbacks
 
         /// <summary>
