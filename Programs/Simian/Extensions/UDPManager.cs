@@ -186,7 +186,7 @@ namespace Simian
             lock (unassociatedAgents)
                 unassociatedAgents[circuitCode] = agent;
 
-            Logger.Log("Created a circuit for " + agent.FirstName, Helpers.LogLevel.Info);
+            Logger.Log("Created circuit " + circuitCode + " for " + agent.FirstName, Helpers.LogLevel.Info);
 
             return circuitCode;
         }
@@ -411,7 +411,7 @@ namespace Simian
                                 Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name),
                                     Helpers.LogLevel.Warning);
 
-                                server.Avatars.Disconnect(client.Agent);
+                                server.Scene.ObjectRemove(this, client.Agent.Avatar.ID);
                                 return;
                             }
                         }

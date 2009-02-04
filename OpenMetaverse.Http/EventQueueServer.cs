@@ -108,15 +108,15 @@ namespace OpenMetaverse.Http
                 eventQueue.Enqueue(events[i]);
         }
 
-        public bool EventQueueHandler(ref HttpListenerContext context)
+        public bool EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response)
         {
             // Decode the request
-            OSD request = null;
+            OSD osdRequest = null;
 
-            try { request = OSDParser.DeserializeLLSDXml(context.Request.InputStream); }
+            try { osdRequest = OSDParser.DeserializeLLSDXml(request.Body); }
             catch (Exception) { }
 
-            if (request != null && request.Type == OSDType.Map)
+            if (request != null && osdRequest.Type == OSDType.Map)
             {
                 OSDMap requestMap = (OSDMap)request;
                 int ack = requestMap["ack"].AsInteger();
@@ -130,7 +130,7 @@ namespace OpenMetaverse.Http
 
                 if (!done)
                 {
-                    StartEventQueueThread(context);
+                    StartEventQueueThread(context, request, response);
 
                     // Tell HttpServer to leave the connection open
                     return false;
@@ -138,25 +138,25 @@ namespace OpenMetaverse.Http
                 else
                 {
                     Logger.Log.InfoFormat("[EventQueue] Shutting down the event queue {0} at the client's request",
-                        context.Request.Url);
+                        request.Uri);
                     Stop();
 
-                    context.Response.KeepAlive = context.Request.KeepAlive;
+                    response.Connection = request.Connection;
                     return true;
                 }
             }
             else
             {
                 Logger.Log.WarnFormat("[EventQueue] Received a request with invalid or missing LLSD at {0}, closing the connection",
-                    context.Request.Url);
+                    request.Uri);
 
-                context.Response.KeepAlive = context.Request.KeepAlive;
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Connection = request.Connection;
+                response.Status = HttpStatusCode.BadRequest;
                 return true;
             }
         }
 
-        void StartEventQueueThread(HttpListenerContext httpContext)
+        void StartEventQueueThread(IHttpClientContext context, IHttpRequest request, IHttpResponse response)
         {
             // Spawn a new thread to hold the connection open and return from our precious IOCP thread
             Thread thread = new Thread(new ThreadStart(
@@ -188,7 +188,7 @@ namespace OpenMetaverse.Http
                                 batchMsPassed = (int)(DateTime.Now - start).TotalMilliseconds;
                             }
 
-                            SendResponse(httpContext, eventsToSend);
+                            SendResponse(context, request, response, eventsToSend);
                             return;
                         }
                         else
@@ -202,7 +202,7 @@ namespace OpenMetaverse.Http
                                 Logger.Log.DebugFormat(
                                     "[EventQueue] {0}ms passed without an event, timing out the event queue",
                                     totalMsPassed);
-                                SendResponse(httpContext, null);
+                                SendResponse(context, request, response, null);
                                 return;
                             }
                         }
@@ -215,9 +215,9 @@ namespace OpenMetaverse.Http
             thread.Start();
         }
 
-        void SendResponse(HttpListenerContext httpContext, List<EventQueueEvent> eventsToSend)
+        void SendResponse(IHttpClientContext context, IHttpRequest request, IHttpResponse response, List<EventQueueEvent> eventsToSend)
         {
-            httpContext.Response.KeepAlive = httpContext.Request.KeepAlive;
+            response.Connection = request.Connection;
 
             if (eventsToSend != null)
             {
@@ -241,19 +241,19 @@ namespace OpenMetaverse.Http
 
                 // Serialize the events and send the response
                 byte[] buffer = OSDParser.SerializeLLSDXmlBytes(responseMap);
-                httpContext.Response.ContentType = "application/xml";
-                httpContext.Response.ContentLength64 = buffer.Length;
-                httpContext.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                httpContext.Response.OutputStream.Close();
-                httpContext.Response.Close();
+                response.ContentType = "application/xml";
+                response.ContentLength = buffer.Length;
+                response.Body.Write(buffer, 0, buffer.Length);
+                response.Body.Flush();
             }
             else
             {
                 // The 502 response started as a bug in the LL event queue server implementation,
                 // but is now hardcoded into the protocol as the code to use for a timeout
-                httpContext.Response.StatusCode = (int)HttpStatusCode.BadGateway;
-                httpContext.Response.Close();
+                response.Status = HttpStatusCode.BadGateway;
             }
+
+            response.Send();
         }
     }
 }

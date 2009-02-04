@@ -82,7 +82,7 @@ namespace Simian.Extensions
 
             server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
 
-            server.Avatars.Disconnect(agent);
+            server.Scene.ObjectRemove(this, agent.Avatar.ID);
         }
     }
 }

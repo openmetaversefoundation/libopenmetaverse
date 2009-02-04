@@ -24,7 +24,7 @@ namespace Simian.Extensions
 
             try
             {
-                XmlTextReader reader = new XmlTextReader(File.OpenRead(server.DataDir + "simiandata.xml"));
+                XmlTextReader reader = new XmlTextReader(File.OpenRead(Simian.DATA_DIR + "simiandata.xml"));
                 osd = OSDParser.DeserializeLLSDXml(reader);
                 reader.Close();
             }
@@ -76,7 +76,7 @@ namespace Simian.Extensions
 
                 try
                 {
-                    XmlTextWriter writer = new XmlTextWriter(server.DataDir + "simiandata.xml", System.Text.Encoding.UTF8);
+                    XmlTextWriter writer = new XmlTextWriter(Simian.DATA_DIR + "simiandata.xml", System.Text.Encoding.UTF8);
                     writer.Formatting = Formatting.Indented;
                     writer.WriteStartElement("llsd");
                     OSDParser.SerializeLLSDXmlElement(writer, dictionary);

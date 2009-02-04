@@ -141,10 +141,16 @@ namespace Simian.Extensions
                 if (responseData.Success)
                     responseData.InventorySkeleton = server.Inventory.CreateInventorySkeleton(responseData.AgentID);
 
-                XmlWriter writer = XmlWriter.Create(response.Body);
-                responseData.ToXmlRpc(writer);
-                writer.Flush();
-                writer.Close();
+                MemoryStream memoryStream = new MemoryStream();
+                using (XmlWriter writer = XmlWriter.Create(memoryStream))
+                {
+                    responseData.ToXmlRpc(writer);
+                    writer.Flush();
+                }
+
+                response.ContentLength = memoryStream.Length;
+                response.Body.Write(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+                response.Body.Flush();
             }
             catch (Exception ex)
             {
@@ -177,6 +183,9 @@ namespace Simian.Extensions
             {
                 // Authentication successful, create a login instance of this agent
                 agent = server.Accounts.CreateInstance(agentID);
+
+                // Create a seed capability for this agent
+                Uri seedCap = server.Capabilities.CreateCapability(server.Scene.SeedCapabilityHandler, false, agentID);
 
                 if (agent != null)
                 {
@@ -217,8 +226,7 @@ namespace Simian.Extensions
                     response.RegionY = regionY;
 
                     response.SecondsSinceEpoch = DateTime.Now;
-                    // FIXME: Actually generate a seed capability
-                    response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, server.HttpPort);
+                    response.SeedCapability = seedCap.ToString();
                     response.SimIP = simIP;
                     response.SimPort = (ushort)server.UDPPort;
                     response.StartLocation = "last"; // FIXME:

@@ -10,7 +10,6 @@ namespace Simian
         bool RemoveAnimation(Agent agent, UUID animID);
         bool ClearAnimations(Agent agent);
         void SendAnimations(Agent agent);
-        void Disconnect(Agent agent);
 
         void SendAlert(Agent agent, string message);
     }

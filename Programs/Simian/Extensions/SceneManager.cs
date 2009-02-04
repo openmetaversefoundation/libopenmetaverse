@@ -3,22 +3,37 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ExtensionLoader;
+using HttpServer;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Http;
 
 namespace Simian.Extensions
 {
-    
+    class EventQueueServerCap
+    {
+        public EventQueueServer Server;
+        public Uri Capability;
+
+        public EventQueueServerCap(EventQueueServer server, Uri capability)
+        {
+            Server = server;
+            Capability = capability;
+        }
+    }
 
     public class SceneManager : IExtension<Simian>, ISceneProvider
     {
         Simian server;
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
         DoubleDictionary<uint, UUID, Agent> sceneAgents = new DoubleDictionary<uint, UUID, Agent>();
+        Dictionary<UUID, EventQueueServerCap> eventQueues = new Dictionary<UUID, EventQueueServerCap>();
         int currentLocalID = 1;
         ulong regionHandle;
         UUID regionID = UUID.Random();
@@ -57,11 +72,19 @@ namespace Simian.Extensions
             this.server = server;
 
             server.UDP.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler));
-            LoadTerrain(server.DataDir + "heightmap.tga");
+            LoadTerrain(Simian.DATA_DIR + "heightmap.tga");
         }
 
         public void Stop()
         {
+            lock (eventQueues)
+            {
+                foreach (EventQueueServerCap eventQueue in eventQueues.Values)
+                {
+                    server.Capabilities.RemoveCapability(eventQueue.Capability);
+                    eventQueue.Server.Stop();
+                }
+            }
         }
 
         public float[,] GetTerrainPatch(uint x, uint y)
@@ -150,14 +173,7 @@ namespace Simian.Extensions
                     if (OnAgentRemove != null)
                         OnAgentRemove(sender, agent);
 
-                    sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
-
-                    KillObjectPacket kill = new KillObjectPacket();
-                    kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                    kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                    kill.ObjectData[0].ID = agent.Avatar.LocalID;
-
-                    server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                    AgentRemove(agent);
                     return true;
                 }
                 else
@@ -193,14 +209,7 @@ namespace Simian.Extensions
                     if (OnAgentRemove != null)
                         OnAgentRemove(sender, agent);
 
-                    sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
-
-                    KillObjectPacket kill = new KillObjectPacket();
-                    kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                    kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                    kill.ObjectData[0].ID = agent.Avatar.LocalID;
-
-                    server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                    AgentRemove(agent);
                     return true;
                 }
                 else
@@ -208,6 +217,33 @@ namespace Simian.Extensions
                     return false;
                 }
             }
+        }
+
+        void AgentRemove(Agent agent)
+        {
+            Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
+
+            sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
+
+            KillObjectPacket kill = new KillObjectPacket();
+            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+            kill.ObjectData[0].ID = agent.Avatar.LocalID;
+
+            server.UDP.BroadcastPacket(kill, PacketCategory.State);
+
+            // Kill the EventQueue
+            RemoveEventQueue(agent.Avatar.ID);
+
+            // Remove the UDP client
+            server.UDP.RemoveClient(agent);
+
+            // Notify everyone in the scene that this agent has gone offline
+            OfflineNotificationPacket offline = new OfflineNotificationPacket();
+            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+            offline.AgentBlock[0].AgentID = agent.Avatar.ID;
+            server.UDP.BroadcastPacket(offline, PacketCategory.State);
         }
 
         public void ObjectTransform(object sender, uint localID, Vector3 position, Quaternion rotation,
@@ -418,6 +454,87 @@ namespace Simian.Extensions
         public void ForEachAgent(Action<Agent> action)
         {
             sceneAgents.ForEach(action);
+        }
+
+        public bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
+        {
+            UUID agentID = (UUID)state;
+
+            OSDArray array = OSDParser.DeserializeLLSDXml(request.Body) as OSDArray;
+            if (array != null)
+            {
+                OSDMap osdResponse = new OSDMap();
+
+                for (int i = 0; i < array.Count; i++)
+                {
+                    string capName = array[i].AsString();
+
+                    switch (capName)
+                    {
+                        case "EventQueueGet":
+                            Uri eqCap = null;
+
+                            // Check if this agent already has an event queue
+                            EventQueueServerCap eqServer;
+                            if (eventQueues.TryGetValue(agentID, out eqServer))
+                                eqCap = eqServer.Capability;
+
+                            // If not, create one
+                            if (eqCap == null)
+                                eqCap = CreateEventQueue(agentID);
+
+                            osdResponse.Add("EventQueueGet", OSD.FromUri(eqCap));
+                            break;
+                    }
+                }
+
+                byte[] responseData = OSDParser.SerializeLLSDXmlBytes(osdResponse);
+                response.ContentLength = responseData.Length;
+                response.Body.Write(responseData, 0, responseData.Length);
+                response.Body.Flush();
+            }
+            else
+            {
+                response.Status = HttpStatusCode.BadRequest;
+            }
+
+            return true;
+        }
+
+        public Uri CreateEventQueue(UUID agentID)
+        {
+            EventQueueServer eqServer = new EventQueueServer(server.HttpServer);
+            EventQueueServerCap eqServerCap = new EventQueueServerCap(eqServer,
+                server.Capabilities.CreateCapability(EventQueueHandler, false, eqServer));
+
+            eventQueues.Add(agentID, eqServerCap);
+            
+            return eqServerCap.Capability;
+        }
+
+        public bool RemoveEventQueue(UUID agentID)
+        {
+            return eventQueues.Remove(agentID);
+        }
+
+        public void SendEvent(Agent agent, string name, OSDMap body)
+        {
+            EventQueueServerCap eventQueue;
+            if (eventQueues.TryGetValue(agent.Avatar.ID, out eventQueue))
+            {
+                eventQueue.Server.SendEvent(name, body);
+            }
+            else
+            {
+                Logger.Log(String.Format("Cannot send the event {0} to agent {1}, no event queue for that avatar",
+                    name, agent.FullName), Helpers.LogLevel.Warning);
+            }
+        }
+
+        bool EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
+        {
+            EventQueueServer eqServer = (EventQueueServer)state;
+            return eqServer.EventQueueHandler(context, request, response);
         }
 
         void BroadcastObjectUpdate(Primitive prim)

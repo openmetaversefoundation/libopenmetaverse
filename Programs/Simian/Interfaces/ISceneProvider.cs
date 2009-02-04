@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using HttpServer;
 using OpenMetaverse;
+using OpenMetaverse.StructuredData;
 
 namespace Simian
 {
@@ -76,5 +78,8 @@ namespace Simian
         bool TryGetAgent(uint localID, out Agent agent);
         bool TryGetAgent(UUID id, out Agent agent);
         void ForEachAgent(Action<Agent> action);
+
+        void SendEvent(Agent agent, string name, OSDMap body);
+        bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
     }
 }

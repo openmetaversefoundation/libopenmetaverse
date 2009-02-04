@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Threading;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using ExtensionLoader;
 using ExtensionLoader.Config;
 using HttpServer;
@@ -17,10 +18,12 @@ namespace Simian
     public partial class Simian
     {
         public const string CONFIG_FILE = "Simian.ini";
+        public const string DATA_DIR = "SimianData/";
 
-        public int UDPPort = 9000;
-        public int HttpPort = 8002;
-        public string DataDir = "SimianData/";
+        public int UDPPort { get { return 9000; } }
+        public int HttpPort { get { return 8002; } }
+        public bool SSL { get { return false; } }
+        public string HostName { get { return Dns.GetHostName(); } }
 
         public WebServer HttpServer;
         public IniConfigSource ConfigFile;
@@ -35,7 +38,7 @@ namespace Simian
         public IInventoryProvider Inventory;
         public IParcelProvider Parcels;
         public IMeshingProvider Mesher;
-        //public ICapabilitiesProvider Capabilities;
+        public ICapabilitiesProvider Capabilities;
 
         // Persistent extensions
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();
@@ -61,7 +64,9 @@ namespace Simian
                 return false;
             }
 
-            InitHttpServer(HttpPort, true);
+            // TODO: SSL support
+            HttpServer = new WebServer(IPAddress.Any, HttpPort);
+            HttpServer.Start();
 
             try
             {
@@ -122,13 +127,6 @@ namespace Simian
             }
 
             HttpServer.Stop();
-        }
-
-        void InitHttpServer(int port, bool ssl)
-        {
-            HttpServer = new WebServer(IPAddress.Any, port);
-
-            HttpServer.Start();
         }
     }
 }

@@ -34,19 +34,31 @@ using HttpServer;
 
 namespace OpenMetaverse.Http
 {
+    /// <summary>
+    /// Delegate for handling incoming HTTP requests through a capability
+    /// </summary>
+    /// <param name="context">Client context</param>
+    /// <param name="request">HTTP request</param>
+    /// <param name="response">HTTP response</param>
+    /// <param name="state">User-defined state object</param>
+    /// <returns>True to send the response and close the connection, false to leave the connection open</returns>
+    public delegate bool CapsRequestCallback(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
+
     public class CapsServer
     {
         struct CapsRedirector
         {
-            public HttpRequestCallback LocalCallback;
+            public CapsRequestCallback LocalCallback;
             public Uri RemoteHandler;
             public bool ClientCertRequired;
+            public object State;
 
-            public CapsRedirector(HttpRequestCallback localCallback, Uri remoteHandler, bool clientCertRequired)
+            public CapsRedirector(CapsRequestCallback localCallback, Uri remoteHandler, bool clientCertRequired, object state)
             {
                 LocalCallback = localCallback;
                 RemoteHandler = remoteHandler;
                 ClientCertRequired = clientCertRequired;
+                State = state;
             }
         }
 
@@ -60,7 +72,7 @@ namespace OpenMetaverse.Http
         public CapsServer(IPAddress address, int port)
         {
             serverOwned = true;
-            capsHandler = BuildCapsHandler("^/");
+            capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
             server = new WebServer(address, port);
             server.LogWriter = new log4netLogWriter(Logger.Log);
         }
@@ -68,7 +80,7 @@ namespace OpenMetaverse.Http
         public CapsServer(IPAddress address, int port, X509Certificate sslCertificate, X509Certificate rootCA, bool requireClientCertificate)
         {
             serverOwned = true;
-            capsHandler = BuildCapsHandler("^/");
+            capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
             server = new WebServer(address, port, sslCertificate, rootCA, requireClientCertificate);
             server.LogWriter = new log4netLogWriter(Logger.Log);
         }
@@ -96,10 +108,10 @@ namespace OpenMetaverse.Http
             server.RemoveHandler(capsHandler);
         }
 
-        public UUID CreateCapability(HttpRequestCallback localHandler, bool clientCertRequired)
+        public UUID CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired);
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, state);
 
             lock (syncRoot)
                 fixedCaps.Add(id, redirector);
@@ -110,7 +122,7 @@ namespace OpenMetaverse.Http
         public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired);
+            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired, null);
 
             lock (syncRoot)
                 fixedCaps.Add(id, redirector);
@@ -118,10 +130,10 @@ namespace OpenMetaverse.Http
             return id;
         }
 
-        public UUID CreateCapability(HttpRequestCallback localHandler, bool clientCertRequired, double ttlSeconds)
+        public UUID CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state, double ttlSeconds)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired);
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, state);
 
             lock (syncRoot)
                 expiringCaps.Add(id, redirector, DateTime.Now + TimeSpan.FromSeconds(ttlSeconds));
@@ -129,10 +141,10 @@ namespace OpenMetaverse.Http
             return id;
         }
 
-        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired, double ttlSeconds)
+        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired, object state, double ttlSeconds)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired);
+            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired, state);
 
             lock (syncRoot)
                 expiringCaps.Add(id, redirector, DateTime.Now + TimeSpan.FromSeconds(ttlSeconds));
@@ -156,9 +168,10 @@ namespace OpenMetaverse.Http
             UUID capsID;
             CapsRedirector redirector;
             bool success;
-            string uuidString = request.UriParts[request.UriParts.Length - 1];
 
-            if (UUID.TryParse(uuidString, out capsID))
+            string path = request.Uri.PathAndQuery.TrimEnd('/');
+
+            if (UUID.TryParse(path.Substring(path.Length - 36), out capsID))
             {
                 lock (syncRoot)
                     success = (expiringCaps.TryGetValue(capsID, out redirector) || fixedCaps.TryGetValue(capsID, out redirector));
@@ -179,7 +192,7 @@ namespace OpenMetaverse.Http
                     if (redirector.RemoteHandler != null)
                         ProxyCapCallback(client, request, response, redirector.RemoteHandler);
                     else
-                        return redirector.LocalCallback(client, request, response);
+                        return redirector.LocalCallback(client, request, response, redirector.State);
 
                     return true;
                 }
@@ -234,7 +247,7 @@ namespace OpenMetaverse.Http
             }
         }
 
-        HttpServer.HttpRequestHandler BuildCapsHandler(string path)
+        HttpRequestHandler BuildCapsHandler(string path)
         {
             HttpRequestSignature signature = new HttpRequestSignature();
             signature.ContentType = "application/xml";

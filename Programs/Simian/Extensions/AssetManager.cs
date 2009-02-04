@@ -23,12 +23,12 @@ namespace Simian.Extensions
         {
             this.server = server;
 
-            UploadDir = Path.Combine(server.DataDir, UPLOAD_DIR);
+            UploadDir = Path.Combine(Simian.DATA_DIR, UPLOAD_DIR);
 
             // Try to create the data directories if they don't already exist
-            if (!Directory.Exists(server.DataDir))
+            if (!Directory.Exists(Simian.DATA_DIR))
             {
-                try { Directory.CreateDirectory(server.DataDir); }
+                try { Directory.CreateDirectory(Simian.DATA_DIR); }
                 catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex); }
             }
             if (!Directory.Exists(UploadDir))
@@ -37,7 +37,7 @@ namespace Simian.Extensions
                 catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex); }
             }
 
-            LoadAssets(server.DataDir);
+            LoadAssets(Simian.DATA_DIR);
             LoadAssets(UploadDir);
         }
 

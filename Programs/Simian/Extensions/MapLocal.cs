@@ -1,10 +1,24 @@
 ﻿using System;
+using System.IO;
+using System.Net;
+using System.Xml;
 using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
 
 namespace Simian.Extensions
 {
+    class HyperGridLink
+    {
+        public string RegionName;
+        public ulong RegionHandle;
+        public UUID RegionID;
+        public UUID RegionImage;
+        public int UDPPort;
+        public int RemotingPort;
+    }
+
     public class MapLocal : IExtension<Simian>
     {
         Simian server;
@@ -84,6 +98,8 @@ namespace Simian.Extensions
         {
             TeleportRequestPacket request = (TeleportRequestPacket)packet;
 
+            // TODO: Stand the avatar up first
+
             if (request.Info.RegionID == server.Scene.RegionID)
             {
                 // Local teleport
@@ -102,13 +118,19 @@ namespace Simian.Extensions
             }
             else
             {
-                Logger.Log("Ignoring teleport request to " + request.Info.RegionID, Helpers.LogLevel.Warning);
+                TeleportFailedPacket reply = new TeleportFailedPacket();
+                reply.Info.AgentID = agent.Avatar.ID;
+                reply.Info.Reason = Utils.StringToBytes("Unknown region");
+
+                server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
             }
         }
 
         void TeleportLocationRequestHandler(Packet packet, Agent agent)
         {
             TeleportLocationRequestPacket request = (TeleportLocationRequestPacket)packet;
+
+            // TODO: Stand the avatar up first
 
             if (request.Info.RegionHandle == server.Scene.RegionHandle)
             {
@@ -126,10 +148,410 @@ namespace Simian.Extensions
 
                 server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
             }
+            else if (request.Info.RegionHandle == Utils.UIntsToLong((server.Scene.RegionX + 1) * 256, server.Scene.RegionY * 256))
+            {
+                // Special case: adjacent simulator is the HyperGrid portal
+                HyperGridTeleport(agent, new Uri(/*"http://192.168.1.2:9010/"*/ "http://osl2.nac.uci.edu:9006/"), request.Info.Position);
+            }
             else
             {
-                Logger.Log("Ignoring teleport request to " + request.Info.RegionHandle, Helpers.LogLevel.Warning);
+                TeleportFailedPacket reply = new TeleportFailedPacket();
+                reply.Info.AgentID = agent.Avatar.ID;
+                reply.Info.Reason = Utils.StringToBytes("Unknown region");
+
+                server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
             }
+        }
+
+        bool HyperGridTeleport(Agent agent, Uri destination, Vector3 destPos)
+        {
+            HyperGridLink link;
+
+            TeleportProgress(agent, "Resolving destination IP address", TeleportFlags.ViaLocation);
+
+            IPHostEntry entry = Dns.GetHostEntry(destination.DnsSafeHost);
+            if (entry.AddressList != null && entry.AddressList.Length >= 1)
+            {
+                TeleportProgress(agent, "Retrieving destination details", TeleportFlags.ViaLocation);
+
+                if (LinkRegion(destination, out link))
+                {
+                    TeleportProgress(agent, "Creating foreign agent", TeleportFlags.ViaLocation);
+
+                    if (ExpectHyperGridUser(agent, destination, destPos, link))
+                    {
+                        TeleportProgress(agent, "Establishing foreign agent presence", TeleportFlags.ViaLocation);
+
+                        // This is a crufty part of the HyperGrid protocol. We need to generate a fragment of a UUID
+                        // (missing the last four digits) and send that as the caps_path variable. Locally, we expand
+                        // that out to http://foreignsim:httpport/CAPS/fragment0000/ and use it as the seed caps path
+                        // that is sent to the client
+                        UUID seedID = UUID.Random();
+                        string seedCapFragment = seedID.ToString().Substring(0, 32);
+                        Uri seedCap = new Uri(destination, "/CAPS/" + seedCapFragment + "0000/");
+
+                        if (CreateChildAgent(agent, destination, destPos, link, seedCapFragment))
+                        {
+                            // Send the final teleport packet to the client
+                            TeleportFinishPacket teleport = new TeleportFinishPacket();
+                            teleport.Info.AgentID = agent.Avatar.ID;
+                            teleport.Info.LocationID = 0; // Unused by the client
+                            teleport.Info.RegionHandle = link.RegionHandle;
+                            teleport.Info.SeedCapability = Utils.StringToBytes(seedCap.ToString());
+                            teleport.Info.SimAccess = (byte)SimAccess.Min;
+                            teleport.Info.SimIP = Utils.BytesToUInt(entry.AddressList[0].GetAddressBytes());
+                            teleport.Info.SimPort = (ushort)link.UDPPort;
+                            teleport.Info.TeleportFlags = (uint)TeleportFlags.ViaLocation;
+
+                            server.UDP.SendPacket(agent.Avatar.ID, teleport, PacketCategory.Transaction);
+                            
+                            // Remove the agent from the local scene (will also tear down the UDP connection)
+                            //server.Scene.ObjectRemove(this, agent.Avatar.ID);
+
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool LinkRegion(Uri destination, out HyperGridLink link)
+        {
+            try
+            {
+                #region Build Request
+
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(destination);
+                request.Method = "POST";
+                request.ContentType = "text/xml";
+
+                MemoryStream memoryStream = new MemoryStream();
+                using (XmlWriter writer = XmlWriter.Create(memoryStream))
+                {
+                    writer.WriteStartElement("methodCall");
+                    {
+                        writer.WriteElementString("methodName", "link_region");
+
+                        writer.WriteStartElement("params");
+                        writer.WriteStartElement("param");
+                        writer.WriteStartElement("value");
+                        writer.WriteStartElement("struct");
+                        {
+                            WriteStringMember(writer, "region_name", String.Empty);
+                        }
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                    }
+                    writer.WriteEndElement();
+
+                    writer.Flush();
+                }
+
+                request.ContentLength = memoryStream.Length;
+
+                using (Stream writeStream = request.GetRequestStream())
+                {
+                    writeStream.Write(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+                }
+
+                #endregion Build Request
+
+                #region Parse Response
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                XmlReaderSettings settings = new XmlReaderSettings();
+                settings.IgnoreComments = true;
+                settings.IgnoreWhitespace = true;
+
+                using (XmlReader reader = XmlReader.Create(response.GetResponseStream(), settings))
+                {
+                    link = new HyperGridLink();
+
+                    reader.ReadStartElement("methodResponse");
+                    {
+                        reader.ReadStartElement("params");
+                        reader.ReadStartElement("param");
+                        reader.ReadStartElement("value");
+                        reader.ReadStartElement("struct");
+                        {
+                            while (reader.Name == "member")
+                            {
+                                reader.ReadStartElement("member");
+                                {
+                                    string name = reader.ReadElementContentAsString("name", String.Empty);
+
+                                    reader.ReadStartElement("value");
+                                    {
+                                        switch (name)
+                                        {
+                                            case "region_name":
+                                                link.RegionName = reader.ReadElementContentAsString("string", String.Empty);
+                                                break;
+                                            case "handle":
+                                                string handle = reader.ReadElementContentAsString("string", String.Empty);
+                                                link.RegionHandle = UInt64.Parse(handle);
+                                                break;
+                                            case "uuid":
+                                                string uuid = reader.ReadElementContentAsString("string", String.Empty);
+                                                link.RegionID = UUID.Parse(uuid);
+                                                break;
+                                            case "internal_port":
+                                                link.UDPPort = reader.ReadElementContentAsInt("string", String.Empty);
+                                                break;
+                                            case "region_image":
+                                                string imageuuid = reader.ReadElementContentAsString("string", String.Empty);
+                                                link.RegionImage = UUID.Parse(imageuuid);
+                                                break;
+                                            case "remoting_port":
+                                                link.RemotingPort = reader.ReadElementContentAsInt("string", String.Empty);
+                                                break;
+                                            default:
+                                                Logger.Log("[HyperGrid] Unrecognized response XML chunk: " + reader.ReadInnerXml(),
+                                                    Helpers.LogLevel.Warning);
+                                                break;
+                                        }
+                                    }
+                                    reader.ReadEndElement();
+                                }
+                                reader.ReadEndElement();
+                            }
+                        }
+                        reader.ReadEndElement();
+                        reader.ReadEndElement();
+                        reader.ReadEndElement();
+                        reader.ReadEndElement();
+                    }
+                    reader.ReadEndElement();
+
+                    return true;
+                }
+
+                #endregion Parse Response
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
+            }
+
+            link = null;
+            return false;
+        }
+
+        bool ExpectHyperGridUser(Agent agent, Uri destination, Vector3 destPos, HyperGridLink link)
+        {
+            try
+            {
+                #region Build Request
+
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(destination);
+                request.Method = "POST";
+                request.ContentType = "text/xml";
+
+                MemoryStream memoryStream = new MemoryStream();
+                using (XmlWriter writer = XmlWriter.Create(memoryStream))
+                {
+                    writer.WriteStartElement("methodCall");
+                    {
+                        writer.WriteElementString("methodName", "expect_hg_user");
+
+                        writer.WriteStartElement("params");
+                        writer.WriteStartElement("param");
+                        writer.WriteStartElement("value");
+                        writer.WriteStartElement("struct");
+                        {
+                            WriteStringMember(writer, "session_id", agent.SessionID.ToString());
+                            WriteStringMember(writer, "secure_session_id", agent.SecureSessionID.ToString());
+                            WriteStringMember(writer, "firstname", agent.FirstName);
+                            WriteStringMember(writer, "lastname", agent.LastName);
+                            WriteStringMember(writer, "agent_id", agent.Avatar.ID.ToString());
+                            WriteStringMember(writer, "circuit_code", agent.CircuitCode.ToString());
+                            WriteStringMember(writer, "startpos_x", destPos.X.ToString(Utils.EnUsCulture));
+                            WriteStringMember(writer, "startpos_y", destPos.Y.ToString(Utils.EnUsCulture));
+                            WriteStringMember(writer, "startpos_z", destPos.Z.ToString(Utils.EnUsCulture));
+                            WriteStringMember(writer, "caps_path", String.Empty);
+
+                            WriteStringMember(writer, "region_uuid", link.RegionID.ToString());
+                            //WriteStringMember(writer, "userserver_id", "");
+                            //WriteStringMember(writer, "assetserver_id", "");
+                            //WriteStringMember(writer, "inventoryserver_id", "");
+                            WriteStringMember(writer, "root_folder_id", agent.InventoryRoot.ToString());
+
+                            WriteStringMember(writer, "internal_port", server.HttpPort.ToString());
+                            WriteStringMember(writer, "regionhandle", link.RegionHandle.ToString());
+                            WriteStringMember(writer, "home_address", IPAddress.Loopback.ToString());
+                            WriteStringMember(writer, "home_port", server.HttpPort.ToString());
+                            WriteStringMember(writer, "home_remoting", server.HttpPort.ToString());
+                        }
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                    }
+                    writer.WriteEndElement();
+
+                    writer.Flush();
+                }
+
+                request.ContentLength = memoryStream.Length;
+
+                using (Stream writeStream = request.GetRequestStream())
+                {
+                    writeStream.Write(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+                }
+
+                #endregion Build Request
+
+                #region Parse Response
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                XmlReaderSettings settings = new XmlReaderSettings();
+                settings.IgnoreComments = true;
+                settings.IgnoreWhitespace = true;
+
+                using (XmlReader reader = XmlReader.Create(response.GetResponseStream(), settings))
+                {
+                    bool success = false;
+                    string reason = String.Empty;
+
+                    reader.ReadStartElement("methodResponse");
+                    {
+                        reader.ReadStartElement("params");
+                        reader.ReadStartElement("param");
+                        reader.ReadStartElement("value");
+                        reader.ReadStartElement("struct");
+                        {
+                            while (reader.Name == "member")
+                            {
+                                reader.ReadStartElement("member");
+                                {
+                                    string name = reader.ReadElementContentAsString("name", String.Empty);
+
+                                    reader.ReadStartElement("value");
+                                    {
+                                        switch (name)
+                                        {
+                                            case "success":
+                                                success = (reader.ReadElementContentAsString("string", String.Empty).ToUpper() == "TRUE");
+                                                break;
+                                            case "reason":
+                                                reason = reader.ReadElementContentAsString("string", String.Empty);
+                                                break;
+                                            default:
+                                                Logger.Log("[HyperGrid] Unrecognized response XML chunk: " + reader.ReadInnerXml(),
+                                                    Helpers.LogLevel.Warning);
+                                                break;
+                                        }
+                                    }
+                                    reader.ReadEndElement();
+                                }
+                                reader.ReadEndElement();
+                            }
+                        }
+                        reader.ReadEndElement();
+                        reader.ReadEndElement();
+                        reader.ReadEndElement();
+                        reader.ReadEndElement();
+                    }
+                    reader.ReadEndElement();
+
+                    if (!success)
+                        Logger.Log("[HyperGrid] Teleport failed, reason: " + reason, Helpers.LogLevel.Warning);
+
+                    return success;
+                }
+
+                #endregion Parse Response
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
+            }
+
+            return false;
+        }
+
+        bool CreateChildAgent(Agent agent, Uri destination, Vector3 destPos, HyperGridLink link, string seedCapFragment)
+        {
+            try
+            {
+                destination = new Uri(destination, "/agent/" + agent.Avatar.ID.ToString() + "/");
+
+                OSDMap args = new OSDMap();
+                args["agent_id"] = OSD.FromUUID(agent.Avatar.ID);
+                args["base_folder"] = OSD.FromUUID(UUID.Zero);
+                args["caps_path"] = OSD.FromString(seedCapFragment);
+                args["children_seeds"] = OSD.FromBoolean(false);
+                args["child"] = OSD.FromBoolean(false);
+                args["circuit_code"] = OSD.FromString(agent.CircuitCode.ToString());
+                args["first_name"] = OSD.FromString(agent.FirstName);
+                args["last_name"] = OSD.FromString(agent.LastName);
+                args["inventory_folder"] = OSD.FromUUID(agent.InventoryRoot);
+                args["secure_session_id"] = OSD.FromUUID(agent.SecureSessionID);
+                args["session_id"] = OSD.FromUUID(agent.SessionID);
+                args["start_pos"] = OSD.FromString(destPos.ToString());
+                args["destination_handle"] = OSD.FromString(link.RegionHandle.ToString());
+
+                LitJson.JsonData jsonData = OSDParser.SerializeJson(args);
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(jsonData.ToJson());
+
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(destination);
+                request.Method = "POST";
+                request.ContentType = "application/json";
+                request.ContentLength = data.Length;
+
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    requestStream.Write(data, 0, data.Length);
+                    requestStream.Flush();
+                }
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                bool success = false;
+                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                {
+                    Boolean.TryParse(reader.ReadToEnd(), out success);
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
+            }
+
+            return false;
+        }
+
+        void TeleportProgress(Agent agent, string message, TeleportFlags flags)
+        {
+            TeleportProgressPacket progress = new TeleportProgressPacket();
+            progress.AgentData.AgentID = agent.Avatar.ID;
+            progress.Info.Message = Utils.StringToBytes(message);
+            progress.Info.TeleportFlags = (uint)flags;
+
+            server.UDP.SendPacket(agent.Avatar.ID, progress, PacketCategory.Transaction);
+        }
+
+        static void WriteStringMember(XmlWriter writer, string name, string value)
+        {
+            writer.WriteStartElement("member");
+            {
+                writer.WriteElementString("name", name);
+
+                writer.WriteStartElement("value");
+                {
+                    writer.WriteElementString("string", value);
+                }
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
         }
     }
 }

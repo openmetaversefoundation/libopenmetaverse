@@ -106,26 +106,6 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(sound, PacketCategory.State);
         }
 
-        public void Disconnect(Agent agent)
-        {
-            // Remove the avatar from the scene
-            SimulationObject obj;
-            if (server.Scene.TryGetObject(agent.Avatar.ID, out obj))
-                server.Scene.ObjectRemove(this, obj.Prim.LocalID);
-            else
-                Logger.Log("Disconnecting an agent that is not in the scene", Helpers.LogLevel.Warning);
-
-            // Remove the UDP client
-            server.UDP.RemoveClient(agent);
-
-            // HACK: Notify everyone when someone disconnects
-            OfflineNotificationPacket offline = new OfflineNotificationPacket();
-            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
-            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-            offline.AgentBlock[0].AgentID = agent.Avatar.ID;
-            server.UDP.BroadcastPacket(offline, PacketCategory.State);
-        }
-
         public void SendAlert(Agent agent, string message)
         {
             AlertMessagePacket alert = new AlertMessagePacket();
@@ -450,8 +430,16 @@ namespace Simian.Extensions
                     update.Index.Prey = -1;
                     update.Index.You = 0;
 
-                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[agentDatas.Count - 1];
-                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[agentDatas.Count - 1];
+                    // Count the number of blocks to send out
+                    int count = 0;
+                    for (int i = 0; i < agentDatas.Count; i++)
+                    {
+                        if (agentDatas[i].AgentID != agent.Avatar.ID)
+                            ++count;
+                    }
+
+                    update.AgentData = new CoarseLocationUpdatePacket.AgentDataBlock[count];
+                    update.Location = new CoarseLocationUpdatePacket.LocationBlock[count];
 
                     int j = 0;
                     for (int i = 0; i < agentDatas.Count; i++)

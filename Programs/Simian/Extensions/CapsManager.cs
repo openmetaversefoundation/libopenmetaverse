@@ -13,7 +13,6 @@ namespace Simian.Extensions
     {
         Simian server;
         CapsServer capsServer;
-        Dictionary<UUID, EventQueueServer> eventQueues = new Dictionary<UUID, EventQueueServer>();
 
         public CapsManager()
         {
@@ -22,47 +21,45 @@ namespace Simian.Extensions
         public void Start(Simian server)
         {
             this.server = server;
-            capsServer = new CapsServer(server.HttpServer, @"^/caps/");
+            capsServer = new CapsServer(server.HttpServer, @"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+            capsServer.Start();
         }
 
         public void Stop()
         {
-            lock (eventQueues)
-            {
-                foreach (EventQueueServer eventQueue in eventQueues.Values)
-                    eventQueue.Stop();
-            }
-
             capsServer.Stop();
         }
 
-        public UUID CreateCapability(HttpServer.HttpRequestCallback localHandler, bool clientCertRequired)
+        public Uri CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state)
         {
-            return capsServer.CreateCapability(localHandler, clientCertRequired);
+            UUID capID = capsServer.CreateCapability(localHandler, clientCertRequired, state);
+            return new Uri(
+                (server.SSL ? "https://" : "http://") +
+                server.HostName +
+                (server.HttpPort == 80 ? String.Empty : ":" + server.HttpPort) +
+                "/caps/" + capID.ToString());
         }
 
-        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired)
+        public Uri CreateCapability(Uri remoteHandler, bool clientCertRequired)
         {
-            return capsServer.CreateCapability(remoteHandler, clientCertRequired);
+            UUID capID = capsServer.CreateCapability(remoteHandler, clientCertRequired);
+            return new Uri(
+                (server.SSL ? "https://" : "http://") +
+                server.HostName +
+                (server.HttpPort == 80 ? String.Empty : ":" + server.HttpPort) +
+                "/caps/" + capID.ToString());
         }
 
-        public bool RemoveCapability(UUID capID)
+        public bool RemoveCapability(Uri cap)
         {
-            return capsServer.RemoveCapability(capID);
-        }
+            string path = cap.PathAndQuery.TrimEnd('/');
+            UUID capID;
 
-        public void SendEvent(Agent agent, string name, OSDMap body)
-        {
-            EventQueueServer eventQueue;
-            if (eventQueues.TryGetValue(agent.Avatar.ID, out eventQueue))
-            {
-                eventQueue.SendEvent(name, body);
-            }
+            // Parse the capability UUID out of the URI
+            if (UUID.TryParse(path.Substring(path.Length - 36), out capID))
+                return capsServer.RemoveCapability(capID);
             else
-            {
-                Logger.Log(String.Format("Cannot send the event {0} to agent {1} {2}, no event queue for that avatar",
-                    name, agent.FirstName, agent.LastName), Helpers.LogLevel.Warning);
-            }
+                return false;
         }
     }
 }

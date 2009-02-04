@@ -8,10 +8,8 @@ namespace Simian
 {
     public interface ICapabilitiesProvider
     {
-        UUID CreateCapability(HttpRequestCallback localHandler, bool clientCertRequired);
-        UUID CreateCapability(Uri remoteHandler, bool clientCertRequired);
-        bool RemoveCapability(UUID capID);
-
-        void SendEvent(Agent agent, string name, OSDMap body);
+        Uri CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state);
+        Uri CreateCapability(Uri remoteHandler, bool clientCertRequired);
+        bool RemoveCapability(Uri cap);
     }
 }

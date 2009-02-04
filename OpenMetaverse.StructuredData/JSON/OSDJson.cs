@@ -132,12 +132,14 @@ namespace OpenMetaverse.StructuredData
                     return new JsonData("b64::" + Convert.ToBase64String(osd.AsBinary()));
                 case OSDType.Array:
                     JsonData jsonarray = new JsonData();
+                    jsonarray.SetJsonType(JsonType.Array);
                     OSDArray array = (OSDArray)osd;
                     for (int i = 0; i < array.Count; i++)
                         jsonarray.Add(SerializeJson(array[i]));
                     return jsonarray;
                 case OSDType.Map:
                     JsonData jsonmap = new JsonData();
+                    jsonmap.SetJsonType(JsonType.Object);
                     OSDMap map = (OSDMap)osd;
                     foreach (KeyValuePair<string, OSD> kvp in map)
                         jsonmap[kvp.Key] = SerializeJson(kvp.Value);
