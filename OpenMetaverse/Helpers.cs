@@ -575,7 +575,7 @@ namespace OpenMetaverse
                 // handle blocks that are arrays
                 if (packetDataObject.GetType().IsArray)
                 {
-                    foreach (var nestedArrayRecord in packetDataObject as Array)
+                    foreach (object nestedArrayRecord in packetDataObject as Array)
                     {
                         foreach (FieldInfo packetArrayField in nestedArrayRecord.GetType().GetFields())
                         {
