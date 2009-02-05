@@ -673,24 +673,82 @@ namespace OpenMetaverse.StructuredData
 
         public OSDBinary(uint value)
         {
-            this.value = Utils.UIntToBytes(value);
+            this.value = new byte[]
+            {
+                (byte)((value >> 24) % 256),
+                (byte)((value >> 16) % 256),
+                (byte)((value >> 8) % 256),
+                (byte)(value % 256)
+            };
         }
 
         public OSDBinary(long value)
         {
-            this.value = Utils.Int64ToBytes(value);
+            this.value = new byte[]
+            {
+                (byte)((value >> 56) % 256),
+                (byte)((value >> 48) % 256),
+                (byte)((value >> 40) % 256),
+                (byte)((value >> 32) % 256),
+                (byte)((value >> 24) % 256),
+                (byte)((value >> 16) % 256),
+                (byte)((value >> 8) % 256),
+                (byte)(value % 256)
+            };
         }
 
         public OSDBinary(ulong value)
         {
-            this.value = Utils.UInt64ToBytes(value);
+            this.value = new byte[]
+            {
+                (byte)((value >> 56) % 256),
+                (byte)((value >> 48) % 256),
+                (byte)((value >> 40) % 256),
+                (byte)((value >> 32) % 256),
+                (byte)((value >> 24) % 256),
+                (byte)((value >> 16) % 256),
+                (byte)((value >> 8) % 256),
+                (byte)(value % 256)
+            };
         }
 
         public override string AsString() { return Convert.ToBase64String(value); }
         public override byte[] AsBinary() { return value; }
-        public override uint AsUInteger() { return Utils.BytesToUInt(value); }
-        public override long AsLong() { return Utils.BytesToInt64(value); }
-        public override ulong AsULong() { return Utils.BytesToUInt64(value); }
+
+        public override uint AsUInteger()
+        {
+            return (uint)(
+                (value[0] << 24) +
+                (value[1] << 16) +
+                (value[2] << 8) +
+                (value[3] << 0));
+        }
+
+        public override long AsLong()
+        {
+            return (long)(
+                ((long)value[0] << 56) +
+                ((long)value[1] << 48) +
+                ((long)value[2] << 40) +
+                ((long)value[3] << 32) +
+                ((long)value[4] << 24) +
+                ((long)value[5] << 16) +
+                ((long)value[6] << 8) +
+                ((long)value[7] << 0));
+        }
+
+        public override ulong AsULong()
+        {
+            return (ulong)(
+                ((ulong)value[0] << 56) +
+                ((ulong)value[1] << 48) +
+                ((ulong)value[2] << 40) +
+                ((ulong)value[3] << 32) +
+                ((ulong)value[4] << 24) +
+                ((ulong)value[5] << 16) +
+                ((ulong)value[6] << 8) +
+                ((ulong)value[7] << 0));
+        }
 
         public override string ToString()
         {

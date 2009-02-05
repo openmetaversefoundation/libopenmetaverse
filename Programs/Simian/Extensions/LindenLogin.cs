@@ -200,6 +200,9 @@ namespace Simian.Extensions
                     IPAddress simIP = addresses.AddressList.Length > 0 ?
                         addresses.AddressList[addresses.AddressList.Length - 1] : IPAddress.Loopback;
 
+                    agent.CurrentRegionHandle = server.Scene.RegionHandle;
+                    agent.HomeRegionHandle = server.Scene.RegionHandle;
+
                     response.AgentID = agent.Avatar.ID;
                     response.SecureSessionID = agent.SecureSessionID;
                     response.SessionID = agent.SessionID;
@@ -220,10 +223,8 @@ namespace Simian.Extensions
                     response.Message = "Welcome to Simian";
                     response.Reason = String.Empty;
 
-                    uint regionX, regionY;
-                    Utils.LongToUInts(agent.CurrentRegionHandle, out regionX, out regionY);
-                    response.RegionX = regionX;
-                    response.RegionY = regionY;
+                    response.RegionX = server.Scene.RegionX * 256;
+                    response.RegionY = server.Scene.RegionY * 256;
 
                     response.SecondsSinceEpoch = DateTime.Now;
                     response.SeedCapability = seedCap.ToString();

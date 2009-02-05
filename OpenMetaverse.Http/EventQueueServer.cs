@@ -68,7 +68,7 @@ namespace OpenMetaverse.Http
 
         WebServer server;
         BlockingQueue<EventQueueEvent> eventQueue = new BlockingQueue<EventQueueEvent>();
-        int currentID = 0;
+        int currentID = 1;
         bool running = true;
 
         public EventQueueServer(WebServer server)
@@ -118,11 +118,11 @@ namespace OpenMetaverse.Http
 
             if (request != null && osdRequest.Type == OSDType.Map)
             {
-                OSDMap requestMap = (OSDMap)request;
+                OSDMap requestMap = (OSDMap)osdRequest;
                 int ack = requestMap["ack"].AsInteger();
                 bool done = requestMap["done"].AsBoolean();
 
-                if (ack != currentID - 1)
+                if (ack != currentID - 1 && ack != 0)
                 {
                     Logger.Log.WarnFormat("[EventQueue] Received an ack for id {0}, last id sent was {1}",
                         ack, currentID - 1);
@@ -229,8 +229,8 @@ namespace OpenMetaverse.Http
                     EventQueueEvent currentEvent = eventsToSend[i];
 
                     OSDMap eventMap = new OSDMap(2);
-                    eventMap.Add("body", currentEvent.Body);
                     eventMap.Add("message", OSD.FromString(currentEvent.Name));
+                    eventMap.Add("body", currentEvent.Body);
                     responseArray.Add(eventMap);
                 }
 
@@ -241,7 +241,7 @@ namespace OpenMetaverse.Http
 
                 // Serialize the events and send the response
                 byte[] buffer = OSDParser.SerializeLLSDXmlBytes(responseMap);
-                response.ContentType = "application/xml";
+                response.ContentType = "application/llsd+xml";
                 response.ContentLength = buffer.Length;
                 response.Body.Write(buffer, 0, buffer.Length);
                 response.Body.Flush();

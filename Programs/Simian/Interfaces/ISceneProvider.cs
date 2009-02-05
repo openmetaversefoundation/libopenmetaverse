@@ -80,6 +80,7 @@ namespace Simian
         void ForEachAgent(Action<Agent> action);
 
         void SendEvent(Agent agent, string name, OSDMap body);
+        bool HasRunningEventQueue(Agent agent);
         bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
     }
 }

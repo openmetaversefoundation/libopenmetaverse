@@ -50,8 +50,8 @@ namespace Simian.Extensions
         public event AgentAppearanceCallback OnAgentAppearance;
         public event TerrainUpdateCallback OnTerrainUpdate;
 
-        public uint RegionX { get { return 1000; } }
-        public uint RegionY { get { return 1000; } }
+        public uint RegionX { get { return 7777; } }
+        public uint RegionY { get { return 7777; } }
         public ulong RegionHandle { get { return regionHandle; } }
         public UUID RegionID { get { return regionID; } }
         public string RegionName { get { return "Simian"; } }
@@ -515,6 +515,11 @@ namespace Simian.Extensions
         public bool RemoveEventQueue(UUID agentID)
         {
             return eventQueues.Remove(agentID);
+        }
+
+        public bool HasRunningEventQueue(Agent agent)
+        {
+            return eventQueues.ContainsKey(agent.Avatar.ID);
         }
 
         public void SendEvent(Agent agent, string name, OSDMap body)

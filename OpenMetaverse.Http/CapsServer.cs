@@ -250,7 +250,6 @@ namespace OpenMetaverse.Http
         HttpRequestHandler BuildCapsHandler(string path)
         {
             HttpRequestSignature signature = new HttpRequestSignature();
-            signature.ContentType = "application/xml";
             signature.Path = path;
             return new HttpServer.HttpRequestHandler(signature, CapsCallback);
         }

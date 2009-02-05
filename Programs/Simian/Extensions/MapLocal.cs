@@ -151,7 +151,7 @@ namespace Simian.Extensions
             else if (request.Info.RegionHandle == Utils.UIntsToLong((server.Scene.RegionX + 1) * 256, server.Scene.RegionY * 256))
             {
                 // Special case: adjacent simulator is the HyperGrid portal
-                HyperGridTeleport(agent, new Uri(/*"http://192.168.1.2:9010/"*/ "http://osl2.nac.uci.edu:9006/"), request.Info.Position);
+                HyperGridTeleport(agent, new Uri("http://osl2.nac.uci.edu:9006/"), request.Info.Position);
             }
             else
             {
@@ -178,33 +178,66 @@ namespace Simian.Extensions
                 {
                     TeleportProgress(agent, "Creating foreign agent", TeleportFlags.ViaLocation);
 
-                    if (ExpectHyperGridUser(agent, destination, destPos, link))
+                    // This is a crufty part of the HyperGrid protocol. We need to generate a fragment of a UUID
+                    // (missing the last four digits) and send that as the caps_path variable. Locally, we expand
+                    // that out to http://foreignsim:httpport/CAPS/fragment0000/ and use it as the seed caps path
+                    // that is sent to the client
+                    UUID seedID = UUID.Random();
+                    string seedCapFragment = seedID.ToString().Substring(0, 32);
+                    Uri seedCap = new Uri(destination, "/CAPS/" + seedCapFragment + "0000/");
+
+                    if (ExpectHyperGridUser(agent, destination, destPos, link, seedCap))
                     {
                         TeleportProgress(agent, "Establishing foreign agent presence", TeleportFlags.ViaLocation);
 
-                        // This is a crufty part of the HyperGrid protocol. We need to generate a fragment of a UUID
-                        // (missing the last four digits) and send that as the caps_path variable. Locally, we expand
-                        // that out to http://foreignsim:httpport/CAPS/fragment0000/ and use it as the seed caps path
-                        // that is sent to the client
-                        UUID seedID = UUID.Random();
-                        string seedCapFragment = seedID.ToString().Substring(0, 32);
-                        Uri seedCap = new Uri(destination, "/CAPS/" + seedCapFragment + "0000/");
-
                         if (CreateChildAgent(agent, destination, destPos, link, seedCapFragment))
                         {
-                            // Send the final teleport packet to the client
-                            TeleportFinishPacket teleport = new TeleportFinishPacket();
-                            teleport.Info.AgentID = agent.Avatar.ID;
-                            teleport.Info.LocationID = 0; // Unused by the client
-                            teleport.Info.RegionHandle = link.RegionHandle;
-                            teleport.Info.SeedCapability = Utils.StringToBytes(seedCap.ToString());
-                            teleport.Info.SimAccess = (byte)SimAccess.Min;
-                            teleport.Info.SimIP = Utils.BytesToUInt(entry.AddressList[0].GetAddressBytes());
-                            teleport.Info.SimPort = (ushort)link.UDPPort;
-                            teleport.Info.TeleportFlags = (uint)TeleportFlags.ViaLocation;
+                            // Send the final teleport message to the client
+                            if (server.Scene.HasRunningEventQueue(agent))
+                            {
+                                uint x, y;
+                                Utils.LongToUInts(link.RegionHandle, out x, out y);
+                                x /= 256;
+                                y /= 256;
+                                Logger.Log(String.Format("HyperGrid teleporting to {0} ({1}, {2}) @ {3}",
+                                    link.RegionName, x, y, destination), Helpers.LogLevel.Info);
 
-                            server.UDP.SendPacket(agent.Avatar.ID, teleport, PacketCategory.Transaction);
-                            
+                                OSDMap info = new OSDMap();
+                                info.Add("AgentID", OSD.FromUUID(agent.Avatar.ID));
+                                info.Add("LocationID", OSD.FromInteger(4)); // Unused by the client
+                                info.Add("RegionHandle", OSD.FromULong(link.RegionHandle));
+                                info.Add("SeedCapability", OSD.FromUri(seedCap));
+                                info.Add("SimAccess", OSD.FromInteger((byte)SimAccess.Min));
+                                info.Add("SimIP", OSD.FromBinary(entry.AddressList[0].GetAddressBytes()));
+                                info.Add("SimPort", OSD.FromInteger(link.UDPPort));
+                                info.Add("TeleportFlags", OSD.FromUInteger((uint)TeleportFlags.ViaLocation));
+
+                                OSDArray infoArray = new OSDArray(1);
+                                infoArray.Add(info);
+
+                                OSDMap teleport = new OSDMap();
+                                teleport.Add("Info", infoArray);
+
+                                server.Scene.SendEvent(agent, "TeleportFinish", teleport);
+                            }
+                            else
+                            {
+                                Logger.Log("No running EventQueue for " + agent.FullName + ", sending TeleportFinish over UDP",
+                                    Helpers.LogLevel.Warning);
+
+                                TeleportFinishPacket teleport = new TeleportFinishPacket();
+                                teleport.Info.AgentID = agent.Avatar.ID;
+                                teleport.Info.LocationID = 0; // Unused by the client
+                                teleport.Info.RegionHandle = link.RegionHandle;
+                                teleport.Info.SeedCapability = Utils.StringToBytes(seedCap.ToString());
+                                teleport.Info.SimAccess = (byte)SimAccess.Min;
+                                teleport.Info.SimIP = Utils.BytesToUInt(entry.AddressList[0].GetAddressBytes());
+                                teleport.Info.SimPort = (ushort)link.UDPPort;
+                                teleport.Info.TeleportFlags = (uint)TeleportFlags.ViaLocation;
+
+                                server.UDP.SendPacket(agent.Avatar.ID, teleport, PacketCategory.Transaction);
+                            }
+
                             // Remove the agent from the local scene (will also tear down the UDP connection)
                             //server.Scene.ObjectRemove(this, agent.Avatar.ID);
 
@@ -342,7 +375,7 @@ namespace Simian.Extensions
             return false;
         }
 
-        bool ExpectHyperGridUser(Agent agent, Uri destination, Vector3 destPos, HyperGridLink link)
+        bool ExpectHyperGridUser(Agent agent, Uri destination, Vector3 destPos, HyperGridLink link, Uri seedCap)
         {
             try
             {
@@ -373,7 +406,7 @@ namespace Simian.Extensions
                             WriteStringMember(writer, "startpos_x", destPos.X.ToString(Utils.EnUsCulture));
                             WriteStringMember(writer, "startpos_y", destPos.Y.ToString(Utils.EnUsCulture));
                             WriteStringMember(writer, "startpos_z", destPos.Z.ToString(Utils.EnUsCulture));
-                            WriteStringMember(writer, "caps_path", String.Empty);
+                            WriteStringMember(writer, "caps_path", seedCap.ToString());
 
                             WriteStringMember(writer, "region_uuid", link.RegionID.ToString());
                             //WriteStringMember(writer, "userserver_id", "");
@@ -382,7 +415,7 @@ namespace Simian.Extensions
                             WriteStringMember(writer, "root_folder_id", agent.InventoryRoot.ToString());
 
                             WriteStringMember(writer, "internal_port", server.HttpPort.ToString());
-                            WriteStringMember(writer, "regionhandle", link.RegionHandle.ToString());
+                            WriteStringMember(writer, "regionhandle", server.Scene.RegionHandle.ToString());
                             WriteStringMember(writer, "home_address", IPAddress.Loopback.ToString());
                             WriteStringMember(writer, "home_port", server.HttpPort.ToString());
                             WriteStringMember(writer, "home_remoting", server.HttpPort.ToString());
