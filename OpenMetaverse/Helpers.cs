@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenMetaverse.Packets;
+using System.Reflection;
 
 namespace OpenMetaverse
 {
@@ -548,6 +549,70 @@ namespace OpenMetaverse
             }
 
             return splitPoints;
+        }
+
+        /// <summary>
+        /// Parse a packet into human readable formatted key/value pairs
+        /// </summary>
+        /// <param name="packet">the Packet to parse</param>
+        /// <returns>A string containing the packet block name, and key/value pairs of the data fields</returns>
+        public static string PacketToString(Packet packet)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach(FieldInfo packetField in packet.GetType().GetFields())
+            {
+                object packetDataObject = packetField.GetValue(packet);
+
+                result.AppendFormat("-- {0} --" + System.Environment.NewLine, packetField.Name);
+
+                foreach(FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
+                {
+                    result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 
+                        packetValueField.Name, packetValueField.GetValue(packetDataObject));
+                }
+
+                // handle blocks that are arrays
+                if (packetDataObject.GetType().IsArray)
+                {
+                    foreach (var nestedArrayRecord in packetDataObject as Array)
+                    {
+                        foreach (FieldInfo packetArrayField in nestedArrayRecord.GetType().GetFields())
+                        {
+                            result.AppendFormat("{0} {1}" + System.Environment.NewLine, 
+                                packetArrayField.Name, packetArrayField.GetValue(nestedArrayRecord));
+                        }
+                    }
+                }
+                else
+                {
+                    // handle non array data blocks
+                    foreach (PropertyInfo packetPropertyField in packetField.GetValue(packet).GetType().GetProperties())
+                    {
+                        // Handle fields named "Data" specifically, this is generally binary data, we'll display it as hex values
+                        if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])) 
+                            && packetPropertyField.Name.Equals("Data"))
+                        {
+                            result.AppendFormat("{0}: {1}" + System.Environment.NewLine,
+                                packetPropertyField.Name, 
+                                Utils.BytesToHexString((byte[])packetPropertyField.GetValue(packetDataObject, null), packetPropertyField.Name));
+                        }
+                        // decode bytes into strings
+                        else if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])))
+                        {
+                            result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 
+                                packetPropertyField.Name, 
+                                Utils.BytesToString((byte[])packetPropertyField.GetValue(packetDataObject, null)));
+                        }
+                        else
+                        {
+                            result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 
+                                packetPropertyField.Name, packetPropertyField.GetValue(packetDataObject, null));
+                        }
+                    }
+                }
+            }
+            return result.ToString();
         }
     }
 }
