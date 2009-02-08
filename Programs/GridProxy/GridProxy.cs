@@ -932,6 +932,24 @@ namespace GridProxy
                     info["SimIP"] = OSD.FromBinary(bytes);
                     info["SimPort"] = OSD.FromInteger(simPort);
                 }
+                else if (message == "EnableSimulator")
+                {
+                    OSDMap info = null;
+                    info = (OSDMap)(((OSDArray)body["SimulatorInfo"])[0]);
+                    byte[] bytes = info["IP"].AsBinary();
+                    uint IP = Utils.BytesToUInt(bytes);
+                    ushort Port = (ushort)info["Port"].AsInteger();
+                    string capsURL = null;
+
+                    GenericCheck(ref IP, ref Port, ref capsURL, capReq.Info.Sim == activeCircuit);
+
+                    bytes[0] = (byte)(IP % 256);
+                    bytes[1] = (byte)((IP >> 8) % 256);
+                    bytes[2] = (byte)((IP >> 16) % 256);
+                    bytes[3] = (byte)((IP >> 24) % 256);
+                    info["IP"] = OSD.FromBinary(bytes);
+                    info["Port"] = OSD.FromInteger(Port);
+                }
                 else if (message == "EstablishAgentCommunication")
                 {
                     string ipAndPort = body["sim-ip-and-port"].AsString();
