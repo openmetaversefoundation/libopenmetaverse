@@ -25,6 +25,7 @@ namespace SimianTests
             simian.UDP = new UDPManager();
             (simian.UDP as IExtension<Simian.Simian>).Start(simian);
             sceneManager = new SceneManager();
+            simian.Scene = sceneManager;
             sceneManager.Start(simian);
 
             agent = CreateDummyAgent();
