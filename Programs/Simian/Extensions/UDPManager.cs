@@ -455,7 +455,15 @@ namespace Simian
                 Agent agent;
                 if (CompleteAgentConnection(useCircuitCode.CircuitCode.Code, out agent))
                 {
-                    // FIXME: Sanity check that the agent isn't already logged in here
+                    // Sanity check that the agent isn't already logged in
+                    if (clients.ContainsKey(agent.Avatar.ID))
+                    {
+                        Logger.Log("Client UDP reference already exists for " + agent.Avatar.ID.ToString() + ", removing",
+                            Helpers.LogLevel.Warning);
+                        server.Scene.ObjectRemove(this, agent.Avatar.ID);
+                        clients.Remove(agent.Avatar.ID);
+                    }
+
                     AddClient(agent, address);
                     if (clients.TryGetValue(agent.Avatar.ID, out client))
                     {

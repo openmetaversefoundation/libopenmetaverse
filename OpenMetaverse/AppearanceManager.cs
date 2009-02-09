@@ -1139,7 +1139,7 @@ namespace OpenMetaverse
 
                 foreach (AgentCachedTextureResponsePacket.WearableDataBlock block in response.WearableData)
                 {
-                    UUID hash=new UUID();
+                    //UUID hash=new UUID();
                     // For each missing element we need to bake our own texture
                     Logger.DebugLog("Cache response, index: " + block.TextureIndex + ", ID: " +
                         block.TextureID.ToString(), Client);

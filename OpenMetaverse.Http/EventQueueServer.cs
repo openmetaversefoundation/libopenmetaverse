@@ -31,6 +31,7 @@ using System.IO;
 using System.Threading;
 using OpenMetaverse.StructuredData;
 using HttpServer;
+using HttpListener = HttpServer.HttpListener;
 
 namespace OpenMetaverse.Http
 {
@@ -66,12 +67,12 @@ namespace OpenMetaverse.Http
         /// events</summary>
         const int MAX_EVENTS_PER_RESPONSE = 5;
 
-        WebServer server;
+        HttpListener server;
         BlockingQueue<EventQueueEvent> eventQueue = new BlockingQueue<EventQueueEvent>();
         int currentID = 1;
         bool running = true;
 
-        public EventQueueServer(WebServer server)
+        public EventQueueServer(HttpListener server)
         {
             this.server = server;
         }

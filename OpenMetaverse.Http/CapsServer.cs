@@ -28,9 +28,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.StructuredData;
 using HttpServer;
+using HttpListener = HttpServer.HttpListener;
 
 namespace OpenMetaverse.Http
 {
@@ -62,7 +64,7 @@ namespace OpenMetaverse.Http
             }
         }
 
-        WebServer server;
+        HttpListener server;
         bool serverOwned;
         HttpRequestHandler capsHandler;
         ExpiringCache<UUID, CapsRedirector> expiringCaps = new ExpiringCache<UUID, CapsRedirector>();
@@ -73,7 +75,7 @@ namespace OpenMetaverse.Http
         {
             serverOwned = true;
             capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            server = new WebServer(address, port);
+            server = HttpListener.Create(address, port);
             server.LogWriter = new log4netLogWriter(Logger.Log);
         }
 
@@ -81,11 +83,11 @@ namespace OpenMetaverse.Http
         {
             serverOwned = true;
             capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            server = new WebServer(address, port, sslCertificate, rootCA, requireClientCertificate);
+            server = HttpListener.Create(address, port, sslCertificate, rootCA, SslProtocols.Default, requireClientCertificate);
             server.LogWriter = new log4netLogWriter(Logger.Log);
         }
 
-        public CapsServer(WebServer httpServer, string handlerPath)
+        public CapsServer(HttpListener httpServer, string handlerPath)
         {
             serverOwned = false;
             capsHandler = BuildCapsHandler(handlerPath);
@@ -97,7 +99,7 @@ namespace OpenMetaverse.Http
             server.AddHandler(capsHandler);
 
             if (serverOwned)
-                server.Start();
+                server.Start(10);
         }
 
         public void Stop()

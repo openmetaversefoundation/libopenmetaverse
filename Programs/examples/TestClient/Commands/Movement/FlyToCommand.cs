@@ -151,13 +151,13 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             Client.Self.Movement.SendUpdate(false);
         }
 
+        [System.Diagnostics.Conditional("DEBUG")]
         private void Debug(string x)
         {
-            return; /* remove for debugging */
             Console.WriteLine(x + " {0,3:##0} {1,3:##0} {2,3:##0} diff {3,5:##0.0} olddiff {4,5:##0.0}  At:{5,5} {6,5}  Up:{7,5} {8,5}  v: {9} w: {10}",
-        myPos.X, myPos.Y, myPos.Z, diff, saveolddiff,
-        Client.Self.Movement.AtPos, Client.Self.Movement.AtNeg, Client.Self.Movement.UpPos, Client.Self.Movement.UpNeg,
-        Client.Self.Velocity.ToString(), Client.Self.AngularVelocity.ToString());
+                myPos.X, myPos.Y, myPos.Z, diff, saveolddiff,
+                Client.Self.Movement.AtPos, Client.Self.Movement.AtNeg, Client.Self.Movement.UpPos, Client.Self.Movement.UpNeg,
+                Client.Self.Velocity.ToString(), Client.Self.AngularVelocity.ToString());
         }
     }
 }

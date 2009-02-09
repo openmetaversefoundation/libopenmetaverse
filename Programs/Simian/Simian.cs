@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using ExtensionLoader;
 using ExtensionLoader.Config;
 using HttpServer;
+using HttpListener = HttpServer.HttpListener;
 using OpenMetaverse;
 using OpenMetaverse.Http;
 
@@ -25,7 +26,7 @@ namespace Simian
         public bool SSL { get { return false; } }
         public string HostName { get { return Dns.GetHostName(); } }
 
-        public WebServer HttpServer;
+        public HttpListener HttpServer;
         public IniConfigSource ConfigFile;
 
         // Interfaces
@@ -65,8 +66,8 @@ namespace Simian
             }
 
             // TODO: SSL support
-            HttpServer = new WebServer(IPAddress.Any, HttpPort);
-            HttpServer.Start();
+            HttpServer = HttpListener.Create(IPAddress.Any, HttpPort);
+            HttpServer.Start(10);
 
             try
             {
