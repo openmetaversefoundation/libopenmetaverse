@@ -75,16 +75,14 @@ namespace OpenMetaverse.Http
         {
             serverOwned = true;
             capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            server = HttpListener.Create(address, port);
-            server.LogWriter = new log4netLogWriter(Logger.Log);
+            server = HttpListener.Create(log4netLogWriter.Instance, address, port);
         }
 
         public CapsServer(IPAddress address, int port, X509Certificate sslCertificate, X509Certificate rootCA, bool requireClientCertificate)
         {
             serverOwned = true;
             capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            server = HttpListener.Create(address, port, sslCertificate, rootCA, SslProtocols.Default, requireClientCertificate);
-            server.LogWriter = new log4netLogWriter(Logger.Log);
+            server = HttpListener.Create(log4netLogWriter.Instance, address, port, sslCertificate, rootCA, SslProtocols.Default, requireClientCertificate);
         }
 
         public CapsServer(HttpListener httpServer, string handlerPath)

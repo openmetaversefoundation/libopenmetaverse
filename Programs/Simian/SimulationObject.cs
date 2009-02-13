@@ -17,8 +17,8 @@ namespace Simian
         public bool Frozen;
 
         protected Simian Server;
-        protected SimpleMesh[] Meshes = new SimpleMesh[4];
-        protected SimpleMesh[] WorldTransformedMeshes = new SimpleMesh[4];
+        protected SimpleMesh[] Meshes;
+        protected SimpleMesh[] WorldTransformedMeshes;
 
         public SimulationObject(SimulationObject obj)
         {
@@ -39,6 +39,8 @@ namespace Simian
         {
             int i = (int)lod;
 
+            if (Meshes == null) Meshes = new SimpleMesh[4];
+
             if (Meshes[i] != null)
             {
                 return Meshes[i];
@@ -55,6 +57,8 @@ namespace Simian
         public SimpleMesh GetWorldMesh(DetailLevel lod, SimulationObject parent)
         {
             int i = (int)lod;
+
+            if (WorldTransformedMeshes == null) WorldTransformedMeshes = new SimpleMesh[4];
 
             if (WorldTransformedMeshes[i] != null)
             {

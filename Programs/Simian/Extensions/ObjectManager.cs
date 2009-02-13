@@ -538,7 +538,7 @@ namespace Simian.Extensions
             {
                 SimulationObject obj;
                 if (server.Scene.TryGetObject(image.ObjectData[i].ObjectLocalID, out obj))
-                    server.Scene.ObjectImage(this, obj,
+                    server.Scene.ObjectModifyTextures(this, obj,
                         Utils.BytesToString(image.ObjectData[i].MediaURL),
                         new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length));
             }

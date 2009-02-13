@@ -66,7 +66,7 @@ namespace Simian
             }
 
             // TODO: SSL support
-            HttpServer = HttpListener.Create(IPAddress.Any, HttpPort);
+            HttpServer = HttpListener.Create(log4netLogWriter.Instance, IPAddress.Any, HttpPort);
             HttpServer.Start(10);
 
             try

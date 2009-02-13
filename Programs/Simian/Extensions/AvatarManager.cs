@@ -71,39 +71,12 @@ namespace Simian.Extensions
 
         public void SendAnimations(Agent agent)
         {
-            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
-            sendAnim.Sender.ID = agent.Avatar.ID;
-            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[1];
-            sendAnim.AnimationSourceList[0] = new AvatarAnimationPacket.AnimationSourceListBlock();
-            sendAnim.AnimationSourceList[0].ObjectID = agent.Avatar.ID;
-
-            UUID[] animIDS;
-            int[] sequenceNums;
-            agent.Animations.GetArrays(out animIDS, out sequenceNums);
-
-            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[animIDS.Length];
-            for (int i = 0; i < animIDS.Length; i++)
-            {
-                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
-                sendAnim.AnimationList[i].AnimID = animIDS[i];
-                sendAnim.AnimationList[i].AnimSequenceID = sequenceNums[i];
-            }
-
-            server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+            server.Scene.ObjectAnimate(this, agent.Avatar.ID, agent.Avatar.ID, agent.Animations.GetAnimations());
         }
 
         public void TriggerSound(Agent agent, UUID soundID, float gain)
         {
-            SoundTriggerPacket sound = new SoundTriggerPacket();
-            sound.SoundData.Handle = server.Scene.RegionHandle;
-            sound.SoundData.ObjectID = agent.Avatar.ID;
-            sound.SoundData.ParentID = agent.Avatar.ID;
-            sound.SoundData.OwnerID = agent.Avatar.ID;
-            sound.SoundData.Position = agent.Avatar.Position;
-            sound.SoundData.SoundID = soundID;
-            sound.SoundData.Gain = gain;
-
-            server.UDP.BroadcastPacket(sound, PacketCategory.State);
+            server.Scene.TriggerSound(this, agent.Avatar.ID, agent.Avatar.ID, agent.Avatar.ID, soundID, agent.Avatar.Position, gain);
         }
 
         public void SendAlert(Agent agent, string message)
@@ -142,10 +115,15 @@ namespace Simian.Extensions
         {
             ViewerEffectPacket effect = (ViewerEffectPacket)packet;
 
-            effect.AgentData.AgentID = UUID.Zero;
-            effect.AgentData.SessionID = UUID.Zero;
+            ViewerEffect[] effects = new ViewerEffect[effect.Effect.Length];
 
-            server.UDP.BroadcastPacket(effect, PacketCategory.State);
+            for (int i = 0; i < effects.Length; i++)
+            {
+                ViewerEffectPacket.EffectBlock block = effect.Effect[i];
+                effects[i] = new ViewerEffect(block.ID, (EffectType)block.Type, block.AgentID, new Color4(block.Color, 0, true), block.Duration);
+            }
+
+            server.Scene.TriggerEffects(this, effects);
         }
 
         void AvatarPropertiesRequestHandler(Packet packet, Agent agent)

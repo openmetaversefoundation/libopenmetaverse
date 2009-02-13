@@ -6,9 +6,14 @@ namespace OpenMetaverse.Http
 {
     public class log4netLogWriter : ILogWriter
     {
+        /// <summary>
+        /// Singleton instance of this class
+        /// </summary>
+        public static log4netLogWriter Instance = new log4netLogWriter(Logger.Log);
+
         ILog Log;
 
-        public log4netLogWriter(ILog log)
+        log4netLogWriter(ILog log)
         {
             Log = log;
         }
@@ -18,6 +23,7 @@ namespace OpenMetaverse.Http
             switch (prio)
             {
                 case LogPrio.Trace:
+                    return; // This logging is very noisy
                 case LogPrio.Debug:
                     Log.DebugFormat("{0}: {1}", source, message);
                     break;

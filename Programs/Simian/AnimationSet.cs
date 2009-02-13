@@ -131,21 +131,18 @@ namespace Simian
             }
         }
 
-        public void GetArrays(out UUID[] animIDs, out int[] sequenceNums)
+        public AnimationTrigger[] GetAnimations()
         {
             lock (animations)
             {
-                animIDs = new UUID[animations.Count + 1];
-                sequenceNums = new int[animations.Count + 1];
+                AnimationTrigger[] triggers = new AnimationTrigger[animations.Count + 1];
 
-                animIDs[0] = defaultAnimation.ID;
-                sequenceNums[0] = defaultAnimation.SequenceNum;
+                triggers[0] = new AnimationTrigger(defaultAnimation.ID, defaultAnimation.SequenceNum);
 
-                for (int i = 0; i < animations.Count; ++i)
-                {
-                    animIDs[i + 1] = animations[i].ID;
-                    sequenceNums[i + 1] = animations[i].SequenceNum;
-                }
+                for (int i = 0; i < animations.Count; i++)
+                    triggers[i + 1] = new AnimationTrigger(animations[i].ID, animations[i].SequenceNum);
+
+                return triggers;
             }
         }
 

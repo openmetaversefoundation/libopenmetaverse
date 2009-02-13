@@ -46,8 +46,9 @@ namespace Simian.Extensions
                 }
                 else
                 {
+                    // No layers, send the full image
                     DiscardLevel = 0;
-                    StopPacket = GetPacketForBytePosition(Texture.AssetData.Length);
+                    StopPacket = GetPacketForBytePosition(Texture.AssetData.Length - 1);
                 }
 
                 CurrentPacket = Utils.Clamp(packet, 1, TexturePacketCount());

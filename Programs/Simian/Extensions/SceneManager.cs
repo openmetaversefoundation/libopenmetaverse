@@ -43,11 +43,14 @@ namespace Simian.Extensions
         public event ObjectRemoveCallback OnObjectRemove;
         public event ObjectTransformCallback OnObjectTransform;
         public event ObjectFlagsCallback OnObjectFlags;
-        public event ObjectImageCallback OnObjectImage;
         public event ObjectModifyCallback OnObjectModify;
+        public event ObjectModifyTexturesCallback OnObjectModifyTextures;
+        public event ObjectAnimateCallback OnObjectAnimate;
         public event AgentAddCallback OnAgentAdd;
         public event AgentRemoveCallback OnAgentRemove;
         public event AgentAppearanceCallback OnAgentAppearance;
+        public event TriggerSoundCallback OnTriggerSound;
+        public event TriggerEffectsCallback OnTriggerEffects;
         public event TerrainUpdateCallback OnTerrainUpdate;
 
         public uint RegionX { get { return 7777; } }
@@ -150,6 +153,8 @@ namespace Simian.Extensions
         public bool ObjectRemove(object sender, uint localID)
         {
             SimulationObject obj;
+            Agent agent;
+
             if (sceneObjects.TryGetValue(localID, out obj))
             {
                 if (OnObjectRemove != null)
@@ -165,27 +170,22 @@ namespace Simian.Extensions
                 server.UDP.BroadcastPacket(kill, PacketCategory.State);
                 return true;
             }
+            else if (sceneAgents.TryGetValue(localID, out agent))
+            {
+                AgentRemove(sender, agent);
+                return true;
+            }
             else
             {
-                Agent agent;
-                if (sceneAgents.TryGetValue(localID, out agent))
-                {
-                    if (OnAgentRemove != null)
-                        OnAgentRemove(sender, agent);
-
-                    AgentRemove(agent);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
         public bool ObjectRemove(object sender, UUID id)
         {
             SimulationObject obj;
+            Agent agent;
+
             if (sceneObjects.TryGetValue(id, out obj))
             {
                 if (OnObjectRemove != null)
@@ -201,26 +201,22 @@ namespace Simian.Extensions
                 server.UDP.BroadcastPacket(kill, PacketCategory.State);
                 return true;
             }
+            else if (sceneAgents.TryGetValue(id, out agent))
+            {
+                AgentRemove(sender, agent);
+                return true;
+            }
             else
             {
-                Agent agent;
-                if (sceneAgents.TryGetValue(id, out agent))
-                {
-                    if (OnAgentRemove != null)
-                        OnAgentRemove(sender, agent);
-
-                    AgentRemove(agent);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
-        void AgentRemove(Agent agent)
+        void AgentRemove(object sender, Agent agent)
         {
+            if (OnAgentRemove != null)
+                OnAgentRemove(sender, agent);
+
             Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
 
             sceneAgents.Remove(agent.Avatar.LocalID, agent.Avatar.ID);
@@ -304,21 +300,6 @@ namespace Simian.Extensions
             BroadcastObjectUpdate(obj.Prim);
         }
 
-        public void ObjectImage(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry)
-        {
-            if (OnObjectImage != null)
-            {
-                OnObjectImage(sender, obj, mediaURL, textureEntry);
-            }
-
-            // Update the object
-            obj.Prim.Textures = textureEntry;
-            obj.Prim.MediaURL = mediaURL;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj.Prim);
-        }
-
         public void ObjectModify(object sender, uint localID, Primitive.ConstructionData data)
         {
             SimulationObject obj;
@@ -335,6 +316,92 @@ namespace Simian.Extensions
                 // Inform clients
                 BroadcastObjectUpdate(obj.Prim);
             }
+        }
+
+        public void ObjectModifyTextures(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry)
+        {
+            if (OnObjectModifyTextures != null)
+            {
+                OnObjectModifyTextures(sender, obj, mediaURL, textureEntry);
+            }
+
+            // Update the object
+            obj.Prim.Textures = textureEntry;
+            obj.Prim.MediaURL = mediaURL;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj.Prim);
+        }
+
+        public void ObjectAnimate(object sender, UUID senderID, UUID objectID, AnimationTrigger[] animations)
+        {
+            if (OnObjectAnimate != null)
+            {
+                OnObjectAnimate(sender, senderID, objectID, animations);
+            }
+
+            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
+            sendAnim.Sender.ID = senderID;
+            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[1];
+            sendAnim.AnimationSourceList[0] = new AvatarAnimationPacket.AnimationSourceListBlock();
+            sendAnim.AnimationSourceList[0].ObjectID = objectID;
+
+            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[animations.Length];
+            for (int i = 0; i < animations.Length; i++)
+            {
+                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
+                sendAnim.AnimationList[i].AnimID = animations[i].AnimationID;
+                sendAnim.AnimationList[i].AnimSequenceID = animations[i].SequenceID;
+            }
+
+            server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+        }
+
+        public void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain)
+        {
+            if (OnTriggerSound != null)
+            {
+                OnTriggerSound(sender, objectID, parentID, ownerID, soundID, position, gain);
+            }
+
+            SoundTriggerPacket sound = new SoundTriggerPacket();
+            sound.SoundData.Handle = server.Scene.RegionHandle;
+            sound.SoundData.ObjectID = objectID;
+            sound.SoundData.ParentID = parentID;
+            sound.SoundData.OwnerID = ownerID;
+            sound.SoundData.Position = position;
+            sound.SoundData.SoundID = soundID;
+            sound.SoundData.Gain = gain;
+
+            server.UDP.BroadcastPacket(sound, PacketCategory.State);
+        }
+
+        public void TriggerEffects(object sender, ViewerEffect[] effects)
+        {
+            if (OnTriggerEffects != null)
+            {
+                OnTriggerEffects(sender, effects);
+            }
+
+            ViewerEffectPacket effect = new ViewerEffectPacket();
+            effect.AgentData.AgentID = UUID.Zero;
+            effect.AgentData.SessionID = UUID.Zero;
+
+            effect.Effect = new ViewerEffectPacket.EffectBlock[effects.Length];
+
+            for (int i = 0; i < effects.Length; i++)
+            {
+                ViewerEffect currentEffect = effects[i];
+                ViewerEffectPacket.EffectBlock block = new ViewerEffectPacket.EffectBlock();
+
+                block.AgentID = currentEffect.AgentID;
+                block.Color = currentEffect.Color.GetBytes(true);
+                block.Duration = currentEffect.Duration;
+                block.ID = currentEffect.EffectID;
+                block.Type = (byte)currentEffect.Type;
+            }
+
+            server.UDP.BroadcastPacket(effect, PacketCategory.State);
         }
 
         public bool ContainsObject(uint localID)
