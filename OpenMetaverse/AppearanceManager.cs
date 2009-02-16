@@ -305,9 +305,12 @@ namespace OpenMetaverse
             List<InventoryBase> ibs_total = new List<InventoryBase>();
 
             // Get what we are currently wearing
-            foreach (KeyValuePair<WearableType, OpenMetaverse.AppearanceManager.WearableData> kvp in Wearables.Dictionary)
-                ibs_total.Add((InventoryBase)kvp.Value.Item);
-
+            lock(Wearables.Dictionary)
+            {
+                foreach (KeyValuePair<WearableType, OpenMetaverse.AppearanceManager.WearableData> kvp in Wearables.Dictionary)
+                    ibs_total.Add((InventoryBase)kvp.Value.Item);
+            
+            }
             // Add the new items at the end, ReplaceOutfitWearables() will do the right thing as it places each warable into a slot in order
             // so the end of the list will overwrite earlier parts if they use the same slot.
             foreach (InventoryBase item in ibs_new)
@@ -1046,10 +1049,13 @@ namespace OpenMetaverse
 
         private void DownloadWearableAssets()
         {
-            foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables.Dictionary)
+            lock(Wearables.Dictionary)
             {
-                Logger.DebugLog("Requesting asset for wearable item " + kvp.Value.Item.WearableType + " (" + kvp.Value.Item.AssetUUID + ")", Client);
-                AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
+                foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables.Dictionary)
+                {
+                    Logger.DebugLog("Requesting asset for wearable item " + kvp.Value.Item.WearableType + " (" + kvp.Value.Item.AssetUUID + ")", Client);
+                    AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
+                }
             }
 
             if (AssetDownloads.Count > 0)
@@ -1106,31 +1112,33 @@ namespace OpenMetaverse
             AgentCachedTextureResponsePacket response = (AgentCachedTextureResponsePacket)packet;
             Dictionary<int, float> paramValues = new Dictionary<int, float>(VisualParams.Params.Count);
 
-            // Build a dictionary of appearance parameter indices and values from the wearables
-            foreach (KeyValuePair<int,VisualParam> kvp in VisualParams.Params)
-            {
-                // Only Group-0 parameters are sent in AgentSetAppearance packets
-                if (kvp.Value.Group == 0)
+	    lock(Wearables.Dictionary)
+	    {
+                // Build a dictionary of appearance parameter indices and values from the wearables
+                foreach (KeyValuePair<int,VisualParam> kvp in VisualParams.Params)
                 {
-                    bool found = false;
-                    VisualParam vp = kvp.Value;
-
-                    // Try and find this value in our collection of downloaded wearables
-                    foreach (WearableData data in Wearables.Dictionary.Values)
+                    // Only Group-0 parameters are sent in AgentSetAppearance packets
+                    if (kvp.Value.Group == 0)
                     {
-                        if (data.Asset.Params.ContainsKey(vp.ParamID))
-                        {
-                            paramValues.Add(vp.ParamID, data.Asset.Params[vp.ParamID]);
-                            found = true;
-                            break;
-                        }
-                    }
+                        bool found = false;
+                        VisualParam vp = kvp.Value;
 
-                    // Use a default value if we don't have one set for it
-                    if (!found) paramValues.Add(vp.ParamID, vp.DefaultValue);
+                        // Try and find this value in our collection of downloaded wearables
+                        foreach (WearableData data in Wearables.Dictionary.Values)
+                        {
+                            if (data.Asset.Params.ContainsKey(vp.ParamID))
+                            {
+                                paramValues.Add(vp.ParamID, data.Asset.Params[vp.ParamID]);
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        // Use a default value if we don't have one set for it
+                        if (!found) paramValues.Add(vp.ParamID, vp.DefaultValue);
+                    }
                 }
             }
-
             lock (AgentTextures)
             {
                 //If we are here then the user has tried to wear stuff or we are at login
