@@ -162,7 +162,19 @@ namespace OpenMetaverse.TestClient
             account.Password = args[2];
 
             if (args.Length > 3)
-                account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+            {
+                // If it looks like a full starting position was specified, parse it
+                if( args[3].IndexOf('/') >= 0 )
+                { 
+                    char sep = '/';
+                    string[] startbits = args[3].Split(sep);
+                    account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
+                            Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
+                }
+                // Otherwise, use the center of the named region
+                else
+                    account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+            }
 
             if (args.Length > 4)
                 if(args[4].StartsWith("http://"))
@@ -224,6 +236,10 @@ namespace OpenMetaverse.TestClient
             if (String.IsNullOrEmpty(firstToken))
                 return;
 
+            // Allow for comments when cmdline begins with ';' or '#'
+            if (firstToken[0] == ';' || firstToken[0] == '#')
+                return;
+            
             string[] args = new string[tokens.Length - 1];
             if (args.Length > 0)
                 Array.Copy(tokens, 1, args, 0, args.Length);
