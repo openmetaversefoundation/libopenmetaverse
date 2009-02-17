@@ -1017,6 +1017,25 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Drop an attached object from this avatar
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/>
+        /// object where the objects reside. This will always be the simulator the avatar is currently in
+        /// </param>
+        /// <param name="localID">The object's ID which is local to the simulator the object is in</param>
+        public void DropObject(Simulator simulator, uint localID)
+        {
+            ObjectDropPacket dropit = new ObjectDropPacket();
+            dropit.AgentData.AgentID = Client.Self.AgentID;
+            dropit.AgentData.SessionID = Client.Self.SessionID;
+            dropit.ObjectData = new ObjectDropPacket.ObjectDataBlock[1];
+            dropit.ObjectData[0] = new ObjectDropPacket.ObjectDataBlock();
+            dropit.ObjectData[0].ObjectLocalID = localID;
+
+            Client.Network.SendPacket(dropit, simulator);
+        }
+
+        /// <summary>
         /// Detach an object from yourself
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> 
