@@ -934,6 +934,7 @@ namespace OpenMetaverse
 
         protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
         {
+            Client.Network.PacketSent(buffer.Data, bytesSent, this);
         }
 
         /// <summary>

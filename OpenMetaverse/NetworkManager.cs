@@ -129,6 +129,13 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         public delegate void PacketCallback(Packet packet, Simulator simulator);
         /// <summary>
+        /// Triggered whenever an outgoing packet is sent
+        /// </summary>
+        /// <param name="data">Buffer holding the outgoing packet payload</param>
+        /// <param name="bytesSent">Number of bytes of the data buffer that were sent</param>
+        /// <param name="simulator">Simulator this packet was sent to</param>
+        public delegate void PacketSentCallback(byte[] data, int bytesSent, Simulator simulator);
+        /// <summary>
         /// Assigned by the OnConnected event. Raised when login was a success
         /// </summary>
         /// <param name="sender">Reference to the GridClient object that called the event</param>
@@ -183,6 +190,10 @@ namespace OpenMetaverse
 
         #region Events
 
+        /// <summary>
+        /// Event raised when an outgoing packet is sent to a simulator
+        /// </summary>
+        public event PacketSentCallback OnPacketSent;
         /// <summary>
         /// Event raised when the client was able to connected successfully.
         /// </summary>
@@ -655,6 +666,12 @@ namespace OpenMetaverse
             }
 
             return null;
+        }
+
+        internal void PacketSent(byte[] data, int bytesSent, Simulator simulator)
+        {
+            if (OnPacketSent != null)
+                OnPacketSent(data, bytesSent, simulator);
         }
 
         /// <summary>
