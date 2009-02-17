@@ -206,7 +206,7 @@ namespace OpenMetaverse
             {
                 byte[] newBytes = new byte[4];
                 Buffer.BlockCopy(bytes, pos, newBytes, 0, 4);
-                Array.Reverse(newBytes, pos, 4);
+                Array.Reverse(newBytes, 0, 4);
                 return BitConverter.ToSingle(newBytes, 0);
             }
             else
@@ -221,7 +221,7 @@ namespace OpenMetaverse
             {
                 byte[] newBytes = new byte[8];
                 Buffer.BlockCopy(bytes, pos, newBytes, 0, 8);
-                Array.Reverse(newBytes, pos, 8);
+                Array.Reverse(newBytes, 0, 8);
                 return BitConverter.ToDouble(newBytes, 0);
             }
             else
