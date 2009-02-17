@@ -1635,6 +1635,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes = packetBuffer;
             }
+            Array.Clear(bytes, packetEnd + 1, bytes.Length - packetEnd - 1);
 
             if (bytes[6] == 0xFF)
             {

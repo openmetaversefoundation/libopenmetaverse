@@ -859,7 +859,8 @@ namespace mapgenerator
                 "            else" + Environment.NewLine +
                 "            {" + Environment.NewLine +
                 "                bytes = packetBuffer;" + Environment.NewLine +
-                "            }" + Environment.NewLine + Environment.NewLine +
+                "            }" + Environment.NewLine +
+                "            Array.Clear(bytes, packetEnd + 1, bytes.Length - packetEnd - 1);" + Environment.NewLine + Environment.NewLine +
                 "            if (bytes[6] == 0xFF)" + Environment.NewLine +
                 "            {" + Environment.NewLine +
                 "                if (bytes[7] == 0xFF)" + Environment.NewLine +
