@@ -1122,7 +1122,11 @@ namespace OpenMetaverse
             RegionHandle = prim.RegionHandle;
             Flags = prim.Flags;
             if (prim.GenericData != null)
+            {
+                if (GenericData == null || GenericData.Length != prim.GenericData.Length)
+                    GenericData = new byte[prim.GenericData.Length];
                 Buffer.BlockCopy(prim.GenericData, 0, GenericData, 0, prim.GenericData.Length);
+            }
             else
                 GenericData = null;
             Position = prim.Position;
@@ -1148,7 +1152,11 @@ namespace OpenMetaverse
             JointPivot = prim.JointPivot;
             JointAxisOrAnchor = prim.JointAxisOrAnchor;
             if (prim.NameValues != null)
+            {
+                if (NameValues == null || NameValues.Length != prim.NameValues.Length)
+                    NameValues = new NameValue[prim.NameValues.Length];
                 Array.Copy(prim.NameValues, NameValues, prim.NameValues.Length);
+            }
             else
                 NameValues = null;
             PrimData = prim.PrimData;
@@ -1443,19 +1451,19 @@ namespace OpenMetaverse
 
         public static bool operator ==(Primitive lhs, Primitive rhs)
         {
-	    if ((Object)lhs == null || (Object)rhs == null)
-	    {
-		return (Object)rhs == (Object)lhs;
-	    }
+            if ((Object)lhs == null || (Object)rhs == null)
+            {
+                return (Object)rhs == (Object)lhs;
+            }
             return (lhs.ID == rhs.ID);
         }
 
         public static bool operator !=(Primitive lhs, Primitive rhs)
         {
-	    if ((Object)lhs == null || (Object)rhs == null)
-	    {
-		return (Object)rhs != (Object)lhs;
-	    }
+            if ((Object)lhs == null || (Object)rhs == null)
+            {
+                return (Object)rhs != (Object)lhs;
+            }
             return !(lhs.ID == rhs.ID);
         }
 
