@@ -814,6 +814,11 @@ namespace OpenMetaverse
             return RequestUpload(out assetID, type, data, storeLocal);
         }
 
+        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal)
+		{
+			return RequestUpload(out assetID, type, data, storeLocal, UUID.Random());
+		}
+		
         /// <summary>
         /// Initiate an asset upload
         /// </summary>
@@ -823,23 +828,24 @@ namespace OpenMetaverse
         /// <param name="data">Raw asset data to upload</param>
         /// <param name="storeLocal">Whether to store this asset on the local
         /// simulator or the grid-wide asset server</param>
+        /// <param name="transactionID">The tranaction id for the upload <see cref="RequestCreateItem"/></param>
         /// <returns>The transaction ID of this transfer</returns>
-        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal)
+        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal, UUID transactionID)
         {
             AssetUpload upload = new AssetUpload();
             upload.AssetData = data;
             upload.AssetType = type;
-            upload.ID = UUID.Random();
-            assetID = UUID.Combine(upload.ID, Client.Self.SecureSessionID);
+            assetID = UUID.Combine(transactionID, Client.Self.SecureSessionID);
             upload.AssetID = assetID;
             upload.Size = data.Length;
             upload.XferID = 0;
-
+			upload.ID = transactionID;
+			
             // Build and send the upload packet
             AssetUploadRequestPacket request = new AssetUploadRequestPacket();
             request.AssetBlock.StoreLocal = storeLocal;
             request.AssetBlock.Tempfile = false; // This field is deprecated
-            request.AssetBlock.TransactionID = upload.ID;
+            request.AssetBlock.TransactionID = transactionID;
             request.AssetBlock.Type = (sbyte)type;
 
             if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
