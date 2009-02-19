@@ -24,6 +24,12 @@ namespace GridImageUpload
         public frmGridImageUpload()
         {
             InitializeComponent();
+
+            // Add login entries to the login combo box
+            cboLoginURL.Items.Add(Settings.AGNI_LOGIN_SERVER);
+            cboLoginURL.Items.Add(Settings.ADITI_LOGIN_SERVER);
+            cboLoginURL.SelectedIndex = 0;
+
             InitClient();
         }
 
@@ -178,12 +184,12 @@ namespace GridImageUpload
             if (cmdConnect.Text == "Connect")
             {
                 cmdConnect.Text = "Disconnect";
-                txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
+                cboLoginURL.Enabled = txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
                 LoginParams lp = new LoginParams();
                 lp.FirstName = txtFirstName.Text;
                 lp.LastName = txtLastName.Text;
                 lp.Password = txtPassword.Text;
-                lp.URI = Client.Settings.LOGIN_SERVER;
+                lp.URI = cboLoginURL.Text;
                 lp.Start = "last";
                 cmdConnect.Enabled = false;
                 Client.Network.BeginLogin(lp);
@@ -193,7 +199,7 @@ namespace GridImageUpload
             {
                 Client.Network.Logout();
                 cmdConnect.Text = "Connect";
-                txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
+                cboLoginURL.Enabled = txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                 DisableUpload();
                 InitClient();
             }
