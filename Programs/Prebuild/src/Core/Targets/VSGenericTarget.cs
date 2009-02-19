@@ -373,31 +373,40 @@ namespace Prebuild.Core.Targets
 					if (subType == SubType.Designer)
 					{
 						ps.WriteLine("    <EmbeddedResource Include=\"{0}\">", file);
-						ps.WriteLine("      <SubType>" + subType + "</SubType>");
-						ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
+						
 						
 						string autogen_name = file.Substring(0, file.LastIndexOf('.')) + ".Designer.cs";
                         string dependent_name = file.Substring(0, file.LastIndexOf('.')) + ".cs";
 
-						ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
-
                         // Check for a parent .cs file with the same name as this designer file
                         if (File.Exists(dependent_name))
+                        {
                             ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(dependent_name));
+                        }
+                        else
+                        {
+                            ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
+                            ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
+                            ps.WriteLine("      <SubType>" + subType + "</SubType>");
+                        }
 						
                         ps.WriteLine("    </EmbeddedResource>");
 						if (File.Exists(autogen_name))
 						{
 							ps.WriteLine("    <Compile Include=\"{0}\">", autogen_name);
-							ps.WriteLine("      <AutoGen>True</AutoGen>");
-							ps.WriteLine("      <DesignTime>True</DesignTime>");
+							//ps.WriteLine("      <DesignTime>True</DesignTime>");
 
                             // If a parent .cs file exists, link this autogen file to it. Otherwise link
                             // to the designer file
                             if (File.Exists(dependent_name))
+                            {
                                 ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(dependent_name));
+                            }
                             else
+                            {
+                                ps.WriteLine("      <AutoGen>True</AutoGen>");
                                 ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file));
+                            }
 	
                             ps.WriteLine("    </Compile>");
 						}
