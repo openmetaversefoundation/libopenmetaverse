@@ -241,21 +241,27 @@ namespace GridProxy
         }
 
         // SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
-        public void SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate)
+        public XmlRpcRequestDelegate SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate)
         {
+            XmlRpcRequestDelegate lastDelegate;
             lock (this)
             {
+                lastDelegate = this.loginRequestDelegate;
                 this.loginRequestDelegate = loginRequestDelegate;
             }
+            return lastDelegate;
         }
 
         // SetLoginResponseDelegate: specify a callback loginResponseDelegate that will be called when the server responds to login
-        public void SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate)
+        public XmlRpcResponseDelegate SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate)
         {
+            XmlRpcResponseDelegate lastDelegate;
             lock (this)
             {
+                lastDelegate = this.loginResponseDelegate;
                 this.loginResponseDelegate = loginResponseDelegate;
             }
+            return lastDelegate;
         }
 
         // AddDelegate: add callback packetDelegate for packets of type packetName going direction
@@ -569,7 +575,7 @@ namespace GridProxy
 
         }
 
-        private Dictionary<string, CapInfo> KnownCaps;
+        public Dictionary<string, CapInfo> KnownCaps;
         //private Dictionary<string, bool> SubHack = new Dictionary<string, bool>();
 
         private void ProxyCaps(NetworkStream netStream, string meth, string uri, Dictionary<string, string> headers, byte[] content, int reqNo)
@@ -1134,7 +1140,7 @@ namespace GridProxy
          */
 
         private Socket simFacingSocket;
-        private IPEndPoint activeCircuit = null;
+        public IPEndPoint activeCircuit = null;
         private Dictionary<IPEndPoint, IPEndPoint> proxyEndPoints = new Dictionary<IPEndPoint, IPEndPoint>();
         private Dictionary<IPEndPoint, SimProxy> simProxies = new Dictionary<IPEndPoint, SimProxy>();
         private Dictionary<EndPoint, SimProxy> proxyHandlers = new Dictionary<EndPoint, SimProxy>();
