@@ -363,7 +363,7 @@ namespace OpenMetaverse
         /// not</summary>
         public bool Connected { get { return connected; } }
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        public List<Vector3> AvatarPositions { get { return avatarPositions; } }
+        public Dictionary<UUID, Vector3> AvatarPositions { get { return avatarPositions; } }
         /// <summary>AvatarPositions index representing your avatar</summary>
         public int PositionIndexYou { get { return positionIndexYou; } }
         /// <summary>AvatarPositions index representing TrackAgent target</summary>
@@ -381,7 +381,8 @@ namespace OpenMetaverse
         /// to the property Connected</summary>
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        internal List<Vector3> avatarPositions = new List<Vector3>();
+        // internal List<Vector3> avatarPositions = new List<Vector3>();
+        internal Dictionary<UUID, Vector3> avatarPositions = new Dictionary<UUID, Vector3>();
         /// <summary>AvatarPositions index representing your avatar</summary>
         internal int positionIndexYou = -1;
         /// <summary>AvatarPositions index representing TrackAgent target</summary>
