@@ -381,7 +381,6 @@ namespace OpenMetaverse
         /// to the property Connected</summary>
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        // internal List<Vector3> avatarPositions = new List<Vector3>();
         internal Dictionary<UUID, Vector3> avatarPositions = new Dictionary<UUID, Vector3>();
         /// <summary>AvatarPositions index representing your avatar</summary>
         internal int positionIndexYou = -1;
