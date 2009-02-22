@@ -129,10 +129,10 @@ namespace OpenMetaverse
         public static readonly UUID[] BAKED_TEXTURE_HASH = new UUID[]
         {
             new UUID("18ded8d6-bcfc-e415-8539-944c0f5ea7a6"),
-	        new UUID("338c29e3-3024-4dbb-998d-7c04cf4fa88f"),
-	        new UUID("91b4a2c7-1b1a-ba16-9a16-1f8f8dcc1c3f"),
-	        new UUID("b2cf28af-b840-1071-3c6a-78085d8128b5"),
-	        new UUID("ea800387-ea1a-14e0-56cb-24f2022f969a")
+            new UUID("338c29e3-3024-4dbb-998d-7c04cf4fa88f"),
+            new UUID("91b4a2c7-1b1a-ba16-9a16-1f8f8dcc1c3f"),
+            new UUID("b2cf28af-b840-1071-3c6a-78085d8128b5"),
+            new UUID("ea800387-ea1a-14e0-56cb-24f2022f969a")
         };
         /// <summary>Default avatar texture, used to detect when a custom
         /// texture is not set for a face</summary>
@@ -148,7 +148,8 @@ namespace OpenMetaverse
         public InternalDictionary<WearableType, WearableData> Wearables = new InternalDictionary<WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this array
         private UUID[] AgentTextures = new UUID[AVATAR_TEXTURE_COUNT];
-
+        // A cache of the textures worn, needed for rebaking
+        private AssetTexture[] AgentAssets = new AssetTexture[AVATAR_TEXTURE_COUNT];
         protected struct PendingAssetDownload
         {
             public UUID Id;
@@ -196,6 +197,7 @@ namespace OpenMetaverse
 
             Client.Network.RegisterCallback(PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateHandler));
             Client.Network.RegisterCallback(PacketType.AgentCachedTextureResponse, new NetworkManager.PacketCallback(AgentCachedTextureResponseHandler));
+            Client.Network.RegisterCallback(PacketType.RebakeAvatarTextures,new NetworkManager.PacketCallback(RebakeAvatarTexturesHandler));
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
         }
 
@@ -736,6 +738,7 @@ namespace OpenMetaverse
             }
 
             Client.Objects.OnNewAvatar -= updateCallback;
+            Logger.Log("Appearance update completed",Helpers.LogLevel.Info);
 
             #endregion Send Appearance
         }
@@ -805,6 +808,20 @@ namespace OpenMetaverse
                 // Send it out
                 Client.Network.SendPacket(cache);
             }
+        }
+        
+        /// <summary>
+        /// Force a rebake of the currently worn textures
+        /// </summary>
+        public void ForceRebakeAvatarTextures()
+        {
+                //Kick the appearance setting as well, this sim probably wants this too a it asked for bakes
+                RebakeLayer(TextureIndex.HeadBaked);
+                RebakeLayer(TextureIndex.EyesBaked);
+                RebakeLayer(TextureIndex.LowerBaked);
+                RebakeLayer(TextureIndex.UpperBaked);
+                RebakeLayer(TextureIndex.SkirtBaked);
+                SendAgentSetAppearance();
         }
 
         /// <summary>
@@ -1064,6 +1081,30 @@ namespace OpenMetaverse
                 Assets.RequestAsset(pad.Id, pad.Type, true);
             }
         }
+        
+        private void RebakeLayer(TextureIndex index)
+        {
+                             
+            BakeType bakeType = Baker.BakeTypeFor(index);
+                            
+            Dictionary<int, float> paramValues;
+
+            // Build a dictionary of appearance parameter indices and values from the wearables
+            paramValues=MakeParamValues();    
+
+            Baker bake = new Baker(Client, bakeType, 0, paramValues);
+                
+            for (int ii = 0; ii < AVATAR_TEXTURE_COUNT; ii++)
+            { 
+                if(bakeType==Baker.BakeTypeFor((TextureIndex)ii) && AgentAssets[ii]!=null)
+                {
+                    Logger.Log("Adding asset "+AgentAssets[ii].AssetID.ToString()+" to baker",Helpers.LogLevel.Debug);
+                    bake.AddTexture((TextureIndex)ii,(AssetTexture)AgentAssets[ii],true);
+                }
+            }
+        
+            UploadBake(bake);
+        }
 
         private void UploadBake(Baker bake)
         {
@@ -1102,19 +1143,13 @@ namespace OpenMetaverse
 
             return 0;
         }
-
-        #region Callbacks
-
-        private void AgentCachedTextureResponseHandler(Packet packet, Simulator simulator)
-        {
-            Logger.DebugLog("AgentCachedTextureResponseHandler()", Client);
+        
+        private Dictionary<int, float> MakeParamValues()
+        {    
+             Dictionary<int, float> paramValues = new Dictionary<int, float>(VisualParams.Params.Count);
             
-            AgentCachedTextureResponsePacket response = (AgentCachedTextureResponsePacket)packet;
-            Dictionary<int, float> paramValues = new Dictionary<int, float>(VisualParams.Params.Count);
-
-	    lock(Wearables.Dictionary)
-	    {
-                // Build a dictionary of appearance parameter indices and values from the wearables
+            lock(Wearables.Dictionary)
+            {
                 foreach (KeyValuePair<int,VisualParam> kvp in VisualParams.Params)
                 {
                     // Only Group-0 parameters are sent in AgentSetAppearance packets
@@ -1139,6 +1174,96 @@ namespace OpenMetaverse
                     }
                 }
             }
+            return paramValues;
+        }
+        
+        private int AddImagesToDownload(BakeType bakeType)
+        {
+            int imageCount = 0;
+
+            // Download all of the images in this layer
+            switch (bakeType)
+            {
+                case BakeType.Head:
+                    lock (ImageDownloads)
+                    {
+                        imageCount += AddImageDownload(TextureIndex.HeadBodypaint);
+                        //imageCount += AddImageDownload(TextureIndex.Hair);
+                    }
+                    break;
+                case BakeType.UpperBody:
+                    lock (ImageDownloads)
+                    {
+                        imageCount += AddImageDownload(TextureIndex.UpperBodypaint);
+                        imageCount += AddImageDownload(TextureIndex.UpperGloves);
+                        imageCount += AddImageDownload(TextureIndex.UpperUndershirt);
+                        imageCount += AddImageDownload(TextureIndex.UpperShirt);
+                        imageCount += AddImageDownload(TextureIndex.UpperJacket);
+                    }
+                    break;
+                case BakeType.LowerBody:
+                    lock (ImageDownloads)
+                    {
+                       imageCount += AddImageDownload(TextureIndex.LowerBodypaint);
+                       imageCount += AddImageDownload(TextureIndex.LowerUnderpants);
+                       imageCount += AddImageDownload(TextureIndex.LowerSocks);
+                       imageCount += AddImageDownload(TextureIndex.LowerShoes);
+                       imageCount += AddImageDownload(TextureIndex.LowerPants);
+                       imageCount += AddImageDownload(TextureIndex.LowerJacket);
+                    }
+                    break;
+                case BakeType.Eyes:
+                    lock (ImageDownloads)
+                    {
+                        imageCount += AddImageDownload(TextureIndex.EyesIris);
+                    }
+                    break;
+                case BakeType.Skirt:
+                    if (Wearables.ContainsKey(WearableType.Skirt))
+                    {
+                        lock (ImageDownloads)
+                        {
+                            imageCount += AddImageDownload(TextureIndex.Skirt);
+                        }
+                    }
+                    break;
+                default:
+                    Logger.Log("Unknown BakeType :" + bakeType.ToString(), Helpers.LogLevel.Warning, Client);
+                    break;
+            }
+            
+            return imageCount;
+        }
+
+        #region Callbacks
+        
+        private void RebakeAvatarTexturesHandler(Packet packet, Simulator simulator)
+        {
+            RebakeAvatarTexturesPacket data=(RebakeAvatarTexturesPacket)packet;
+            Logger.Log("Request rebake for :"+data.TextureData.TextureID.ToString(),Helpers.LogLevel.Info);
+            
+            lock (AgentTextures)
+            {
+                for (int i = 0; i < AgentTextures.Length; i++)
+                {    
+                    if(AgentTextures[i] == data.TextureData.TextureID)
+                    {
+                        // Its one of our baked layers, rebake this one
+                        RebakeLayer((TextureIndex)i);
+                    
+                        //Kick the appearance setting as well, this sim probably wants this too a it asked for bakes
+                        SendAgentSetAppearance();
+                    }
+                }
+            }
+        }
+
+        private void AgentCachedTextureResponseHandler(Packet packet, Simulator simulator)
+        {
+            Logger.DebugLog("AgentCachedTextureResponseHandler()", Client);
+            
+            AgentCachedTextureResponsePacket response = (AgentCachedTextureResponsePacket)packet;
+
             lock (AgentTextures)
             {
                 //If we are here then the user has tried to wear stuff or we are at login
@@ -1166,66 +1291,19 @@ namespace OpenMetaverse
                     {
                         TextureIndex index = BakeTypeToAgentTextureIndex(bakeType);
                         AgentTextures[(int)index] = block.TextureID;
+                        AddImagesToDownload(bakeType); // We need to do this bit regardless for rebaking purposes later
                     }
                     else
                     {
-                        int imageCount = 0;
-
-                        // Download all of the images in this layer
-                        switch (bakeType)
-                        {
-                            case BakeType.Head:
-                                lock (ImageDownloads)
-                                {
-                                    imageCount += AddImageDownload(TextureIndex.HeadBodypaint);
-                                    //imageCount += AddImageDownload(TextureIndex.Hair);
-                                }
-                                break;
-                            case BakeType.UpperBody:
-                                lock (ImageDownloads)
-                                {
-                                    imageCount += AddImageDownload(TextureIndex.UpperBodypaint);
-                                    imageCount += AddImageDownload(TextureIndex.UpperGloves);
-                                    imageCount += AddImageDownload(TextureIndex.UpperUndershirt);
-                                    imageCount += AddImageDownload(TextureIndex.UpperShirt);
-                                    imageCount += AddImageDownload(TextureIndex.UpperJacket);
-                                }
-                                break;
-                            case BakeType.LowerBody:
-                                lock (ImageDownloads)
-                                {
-                                    imageCount += AddImageDownload(TextureIndex.LowerBodypaint);
-                                    imageCount += AddImageDownload(TextureIndex.LowerUnderpants);
-                                    imageCount += AddImageDownload(TextureIndex.LowerSocks);
-                                    imageCount += AddImageDownload(TextureIndex.LowerShoes);
-                                    imageCount += AddImageDownload(TextureIndex.LowerPants);
-                                    imageCount += AddImageDownload(TextureIndex.LowerJacket);
-                                }
-                                break;
-                            case BakeType.Eyes:
-                                lock (ImageDownloads)
-                                {
-                                    imageCount += AddImageDownload(TextureIndex.EyesIris);
-                                }
-                                break;
-                            case BakeType.Skirt:
-                                if (Wearables.ContainsKey(WearableType.Skirt))
-                                {
-                                    lock (ImageDownloads)
-                                    {
-                                        imageCount += AddImageDownload(TextureIndex.Skirt);
-                                    }
-                                }
-                                break;
-                            default:
-                                Logger.Log("Unknown BakeType " + block.TextureIndex, Helpers.LogLevel.Warning, Client);
-                                break;
-                        }
-
+                        int imageCount=AddImagesToDownload(bakeType);
+                       
                         if (!PendingBakes.ContainsKey(bakeType))
                         {
                             Logger.DebugLog("Initializing " + bakeType.ToString() + " bake with " + imageCount + " textures", Client);
-
+    
+                            Dictionary<int, float> paramValues=MakeParamValues();
+                            // Build a dictionary of appearance parameter indices and values from the wearables
+                            
                             if (imageCount == 0)
                             {
                                 // if there are no textures to download, we can bake right away and start the upload
@@ -1354,6 +1432,7 @@ namespace OpenMetaverse
                             //writer.Close();
 
                             bool baked = false;
+                            AgentAssets[at]=assetTexture; //Cache this asset for rebaking, todo this could be better rather than dropping in this list.
 
                             if (PendingBakes.ContainsKey(type))
                             {
