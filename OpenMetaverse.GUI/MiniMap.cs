@@ -107,9 +107,9 @@ namespace OpenMetaverse.GUI
 
                 int i = 0;
 
-                Vector3 myPos = sim.AvatarPositions[sim.PositionIndexYou];
+                Vector3 myPos = sim.AvatarPositions[_Client.Self.AgentID];
 
-                _Client.Network.CurrentSim.AvatarPositions.ForEach(delegate(Vector3 pos)
+                foreach (Vector3 pos in _Client.Network.CurrentSim.AvatarPositions.Values)
                 {
                     int x = (int)pos.X;
                     int y = 255 - (int)pos.Y;
@@ -141,7 +141,7 @@ namespace OpenMetaverse.GUI
                         }
                     }
                     i++;
-                });
+                };
 
                 g.DrawImage(bmp, 0, 0);
                 this.Image = bmp;
