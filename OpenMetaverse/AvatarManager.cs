@@ -82,6 +82,8 @@ namespace OpenMetaverse
     /// </summary>
     public class AvatarManager
     {
+        const int MAX_UUIDS_PER_PACKET = 100;
+
         /// <summary>
         /// Triggered when an avatar animation signal is received
         /// </summary>
@@ -262,25 +264,42 @@ namespace OpenMetaverse
         /// <param name="ids">The avatar keys to retrieve names for</param>
         public void RequestAvatarNames(List<UUID> ids)
         {
-            Logger.Log("AvatarManager requesting UUIDs count " + ids.Count, Helpers.LogLevel.Debug);
-            if (ids.Count > 0)
-            {
-                UUIDNameRequestPacket request = new UUIDNameRequestPacket();
-                request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[ids.Count];
+            int m = MAX_UUIDS_PER_PACKET;
+            int n = ids.Count / m; // Number of full requests to make
+            int i = 0;
 
-                for (int i = 0; i < ids.Count; i++)
+            UUIDNameRequestPacket request;
+
+            for (int j = 0; j < n; j++)
+            {
+                request = new UUIDNameRequestPacket();
+                request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[m];
+
+                for (; i < (j + 1) * m; i++)
                 {
-                    request.UUIDNameBlock[i] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
-                    request.UUIDNameBlock[i].ID = ids[i];
+                    request.UUIDNameBlock[i % m] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
+                    request.UUIDNameBlock[i % m].ID = ids[i];
                 }
 
+                Logger.Log("AvatarManager requesting names for " + request.UUIDNameBlock.Length + " UUIDs", Helpers.LogLevel.Debug);
                 Client.Network.SendPacket(request);
             }
-            else
-            {
-                // not sending request, no ids!
-            }
 
+            // Get any remaining names after left after the full requests
+            if (ids.Count > n * m)
+            {
+                request = new UUIDNameRequestPacket();
+                request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[ids.Count - n * m];
+
+                for (; i < ids.Count; i++)
+                {
+                    request.UUIDNameBlock[i % m] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
+                    request.UUIDNameBlock[i % m].ID = ids[i];
+                }
+
+                Logger.Log("AvatarManager requesting names for " + request.UUIDNameBlock.Length + " UUIDs", Helpers.LogLevel.Debug);
+                Client.Network.SendPacket(request);
+            }
         }
 
         /// <summary>
