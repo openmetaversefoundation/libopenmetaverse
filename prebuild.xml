@@ -181,6 +181,7 @@
           <Exclude name="BlockingQueue.cs"/>
           <Exclude name="DoubleDictionary.cs"/>
           <Exclude name="ExpiringCache.cs"/>
+          <Exclude name="CircularQueue.cs"/>
         </Match>
       </Files>
     </Project>
