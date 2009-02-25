@@ -31,8 +31,11 @@ namespace Simian.Extensions
     public class SceneManager : IExtension<Simian>, ISceneProvider
     {
         Simian server;
+        // Contains all scene objects, including prims and avatars
         DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
+        // A duplicate of the avatar information stored in sceneObjects, improves operations such as iterating over all agents
         DoubleDictionary<uint, UUID, Agent> sceneAgents = new DoubleDictionary<uint, UUID, Agent>();
+        // Event queues for each avatar in the scene
         Dictionary<UUID, EventQueueServerCap> eventQueues = new Dictionary<UUID, EventQueueServerCap>();
         int currentLocalID = 1;
         ulong regionHandle;
@@ -46,6 +49,8 @@ namespace Simian.Extensions
         public event ObjectModifyCallback OnObjectModify;
         public event ObjectModifyTexturesCallback OnObjectModifyTextures;
         public event ObjectAnimateCallback OnObjectAnimate;
+        public event ObjectUndoCallback OnObjectUndo;
+        public event ObjectRedoCallback OnObjectRedo;
         public event AgentAddCallback OnAgentAdd;
         public event AgentRemoveCallback OnAgentRemove;
         public event AgentAppearanceCallback OnAgentAppearance;
@@ -112,18 +117,27 @@ namespace Simian.Extensions
 
         public bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags)
         {
+            if (OnObjectAdd != null)
+            {
+                OnObjectAdd(sender, obj, creatorFlags);
+            }
+
             // Check if the object already exists in the scene
-            if (sceneObjects.ContainsKey(obj.Prim.ID))
-                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
+            SimulationObject oldObj;
+            if (sceneObjects.TryGetValue(obj.Prim.ID, out oldObj))
+            {
+                sceneObjects.Remove(oldObj.Prim.LocalID, oldObj.Prim.ID);
+
+                // Copy the undo/redo steps to the new object
+                obj.UndoSteps = new CircularQueue<Primitive>(oldObj.UndoSteps);
+                obj.RedoSteps = new CircularQueue<Primitive>(oldObj.RedoSteps);
+            }
 
             if (obj.Prim.LocalID == 0)
             {
                 // Assign a unique LocalID to this object
                 obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
             }
-
-            if (OnObjectAdd != null)
-                OnObjectAdd(sender, obj, creatorFlags);
 
             // Add the object to the scene dictionary
             sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
@@ -155,6 +169,9 @@ namespace Simian.Extensions
             SimulationObject obj;
             Agent agent;
 
+            if (sceneAgents.TryGetValue(localID, out agent))
+                AgentRemove(sender, agent);
+
             if (sceneObjects.TryGetValue(localID, out obj))
             {
                 if (OnObjectRemove != null)
@@ -170,21 +187,17 @@ namespace Simian.Extensions
                 server.UDP.BroadcastPacket(kill, PacketCategory.State);
                 return true;
             }
-            else if (sceneAgents.TryGetValue(localID, out agent))
-            {
-                AgentRemove(sender, agent);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public bool ObjectRemove(object sender, UUID id)
         {
             SimulationObject obj;
             Agent agent;
+
+            if (sceneAgents.TryGetValue(id, out agent))
+                AgentRemove(sender, agent);
 
             if (sceneObjects.TryGetValue(id, out obj))
             {
@@ -201,15 +214,8 @@ namespace Simian.Extensions
                 server.UDP.BroadcastPacket(kill, PacketCategory.State);
                 return true;
             }
-            else if (sceneAgents.TryGetValue(id, out agent))
-            {
-                AgentRemove(sender, agent);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         void AgentRemove(object sender, Agent agent)
@@ -242,48 +248,28 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(offline, PacketCategory.State);
         }
 
-        public void ObjectTransform(object sender, uint localID, Vector3 position, Quaternion rotation,
+        public void ObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation,
             Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity)
         {
-            SimulationObject obj;
-            Agent agent;
-
-            if (sceneObjects.TryGetValue(localID, out obj))
+            if (OnObjectTransform != null)
             {
-                if (OnObjectTransform != null)
-                {
-                    OnObjectTransform(sender, obj, position, rotation, velocity,
-                        acceleration, angularVelocity);
-                }
-
-                // Update the object
-                obj.Prim.Position = position;
-                obj.Prim.Rotation = rotation;
-                obj.Prim.Velocity = velocity;
-                obj.Prim.Acceleration = acceleration;
-                obj.Prim.AngularVelocity = angularVelocity;
-
-                // Inform clients
-                BroadcastObjectUpdate(obj.Prim);
+                OnObjectTransform(sender, obj, position, rotation, velocity,
+                    acceleration, angularVelocity);
             }
-            else if (sceneAgents.TryGetValue(localID, out agent))
-            {
-                if (OnObjectTransform != null)
-                {
-                    OnObjectTransform(sender, obj, position, rotation, velocity,
-                        acceleration, angularVelocity);
-                }
 
-                // Update the avatar
-                agent.Avatar.Position = position;
-                agent.Avatar.Rotation = rotation;
-                agent.Avatar.Velocity = velocity;
-                agent.Avatar.Acceleration = acceleration;
-                agent.Avatar.AngularVelocity = angularVelocity;
+            // Add an undo step for prims (not avatars)
+            if (!(obj.Prim is Avatar))
+                obj.CreateUndoStep();
 
-                // Inform clients
-                BroadcastObjectUpdate(agent.Avatar);
-            }
+            // Update the object
+            obj.Prim.Position = position;
+            obj.Prim.Rotation = rotation;
+            obj.Prim.Velocity = velocity;
+            obj.Prim.Acceleration = acceleration;
+            obj.Prim.AngularVelocity = angularVelocity;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj.Prim);
         }
 
         public void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags)
@@ -293,6 +279,10 @@ namespace Simian.Extensions
                 OnObjectFlags(sender, obj, flags);
             }
 
+            // Add an undo step for prims (not avatars)
+            if (!(obj.Prim is Avatar))
+                obj.CreateUndoStep();
+
             // Update the object
             obj.Prim.Flags = flags;
 
@@ -300,22 +290,22 @@ namespace Simian.Extensions
             BroadcastObjectUpdate(obj.Prim);
         }
 
-        public void ObjectModify(object sender, uint localID, Primitive.ConstructionData data)
+        public void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
         {
-            SimulationObject obj;
-            if (sceneObjects.TryGetValue(localID, out obj))
+            if (OnObjectModify != null)
             {
-                if (OnObjectModify != null)
-                {
-                    OnObjectModify(sender, obj, data);
-                }
-
-                // Update the object
-                obj.Prim.PrimData = data;
-
-                // Inform clients
-                BroadcastObjectUpdate(obj.Prim);
+                OnObjectModify(sender, obj, data);
             }
+
+            // Add an undo step for prims (not avatars)
+            if (!(obj.Prim is Avatar))
+                obj.CreateUndoStep();
+
+            // Update the object
+            obj.Prim.PrimData = data;
+
+            // Inform clients
+            BroadcastObjectUpdate(obj.Prim);
         }
 
         public void ObjectModifyTextures(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry)
@@ -324,6 +314,10 @@ namespace Simian.Extensions
             {
                 OnObjectModifyTextures(sender, obj, mediaURL, textureEntry);
             }
+
+            // Add an undo step for prims (not avatars)
+            if (!(obj.Prim is Avatar))
+                obj.CreateUndoStep();
 
             // Update the object
             obj.Prim.Textures = textureEntry;
@@ -355,6 +349,56 @@ namespace Simian.Extensions
             }
 
             server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+        }
+
+        public void ObjectUndo(object sender, SimulationObject obj)
+        {
+            if (OnObjectUndo != null)
+            {
+                OnObjectUndo(sender, obj);
+            }
+
+            Primitive prim = obj.UndoSteps.DequeueLast();
+            if (prim != null)
+            {
+                Logger.Log(String.Format("Performing undo on object {0}", obj.Prim.ID), Helpers.LogLevel.Debug);
+
+                obj.RedoSteps.Enqueue(prim);
+                obj.Prim = prim;
+
+                // Inform clients
+                BroadcastObjectUpdate(obj.Prim);
+            }
+            else
+            {
+                Logger.Log(String.Format("Undo requested on object {0} with no remaining undo steps", obj.Prim.ID),
+                    Helpers.LogLevel.Debug);
+            }
+        }
+
+        public void ObjectRedo(object sender, SimulationObject obj)
+        {
+            if (OnObjectRedo != null)
+            {
+                OnObjectRedo(sender, obj);
+            }
+
+            Primitive prim = obj.RedoSteps.DequeueLast();
+            if (prim != null)
+            {
+                Logger.Log(String.Format("Performing redo on object {0}", obj.Prim.ID), Helpers.LogLevel.Debug);
+
+                obj.UndoSteps.Enqueue(prim);
+                obj.Prim = prim;
+
+                // Inform clients
+                BroadcastObjectUpdate(obj.Prim);
+            }
+            else
+            {
+                Logger.Log(String.Format("Redo requested on object {0} with no remaining redo steps", obj.Prim.ID),
+                    Helpers.LogLevel.Debug);
+            }
         }
 
         public void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain)
@@ -399,6 +443,9 @@ namespace Simian.Extensions
                 block.Duration = currentEffect.Duration;
                 block.ID = currentEffect.EffectID;
                 block.Type = (byte)currentEffect.Type;
+                block.TypeData = currentEffect.TypeData;
+
+                effect.Effect[i] = block;
             }
 
             server.UDP.BroadcastPacket(effect, PacketCategory.State);

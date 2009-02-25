@@ -12,7 +12,6 @@ namespace Simian.Extensions
     {
         Simian server;
         
-
         public ObjectManager()
         {
         }
@@ -31,6 +30,8 @@ namespace Simian.Extensions
             server.UDP.RegisterPacketCallback(PacketType.ObjectFlagUpdate, new PacketCallback(ObjectFlagUpdateHandler));
             server.UDP.RegisterPacketCallback(PacketType.ObjectExtraParams, new PacketCallback(ObjectExtraParamsHandler));
             server.UDP.RegisterPacketCallback(PacketType.ObjectImage, new PacketCallback(ObjectImageHandler));
+            server.UDP.RegisterPacketCallback(PacketType.Undo, new PacketCallback(UndoHandler));
+            server.UDP.RegisterPacketCallback(PacketType.Redo, new PacketCallback(RedoHandler));
             server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
             server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
             server.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new PacketCallback(RequestObjectPropertiesFamilyHandler));
@@ -465,7 +466,7 @@ namespace Simian.Extensions
                     data.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
                     data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
-                    server.Scene.ObjectModify(this, obj.Prim.LocalID, data);
+                    server.Scene.ObjectModify(this, obj, data);
                 }
                 else
                 {
@@ -541,6 +542,30 @@ namespace Simian.Extensions
                     server.Scene.ObjectModifyTextures(this, obj,
                         Utils.BytesToString(image.ObjectData[i].MediaURL),
                         new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length));
+            }
+        }
+
+        void UndoHandler(Packet packet, Agent agent)
+        {
+            UndoPacket undo = (UndoPacket)packet;
+
+            for (int i = 0; i < undo.ObjectData.Length; i++)
+            {
+                SimulationObject obj;
+                if (server.Scene.TryGetObject(undo.ObjectData[i].ObjectID, out obj))
+                    server.Scene.ObjectUndo(this, obj);
+            }
+        }
+
+        void RedoHandler(Packet packet, Agent agent)
+        {
+            RedoPacket redo = (RedoPacket)packet;
+
+            for (int i = 0; i < redo.ObjectData.Length; i++)
+            {
+                SimulationObject obj;
+                if (server.Scene.TryGetObject(redo.ObjectData[i].ObjectID, out obj))
+                    server.Scene.ObjectRedo(this, obj);
             }
         }
 
@@ -674,7 +699,7 @@ namespace Simian.Extensions
                     }
                     else
                     {
-                        server.Scene.ObjectTransform(this, obj.Prim.LocalID, position, rotation,
+                        server.Scene.ObjectTransform(this, obj, position, rotation,
                             obj.Prim.Velocity, obj.Prim.Acceleration, obj.Prim.AngularVelocity);
                     }
                 }

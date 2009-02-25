@@ -35,14 +35,16 @@ namespace Simian
         public UUID AgentID;
         public Color4 Color;
         public float Duration;
+        public byte[] TypeData;
 
-        public ViewerEffect(UUID effectID, EffectType type, UUID agentID, Color4 color, float duration)
+        public ViewerEffect(UUID effectID, EffectType type, UUID agentID, Color4 color, float duration, byte[] typeData)
         {
             EffectID = effectID;
             Type = type;
             AgentID = agentID;
             Color = color;
             Duration = duration;
+            TypeData = typeData;
         }
     }
 
@@ -72,6 +74,8 @@ namespace Simian
     public delegate void ObjectModifyCallback(object sender, SimulationObject obj, Primitive.ConstructionData data);
     public delegate void ObjectModifyTexturesCallback(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
     public delegate void ObjectAnimateCallback(object sender, UUID senderID, UUID objectID, AnimationTrigger[] animations);
+    public delegate void ObjectUndoCallback(object sender, SimulationObject obj);
+    public delegate void ObjectRedoCallback(object sender, SimulationObject obj);
     public delegate void AgentAddCallback(object sender, Agent agent, PrimFlags creatorFlags);
     public delegate void AgentRemoveCallback(object sender, Agent agent);
     public delegate void AgentAppearanceCallback(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams);
@@ -88,6 +92,8 @@ namespace Simian
         event ObjectModifyCallback OnObjectModify;
         event ObjectModifyTexturesCallback OnObjectModifyTextures;
         event ObjectAnimateCallback OnObjectAnimate;
+        event ObjectUndoCallback OnObjectUndo;
+        event ObjectRedoCallback OnObjectRedo;
         event AgentAddCallback OnAgentAdd;
         event AgentRemoveCallback OnAgentRemove;
         event AgentAppearanceCallback OnAgentAppearance;
@@ -111,11 +117,13 @@ namespace Simian
         bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags);
         bool ObjectRemove(object sender, uint localID);
         bool ObjectRemove(object sender, UUID id);
-        void ObjectTransform(object sender, uint localID, Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity);
+        void ObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity);
         void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags);
-        void ObjectModify(object sender, uint localID, Primitive.ConstructionData data);
+        void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data);
         void ObjectModifyTextures(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
         void ObjectAnimate(object sender, UUID senderID, UUID objectID, AnimationTrigger[] animations);
+        void ObjectUndo(object sender, SimulationObject obj);
+        void ObjectRedo(object sender, SimulationObject obj);
         void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain);
         void TriggerEffects(object sender, ViewerEffect[] effects);
         bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags);

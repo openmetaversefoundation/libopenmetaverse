@@ -15,6 +15,10 @@ namespace Simian
         /// <summary>True when an avatar grabs this object. Stops movement and
         /// rotation</summary>
         public bool Frozen;
+        /// <summary>Holds the state of the object after each edit to enable undo</summary>
+        public CircularQueue<Primitive> UndoSteps = new CircularQueue<Primitive>(10);
+        /// <summary>Holds the state of the object after each undo to enable redo</summary>
+        public CircularQueue<Primitive> RedoSteps = new CircularQueue<Primitive>(10);
 
         protected Simian Server;
         protected SimpleMesh[] Meshes;
@@ -35,6 +39,14 @@ namespace Simian
             Server = server;
         }
 
+        /// <summary>
+        /// Copy the current state of the object into the next undo step
+        /// </summary>
+        public void CreateUndoStep()
+        {
+            UndoSteps.Enqueue(new Primitive(Prim));
+        }
+
         public SimpleMesh GetMesh(DetailLevel lod)
         {
             int i = (int)lod;
@@ -47,8 +59,7 @@ namespace Simian
             }
             else
             {
-                Primitive prim = (Primitive)Prim;
-                SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(prim, lod);
+                SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(Prim, lod);
                 Meshes[i] = mesh;
                 return mesh;
             }
@@ -67,22 +78,7 @@ namespace Simian
             else
             {
                 // Get the untransformed mesh
-                SimpleMesh mesh = GetMesh(lod);
-
-                // Copy to our new mesh
-                SimpleMesh transformedMesh = new SimpleMesh();
-                transformedMesh.Indices = new List<ushort>(mesh.Indices);
-                transformedMesh.Path.Open = mesh.Path.Open;
-                transformedMesh.Path.Points = new List<PathPoint>(mesh.Path.Points);
-                transformedMesh.Prim = mesh.Prim;
-                transformedMesh.Profile.Concave = mesh.Profile.Concave;
-                transformedMesh.Profile.Faces = new List<ProfileFace>(mesh.Profile.Faces);
-                transformedMesh.Profile.MaxX = mesh.Profile.MaxX;
-                transformedMesh.Profile.MinX = mesh.Profile.MinX;
-                transformedMesh.Profile.Open = mesh.Profile.Open;
-                transformedMesh.Profile.Positions = new List<Vector3>(mesh.Profile.Positions);
-                transformedMesh.Profile.TotalOutsidePoints = mesh.Profile.TotalOutsidePoints;
-                transformedMesh.Vertices = new List<Vertex>(mesh.Vertices);
+                SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(Prim, lod);
 
                 // Construct a matrix to transform to world space
                 Matrix4 transform = Matrix4.Identity;
@@ -94,20 +90,20 @@ namespace Simian
                     transform *= Matrix4.CreateTranslation(parent.Prim.Position);
                 }
 
-                transform *= Matrix4.CreateScale(this.Prim.Scale);
-                transform *= Matrix4.CreateFromQuaternion(this.Prim.Rotation);
-                transform *= Matrix4.CreateTranslation(this.Prim.Position);
+                transform *= Matrix4.CreateScale(Prim.Scale);
+                transform *= Matrix4.CreateFromQuaternion(Prim.Rotation);
+                transform *= Matrix4.CreateTranslation(Prim.Position);
 
                 // Transform the mesh
-                for (int j = 0; j < transformedMesh.Vertices.Count; j++)
+                for (int j = 0; j < mesh.Vertices.Count; j++)
                 {
-                    Vertex vertex = transformedMesh.Vertices[j];
+                    Vertex vertex = mesh.Vertices[j];
                     vertex.Position *= transform;
-                    transformedMesh.Vertices[j] = vertex;
+                    mesh.Vertices[j] = vertex;
                 }
 
-                WorldTransformedMeshes[i] = transformedMesh;
-                return transformedMesh;
+                WorldTransformedMeshes[i] = mesh;
+                return mesh;
             }
         }
 

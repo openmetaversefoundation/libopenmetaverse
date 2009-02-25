@@ -383,8 +383,8 @@ namespace Simian
                     {
                         if (outgoing.ResendCount < 3)
                         {
-                            Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount));
+                            //Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
+                            //        outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), now - outgoing.TickCount));
 
                             // The TickCount will be set to the current time when the packet
                             // is actually sent out again
@@ -394,7 +394,20 @@ namespace Simian
 
                             //++Stats.ResentPackets;
 
-                            SendPacket(client, outgoing);
+                            try
+                            {
+                                SendPacket(client, outgoing);
+                            }
+                            catch (NullReferenceException)
+                            {
+                                // Programming error elsewhere can put bad packets in the outgoing queue.
+                                // These will never successfully serialize, so just drop them
+                                Logger.Log(String.Format("Dropping bad packet #{0} ({1}) from the outgoing queue",
+                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType()),
+                                    Helpers.LogLevel.Warning);
+
+                                lock (client.NeedAcks) client.NeedAcks.Remove(outgoing.Packet.Header.Sequence);
+                            }
                         }
                         else
                         {

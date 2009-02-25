@@ -113,17 +113,18 @@ namespace Simian.Extensions
 
         void ViewerEffectHandler(Packet packet, Agent agent)
         {
-            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
+            ViewerEffectPacket incomingEffects = (ViewerEffectPacket)packet;
 
-            ViewerEffect[] effects = new ViewerEffect[effect.Effect.Length];
+            ViewerEffect[] outgoingEffects = new ViewerEffect[incomingEffects.Effect.Length];
 
-            for (int i = 0; i < effects.Length; i++)
+            for (int i = 0; i < outgoingEffects.Length; i++)
             {
-                ViewerEffectPacket.EffectBlock block = effect.Effect[i];
-                effects[i] = new ViewerEffect(block.ID, (EffectType)block.Type, block.AgentID, new Color4(block.Color, 0, true), block.Duration);
+                ViewerEffectPacket.EffectBlock block = incomingEffects.Effect[i];
+                outgoingEffects[i] = new ViewerEffect(block.ID, (EffectType)block.Type, block.AgentID,
+                    new Color4(block.Color, 0, true), block.Duration, block.TypeData);
             }
 
-            server.Scene.TriggerEffects(this, effects);
+            server.Scene.TriggerEffects(this, outgoingEffects);
         }
 
         void AvatarPropertiesRequestHandler(Packet packet, Agent agent)

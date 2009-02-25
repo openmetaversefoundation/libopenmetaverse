@@ -98,8 +98,12 @@ namespace Simian.Extensions
 
         void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
         {
-            server.Scene.ObjectTransform(this, update.LocalID, update.Position, update.Rotation, update.Velocity,
-                update.Acceleration, update.AngularVelocity);
+            SimulationObject obj;
+            if (server.Scene.TryGetObject(update.LocalID, out obj))
+            {
+                server.Scene.ObjectTransform(this, obj, update.Position, update.Rotation, update.Velocity,
+                    update.Acceleration, update.AngularVelocity);
+            }
 
             if (update.LocalID == client.Self.LocalID)
             {
