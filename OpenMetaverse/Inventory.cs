@@ -26,6 +26,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace OpenMetaverse
 {
@@ -306,6 +309,103 @@ namespace OpenMetaverse
         public bool Contains(InventoryBase obj)
         {
             return Contains(obj.UUID);
+        }
+
+        /// <summary>
+        /// Save the current inventory structure to a cache file
+        /// </summary>
+        /// <param name="filename">Name of the cache file to save to</param>
+        public void cache_inventory_to_disk(string filename)
+        {
+            Stream stream = File.Open(filename, FileMode.Create);
+            BinaryFormatter bformatter = new BinaryFormatter();
+            Console.WriteLine("Writing Inventory Information");
+            foreach (KeyValuePair<UUID, InventoryNode> kvp in Items)
+            {
+                bformatter.Serialize(stream, kvp.Value);
+            }
+            stream.Close();
+        }
+
+        /// <summary>
+        /// Loads in inventory cache file into the inventory structure. Note only valid to call after login has been successful.
+        /// </summary>
+        /// <param name="filename">Name of the cache file to load</param>
+        public void read_inventory_cache(string filename)
+        {
+            List<InventoryNode> nodes = new List<InventoryNode>();
+            int item_count = 0;
+
+            try
+            {
+                if (!File.Exists(filename))
+                    return;
+
+                Stream stream = File.Open(filename, FileMode.Open);
+                BinaryFormatter bformatter = new BinaryFormatter();
+
+                while (stream.Position < stream.Length)
+                {
+                    OpenMetaverse.InventoryNode node = (InventoryNode)bformatter.Deserialize(stream);
+                    nodes.Add(node);
+                    item_count++;
+                }
+
+                stream.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error accessing inventory cache file :" + e.Message, Helpers.LogLevel.Error);
+                return;
+            }
+
+            Logger.Log("Read " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
+
+            item_count = 0;
+
+            List<InventoryNode> del_nodes = new List<InventoryNode>();
+
+            // Becuase we could get child nodes before parents we must itterate around and only add nodes who have
+            // a parent already in the list because we must update both child and parent to link together
+            while (nodes.Count != 0)
+            {
+                foreach (InventoryNode node in nodes)
+                {
+                    InventoryNode pnode;
+                    if (node.ParentID == UUID.Zero)
+                    {
+                        //We don't need the root nodes "My Inventory" etc as they will already exist for the correct
+                        // user of this cache.
+                        del_nodes.Add(node);
+                    }
+                    else if (Items.TryGetValue(node.ParentID, out pnode))
+                    {
+                        if (node.Data != null)
+                        {
+                            //Only add new items, this is most likely to be run at login time before any inventory
+                            //nodes other than the root are populated.
+                            if (!Items.ContainsKey(node.Data.UUID))
+                            {
+                                Items.Add(node.Data.UUID, node);
+                                node.Parent = pnode; //Update this node with its parent
+                                pnode.Nodes.Add(node.Data.UUID, node); // Add to the parents child list
+                                item_count++;
+                            }
+                        }
+
+                        del_nodes.Add(node);
+                    }
+
+                }
+
+                //Clean up processed nodes this loop around.
+                foreach (InventoryNode node in del_nodes)
+                    nodes.Remove(node);
+
+                del_nodes.Clear();
+            }
+
+            Logger.Log("Reassembled " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
         }
 
         #region Operators

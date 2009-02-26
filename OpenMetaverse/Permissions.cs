@@ -73,6 +73,7 @@ namespace OpenMetaverse
     /// <summary>
     /// 
     /// </summary>
+    [Serializable()]
     public struct Permissions
     {
         public PermissionMask BaseMask;

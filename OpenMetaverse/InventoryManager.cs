@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
+using System.Runtime.Serialization;
 using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
@@ -159,7 +160,8 @@ namespace OpenMetaverse
     /// <summary>
     /// Base Class for Inventory Items
     /// </summary>
-    public abstract class InventoryBase
+    [Serializable()]
+    public abstract class InventoryBase : ISerializable
     {
         /// <summary><seealso cref="OpenMetaverse.UUID"/> of item/folder</summary>
         public readonly UUID UUID;
@@ -179,6 +181,30 @@ namespace OpenMetaverse
             if (itemID == UUID.Zero)
                 Logger.Log("Initializing an InventoryBase with UUID.Zero", Helpers.LogLevel.Warning);
             UUID = itemID;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        {
+            info.AddValue("UUID", UUID);
+            info.AddValue("ParentUUID",ParentUUID );
+            info.AddValue("Name", Name);
+            info.AddValue("OwnerID", OwnerID);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public InventoryBase(SerializationInfo info, StreamingContext ctxt)
+        {
+            UUID = (UUID)info.GetValue("UUID", typeof(UUID));
+            ParentUUID = (UUID)info.GetValue("ParentUUID", typeof(UUID));
+            Name = (string)info.GetValue("Name", typeof(string));
+            OwnerID = (UUID)info.GetValue("OwnerID", typeof(UUID));
         }
 
         /// <summary>
@@ -261,6 +287,48 @@ namespace OpenMetaverse
         /// <param name="itemID"><seealso cref="OpenMetaverse.UUID"/> of the item</param>
         public InventoryItem(InventoryType type, UUID itemID) : base(itemID) { InventoryType = type; }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        new public void GetObjectData(SerializationInfo info, StreamingContext ctxt) 
+        {
+            base.GetObjectData(info,ctxt);
+            info.AddValue("AssetUUID",AssetUUID,typeof(UUID));
+            info.AddValue("Permissions", Permissions,typeof(Permissions));
+            info.AddValue("AssetType", AssetType);
+            info.AddValue("InventoryType", InventoryType);
+            info.AddValue("CreatorID", CreatorID);
+            info.AddValue("Description", Description);
+            info.AddValue("GroupID", GroupID);
+            info.AddValue("GroupOwned", GroupOwned);
+            info.AddValue("SalePrice", SalePrice);
+            info.AddValue("SaleType", SaleType);
+            info.AddValue("Flags", Flags);
+            info.AddValue("CreationDate", CreationDate);  
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public InventoryItem(SerializationInfo info, StreamingContext ctxt) : base (info,ctxt)
+        {
+           AssetUUID = (UUID)info.GetValue("AssetUUID", typeof(UUID));
+           Permissions =(Permissions)info.GetValue("Permissions",typeof(Permissions));
+           AssetType = (AssetType)info.GetValue("AssetType", typeof(AssetType));
+           InventoryType = (InventoryType)info.GetValue("InventoryType", typeof(InventoryType));
+           CreatorID = (UUID)info.GetValue("CreatorID", typeof(UUID));
+           Description = (string)info.GetValue("Description", typeof(string));
+           GroupID= (UUID)info.GetValue("GroupID", typeof(UUID));
+           GroupOwned = (bool)info.GetValue("GroupOwned", typeof(bool));
+           SalePrice = (int)info.GetValue("SalePrice", typeof(int));
+           SaleType = (SaleType)info.GetValue("SaleType", typeof(SaleType));
+           Flags = (uint)info.GetValue("Flags", typeof(uint));
+           CreationDate = (DateTime)info.GetValue("CreationDate", typeof(DateTime));
+        }
+
         /// <summary>
         /// Generates a number corresponding to the value of the object to support the use of a hash table.
         /// Suitable for use in hashing algorithms and data structures such as a hash table
@@ -333,6 +401,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Texture; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryTexture object from a serialization stream
+        /// </summary>
+        public InventoryTexture(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Texture; 
+        }
     }
 
     /// <summary>
@@ -349,6 +425,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Sound; 
         } 
+
+        /// <summary>
+        /// Construct an InventorySound object from a serialization stream
+        /// </summary>
+        public InventorySound(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Sound; 
+        }
     }
 
     /// <summary>
@@ -363,6 +447,14 @@ namespace OpenMetaverse
         /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryCallingCard(UUID itemID) : base(itemID) 
         { 
+            InventoryType = InventoryType.CallingCard; 
+        }
+
+        /// <summary>
+        /// Construct an InventoryCallingCard object from a serialization stream
+        /// </summary>
+        public InventoryCallingCard(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
             InventoryType = InventoryType.CallingCard; 
         }
     }
@@ -380,6 +472,15 @@ namespace OpenMetaverse
         public InventoryLandmark(UUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Landmark; 
+        }
+
+        /// <summary>
+        /// Construct an InventoryLandmark object from a serialization stream
+        /// </summary>
+        public InventoryLandmark(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Landmark;
+
         }
 
         /// <summary>
@@ -404,6 +505,14 @@ namespace OpenMetaverse
         /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryObject(UUID itemID) : base(itemID) 
         { 
+            InventoryType = InventoryType.Object; 
+        }
+
+        /// <summary>
+        /// Construct an InventoryObject object from a serialization stream
+        /// </summary>
+        public InventoryObject(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
             InventoryType = InventoryType.Object; 
         }
 
@@ -433,7 +542,15 @@ namespace OpenMetaverse
         public InventoryNotecard(UUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Notecard; 
-        } 
+        }
+
+        /// <summary>
+        /// Construct an InventoryNotecard object from a serialization stream
+        /// </summary>
+        public InventoryNotecard(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Notecard; 
+        }
     }
 
     /// <summary>
@@ -451,6 +568,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Category; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryCategory object from a serialization stream
+        /// </summary>
+        public InventoryCategory(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Category; 
+        }
     }
 
     /// <summary>
@@ -467,6 +592,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.LSL; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryLSL object from a serialization stream
+        /// </summary>
+        public InventoryLSL(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.LSL; 
+        }
     }
 
     /// <summary>
@@ -483,6 +616,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Snapshot; 
         } 
+
+        /// <summary>
+        /// Construct an InventorySnapshot object from a serialization stream
+        /// </summary>
+        public InventorySnapshot(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Snapshot; 
+        }
     }
 
     /// <summary>
@@ -497,6 +638,14 @@ namespace OpenMetaverse
         /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryAttachment(UUID itemID) : base(itemID) 
         { 
+            InventoryType = InventoryType.Attachment; 
+        }
+
+        /// <summary>
+        /// Construct an InventoryAttachment object from a serialization stream
+        /// </summary>
+        public InventoryAttachment(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
             InventoryType = InventoryType.Attachment; 
         }
 
@@ -523,6 +672,14 @@ namespace OpenMetaverse
         public InventoryWearable(UUID itemID) : base(itemID) { InventoryType = InventoryType.Wearable; }
 
         /// <summary>
+        /// Construct an InventoryWearable object from a serialization stream
+        /// </summary>
+        public InventoryWearable(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+            InventoryType = InventoryType.Wearable; 
+        }
+
+        /// <summary>
         /// The <seealso cref="OpenMetaverse.WearableType"/>, Skin, Shape, Skirt, Etc
         /// </summary>
         public WearableType WearableType
@@ -545,7 +702,17 @@ namespace OpenMetaverse
         public InventoryAnimation(UUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Animation; 
-        } 
+        }
+
+	/// <summary>
+        /// Construct an InventoryAnimation object from a serialization stream
+        /// </summary>
+        public InventoryAnimation(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Animation; 
+        }
+ 
+
     }
 
     /// <summary>
@@ -562,6 +729,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Gesture; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryGesture object from a serialization stream
+        /// </summary>
+        public InventoryGesture(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Gesture; 
+        }
     }
     
     /// <summary>
@@ -592,6 +767,28 @@ namespace OpenMetaverse
         {
             return Name;
         }
+
+        /// <summary>
+        /// Get Serilization data for this InventoryFolder object
+        /// </summary>
+        new public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        {
+            base.GetObjectData(info,ctxt);
+            info.AddValue("PreferredType", PreferredType, typeof(AssetType));
+            info.AddValue("Version", Version);
+            info.AddValue("DescendentCount", DescendentCount);
+        }
+
+        /// <summary>
+        /// Construct an InventoryFolder object from a serialization stream
+        /// </summary>
+        public InventoryFolder(SerializationInfo info, StreamingContext ctxt) : base (info, ctxt)
+        {
+            PreferredType = (AssetType)info.GetValue("PreferredType", typeof(AssetType));
+            Version=(int)info.GetValue("Version",typeof(int));
+            DescendentCount = (int)info.GetValue("DescendentCount", typeof(int));
+        }
+
 
         /// <summary>
         /// 
