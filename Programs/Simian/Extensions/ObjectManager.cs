@@ -115,13 +115,7 @@ namespace Simian.Extensions
 
             // Create an object
             Primitive prim = new Primitive();
-            prim.Flags =
-                PrimFlags.ObjectModify |
-                PrimFlags.ObjectCopy |
-                PrimFlags.ObjectAnyOwner |
-                PrimFlags.ObjectMove |
-                PrimFlags.ObjectTransfer |
-                PrimFlags.ObjectOwnerModify;
+
             // TODO: Security check
             prim.GroupID = add.AgentData.GroupID;
             prim.ID = UUID.Random();
@@ -159,18 +153,17 @@ namespace Simian.Extensions
             prim.Properties.Name = "New Object";
             prim.Properties.ObjectID = prim.ID;
             prim.Properties.OwnerID = prim.OwnerID;
-            prim.Properties.Permissions = Permissions.FullPermissions;
+            prim.Properties.Permissions = server.Permissions.GetDefaultPermissions();
             prim.Properties.SalePrice = 10;
 
             prim.RegionHandle = server.Scene.RegionHandle;
             prim.Rotation = add.ObjectData.Rotation;
             prim.Scale = scale;
-            prim.Textures = new Primitive.TextureEntry(Primitive.TextureEntry.WHITE_TEXTURE);
             prim.TextColor = Color4.Black;
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAdd(this, simObj, flags);
+            server.Scene.ObjectAdd(this, simObj, agent.Avatar.ID, 0, flags);
         }
 
         void ObjectDuplicateHandler(Packet packet, Agent agent)
@@ -191,7 +184,7 @@ namespace Simian.Extensions
                     newObj.Prim.Position += offset;
                     newObj.Prim.ID = UUID.Random();
 
-                    server.Scene.ObjectAdd(this, newObj, flags);
+                    server.Scene.ObjectAdd(this, newObj, agent.Avatar.ID, 0, flags);
                 }
                 else
                 {
@@ -341,7 +334,6 @@ namespace Simian.Extensions
                 update.RegionData.TimeDilation = UInt16.MaxValue;               
 
                 update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-
                 update.ObjectData[0] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, server.Scene.RegionHandle, linkSet[i].Prim.Flags);
 
                 if (linkSet[i].Prim.ParentID > 0)
@@ -695,7 +687,7 @@ namespace Simian.Extensions
                         obj.Prim.Rotation = rotation;
                         obj.Prim.Scale = scale;
 
-                        server.Scene.ObjectAdd(this, obj, PrimFlags.None);
+                        server.Scene.ObjectAdd(this, obj, agent.Avatar.ID, 0, PrimFlags.None);
                     }
                     else
                     {

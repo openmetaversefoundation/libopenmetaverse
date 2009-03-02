@@ -102,5 +102,27 @@ namespace Simian
                     return String.Empty;
             }
         }
+
+        public Vector3 GetSimulatorPosition(ISceneProvider scene)
+        {
+            SimulationObject parent;
+            Vector3 position = Avatar.Position;
+
+            if (Avatar.ParentID != 0 && scene.TryGetObject(Avatar.ParentID, out parent))
+                position += Vector3.Transform(parent.Prim.Position, Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
+
+            return position;
+        }
+
+        public Quaternion GetSimulatorRotation(ISceneProvider scene)
+        {
+            SimulationObject parent;
+            Quaternion rotation = Avatar.Rotation;
+
+            if (Avatar.ParentID != 0 && scene.TryGetObject(Avatar.ParentID, out parent))
+                rotation *= parent.Prim.Rotation;
+
+            return rotation;
+        }
     }
 }

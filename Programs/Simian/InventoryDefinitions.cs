@@ -41,6 +41,28 @@ namespace Simian
         {
             return ID.GetHashCode();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is InventoryObject))
+                return false;
+
+            InventoryObject o = (InventoryObject)obj;
+            return o.ID == ID;
+        }
+
+        public static bool operator ==(InventoryObject lhs, InventoryObject rhs)
+        {
+            if ((object)lhs == null)
+                return (object)rhs == null;
+            else
+                return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(InventoryObject lhs, InventoryObject rhs)
+        {
+            return !(lhs == rhs);
+        }
     }
 
     /// <summary>
@@ -87,30 +109,6 @@ namespace Simian
                     (uint)Permissions.OwnerMask);
             }
         }
-
-        public override int GetHashCode()
-        {
-            return ID.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is InventoryItem))
-                return false;
-
-            InventoryItem o = (InventoryItem)obj;
-            return o.ID == ID;
-        }
-
-        public static bool operator ==(InventoryItem lhs, InventoryItem rhs)
-        {
-            return lhs.Equals(rhs);
-        }
-
-        public static bool operator !=(InventoryItem lhs, InventoryItem rhs)
-        {
-            return !(lhs == rhs);
-        }
     }
 
     /// <summary>
@@ -148,6 +146,13 @@ namespace Simian
         {
             return !(lhs == rhs);
         }
+    }
+
+    public class InventoryTaskItem : InventoryItem
+    {
+        public UUID ParentObjectID;
+        public UUID PermissionGranter;
+        public uint GrantedPermissions;
     }
 
     #endregion Inventory Item Containers

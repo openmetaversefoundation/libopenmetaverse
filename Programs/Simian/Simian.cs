@@ -35,11 +35,15 @@ namespace Simian
         public IUDPProvider UDP;
         public ISceneProvider Scene;
         public IAssetProvider Assets;
+        public IPermissionsProvider Permissions;
         public IAvatarProvider Avatars;
         public IInventoryProvider Inventory;
+        public ITaskInventoryProvider TaskInventory;
         public IParcelProvider Parcels;
         public IMeshingProvider Mesher;
         public ICapabilitiesProvider Capabilities;
+        public IScriptEngine ScriptEngine;
+        public IMessagingProvider Messages;
 
         // Persistent extensions
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();

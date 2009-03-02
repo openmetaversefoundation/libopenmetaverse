@@ -10,6 +10,9 @@ namespace Simian
         /// <summary>Any sort of transactional message, such as
         /// AgentMovementComplete</summary>
         Transaction = 0,
+        /// <summary>Chat such as intra-simulator chat or instant
+        /// messaging</summary>
+        Messaging,
         /// <summary>State synchronization, such as animations or
         /// object updates</summary>
         State,

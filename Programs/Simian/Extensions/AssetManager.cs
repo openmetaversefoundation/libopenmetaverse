@@ -86,6 +86,19 @@ namespace Simian.Extensions
             return AssetStore.TryGetValue(id, out asset);
         }
 
+        public byte[] EncodePrimAsset(List<SimulationObject> linkset)
+        {
+            // FIXME:
+            return new byte[0];
+        }
+
+        public bool TryDecodePrimAsset(byte[] primAssetData, out List<SimulationObject> linkset)
+        {
+            // FIXME:
+            linkset = null;
+            return false;
+        }
+
         void SaveAsset(Asset asset)
         {
             try

@@ -48,9 +48,7 @@ namespace Simian.Extensions
                 agent.SecureSessionID = UUID.Random();
 
                 // Avatar flags
-                agent.Flags = PrimFlags.Physics | PrimFlags.ObjectModify | PrimFlags.ObjectCopy |
-                    PrimFlags.ObjectAnyOwner | PrimFlags.ObjectMove | PrimFlags.InventoryEmpty |
-                    PrimFlags.ObjectTransfer | PrimFlags.ObjectOwnerModify | PrimFlags.ObjectYouOwner;
+                agent.Flags = PrimFlags.Physics;
 
                 return agent;
             }

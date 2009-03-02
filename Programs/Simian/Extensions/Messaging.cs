@@ -30,23 +30,9 @@ namespace Simian.Extensions
         {
             ChatFromViewerPacket viewerChat = (ChatFromViewerPacket)packet;
 
-            string message = Utils.BytesToString(viewerChat.ChatData.Message);
-            if (viewerChat.ChatData.Channel != 0 || (message.Length > 0 && message.Substring(0, 1) == "/"))
-                return; //not public chat
-
-            //TODO: add distance constraints to AudibleLevel and Message 
-
-            ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
-            chat.ChatData.Audible = (byte)ChatAudibleLevel.Fully;
-            chat.ChatData.ChatType = viewerChat.ChatData.Type;
-            chat.ChatData.OwnerID = agent.Avatar.ID;
-            chat.ChatData.SourceID = agent.Avatar.ID;
-            chat.ChatData.SourceType = (byte)ChatSourceType.Agent;
-            chat.ChatData.Position = agent.Avatar.Position;
-            chat.ChatData.FromName = Utils.StringToBytes(agent.Avatar.Name);
-            chat.ChatData.Message = viewerChat.ChatData.Message;
-
-            server.UDP.BroadcastPacket(chat, PacketCategory.Transaction);
+            server.Scene.ObjectChat(this, agent.Avatar.ID, agent.Avatar.ID, ChatAudibleLevel.Fully, (ChatType)viewerChat.ChatData.Type,
+                ChatSourceType.Agent, agent.Avatar.Name, agent.GetSimulatorPosition(server.Scene), viewerChat.ChatData.Channel,
+                Utils.BytesToString(viewerChat.ChatData.Message));
         }
 
         void ImprovedInstantMessageHandler(Packet packet, Agent agent)
@@ -60,8 +46,9 @@ namespace Simian.Extensions
                 Agent recipient;
                 if (server.Scene.TryGetAgent(im.MessageBlock.ToAgentID, out recipient))
                 {
+                    // FIXME: Look into the fields we are setting to default values
                     ImprovedInstantMessagePacket sendIM = new ImprovedInstantMessagePacket();
-                    sendIM.MessageBlock.RegionID = UUID.Random(); //FIXME
+                    sendIM.MessageBlock.RegionID = server.Scene.RegionID;
                     sendIM.MessageBlock.ParentEstateID = 1;
                     sendIM.MessageBlock.FromGroup = false;
                     sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.Avatar.Name);
@@ -71,12 +58,12 @@ namespace Simian.Extensions
                     sendIM.MessageBlock.ID = agent.Avatar.ID;
                     sendIM.MessageBlock.Message = im.MessageBlock.Message;
                     sendIM.MessageBlock.BinaryBucket = new byte[0];
-                    sendIM.MessageBlock.Timestamp = 0;
-                    sendIM.MessageBlock.Position = agent.Avatar.Position;
+                    sendIM.MessageBlock.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
+                    sendIM.MessageBlock.Position = agent.GetSimulatorPosition(server.Scene);
 
                     sendIM.AgentData.AgentID = agent.Avatar.ID;
 
-                    server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Transaction);
+                    server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Messaging);
                 }
             }
         }

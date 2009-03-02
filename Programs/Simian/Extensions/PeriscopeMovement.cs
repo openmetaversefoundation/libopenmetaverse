@@ -31,7 +31,6 @@ namespace Simian.Extensions
         Periscope periscope;
         Timer updateTimer;
         long lastTick;
-        TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
 
         public int LastTick
         {
@@ -43,8 +42,6 @@ namespace Simian.Extensions
         {
             this.server = server;
             this.periscope = periscope;
-
-            server.Scene.OnTerrainUpdate += Scene_OnTerrainUpdate;
 
             server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
             server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
@@ -61,13 +58,6 @@ namespace Simian.Extensions
                 updateTimer.Dispose();
                 updateTimer = null;
             }
-        }
-
-        void Scene_OnTerrainUpdate(object sender, uint x, uint y, float[,] patchData)
-        {
-            TerrainPatch patch = new TerrainPatch(16, 16);
-            patch.Height = patchData;
-            heightmap[y, x] = patch;
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -119,9 +109,12 @@ namespace Simian.Extensions
                         if ((heldForward || heldBack) && (heldLeft || heldRight))
                             speed /= SQRT_TWO;
 
-                        // adjust multiplier for Z dimension
-                        float oldFloor = GetLandHeightAt(agent.Avatar.Position);
-                        float newFloor = GetLandHeightAt(agent.Avatar.Position + (move * speed));
+                        Vector3 agentPosition = agent.GetSimulatorPosition(server.Scene);
+                        float oldFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+
+                        agentPosition += (move * speed);
+                        float newFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+
                         if (!flying && newFloor != oldFloor)
                             speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
 
@@ -346,66 +339,6 @@ namespace Simian.Extensions
             SetAlwaysRunPacket run = (SetAlwaysRunPacket)packet;
 
             agent.Running = run.AgentData.AlwaysRun;
-        }
-
-        float GetLandHeightAt(Vector3 position)
-        {
-            int x = (int)position.X;
-            int y = (int)position.Y;
-
-            if (x > 255) x = 255;
-            else if (x < 0) x = 0;
-            if (y > 255) y = 255;
-            else if (y < 0) y = 0;
-
-            int patchX = x / 16;
-            int patchY = y / 16;
-
-            if (heightmap[patchY, patchX] != null)
-            {
-                float center = heightmap[patchY, patchX].Height[y - (patchY * 16), x - (patchX * 16)];
-
-                float distX = position.X - (int)position.X;
-                float distY = position.Y - (int)position.Y;
-
-                float nearestX;
-                float nearestY;
-
-                if (distX > 0f)
-                {
-                    int i = x < 255 ? 1 : 0;
-                    int newPatchX = (x + i) / 16;
-                    nearestX = heightmap[patchY, newPatchX].Height[y - (patchY * 16), (x + i) - (newPatchX * 16)];
-                }
-                else
-                {
-                    int i = x > 0 ? 1 : 0;
-                    int newPatchX = (x - i) / 16;
-                    nearestX = heightmap[patchY, newPatchX].Height[y - (patchY * 16), (x - i) - (newPatchX * 16)];
-                }
-
-                if (distY > 0f)
-                {
-                    int i = y < 255 ? 1 : 0;
-                    int newPatchY = (y + i) / 16;
-                    nearestY = heightmap[newPatchY, patchX].Height[(y + i) - (newPatchY * 16), x - (patchX * 16)];
-                }
-                else
-                {
-                    int i = y > 0 ? 1 : 0;
-                    int newPatchY = (y - i) / 16;
-                    nearestY = heightmap[newPatchY, patchX].Height[(y - i) - (newPatchY * 16), x - (patchX * 16)];
-                }
-
-                float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
-                float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
-
-                return ((lerpX + lerpY) / 2);
-            }
-            else
-            {
-                return 0f;
-            }
         }
     }
 }

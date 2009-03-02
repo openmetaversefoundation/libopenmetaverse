@@ -27,7 +27,8 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            capsServer.Stop();
+            if (capsServer != null)
+                capsServer.Stop();
         }
 
         public Uri CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state)

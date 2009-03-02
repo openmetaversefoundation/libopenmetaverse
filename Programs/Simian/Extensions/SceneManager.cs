@@ -41,6 +41,7 @@ namespace Simian.Extensions
         ulong regionHandle;
         UUID regionID = UUID.Random();
         TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
+        Vector2[,] windSpeeds = new Vector2[16, 16];
 
         public event ObjectAddCallback OnObjectAdd;
         public event ObjectRemoveCallback OnObjectRemove;
@@ -48,7 +49,12 @@ namespace Simian.Extensions
         public event ObjectFlagsCallback OnObjectFlags;
         public event ObjectModifyCallback OnObjectModify;
         public event ObjectModifyTexturesCallback OnObjectModifyTextures;
+        public event ObjectSetRotationAxisCallback OnObjectSetRotationAxis;
+        public event ObjectApplyImpulseCallback OnObjectApplyImpulse;
+        public event ObjectApplyRotationalImpulseCallback OnObjectApplyRotationalImpulse;
+        public event ObjectSetTorqueCallback OnObjectSetTorque;
         public event ObjectAnimateCallback OnObjectAnimate;
+        public event ObjectChatCallback OnObjectChat;
         public event ObjectUndoCallback OnObjectUndo;
         public event ObjectRedoCallback OnObjectRedo;
         public event AgentAddCallback OnAgentAdd;
@@ -57,6 +63,7 @@ namespace Simian.Extensions
         public event TriggerSoundCallback OnTriggerSound;
         public event TriggerEffectsCallback OnTriggerEffects;
         public event TerrainUpdateCallback OnTerrainUpdate;
+        public event WindUpdateCallback OnWindUpdate;
 
         public uint RegionX { get { return 7777; } }
         public uint RegionY { get { return 7777; } }
@@ -69,6 +76,8 @@ namespace Simian.Extensions
 
         public uint TerrainPatchWidth { get { return 16; } }
         public uint TerrainPatchHeight { get { return 16; } }
+        public uint TerrainPatchCountWidth { get { return 16; } }
+        public uint TerrainPatchCountHeight { get { return 16; } }
 
         public SceneManager()
         {
@@ -85,13 +94,66 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            lock (eventQueues)
+            sceneAgents.ForEach(delegate(Agent agent) { AgentRemove(this, agent); });
+        }
+
+        public float GetTerrainHeightAt(float fx, float fy)
+        {
+            int x = (int)fx;
+            int y = (int)fy;
+
+            if (x > 255) x = 255;
+            else if (x < 0) x = 0;
+            if (y > 255) y = 255;
+            else if (y < 0) y = 0;
+
+            int patchX = x / 16;
+            int patchY = y / 16;
+
+            if (heightmap[patchY, patchX] != null)
             {
-                foreach (EventQueueServerCap eventQueue in eventQueues.Values)
+                float center = heightmap[patchY, patchX].Height[y - (patchY * 16), x - (patchX * 16)];
+
+                float distX = fx - (int)fx;
+                float distY = fy - (int)fy;
+
+                float nearestX;
+                float nearestY;
+
+                if (distX > 0f)
                 {
-                    server.Capabilities.RemoveCapability(eventQueue.Capability);
-                    eventQueue.Server.Stop();
+                    int i = x < 255 ? 1 : 0;
+                    int newPatchX = (x + i) / 16;
+                    nearestX = heightmap[patchY, newPatchX].Height[y - (patchY * 16), (x + i) - (newPatchX * 16)];
                 }
+                else
+                {
+                    int i = x > 0 ? 1 : 0;
+                    int newPatchX = (x - i) / 16;
+                    nearestX = heightmap[patchY, newPatchX].Height[y - (patchY * 16), (x - i) - (newPatchX * 16)];
+                }
+
+                if (distY > 0f)
+                {
+                    int i = y < 255 ? 1 : 0;
+                    int newPatchY = (y + i) / 16;
+                    nearestY = heightmap[newPatchY, patchX].Height[(y + i) - (newPatchY * 16), x - (patchX * 16)];
+                }
+                else
+                {
+                    int i = y > 0 ? 1 : 0;
+                    int newPatchY = (y - i) / 16;
+                    nearestY = heightmap[newPatchY, patchX].Height[(y - i) - (newPatchY * 16), x - (patchX * 16)];
+                }
+
+                float lerpX = Utils.Lerp(center, nearestX, Math.Abs(distX));
+                float lerpY = Utils.Lerp(center, nearestY, Math.Abs(distY));
+
+                return ((lerpX + lerpY) / 2);
+            }
+            else
+            {
+                return 0f;
             }
         }
 
@@ -115,11 +177,42 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(layer, PacketCategory.Terrain);
         }
 
-        public bool ObjectAdd(object sender, SimulationObject obj, PrimFlags creatorFlags)
+        public Vector2 GetWindSpeedAt(float fx, float fy)
+        {
+            int x = (int)fx;
+            int y = (int)fy;
+
+            if (x > 255) x = 255;
+            else if (x < 0) x = 0;
+            if (y > 255) y = 255;
+            else if (y < 0) y = 0;
+
+            int patchX = x / 16;
+            int patchY = y / 16;
+
+            return windSpeeds[patchY, patchX];
+        }
+
+        public Vector2 GetWindSpeed(uint x, uint y)
+        {
+            return windSpeeds[y, x];
+        }
+
+        public void SetWindSpeed(object sender, uint x, uint y, Vector2 windSpeed)
+        {
+            if (OnWindUpdate != null)
+            {
+                OnWindUpdate(sender, x, y, windSpeed);
+            }
+
+            windSpeeds[y, x] = windSpeed;
+        }
+
+        public bool ObjectAdd(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags)
         {
             if (OnObjectAdd != null)
             {
-                OnObjectAdd(sender, obj, creatorFlags);
+                OnObjectAdd(sender, obj, ownerID, scriptStartParam, creatorFlags);
             }
 
             // Check if the object already exists in the scene
@@ -132,11 +225,49 @@ namespace Simian.Extensions
                 obj.UndoSteps = new CircularQueue<Primitive>(oldObj.UndoSteps);
                 obj.RedoSteps = new CircularQueue<Primitive>(oldObj.RedoSteps);
             }
-
-            if (obj.Prim.LocalID == 0)
+            else
             {
-                // Assign a unique LocalID to this object
-                obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+                // Enable some default flags that all objects will have
+                obj.Prim.Flags |= server.Permissions.GetDefaultObjectFlags();
+
+                // Object did not exist before, so there's no way it could contain inventory
+                obj.Prim.Flags |= PrimFlags.InventoryEmpty;
+
+                // Fun Fact: Prim.OwnerID is only used by the LL viewer to mute sounds
+                obj.Prim.OwnerID = ownerID;
+
+                // Assign a unique LocalID to this object if no LocalID is set
+                if (obj.Prim.LocalID == 0)
+                    obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+
+                // Assign a random ID to this object if no ID is set
+                if (obj.Prim.ID == UUID.Zero)
+                    obj.Prim.ID = UUID.Random();
+
+                // Set the RegionHandle if no RegionHandle is set
+                if (obj.Prim.RegionHandle == 0)
+                    obj.Prim.RegionHandle = server.Scene.RegionHandle;
+
+                // Make sure this object has properties
+                if (obj.Prim.Properties == null)
+                {
+                    obj.Prim.Properties = new Primitive.ObjectProperties();
+                    obj.Prim.Properties.CreationDate = DateTime.Now;
+                    obj.Prim.Properties.CreatorID = ownerID;
+                    obj.Prim.Properties.Name = "New Object";
+                    obj.Prim.Properties.ObjectID = obj.Prim.ID;
+                    obj.Prim.Properties.OwnerID = ownerID;
+                    obj.Prim.Properties.Permissions = server.Permissions.GetDefaultPermissions();
+                    obj.Prim.Properties.SalePrice = 10;
+                }
+
+                // Set the default scale
+                if (obj.Prim.Scale == Vector3.Zero)
+                    obj.Prim.Scale = new Vector3(0.5f, 0.5f, 0.5f);
+
+                // Set default textures if none are set
+                if (obj.Prim.Textures == null)
+                    obj.Prim.Textures = new Primitive.TextureEntry(new UUID("89556747-24cb-43ed-920b-47caed15465f")); // Plywood
             }
 
             // Add the object to the scene dictionary
@@ -146,7 +277,7 @@ namespace Simian.Extensions
             {
                 // Send an update out to the creator
                 ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                    obj.Prim.Flags | creatorFlags);
+                    obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner);
                 server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
             }
 
@@ -253,8 +384,7 @@ namespace Simian.Extensions
         {
             if (OnObjectTransform != null)
             {
-                OnObjectTransform(sender, obj, position, rotation, velocity,
-                    acceleration, angularVelocity);
+                OnObjectTransform(sender, obj, position, rotation, velocity, acceleration, angularVelocity);
             }
 
             // Add an undo step for prims (not avatars)
@@ -327,6 +457,47 @@ namespace Simian.Extensions
             BroadcastObjectUpdate(obj.Prim);
         }
 
+        public void ObjectSetRotationAxis(object sender, SimulationObject obj, Vector3 rotationAxis)
+        {
+            if (OnObjectSetRotationAxis != null)
+            {
+                OnObjectSetRotationAxis(sender, obj, rotationAxis);
+            }
+
+            // Update the object
+            obj.RotationAxis = rotationAxis;
+        }
+
+        public void ObjectApplyImpulse(object sender, SimulationObject obj, Vector3 impulse)
+        {
+            if (OnObjectApplyImpulse != null)
+            {
+                OnObjectApplyImpulse(sender, obj, impulse);
+            }
+
+            // FIXME:
+        }
+
+        public void ObjectApplyRotationalImpulse(object sender, SimulationObject obj, Vector3 impulse)
+        {
+            if (OnObjectApplyRotationalImpulse != null)
+            {
+                OnObjectApplyRotationalImpulse(sender, obj, impulse);
+            }
+
+            // FIXME:
+        }
+
+        public void ObjectSetTorque(object sender, SimulationObject obj, Vector3 torque)
+        {
+            if (OnObjectSetTorque != null)
+            {
+                OnObjectSetTorque(sender, obj, torque);
+            }
+
+            obj.Torque = torque;
+        }
+
         public void ObjectAnimate(object sender, UUID senderID, UUID objectID, AnimationTrigger[] animations)
         {
             if (OnObjectAnimate != null)
@@ -349,6 +520,31 @@ namespace Simian.Extensions
             }
 
             server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+        }
+
+        public void ObjectChat(object sender, UUID ownerID, UUID sourceID, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType,
+            string fromName, Vector3 position, int channel, string message)
+        {
+            if (OnObjectChat != null)
+            {
+                OnObjectChat(sender, ownerID, sourceID, audible, type, sourceType, fromName, position, channel, message);
+            }
+
+            if (channel == 0)
+            {
+                // TODO: Reduction provider will impose the chat radius
+                ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
+                chat.ChatData.Audible = (byte)audible;
+                chat.ChatData.ChatType = (byte)type;
+                chat.ChatData.OwnerID = ownerID;
+                chat.ChatData.SourceID = sourceID;
+                chat.ChatData.SourceType = (byte)sourceType;
+                chat.ChatData.Position = position;
+                chat.ChatData.FromName = Utils.StringToBytes(fromName);
+                chat.ChatData.Message = Utils.StringToBytes(message);
+
+                server.UDP.BroadcastPacket(chat, PacketCategory.Messaging);
+            }
         }
 
         public void ObjectUndo(object sender, SimulationObject obj)
@@ -550,6 +746,11 @@ namespace Simian.Extensions
             sceneObjects.ForEach(action);
         }
 
+        public SimulationObject FindObject(Predicate<SimulationObject> predicate)
+        {
+            return sceneObjects.FindValue(predicate);
+        }
+
         public bool TryGetAgent(uint localID, out Agent agent)
         {
             return sceneAgents.TryGetValue(localID, out agent);
@@ -568,6 +769,11 @@ namespace Simian.Extensions
         public void ForEachAgent(Action<Agent> action)
         {
             sceneAgents.ForEach(action);
+        }
+
+        public Agent FindAgent(Predicate<Agent> predicate)
+        {
+            return sceneAgents.FindValue(predicate);
         }
 
         public bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
@@ -621,14 +827,27 @@ namespace Simian.Extensions
             EventQueueServerCap eqServerCap = new EventQueueServerCap(eqServer,
                 server.Capabilities.CreateCapability(EventQueueHandler, false, eqServer));
 
-            eventQueues.Add(agentID, eqServerCap);
+            lock (eventQueues)
+                eventQueues.Add(agentID, eqServerCap);
             
             return eqServerCap.Capability;
         }
 
         public bool RemoveEventQueue(UUID agentID)
         {
-            return eventQueues.Remove(agentID);
+            lock (eventQueues)
+            {
+                EventQueueServerCap queue;
+                if (eventQueues.TryGetValue(agentID, out queue))
+                {
+                    queue.Server.Stop();
+                    return eventQueues.Remove(agentID);
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         public bool HasRunningEventQueue(Agent agent)
@@ -697,7 +916,7 @@ namespace Simian.Extensions
             agent.Balance = 1000;
 
             // Add this avatar as an object in the scene
-            if (ObjectAdd(this, new SimulationObject(agent.Avatar, server), PrimFlags.None))
+            if (ObjectAdd(this, new SimulationObject(agent.Avatar, server), agent.Avatar.ID, 0, PrimFlags.None))
             {
                 // Send a response back to the client
                 AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
