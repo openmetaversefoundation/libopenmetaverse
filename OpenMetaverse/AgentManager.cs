@@ -1467,6 +1467,71 @@ namespace OpenMetaverse
             Client.Network.SendPacket(reply);
         }
 
+        /// <summary>
+        /// Accept invite for to a chatterbox session
+        /// </summary>
+        /// <param name="session_id"><seealso cref="UUID"/> of session to accept invite to</param>
+        public void ChatterBoxAcceptInvite(UUID session_id)
+        {
+            if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
+                throw new Exception("ChatSessionRequest capability is not currently available");
+
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("ChatSessionRequest");
+
+            if (url != null)
+            {
+                OSDMap req = new OSDMap();
+                req.Add("method", OSD.FromString("accept invitation"));
+                req.Add("session-id", OSD.FromUUID(session_id));
+
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
+
+                CapsClient request = new CapsClient(url);
+                request.StartRequest(postData);
+            }
+            else
+            {
+                throw new Exception("ChatSessionRequest capability is not currently available");
+            }
+
+       }
+
+       /// <summary>
+       /// Start a friends confrence
+       /// </summary>
+       /// <param name="participants"><seealso cref="UUID"/> List of UUIDs to start a confrence with</param>
+       /// <param name="tmp_session_id"><seealso cref="UUID"/>a Unique UUID that will be returned in the OnJoinedGroupChat callback></param>
+       public void StartIMConfrence(List <UUID> participants,UUID tmp_session_id)
+       {
+           if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
+               throw new Exception("ChatSessionRequest capability is not currently available");
+
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("ChatSessionRequest");
+
+            if (url != null)
+            {
+                OSDMap req = new OSDMap();
+                req.Add("method", OSD.FromString("start conference"));
+                OSDArray members = new OSDArray();
+                foreach(UUID participant in participants)
+                    members.Add(OSD.FromUUID(participant));
+
+                req.Add("params",members);
+                req.Add("session-id", OSD.FromUUID(tmp_session_id));
+
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
+
+                Console.WriteLine(req.ToString());
+
+                CapsClient request = new CapsClient(url);
+                request.StartRequest(postData);
+            }
+            else
+            {
+                throw new Exception("ChatSessionRequest capability is not currently available");
+            }
+        }
+
         #endregion Chat and instant messages
 
         #region Viewer Effects
