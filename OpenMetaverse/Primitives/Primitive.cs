@@ -101,6 +101,20 @@ namespace OpenMetaverse
         ObjectGroupOwned = 0x00040000,
         /// <summary>Deprecated</summary>
         ObjectYouOfficer = 0x00080000,
+
+        /// <summary>Server flag, will not be sent to clients. Specifies that
+        /// the object is destroyed when it touches a simulator edge</summary>
+        DieAtEdge = 0x00100000,
+        /// <summary>Server flag, will not be sent to clients. Specifies that
+        /// the object will be returned to the owner's inventory when it
+        /// touches a simulator edge</summary>
+        ReturnAtEdge = 0x00200000,
+        /// <summary>Server flag, will not be sent to clients.</summary>
+        Sandbox = 0x00400000,
+        /// <summary>Server flag, will not be sent to client. Specifies that
+        /// the object is hovering/flying</summary>
+        Flying = 0x00800000,
+
         /// <summary></summary>
         CameraDecoupled = 0x00100000,
         /// <summary></summary>
@@ -109,6 +123,12 @@ namespace OpenMetaverse
         CameraSource = 0x00400000,
         /// <summary></summary>
         CastShadows = 0x00800000,
+
+        Placeholder5 = 0x01000000,
+        Placeholder6 = 0x02000000,
+        Placeholder7 = 0x04000000,
+        Placeholder8 = 0x08000000,
+
         /// <summary></summary>
         ObjectOwnerModify = 0x10000000,
         /// <summary></summary>
@@ -527,6 +547,13 @@ namespace OpenMetaverse
 
             #region Properties
 
+            /// <summary>Attachment point to an avatar</summary>
+            public AttachmentPoint AttachmentPoint
+            {
+                get { return (AttachmentPoint)Utils.SwapWords(State); }
+                set { State = (byte)Utils.SwapWords((byte)value); }
+            }
+
             /// <summary></summary>
             public ProfileCurve ProfileCurve
             {
@@ -577,75 +604,7 @@ namespace OpenMetaverse
                 }
             }
 
-            /// <summary>Uses basic heuristics to estimate the primitive shape</summary>
-            public PrimType Type
-            {
-                get
-                {
-                    bool linearPath = (PathCurve == PathCurve.Line || PathCurve == PathCurve.Flexible);
-                    float scaleY = PathScaleY;
-
-                    if (linearPath)
-                    {
-                        switch (ProfileCurve)
-                        {
-                            case ProfileCurve.Circle:
-                                return PrimType.Cylinder;
-                            case ProfileCurve.Square:
-                                return PrimType.Box;
-                            case ProfileCurve.IsoTriangle:
-                            case ProfileCurve.EqualTriangle:
-                            case ProfileCurve.RightTriangle:
-                                return PrimType.Prism;
-                            case ProfileCurve.HalfCircle:
-                            default:
-                                return PrimType.Unknown;
-                        }
-                    }
-                    else
-                    {
-                        switch (PathCurve)
-                        {
-                            case PathCurve.Flexible:
-                                return PrimType.Unknown;
-                            case PathCurve.Circle:
-                                switch (ProfileCurve)
-                                {
-                                    case ProfileCurve.Circle:
-                                        if (scaleY > 0.75f)
-                                            return PrimType.Sphere;
-                                        else
-                                            return PrimType.Torus;
-                                    case ProfileCurve.HalfCircle:
-                                        return PrimType.Sphere;
-                                    case ProfileCurve.EqualTriangle:
-                                        return PrimType.Ring;
-                                    case ProfileCurve.Square:
-                                        if (scaleY <= 0.75f)
-                                            return PrimType.Tube;
-                                        else
-                                            return PrimType.Unknown;
-                                    default:
-                                        return PrimType.Unknown;
-                                }
-                            case PathCurve.Circle2:
-                                if (ProfileCurve == ProfileCurve.Circle)
-                                    return PrimType.Sphere;
-                                else
-                                    return PrimType.Unknown;
-                            default:
-                                return PrimType.Unknown;
-                        }
-                    }
-                }
-            }
-
             #endregion Properties
-
-            public override string ToString()
-            {
-                return Type.ToString();
-            }
         }
 
         /// <summary>
@@ -1101,6 +1060,76 @@ namespace OpenMetaverse
 
         #endregion Public Members
 
+        #region Properties
+
+        /// <summary>Uses basic heuristics to estimate the primitive shape</summary>
+        public PrimType Type
+        {
+            get
+            {
+                if (Sculpt != null && Sculpt.Type != SculptType.None)
+                    return PrimType.Sculpt;
+
+                bool linearPath = (PrimData.PathCurve == PathCurve.Line || PrimData.PathCurve == PathCurve.Flexible);
+                float scaleY = PrimData.PathScaleY;
+
+                if (linearPath)
+                {
+                    switch (PrimData.ProfileCurve)
+                    {
+                        case ProfileCurve.Circle:
+                            return PrimType.Cylinder;
+                        case ProfileCurve.Square:
+                            return PrimType.Box;
+                        case ProfileCurve.IsoTriangle:
+                        case ProfileCurve.EqualTriangle:
+                        case ProfileCurve.RightTriangle:
+                            return PrimType.Prism;
+                        case ProfileCurve.HalfCircle:
+                        default:
+                            return PrimType.Unknown;
+                    }
+                }
+                else
+                {
+                    switch (PrimData.PathCurve)
+                    {
+                        case PathCurve.Flexible:
+                            return PrimType.Unknown;
+                        case PathCurve.Circle:
+                            switch (PrimData.ProfileCurve)
+                            {
+                                case ProfileCurve.Circle:
+                                    if (scaleY > 0.75f)
+                                        return PrimType.Sphere;
+                                    else
+                                        return PrimType.Torus;
+                                case ProfileCurve.HalfCircle:
+                                    return PrimType.Sphere;
+                                case ProfileCurve.EqualTriangle:
+                                    return PrimType.Ring;
+                                case ProfileCurve.Square:
+                                    if (scaleY <= 0.75f)
+                                        return PrimType.Tube;
+                                    else
+                                        return PrimType.Unknown;
+                                default:
+                                    return PrimType.Unknown;
+                            }
+                        case PathCurve.Circle2:
+                            if (PrimData.ProfileCurve == ProfileCurve.Circle)
+                                return PrimType.Sphere;
+                            else
+                                return PrimType.Unknown;
+                        default:
+                            return PrimType.Unknown;
+                    }
+                }
+            }
+        }
+
+        #endregion Properties
+
         #region Constructors
 
         /// <summary>
@@ -1434,7 +1463,7 @@ namespace OpenMetaverse
             switch (PrimData.PCode)
             {
                 case PCode.Prim:
-                    return String.Format("{0} ({1})", PrimData.Type, ID);
+                    return String.Format("{0} ({1})", Type, ID);
                 default:
                     return String.Format("{0} ({1})", PrimData.PCode, ID);
             }

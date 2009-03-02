@@ -165,6 +165,20 @@ namespace OpenMetaverse
             }
         }
 
+        public TValue FindValue(Predicate<TValue> predicate)
+        {
+            lock (syncObject)
+            {
+                foreach (TValue value in Dictionary1.Values)
+                {
+                    if (predicate(value))
+                        return value;
+                }
+            }
+
+            return default(TValue);
+        }
+
         public TValue this[TKey1 key1]
         {
             get { return Dictionary1[key1]; }

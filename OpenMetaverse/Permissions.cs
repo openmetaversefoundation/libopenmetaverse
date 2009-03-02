@@ -156,7 +156,7 @@ namespace OpenMetaverse
         }
 
         public static readonly Permissions NoPermissions = new Permissions();
-        public static readonly Permissions FullPermissions = new Permissions(UInt32.MaxValue, UInt32.MaxValue,
-            UInt32.MaxValue, UInt32.MaxValue, UInt32.MaxValue);
+        public static readonly Permissions FullPermissions = new Permissions((uint)PermissionMask.All, (uint)PermissionMask.All,
+            (uint)PermissionMask.All, (uint)PermissionMask.All, (uint)PermissionMask.All);
     }
 }

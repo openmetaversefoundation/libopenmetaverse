@@ -824,6 +824,16 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Swaps the high and low words in a byte. Converts aaaabbbb to bbbbaaaa
+        /// </summary>
+        /// <param name="value">Byte to swap the words in</param>
+        /// <returns>Byte value with the words swapped</returns>
+        public static byte SwapWords(byte value)
+        {
+            return (byte)(((value & 0xF0) >> 4) | ((value & 0x0F) << 4));
+        }
+
         #endregion Miscellaneous
     }
 }

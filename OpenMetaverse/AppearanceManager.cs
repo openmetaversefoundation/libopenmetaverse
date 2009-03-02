@@ -149,7 +149,8 @@ namespace OpenMetaverse
         // As wearable assets are downloaded and decoded, the textures are added to this array
         private UUID[] AgentTextures = new UUID[AVATAR_TEXTURE_COUNT];
         // A cache of the textures worn, needed for rebaking
-        private AssetTexture[] AgentAssets = new AssetTexture[AVATAR_TEXTURE_COUNT];
+        private AssetTexture[] AgentAssets = new AssetTexture[AVATAR_TEXTURE_COUNT];
+
         protected struct PendingAssetDownload
         {
             public UUID Id;
@@ -266,13 +267,13 @@ namespace OpenMetaverse
         {
             public object Param;
             public bool Bake;
-            public bool Remove_Existing_Attachments;
+            public bool RemoveExistingAttachments;
 
-            public WearParams(object param, bool bake, bool remove_existing_attachments)
+            public WearParams(object param, bool bake, bool removeExistingAttachments)
             {
                 Param = param;
                 Bake = bake;
-                Remove_Existing_Attachments = remove_existing_attachments;
+                RemoveExistingAttachments = removeExistingAttachments;
             }
         }
 
@@ -347,7 +348,7 @@ namespace OpenMetaverse
             WearablesRequestEvent.WaitOne();
             ReplaceOutfitWearables(wearables);
             UpdateAppearanceFromWearables(wearParams.Bake);
-            AddAttachments(attachments, wearParams.Remove_Existing_Attachments);
+            AddAttachments(attachments, wearParams.RemoveExistingAttachments);
         }
 
         /// <summary>
@@ -413,7 +414,7 @@ namespace OpenMetaverse
             WearablesRequestEvent.WaitOne(); // wait for current wearables
             ReplaceOutfitWearables(wearables); // replace current wearables with outfit folder
             UpdateAppearanceFromWearables(wearOutfitParams.Bake);
-            AddAttachments(attachments, wearOutfitParams.Remove_Existing_Attachments);
+            AddAttachments(attachments, wearOutfitParams.RemoveExistingAttachments);
         }
 
         private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryBase> attachments)
@@ -529,7 +530,7 @@ namespace OpenMetaverse
                 {
                     InventoryAttachment attachment = (InventoryAttachment)attachments[i];
                     attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
-                    attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                    attachmentsPacket.ObjectData[i].AttachmentPt = (byte)attachment.AttachmentPoint;
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
                     attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
