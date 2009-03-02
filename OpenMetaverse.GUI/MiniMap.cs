@@ -103,7 +103,7 @@ namespace OpenMetaverse.GUI
                     g.FillRectangle(Brushes.White, 0f, 0f, 256f, 256f);
                 }
 
-                if (sim.PositionIndexYou == -1 || sim.PositionIndexYou >= sim.AvatarPositions.Count) return;
+                if (!sim.AvatarPositions.ContainsKey(Client.Self.AgentID)) return;
 
                 int i = 0;
 
