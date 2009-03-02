@@ -337,7 +337,7 @@ namespace Simian.Extensions
 
         void AgentHeightWidthHandler(Packet packet, Agent agent)
         {
-            AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
+            //AgentHeightWidthPacket heightWidth = (AgentHeightWidthPacket)packet;
 
             // TODO: These are the screen size dimensions. Useful when we start doing frustum culling
             //Logger.Log(String.Format("Agent wants to set height={0}, width={1}",

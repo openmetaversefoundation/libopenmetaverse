@@ -160,7 +160,8 @@ namespace Simian.Extensions
             FetchInventoryDescendentsPacket fetch = (FetchInventoryDescendentsPacket)packet;
             bool sendFolders = fetch.InventoryData.FetchFolders;
             bool sendItems = fetch.InventoryData.FetchItems;
-            InventorySortOrder order = (InventorySortOrder)fetch.InventoryData.SortOrder;
+            // TODO: Obey SortOrder
+            //InventorySortOrder order = (InventorySortOrder)fetch.InventoryData.SortOrder;
 
             Dictionary<UUID, InventoryObject> agentInventory = GetAgentInventory(agent.Avatar.ID);
 

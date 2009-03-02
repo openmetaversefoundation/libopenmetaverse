@@ -1261,8 +1261,6 @@ namespace Simian.Extensions
 
         public LSL_Vector llGetForce()
         {
-            LSL_Vector force = LSL_Vector.Zero;
-
             hostObject.AddScriptLPS(1);
 
             // Child prims do not have velocity, only parents
@@ -2035,7 +2033,7 @@ namespace Simian.Extensions
         public void llSetBuoyancy(double buoyancy)
         {
             hostObject.AddScriptLPS(1);
-            SimulationObject parent = hostObject.GetLinksetParent();
+            //SimulationObject parent = hostObject.GetLinksetParent();
             NotImplemented("llSetBuoyancy");
             //server.Scene.ObjectSetBuoyancy(this, parent, (float)buoyancy);
         }
@@ -2231,7 +2229,10 @@ namespace Simian.Extensions
                             llReleaseControls();
 
                         SimulationObject parent = hostObject.GetLinksetParent();
-                        // FIXME: How do parentIDs and linksets work? Is there a hierarchy of parentIDs?
+                        if (parent.Prim.ParentID != 0)
+                        {
+                            // FIXME: Finish this function
+                        }
                     }
                 }
             }
@@ -6097,7 +6098,7 @@ namespace Simian.Extensions
             UUID textureID = UUID.Zero;
 
             if (!UUID.TryParse(texture, out textureID))
-                textureID = InventoryKey(texture, (int)AssetType.Texture).AssetID;
+                textureID = InventoryKey(texture, AssetType.Texture).AssetID;
 
             if (textureID == UUID.Zero)
                 return;

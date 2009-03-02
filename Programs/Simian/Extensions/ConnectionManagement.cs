@@ -71,8 +71,6 @@ namespace Simian.Extensions
 
         void LogoutRequestHandler(Packet packet, Agent agent)
         {
-            LogoutRequestPacket request = (LogoutRequestPacket)packet;
-
             LogoutReplyPacket reply = new LogoutReplyPacket();
             reply.AgentData.AgentID = agent.Avatar.ID;
             reply.AgentData.SessionID = agent.SessionID;

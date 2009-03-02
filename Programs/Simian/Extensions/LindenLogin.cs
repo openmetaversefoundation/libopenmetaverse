@@ -196,9 +196,9 @@ namespace Simian.Extensions
                     agent.LastLoginTime = Utils.DateTimeToUnixTime(DateTime.Now);
 
                     // Get this machine's IP address
-                    IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
-                    IPAddress simIP = addresses.AddressList.Length > 0 ?
-                        addresses.AddressList[addresses.AddressList.Length - 1] : IPAddress.Loopback;
+                    IPHostEntry entry = Dns.GetHostEntry(System.Environment.MachineName);
+                    IPAddress simIP = entry.AddressList.Length > 0 ?
+                        entry.AddressList[entry.AddressList.Length - 1] : IPAddress.Loopback;
 
                     agent.CurrentRegionHandle = server.Scene.RegionHandle;
                     agent.HomeRegionHandle = server.Scene.RegionHandle;

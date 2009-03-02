@@ -227,21 +227,21 @@ namespace Simian.Extensions
                 }
                 else if (source == SourceType.SimEstate)
                 {
-                    UUID agentID = new UUID(request.TransferInfo.Params, 0);
-                    UUID sessionID = new UUID(request.TransferInfo.Params, 16);
-                    EstateAssetType type = (EstateAssetType)Utils.BytesToInt(request.TransferInfo.Params, 32);
+                    //UUID agentID = new UUID(request.TransferInfo.Params, 0);
+                    //UUID sessionID = new UUID(request.TransferInfo.Params, 16);
+                    //EstateAssetType type = (EstateAssetType)Utils.BytesToInt(request.TransferInfo.Params, 32);
 
                     Logger.Log("Please implement estate asset transfers", Helpers.LogLevel.Warning);
                 }
                 else if (source == SourceType.SimInventoryItem)
                 {
-                    UUID agentID = new UUID(request.TransferInfo.Params, 0);
-                    UUID sessionID = new UUID(request.TransferInfo.Params, 16);
-                    UUID ownerID = new UUID(request.TransferInfo.Params, 32);
+                    //UUID agentID = new UUID(request.TransferInfo.Params, 0);
+                    //UUID sessionID = new UUID(request.TransferInfo.Params, 16);
+                    //UUID ownerID = new UUID(request.TransferInfo.Params, 32);
                     UUID taskID = new UUID(request.TransferInfo.Params, 48);
-                    UUID itemID = new UUID(request.TransferInfo.Params, 64);
-                    UUID assetID = new UUID(request.TransferInfo.Params, 80);
-                    AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 96);
+                    //UUID itemID = new UUID(request.TransferInfo.Params, 64);
+                    //UUID assetID = new UUID(request.TransferInfo.Params, 80);
+                    //AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 96);
 
                     if (taskID != UUID.Zero)
                     {

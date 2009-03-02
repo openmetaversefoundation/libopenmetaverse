@@ -885,8 +885,6 @@ namespace Simian.Extensions
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
         {
-            CompleteAgentMovementPacket request = (CompleteAgentMovementPacket)packet;
-
             // Create a representation for this agent
             Avatar avatar = new Avatar();
             avatar.ID = agent.Avatar.ID;

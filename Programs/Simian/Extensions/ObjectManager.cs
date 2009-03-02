@@ -49,7 +49,7 @@ namespace Simian.Extensions
             Vector3 scale = add.ObjectData.Scale;
             PCode pcode = (PCode)add.ObjectData.PCode;
             PrimFlags flags = (PrimFlags)add.ObjectData.AddFlags;
-            bool bypassRaycast = (add.ObjectData.BypassRaycast == 1);
+            //bool bypassRaycast = (add.ObjectData.BypassRaycast == 1);
             bool rayEndIsIntersection = (add.ObjectData.RayEndIsIntersection == 1);
 
             #region Position Calculation
@@ -518,8 +518,40 @@ namespace Simian.Extensions
                 if (server.Scene.TryGetObject(block.ObjectLocalID, out obj))
                 {
                     ExtraParamType type = (ExtraParamType)block.ParamType;
+                    
+                    if (block.ParamInUse)
+                    {
+                        switch (type)
+                        {
+                            case ExtraParamType.Flexible:
+                                obj.Prim.Flexible = new Primitive.FlexibleData(block.ParamData, 0);
+                                break;
+                            case ExtraParamType.Light:
+                                obj.Prim.Light = new Primitive.LightData(block.ParamData, 0);
+                                break;
+                            case ExtraParamType.Sculpt:
+                                obj.Prim.Sculpt = new Primitive.SculptData(block.ParamData, 0);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (type)
+                        {
+                            case ExtraParamType.Flexible:
+                                obj.Prim.Flexible = null;
+                                break;
+                            case ExtraParamType.Light:
+                                obj.Prim.Light = null;
+                                break;
+                            case ExtraParamType.Sculpt:
+                                obj.Prim.Sculpt = null;
+                                break;
+                        }
+                    }
+
+                    server.Scene.ObjectAdd(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
                 }
-                
             }
         }
 
@@ -655,7 +687,7 @@ namespace Simian.Extensions
                 if (server.Scene.TryGetObject(block.ObjectLocalID, out obj))
                 {
                     UpdateType type = (UpdateType)block.Type;
-                    bool linked = ((type & UpdateType.Linked) != 0);
+                    //bool linked = ((type & UpdateType.Linked) != 0);
                     int pos = 0;
                     Vector3 position = obj.Prim.Position;
                     Quaternion rotation = obj.Prim.Rotation;
@@ -678,7 +710,7 @@ namespace Simian.Extensions
                         pos += 12;
 
                         // FIXME: Use this in linksets
-                        bool uniform = ((type & UpdateType.Uniform) != 0);
+                        //bool uniform = ((type & UpdateType.Uniform) != 0);
                     }
 
                     if (scaled)
@@ -787,7 +819,6 @@ namespace Simian.Extensions
             }
 
             Vector3 direction = Vector3.Normalize(rayEnd - rayStart);
-            Ray ray = new Ray(rayStart, direction);
 
             // Get the mesh that has been transformed into world-space
             SimpleMesh mesh = null;
@@ -801,7 +832,6 @@ namespace Simian.Extensions
             {
                 mesh = obj.GetWorldMesh(DetailLevel.Low, null);
             }
-
 
             if (mesh != null)
             {

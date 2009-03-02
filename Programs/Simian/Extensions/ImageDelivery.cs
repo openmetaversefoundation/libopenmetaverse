@@ -166,7 +166,7 @@ namespace Simian.Extensions
                 }
                 else
                 {
-                    bool bake = ((ImageType)block.Type == ImageType.Baked);
+                    //bool bake = ((ImageType)block.Type == ImageType.Baked);
 
                     // New download, check if we have this image
                     Asset asset;
