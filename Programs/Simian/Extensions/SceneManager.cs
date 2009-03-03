@@ -221,9 +221,9 @@ namespace Simian.Extensions
             {
                 sceneObjects.Remove(oldObj.Prim.LocalID, oldObj.Prim.ID);
 
-                // Copy the undo/redo steps to the new object
-                obj.UndoSteps = new CircularQueue<Primitive>(oldObj.UndoSteps);
-                obj.RedoSteps = new CircularQueue<Primitive>(oldObj.RedoSteps);
+                // Point the new object at the old undo/redo queues
+                obj.UndoSteps = oldObj.UndoSteps;
+                obj.RedoSteps = oldObj.RedoSteps;
             }
             else
             {
@@ -681,6 +681,31 @@ namespace Simian.Extensions
             // Avatars always have physics
             agent.Avatar.Prim.Flags |= PrimFlags.Physics;
 
+            // Default avatar values
+            agent.Avatar.Prim.Position = new Vector3(128f, 128f, 25f);
+            agent.Avatar.Prim.Rotation = Quaternion.Identity;
+            agent.Avatar.Prim.Scale = new Vector3(0.45f, 0.6f, 1.9f);
+            agent.Avatar.Prim.PrimData.Material = Material.Flesh;
+            agent.Avatar.Prim.PrimData.PCode = PCode.Avatar;
+            agent.Avatar.Prim.Textures = new Primitive.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
+
+            // Set the avatar name
+            NameValue[] name = new NameValue[2];
+            name[0] = new NameValue("FirstName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
+                NameValue.SendtoType.SimViewer, agent.FirstName);
+            name[1] = new NameValue("LastName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
+                NameValue.SendtoType.SimViewer, agent.LastName);
+            agent.Avatar.Prim.NameValues = name;
+
+            // Give testers a provisionary balance of 1000L
+            agent.Balance = 1000;
+
+            // Some default avatar prim properties
+            agent.Avatar.Prim.Properties = new Primitive.ObjectProperties();
+            agent.Avatar.Prim.Properties.CreationDate = Utils.UnixTimeToDateTime(agent.CreationTime);
+            agent.Avatar.Prim.Properties.Name = agent.FullName;
+            agent.Avatar.Prim.Properties.ObjectID = agent.ID;
+
             if (agent.Avatar.Prim.LocalID == 0)
             {
                 // Assign a unique LocalID to this agent
@@ -693,21 +718,8 @@ namespace Simian.Extensions
             // Add the agent to the scene dictionary
             sceneAgents[agent.ID] = agent;
 
-            // Send an update out to the agent
-            ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(agent.Avatar.Prim, regionHandle,
-                agent.Avatar.Prim.Flags | creatorFlags);
-            server.UDP.SendPacket(agent.ID, updateToOwner, PacketCategory.State);
-
-            // Send an update out to everyone else
-            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(agent.Avatar.Prim, regionHandle,
-                agent.Avatar.Prim.Flags);
-            server.Scene.ForEachAgent(
-                delegate(Agent recipient)
-                {
-                    if (recipient.ID != agent.ID)
-                        server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
-                }
-            );
+            // Send out an update to everyone
+            //ObjectAdd(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None);
 
             return true;
         }
@@ -896,43 +908,15 @@ namespace Simian.Extensions
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
         {
-            // Create a representation for this agent
-            Avatar avatar = new Avatar();
-            avatar.ID = agent.ID;
-            avatar.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
-            avatar.Position = new Vector3(128f, 128f, 25f);
-            avatar.Rotation = Quaternion.Identity;
-            avatar.Scale = new Vector3(0.45f, 0.6f, 1.9f);
-            avatar.PrimData.Material = Material.Flesh;
-            avatar.PrimData.PCode = PCode.Avatar;
-
-            // Create a default outfit for the avatar
-            Primitive.TextureEntry te = new Primitive.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
-            avatar.Textures = te;
-
-            // Set the avatar name
-            NameValue[] name = new NameValue[2];
-            name[0] = new NameValue("FirstName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
-                NameValue.SendtoType.SimViewer, agent.FirstName);
-            name[1] = new NameValue("LastName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
-                NameValue.SendtoType.SimViewer, agent.LastName);
-            avatar.NameValues = name;
-
-            // Link this avatar up with the corresponding agent
-            agent.Avatar.Prim = avatar;
-
-            // Give testers a provisionary balance of 1000L
-            agent.Balance = 1000;
-
             // Add this avatar as an object in the scene
-            if (ObjectAdd(this, agent.Avatar, agent.ID, 0, PrimFlags.None))
+            if (ObjectAdd(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None))
             {
                 // Send a response back to the client
                 AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
                 complete.AgentData.AgentID = agent.ID;
                 complete.AgentData.SessionID = agent.SessionID;
                 complete.Data.LookAt = Vector3.UnitX;
-                complete.Data.Position = avatar.Position;
+                complete.Data.Position = agent.Avatar.Prim.Position;
                 complete.Data.RegionHandle = regionHandle;
                 complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
                 complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
@@ -951,7 +935,7 @@ namespace Simian.Extensions
             }
             else
             {
-                Logger.Log("Received a CompleteAgentMovement from an avatar already in the scene, " +
+                Logger.Log("Received a CompleteAgentMovement but failed to insert avatar into the scene: " +
                     agent.FullName, Helpers.LogLevel.Warning);
             }
         }

@@ -24,6 +24,7 @@ namespace Simian.Extensions
         const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
 
         static readonly UUID BIG_SPLASH_SOUND = new UUID("486475b9-1460-4969-871e-fad973b38015");
+        static readonly Vector3 SEATING_FUDGE = new Vector3(0.3f, 0.0f, 0.0f);
 
         const float SQRT_TWO = 1.41421356f;
 
@@ -73,6 +74,9 @@ namespace Simian.Extensions
             server.Scene.ForEachAgent(
                 delegate(Agent agent)
                 {
+                    if ((agent.Avatar.Prim.Flags & PrimFlags.Physics) == 0)
+                        return;
+
                     bool animsChanged = false;
 
                     // Create forward and left vectors from the current avatar rotation
@@ -382,17 +386,19 @@ namespace Simian.Extensions
             if (agent.RequestedSitTarget != UUID.Zero)
             {
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(agent.RequestedSitTarget, out obj))
+                SimulationObject avObj;
+                if (server.Scene.TryGetObject(agent.RequestedSitTarget, out obj) && server.Scene.TryGetObject(agent.ID, out avObj))
                 {
+                    agent.Avatar.Prim.Flags &= ~PrimFlags.Physics;
                     agent.Avatar.Prim.ParentID = obj.Prim.LocalID;
-                    agent.Avatar.Prim.Position = agent.RequestedSitOffset;
+                    agent.Avatar.Prim.Position = Vector3.Zero;
+                    agent.Avatar.Prim.Position.X = obj.Prim.Scale.X * 0.5f;
+                    agent.Avatar.Prim.Position.Z = obj.Prim.Scale.Z * 0.5f;
+                    agent.Avatar.Prim.Position.Z += agent.Avatar.Prim.Scale.Z * 0.33f;
 
-                    ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar.Prim,
-                        server.Scene.RegionHandle, agent.Avatar.Prim.Flags);
-
-                    server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
-
+                    server.Scene.ObjectAdd(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None);
                     server.Avatars.SetDefaultAnimation(agent, Animations.SIT);
+                    server.Avatars.SendAnimations(agent);
                 }
                 else
                 {
@@ -420,15 +426,20 @@ namespace Simian.Extensions
                 {
                     agent.Avatar.Prim.Position = obj.Prim.Position
                         + Vector3.Transform(obj.SitPosition, Matrix4.CreateFromQuaternion(obj.SitRotation))
-                        + new Vector3(0f, 0f, 1f);
+                        + Vector3.UnitZ;
                 }
                 else
                 {
                     //TODO: get position from course locations?
                     agent.Avatar.Prim.Position = Vector3.Zero;
                 }
+
                 agent.Avatar.Prim.ParentID = 0;
+                
                 server.Avatars.SetDefaultAnimation(agent, Animations.STAND);
+                server.Avatars.SendAnimations(agent);
+
+                agent.Avatar.Prim.Flags |= PrimFlags.Physics;
             }
 
             ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar.Prim,

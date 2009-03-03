@@ -182,7 +182,9 @@ namespace Simian.Extensions
                 {
                     SimulationObject newObj = new SimulationObject(obj);
                     newObj.Prim.Position += offset;
-                    newObj.Prim.ID = UUID.Random();
+                    newObj.Prim.ID = UUID.Zero;
+                    newObj.Prim.LocalID = 0;
+                    newObj.Prim.Properties.CreationDate = DateTime.Now;
 
                     server.Scene.ObjectAdd(this, newObj, agent.ID, 0, flags);
                 }
