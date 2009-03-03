@@ -45,6 +45,8 @@ namespace Simian.Extensions
         {
             this.server = server;
 
+            server.UDP.RegisterPacketCallback(PacketType.AgentRequestSit, AgentRequestSitHandler);
+            server.UDP.RegisterPacketCallback(PacketType.AgentSit, AgentSitHandler);
             server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
             server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
 
@@ -346,6 +348,62 @@ namespace Simian.Extensions
             );
         }
 
+        void AgentRequestSitHandler(Packet packet, Agent agent)
+        {
+            AgentRequestSitPacket request = (AgentRequestSitPacket)packet;
+
+            SimulationObject obj;
+            if (server.Scene.TryGetObject(request.TargetObject.TargetID, out obj))
+            {
+                agent.RequestedSitTarget = request.TargetObject.TargetID;
+                agent.RequestedSitOffset = request.TargetObject.Offset;
+
+                AvatarSitResponsePacket response = new AvatarSitResponsePacket();
+                response.SitObject.ID = request.TargetObject.TargetID;
+                response.SitTransform.AutoPilot = true;
+                response.SitTransform.CameraAtOffset = Vector3.Zero;
+                response.SitTransform.CameraEyeOffset = Vector3.Zero;
+                response.SitTransform.ForceMouselook = false;
+                response.SitTransform.SitPosition = request.TargetObject.Offset;
+                response.SitTransform.SitRotation = obj.SitRotation;
+
+                server.UDP.SendPacket(agent.Avatar.ID, response, PacketCategory.State);
+            }
+            else
+            {
+                //TODO: send error
+            }
+        }
+
+        void AgentSitHandler(Packet packet, Agent agent)
+        {
+            AgentSitPacket sit = (AgentSitPacket)packet;
+
+            if (agent.RequestedSitTarget != UUID.Zero)
+            {
+                SimulationObject obj;
+                if (server.Scene.TryGetObject(agent.RequestedSitTarget, out obj))
+                {
+                    agent.Avatar.ParentID = obj.Prim.LocalID;
+                    agent.Avatar.Position = agent.RequestedSitOffset;
+
+                    ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
+                        server.Scene.RegionHandle, agent.Flags);
+
+                    server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
+
+                    server.Avatars.SetDefaultAnimation(agent, Animations.SIT);
+                }
+                else
+                {
+                    //TODO: send error
+                }
+
+                agent.RequestedSitTarget = UUID.Zero;
+                agent.RequestedSitOffset = Vector3.Zero;
+            }
+        }
+
         void AgentUpdateHandler(Packet packet, Agent agent)
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
@@ -354,6 +412,24 @@ namespace Simian.Extensions
             agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
             agent.Avatar.PrimData.State = update.AgentData.State; // FIXME: Are these two different state variables?
             agent.Flags = (PrimFlags)update.AgentData.Flags;
+
+            if (agent.Avatar.ParentID > 0 && (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP) == AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP)
+            {
+                SimulationObject obj;
+                if (server.Scene.TryGetObject(agent.Avatar.ParentID, out obj))
+                {
+                    agent.Avatar.Position = obj.Prim.Position
+                        + Vector3.Transform(obj.SitPosition, Matrix4.CreateFromQuaternion(obj.SitRotation))
+                        + new Vector3(0f, 0f, 1f);
+                }
+                else
+                {
+                    //TODO: get position from course locations?
+                    agent.Avatar.Position = Vector3.Zero;
+                }
+                agent.Avatar.ParentID = 0;
+                server.Avatars.SetDefaultAnimation(agent, Animations.STAND);
+            }
 
             ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
                 server.Scene.RegionHandle, agent.Flags);

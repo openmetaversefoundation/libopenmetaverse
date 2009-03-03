@@ -29,6 +29,8 @@ namespace Simian
         public Vector3 HomePosition;
         public Vector3 HomeLookAt;
         public Vector3 CurrentLookAt;
+        public UUID RequestedSitTarget;
+        public Vector3 RequestedSitOffset;
         public ulong CurrentRegionHandle;
 
         // Profile
