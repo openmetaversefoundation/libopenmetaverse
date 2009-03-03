@@ -203,7 +203,7 @@ namespace Simian.Extensions
                     agent.CurrentRegionHandle = server.Scene.RegionHandle;
                     agent.HomeRegionHandle = server.Scene.RegionHandle;
 
-                    response.AgentID = agent.Avatar.ID;
+                    response.AgentID = agent.ID;
                     response.SecureSessionID = agent.SecureSessionID;
                     response.SessionID = agent.SessionID;
                     response.CircuitCode = agent.CircuitCode;

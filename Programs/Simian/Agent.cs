@@ -65,7 +65,7 @@ namespace Simian
 
         // Temporary
         [NonSerialized]
-        public Avatar Avatar = new Avatar();
+        public SimulationObject Avatar;
         [NonSerialized]
         public UUID SessionID;
         [NonSerialized]
@@ -85,7 +85,14 @@ namespace Simian
         [NonSerialized]
         public AnimationSet Animations = new AnimationSet();
         [NonSerialized]
-        public PrimFlags Flags;
+        public AgentState State;
+        [NonSerialized]
+        public bool HideTitle;
+
+        public UUID ID
+        {
+            get { return Avatar.Prim.ID; }
+        }
 
         public string FullName
         {
@@ -105,26 +112,9 @@ namespace Simian
             }
         }
 
-        public Vector3 GetSimulatorPosition(ISceneProvider scene)
+        public Agent(SimulationObject avatar)
         {
-            SimulationObject parent;
-            Vector3 position = Avatar.Position;
-
-            if (Avatar.ParentID != 0 && scene.TryGetObject(Avatar.ParentID, out parent))
-                position += Vector3.Transform(parent.Prim.Position, Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
-
-            return position;
-        }
-
-        public Quaternion GetSimulatorRotation(ISceneProvider scene)
-        {
-            SimulationObject parent;
-            Quaternion rotation = Avatar.Rotation;
-
-            if (Avatar.ParentID != 0 && scene.TryGetObject(Avatar.ParentID, out parent))
-                rotation *= parent.Prim.Rotation;
-
-            return rotation;
+            Avatar = avatar;
         }
     }
 }

@@ -180,7 +180,7 @@ namespace Simian.Extensions
 
                         ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
                         notfound.ImageID.ID = block.Image;
-                        server.UDP.SendPacket(agent.Avatar.ID, notfound, PacketCategory.Texture);
+                        server.UDP.SendPacket(agent.ID, notfound, PacketCategory.Texture);
                     }
                 }
             }
@@ -217,7 +217,7 @@ namespace Simian.Extensions
                     Helpers.LogLevel.Error);
             }
 
-            server.UDP.SendPacket(agent.Avatar.ID, data, PacketCategory.Texture);
+            server.UDP.SendPacket(agent.ID, data, PacketCategory.Texture);
 
             // Check if ImagePacket packets need to be sent to complete this transfer
             if (download.CurrentPacket <= download.StopPacket)
@@ -258,7 +258,7 @@ namespace Simian.Extensions
                                         imagePacketSize), Helpers.LogLevel.Error);
                                 }
 
-                                server.UDP.SendPacket(agent.Avatar.ID, transfer, PacketCategory.Texture);
+                                server.UDP.SendPacket(agent.ID, transfer, PacketCategory.Texture);
 
                                 ++download.CurrentPacket;
                             }

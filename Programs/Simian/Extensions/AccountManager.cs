@@ -26,7 +26,7 @@ namespace Simian.Extensions
 
         public void AddAccount(Agent agent)
         {
-            accounts.Add(agent.FullName, agent.Avatar.ID, agent);
+            accounts.Add(agent.FullName, agent.ID, agent);
         }
 
         public bool RemoveAccount(UUID agentID)
@@ -46,9 +46,6 @@ namespace Simian.Extensions
                 // Random session IDs
                 agent.SessionID = UUID.Random();
                 agent.SecureSessionID = UUID.Random();
-
-                // Avatar flags
-                agent.Flags = PrimFlags.Physics;
 
                 return agent;
             }
@@ -79,7 +76,7 @@ namespace Simian.Extensions
             accounts.ForEach(delegate(Agent agent)
             {
                 OSDMap agentMap = OSD.SerializeMembers(agent);
-                agentMap["AgentID"] = OSD.FromUUID(agent.Avatar.ID);
+                agentMap["AgentID"] = OSD.FromUUID(agent.ID);
                 array.Add(agentMap);
             });
 
@@ -97,14 +94,17 @@ namespace Simian.Extensions
 
             for (int i = 0; i < array.Count; i++)
             {
-                Agent agent = new Agent();
+                Avatar avatar = new Avatar();
+                SimulationObject obj = new SimulationObject(avatar, server);
+                Agent agent = new Agent(obj);
                 object agentRef = (object)agent;
                 OSDMap map = array[i] as OSDMap;
                 OSD.DeserializeMembers(ref agentRef, map);
                 agent = (Agent)agentRef;
-                agent.Avatar.ID = map["AgentID"].AsUUID();
 
-                accounts.Add(agent.FullName, agent.Avatar.ID, agent);
+                agent.Avatar.Prim.ID = map["AgentID"].AsUUID();
+
+                accounts.Add(agent.FullName, agent.ID, agent);
             }
 
             Logger.Log(String.Format("Deserialized the agent store with {0} entries", accounts.Count),

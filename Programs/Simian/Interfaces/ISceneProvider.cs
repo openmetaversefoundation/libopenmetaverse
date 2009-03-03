@@ -149,7 +149,6 @@ namespace Simian
         SimulationObject FindObject(Predicate<SimulationObject> predicate);
         
         int AgentCount();
-        bool TryGetAgent(uint localID, out Agent agent);
         bool TryGetAgent(UUID id, out Agent agent);
         void ForEachAgent(Action<Agent> action);
         Agent FindAgent(Predicate<Agent> predicate);

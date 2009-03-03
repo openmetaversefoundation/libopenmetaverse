@@ -74,11 +74,11 @@ namespace Simian.Extensions
                     if (parcels.TryGetValue(parcelOverlay[y * 64 + x], out parcel))
                     {
                         // Set the ownership/sale flag
-                        if (parcel.OwnerID == agent.Avatar.ID)
+                        if (parcel.OwnerID == agent.ID)
                             tempByte = (byte)ParcelOverlayType.OwnedBySelf;
                         else if (parcel.AuctionID != 0)
                             tempByte = (byte)ParcelOverlayType.Auction;
-                        else if (parcel.SalePrice > 0 && (parcel.AuthBuyerID == UUID.Zero || parcel.AuthBuyerID == agent.Avatar.ID))
+                        else if (parcel.SalePrice > 0 && (parcel.AuthBuyerID == UUID.Zero || parcel.AuthBuyerID == agent.ID))
                             tempByte = (byte)ParcelOverlayType.ForSale;
                         else if (parcel.GroupID != UUID.Zero)
                             tempByte = (byte)ParcelOverlayType.OwnedByGroup;
@@ -108,7 +108,7 @@ namespace Simian.Extensions
                             ParcelOverlayPacket overlay = new ParcelOverlayPacket();
                             overlay.ParcelData.SequenceID = sequenceID;
                             overlay.ParcelData.Data = byteArray;
-                            server.UDP.SendPacket(agent.Avatar.ID, overlay, PacketCategory.State);
+                            server.UDP.SendPacket(agent.ID, overlay, PacketCategory.State);
 
                             byteArrayCount = 0;
                             ++sequenceID;
@@ -215,9 +215,9 @@ namespace Simian.Extensions
                 properties.ParcelData.UserLookAt = parcel.UserLookAt;
 
                 // HACK: Make everyone think they are the owner of this parcel
-                properties.ParcelData.OwnerID = agent.Avatar.ID;
+                properties.ParcelData.OwnerID = agent.ID;
 
-                server.UDP.SendPacket(agent.Avatar.ID, properties, PacketCategory.Transaction);
+                server.UDP.SendPacket(agent.ID, properties, PacketCategory.Transaction);
             }
             else
             {

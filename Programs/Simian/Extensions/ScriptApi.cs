@@ -1233,7 +1233,7 @@ namespace Simian.Extensions
 
             hostObject.AddScriptLPS(1);
 
-            Quaternion q = hostObject.GetSimulatorRotation(server.Scene);
+            Quaternion q = hostObject.GetSimulatorRotation();
             return new LSL_Rotation(q.X, q.Y, q.Z, q.W);
         }
 

@@ -30,8 +30,8 @@ namespace Simian.Extensions
         {
             ChatFromViewerPacket viewerChat = (ChatFromViewerPacket)packet;
 
-            server.Scene.ObjectChat(this, agent.Avatar.ID, agent.Avatar.ID, ChatAudibleLevel.Fully, (ChatType)viewerChat.ChatData.Type,
-                ChatSourceType.Agent, agent.Avatar.Name, agent.GetSimulatorPosition(server.Scene), viewerChat.ChatData.Channel,
+            server.Scene.ObjectChat(this, agent.ID, agent.ID, ChatAudibleLevel.Fully, (ChatType)viewerChat.ChatData.Type,
+                ChatSourceType.Agent, agent.FullName, agent.Avatar.GetSimulatorPosition(), viewerChat.ChatData.Channel,
                 Utils.BytesToString(viewerChat.ChatData.Message));
         }
 
@@ -51,19 +51,19 @@ namespace Simian.Extensions
                     sendIM.MessageBlock.RegionID = server.Scene.RegionID;
                     sendIM.MessageBlock.ParentEstateID = 1;
                     sendIM.MessageBlock.FromGroup = false;
-                    sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.Avatar.Name);
+                    sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.FullName);
                     sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
                     sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
                     sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
-                    sendIM.MessageBlock.ID = agent.Avatar.ID;
+                    sendIM.MessageBlock.ID = agent.ID;
                     sendIM.MessageBlock.Message = im.MessageBlock.Message;
                     sendIM.MessageBlock.BinaryBucket = new byte[0];
                     sendIM.MessageBlock.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
-                    sendIM.MessageBlock.Position = agent.GetSimulatorPosition(server.Scene);
+                    sendIM.MessageBlock.Position = agent.Avatar.GetSimulatorPosition();
 
-                    sendIM.AgentData.AgentID = agent.Avatar.ID;
+                    sendIM.AgentData.AgentID = agent.ID;
 
-                    server.UDP.SendPacket(recipient.Avatar.ID, sendIM, PacketCategory.Messaging);
+                    server.UDP.SendPacket(recipient.ID, sendIM, PacketCategory.Messaging);
                 }
             }
         }

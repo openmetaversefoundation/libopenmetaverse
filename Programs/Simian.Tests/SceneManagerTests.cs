@@ -80,7 +80,7 @@ namespace SimianTests
             Assert.IsTrue(callbackEvent.WaitOne(1000, false), "Timed out waiting for callback");
             simian.UDP.OnOutgoingPacket -= callback;
             
-            Assert.That(receivedAgentID == agent.Avatar.ID, "Agent ID mismatch");
+            Assert.That(receivedAgentID == agent.ID, "Agent ID mismatch");
             
             Assert.That(receivedVisualParams.Length == 218, "VisualParams has an incorrect length");
             for (int i = 0; i < 218; i++)
@@ -95,13 +95,13 @@ namespace SimianTests
             }
         }
 
-        static Agent CreateDummyAgent()
+        Agent CreateDummyAgent()
         {
-            Agent agent = new Agent();
-            agent.Avatar.ID = UUID.Random();
+            Agent agent = new Agent(new SimulationObject(new Avatar(), simian));
+            agent.Avatar.Prim.ID = UUID.Random();
             agent.SessionID = UUID.Random();
-            agent.Avatar.Position = new Vector3(128f, 128f, 40f);
-            agent.Avatar.Rotation = Quaternion.Identity;
+            agent.Avatar.Prim.Position = new Vector3(128f, 128f, 40f);
+            agent.Avatar.Prim.Rotation = Quaternion.Identity;
             return agent;
         }
     }

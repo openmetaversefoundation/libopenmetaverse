@@ -115,12 +115,12 @@ namespace Simian
             return position;
         }
 
-        public Quaternion GetSimulatorRotation(ISceneProvider scene)
+        public Quaternion GetSimulatorRotation()
         {
             SimulationObject parent;
             Quaternion rotation = Prim.Rotation;
 
-            if (Prim.ParentID != 0 && scene.TryGetObject(Prim.ParentID, out parent))
+            if (Prim.ParentID != 0 && Server.Scene.TryGetObject(Prim.ParentID, out parent))
                 rotation *= parent.Prim.Rotation;
 
             return rotation;

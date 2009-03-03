@@ -163,16 +163,16 @@ namespace Simian
         public void AddClient(Agent agent, IPEndPoint endpoint)
         {
             UDPClient client = new UDPClient(this, agent, endpoint);
-            clients.Add(agent.Avatar.ID, endpoint, client);
+            clients.Add(agent.ID, endpoint, client);
         }
 
         public bool RemoveClient(Agent agent)
         {
             UDPClient client;
-            if (clients.TryGetValue(agent.Avatar.ID, out client))
+            if (clients.TryGetValue(agent.ID, out client))
             {
                 client.Shutdown();
-                return clients.Remove(agent.Avatar.ID, client.Address);
+                return clients.Remove(agent.ID, client.Address);
             }
             else
                 return false;
@@ -421,10 +421,10 @@ namespace Simian
                             //FIXME: Make 60000 an .ini setting
                             if (Environment.TickCount - client.Agent.TickLastPacketReceived > 60000)
                             {
-                                Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.Avatar.Name),
+                                Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.FullName),
                                     Helpers.LogLevel.Warning);
 
-                                server.Scene.ObjectRemove(this, client.Agent.Avatar.ID);
+                                server.Scene.ObjectRemove(this, client.Agent.ID);
                                 return;
                             }
                         }
@@ -469,16 +469,16 @@ namespace Simian
                 if (CompleteAgentConnection(useCircuitCode.CircuitCode.Code, out agent))
                 {
                     // Sanity check that the agent isn't already logged in
-                    if (clients.ContainsKey(agent.Avatar.ID))
+                    if (clients.ContainsKey(agent.ID))
                     {
-                        Logger.Log("Client UDP reference already exists for " + agent.Avatar.ID.ToString() + ", removing",
+                        Logger.Log("Client UDP reference already exists for " + agent.ID.ToString() + ", removing",
                             Helpers.LogLevel.Warning);
-                        server.Scene.ObjectRemove(this, agent.Avatar.ID);
-                        clients.Remove(agent.Avatar.ID);
+                        server.Scene.ObjectRemove(this, agent.ID);
+                        clients.Remove(agent.ID);
                     }
 
                     AddClient(agent, address);
-                    if (clients.TryGetValue(agent.Avatar.ID, out client))
+                    if (clients.TryGetValue(agent.ID, out client))
                     {
                         Logger.Log("Activated UDP circuit " + useCircuitCode.CircuitCode.Code, Helpers.LogLevel.Info);
                     }

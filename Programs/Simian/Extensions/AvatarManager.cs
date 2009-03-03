@@ -71,19 +71,19 @@ namespace Simian.Extensions
 
         public void SendAnimations(Agent agent)
         {
-            server.Scene.ObjectAnimate(this, agent.Avatar.ID, agent.Avatar.ID, agent.Animations.GetAnimations());
+            server.Scene.ObjectAnimate(this, agent.ID, agent.ID, agent.Animations.GetAnimations());
         }
 
         public void TriggerSound(Agent agent, UUID soundID, float gain)
         {
-            server.Scene.TriggerSound(this, agent.Avatar.ID, agent.Avatar.ID, agent.Avatar.ID, soundID, agent.Avatar.Position, gain);
+            server.Scene.TriggerSound(this, agent.ID, agent.ID, agent.ID, soundID, agent.Avatar.Prim.Position, gain);
         }
 
         public void SendAlert(Agent agent, string message)
         {
             AlertMessagePacket alert = new AlertMessagePacket();
             alert.AlertData.Message = Utils.StringToBytes(message);
-            server.UDP.SendPacket(agent.Avatar.ID, alert, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.ID, alert, PacketCategory.Transaction);
         }
 
         void AgentAnimationHandler(Packet packet, Agent agent)
@@ -135,7 +135,7 @@ namespace Simian.Extensions
             if (server.Scene.TryGetAgent(request.AgentData.AvatarID, out foundAgent))
             {
                 AvatarPropertiesReplyPacket reply = new AvatarPropertiesReplyPacket();
-                reply.AgentData.AgentID = agent.Avatar.ID;
+                reply.AgentData.AgentID = agent.ID;
                 reply.AgentData.AvatarID = request.AgentData.AvatarID;
                 reply.PropertiesData.AboutText = Utils.StringToBytes(foundAgent.ProfileAboutText);
                 reply.PropertiesData.BornOn = Utils.StringToBytes(foundAgent.ProfileBornOn);
@@ -147,7 +147,7 @@ namespace Simian.Extensions
                 reply.PropertiesData.PartnerID = foundAgent.PartnerID;
                 reply.PropertiesData.ProfileURL = Utils.StringToBytes(foundAgent.ProfileURL);
 
-                server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
+                server.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
             }
             else
             {
@@ -175,19 +175,19 @@ namespace Simian.Extensions
         {
             Dictionary<WearableType, InventoryItem> wearables = new Dictionary<WearableType, InventoryItem>();
 
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Shape, agent.ShapeItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Skin, agent.SkinItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Hair, agent.HairItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Eyes, agent.EyesItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Shirt, agent.ShirtItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Pants, agent.PantsItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Shoes, agent.ShoesItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Socks, agent.SocksItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Jacket, agent.JacketItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Gloves, agent.GlovesItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Undershirt, agent.UndershirtItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Underpants, agent.UnderpantsItem);
-            TryAddWearable(agent.Avatar.ID, wearables, WearableType.Skirt, agent.SkirtItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Shape, agent.ShapeItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Skin, agent.SkinItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Hair, agent.HairItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Eyes, agent.EyesItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Shirt, agent.ShirtItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Pants, agent.PantsItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Shoes, agent.ShoesItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Socks, agent.SocksItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Jacket, agent.JacketItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Gloves, agent.GlovesItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Undershirt, agent.UndershirtItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Underpants, agent.UnderpantsItem);
+            TryAddWearable(agent.ID, wearables, WearableType.Skirt, agent.SkirtItem);
 
             return wearables;
         }
@@ -195,7 +195,7 @@ namespace Simian.Extensions
         void SendWearables(Agent agent)
         {
             AgentWearablesUpdatePacket update = new AgentWearablesUpdatePacket();
-            update.AgentData.AgentID = agent.Avatar.ID;
+            update.AgentData.AgentID = agent.ID;
 
             Dictionary<WearableType, InventoryItem> wearables = GetCurrentWearables(agent);
             update.WearableData = new AgentWearablesUpdatePacket.WearableDataBlock[wearables.Count];
@@ -216,7 +216,7 @@ namespace Simian.Extensions
 
             Logger.DebugLog(String.Format("Sending info about {0} wearables", wearables.Count));
 
-            server.UDP.SendPacket(agent.Avatar.ID, update, PacketCategory.Asset);
+            server.UDP.SendPacket(agent.ID, update, PacketCategory.Asset);
         }
 
         void AgentWearablesRequestHandler(Packet packet, Agent agent)
@@ -316,7 +316,7 @@ namespace Simian.Extensions
             AgentCachedTexturePacket cached = (AgentCachedTexturePacket)packet;
 
             AgentCachedTextureResponsePacket response = new AgentCachedTextureResponsePacket();
-            response.AgentData.AgentID = agent.Avatar.ID;
+            response.AgentData.AgentID = agent.ID;
             response.AgentData.SerialNum = cached.AgentData.SerialNum;
 
             response.WearableData = new AgentCachedTextureResponsePacket.WearableDataBlock[cached.WearableData.Length];
@@ -332,7 +332,7 @@ namespace Simian.Extensions
 
             response.Header.Zerocoded = true;
 
-            server.UDP.SendPacket(agent.Avatar.ID, response, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.ID, response, PacketCategory.Transaction);
         }
 
         void AgentHeightWidthHandler(Packet packet, Agent agent)
@@ -377,7 +377,7 @@ namespace Simian.Extensions
                 }
             }
 
-            server.UDP.SendPacket(agent.Avatar.ID, reply, PacketCategory.Transaction);
+            server.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
         }
 
         void CoarseLocationTimer_Elapsed(object sender)
@@ -390,11 +390,11 @@ namespace Simian.Extensions
                 delegate(Agent agent)
                 {
                     CoarseLocationUpdatePacket.AgentDataBlock dataBlock = new CoarseLocationUpdatePacket.AgentDataBlock();
-                    dataBlock.AgentID = agent.Avatar.ID;
+                    dataBlock.AgentID = agent.ID;
                     CoarseLocationUpdatePacket.LocationBlock locationBlock = new CoarseLocationUpdatePacket.LocationBlock();
-                    locationBlock.X = (byte)agent.Avatar.Position.X;
-                    locationBlock.Y = (byte)agent.Avatar.Position.Y;
-                    locationBlock.Z = (byte)((int)agent.Avatar.Position.Z / 4);
+                    locationBlock.X = (byte)agent.Avatar.Prim.Position.X;
+                    locationBlock.Y = (byte)agent.Avatar.Prim.Position.Y;
+                    locationBlock.Z = (byte)((int)agent.Avatar.Prim.Position.Z / 4);
 
                     agentDatas.Add(dataBlock);
                     agentLocations.Add(locationBlock);
@@ -413,7 +413,7 @@ namespace Simian.Extensions
                     int count = 0;
                     for (int i = 0; i < agentDatas.Count; i++)
                     {
-                        if (agentDatas[i].AgentID != agent.Avatar.ID)
+                        if (agentDatas[i].AgentID != agent.ID)
                             ++count;
                     }
 
@@ -423,7 +423,7 @@ namespace Simian.Extensions
                     int j = 0;
                     for (int i = 0; i < agentDatas.Count; i++)
                     {
-                        if (agentDatas[i].AgentID != agent.Avatar.ID)
+                        if (agentDatas[i].AgentID != agent.ID)
                         {
                             update.AgentData[j] = agentDatas[i];
                             update.Location[j] = agentLocations[i];
@@ -431,7 +431,7 @@ namespace Simian.Extensions
                         }
                     }
 
-                    server.UDP.SendPacket(agent.Avatar.ID, update, PacketCategory.State);
+                    server.UDP.SendPacket(agent.ID, update, PacketCategory.State);
                 }
             );
         }

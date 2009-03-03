@@ -76,7 +76,7 @@ namespace Simian.Extensions
                     bool animsChanged = false;
 
                     // Create forward and left vectors from the current avatar rotation
-                    Matrix4 rotMatrix = Matrix4.CreateFromQuaternion(agent.Avatar.Rotation);
+                    Matrix4 rotMatrix = Matrix4.CreateFromQuaternion(agent.Avatar.Prim.Rotation);
                     Vector3 fwd = Vector3.Transform(Vector3.UnitX, rotMatrix);
                     Vector3 left = Vector3.Transform(Vector3.UnitY, rotMatrix);
 
@@ -110,7 +110,7 @@ namespace Simian.Extensions
                     if ((heldForward || heldBack) && (heldLeft || heldRight))
                         speed /= SQRT_TWO;
 
-                    Vector3 agentPosition = agent.GetSimulatorPosition(server.Scene);
+                    Vector3 agentPosition = agent.Avatar.GetSimulatorPosition();
                     float oldFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
 
                     agentPosition += (move * speed);
@@ -121,7 +121,7 @@ namespace Simian.Extensions
 
                     // least possible distance from avatar to the ground
                     // TODO: calculate to get rid of "bot squat"
-                    float lowerLimit = newFloor + agent.Avatar.Scale.Z / 2;
+                    float lowerLimit = newFloor + agent.Avatar.Prim.Scale.Z / 2;
 
                     // TODO: check our Z (minus height/2) compared to all the prim
                     // bounding boxes, and define a new lowerLimit as a hack for platforms
@@ -129,7 +129,7 @@ namespace Simian.Extensions
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
 
-                    float waterChestHeight = server.Scene.WaterHeight - (agent.Avatar.Scale.Z * .33f);
+                    float waterChestHeight = server.Scene.WaterHeight - (agent.Avatar.Prim.Scale.Z * .33f);
 
                     if (flying)
                     {
@@ -137,12 +137,12 @@ namespace Simian.Extensions
                         agent.TickJump = 0;
 
                         //velocity falloff while flying
-                        agent.Avatar.Velocity.X *= 0.66f;
-                        agent.Avatar.Velocity.Y *= 0.66f;
-                        agent.Avatar.Velocity.Z *= 0.33f;
+                        agent.Avatar.Prim.Velocity.X *= 0.66f;
+                        agent.Avatar.Prim.Velocity.Y *= 0.66f;
+                        agent.Avatar.Prim.Velocity.Z *= 0.33f;
 
-                        if (agent.Avatar.Position.Z == lowerLimit)
-                            agent.Avatar.Velocity.Z += INITIAL_HOVER_IMPULSE;
+                        if (agent.Avatar.Prim.Position.Z == lowerLimit)
+                            agent.Avatar.Prim.Velocity.Z += INITIAL_HOVER_IMPULSE;
 
                         if (move.X != 0 || move.Y != 0)
                         { //flying horizontally
@@ -166,18 +166,18 @@ namespace Simian.Extensions
                         }
                     }
 
-                    else if (agent.Avatar.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Position.Z <= waterChestHeight)
+                    else if (agent.Avatar.Prim.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Prim.Position.Z <= waterChestHeight)
                     { //falling, floating, or landing from a jump
 
-                        if (agent.Avatar.Position.Z > server.Scene.WaterHeight)
+                        if (agent.Avatar.Prim.Position.Z > server.Scene.WaterHeight)
                         { //above water
 
                             move = Vector3.Zero; //override controls while drifting
-                            agent.Avatar.Velocity *= 0.95f; //keep most of our inertia
+                            agent.Avatar.Prim.Velocity *= 0.95f; //keep most of our inertia
 
                             float fallElapsed = (float)(Environment.TickCount - agent.TickFall) / 1000f;
 
-                            if (agent.TickFall == 0 || (fallElapsed > FALL_DELAY && agent.Avatar.Velocity.Z >= 0f))
+                            if (agent.TickFall == 0 || (fallElapsed > FALL_DELAY && agent.Avatar.Prim.Velocity.Z >= 0f))
                             { //just started falling
                                 agent.TickFall = Environment.TickCount;
                             }
@@ -195,13 +195,13 @@ namespace Simian.Extensions
                                 }
                             }
                         }
-                        else if (agent.Avatar.Position.Z >= waterChestHeight)
+                        else if (agent.Avatar.Prim.Position.Z >= waterChestHeight)
                         { //at the water line
 
                             gravity = 0f;
-                            agent.Avatar.Velocity *= 0.5f;
-                            agent.Avatar.Velocity.Z = 0f;
-                            if (move.Z < 1) agent.Avatar.Position.Z = waterChestHeight;
+                            agent.Avatar.Prim.Velocity *= 0.5f;
+                            agent.Avatar.Prim.Velocity.Z = 0f;
+                            if (move.Z < 1) agent.Avatar.Prim.Position.Z = waterChestHeight;
 
                             if (move.Z > 0)
                             {
@@ -223,8 +223,8 @@ namespace Simian.Extensions
                         { //underwater
 
                             gravity = 0f; //buoyant
-                            agent.Avatar.Velocity *= 0.5f * seconds;
-                            agent.Avatar.Velocity.Z += 0.75f * seconds;
+                            agent.Avatar.Prim.Velocity *= 0.5f * seconds;
+                            agent.Avatar.Prim.Velocity.Z += 0.75f * seconds;
 
                             if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
                                 animsChanged = true;
@@ -236,10 +236,10 @@ namespace Simian.Extensions
                         agent.TickFall = 0;
 
                         //friction
-                        agent.Avatar.Acceleration *= 0.2f;
-                        agent.Avatar.Velocity *= 0.2f;
+                        agent.Avatar.Prim.Acceleration *= 0.2f;
+                        agent.Avatar.Prim.Velocity *= 0.2f;
 
-                        agent.Avatar.Position.Z = lowerLimit;
+                        agent.Avatar.Prim.Position.Z = lowerLimit;
 
                         if (move.Z > 0)
                         { //jumping
@@ -264,9 +264,9 @@ namespace Simian.Extensions
                                 if (server.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
                                     animsChanged = true;
 
-                                agent.Avatar.Velocity.X += agent.Avatar.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
-                                agent.Avatar.Velocity.Y += agent.Avatar.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL;
-                                agent.Avatar.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
+                                agent.Avatar.Prim.Velocity.X += agent.Avatar.Prim.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
+                                agent.Avatar.Prim.Velocity.Y += agent.Avatar.Prim.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL;
+                                agent.Avatar.Prim.Velocity.Z = JUMP_IMPULSE_VERTICAL * seconds;
 
                                 agent.TickJump = -1; //flag that we are currently jumping
                             }
@@ -321,29 +321,29 @@ namespace Simian.Extensions
                     // static acceleration when any control is held, otherwise none
                     if (moving)
                     {
-                        agent.Avatar.Acceleration = move * speed;
-                        if (agent.Avatar.Acceleration.Z < -maxVel)
-                            agent.Avatar.Acceleration.Z = -maxVel;
-                        else if (agent.Avatar.Acceleration.Z > maxVel)
-                            agent.Avatar.Acceleration.Z = maxVel;
+                        agent.Avatar.Prim.Acceleration = move * speed;
+                        if (agent.Avatar.Prim.Acceleration.Z < -maxVel)
+                            agent.Avatar.Prim.Acceleration.Z = -maxVel;
+                        else if (agent.Avatar.Prim.Acceleration.Z > maxVel)
+                            agent.Avatar.Prim.Acceleration.Z = maxVel;
                     }
-                    else agent.Avatar.Acceleration = Vector3.Zero;
+                    else agent.Avatar.Prim.Acceleration = Vector3.Zero;
 
-                    agent.Avatar.Velocity += agent.Avatar.Acceleration - new Vector3(0f, 0f, gravity);
-                    if (agent.Avatar.Velocity.Z < -maxVel)
-                        agent.Avatar.Velocity.Z = -maxVel;
-                    else if (agent.Avatar.Velocity.Z > maxVel)
-                        agent.Avatar.Velocity.Z = maxVel;
+                    agent.Avatar.Prim.Velocity += agent.Avatar.Prim.Acceleration - new Vector3(0f, 0f, gravity);
+                    if (agent.Avatar.Prim.Velocity.Z < -maxVel)
+                        agent.Avatar.Prim.Velocity.Z = -maxVel;
+                    else if (agent.Avatar.Prim.Velocity.Z > maxVel)
+                        agent.Avatar.Prim.Velocity.Z = maxVel;
 
-                    agent.Avatar.Position += agent.Avatar.Velocity;
+                    agent.Avatar.Prim.Position += agent.Avatar.Prim.Velocity;
 
-                    if (agent.Avatar.Position.X < 0) agent.Avatar.Position.X = 0f;
-                    else if (agent.Avatar.Position.X > 255) agent.Avatar.Position.X = 255f;
+                    if (agent.Avatar.Prim.Position.X < 0) agent.Avatar.Prim.Position.X = 0f;
+                    else if (agent.Avatar.Prim.Position.X > 255) agent.Avatar.Prim.Position.X = 255f;
 
-                    if (agent.Avatar.Position.Y < 0) agent.Avatar.Position.Y = 0f;
-                    else if (agent.Avatar.Position.Y > 255) agent.Avatar.Position.Y = 255f;
+                    if (agent.Avatar.Prim.Position.Y < 0) agent.Avatar.Prim.Position.Y = 0f;
+                    else if (agent.Avatar.Prim.Position.Y > 255) agent.Avatar.Prim.Position.Y = 255f;
 
-                    if (agent.Avatar.Position.Z < lowerLimit) agent.Avatar.Position.Z = lowerLimit;
+                    if (agent.Avatar.Prim.Position.Z < lowerLimit) agent.Avatar.Prim.Position.Z = lowerLimit;
                 }
             );
         }
@@ -367,7 +367,7 @@ namespace Simian.Extensions
                 response.SitTransform.SitPosition = request.TargetObject.Offset;
                 response.SitTransform.SitRotation = obj.SitRotation;
 
-                server.UDP.SendPacket(agent.Avatar.ID, response, PacketCategory.State);
+                server.UDP.SendPacket(agent.ID, response, PacketCategory.State);
             }
             else
             {
@@ -384,11 +384,11 @@ namespace Simian.Extensions
                 SimulationObject obj;
                 if (server.Scene.TryGetObject(agent.RequestedSitTarget, out obj))
                 {
-                    agent.Avatar.ParentID = obj.Prim.LocalID;
-                    agent.Avatar.Position = agent.RequestedSitOffset;
+                    agent.Avatar.Prim.ParentID = obj.Prim.LocalID;
+                    agent.Avatar.Prim.Position = agent.RequestedSitOffset;
 
-                    ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
-                        server.Scene.RegionHandle, agent.Flags);
+                    ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar.Prim,
+                        server.Scene.RegionHandle, agent.Avatar.Prim.Flags);
 
                     server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
 
@@ -408,31 +408,31 @@ namespace Simian.Extensions
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
-            agent.Avatar.Rotation = update.AgentData.BodyRotation;
+            agent.Avatar.Prim.Rotation = update.AgentData.BodyRotation;
             agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
-            agent.Avatar.PrimData.State = update.AgentData.State; // FIXME: Are these two different state variables?
-            agent.Flags = (PrimFlags)update.AgentData.Flags;
+            agent.State = (AgentState)update.AgentData.State;
+            agent.HideTitle = update.AgentData.Flags != 0;
 
-            if (agent.Avatar.ParentID > 0 && (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP) == AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP)
+            if (agent.Avatar.Prim.ParentID > 0 && (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP) == AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP)
             {
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(agent.Avatar.ParentID, out obj))
+                if (server.Scene.TryGetObject(agent.Avatar.Prim.ParentID, out obj))
                 {
-                    agent.Avatar.Position = obj.Prim.Position
+                    agent.Avatar.Prim.Position = obj.Prim.Position
                         + Vector3.Transform(obj.SitPosition, Matrix4.CreateFromQuaternion(obj.SitRotation))
                         + new Vector3(0f, 0f, 1f);
                 }
                 else
                 {
                     //TODO: get position from course locations?
-                    agent.Avatar.Position = Vector3.Zero;
+                    agent.Avatar.Prim.Position = Vector3.Zero;
                 }
-                agent.Avatar.ParentID = 0;
+                agent.Avatar.Prim.ParentID = 0;
                 server.Avatars.SetDefaultAnimation(agent, Animations.STAND);
             }
 
-            ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
-                server.Scene.RegionHandle, agent.Flags);
+            ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar.Prim,
+                server.Scene.RegionHandle, agent.Avatar.Prim.Flags);
 
             server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }

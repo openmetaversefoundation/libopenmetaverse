@@ -71,14 +71,14 @@ namespace Simian.Extensions
         {
             SimulationObject simObj = new SimulationObject(prim, server);
             if (MasterAgent != null)
-                simObj.Prim.OwnerID = MasterAgent.Avatar.ID;
-            server.Scene.ObjectAdd(this, simObj, MasterAgent.Avatar.ID, 0, PrimFlags.None);
+                simObj.Prim.OwnerID = MasterAgent.ID;
+            server.Scene.ObjectAdd(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
         }
 
         void Objects_OnNewAttachment(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAdd(this, simObj, MasterAgent.Avatar.ID, 0, PrimFlags.None);
+            server.Scene.ObjectAdd(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
         }
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
@@ -86,9 +86,9 @@ namespace Simian.Extensions
             ulong localRegionHandle = Utils.UIntsToLong(256 * server.Scene.RegionX, 256 * server.Scene.RegionY);
 
             // Add the avatar to both the agents list and the scene objects
-            Agent agent = new Agent();
-            agent.Avatar.ID = avatar.ID;
-            agent.Avatar = avatar;
+            SimulationObject obj = new SimulationObject(avatar, server);
+            Agent agent = new Agent(obj);
+            agent.Avatar.Prim.ID = avatar.ID;
             agent.CurrentRegionHandle = localRegionHandle;
             agent.FirstName = avatar.FirstName;
             agent.LastName = avatar.LastName;
@@ -107,15 +107,15 @@ namespace Simian.Extensions
 
             if (update.LocalID == client.Self.LocalID)
             {
-                MasterAgent.Avatar.Acceleration = update.Acceleration;
-                MasterAgent.Avatar.AngularVelocity = update.AngularVelocity;
-                MasterAgent.Avatar.CollisionPlane = update.CollisionPlane;
-                MasterAgent.Avatar.Position = update.Position;
-                MasterAgent.Avatar.Rotation = update.Rotation;
-                MasterAgent.Avatar.Velocity = update.Velocity;
+                MasterAgent.Avatar.Prim.Acceleration = update.Acceleration;
+                MasterAgent.Avatar.Prim.AngularVelocity = update.AngularVelocity;
+                MasterAgent.Avatar.Prim.CollisionPlane = update.CollisionPlane;
+                MasterAgent.Avatar.Prim.Position = update.Position;
+                MasterAgent.Avatar.Prim.Rotation = update.Rotation;
+                MasterAgent.Avatar.Prim.Velocity = update.Velocity;
 
                 if (update.Textures != null)
-                    MasterAgent.Avatar.Textures = update.Textures;
+                    MasterAgent.Avatar.Prim.Textures = update.Textures;
             }
         }
 
@@ -139,7 +139,7 @@ namespace Simian.Extensions
 
                 server.Scene.AgentAppearance(this, agent, te, vp);
 
-                if (agent.Avatar.ID == client.Self.AgentID)
+                if (agent.ID == client.Self.AgentID)
                     server.Scene.AgentAppearance(this, MasterAgent, te, vp);
             }
             else
@@ -196,10 +196,10 @@ namespace Simian.Extensions
                 server.Scene.ForEachAgent(
                     delegate(Agent agent)
                     {
-                        if (agent.Avatar.RegionHandle != localRegionHandle &&
-                            agent.Avatar.RegionHandle != client.Network.CurrentSim.Handle)
+                        if (agent.Avatar.Prim.RegionHandle != localRegionHandle &&
+                            agent.Avatar.Prim.RegionHandle != client.Network.CurrentSim.Handle)
                         {
-                            server.Scene.ObjectRemove(this, agent.Avatar.ID);
+                            server.Scene.ObjectRemove(this, agent.ID);
                         }
                     }
                 );
@@ -248,7 +248,7 @@ namespace Simian.Extensions
         {
             RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
 
-            handshake.RegionInfo.SimOwner = (MasterAgent != null ? MasterAgent.Avatar.ID : UUID.Zero);
+            handshake.RegionInfo.SimOwner = (MasterAgent != null ? MasterAgent.ID : UUID.Zero);
             handshake.RegionInfo.RegionFlags &= ~(uint)RegionFlags.NoFly;
             handshake.RegionInfo2.RegionID = server.Scene.RegionID;
 
@@ -372,7 +372,7 @@ namespace Simian.Extensions
                 }
             }
 
-            if (MasterAgent == null || update.AgentData.AgentID == MasterAgent.Avatar.ID)
+            if (MasterAgent == null || update.AgentData.AgentID == MasterAgent.ID)
             {
                 update.AgentData.AgentID = client.Self.AgentID;
                 update.AgentData.SessionID = client.Self.SessionID;
@@ -384,7 +384,7 @@ namespace Simian.Extensions
         {
             ObjectGrabPacket grab = (ObjectGrabPacket)packet;
 
-            if (MasterAgent == null || grab.AgentData.AgentID == MasterAgent.Avatar.ID)
+            if (MasterAgent == null || grab.AgentData.AgentID == MasterAgent.ID)
             {
                 grab.AgentData.AgentID = client.Self.AgentID;
                 grab.AgentData.SessionID = client.Self.SessionID;
@@ -397,7 +397,7 @@ namespace Simian.Extensions
         {
             ObjectGrabUpdatePacket grabUpdate = (ObjectGrabUpdatePacket)packet;
 
-            if (MasterAgent == null || grabUpdate.AgentData.AgentID == MasterAgent.Avatar.ID)
+            if (MasterAgent == null || grabUpdate.AgentData.AgentID == MasterAgent.ID)
             {
                 grabUpdate.AgentData.AgentID = client.Self.AgentID;
                 grabUpdate.AgentData.SessionID = client.Self.SessionID;
@@ -410,7 +410,7 @@ namespace Simian.Extensions
         {
             ObjectDeGrabPacket degrab = (ObjectDeGrabPacket)packet;
 
-            if (MasterAgent == null || degrab.AgentData.AgentID == MasterAgent.Avatar.ID)
+            if (MasterAgent == null || degrab.AgentData.AgentID == MasterAgent.ID)
             {
                 degrab.AgentData.AgentID = client.Self.AgentID;
                 degrab.AgentData.SessionID = client.Self.SessionID;
@@ -423,7 +423,7 @@ namespace Simian.Extensions
         {
             ViewerEffectPacket effect = (ViewerEffectPacket)packet;
 
-            if (MasterAgent == null || effect.AgentData.AgentID == MasterAgent.Avatar.ID)
+            if (MasterAgent == null || effect.AgentData.AgentID == MasterAgent.ID)
             {
                 effect.AgentData.AgentID = client.Self.AgentID;
                 effect.AgentData.SessionID = client.Self.SessionID;
@@ -436,7 +436,7 @@ namespace Simian.Extensions
         {
             AgentAnimationPacket animation = (AgentAnimationPacket)packet;
 
-            if (MasterAgent == null || animation.AgentData.AgentID == MasterAgent.Avatar.ID)
+            if (MasterAgent == null || animation.AgentData.AgentID == MasterAgent.ID)
             {
                 animation.AgentData.AgentID = client.Self.AgentID;
                 animation.AgentData.SessionID = client.Self.SessionID;
