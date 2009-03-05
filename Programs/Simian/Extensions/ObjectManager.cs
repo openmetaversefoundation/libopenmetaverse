@@ -21,6 +21,7 @@ namespace Simian.Extensions
             this.server = server;
 
             server.UDP.RegisterPacketCallback(PacketType.ObjectAdd, new PacketCallback(ObjectAddHandler));
+            server.UDP.RegisterPacketCallback(PacketType.ObjectAttach, new PacketCallback(ObjectAttachHandler));
             server.UDP.RegisterPacketCallback(PacketType.ObjectDuplicate, new PacketCallback(ObjectDuplicateHandler));
             server.UDP.RegisterPacketCallback(PacketType.ObjectSelect, new PacketCallback(ObjectSelectHandler));
             server.UDP.RegisterPacketCallback(PacketType.ObjectDeselect, new PacketCallback(ObjectDeselectHandler));
@@ -164,6 +165,28 @@ namespace Simian.Extensions
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, server);
             server.Scene.ObjectAdd(this, simObj, agent.ID, 0, flags);
+        }
+
+        void ObjectAttachHandler(Packet packet, Agent agent)
+        {
+            ObjectAttachPacket attach = (ObjectAttachPacket)packet;
+
+            for (int i = 0; i < attach.ObjectData.Length; i++)
+            {
+                SimulationObject obj;
+                if (!server.Scene.TryGetObject(attach.ObjectData[i].ObjectLocalID, out obj))
+                    continue;
+
+                obj.Prim.ParentID = agent.Avatar.Prim.LocalID;
+                obj.Prim.Position = Vector3.Zero; //TODO: simulationObject.AttachmentPoint
+                obj.Prim.Rotation = attach.ObjectData[i].Rotation;  //TODO: simulationObject.AttachmentRot ?
+
+                AttachmentPoint point = (AttachmentPoint)attach.AgentData.AttachmentPoint;
+                obj.Prim.PrimData.AttachmentPoint = point == AttachmentPoint.Default ? obj.LastAttachmentPoint : point;
+
+                // Send an update out to everyone
+                server.Scene.ObjectAdd(this, obj, agent.ID, 0, obj.Prim.Flags);
+            }
         }
 
         void ObjectDuplicateHandler(Packet packet, Agent agent)
@@ -330,14 +353,6 @@ namespace Simian.Extensions
             {
                 linkSet[i].LinkNumber = i + 1;
 
-                ObjectUpdatePacket update = new ObjectUpdatePacket();
-
-                update.RegionData.RegionHandle = server.Scene.RegionHandle;
-                update.RegionData.TimeDilation = UInt16.MaxValue;               
-
-                update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-                update.ObjectData[0] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim, server.Scene.RegionHandle, linkSet[i].Prim.Flags);
-
                 if (linkSet[i].Prim.ParentID > 0)
                 {
                     //previously linked children
@@ -357,21 +372,16 @@ namespace Simian.Extensions
                     linkSet[i].Prim.Rotation /= linkSet[0].Prim.Rotation;
 
                     //set parent ID
-                    update.ObjectData[0].ParentID = linkSet[0].Prim.LocalID;
+                    linkSet[i].Prim.ParentID = linkSet[0].Prim.LocalID;
                 }
                 else
                 {
                     //root prim
-                    update.ObjectData[0].ParentID = 0;
+                    linkSet[i].Prim.ParentID = 0;
                 }
 
-                update.ObjectData[0].ObjectData = SimulationObject.BuildObjectData(
-                    linkSet[i].Prim.Position, linkSet[i].Prim.Rotation,
-                    Vector3.Zero, Vector3.Zero, Vector3.Zero);
-
-                server.UDP.BroadcastPacket(update, PacketCategory.State);
+                server.Scene.ObjectAdd(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
             }
-
         }
 
         void ObjectDelinkHandler(Packet packet, Agent agent)
@@ -398,19 +408,9 @@ namespace Simian.Extensions
                 }
             }
 
-            ObjectUpdatePacket update = new ObjectUpdatePacket();
-
-            update.RegionData.RegionHandle = server.Scene.RegionHandle;
-            update.RegionData.TimeDilation = UInt16.MaxValue;
-
-            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[linkSet.Count];
-
             for (int i = 0; i < linkSet.Count; i++)
             {
-                update.ObjectData[i] = SimulationObject.BuildUpdateBlock(linkSet[i].Prim,
-                    server.Scene.RegionHandle, linkSet[i].Prim.Flags);
-
-                update.ObjectData[i].ParentID = 0;
+                linkSet[i].Prim.ParentID = 0;
                 linkSet[i].LinkNumber = 0;
 
                 //add root prim orientation to child prims
@@ -420,12 +420,8 @@ namespace Simian.Extensions
                     linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
                 }
 
-                update.ObjectData[i].ObjectData = SimulationObject.BuildObjectData(
-                    linkSet[i].Prim.Position, linkSet[i].Prim.Rotation,
-                    Vector3.Zero, Vector3.Zero, Vector3.Zero);
+                server.Scene.ObjectAdd(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
             }
-
-            server.UDP.BroadcastPacket(update, PacketCategory.State);
         }
 
         void ObjectShapeHandler(Packet packet, Agent agent)

@@ -414,7 +414,9 @@ namespace Simian.Extensions
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
-            agent.Avatar.Prim.Rotation = update.AgentData.BodyRotation;
+            if (agent.Avatar.Prim.ParentID == 0)
+                agent.Avatar.Prim.Rotation = update.AgentData.BodyRotation;
+
             agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
             agent.State = (AgentState)update.AgentData.State;
             agent.HideTitle = update.AgentData.Flags != 0;
