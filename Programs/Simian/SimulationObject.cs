@@ -25,6 +25,8 @@ namespace Simian
         public Vector3 RotationAxis = Vector3.UnitY;
         /// <summary>A continual rotational impulse</summary>
         public Vector3 Torque;
+        /// <summary>Last point the object was attached to (right hand by default)</summary>
+        public AttachmentPoint LastAttachmentPoint = AttachmentPoint.RightHand;
         /// <summary>Seat offset</summary>
         public Vector3 SitPosition;
         /// <summary>Seat rotation</summary>
