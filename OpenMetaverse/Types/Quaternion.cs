@@ -197,9 +197,7 @@ namespace OpenMetaverse
         public byte[] GetBytes()
         {
             byte[] bytes = new byte[12];
-            float norm;
-
-            norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
+            float norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
             if (norm != 0f)
             {
@@ -233,6 +231,48 @@ namespace OpenMetaverse
             }
 
             return bytes;
+        }
+
+        /// <summary>
+        /// Writes the raw bytes for this quaternion to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 12 bytes before the end of the array</param>
+        public void ToBytes(byte[] dest, int pos)
+        {
+            float norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
+
+            if (norm != 0f)
+            {
+                norm = 1f / norm;
+
+                float x, y, z;
+                if (W >= 0f)
+                {
+                    x = X; y = Y; z = Z;
+                }
+                else
+                {
+                    x = -X; y = -Y; z = -Z;
+                }
+
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * x), 0, dest, pos + 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * y), 0, dest, pos + 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * z), 0, dest, pos + 8, 4);
+
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(dest, pos + 0, 4);
+                    Array.Reverse(dest, pos + 4, 4);
+                    Array.Reverse(dest, pos + 8, 4);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException(String.Format(
+                    "Quaternion {0} normalized to zero", ToString()));
+            }
         }
 
         /// <summary>

@@ -182,6 +182,7 @@
           <Exclude name="DoubleDictionary.cs"/>
           <Exclude name="ExpiringCache.cs"/>
           <Exclude name="CircularQueue.cs"/>
+          <Exclude name="CRC32.cs"/>
         </Match>
       </Files>
     </Project>

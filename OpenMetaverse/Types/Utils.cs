@@ -80,6 +80,8 @@ namespace OpenMetaverse
         /// <summary>UNIX epoch in DateTime format</summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1);
 
+        public static readonly byte[] EmptyBytes = Utils.EmptyBytes;
+
         /// <summary>Provide a single instance of the MD5 class to avoid making
         /// duplicate copies and handle thread safety</summary>
         private static readonly System.Security.Cryptography.MD5 MD5Builder =

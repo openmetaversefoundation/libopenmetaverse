@@ -1252,7 +1252,7 @@ namespace OpenMetaverse
         {
             InstantMessage(Name, target, message, AgentID.Equals(target) ? AgentID : target ^ AgentID,
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.SimPosition,
-                UUID.Zero, new byte[0]);
+                UUID.Zero, Utils.EmptyBytes);
         }
 
         /// <summary>
@@ -1265,7 +1265,7 @@ namespace OpenMetaverse
         {
             InstantMessage(Name, target, message, imSessionID,
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.SimPosition,
-                UUID.Zero, new byte[0]);
+                UUID.Zero, Utils.EmptyBytes);
         }
 
         /// <summary>
@@ -1289,7 +1289,7 @@ namespace OpenMetaverse
             }
             else
             {
-                binaryBucket = new byte[0];
+                binaryBucket = Utils.EmptyBytes;
             }
 
             InstantMessage(fromName, target, message, imSessionID, InstantMessageDialog.MessageFromAgent,
@@ -1334,7 +1334,7 @@ namespace OpenMetaverse
                 if (binaryBucket != null)
                     im.MessageBlock.BinaryBucket = binaryBucket;
                 else
-                    im.MessageBlock.BinaryBucket = new byte[0];
+                    im.MessageBlock.BinaryBucket = Utils.EmptyBytes;
 
                 // These fields are mandatory, even if we don't have valid values for them
                 im.MessageBlock.Position = Vector3.Zero;
@@ -1410,12 +1410,12 @@ namespace OpenMetaverse
             im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionGroupStart;
             im.MessageBlock.FromAgentName = Utils.StringToBytes(Client.Self.Name);
             im.MessageBlock.FromGroup = false;
-            im.MessageBlock.Message = new byte[0];
+            im.MessageBlock.Message = Utils.EmptyBytes;
             im.MessageBlock.ParentEstateID = 0;
             im.MessageBlock.Offline = 0;
             im.MessageBlock.ID = groupID;
             im.MessageBlock.ToAgentID = groupID;
-            im.MessageBlock.BinaryBucket = new byte[0];
+            im.MessageBlock.BinaryBucket = Utils.EmptyBytes;
             im.MessageBlock.Position = Client.Self.SimPosition;
             im.MessageBlock.RegionID = UUID.Zero;
 
@@ -1435,11 +1435,11 @@ namespace OpenMetaverse
             im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionDrop;
             im.MessageBlock.FromAgentName = Utils.StringToBytes(Client.Self.Name);
             im.MessageBlock.FromGroup = false;
-            im.MessageBlock.Message = new byte[0];
+            im.MessageBlock.Message = Utils.EmptyBytes;
             im.MessageBlock.Offline = 0;
             im.MessageBlock.ID = groupID;
             im.MessageBlock.ToAgentID = groupID;
-            im.MessageBlock.BinaryBucket = new byte[0];
+            im.MessageBlock.BinaryBucket = Utils.EmptyBytes;
             im.MessageBlock.Position = Vector3.Zero;
             im.MessageBlock.RegionID = UUID.Zero;
 
@@ -2338,7 +2338,7 @@ namespace OpenMetaverse
         {
             InstantMessage(Name, requesterID, String.Empty, UUID.Random(),
                 accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
-                InstantMessageOnline.Offline, this.SimPosition, UUID.Zero, new byte[0]);
+                InstantMessageOnline.Offline, this.SimPosition, UUID.Zero, Utils.EmptyBytes);
 
             if (accept)
             {
@@ -2492,7 +2492,7 @@ namespace OpenMetaverse
         {
             InstantMessage(Name, groupID, String.Empty, imSessionID,
                 accept ? InstantMessageDialog.GroupInvitationAccept : InstantMessageDialog.GroupInvitationDecline,
-                InstantMessageOnline.Offline, Vector3.Zero, UUID.Zero, new byte[0]);
+                InstantMessageOnline.Offline, Vector3.Zero, UUID.Zero, Utils.EmptyBytes);
         }
 
         /// <summary>

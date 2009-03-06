@@ -845,7 +845,7 @@ namespace OpenMetaverse
             public byte[] ToBytes()
             {
                 if (DefaultTexture == null)
-                    return new byte[0];
+                    return Utils.EmptyBytes;
 
                 MemoryStream memStream = new MemoryStream();
                 BinaryWriter binWriter = new BinaryWriter(memStream);

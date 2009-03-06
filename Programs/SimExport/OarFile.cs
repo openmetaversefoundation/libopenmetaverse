@@ -204,7 +204,7 @@ namespace SimExport
             if (prim.Textures != null)
                 te = prim.Textures.ToBytes();
             else
-                te = new byte[0];
+                te = Utils.EmptyBytes;
 
             writer.WriteBase64(te, 0, te.Length);
             writer.WriteEndElement();

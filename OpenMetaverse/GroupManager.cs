@@ -235,7 +235,7 @@ namespace OpenMetaverse
         public byte[] SerializeAttachment()
         {
             if (OwnerID == UUID.Zero || AttachmentID == UUID.Zero)
-                return new byte[0];
+                return Utils.EmptyBytes;
             
             OpenMetaverse.StructuredData.OSDMap att = new OpenMetaverse.StructuredData.OSDMap();
             att.Add("item_id", OpenMetaverse.StructuredData.OSD.FromUUID(AttachmentID));

@@ -86,7 +86,7 @@ namespace OpenMetaverse.StructuredData
         public virtual UUID AsUUID() { return UUID.Zero; }
         public virtual DateTime AsDate() { return Utils.Epoch; }
         public virtual Uri AsUri() { return new Uri(String.Empty); }
-        public virtual byte[] AsBinary() { return new byte[0]; }
+        public virtual byte[] AsBinary() { return Utils.EmptyBytes; }
         public virtual Vector2 AsVector2() { return Vector2.Zero; }
         public virtual Vector3 AsVector3() { return Vector3.Zero; }
         public virtual Vector3d AsVector3d() { return Vector3d.Zero; }
@@ -668,7 +668,7 @@ namespace OpenMetaverse.StructuredData
             if (value != null)
                 this.value = value;
             else
-                this.value = new byte[0];
+                this.value = Utils.EmptyBytes;
         }
 
         public OSDBinary(uint value)

@@ -871,7 +871,7 @@ namespace OpenMetaverse
             extra.ObjectData[0].ObjectLocalID = localID;
             extra.ObjectData[0].ParamType = (byte)type;
             extra.ObjectData[0].ParamInUse = false;
-            extra.ObjectData[0].ParamData = new byte[0];
+            extra.ObjectData[0].ParamData = Utils.EmptyBytes;
             extra.ObjectData[0].ParamSize = 0;
 
             Client.Network.SendPacket(extra, simulator);

@@ -1621,7 +1621,7 @@ namespace OpenMetaverse
                 MoveInventoryItemPacket.InventoryDataBlock block = new MoveInventoryItemPacket.InventoryDataBlock();
                 block.ItemID = entry.Key;
                 block.FolderID = entry.Value;
-                block.NewName = new byte[0];
+                block.NewName = Utils.EmptyBytes;
                 move.InventoryData[index++] = block;
             }
 
@@ -2020,7 +2020,7 @@ namespace OpenMetaverse
                 if (newNames != null && !String.IsNullOrEmpty(newNames[i]))
                     copy.InventoryData[i].NewName = Utils.StringToBytes(newNames[i]);
                 else
-                    copy.InventoryData[i].NewName = new byte[0];
+                    copy.InventoryData[i].NewName = Utils.EmptyBytes;
             }
 
             _Client.Network.SendPacket(copy);
@@ -3614,7 +3614,7 @@ namespace OpenMetaverse
                     imp.MessageBlock.ID = im.IMSessionID;
                     imp.MessageBlock.Timestamp = 0;
                     imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Client.Self.Name);
-                    imp.MessageBlock.Message = new byte[0];
+                    imp.MessageBlock.Message = Utils.EmptyBytes;
                     imp.MessageBlock.ParentEstateID = 0;
                     imp.MessageBlock.RegionID = UUID.Zero;
                     imp.MessageBlock.Position = _Client.Self.SimPosition;
@@ -3653,7 +3653,7 @@ namespace OpenMetaverse
                                 break;
                         }
 
-                        imp.MessageBlock.BinaryBucket = new byte[0];
+                        imp.MessageBlock.BinaryBucket = Utils.EmptyBytes;
                     }
 
                     _Client.Network.SendPacket(imp, simulator);

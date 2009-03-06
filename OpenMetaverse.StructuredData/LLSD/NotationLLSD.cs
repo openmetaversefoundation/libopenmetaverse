@@ -186,7 +186,7 @@ namespace OpenMetaverse.StructuredData
                     osd = OSD.FromUUID(lluuid);
                     break;
                 case binaryNotationMarker:
-                    byte[] bytes = new byte[0];
+                    byte[] bytes = Utils.EmptyBytes;
                     int bChar = reader.Peek();
                     if (bChar < 0)
                         throw new OSDException("Notation LLSD parsing: Unexpected end of stream in binary.");

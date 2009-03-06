@@ -1026,7 +1026,7 @@ namespace OpenMetaverse.Rendering
         // Sculpted
         private UUID _sculptTexture = UUID.Zero;
         private byte _sculptType = (byte)0;
-        private byte[] _sculptData = new byte[0];
+        private byte[] _sculptData = Utils.EmptyBytes;
 
         // Flexi
         private int _flexiSoftness = 0;

@@ -218,7 +218,7 @@ namespace OpenMetaverse
     {
         public UUID ID;
         public int Size;
-        public byte[] AssetData = new byte[0];
+        public byte[] AssetData = Utils.EmptyBytes;
         public int Transferred;
         public bool Success;
         public AssetType AssetType;
@@ -235,7 +235,7 @@ namespace OpenMetaverse
 
         public Transfer()
         {
-            AssetData = new byte[0];
+            AssetData = Utils.EmptyBytes;
             transferStart = Environment.TickCount;
         }
     }
@@ -867,7 +867,7 @@ namespace OpenMetaverse
                     upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
 
                 // Asset is too big, send in multiple packets
-                request.AssetBlock.AssetData = new byte[0];
+                request.AssetBlock.AssetData = Utils.EmptyBytes;
             }
 
             // Wait for the previous upload to receive a RequestXferPacket

@@ -204,6 +204,28 @@ namespace OpenMetaverse
             return byteArray;
         }
 
+        /// <summary>
+        /// Writes the raw bytes for this vector to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 16 bytes before the end of the array</param>
+        public void ToBytes(byte[] dest, int pos)
+        {
+            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, dest, pos + 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, dest, pos + 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, dest, pos + 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(W), 0, dest, pos + 12, 4);
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(dest, pos + 0, 4);
+                Array.Reverse(dest, pos + 4, 4);
+                Array.Reverse(dest, pos + 8, 4);
+                Array.Reverse(dest, pos + 12, 4);
+            }
+        }
+
         #endregion Public Methods
 
         #region Static Methods

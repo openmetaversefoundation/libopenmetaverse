@@ -558,7 +558,7 @@ namespace OpenMetaverse
             RentPrice = 0;
             AABBMin = Vector3.Zero;
             AABBMax = Vector3.Zero;
-            Bitmap = new byte[0];
+            Bitmap = Utils.EmptyBytes;
             Area = 0;
             Status = ParcelStatus.None;
             SimWideMaxPrims = 0;
@@ -612,7 +612,7 @@ namespace OpenMetaverse
                 body["auto_scale"] =  OSD.FromInteger(this.Media.MediaAutoScale);
                 body["category"] = OSD.FromInteger((byte)this.Category);
                 body["description"] = OSD.FromString(this.Desc);
-                body["flags"] =  OSD.FromBinary(new byte[0]);
+                body["flags"] =  OSD.FromBinary(Utils.EmptyBytes);
                 body["group_id"] = OSD.FromUUID(this.GroupID);
                 body["landing_type"] = OSD.FromInteger((byte)this.Landing);
                 body["local_id"] = OSD.FromInteger(this.LocalID);
