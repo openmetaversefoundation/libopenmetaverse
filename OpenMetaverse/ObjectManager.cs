@@ -1616,6 +1616,7 @@ namespace OpenMetaverse
                         avatar.PrimData = data;
                         avatar.GenericData = block.Data;
                         avatar.ParentID = block.ParentID;
+                        avatar.RegionHandle = update.RegionData.RegionHandle;
 
                         SetAvatarSittingOn(simulator, avatar, block.ParentID, oldSeatID);
 
