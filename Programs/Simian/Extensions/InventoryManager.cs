@@ -386,8 +386,8 @@ namespace Simian.Extensions
                     Logger.Log("FetchInventory called for an unknown item " + itemID.ToString(),
                         Helpers.LogLevel.Warning);
 
-                    blocks[i].Name = new byte[0];
-                    blocks[i].Description = new byte[0];
+                    blocks[i].Name = Utils.EmptyBytes;
+                    blocks[i].Description = Utils.EmptyBytes;
                 }
             }
 

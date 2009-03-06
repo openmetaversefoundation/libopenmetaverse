@@ -44,6 +44,7 @@ namespace Simian
         public ICapabilitiesProvider Capabilities;
         public IScriptEngine ScriptEngine;
         public IMessagingProvider Messages;
+        public IPhysicsProvider Physics;
 
         // Persistent extensions
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();

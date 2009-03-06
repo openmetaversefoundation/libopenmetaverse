@@ -270,6 +270,9 @@ namespace Simian.Extensions
                     obj.Prim.Textures = new Primitive.TextureEntry(new UUID("89556747-24cb-43ed-920b-47caed15465f")); // Plywood
             }
 
+            // Reset the prim CRC
+            obj.CRC = 0;
+
             // Add the object to the scene dictionary
             sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
 
@@ -277,13 +280,13 @@ namespace Simian.Extensions
             {
                 // Send an update out to the creator
                 ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                    obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner);
+                    obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
                 server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
             }
 
             // Send an update out to everyone else
             ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                obj.Prim.Flags);
+                obj.Prim.Flags, obj.CRC);
             server.Scene.ForEachAgent(
                 delegate(Agent recipient)
                 {
@@ -398,6 +401,9 @@ namespace Simian.Extensions
             obj.Prim.Acceleration = acceleration;
             obj.Prim.AngularVelocity = angularVelocity;
 
+            // Reset the prim CRC
+            obj.CRC = 0;
+
             // Inform clients
             BroadcastObjectUpdate(obj.Prim);
         }
@@ -415,6 +421,9 @@ namespace Simian.Extensions
 
             // Update the object
             obj.Prim.Flags = flags;
+
+            // Reset the prim CRC
+            obj.CRC = 0;
 
             // Inform clients
             BroadcastObjectUpdate(obj.Prim);
@@ -434,6 +443,9 @@ namespace Simian.Extensions
             // Update the object
             obj.Prim.PrimData = data;
 
+            // Reset the prim CRC
+            obj.CRC = 0;
+
             // Inform clients
             BroadcastObjectUpdate(obj.Prim);
         }
@@ -452,6 +464,9 @@ namespace Simian.Extensions
             // Update the object
             obj.Prim.Textures = textureEntry;
             obj.Prim.MediaURL = mediaURL;
+
+            // Reset the prim CRC
+            obj.CRC = 0;
 
             // Inform clients
             BroadcastObjectUpdate(obj.Prim);
@@ -950,7 +965,7 @@ namespace Simian.Extensions
             sceneObjects.ForEach(delegate(SimulationObject obj)
             {
                 ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim,
-                    obj.Prim.RegionHandle, obj.Prim.Flags);
+                    obj.Prim.RegionHandle, obj.Prim.Flags, obj.CRC);
                 server.UDP.SendPacket(agent.ID, update, PacketCategory.State);
             });
 

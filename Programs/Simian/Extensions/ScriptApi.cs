@@ -1994,7 +1994,7 @@ namespace Simian.Extensions
 
             server.Messages.SendInstantMessage(this, hostObject.Prim.ID, hostObject.Prim.Properties.Name, toID,
                 InstantMessageDialog.MessageFromObject, false, hostObject.Prim.ID, false, hostObject.GetSimulatorPosition(),
-                0, UUID.Zero, DateTime.Now, message, new byte[0]);
+                0, UUID.Zero, DateTime.Now, message, Utils.EmptyBytes);
             ScriptSleep(2000);
         }
 
@@ -4833,7 +4833,7 @@ namespace Simian.Extensions
             int c = 0;
             for (int i = 0; i < src1.Length; i++)
             {
-                ret += src1[i] ^ src2[c];
+                ret += (char)(src1[i] ^ src2[c]);
 
                 c++;
                 if (c >= src2.Length)
@@ -5691,7 +5691,17 @@ namespace Simian.Extensions
                         if (remain < 1) return;
 
                         LSL_Rotation q = rules.GetQuaternionItem(idx++);
-                        llSetRot(q);
+                        // try to let this work as in SL...
+                        if (parent == prim)
+                        {
+                            // special case: If we are root, rotate the parent to the new rotation
+                            SetRot(parent, Rot2Quaternion(q));
+                        }
+                        else
+                        {
+                            // We are a child. The rotation values will be set to the one of root modified by rot, as in SL. Don't ask.
+                            SetRot(hostObject, parent.Prim.Rotation * Rot2Quaternion(q));
+                        }
                         break;
                     case ScriptTypes.PRIM_TYPE:
                         if (remain < 3) return;

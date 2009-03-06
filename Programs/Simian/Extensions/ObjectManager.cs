@@ -68,7 +68,7 @@ namespace Simian.Extensions
                     if (server.Scene.TryGetObject(add.ObjectData.RayTargetID, out obj))
                     {
                         // Test for a collision with the specified object
-                        position = ObjectCollisionTest(add.ObjectData.RayStart, add.ObjectData.RayEnd, obj);
+                        position = server.Physics.ObjectCollisionTest(add.ObjectData.RayStart, add.ObjectData.RayEnd, obj);
                     }
                 }
 
@@ -240,50 +240,25 @@ namespace Simian.Extensions
                 {
                     //Logger.DebugLog("Selecting object " + obj.Prim.LocalID);
 
-                    if (obj.Prim.Properties != null)
-                    {
-                        properties.ObjectData[0].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
-                        properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
-                        properties.ObjectData[0].CreatorID = obj.Prim.Properties.CreatorID;
-                        properties.ObjectData[0].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
-                        properties.ObjectData[0].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
-                        properties.ObjectData[0].GroupID = obj.Prim.Properties.GroupID;
-                        properties.ObjectData[0].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
-                        properties.ObjectData[0].LastOwnerID = obj.Prim.Properties.LastOwnerID;
-                        properties.ObjectData[0].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
-                        properties.ObjectData[0].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
-                        properties.ObjectData[0].ObjectID = obj.Prim.ID;
-                        properties.ObjectData[0].OwnerID = obj.Prim.Properties.OwnerID;
-                        properties.ObjectData[0].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
-                        properties.ObjectData[0].OwnershipCost = obj.Prim.Properties.OwnershipCost;
-                        properties.ObjectData[0].SalePrice = obj.Prim.Properties.SalePrice;
-                        properties.ObjectData[0].SaleType = (byte)obj.Prim.Properties.SaleType;
-                        properties.ObjectData[0].SitName = new byte[0]; // FIXME: Finish these
-                        properties.ObjectData[0].TextureID = new byte[0];
-                        properties.ObjectData[0].TouchName = new byte[0];
-                    }
-                    else
-                    {
-                        properties.ObjectData[0].BaseMask = (uint)PermissionMask.All;
-                        properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(DateTime.Now);
-                        properties.ObjectData[0].CreatorID = agent.ID;
-                        properties.ObjectData[0].Description = Utils.StringToBytes(String.Empty);
-                        properties.ObjectData[0].EveryoneMask = (uint)PermissionMask.All;
-                        properties.ObjectData[0].GroupID = UUID.Zero;
-                        properties.ObjectData[0].GroupMask = (uint)PermissionMask.All;
-                        properties.ObjectData[0].LastOwnerID = UUID.Zero;
-                        properties.ObjectData[0].Name = Utils.StringToBytes(String.Empty);
-                        properties.ObjectData[0].NextOwnerMask = (uint)PermissionMask.All;
-                        properties.ObjectData[0].ObjectID = obj.Prim.ID;
-                        properties.ObjectData[0].OwnerID = agent.ID;
-                        properties.ObjectData[0].OwnerMask = (uint)PermissionMask.All;
-                        properties.ObjectData[0].OwnershipCost = 0;
-                        properties.ObjectData[0].SalePrice = 0;
-                        properties.ObjectData[0].SaleType = (byte)SaleType.Not;
-                        properties.ObjectData[0].SitName = new byte[0];
-                        properties.ObjectData[0].TextureID = new byte[0];
-                        properties.ObjectData[0].TouchName = new byte[0];
-                    }
+                    properties.ObjectData[0].BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                    properties.ObjectData[0].CreationDate = Utils.DateTimeToUnixTime(obj.Prim.Properties.CreationDate);
+                    properties.ObjectData[0].CreatorID = obj.Prim.Properties.CreatorID;
+                    properties.ObjectData[0].Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                    properties.ObjectData[0].EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                    properties.ObjectData[0].GroupID = obj.Prim.Properties.GroupID;
+                    properties.ObjectData[0].GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                    properties.ObjectData[0].LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                    properties.ObjectData[0].Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                    properties.ObjectData[0].NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                    properties.ObjectData[0].ObjectID = obj.Prim.ID;
+                    properties.ObjectData[0].OwnerID = obj.Prim.Properties.OwnerID;
+                    properties.ObjectData[0].OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                    properties.ObjectData[0].OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                    properties.ObjectData[0].SalePrice = obj.Prim.Properties.SalePrice;
+                    properties.ObjectData[0].SaleType = (byte)obj.Prim.Properties.SaleType;
+                    properties.ObjectData[0].SitName = Utils.StringToBytes(obj.Prim.Properties.SitName);
+                    properties.ObjectData[0].TextureID = Utils.EmptyBytes; // FIXME: What is this?
+                    properties.ObjectData[0].TouchName = Utils.StringToBytes(obj.Prim.Properties.TouchName);
 
                     server.UDP.SendPacket(agent.ID, properties, PacketCategory.Transaction);
                 }
@@ -292,11 +267,11 @@ namespace Simian.Extensions
                     Logger.Log("ObjectSelect sent for missing object " + select.ObjectData[i].ObjectLocalID,
                         Helpers.LogLevel.Warning);
 
-                    properties.ObjectData[0].Description = new byte[0];
-                    properties.ObjectData[0].Name = new byte[0];
-                    properties.ObjectData[0].SitName = new byte[0];
-                    properties.ObjectData[0].TextureID = new byte[0];
-                    properties.ObjectData[0].TouchName = new byte[0];
+                    properties.ObjectData[0].Description = Utils.EmptyBytes;
+                    properties.ObjectData[0].Name = Utils.EmptyBytes;
+                    properties.ObjectData[0].SitName = Utils.EmptyBytes;
+                    properties.ObjectData[0].TextureID = Utils.EmptyBytes;
+                    properties.ObjectData[0].TouchName = Utils.EmptyBytes;
 
                     KillObjectPacket kill = new KillObjectPacket();
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
@@ -597,7 +572,6 @@ namespace Simian.Extensions
             DeRezDestination destination = (DeRezDestination)derez.AgentBlock.Destination;
             
             // TODO: Check permissions
-
             for (int i = 0; i < derez.ObjectData.Length; i++)
             {
                 uint localID = derez.ObjectData[i].ObjectLocalID;
@@ -728,7 +702,6 @@ namespace Simian.Extensions
                 else
                 {
                     // Ghosted prim, send a kill message to this agent
-                    // FIXME: Handle children
                     KillObjectPacket kill = new KillObjectPacket();
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
@@ -747,46 +720,22 @@ namespace Simian.Extensions
             if (server.Scene.TryGetObject(request.ObjectData.ObjectID, out obj))
             {
                 ObjectPropertiesFamilyPacket props = new ObjectPropertiesFamilyPacket();
-
-                if (obj.Prim.Properties != null)
-                {
-                    props.ObjectData.BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
-                    props.ObjectData.Category = (uint)obj.Prim.Properties.Category;
-                    props.ObjectData.Description = Utils.StringToBytes(obj.Prim.Properties.Description);
-                    props.ObjectData.EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
-                    props.ObjectData.GroupID = obj.Prim.Properties.GroupID;
-                    props.ObjectData.GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
-                    props.ObjectData.LastOwnerID = obj.Prim.Properties.LastOwnerID;
-                    props.ObjectData.Name = Utils.StringToBytes(obj.Prim.Properties.Name);
-                    props.ObjectData.NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
-                    props.ObjectData.ObjectID = obj.Prim.ID;
-                    props.ObjectData.OwnerID = obj.Prim.Properties.OwnerID;
-                    props.ObjectData.OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
-                    props.ObjectData.OwnershipCost = obj.Prim.Properties.OwnershipCost;
-                    props.ObjectData.RequestFlags = (uint)type;
-                    props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
-                    props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
-                }
-                else
-                {
-                    // Make up some default properties for this prim
-                    props.ObjectData.BaseMask = (uint)PermissionMask.All;
-                    props.ObjectData.Category = (uint)ObjectCategory.None;
-                    props.ObjectData.Description = Utils.StringToBytes(String.Empty);
-                    props.ObjectData.EveryoneMask = (uint)PermissionMask.All;
-                    props.ObjectData.GroupID = UUID.Zero;
-                    props.ObjectData.GroupMask = (uint)PermissionMask.All;
-                    props.ObjectData.LastOwnerID = UUID.Zero;
-                    props.ObjectData.Name = Utils.StringToBytes(String.Empty);
-                    props.ObjectData.NextOwnerMask = (uint)PermissionMask.All;
-                    props.ObjectData.ObjectID = obj.Prim.ID;
-                    props.ObjectData.OwnerID = agent.ID;
-                    props.ObjectData.OwnerMask = (uint)PermissionMask.All;
-                    props.ObjectData.OwnershipCost = 0;
-                    props.ObjectData.RequestFlags = (uint)ReportType.None;
-                    props.ObjectData.SalePrice = 0;
-                    props.ObjectData.SaleType = (byte)SaleType.Not;
-                }
+                props.ObjectData.BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
+                props.ObjectData.Category = (uint)obj.Prim.Properties.Category;
+                props.ObjectData.Description = Utils.StringToBytes(obj.Prim.Properties.Description);
+                props.ObjectData.EveryoneMask = (uint)obj.Prim.Properties.Permissions.EveryoneMask;
+                props.ObjectData.GroupID = obj.Prim.Properties.GroupID;
+                props.ObjectData.GroupMask = (uint)obj.Prim.Properties.Permissions.GroupMask;
+                props.ObjectData.LastOwnerID = obj.Prim.Properties.LastOwnerID;
+                props.ObjectData.Name = Utils.StringToBytes(obj.Prim.Properties.Name);
+                props.ObjectData.NextOwnerMask = (uint)obj.Prim.Properties.Permissions.NextOwnerMask;
+                props.ObjectData.ObjectID = obj.Prim.ID;
+                props.ObjectData.OwnerID = obj.Prim.Properties.OwnerID;
+                props.ObjectData.OwnerMask = (uint)obj.Prim.Properties.Permissions.OwnerMask;
+                props.ObjectData.OwnershipCost = obj.Prim.Properties.OwnershipCost;
+                props.ObjectData.RequestFlags = (uint)type;
+                props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
+                props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
 
                 server.UDP.SendPacket(agent.ID, props, PacketCategory.Transaction);
             }
@@ -803,113 +752,5 @@ namespace Simian.Extensions
             Logger.DebugLog("Full scene collision test was requested, ignoring");
             return rayEnd;
         }
-
-        Vector3 ObjectCollisionTest(Vector3 rayStart, Vector3 rayEnd, SimulationObject obj)
-        {
-            const float OO_THREE = 1f / 3f;
-
-            Vector3 closestPoint = rayEnd;
-
-            if (rayStart == rayEnd)
-            {
-                Logger.DebugLog("RayStart is equal to RayEnd, returning given location");
-                return closestPoint;
-            }
-
-            Vector3 direction = Vector3.Normalize(rayEnd - rayStart);
-
-            // Get the mesh that has been transformed into world-space
-            SimpleMesh mesh = null;
-            if (obj.Prim.ParentID != 0)
-            {
-                SimulationObject parent;
-                if (server.Scene.TryGetObject(obj.Prim.ParentID, out parent))
-                    mesh = obj.GetWorldMesh(DetailLevel.Low, parent);
-            }
-            else
-            {
-                mesh = obj.GetWorldMesh(DetailLevel.Low, null);
-            }
-
-            if (mesh != null)
-            {
-                // Iterate through all of the triangles in the mesh, doing a ray-triangle intersection
-                
-                float closestDistance = Single.MaxValue;
-                for (int i = 0; i < mesh.Indices.Count; i += 3)
-                {
-                    Vector3 point0 = mesh.Vertices[mesh.Indices[i + 0]].Position;
-                    Vector3 point1 = mesh.Vertices[mesh.Indices[i + 1]].Position;
-                    Vector3 point2 = mesh.Vertices[mesh.Indices[i + 2]].Position;
-
-                    if (RayTriangleIntersection(rayStart, direction, point0, point1, point2))
-                    {
-                        // HACK: Find the barycenter of this triangle. Would be better to have
-                        // RayTriangleIntersection return the exact collision point
-                        Vector3 center = (point0 + point1 + point2) * OO_THREE;
-
-                        Logger.DebugLog("Collision hit with triangle at " + center);
-
-                        if ((center - rayStart).Length() < closestDistance)
-                            closestPoint = center;
-                    }
-                }
-            }
-
-            return closestPoint;
-        }
-
-        /// <summary>
-        /// Adapted from http://www.cs.virginia.edu/~gfx/Courses/2003/ImageSynthesis/papers/Acceleration/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
-        /// </summary>
-        /// <param name="origin">Origin point of the ray</param>
-        /// <param name="direction">Unit vector representing the direction of the ray</param>
-        /// <param name="vert0">Position of the first triangle corner</param>
-        /// <param name="vert1">Position of the second triangle corner</param>
-        /// <param name="vert2">Position of the third triangle corner</param>
-        /// <returns>True if the ray passes through the triangle, otherwise false</returns>
-        bool RayTriangleIntersection(Vector3 origin, Vector3 direction, Vector3 vert0, Vector3 vert1, Vector3 vert2)
-        {
-            const float EPSILON = 0.00001f;
-
-            Vector3 edge1, edge2, pvec;
-            float determinant, invDeterminant;
-
-            // Find vectors for two edges sharing vert0
-            edge1 = vert1 - vert0;
-            edge2 = vert2 - vert0;
-
-            // Begin calculating the determinant
-            pvec = Vector3.Cross(direction, edge2);
-
-            // If the determinant is near zero, ray lies in plane of triangle
-            determinant = Vector3.Dot(edge1, pvec);
-
-            if (determinant > -EPSILON && determinant < EPSILON)
-                return false;
-
-            invDeterminant = 1f / determinant;
-
-            // Calculate distance from vert0 to ray origin
-            Vector3 tvec = origin - vert0;
-
-            // Calculate U parameter and test bounds
-            float u = Vector3.Dot(tvec, pvec) * invDeterminant;
-            if (u < 0.0f || u > 1.0f)
-                return false;
-
-            // Prepare to test V parameter
-            Vector3 qvec = Vector3.Cross(tvec, edge1);
-
-            // Calculate V parameter and test bounds
-            float v = Vector3.Dot(direction, qvec) * invDeterminant;
-            if (v < 0.0f || u + v > 1.0f)
-                return false;
-
-            //t = Vector3.Dot(edge2, qvec) * invDeterminant;
-
-            return true;
-        }
-
     }
 }

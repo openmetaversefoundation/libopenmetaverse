@@ -89,7 +89,7 @@ namespace Simian.Extensions
         public byte[] EncodePrimAsset(List<SimulationObject> linkset)
         {
             // FIXME:
-            return new byte[0];
+            return Utils.EmptyBytes;
         }
 
         public bool TryDecodePrimAsset(byte[] primAssetData, out List<SimulationObject> linkset)

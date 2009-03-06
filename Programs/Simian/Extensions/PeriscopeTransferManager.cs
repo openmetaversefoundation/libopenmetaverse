@@ -84,7 +84,7 @@ namespace Simian.Extensions
                 RequestXferPacket xfer = new RequestXferPacket();
                 xfer.XferID.DeleteOnCompletion = request.AssetBlock.Tempfile;
                 xfer.XferID.FilePath = 0;
-                xfer.XferID.Filename = new byte[0];
+                xfer.XferID.Filename = Utils.EmptyBytes;
                 xfer.XferID.ID = request.AssetBlock.TransactionID.GetULong();
                 xfer.XferID.UseBigPackets = false;
                 xfer.XferID.VFileID = asset.AssetID;

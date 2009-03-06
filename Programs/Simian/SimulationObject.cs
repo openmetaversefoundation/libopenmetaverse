@@ -36,6 +36,36 @@ namespace Simian
         protected SimpleMesh[] Meshes;
         protected SimpleMesh[] WorldTransformedMeshes;
 
+        uint? crc;
+
+        public uint CRC
+        {
+            get
+            {
+                if (crc.HasValue)
+                    return crc.Value;
+
+                int len = 0;
+                byte[] bytes = new byte[1024];
+                ObjectUpdatePacket.ObjectDataBlock block = BuildUpdateBlock(Prim, PrimFlags.None, 0);
+                block.ToBytes(bytes, ref len);
+                --len;
+                
+                CRC32 crc32 = new CRC32();
+                crc32.Update(bytes, 0, len);
+
+                crc = crc32.CRC;
+                return crc.Value;
+            }
+            set
+            {
+                if (value == 0)
+                    crc = null;
+                else
+                    crc = value;
+            }
+        }
+
         public SimulationObject(SimulationObject obj)
         {
             Prim = new Primitive(obj.Prim);
@@ -201,42 +231,29 @@ namespace Simian
             }
         }
 
-        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, ulong regionHandle, PrimFlags flags)
+        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, ulong regionHandle, PrimFlags flags, uint crc)
         {
             ObjectUpdatePacket update = new ObjectUpdatePacket();
             update.RegionData.RegionHandle = regionHandle;
             update.RegionData.TimeDilation = UInt16.MaxValue;
             update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-            update.ObjectData[0] = BuildUpdateBlock(obj, regionHandle, flags);
+            update.ObjectData[0] = BuildUpdateBlock(obj, flags, crc);
 
             return update;
         }
 
-        public static byte[] BuildObjectData(Vector3 position, Quaternion rotation, Vector3 velocity,
-            Vector3 acceleration, Vector3 angularVelocity)
+        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, PrimFlags flags, uint crc)
         {
             byte[] objectData = new byte[60];
-            int pos = 0;
-            position.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            velocity.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            acceleration.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            rotation.GetBytes().CopyTo(objectData, pos);
-            pos += 12;
-            angularVelocity.GetBytes().CopyTo(objectData, pos);
-            return objectData;
-        }
-
-        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, ulong regionHandle, PrimFlags flags)
-        {
-            byte[] objectData = BuildObjectData(obj.Position, obj.Rotation, obj.Velocity,
-                obj.Acceleration, obj.AngularVelocity);
+            obj.Position.ToBytes(objectData, 0);
+            obj.Velocity.ToBytes(objectData, 12);
+            obj.Acceleration.ToBytes(objectData, 24);
+            obj.Rotation.ToBytes(objectData, 36);
+            obj.AngularVelocity.ToBytes(objectData, 48);
 
             ObjectUpdatePacket.ObjectDataBlock update = new ObjectUpdatePacket.ObjectDataBlock();
             update.ClickAction = (byte)obj.ClickAction;
-            update.CRC = 0;
+            update.CRC = crc;
             update.ExtraParams = obj.GetExtraParamsBytes();
             update.Flags = (byte)flags;
             update.FullID = obj.ID;
@@ -273,14 +290,14 @@ namespace Simian
             update.PSBlock = obj.ParticleSys.GetBytes();
             update.TextColor = obj.TextColor.GetBytes(true);
             update.TextureAnim = obj.TextureAnim.GetBytes();
-            update.TextureEntry = obj.Textures == null ? new byte[0] : obj.Textures.ToBytes();
+            update.TextureEntry = obj.Textures == null ? Utils.EmptyBytes : obj.Textures.ToBytes();
             update.Radius = obj.SoundRadius;
             update.Scale = obj.Scale;
             update.Sound = obj.Sound;
             update.State = obj.PrimData.State;
             update.Text = Utils.StringToBytes(obj.Text);
             update.UpdateFlags = (uint)flags;
-            update.Data = obj.GenericData == null ? new byte[0] : obj.GenericData;
+            update.Data = obj.GenericData == null ? Utils.EmptyBytes : obj.GenericData;
 
             return update;
         }

@@ -445,7 +445,7 @@ namespace Simian.Extensions
             }
 
             ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar.Prim,
-                server.Scene.RegionHandle, agent.Avatar.Prim.Flags);
+                server.Scene.RegionHandle, agent.Avatar.Prim.Flags, 0);
 
             server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }

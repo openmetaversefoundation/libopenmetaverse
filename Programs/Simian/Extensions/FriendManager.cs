@@ -46,7 +46,7 @@ namespace Simian.Extensions
                     sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
                     sendIM.MessageBlock.ID = agent.ID;
                     sendIM.MessageBlock.Message = im.MessageBlock.Message;
-                    sendIM.MessageBlock.BinaryBucket = new byte[0];
+                    sendIM.MessageBlock.BinaryBucket = Utils.EmptyBytes;
                     sendIM.MessageBlock.Timestamp = 0;
                     sendIM.MessageBlock.Position = agent.Avatar.GetSimulatorPosition();
 

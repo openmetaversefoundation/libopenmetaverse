@@ -327,7 +327,7 @@ namespace Simian.Extensions
                 response.WearableData[i] = new AgentCachedTextureResponsePacket.WearableDataBlock();
                 response.WearableData[i].TextureIndex = cached.WearableData[i].TextureIndex;
                 response.WearableData[i].TextureID = UUID.Zero;
-                response.WearableData[i].HostName = new byte[0];
+                response.WearableData[i].HostName = Utils.EmptyBytes;
             }
 
             response.Header.Zerocoded = true;
@@ -372,8 +372,8 @@ namespace Simian.Extensions
                 }
                 else
                 {
-                    reply.UUIDNameBlock[i].FirstName = new byte[0];
-                    reply.UUIDNameBlock[i].LastName = new byte[0];
+                    reply.UUIDNameBlock[i].FirstName = Utils.EmptyBytes;
+                    reply.UUIDNameBlock[i].LastName = Utils.EmptyBytes;
                 }
             }
 
