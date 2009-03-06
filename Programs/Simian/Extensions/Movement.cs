@@ -16,7 +16,7 @@ namespace Simian.Extensions
         const float RUN_SPEED = 5f; //meters/sec
         const float FLY_SPEED = 10f; //meters/sec
         const float FALL_DELAY = 0.33f; //seconds before starting animation
-        const float FALL_FORGIVENESS = 0.25f; //fall buffer in meters
+        const float FALL_FORGIVENESS = .25f; //fall buffer in meters
         const float JUMP_IMPULSE_VERTICAL = 8.5f; //boost amount in meters/sec
         const float JUMP_IMPULSE_HORIZONTAL = 10f; //boost amount in meters/sec
         const float INITIAL_HOVER_IMPULSE = 2f; //boost amount in meters/sec
@@ -123,12 +123,44 @@ namespace Simian.Extensions
                     if (!flying && newFloor != oldFloor)
                         speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
 
-                    // least possible distance from avatar to the ground
-                    // TODO: calculate to get rid of "bot squat"
-                    float lowerLimit = newFloor + agent.Avatar.Prim.Scale.Z / 2;
+                    //HACK: distance from avatar center to the bottom of its feet
+                    float distanceFromFloor = agent.Avatar.Prim.Scale.Z * .5f;
 
-                    // TODO: check our Z (minus height/2) compared to all the prim
-                    // bounding boxes, and define a new lowerLimit as a hack for platforms
+                    float lowerLimit = newFloor + distanceFromFloor;
+
+                    //"bridge" physics
+                    if (agent.Avatar.Prim.Velocity != Vector3.Zero)
+                    {
+                        //start ray at our feet
+                        Vector3 rayStart = new Vector3(
+                            agent.Avatar.Prim.Position.X,
+                            agent.Avatar.Prim.Position.Y,
+                            agent.Avatar.Prim.Position.Z - distanceFromFloor
+                            );
+
+                        //end ray at 0.01m below our feet
+                        Vector3 rayEnd = new Vector3(
+                            rayStart.X,
+                            rayStart.Y,
+                            rayStart.Z - 0.01f
+                            );
+
+                        server.Scene.ForEachObject(delegate(SimulationObject obj)
+                        {
+                            //HACK: check nearby objects (what did you expect, octree?)
+                            if (Vector3.Distance(rayStart, obj.Prim.Position) <= 15f)
+                            {
+                                Vector3 collision = server.Physics.ObjectCollisionTest(rayStart, rayEnd, obj);
+
+                                if (collision != rayEnd) //we collided!
+                                {
+                                    //check if we are any higher than before
+                                    float height = collision.Z + distanceFromFloor;                                    
+                                    if (height > lowerLimit) lowerLimit = height;
+                                }
+                            }
+                        });
+                    }
 
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
@@ -169,15 +201,19 @@ namespace Simian.Extensions
                                 animsChanged = true;
                         }
                     }
-
+                         
                     else if (agent.Avatar.Prim.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Prim.Position.Z <= waterChestHeight)
                     { //falling, floating, or landing from a jump
 
                         if (agent.Avatar.Prim.Position.Z > server.Scene.WaterHeight)
                         { //above water
 
-                            move = Vector3.Zero; //override controls while drifting
-                            agent.Avatar.Prim.Velocity *= 0.95f; //keep most of our inertia
+                            //override controls while drifting
+                            move = Vector3.Zero;
+
+                            //keep most of our horizontal inertia
+                            agent.Avatar.Prim.Velocity.X *= 0.975f; 
+                            agent.Avatar.Prim.Velocity.Y *= 0.975f;
 
                             float fallElapsed = (float)(Environment.TickCount - agent.TickFall) / 1000f;
 
