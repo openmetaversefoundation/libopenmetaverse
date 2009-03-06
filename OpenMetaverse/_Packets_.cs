@@ -2262,8 +2262,8 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(Code, bytes, i); i += 4;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -2387,11 +2387,11 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)ObjectName.Length;
                 Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
-                Buffer.BlockCopy(TelehubPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(TelehubRot.GetBytes(), 0, bytes, i, 12); i += 12;
+                TelehubPos.ToBytes(bytes, i); i += 12;
+                TelehubRot.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -2429,7 +2429,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SpawnPointPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                SpawnPointPos.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -2768,9 +2768,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -2934,8 +2934,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3005,7 +3005,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AvatarID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)FirstName.Length;
                 Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)LastName.Length;
@@ -3136,9 +3136,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3176,7 +3176,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3369,8 +3369,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3408,7 +3408,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3511,7 +3511,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)Desc.Length;
@@ -3524,7 +3524,7 @@ namespace OpenMetaverse.Packets
                 Utils.FloatToBytes(GlobalZ, bytes, i); i += 4;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(Dwell, bytes, i); i += 4;
                 Utils.IntToBytes(Price, bytes, i); i += 4;
             }
@@ -3657,8 +3657,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3717,7 +3717,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
                 Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
@@ -3832,8 +3832,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -3909,7 +3909,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
                 Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
@@ -4025,7 +4025,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4063,7 +4063,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4124,7 +4124,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)((ForSale) ? 1 : 0);
@@ -4273,7 +4273,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4311,7 +4311,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4400,7 +4400,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)FirstName.Length;
                 Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)LastName.Length;
@@ -4537,7 +4537,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4575,7 +4575,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4651,7 +4651,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 Utils.UIntToBytes(EventID, bytes, i); i += 4;
@@ -4787,7 +4787,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4825,7 +4825,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -4884,7 +4884,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
                 Utils.IntToBytes(Members, bytes, i); i += 4;
@@ -5019,8 +5019,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5081,7 +5081,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
                 Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
@@ -5195,7 +5195,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5233,7 +5233,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5296,7 +5296,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = ClassifiedFlags;
@@ -5433,8 +5433,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5489,7 +5489,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
             }
@@ -5616,8 +5616,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5655,7 +5655,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5764,7 +5764,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -5884,8 +5884,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CreationDate, bytes, i); i += 4;
                 Utils.UIntToBytes(ExpirationDate, bytes, i); i += 4;
                 Utils.UIntToBytes(Category, bytes, i); i += 4;
@@ -5894,12 +5894,12 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(ParentEstate, bytes, i); i += 4;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                PosGlobal.ToBytes(bytes, i); i += 24;
                 bytes[i++] = (byte)ParcelName.Length;
                 Buffer.BlockCopy(ParcelName, 0, bytes, i, ParcelName.Length); i += ParcelName.Length;
                 bytes[i++] = ClassifiedFlags;
@@ -6013,8 +6013,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6098,17 +6098,17 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Category, bytes, i); i += 4;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(ParentEstate, bytes, i); i += 4;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                SnapshotID.ToBytes(bytes, i); i += 16;
+                PosGlobal.ToBytes(bytes, i); i += 24;
                 bytes[i++] = ClassifiedFlags;
                 Utils.IntToBytes(PriceForListing, bytes, i); i += 4;
             }
@@ -6220,8 +6220,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6259,7 +6259,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6369,8 +6369,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6410,8 +6410,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ClassifiedID.ToBytes(bytes, i); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6521,8 +6521,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6570,7 +6570,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
                 Utils.UIntToBytes(SearchType, bytes, i); i += 4;
                 Utils.IntToBytes(Price, bytes, i); i += 4;
@@ -6684,7 +6684,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6722,7 +6722,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6785,7 +6785,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)((Auction) ? 1 : 0);
@@ -6922,8 +6922,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -6963,7 +6963,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
             }
 
@@ -7073,7 +7073,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -7111,7 +7111,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -7168,7 +7168,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 Utils.FloatToBytes(Dwell, bytes, i); i += 4;
@@ -7302,8 +7302,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -7341,7 +7341,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -7449,7 +7449,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -7556,8 +7556,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)Desc.Length;
@@ -7570,7 +7570,7 @@ namespace OpenMetaverse.Packets
                 Utils.FloatToBytes(GlobalZ, bytes, i); i += 4;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(Dwell, bytes, i); i += 4;
                 Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 Utils.IntToBytes(AuctionID, bytes, i); i += 4;
@@ -7684,8 +7684,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -7837,7 +7837,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
                 Utils.IntToBytes(Count, bytes, i); i += 4;
                 bytes[i++] = (byte)((OnlineStatus) ? 1 : 0);
@@ -7961,8 +7961,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8000,7 +8000,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8110,8 +8110,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8187,7 +8187,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(NoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                NoticeID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Timestamp, bytes, i); i += 4;
                 bytes[i++] = (byte)(FromName.Length % 256);
                 bytes[i++] = (byte)((FromName.Length >> 8) % 256);
@@ -8321,8 +8321,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8360,7 +8360,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupNoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupNoticeID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8470,8 +8470,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8513,9 +8513,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                RegionID.ToBytes(bytes, i); i += 16;
+                Position.ToBytes(bytes, i); i += 12;
+                LookAt.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -8625,8 +8625,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -8669,8 +8669,8 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                LookAt.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -8786,10 +8786,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(LocationID, bytes, i); i += 4;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                LookAt.ToBytes(bytes, i); i += 12;
                 Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
             }
 
@@ -8897,9 +8897,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(LandmarkID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                LandmarkID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -9003,7 +9003,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -9197,7 +9197,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(LocationID, bytes, i); i += 4;
                 Utils.UIntToBytes(SimIP, bytes, i); i += 4;
                 bytes[i++] = (byte)((SimPort >> 8) % 256);
@@ -9312,8 +9312,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -9408,7 +9408,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -9542,9 +9542,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(LureID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                LureID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(TeleportFlags, bytes, i); i += 4;
             }
 
@@ -9650,8 +9650,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -9874,7 +9874,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Reason.Length;
                 Buffer.BlockCopy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
             }
@@ -9983,9 +9983,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -10023,7 +10023,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -10150,9 +10150,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -10190,7 +10190,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -10315,8 +10315,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -10423,8 +10423,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
             }
 
@@ -10532,8 +10532,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
             }
 
@@ -10639,8 +10639,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -10814,8 +10814,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
@@ -10986,8 +10986,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
@@ -11141,8 +11141,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
@@ -11303,10 +11303,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
-                Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
+                Size.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -11346,7 +11346,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
+                CacheID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = TextureIndex;
             }
 
@@ -11591,8 +11591,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -11738,7 +11738,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -11841,7 +11841,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TextureID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TextureID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -11948,8 +11948,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((AlwaysRun) ? 1 : 0);
             }
 
@@ -12057,8 +12057,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Force) ? 1 : 0);
             }
 
@@ -12225,9 +12225,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -12267,7 +12267,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
+                Offset.ToBytes(bytes, i); i += 12;
                 Utils.UIntToBytes(DuplicateFlags, bytes, i); i += 4;
             }
 
@@ -12455,16 +12455,16 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RayStart.ToBytes(bytes, i); i += 12;
+                RayEnd.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)((BypassRaycast) ? 1 : 0);
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
                 bytes[i++] = (byte)((CopyCenters) ? 1 : 0);
                 bytes[i++] = (byte)((CopyRotates) ? 1 : 0);
-                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RayTargetID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(DuplicateFlags, bytes, i); i += 4;
             }
 
@@ -12629,8 +12629,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -12671,7 +12671,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
+                Scale.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -12797,8 +12797,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -12839,7 +12839,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Rotation.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -12975,8 +12975,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
                 bytes[i++] = (byte)((UsePhysics) ? 1 : 0);
                 bytes[i++] = (byte)((IsTemporary) ? 1 : 0);
@@ -13087,8 +13087,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -13255,8 +13255,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -13457,8 +13457,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -13625,8 +13625,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -13849,8 +13849,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14043,8 +14043,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14087,8 +14087,8 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Override) ? 1 : 0);
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14259,9 +14259,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14429,10 +14429,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CategoryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                CategoryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14602,8 +14602,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14645,9 +14645,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -14758,7 +14758,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Delete) ? 1 : 0);
             }
 
@@ -14865,8 +14865,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -15082,8 +15082,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -15253,8 +15253,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -15437,8 +15437,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -15621,8 +15621,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -15789,8 +15789,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -15954,8 +15954,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -16121,8 +16121,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = AttachmentPoint;
             }
 
@@ -16164,7 +16164,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Rotation.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -16290,8 +16290,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -16454,8 +16454,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -16618,8 +16618,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -16782,8 +16782,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -16946,8 +16946,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -16988,7 +16988,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(GrabOffset.GetBytes(), 0, bytes, i, 12); i += 12;
+                GrabOffset.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -17036,12 +17036,12 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                UVCoord.ToBytes(bytes, i); i += 12;
+                STCoord.ToBytes(bytes, i); i += 12;
                 Utils.IntToBytes(FaceIndex, bytes, i); i += 4;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                Normal.ToBytes(bytes, i); i += 12;
+                Binormal.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -17172,8 +17172,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -17217,9 +17217,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GrabOffsetInitial.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(GrabPosition.GetBytes(), 0, bytes, i, 12); i += 12;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                GrabOffsetInitial.ToBytes(bytes, i); i += 12;
+                GrabPosition.ToBytes(bytes, i); i += 12;
                 Utils.UIntToBytes(TimeSinceLast, bytes, i); i += 4;
             }
 
@@ -17268,12 +17268,12 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                UVCoord.ToBytes(bytes, i); i += 12;
+                STCoord.ToBytes(bytes, i); i += 12;
                 Utils.IntToBytes(FaceIndex, bytes, i); i += 4;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                Normal.ToBytes(bytes, i); i += 12;
+                Binormal.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -17404,8 +17404,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -17491,12 +17491,12 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(UVCoord.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(STCoord.GetBytes(), 0, bytes, i, 12); i += 12;
+                UVCoord.ToBytes(bytes, i); i += 12;
+                STCoord.ToBytes(bytes, i); i += 12;
                 Utils.IntToBytes(FaceIndex, bytes, i); i += 4;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Normal.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Binormal.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                Normal.ToBytes(bytes, i); i += 12;
+                Binormal.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -17626,8 +17626,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -17665,7 +17665,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -17776,8 +17776,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -17817,8 +17817,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                Rotation.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -17929,8 +17929,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -17968,7 +17968,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -18081,8 +18081,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(VolumeDetail % 256);
                 bytes[i++] = (byte)((VolumeDetail >> 8) % 256);
             }
@@ -18122,7 +18122,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -18248,8 +18248,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -18477,8 +18477,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -18583,8 +18583,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -18689,8 +18689,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -18960,8 +18960,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -19001,7 +19001,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -19112,8 +19112,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -19151,7 +19151,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(PreyID.GetBytes(), 0, bytes, i, 16); i += 16;
+                PreyID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -19328,8 +19328,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(IP, bytes, i); i += 4;
                 Utils.UIntToBytes(StartTime, bytes, i); i += 4;
                 Utils.FloatToBytes(RunTime, bytes, i); i += 4;
@@ -19682,8 +19682,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -19725,8 +19725,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TaskID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Questions, bytes, i); i += 4;
             }
 
@@ -19837,8 +19837,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -19954,14 +19954,14 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = ReportType;
                 bytes[i++] = Category;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
                 bytes[i++] = CheckFlags;
-                Buffer.BlockCopy(ScreenshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AbuserID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ScreenshotID.ToBytes(bytes, i); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                AbuserID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)AbuseRegionName.Length;
                 Buffer.BlockCopy(AbuseRegionName, 0, bytes, i, AbuseRegionName.Length); i += AbuseRegionName.Length;
-                Buffer.BlockCopy(AbuseRegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AbuseRegionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Summary.Length;
                 Buffer.BlockCopy(Summary, 0, bytes, i, Summary.Length); i += Summary.Length;
                 bytes[i++] = (byte)(Details.Length % 256);
@@ -20196,7 +20196,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -20369,8 +20369,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Victim.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Perp.GetBytes(), 0, bytes, i, 16); i += 16;
+                Victim.ToBytes(bytes, i); i += 16;
+                Perp.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Time, bytes, i); i += 4;
                 Utils.FloatToBytes(Mag, bytes, i); i += 4;
                 bytes[i++] = Type;
@@ -20743,12 +20743,12 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)FromName.Length;
                 Buffer.BlockCopy(FromName, 0, bytes, i, FromName.Length); i += FromName.Length;
-                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SourceID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = SourceType;
                 bytes[i++] = ChatType;
                 bytes[i++] = Audible;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)(Message.Length % 256);
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
@@ -21072,8 +21072,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -21178,8 +21178,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -21389,8 +21389,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -21742,19 +21742,19 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = SimAccess;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(SimOwner.GetBytes(), 0, bytes, i, 16); i += 16;
+                SimOwner.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsEstateManager) ? 1 : 0);
                 Utils.FloatToBytes(WaterHeight, bytes, i); i += 4;
                 Utils.FloatToBytes(BillableFactor, bytes, i); i += 4;
-                Buffer.BlockCopy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainBase0.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainBase1.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainBase2.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainBase3.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainDetail0.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainDetail1.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainDetail2.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TerrainDetail3.GetBytes(), 0, bytes, i, 16); i += 16;
+                CacheID.ToBytes(bytes, i); i += 16;
+                TerrainBase0.ToBytes(bytes, i); i += 16;
+                TerrainBase1.ToBytes(bytes, i); i += 16;
+                TerrainBase2.ToBytes(bytes, i); i += 16;
+                TerrainBase3.ToBytes(bytes, i); i += 16;
+                TerrainDetail0.ToBytes(bytes, i); i += 16;
+                TerrainDetail1.ToBytes(bytes, i); i += 16;
+                TerrainDetail2.ToBytes(bytes, i); i += 16;
+                TerrainDetail3.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(TerrainStartHeight00, bytes, i); i += 4;
                 Utils.FloatToBytes(TerrainStartHeight01, bytes, i); i += 4;
                 Utils.FloatToBytes(TerrainStartHeight10, bytes, i); i += 4;
@@ -21800,7 +21800,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RegionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -21911,8 +21911,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -22072,9 +22072,9 @@ namespace OpenMetaverse.Packets
                 Utils.UInt64ToBytes(UsecSinceStart, bytes, i); i += 8;
                 Utils.UIntToBytes(SecPerDay, bytes, i); i += 4;
                 Utils.UIntToBytes(SecPerYear, bytes, i); i += 4;
-                Buffer.BlockCopy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
+                SunDirection.ToBytes(bytes, i); i += 12;
                 Utils.FloatToBytes(SunPhase, bytes, i); i += 4;
-                Buffer.BlockCopy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
+                SunAngVelocity.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -22370,7 +22370,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransferID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(ChannelType, bytes, i); i += 4;
                 Utils.IntToBytes(SourceType, bytes, i); i += 4;
                 Utils.FloatToBytes(Priority, bytes, i); i += 4;
@@ -22505,7 +22505,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransferID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(ChannelType, bytes, i); i += 4;
                 Utils.IntToBytes(TargetType, bytes, i); i += 4;
                 Utils.IntToBytes(Status, bytes, i); i += 4;
@@ -22618,7 +22618,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransferID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(ChannelType, bytes, i); i += 4;
             }
 
@@ -22756,7 +22756,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = FilePath;
                 bytes[i++] = (byte)((DeleteOnCompletion) ? 1 : 0);
                 bytes[i++] = (byte)((UseBigPackets) ? 1 : 0);
-                Buffer.BlockCopy(VFileID.GetBytes(), 0, bytes, i, 16); i += 16;
+                VFileID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(VFileType % 256);
                 bytes[i++] = (byte)((VFileType >> 8) % 256);
             }
@@ -22970,7 +22970,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsTrial) ? 1 : 0);
             }
 
@@ -23193,7 +23193,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -23357,7 +23357,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -23460,7 +23460,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -23565,7 +23565,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(DefaultPayPrice, bytes, i); i += 4;
             }
 
@@ -23788,8 +23788,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(Reason.Length % 256);
                 bytes[i++] = (byte)((Reason.Length >> 8) % 256);
                 Buffer.BlockCopy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
@@ -23902,7 +23902,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -24029,9 +24029,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GodID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GodSessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GodID.ToBytes(bytes, i); i += 16;
+                GodSessionID.ToBytes(bytes, i); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(KickFlags, bytes, i); i += 4;
                 bytes[i++] = (byte)(Reason.Length % 256);
                 bytes[i++] = (byte)((Reason.Length >> 8) % 256);
@@ -24140,8 +24140,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -24181,7 +24181,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -24292,8 +24292,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -24333,7 +24333,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -24446,9 +24446,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                AvatarID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -24553,8 +24553,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                AvatarID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -24675,9 +24675,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(PartnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ImageID.ToBytes(bytes, i); i += 16;
+                FLImageID.ToBytes(bytes, i); i += 16;
+                PartnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(AboutText.Length % 256);
                 bytes[i++] = (byte)((AboutText.Length >> 8) % 256);
                 Buffer.BlockCopy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
@@ -24800,8 +24800,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                AvatarID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25006,8 +25006,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                AvatarID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25087,10 +25087,10 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
                 bytes[i++] = (byte)GroupTitle.Length;
                 Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
-                Buffer.BlockCopy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupInsigniaID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25259,8 +25259,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25351,8 +25351,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ImageID.ToBytes(bytes, i); i += 16;
+                FLImageID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(AboutText.Length % 256);
                 bytes[i++] = (byte)((AboutText.Length >> 8) % 256);
                 Buffer.BlockCopy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
@@ -25472,8 +25472,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25676,7 +25676,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25731,7 +25731,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(Notes.Length % 256);
                 bytes[i++] = (byte)((Notes.Length >> 8) % 256);
                 Buffer.BlockCopy(Notes, 0, bytes, i, Notes.Length); i += Notes.Length;
@@ -25844,8 +25844,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -25900,7 +25900,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(Notes.Length % 256);
                 bytes[i++] = (byte)((Notes.Length >> 8) % 256);
                 Buffer.BlockCopy(Notes, 0, bytes, i, Notes.Length); i += Notes.Length;
@@ -26013,8 +26013,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                TargetID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -26069,7 +26069,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                PickID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)PickName.Length;
                 Buffer.BlockCopy(PickName, 0, bytes, i, PickName.Length); i += PickName.Length;
             }
@@ -26196,8 +26196,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -26343,7 +26343,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -26503,7 +26503,7 @@ namespace OpenMetaverse.Packets
                 Utils.UIntToBytes(Amount, bytes, i); i += 4;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(GlobalPos.GetBytes(), 0, bytes, i, 24); i += 24;
+                GlobalPos.ToBytes(bytes, i); i += 24;
                 Utils.UIntToBytes(EventFlags, bytes, i); i += 4;
             }
 
@@ -26614,8 +26614,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -26763,8 +26763,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -26912,8 +26912,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27010,7 +27010,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)QueryText.Length;
                 Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
                 Utils.UIntToBytes(QueryFlags, bytes, i); i += 4;
@@ -27127,7 +27127,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27256,23 +27256,23 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                PickID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((TopPick) ? 1 : 0);
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)User.Length;
                 Buffer.BlockCopy(User, 0, bytes, i, User.Length); i += User.Length;
                 bytes[i++] = (byte)OriginalName.Length;
                 Buffer.BlockCopy(OriginalName, 0, bytes, i, OriginalName.Length); i += OriginalName.Length;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                PosGlobal.ToBytes(bytes, i); i += 24;
                 Utils.IntToBytes(SortOrder, bytes, i); i += 4;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
             }
@@ -27384,8 +27384,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27469,17 +27469,17 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                PickID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((TopPick) ? 1 : 0);
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
                 Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                SnapshotID.ToBytes(bytes, i); i += 16;
+                PosGlobal.ToBytes(bytes, i); i += 24;
                 Utils.IntToBytes(SortOrder, bytes, i); i += 4;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
             }
@@ -27591,8 +27591,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27630,7 +27630,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                PickID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27740,8 +27740,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27781,8 +27781,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                PickID.ToBytes(bytes, i); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -27926,8 +27926,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TaskID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)ObjectName.Length;
                 Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
                 bytes[i++] = (byte)ObjectOwner.Length;
@@ -28225,7 +28225,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)FirstName.Length;
                 Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)LastName.Length;
@@ -28236,7 +28236,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 Utils.IntToBytes(ChatChannel, bytes, i); i += 4;
-                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ImageID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -28416,8 +28416,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -28476,7 +28476,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(ChatChannel, bytes, i); i += 4;
                 Utils.IntToBytes(ButtonIndex, bytes, i); i += 4;
                 bytes[i++] = (byte)ButtonLabel.Length;
@@ -28591,8 +28591,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -28697,8 +28697,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -28738,7 +28738,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(ObjectPermissions, bytes, i); i += 4;
             }
 
@@ -28900,8 +28900,8 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)ObjectName.Length;
                 Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((OwnerIsGroup) ? 1 : 0);
                 bytes[i++] = (byte)Message.Length;
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
@@ -29047,8 +29047,8 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Buffer.BlockCopy(SimPosition.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                SimPosition.ToBytes(bytes, i); i += 12;
+                LookAt.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -29277,8 +29277,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -29430,8 +29430,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -29571,16 +29571,16 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(MusicURL, 0, bytes, i, MusicURL.Length); i += MusicURL.Length;
                 bytes[i++] = (byte)MediaURL.Length;
                 Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
-                Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                MediaID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = MediaAutoScale;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(PassPrice, bytes, i); i += 4;
                 Utils.FloatToBytes(PassHours, bytes, i); i += 4;
                 bytes[i++] = Category;
-                Buffer.BlockCopy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                AuthBuyerID.ToBytes(bytes, i); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
+                UserLocation.ToBytes(bytes, i); i += 12;
+                UserLookAt.ToBytes(bytes, i); i += 12;
                 bytes[i++] = LandingType;
             }
 
@@ -29692,8 +29692,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -29772,7 +29772,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TaskID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -29810,7 +29810,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -29961,8 +29961,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30114,8 +30114,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30194,7 +30194,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TaskID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30232,7 +30232,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30383,8 +30383,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30463,7 +30463,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ReturnID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ReturnID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30594,8 +30594,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30719,11 +30719,11 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(CovenantID.GetBytes(), 0, bytes, i, 16); i += 16;
+                CovenantID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CovenantTimestamp, bytes, i); i += 4;
                 bytes[i++] = (byte)EstateName.Length;
                 Buffer.BlockCopy(EstateName, 0, bytes, i, EstateName.Length); i += EstateName.Length;
-                Buffer.BlockCopy(EstateOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                EstateOwnerID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -30989,8 +30989,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -31138,8 +31138,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -31179,7 +31179,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
@@ -31290,8 +31290,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -31439,8 +31439,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -31482,7 +31482,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
                 bytes[i++] = (byte)((Final) ? 1 : 0);
             }
@@ -31662,8 +31662,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -31820,8 +31820,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -31978,8 +31978,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -32127,8 +32127,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -32174,7 +32174,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveContribution) ? 1 : 0);
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
@@ -32335,8 +32335,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -32376,7 +32376,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
             }
 
@@ -32488,8 +32488,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -32648,7 +32648,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(SequenceID, bytes, i); i += 4;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
@@ -32693,7 +32693,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Time, bytes, i); i += 4;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
@@ -32821,8 +32821,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -32870,7 +32870,7 @@ namespace OpenMetaverse.Packets
             {
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(SequenceID, bytes, i); i += 4;
                 Utils.IntToBytes(Sections, bytes, i); i += 4;
             }
@@ -32914,7 +32914,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Time, bytes, i); i += 4;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
@@ -33047,8 +33047,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33089,7 +33089,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33197,7 +33197,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33240,7 +33240,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ParcelID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(Dwell, bytes, i); i += 4;
             }
 
@@ -33351,8 +33351,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33500,8 +33500,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33542,7 +33542,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33650,7 +33650,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -33800,7 +33800,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)FirstName.Length;
                 Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)LastName.Length;
@@ -33922,7 +33922,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34057,7 +34057,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
             }
@@ -34179,8 +34179,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34286,8 +34286,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34392,8 +34392,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34500,8 +34500,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Running) ? 1 : 0);
             }
 
@@ -34607,8 +34607,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34650,8 +34650,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Running) ? 1 : 0);
             }
 
@@ -34762,8 +34762,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34803,8 +34803,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -34947,11 +34947,11 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SearchID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SearchPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(SearchDir.GetBytes(), 0, bytes, i, 12); i += 12;
+                SourceID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
+                SearchID.ToBytes(bytes, i); i += 16;
+                SearchPos.ToBytes(bytes, i); i += 12;
+                SearchDir.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)SearchName.Length;
                 Buffer.BlockCopy(SearchName, 0, bytes, i, SearchName.Length); i += SearchName.Length;
                 Utils.IntToBytes(Type, bytes, i); i += 4;
@@ -35062,7 +35062,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SourceID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -35131,12 +35131,12 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Velocity.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                Position.ToBytes(bytes, i); i += 12;
+                Velocity.ToBytes(bytes, i); i += 12;
+                Rotation.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 Utils.IntToBytes(Type, bytes, i); i += 4;
@@ -35268,8 +35268,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CircuitCode, bytes, i); i += 4;
             }
 
@@ -35375,8 +35375,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -35420,8 +35420,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                LookAt.ToBytes(bytes, i); i += 12;
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 Utils.UIntToBytes(Timestamp, bytes, i); i += 4;
             }
@@ -35593,8 +35593,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -35699,8 +35699,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -35738,7 +35738,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -35864,8 +35864,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -35967,13 +35967,13 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((FromGroup) ? 1 : 0);
-                Buffer.BlockCopy(ToAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ToAgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(ParentEstateID, bytes, i); i += 4;
-                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                RegionID.ToBytes(bytes, i); i += 16;
+                Position.ToBytes(bytes, i); i += 12;
                 bytes[i++] = Offline;
                 bytes[i++] = Dialog;
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Timestamp, bytes, i); i += 4;
                 bytes[i++] = (byte)FromAgentName.Length;
                 Buffer.BlockCopy(FromAgentName, 0, bytes, i, FromAgentName.Length); i += FromAgentName.Length;
@@ -36093,8 +36093,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36201,8 +36201,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Hunter.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Prey.GetBytes(), 0, bytes, i, 16); i += 16;
+                Hunter.ToBytes(bytes, i); i += 16;
+                Prey.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(SpaceIP, bytes, i); i += 4;
             }
 
@@ -36369,8 +36369,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36411,7 +36411,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
-                Buffer.BlockCopy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
+                Token.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36521,8 +36521,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36563,7 +36563,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = GodLevel;
-                Buffer.BlockCopy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
+                Token.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36675,9 +36675,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36734,7 +36734,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)Method.Length;
                 Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
-                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Invoice.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36921,9 +36921,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -36980,7 +36980,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)Method.Length;
                 Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
-                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Invoice.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37167,9 +37167,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37226,7 +37226,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)Method.Length;
                 Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
-                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Invoice.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37411,8 +37411,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37560,8 +37560,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37620,7 +37620,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(MuteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                MuteID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)MuteName.Length;
                 Buffer.BlockCopy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
                 Utils.IntToBytes(MuteType, bytes, i); i += 4;
@@ -37734,8 +37734,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37790,7 +37790,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(MuteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                MuteID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)MuteName.Length;
                 Buffer.BlockCopy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
             }
@@ -37902,8 +37902,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37943,8 +37943,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(NotecardItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                NotecardItemID.ToBytes(bytes, i); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -37984,8 +37984,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -38118,9 +38118,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -38228,19 +38228,19 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -38379,9 +38379,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((SimApproved) ? 1 : 0);
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -38489,19 +38489,19 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -38640,8 +38640,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Stamp) ? 1 : 0);
             }
 
@@ -38699,8 +38699,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)NewName.Length;
                 Buffer.BlockCopy(NewName, 0, bytes, i, NewName.Length); i += NewName.Length;
             }
@@ -38828,8 +38828,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -38891,9 +38891,9 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
-                Buffer.BlockCopy(OldAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OldAgentID.ToBytes(bytes, i); i += 16;
+                OldItemID.ToBytes(bytes, i); i += 16;
+                NewFolderID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)NewName.Length;
                 Buffer.BlockCopy(NewName, 0, bytes, i, NewName.Length); i += NewName.Length;
             }
@@ -39021,8 +39021,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39060,7 +39060,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39185,8 +39185,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39226,7 +39226,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -39350,7 +39350,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39390,8 +39390,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(NewAssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                NewAssetID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39501,8 +39501,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39561,8 +39561,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                ParentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -39675,8 +39675,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -39735,8 +39735,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                ParentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -39866,8 +39866,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Stamp) ? 1 : 0);
             }
 
@@ -39908,8 +39908,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                ParentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40035,8 +40035,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40074,7 +40074,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40199,8 +40199,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40246,8 +40246,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(SortOrder, bytes, i); i += 4;
                 bytes[i++] = (byte)((FetchFolders) ? 1 : 0);
                 bytes[i++] = (byte)((FetchItems) ? 1 : 0);
@@ -40367,9 +40367,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Version, bytes, i); i += 4;
                 Utils.IntToBytes(Descendents, bytes, i); i += 4;
             }
@@ -40430,8 +40430,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                ParentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -40540,18 +40540,18 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -40708,8 +40708,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40749,8 +40749,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40874,7 +40874,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -40980,18 +40980,18 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -41128,8 +41128,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -41188,8 +41188,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                ParentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
@@ -41300,19 +41300,19 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -41473,10 +41473,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -41583,8 +41583,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                QueryID.ToBytes(bytes, i); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsReadable) ? 1 : 0);
             }
 
@@ -41690,8 +41690,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -41729,7 +41729,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -41767,7 +41767,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -41912,8 +41912,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -41951,7 +41951,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42062,8 +42062,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42210,18 +42210,18 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -42348,8 +42348,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42390,7 +42390,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42503,9 +42503,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42546,7 +42546,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42656,8 +42656,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42822,7 +42822,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TaskID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(Serial % 256);
                 bytes[i++] = (byte)((Serial >> 8) % 256);
                 bytes[i++] = (byte)Filename.Length;
@@ -42932,8 +42932,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -42981,10 +42981,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = Destination;
-                Buffer.BlockCopy(DestinationID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                DestinationID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = PacketCount;
                 bytes[i++] = PacketNumber;
             }
@@ -43155,7 +43155,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
             }
 
@@ -43263,9 +43263,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -43325,11 +43325,11 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FromTaskID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = BypassRaycast;
-                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RayStart.ToBytes(bytes, i); i += 12;
+                RayEnd.ToBytes(bytes, i); i += 12;
+                RayTargetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
@@ -43442,18 +43442,18 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -43582,9 +43582,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -43644,11 +43644,11 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FromTaskID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = BypassRaycast;
-                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RayStart.ToBytes(bytes, i); i += 12;
+                RayEnd.ToBytes(bytes, i); i += 12;
+                RayTargetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
@@ -43695,8 +43695,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(NotecardItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                NotecardItemID.ToBytes(bytes, i); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -43734,7 +43734,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -43870,8 +43870,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -43909,7 +43909,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -43947,7 +43947,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44077,8 +44077,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44116,7 +44116,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44226,8 +44226,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SourceID.ToBytes(bytes, i); i += 16;
+                DestID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44332,8 +44332,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44371,7 +44371,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OtherID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OtherID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44481,8 +44481,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44522,8 +44522,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                DestID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44633,8 +44633,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44672,7 +44672,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44710,7 +44710,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44840,8 +44840,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44879,7 +44879,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -44991,9 +44991,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -45140,18 +45140,18 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
                 Utils.UIntToBytes(EveryoneMask, bytes, i); i += 4;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)((GroupOwned) ? 1 : 0);
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -45278,8 +45278,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -45362,8 +45362,8 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(NextOwnerMask, bytes, i); i += 4;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)InvType;
@@ -45482,8 +45482,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -45576,7 +45576,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
             }
@@ -45692,7 +45692,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RegionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -45797,7 +45797,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RegionID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
             }
 
@@ -45903,8 +45903,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -45971,8 +45971,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SourceID.ToBytes(bytes, i); i += 16;
+                DestID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = Flags;
                 Utils.IntToBytes(Amount, bytes, i); i += 4;
                 bytes[i++] = AggregatePermNextOwner;
@@ -46090,8 +46090,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -46129,7 +46129,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -46265,8 +46265,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((TransactionSuccess) ? 1 : 0);
                 Utils.IntToBytes(MoneyBalance, bytes, i); i += 4;
                 Utils.IntToBytes(SquareMetersCredit, bytes, i); i += 4;
@@ -46445,8 +46445,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((TransactionSuccess) ? 1 : 0);
                 Utils.IntToBytes(MoneyBalance, bytes, i); i += 4;
                 Utils.IntToBytes(SquareMetersCredit, bytes, i); i += 4;
@@ -46565,8 +46565,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -46609,8 +46609,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(GestureFlags, bytes, i); i += 4;
             }
 
@@ -46738,8 +46738,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -46780,7 +46780,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(GestureFlags, bytes, i); i += 4;
             }
 
@@ -46921,7 +46921,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Filename.Length;
                 Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
             }
@@ -47026,7 +47026,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -47131,8 +47131,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -47172,7 +47172,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentRelated.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(RelatedRights, bytes, i); i += 4;
             }
 
@@ -47296,7 +47296,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -47336,7 +47336,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentRelated.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(RelatedRights, bytes, i); i += 4;
             }
 
@@ -47460,7 +47460,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -47578,7 +47578,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -47698,8 +47698,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -47761,8 +47761,8 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)SimName.Length;
                 Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 Utils.UIntToBytes(LocationID, bytes, i); i += 4;
-                Buffer.BlockCopy(LocationPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LocationLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                LocationPos.ToBytes(bytes, i); i += 12;
+                LocationLookAt.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -47894,7 +47894,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)((Tempfile) ? 1 : 0);
                 bytes[i++] = (byte)((StoreLocal) ? 1 : 0);
@@ -48007,7 +48007,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(UUID.GetBytes(), 0, bytes, i, 16); i += 16;
+                UUID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Type;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
             }
@@ -48114,8 +48114,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -48201,7 +48201,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)((Charter.Length >> 8) % 256);
                 Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
-                Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                InsigniaID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(MembershipFee, bytes, i); i += 4;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
@@ -48314,7 +48314,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -48371,7 +48371,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
                 bytes[i++] = (byte)Message.Length;
                 Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
@@ -48484,8 +48484,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -48552,12 +48552,12 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(Charter.Length % 256);
                 bytes[i++] = (byte)((Charter.Length >> 8) % 256);
                 Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
-                Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                InsigniaID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(MembershipFee, bytes, i); i += 4;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
@@ -48674,9 +48674,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -48718,8 +48718,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RoleID.ToBytes(bytes, i); i += 16;
+                MemberID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Change, bytes, i); i += 4;
             }
 
@@ -48845,8 +48845,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -48884,7 +48884,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -48993,7 +48993,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49033,7 +49033,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
             }
 
@@ -49144,8 +49144,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49183,7 +49183,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49221,7 +49221,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(EjecteeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                EjecteeID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49349,7 +49349,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49387,7 +49387,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49540,8 +49540,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49579,7 +49579,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49687,7 +49687,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49727,7 +49727,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
             }
 
@@ -49838,8 +49838,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49877,7 +49877,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -49917,8 +49917,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(InviteeID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                InviteeID.ToBytes(bytes, i); i += 16;
+                RoleID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50048,8 +50048,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50087,7 +50087,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50195,7 +50195,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50304,7 +50304,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Charter.Length % 256);
@@ -50314,8 +50314,8 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)MemberTitle.Length;
                 Buffer.BlockCopy(MemberTitle, 0, bytes, i, MemberTitle.Length); i += MemberTitle.Length;
                 Utils.UInt64ToBytes(PowersMask, bytes, i); i += 8;
-                Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FounderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                InsigniaID.ToBytes(bytes, i); i += 16;
+                FounderID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(MembershipFee, bytes, i); i += 4;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
                 Utils.IntToBytes(Money, bytes, i); i += 4;
@@ -50323,7 +50323,7 @@ namespace OpenMetaverse.Packets
                 Utils.IntToBytes(GroupRolesCount, bytes, i); i += 4;
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
-                Buffer.BlockCopy(OwnerRole.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerRole.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50436,9 +50436,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50480,7 +50480,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
                 Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
             }
@@ -50593,8 +50593,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50711,7 +50711,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
                 Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
                 bytes[i++] = (byte)StartDate.Length;
@@ -50846,9 +50846,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -50890,7 +50890,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
                 Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
             }
@@ -51003,8 +51003,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51063,7 +51063,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
                 Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
                 bytes[i++] = (byte)StartDate.Length;
@@ -51257,9 +51257,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51301,7 +51301,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
                 Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
             }
@@ -51414,8 +51414,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51474,7 +51474,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(IntervalDays, bytes, i); i += 4;
                 Utils.IntToBytes(CurrentInterval, bytes, i); i += 4;
                 bytes[i++] = (byte)StartDate.Length;
@@ -51703,8 +51703,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51742,7 +51742,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51780,7 +51780,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51895,8 +51895,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -51936,7 +51936,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(TotalNumItems, bytes, i); i += 4;
             }
 
@@ -52060,8 +52060,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
+                VoteID.ToBytes(bytes, i); i += 16;
+                VoteInitiator.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)TerseDateID.Length;
                 Buffer.BlockCopy(TerseDateID, 0, bytes, i, TerseDateID.Length); i += TerseDateID.Length;
                 bytes[i++] = (byte)StartDateTime.Length;
@@ -52205,8 +52205,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -52244,7 +52244,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -52282,7 +52282,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -52397,8 +52397,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -52438,7 +52438,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(TotalNumItems, bytes, i); i += 4;
             }
 
@@ -52575,14 +52575,14 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                VoteID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)TerseDateID.Length;
                 Buffer.BlockCopy(TerseDateID, 0, bytes, i, TerseDateID.Length); i += TerseDateID.Length;
                 bytes[i++] = (byte)StartDateTime.Length;
                 Buffer.BlockCopy(StartDateTime, 0, bytes, i, StartDateTime.Length); i += StartDateTime.Length;
                 bytes[i++] = (byte)EndDateTime.Length;
                 Buffer.BlockCopy(EndDateTime, 0, bytes, i, EndDateTime.Length); i += EndDateTime.Length;
-                Buffer.BlockCopy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
+                VoteInitiator.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)VoteType.Length;
                 Buffer.BlockCopy(VoteType, 0, bytes, i, VoteType.Length); i += VoteType.Length;
                 bytes[i++] = (byte)VoteResult.Length;
@@ -52648,7 +52648,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(CandidateID.GetBytes(), 0, bytes, i, 16); i += 16;
+                CandidateID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)VoteCast.Length;
                 Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
                 Utils.IntToBytes(NumVotes, bytes, i); i += 4;
@@ -52787,8 +52787,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -52849,7 +52849,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Quorum, bytes, i); i += 4;
                 Utils.FloatToBytes(Majority, bytes, i); i += 4;
                 Utils.IntToBytes(Duration, bytes, i); i += 4;
@@ -52965,8 +52965,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53023,8 +53023,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ProposalID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ProposalID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)VoteCast.Length;
                 Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
             }
@@ -53136,8 +53136,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53177,8 +53177,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53286,7 +53286,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53328,8 +53328,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(MemberCount, bytes, i); i += 4;
             }
 
@@ -53406,7 +53406,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Contribution, bytes, i); i += 4;
                 bytes[i++] = (byte)OnlineStatus.Length;
                 Buffer.BlockCopy(OnlineStatus, 0, bytes, i, OnlineStatus.Length); i += OnlineStatus.Length;
@@ -53546,9 +53546,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53654,8 +53654,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53695,7 +53695,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Contribution, bytes, i); i += 4;
             }
 
@@ -53806,8 +53806,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -53847,7 +53847,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
             }
 
@@ -54001,8 +54001,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54042,8 +54042,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54151,7 +54151,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54193,8 +54193,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(RoleCount, bytes, i); i += 4;
             }
 
@@ -54284,7 +54284,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RoleID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)Title.Length;
@@ -54422,8 +54422,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54463,8 +54463,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54578,9 +54578,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(TotalPairs, bytes, i); i += 4;
             }
 
@@ -54621,8 +54621,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RoleID.ToBytes(bytes, i); i += 16;
+                MemberID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54751,10 +54751,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54861,9 +54861,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -54922,7 +54922,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)Title.Length;
                 Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
-                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RoleID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((Selected) ? 1 : 0);
             }
 
@@ -55053,10 +55053,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(TitleRoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
+                TitleRoleID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -55163,9 +55163,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -55254,7 +55254,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RoleID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)Description.Length;
@@ -55387,8 +55387,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -55510,8 +55510,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RequestID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Selection.Length;
                 Buffer.BlockCopy(Selection, 0, bytes, i, Selection.Length); i += Selection.Length;
             }
@@ -55618,8 +55618,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -55726,8 +55726,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(SerialNum, bytes, i); i += 4;
             }
 
@@ -55770,8 +55770,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = WearableType;
             }
 
@@ -55898,8 +55898,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -55939,7 +55939,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = WearableType;
             }
 
@@ -56068,8 +56068,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(SerialNum, bytes, i); i += 4;
             }
 
@@ -56110,7 +56110,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = TextureIndex;
             }
 
@@ -56238,8 +56238,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(SerialNum, bytes, i); i += 4;
             }
 
@@ -56297,7 +56297,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TextureID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TextureID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = TextureIndex;
                 bytes[i++] = (byte)HostName.Length;
                 Buffer.BlockCopy(HostName, 0, bytes, i, HostName.Length); i += HostName.Length;
@@ -56425,8 +56425,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -56595,14 +56595,14 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)FirstName.Length;
                 Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)LastName.Length;
                 Buffer.BlockCopy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
                 bytes[i++] = (byte)GroupTitle.Length;
                 Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
-                Buffer.BlockCopy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ActiveGroupID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
@@ -56730,8 +56730,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(AgentPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)GroupTitle.Length;
                 Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
@@ -56853,7 +56853,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -56916,10 +56916,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
-                Buffer.BlockCopy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupInsigniaID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Contribution, bytes, i); i += 4;
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
@@ -57048,8 +57048,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -57156,7 +57156,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
+                EndPointID.ToBytes(bytes, i); i += 16;
                 Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
             }
 
@@ -57260,7 +57260,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
+                EndPointID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -57425,8 +57425,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -57508,8 +57508,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = AttachmentPt;
                 Utils.UIntToBytes(ItemFlags, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
@@ -57629,8 +57629,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -57672,7 +57672,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(CompoundMsgID.GetBytes(), 0, bytes, i, 16); i += 16;
+                CompoundMsgID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = TotalObjects;
                 bytes[i++] = (byte)((FirstDetachAll) ? 1 : 0);
             }
@@ -57756,8 +57756,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = AttachmentPt;
                 Utils.UIntToBytes(ItemFlags, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
@@ -57897,8 +57897,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58003,8 +58003,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58042,7 +58042,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                NewFolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58082,8 +58082,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OldFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OldItemID.ToBytes(bytes, i); i += 16;
+                OldFolderID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58213,8 +58213,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58317,7 +58317,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58502,8 +58502,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58668,7 +58668,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -58869,7 +58869,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)Method.Length;
                 Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
-                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Invoice.ToBytes(bytes, i); i += 16;
                 Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
             }
 
@@ -59056,8 +59056,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
@@ -59165,7 +59165,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -59216,7 +59216,7 @@ namespace OpenMetaverse.Packets
                 Utils.UIntToBytes(Right, bytes, i); i += 4;
                 Utils.UIntToBytes(Top, bytes, i); i += 4;
                 Utils.UIntToBytes(Bottom, bytes, i); i += 4;
-                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ImageID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -59347,8 +59347,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
@@ -59518,8 +59518,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
@@ -59686,7 +59686,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -59764,7 +59764,7 @@ namespace OpenMetaverse.Packets
                 Utils.UIntToBytes(RegionFlags, bytes, i); i += 4;
                 bytes[i++] = WaterHeight;
                 bytes[i++] = Agents;
-                Buffer.BlockCopy(MapImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                MapImageID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -59895,8 +59895,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
                 Utils.UIntToBytes(EstateID, bytes, i); i += 4;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
@@ -60050,7 +60050,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
             }
 
@@ -60154,7 +60154,7 @@ namespace OpenMetaverse.Packets
             {
                 Utils.UIntToBytes(X, bytes, i); i += 4;
                 Utils.UIntToBytes(Y, bytes, i); i += 4;
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(Extra, bytes, i); i += 4;
                 Utils.IntToBytes(Extra2, bytes, i); i += 4;
                 bytes[i++] = (byte)Name.Length;
@@ -60373,10 +60373,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                AssetID.ToBytes(bytes, i); i += 16;
+                PosGlobal.ToBytes(bytes, i); i += 24;
                 bytes[i++] = (byte)To.Length;
                 Buffer.BlockCopy(To, 0, bytes, i, To.Length); i += To.Length;
                 bytes[i++] = (byte)From.Length;
@@ -60622,7 +60622,7 @@ namespace OpenMetaverse.Packets
             {
                 bytes[i++] = (byte)MediaURL.Length;
                 Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
-                Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                MediaID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = MediaAutoScale;
             }
 
@@ -60813,8 +60813,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -61072,7 +61072,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(TaskLocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TaskID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(LocationX, bytes, i); i += 4;
                 Utils.FloatToBytes(LocationY, bytes, i); i += 4;
                 Utils.FloatToBytes(LocationZ, bytes, i); i += 4;
@@ -61203,7 +61203,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -61308,7 +61308,7 @@ namespace OpenMetaverse.Packets
                 Utils.IntToBytes(Code, bytes, i); i += 4;
                 bytes[i++] = (byte)Token.Length;
                 Buffer.BlockCopy(Token, 0, bytes, i, Token.Length); i += Token.Length;
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)System.Length;
                 Buffer.BlockCopy(System, 0, bytes, i, System.Length); i += System.Length;
                 bytes[i++] = (byte)(Message.Length % 256);
@@ -61427,8 +61427,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -61881,9 +61881,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -62004,12 +62004,12 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = (byte)(ProfileHollow % 256);
                 bytes[i++] = (byte)((ProfileHollow >> 8) % 256);
                 bytes[i++] = BypassRaycast;
-                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                RayStart.ToBytes(bytes, i); i += 12;
+                RayEnd.ToBytes(bytes, i); i += 12;
+                RayTargetID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = RayEndIsIntersection;
-                Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Scale.ToBytes(bytes, i); i += 12;
+                Rotation.ToBytes(bytes, i); i += 12;
                 bytes[i++] = State;
             }
 
@@ -62121,8 +62121,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -62308,8 +62308,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -62476,8 +62476,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -62518,7 +62518,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(ObjectLocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -62644,8 +62644,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -62686,7 +62686,7 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(RequestFlags, bytes, i); i += 4;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -62882,7 +62882,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -63027,8 +63027,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -63133,8 +63133,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
+                LookAt.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -63249,8 +63249,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -63472,10 +63472,10 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                CreatorID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(CreationDate, bytes, i); i += 8;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
@@ -63491,10 +63491,10 @@ namespace OpenMetaverse.Packets
                 Utils.UIntToBytes(Category, bytes, i); i += 4;
                 bytes[i++] = (byte)(InventorySerial % 256);
                 bytes[i++] = (byte)((InventorySerial >> 8) % 256);
-                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ItemID.ToBytes(bytes, i); i += 16;
+                FolderID.ToBytes(bytes, i); i += 16;
+                FromTaskID.ToBytes(bytes, i); i += 16;
+                LastOwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)Description.Length;
@@ -63682,9 +63682,9 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(RequestFlags, bytes, i); i += 4;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(BaseMask, bytes, i); i += 4;
                 Utils.UIntToBytes(OwnerMask, bytes, i); i += 4;
                 Utils.UIntToBytes(GroupMask, bytes, i); i += 4;
@@ -63694,7 +63694,7 @@ namespace OpenMetaverse.Packets
                 bytes[i++] = SaleType;
                 Utils.IntToBytes(SalePrice, bytes, i); i += 4;
                 Utils.UIntToBytes(Category, bytes, i); i += 4;
-                Buffer.BlockCopy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                LastOwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)Name.Length;
                 Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)Description.Length;
@@ -63804,8 +63804,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -63975,9 +63975,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SoundID.ToBytes(bytes, i); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(Gain, bytes, i); i += 4;
                 bytes[i++] = Flags;
             }
@@ -64084,7 +64084,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(Gain, bytes, i); i += 4;
             }
 
@@ -64192,9 +64192,9 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                SoundID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -64314,8 +64314,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -64379,8 +64379,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = Type;
                 Utils.FloatToBytes(Duration, bytes, i); i += 4;
                 Buffer.BlockCopy(Color, 0, bytes, i, 4);i += 4;
@@ -64740,15 +64740,15 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                BodyRotation.ToBytes(bytes, i); i += 12;
+                HeadRotation.ToBytes(bytes, i); i += 12;
                 bytes[i++] = State;
-                Buffer.BlockCopy(CameraCenter.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(CameraAtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(CameraLeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(CameraUpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                CameraCenter.ToBytes(bytes, i); i += 12;
+                CameraAtAxis.ToBytes(bytes, i); i += 12;
+                CameraLeftAxis.ToBytes(bytes, i); i += 12;
+                CameraUpAxis.ToBytes(bytes, i); i += 12;
                 Utils.FloatToBytes(Far, bytes, i); i += 4;
                 Utils.UIntToBytes(ControlFlags, bytes, i); i += 4;
                 bytes[i++] = Flags;
@@ -64857,8 +64857,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -64898,7 +64898,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AnimID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((StartAnim) ? 1 : 0);
             }
 
@@ -65098,8 +65098,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -65139,8 +65139,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
+                TargetID.ToBytes(bytes, i); i += 16;
+                Offset.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -65251,8 +65251,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -65357,8 +65357,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -65404,7 +65404,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Image.GetBytes(), 0, bytes, i, 16); i += 16;
+                Image.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)DiscardLevel;
                 Utils.FloatToBytes(DownloadPriority, bytes, i); i += 4;
                 Utils.UIntToBytes(Packet, bytes, i); i += 4;
@@ -65537,7 +65537,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = Codec;
                 Utils.UIntToBytes(Size, bytes, i); i += 4;
                 bytes[i++] = (byte)(Packets % 256);
@@ -65706,7 +65706,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)(Packet % 256);
                 bytes[i++] = (byte)((Packet >> 8) % 256);
             }
@@ -66288,12 +66288,12 @@ namespace OpenMetaverse.Packets
             {
                 Utils.UIntToBytes(ID, bytes, i); i += 4;
                 bytes[i++] = State;
-                Buffer.BlockCopy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
+                FullID.ToBytes(bytes, i); i += 16;
                 Utils.UIntToBytes(CRC, bytes, i); i += 4;
                 bytes[i++] = PCode;
                 bytes[i++] = Material;
                 bytes[i++] = ClickAction;
-                Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
+                Scale.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)ObjectData.Length;
                 Buffer.BlockCopy(ObjectData, 0, bytes, i, ObjectData.Length); i += ObjectData.Length;
                 Utils.UIntToBytes(ParentID, bytes, i); i += 4;
@@ -66341,14 +66341,14 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(PSBlock, 0, bytes, i, PSBlock.Length); i += PSBlock.Length;
                 bytes[i++] = (byte)ExtraParams.Length;
                 Buffer.BlockCopy(ExtraParams, 0, bytes, i, ExtraParams.Length); i += ExtraParams.Length;
-                Buffer.BlockCopy(Sound.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Sound.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 Utils.FloatToBytes(Gain, bytes, i); i += 4;
                 bytes[i++] = Flags;
                 Utils.FloatToBytes(Radius, bytes, i); i += 4;
                 bytes[i++] = JointType;
-                Buffer.BlockCopy(JointPivot.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(JointAxisOrAnchor.GetBytes(), 0, bytes, i, 12); i += 12;
+                JointPivot.ToBytes(bytes, i); i += 12;
+                JointAxisOrAnchor.ToBytes(bytes, i); i += 12;
             }
 
         }
@@ -67168,7 +67168,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                TransferID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(ChannelType, bytes, i); i += 4;
                 Utils.IntToBytes(Packet, bytes, i); i += 4;
                 Utils.IntToBytes(Status, bytes, i); i += 4;
@@ -67549,7 +67549,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -67589,7 +67589,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AnimID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(AnimSequenceID, bytes, i); i += 4;
             }
 
@@ -67628,7 +67628,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -67845,7 +67845,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -67894,10 +67894,10 @@ namespace OpenMetaverse.Packets
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((AutoPilot) ? 1 : 0);
-                Buffer.BlockCopy(SitPosition.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(SitRotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(CameraEyeOffset.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(CameraAtOffset.GetBytes(), 0, bytes, i, 12); i += 12;
+                SitPosition.ToBytes(bytes, i); i += 12;
+                SitRotation.ToBytes(bytes, i); i += 12;
+                CameraEyeOffset.ToBytes(bytes, i); i += 12;
+                CameraAtOffset.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)((ForceMouselook) ? 1 : 0);
             }
 
@@ -68007,7 +68007,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Plane.GetBytes(), 0, bytes, i, 16); i += 16;
+                Plane.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -68281,14 +68281,14 @@ namespace OpenMetaverse.Packets
                 Utils.IntToBytes(OtherCount, bytes, i); i += 4;
                 Utils.IntToBytes(PublicCount, bytes, i); i += 4;
                 Utils.IntToBytes(LocalID, bytes, i); i += 4;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
                 Utils.UIntToBytes(AuctionID, bytes, i); i += 4;
                 Utils.IntToBytes(ClaimDate, bytes, i); i += 4;
                 Utils.IntToBytes(ClaimPrice, bytes, i); i += 4;
                 Utils.IntToBytes(RentPrice, bytes, i); i += 4;
-                Buffer.BlockCopy(AABBMin.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(AABBMax.GetBytes(), 0, bytes, i, 12); i += 12;
+                AABBMin.ToBytes(bytes, i); i += 12;
+                AABBMax.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)(Bitmap.Length % 256);
                 bytes[i++] = (byte)((Bitmap.Length >> 8) % 256);
                 Buffer.BlockCopy(Bitmap, 0, bytes, i, Bitmap.Length); i += Bitmap.Length;
@@ -68314,16 +68314,16 @@ namespace OpenMetaverse.Packets
                 Buffer.BlockCopy(MusicURL, 0, bytes, i, MusicURL.Length); i += MusicURL.Length;
                 bytes[i++] = (byte)MediaURL.Length;
                 Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
-                Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                MediaID.ToBytes(bytes, i); i += 16;
                 bytes[i++] = MediaAutoScale;
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.IntToBytes(PassPrice, bytes, i); i += 4;
                 Utils.FloatToBytes(PassHours, bytes, i); i += 4;
                 bytes[i++] = Category;
-                Buffer.BlockCopy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                AuthBuyerID.ToBytes(bytes, i); i += 16;
+                SnapshotID.ToBytes(bytes, i); i += 16;
+                UserLocation.ToBytes(bytes, i); i += 12;
+                UserLookAt.ToBytes(bytes, i); i += 12;
                 bytes[i++] = LandingType;
                 bytes[i++] = (byte)((RegionPushOverride) ? 1 : 0);
                 bytes[i++] = (byte)((RegionDenyAnonymous) ? 1 : 0);
@@ -68555,33 +68555,33 @@ namespace OpenMetaverse.Packets
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                AgentPos.ToBytes(bytes, i); i += 12;
+                AgentVel.ToBytes(bytes, i); i += 12;
+                Center.ToBytes(bytes, i); i += 12;
+                Size.ToBytes(bytes, i); i += 12;
+                AtAxis.ToBytes(bytes, i); i += 12;
+                LeftAxis.ToBytes(bytes, i); i += 12;
+                UpAxis.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
                 Utils.FloatToBytes(Far, bytes, i); i += 4;
                 Utils.FloatToBytes(Aspect, bytes, i); i += 4;
                 bytes[i++] = (byte)Throttles.Length;
                 Buffer.BlockCopy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
                 Utils.UIntToBytes(LocomotionState, bytes, i); i += 4;
-                Buffer.BlockCopy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                HeadRotation.ToBytes(bytes, i); i += 12;
+                BodyRotation.ToBytes(bytes, i); i += 12;
                 Utils.UIntToBytes(ControlFlags, bytes, i); i += 4;
                 Utils.FloatToBytes(EnergyLevel, bytes, i); i += 4;
                 bytes[i++] = GodLevel;
                 bytes[i++] = (byte)((AlwaysRun) ? 1 : 0);
-                Buffer.BlockCopy(PreyAgent.GetBytes(), 0, bytes, i, 16); i += 16;
+                PreyAgent.ToBytes(bytes, i); i += 16;
                 bytes[i++] = AgentAccess;
                 bytes[i++] = (byte)(AgentTextures.Length % 256);
                 bytes[i++] = (byte)((AgentTextures.Length >> 8) % 256);
                 Buffer.BlockCopy(AgentTextures, 0, bytes, i, AgentTextures.Length); i += AgentTextures.Length;
-                Buffer.BlockCopy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                ActiveGroupID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -68623,7 +68623,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GroupID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(GroupPowers, bytes, i); i += 8;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
             }
@@ -68665,8 +68665,8 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(Animation.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Animation.ToBytes(bytes, i); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -68704,7 +68704,7 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(GranterID.GetBytes(), 0, bytes, i, 16); i += 16;
+                GranterID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -69009,8 +69009,8 @@ namespace OpenMetaverse.Packets
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
             }
 
         }
@@ -69137,15 +69137,15 @@ namespace OpenMetaverse.Packets
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
                 Utils.UIntToBytes(ViewerCircuitCode, bytes, i); i += 4;
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Buffer.BlockCopy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+                AgentPos.ToBytes(bytes, i); i += 12;
+                AgentVel.ToBytes(bytes, i); i += 12;
+                Center.ToBytes(bytes, i); i += 12;
+                Size.ToBytes(bytes, i); i += 12;
+                AtAxis.ToBytes(bytes, i); i += 12;
+                LeftAxis.ToBytes(bytes, i); i += 12;
+                UpAxis.ToBytes(bytes, i); i += 12;
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
             }
 
@@ -69261,12 +69261,12 @@ namespace OpenMetaverse.Packets
 
             public override void ToBytes(byte[] bytes, ref int i)
             {
-                Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                SoundID.ToBytes(bytes, i); i += 16;
+                OwnerID.ToBytes(bytes, i); i += 16;
+                ObjectID.ToBytes(bytes, i); i += 16;
+                ParentID.ToBytes(bytes, i); i += 16;
                 Utils.UInt64ToBytes(Handle, bytes, i); i += 8;
-                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Position.ToBytes(bytes, i); i += 12;
                 Utils.FloatToBytes(Gain, bytes, i); i += 4;
             }
 

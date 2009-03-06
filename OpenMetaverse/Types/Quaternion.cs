@@ -197,39 +197,7 @@ namespace OpenMetaverse
         public byte[] GetBytes()
         {
             byte[] bytes = new byte[12];
-            float norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
-
-            if (norm != 0f)
-            {
-                norm = 1f / norm;
-
-                float x, y, z;
-                if (W >= 0f)
-                {
-                    x = X; y = Y; z = Z;
-                }
-                else
-                {
-                    x = -X; y = -Y; z = -Z;
-                }
-
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * x), 0, bytes, 0, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * y), 0, bytes, 4, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * z), 0, bytes, 8, 4);
-
-                if (!BitConverter.IsLittleEndian)
-                {
-                    Array.Reverse(bytes, 0, 4);
-                    Array.Reverse(bytes, 4, 4);
-                    Array.Reverse(bytes, 8, 4);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException(String.Format(
-                    "Quaternion {0} normalized to zero", ToString()));
-            }
-
+            ToBytes(bytes, 0);
             return bytes;
         }
 

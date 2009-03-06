@@ -208,18 +208,16 @@ namespace mapgenerator
                     writer.WriteLine("bytes[i++] = (byte)(" + field.Name + " % 256);");
                     writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 8) % 256);");
                     break;
-                case FieldType.LLUUID:
-                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
-                    break;
-                case FieldType.LLVector4:
-                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
-                    break;
                 case FieldType.LLQuaternion:
                 case FieldType.LLVector3:
-                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 12); i += 12;");
+                    writer.WriteLine(field.Name + ".ToBytes(bytes, i); i += 12;");
+                    break;
+                case FieldType.LLUUID:
+                case FieldType.LLVector4:
+                    writer.WriteLine(field.Name + ".ToBytes(bytes, i); i += 16;");
                     break;
                 case FieldType.LLVector3d:
-                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 24); i += 24;");
+                    writer.WriteLine(field.Name + ".ToBytes(bytes, i); i += 24;");
                     break;
                 case FieldType.U8:
                     writer.WriteLine("bytes[i++] = " + field.Name + ";");

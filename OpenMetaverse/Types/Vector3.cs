@@ -180,18 +180,7 @@ namespace OpenMetaverse
         public byte[] GetBytes()
         {
             byte[] byteArray = new byte[12];
-
-            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
-
-            if (!BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(byteArray, 0, 4);
-                Array.Reverse(byteArray, 4, 4);
-                Array.Reverse(byteArray, 8, 4);
-            }
-
+            ToBytes(byteArray, 0);
             return byteArray;
         }
 

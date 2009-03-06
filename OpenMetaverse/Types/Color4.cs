@@ -213,38 +213,67 @@ namespace OpenMetaverse
             return GetBytes(false);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         public byte[] GetBytes(bool inverted)
         {
             byte[] byteArray = new byte[4];
-
-            byteArray[0] = Utils.FloatToByte(R, 0f, 1f);
-            byteArray[1] = Utils.FloatToByte(G, 0f, 1f);
-            byteArray[2] = Utils.FloatToByte(B, 0f, 1f);
-            byteArray[3] = Utils.FloatToByte(A, 0f, 1f);
-
-            if (inverted)
-            {
-                byteArray[0] = (byte)(255 - byteArray[0]);
-                byteArray[1] = (byte)(255 - byteArray[1]);
-                byteArray[2] = (byte)(255 - byteArray[2]);
-                byteArray[3] = (byte)(255 - byteArray[3]);
-            }
-
+            ToBytes(byteArray, 0, inverted);
             return byteArray;
         }
 
         public byte[] GetFloatBytes()
         {
             byte[] bytes = new byte[16];
-            Buffer.BlockCopy(BitConverter.GetBytes(R), 0, bytes, 0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(G), 0, bytes, 4, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(B), 0, bytes, 8, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(A), 0, bytes, 12, 4);
+            ToFloatBytes(bytes, 0);
             return bytes;
+        }
+
+        /// <summary>
+        /// Writes the raw bytes for this color to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 16 bytes before the end of the array</param>
+        public void ToBytes(byte[] dest, int pos)
+        {
+            ToBytes(dest, pos, false);
+        }
+
+        /// <summary>
+        /// Writes the raw bytes for this color to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 4 bytes before the end of the array</param>
+        /// <param name="inverted">True to invert the output (1.0 becomes 0
+        /// instead of 255)</param>
+        public void ToBytes(byte[] dest, int pos, bool inverted)
+        {
+            dest[pos + 0] = Utils.FloatToByte(R, 0f, 1f);
+            dest[pos + 1] = Utils.FloatToByte(G, 0f, 1f);
+            dest[pos + 2] = Utils.FloatToByte(B, 0f, 1f);
+            dest[pos + 3] = Utils.FloatToByte(A, 0f, 1f);
+
+            if (inverted)
+            {
+                dest[pos + 0] = (byte)(255 - dest[pos + 0]);
+                dest[pos + 1] = (byte)(255 - dest[pos + 1]);
+                dest[pos + 2] = (byte)(255 - dest[pos + 2]);
+                dest[pos + 3] = (byte)(255 - dest[pos + 3]);
+            }
+        }
+
+        // <summary>
+        /// Writes the raw bytes for this color to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 16 bytes before the end of the array</param>
+        public void ToFloatBytes(byte[] dest, int pos)
+        {
+            Buffer.BlockCopy(BitConverter.GetBytes(R), 0, dest, pos + 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(G), 0, dest, pos + 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(B), 0, dest, pos + 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(A), 0, dest, pos + 12, 4);
         }
 
         public float GetHue()
