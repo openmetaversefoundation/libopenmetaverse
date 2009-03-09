@@ -189,13 +189,14 @@ namespace Simian
             }
         }
 
-        public SimpleMesh GetWorldMesh(DetailLevel lod, SimulationObject parent)
+        public SimpleMesh GetWorldMesh(DetailLevel lod, bool forceRebuild)
         {
             int i = (int)lod;
 
-            if (WorldTransformedMeshes == null) WorldTransformedMeshes = new SimpleMesh[4];
+            if (WorldTransformedMeshes == null)
+                WorldTransformedMeshes = new SimpleMesh[4];
 
-            if (WorldTransformedMeshes[i] != null)
+            if (!forceRebuild && WorldTransformedMeshes[i] != null)
             {
                 return WorldTransformedMeshes[i];
             }
@@ -207,7 +208,8 @@ namespace Simian
                 // Construct a matrix to transform to world space
                 Matrix4 transform = Matrix4.Identity;
 
-                if (parent != null)
+                SimulationObject parent = GetLinksetParent();
+                if (parent != this)
                 {
                     // Apply parent rotation and translation first
                     transform *= Matrix4.CreateFromQuaternion(parent.Prim.Rotation);

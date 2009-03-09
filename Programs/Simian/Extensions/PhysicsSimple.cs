@@ -16,6 +16,10 @@ namespace Simian.Extensions
         public void Start(Simian server)
         {
             this.server = server;
+
+            server.Scene.OnObjectAdd += Scene_OnObjectAdd;
+            server.Scene.OnObjectModify += Scene_OnObjectModify;
+            server.Scene.OnObjectTransform += Scene_OnObjectTransform;
         }
 
         public void Stop()
@@ -24,8 +28,6 @@ namespace Simian.Extensions
 
         public Vector3 ObjectCollisionTest(Vector3 rayStart, Vector3 rayEnd, SimulationObject obj)
         {
-            const float OO_THREE = 1f / 3f;
-
             Vector3 closestPoint = rayEnd;
 
             if (rayStart == rayEnd)
@@ -37,18 +39,7 @@ namespace Simian.Extensions
             Vector3 direction = Vector3.Normalize(rayEnd - rayStart);
 
             // Get the mesh that has been transformed into world-space
-            SimpleMesh mesh = null;
-            if (obj.Prim.ParentID != 0)
-            {
-                SimulationObject parent;
-                if (server.Scene.TryGetObject(obj.Prim.ParentID, out parent))
-                    mesh = obj.GetWorldMesh(DetailLevel.Low, parent);
-            }
-            else
-            {
-                mesh = obj.GetWorldMesh(DetailLevel.Low, null);
-            }
-
+            SimpleMesh mesh = obj.GetWorldMesh(DetailLevel.Low, false);
             if (mesh != null)
             {
                 // Iterate through all of the triangles in the mesh, doing a ray-triangle intersection
@@ -60,16 +51,11 @@ namespace Simian.Extensions
                     Vector3 point1 = mesh.Vertices[mesh.Indices[i + 1]].Position;
                     Vector3 point2 = mesh.Vertices[mesh.Indices[i + 2]].Position;
 
-                    if (RayTriangleIntersection(rayStart, direction, point0, point1, point2))
+                    Vector3 collisionPoint;
+                    if (RayTriangleIntersection(rayStart, direction, point0, point1, point2, out collisionPoint))
                     {
-                        // HACK: Find the barycenter of this triangle. Would be better to have
-                        // RayTriangleIntersection return the exact collision point
-                        Vector3 center = (point0 + point1 + point2) * OO_THREE;
-
-                        Logger.DebugLog("Collision hit with triangle at " + center);
-
-                        if ((center - rayStart).Length() < closestDistance)
-                            closestPoint = center;
+                        if ((collisionPoint - rayStart).Length() < closestDistance)
+                            closestPoint = collisionPoint;
                     }
                 }
             }
@@ -100,8 +86,9 @@ namespace Simian.Extensions
         /// <param name="vert0">Position of the first triangle corner</param>
         /// <param name="vert1">Position of the second triangle corner</param>
         /// <param name="vert2">Position of the third triangle corner</param>
+        /// <param name="collisionPoint">The collision point in the triangle</param>
         /// <returns>True if the ray passes through the triangle, otherwise false</returns>
-        bool RayTriangleIntersection(Vector3 origin, Vector3 direction, Vector3 vert0, Vector3 vert1, Vector3 vert2)
+        static bool RayTriangleIntersection(Vector3 origin, Vector3 direction, Vector3 vert0, Vector3 vert1, Vector3 vert2, out Vector3 collisionPoint)
         {
             const float EPSILON = 0.00001f;
 
@@ -119,7 +106,10 @@ namespace Simian.Extensions
             determinant = Vector3.Dot(edge1, pvec);
 
             if (determinant > -EPSILON && determinant < EPSILON)
+            {
+                collisionPoint = Vector3.Zero;
                 return false;
+            }
 
             invDeterminant = 1f / determinant;
 
@@ -129,7 +119,10 @@ namespace Simian.Extensions
             // Calculate U parameter and test bounds
             float u = Vector3.Dot(tvec, pvec) * invDeterminant;
             if (u < 0.0f || u > 1.0f)
+            {
+                collisionPoint = Vector3.Zero;
                 return false;
+            }
 
             // Prepare to test V parameter
             Vector3 qvec = Vector3.Cross(tvec, edge1);
@@ -137,9 +130,17 @@ namespace Simian.Extensions
             // Calculate V parameter and test bounds
             float v = Vector3.Dot(direction, qvec) * invDeterminant;
             if (v < 0.0f || u + v > 1.0f)
+            {
+                collisionPoint = Vector3.Zero;
                 return false;
+            }
 
             //t = Vector3.Dot(edge2, qvec) * invDeterminant;
+
+            collisionPoint = new Vector3(
+                vert0.X + u * (vert1.X - vert0.X) + v * (vert2.X - vert0.X),
+                vert0.Y + u * (vert1.Y - vert0.Y) + v * (vert2.Y - vert0.Y),
+                vert0.Z + u * (vert1.Z - vert0.Z) + v * (vert2.Z - vert0.Z));
 
             return true;
         }
@@ -403,5 +404,30 @@ namespace Simian.Extensions
 
             return returnMass;
         }
+
+        #region Callbacks
+
+        void Scene_OnObjectAdd(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags)
+        {
+            // TODO: This doesn't update children prims when their parents move. "World meshes" are a bad approach in general,
+            // the transforms should probably be applied to the mesh in the collision test
+            obj.GetWorldMesh(DetailLevel.Low, true);
+        }
+
+        void Scene_OnObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
+        {
+            obj.GetWorldMesh(DetailLevel.Low, true);
+        }
+
+        void Scene_OnObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity,
+            Vector3 acceleration, Vector3 angularVelocity)
+        {
+            // TODO: This doesn't update children prims when their parents move. "World meshes" are a bad approach in general,
+            // the transforms should probably be applied to the mesh in the collision test
+            if (position != obj.Prim.Position || rotation != obj.Prim.Rotation)
+                obj.GetWorldMesh(DetailLevel.Low, true);
+        }
+
+        #endregion Callbacks
     }
 }
