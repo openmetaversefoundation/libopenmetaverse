@@ -171,13 +171,13 @@ namespace Simian
             UndoSteps.Enqueue(new Primitive(Prim));
         }
 
-        public SimpleMesh GetMesh(DetailLevel lod)
+        public SimpleMesh GetMesh(DetailLevel lod, bool forceMeshing)
         {
             int i = (int)lod;
 
             if (Meshes == null) Meshes = new SimpleMesh[4];
 
-            if (Meshes[i] != null)
+            if (!forceMeshing && Meshes[i] != null)
             {
                 return Meshes[i];
             }
@@ -189,21 +189,24 @@ namespace Simian
             }
         }
 
-        public SimpleMesh GetWorldMesh(DetailLevel lod, bool forceRebuild)
+        public SimpleMesh GetWorldMesh(DetailLevel lod, bool forceMeshing, bool forceTransform)
         {
             int i = (int)lod;
 
             if (WorldTransformedMeshes == null)
                 WorldTransformedMeshes = new SimpleMesh[4];
 
-            if (!forceRebuild && WorldTransformedMeshes[i] != null)
+            if (!forceMeshing && !forceTransform && WorldTransformedMeshes[i] != null)
             {
                 return WorldTransformedMeshes[i];
             }
             else
             {
                 // Get the untransformed mesh
-                SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(Prim, lod);
+                SimpleMesh mesh = GetMesh(lod, forceMeshing);
+
+                // Copy to our new mesh
+                SimpleMesh transformedMesh = new SimpleMesh(mesh);
 
                 // Construct a matrix to transform to world space
                 Matrix4 transform = Matrix4.Identity;
@@ -221,15 +224,15 @@ namespace Simian
                 transform *= Matrix4.CreateTranslation(Prim.Position);
 
                 // Transform the mesh
-                for (int j = 0; j < mesh.Vertices.Count; j++)
+                for (int j = 0; j < transformedMesh.Vertices.Count; j++)
                 {
-                    Vertex vertex = mesh.Vertices[j];
+                    Vertex vertex = transformedMesh.Vertices[j];
                     vertex.Position *= transform;
-                    mesh.Vertices[j] = vertex;
+                    transformedMesh.Vertices[j] = vertex;
                 }
 
-                WorldTransformedMeshes[i] = mesh;
-                return mesh;
+                WorldTransformedMeshes[i] = transformedMesh;
+                return transformedMesh;
             }
         }
 

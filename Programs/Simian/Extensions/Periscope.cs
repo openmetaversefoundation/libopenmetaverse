@@ -72,13 +72,13 @@ namespace Simian.Extensions
             SimulationObject simObj = new SimulationObject(prim, server);
             if (MasterAgent != null)
                 simObj.Prim.OwnerID = MasterAgent.ID;
-            server.Scene.ObjectAdd(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
         }
 
         void Objects_OnNewAttachment(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAdd(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
         }
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)

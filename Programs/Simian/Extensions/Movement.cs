@@ -432,7 +432,7 @@ namespace Simian.Extensions
                     agent.Avatar.Prim.Position.Z = obj.Prim.Scale.Z * 0.5f;
                     agent.Avatar.Prim.Position.Z += agent.Avatar.Prim.Scale.Z * 0.33f;
 
-                    server.Scene.ObjectAdd(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None);
+                    server.Scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None);
                     server.Avatars.SetDefaultAnimation(agent, Animations.SIT);
                     server.Avatars.SendAnimations(agent);
                 }

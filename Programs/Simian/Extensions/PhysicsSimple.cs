@@ -39,7 +39,7 @@ namespace Simian.Extensions
             Vector3 direction = Vector3.Normalize(rayEnd - rayStart);
 
             // Get the mesh that has been transformed into world-space
-            SimpleMesh mesh = obj.GetWorldMesh(DetailLevel.Low, false);
+            SimpleMesh mesh = obj.GetWorldMesh(DetailLevel.Low, false, false);
             if (mesh != null)
             {
                 // Iterate through all of the triangles in the mesh, doing a ray-triangle intersection
@@ -411,12 +411,12 @@ namespace Simian.Extensions
         {
             // TODO: This doesn't update children prims when their parents move. "World meshes" are a bad approach in general,
             // the transforms should probably be applied to the mesh in the collision test
-            obj.GetWorldMesh(DetailLevel.Low, true);
+            obj.GetWorldMesh(DetailLevel.Low, true, true);
         }
 
         void Scene_OnObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
         {
-            obj.GetWorldMesh(DetailLevel.Low, true);
+            obj.GetWorldMesh(DetailLevel.Low, true, false);
         }
 
         void Scene_OnObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity,
@@ -425,7 +425,7 @@ namespace Simian.Extensions
             // TODO: This doesn't update children prims when their parents move. "World meshes" are a bad approach in general,
             // the transforms should probably be applied to the mesh in the collision test
             if (position != obj.Prim.Position || rotation != obj.Prim.Rotation)
-                obj.GetWorldMesh(DetailLevel.Low, true);
+                obj.GetWorldMesh(DetailLevel.Low, false, true);
         }
 
         #endregion Callbacks

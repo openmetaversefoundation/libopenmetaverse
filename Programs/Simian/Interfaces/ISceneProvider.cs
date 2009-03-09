@@ -112,7 +112,7 @@ namespace Simian
         uint TerrainPatchCountWidth { get; }
         uint TerrainPatchCountHeight { get; }
 
-        bool ObjectAdd(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags);
+        bool ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags);
         bool ObjectRemove(object sender, uint localID);
         bool ObjectRemove(object sender, UUID id);
         void ObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity);

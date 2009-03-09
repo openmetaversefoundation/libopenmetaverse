@@ -164,7 +164,7 @@ namespace Simian.Extensions
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAdd(this, simObj, agent.ID, 0, flags);
+            server.Scene.ObjectAddOrUpdate(this, simObj, agent.ID, 0, flags);
         }
 
         void ObjectAttachHandler(Packet packet, Agent agent)
@@ -185,7 +185,7 @@ namespace Simian.Extensions
                 obj.Prim.PrimData.AttachmentPoint = point == AttachmentPoint.Default ? obj.LastAttachmentPoint : point;
 
                 // Send an update out to everyone
-                server.Scene.ObjectAdd(this, obj, agent.ID, 0, obj.Prim.Flags);
+                server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, obj.Prim.Flags);
             }
         }
 
@@ -209,7 +209,7 @@ namespace Simian.Extensions
                     newObj.Prim.LocalID = 0;
                     newObj.Prim.Properties.CreationDate = DateTime.Now;
 
-                    server.Scene.ObjectAdd(this, newObj, agent.ID, 0, flags);
+                    server.Scene.ObjectAddOrUpdate(this, newObj, agent.ID, 0, flags);
                 }
                 else
                 {
@@ -355,7 +355,7 @@ namespace Simian.Extensions
                     linkSet[i].Prim.ParentID = 0;
                 }
 
-                server.Scene.ObjectAdd(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
+                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
             }
         }
 
@@ -395,7 +395,7 @@ namespace Simian.Extensions
                     linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
                 }
 
-                server.Scene.ObjectAdd(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
+                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
             }
         }
 
@@ -523,7 +523,7 @@ namespace Simian.Extensions
                         }
                     }
 
-                    server.Scene.ObjectAdd(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
+                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
                 }
             }
         }
@@ -691,7 +691,7 @@ namespace Simian.Extensions
                         obj.Prim.Rotation = rotation;
                         obj.Prim.Scale = scale;
 
-                        server.Scene.ObjectAdd(this, obj, agent.ID, 0, PrimFlags.None);
+                        server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, PrimFlags.None);
                     }
                     else
                     {

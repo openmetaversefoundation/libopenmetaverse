@@ -208,7 +208,7 @@ namespace Simian.Extensions
             windSpeeds[y, x] = windSpeed;
         }
 
-        public bool ObjectAdd(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags)
+        public bool ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags)
         {
             if (OnObjectAdd != null)
             {
@@ -918,13 +918,13 @@ namespace Simian.Extensions
         {
             SimulationObject obj;
             if (TryGetObject(prim.ID, out obj))
-                ObjectAdd(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
+                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
         }
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
         {
             // Add this avatar as an object in the scene
-            if (ObjectAdd(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None))
+            if (ObjectAddOrUpdate(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None))
             {
                 // Send a response back to the client
                 AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
