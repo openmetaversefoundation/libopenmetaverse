@@ -477,6 +477,7 @@ namespace Simian
                         clients.Remove(agent.ID);
                     }
 
+                    Logger.DebugLog(String.Format("Adding client {0} from {1}", agent.FullName, address));
                     AddClient(agent, address);
                     if (clients.TryGetValue(agent.ID, out client))
                     {

@@ -57,9 +57,9 @@ namespace OpenMetaverse
     [Flags]
     public enum CompressedFlags : uint
     {
-        /// <summary>Hasn't been spotted in the wild yet</summary>
+        /// <summary>Unknown</summary>
         ScratchPad = 0x01,
-        /// <summary>This may be incorrect</summary>
+        /// <summary>Whether the object has a TreeSpecies</summary>
         Tree = 0x02,
         /// <summary>Whether the object has floating text ala llSetText</summary>
         HasText = 0x04,

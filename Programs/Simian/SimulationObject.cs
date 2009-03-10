@@ -246,17 +246,6 @@ namespace Simian
             }
         }
 
-        public static ObjectUpdatePacket BuildFullUpdate(Primitive obj, ulong regionHandle, PrimFlags flags, uint crc)
-        {
-            ObjectUpdatePacket update = new ObjectUpdatePacket();
-            update.RegionData.RegionHandle = regionHandle;
-            update.RegionData.TimeDilation = UInt16.MaxValue;
-            update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
-            update.ObjectData[0] = BuildUpdateBlock(obj, flags, crc);
-
-            return update;
-        }
-
         public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive prim, PrimFlags flags, uint crc)
         {
             byte[] objectData = new byte[60];

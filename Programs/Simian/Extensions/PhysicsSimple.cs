@@ -9,6 +9,11 @@ namespace Simian.Extensions
     {
         Simian server;
 
+        public float TimeDilation
+        {
+            get { return 1.0f; }
+        }
+
         public PhysicsSimple()
         {
         }

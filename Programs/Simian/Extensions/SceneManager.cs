@@ -98,6 +98,8 @@ namespace Simian.Extensions
             }
         }
 
+        #region Object Interfaces
+
         public void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags)
         {
             if (OnObjectAddOrUpdate != null)
@@ -212,196 +214,6 @@ namespace Simian.Extensions
             SendObjectPacket(obj, canUseCompressed, canUseImproved, creatorFlags, updateFlags);
         }
 
-        void SendObjectPacket(SimulationObject obj, bool canUseCompressed, bool canUseImproved, PrimFlags creatorFlags, UpdateFlags updateFlags)
-        {
-            if (!canUseImproved && !canUseCompressed)
-            {
-                #region ObjectUpdate
-
-                Logger.DebugLog("Sending ObjectUpdate");
-
-                if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
-                {
-                    // Send an update out to the creator
-                    ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                        obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
-                    server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
-                }
-
-                // Send an update out to everyone else
-                ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                    obj.Prim.Flags, obj.CRC);
-                server.Scene.ForEachAgent(
-                    delegate(Agent recipient)
-                    {
-                        if (recipient.ID != obj.Prim.OwnerID)
-                            server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
-                    }
-                );
-
-                #endregion ObjectUpdate
-            }
-            else if (!canUseImproved)
-            {
-                #region ObjectUpdateCompressed
-
-                ObjectUpdateCompressedPacket update = new ObjectUpdateCompressedPacket();
-                update.RegionData.RegionHandle = RegionHandle;
-                update.RegionData.TimeDilation = (ushort)(1f * (float)UInt16.MaxValue); // TODO: Implement this
-                update.ObjectData = new ObjectUpdateCompressedPacket.ObjectDataBlock[1];
-                update.ObjectData[0] = new ObjectUpdateCompressedPacket.ObjectDataBlock();
-
-                CompressedFlags flags = 0;
-                int size = 0;
-                byte[] textBytes;
-                byte[] mediaURLBytes;
-
-                if ((updateFlags & UpdateFlags.AngularVelocity) != 0)
-                {
-                    flags |= CompressedFlags.HasAngularVelocity;
-                    size += 12;
-                }
-                if ((updateFlags & UpdateFlags.ParentID) != 0)
-                {
-                    flags |= CompressedFlags.HasParent;
-                    size += 4;
-                }
-                if ((updateFlags & UpdateFlags.ScratchPad) != 0)
-                {
-                    switch (obj.Prim.PrimData.PCode)
-                    {
-                        case PCode.Grass:
-                        case PCode.Tree:
-                        case PCode.NewTree:
-                            flags |= CompressedFlags.Tree;
-                            size += 2;
-                            break;
-                        default:
-                            flags |= CompressedFlags.ScratchPad;
-                            size += 1 + obj.Prim.ScratchPad.Length;
-                            break;
-                    }
-                }
-                if ((updateFlags & UpdateFlags.Text) != 0)
-                {
-                    flags |= CompressedFlags.HasText;
-                    textBytes = Utils.StringToBytes(obj.Prim.Text);
-                    size += textBytes.Length;
-                }
-                if ((updateFlags & UpdateFlags.MediaURL) != 0)
-                {
-                    flags |= CompressedFlags.MediaURL;
-                    mediaURLBytes = Utils.StringToBytes(obj.Prim.MediaURL);
-                    size += mediaURLBytes.Length;
-                }
-                if ((updateFlags & UpdateFlags.Particles) != 0)
-                {
-                    flags |= CompressedFlags.HasParticles;
-                    // size +=
-                }
-                // Extra Params
-                if ((updateFlags & UpdateFlags.Sound) != 0)
-                {
-                    flags |= CompressedFlags.HasSound;
-                }
-                if ((updateFlags & UpdateFlags.NameValue) != 0)
-                {
-                    flags |= CompressedFlags.HasNameValues;
-                    //size += 
-                }
-                // PrimData
-                // Texture Length
-                // Texture Entry
-                if ((updateFlags & UpdateFlags.TextureAnim) != 0)
-                {
-                    flags |= CompressedFlags.TextureAnimation;
-                    // size += 4 +
-                }
-
-                Logger.DebugLog("Sending ObjectUpdateCompressed with " + flags.ToString());
-
-                update.ObjectData[0].UpdateFlags = (uint)flags;
-                //update.ObjectData[0].Data = data;
-                //server.UDP.BroadcastPacket(update, PacketCategory.State);
-
-                #endregion ObjectUpdateCompressed
-            }
-            else
-            {
-                #region ImprovedTerseObjectUpdate
-
-                Logger.DebugLog("Sending ImprovedTerseObjectUpdate");
-
-                int pos = 0;
-                byte[] data = new byte[(obj.Prim is Avatar ? 60 : 44)];
-
-                // LocalID
-                Utils.UIntToBytes(obj.Prim.LocalID, data, pos);
-                pos += 4;
-                // Avatar/CollisionPlane
-                data[pos++] = obj.Prim.PrimData.State;
-                if (obj.Prim is Avatar)
-                {
-                    data[pos++] = 1;
-                    obj.Prim.CollisionPlane.ToBytes(data, pos);
-                    pos += 16;
-                }
-                else
-                {
-                    ++pos;
-                }
-                // Position
-                obj.Prim.Position.ToBytes(data, pos);
-                pos += 12;
-
-                // Velocity
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.X, -128.0f, 128.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.Y, -128.0f, 128.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.Z, -128.0f, 128.0f), data, pos); pos += 2;
-                // Acceleration
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.X, -64.0f, 64.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.Y, -64.0f, 64.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.Z, -64.0f, 64.0f), data, pos); pos += 2;
-                // Rotation
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.X, -1.0f, 1.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.Y, -1.0f, 1.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.Z, -1.0f, 1.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.W, -1.0f, 1.0f), data, pos); pos += 2;
-                // Angular Velocity
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.X, -64.0f, 64.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.Y, -64.0f, 64.0f), data, pos); pos += 2;
-                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.Z, -64.0f, 64.0f), data, pos); pos += 2;
-
-                ImprovedTerseObjectUpdatePacket update = new ImprovedTerseObjectUpdatePacket();
-                update.RegionData.RegionHandle = RegionHandle;
-                update.RegionData.TimeDilation = (ushort)(1f * (float)UInt16.MaxValue); // TODO: Implement this
-                update.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[1];
-                update.ObjectData[0] = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
-                update.ObjectData[0].Data = data;
-
-                if ((updateFlags & UpdateFlags.Textures) != 0)
-                {
-                    byte[] textureBytes = obj.Prim.Textures.GetBytes();
-                    byte[] textureEntry = new byte[textureBytes.Length + 4];
-
-                    // Texture Length
-                    Utils.IntToBytes(textureBytes.Length, textureEntry, 0);
-                    // Texture
-                    Buffer.BlockCopy(textureBytes, 0, textureEntry, 4, textureBytes.Length);
-
-                    update.ObjectData[0].TextureEntry = textureEntry;
-                }
-                else
-                {
-                    update.ObjectData[0].TextureEntry = Utils.EmptyBytes;
-                }
-
-                server.UDP.BroadcastPacket(update, PacketCategory.State);
-
-                #endregion ImprovedTerseObjectUpdate
-            }
-        }
-
         public bool ObjectRemove(object sender, uint localID)
         {
             SimulationObject obj;
@@ -454,36 +266,6 @@ namespace Simian.Extensions
             }
 
             return false;
-        }
-
-        void AgentRemove(object sender, Agent agent)
-        {
-            if (OnAgentRemove != null)
-                OnAgentRemove(sender, agent);
-
-            Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
-
-            lock (sceneAgents) sceneAgents.Remove(agent.ID);
-
-            KillObjectPacket kill = new KillObjectPacket();
-            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-            kill.ObjectData[0].ID = agent.Avatar.Prim.LocalID;
-
-            server.UDP.BroadcastPacket(kill, PacketCategory.State);
-
-            // Kill the EventQueue
-            RemoveEventQueue(agent.ID);
-
-            // Remove the UDP client
-            server.UDP.RemoveClient(agent);
-
-            // Notify everyone in the scene that this agent has gone offline
-            OfflineNotificationPacket offline = new OfflineNotificationPacket();
-            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
-            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-            offline.AgentBlock[0].AgentID = agent.ID;
-            server.UDP.BroadcastPacket(offline, PacketCategory.State);
         }
 
         public void ObjectSetRotationAxis(object sender, SimulationObject obj, Vector3 rotationAxis)
@@ -626,6 +408,41 @@ namespace Simian.Extensions
             }
         }
 
+        public bool ContainsObject(uint localID)
+        {
+            return sceneObjects.ContainsKey(localID);
+        }
+
+        public bool ContainsObject(UUID id)
+        {
+            return sceneObjects.ContainsKey(id);
+        }
+
+        public int ObjectCount()
+        {
+            return sceneObjects.Count;
+        }
+
+        public bool TryGetObject(uint localID, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(localID, out obj);
+        }
+
+        public bool TryGetObject(UUID id, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(id, out obj);
+        }
+
+        public void ForEachObject(Action<SimulationObject> action)
+        {
+            sceneObjects.ForEach(action);
+        }
+
+        public SimulationObject FindObject(Predicate<SimulationObject> predicate)
+        {
+            return sceneObjects.FindValue(predicate);
+        }
+
         public void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain)
         {
             if (OnTriggerSound != null)
@@ -676,30 +493,9 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(effect, PacketCategory.State);
         }
 
-        public bool ContainsObject(uint localID)
-        {
-            return sceneObjects.ContainsKey(localID);
-        }
+        #endregion Object Interfaces
 
-        public bool ContainsObject(UUID id)
-        {
-            return sceneObjects.ContainsKey(id);
-        }
-
-        public int ObjectCount()
-        {
-            return sceneObjects.Count;
-        }
-
-        public bool TryGetObject(uint localID, out SimulationObject obj)
-        {
-            return sceneObjects.TryGetValue(localID, out obj);
-        }
-
-        public bool TryGetObject(UUID id, out SimulationObject obj)
-        {
-            return sceneObjects.TryGetValue(id, out obj);
-        }
+        #region Agent Interfaces
 
         public bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags)
         {
@@ -756,6 +552,36 @@ namespace Simian.Extensions
             return true;
         }
 
+        void AgentRemove(object sender, Agent agent)
+        {
+            if (OnAgentRemove != null)
+                OnAgentRemove(sender, agent);
+
+            Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
+
+            lock (sceneAgents) sceneAgents.Remove(agent.ID);
+
+            KillObjectPacket kill = new KillObjectPacket();
+            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+            kill.ObjectData[0].ID = agent.Avatar.Prim.LocalID;
+
+            server.UDP.BroadcastPacket(kill, PacketCategory.State);
+
+            // Kill the EventQueue
+            RemoveEventQueue(agent.ID);
+
+            // Remove the UDP client
+            server.UDP.RemoveClient(agent);
+
+            // Notify everyone in the scene that this agent has gone offline
+            OfflineNotificationPacket offline = new OfflineNotificationPacket();
+            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+            offline.AgentBlock[0].AgentID = agent.ID;
+            server.UDP.BroadcastPacket(offline, PacketCategory.State);
+        }
+
         public void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
         {
             if (OnAgentAppearance != null)
@@ -786,16 +612,6 @@ namespace Simian.Extensions
                     }
                 );
             }
-        }
-
-        public void ForEachObject(Action<SimulationObject> action)
-        {
-            sceneObjects.ForEach(action);
-        }
-
-        public SimulationObject FindObject(Predicate<SimulationObject> predicate)
-        {
-            return sceneObjects.FindValue(predicate);
         }
 
         public bool TryGetAgent(UUID id, out Agent agent)
@@ -830,6 +646,8 @@ namespace Simian.Extensions
 
             return null;
         }
+
+        #endregion Agent Interfaces
 
         #region Terrain and Wind
 
@@ -946,6 +764,8 @@ namespace Simian.Extensions
 
         #endregion Terrain and Wind
 
+        #region Capabilities Interfaces
+
         public Uri CreateEventQueue(UUID agentID)
         {
             EventQueueServer eqServer = new EventQueueServer(server.HttpServer);
@@ -1039,6 +859,10 @@ namespace Simian.Extensions
             return true;
         }
 
+        #endregion Capabilities Interfaces
+
+        #region Callback Handlers
+
         bool EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
         {
             EventQueueServer eqServer = (EventQueueServer)state;
@@ -1073,6 +897,8 @@ namespace Simian.Extensions
             server.UDP.BroadcastPacket(online, PacketCategory.State);
         }
 
+        #endregion Callback Handlers
+
         // HACK: The reduction provider will deprecate this at some point
         void SynchronizeStateTo(Agent agent)
         {
@@ -1082,8 +908,12 @@ namespace Simian.Extensions
             // Send object updates for objects and avatars
             sceneObjects.ForEach(delegate(SimulationObject obj)
             {
-                ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(obj.Prim,
-                    obj.Prim.RegionHandle, obj.Prim.Flags, obj.CRC);
+                ObjectUpdatePacket update = new ObjectUpdatePacket();
+                update.RegionData.RegionHandle = regionHandle;
+                update.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+                update.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim, obj.Prim.Flags, obj.CRC);
+
                 server.UDP.SendPacket(agent.ID, update, PacketCategory.State);
             });
 
@@ -1181,6 +1011,388 @@ namespace Simian.Extensions
                     LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap[y, x].Height, x, y);
                     server.UDP.SendPacket(agent.ID, layer, PacketCategory.Terrain);
                 }
+            }
+        }
+
+        void SendObjectPacket(SimulationObject obj, bool canUseCompressed, bool canUseImproved, PrimFlags creatorFlags, UpdateFlags updateFlags)
+        {
+            if (!canUseImproved && !canUseCompressed)
+            {
+                #region ObjectUpdate
+
+                Logger.DebugLog("Sending ObjectUpdate");
+
+                if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
+                {
+                    // Send an update out to the creator
+                    ObjectUpdatePacket updateToOwner = new ObjectUpdatePacket();
+                    updateToOwner.RegionData.RegionHandle = regionHandle;
+                    updateToOwner.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                    updateToOwner.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+                    updateToOwner.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim,
+                        obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
+
+                    server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
+                }
+
+                // Send an update out to everyone else
+                ObjectUpdatePacket updateToOthers = new ObjectUpdatePacket();
+                updateToOthers.RegionData.RegionHandle = regionHandle;
+                updateToOthers.RegionData.TimeDilation = UInt16.MaxValue;
+                updateToOthers.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+                updateToOthers.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim,
+                    obj.Prim.Flags, obj.CRC);
+
+                server.Scene.ForEachAgent(
+                    delegate(Agent recipient)
+                    {
+                        if (recipient.ID != obj.Prim.OwnerID)
+                            server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
+                    }
+                );
+
+                #endregion ObjectUpdate
+            }
+            else if (!canUseImproved)
+            {
+                #region ObjectUpdateCompressed
+
+                #region Size calculation and field serialization
+
+                CompressedFlags flags = 0;
+                int size = 84;
+                byte[] textBytes = null;
+                byte[] mediaURLBytes = null;
+                byte[] particleBytes = null;
+                byte[] extraParamBytes = null;
+                byte[] nameValueBytes = null;
+                byte[] textureBytes = null;
+                byte[] textureAnimBytes = null;
+
+                if ((updateFlags & UpdateFlags.AngularVelocity) != 0)
+                {
+                    flags |= CompressedFlags.HasAngularVelocity;
+                    size += 12;
+                }
+                if ((updateFlags & UpdateFlags.ParentID) != 0)
+                {
+                    flags |= CompressedFlags.HasParent;
+                    size += 4;
+                }
+                if ((updateFlags & UpdateFlags.ScratchPad) != 0)
+                {
+                    switch (obj.Prim.PrimData.PCode)
+                    {
+                        case PCode.Grass:
+                        case PCode.Tree:
+                        case PCode.NewTree:
+                            flags |= CompressedFlags.Tree;
+                            size += 2; // Size byte plus one byte
+                            break;
+                        default:
+                            flags |= CompressedFlags.ScratchPad;
+                            size += 1 + obj.Prim.ScratchPad.Length; // Size byte plus bytes
+                            break;
+                    }
+                }
+                if ((updateFlags & UpdateFlags.Text) != 0)
+                {
+                    flags |= CompressedFlags.HasText;
+                    textBytes = Utils.StringToBytes(obj.Prim.Text);
+                    size += textBytes.Length; // Null-terminated, no size byte
+                    size += 4; // Text color
+                }
+                if ((updateFlags & UpdateFlags.MediaURL) != 0)
+                {
+                    flags |= CompressedFlags.MediaURL;
+                    mediaURLBytes = Utils.StringToBytes(obj.Prim.MediaURL);
+                    size += mediaURLBytes.Length; // Null-terminated, no size byte
+                }
+                if ((updateFlags & UpdateFlags.Particles) != 0)
+                {
+                    flags |= CompressedFlags.HasParticles;
+                    particleBytes = obj.Prim.ParticleSys.GetBytes();
+                    size += particleBytes.Length; // Should be exactly 86 bytes
+                }
+
+                // Extra Params
+                extraParamBytes = obj.Prim.GetExtraParamsBytes();
+                size += extraParamBytes.Length;
+
+                if ((updateFlags & UpdateFlags.Sound) != 0)
+                {
+                    flags |= CompressedFlags.HasSound;
+                    size += 25; // SoundID, SoundGain, SoundFlags, SoundRadius
+                }
+                if ((updateFlags & UpdateFlags.NameValue) != 0)
+                {
+                    flags |= CompressedFlags.HasNameValues;
+                    nameValueBytes = Utils.StringToBytes(NameValue.NameValuesToString(obj.Prim.NameValues));
+                    size += nameValueBytes.Length; // Null-terminated, no size byte
+                }
+
+                size += 23; // PrimData
+                size += 4; // Texture Length
+                textureBytes = obj.Prim.Textures.GetBytes();
+                size += textureBytes.Length; // Texture Entry
+
+                if ((updateFlags & UpdateFlags.TextureAnim) != 0)
+                {
+                    flags |= CompressedFlags.TextureAnimation;
+                    size += 4; // TextureAnim Length
+                    textureAnimBytes = obj.Prim.TextureAnim.GetBytes();
+                    size += textureAnimBytes.Length; // TextureAnim
+                }
+
+                #endregion Size calculation and field serialization
+
+                #region Packet serialization
+
+                int pos = 0;
+                byte[] data = new byte[size];
+
+                // UUID
+                obj.Prim.ID.ToBytes(data, 0);
+                pos += 16;
+                // LocalID
+                Utils.UIntToBytes(obj.Prim.LocalID, data, pos);
+                pos += 4;
+                // PCode
+                data[pos++] = (byte)obj.Prim.PrimData.PCode;
+                // State
+                data[pos++] = obj.Prim.PrimData.State;
+                // CRC
+                Utils.UIntToBytes(obj.CRC, data, pos);
+                pos += 4;
+                // Material
+                data[pos++] = (byte)obj.Prim.PrimData.Material;
+                // ClickAction
+                data[pos++] = (byte)obj.Prim.ClickAction;
+                // Scale
+                obj.Prim.Scale.ToBytes(data, pos);
+                pos += 12;
+                // Position
+                obj.Prim.Position.ToBytes(data, pos);
+                pos += 12;
+                // Rotation
+                obj.Prim.Rotation.ToBytes(data, pos);
+                pos += 12;
+                // Compressed Flags
+                Utils.UIntToBytes((uint)flags, data, pos);
+                pos += 4;
+                // OwnerID
+                obj.Prim.OwnerID.ToBytes(data, pos);
+                pos += 16;
+
+                if ((flags & CompressedFlags.HasAngularVelocity) != 0)
+                {
+                    obj.Prim.AngularVelocity.ToBytes(data, pos);
+                    pos += 12;
+                }
+                if ((flags & CompressedFlags.HasParent) != 0)
+                {
+                    Utils.UIntToBytes(obj.Prim.ParentID, data, pos);
+                    pos += 4;
+                }
+                if ((flags & CompressedFlags.ScratchPad) != 0)
+                {
+                    data[pos++] = (byte)obj.Prim.ScratchPad.Length;
+                    Buffer.BlockCopy(obj.Prim.ScratchPad, 0, data, pos, obj.Prim.ScratchPad.Length);
+                    pos += obj.Prim.ScratchPad.Length;
+                }
+                else if ((flags & CompressedFlags.Tree) != 0)
+                {
+                    data[pos++] = 1;
+                    data[pos++] = (byte)obj.Prim.TreeSpecies;
+                }
+                if ((flags & CompressedFlags.HasText) != 0)
+                {
+                    Buffer.BlockCopy(textBytes, 0, data, pos, textBytes.Length);
+                    pos += textBytes.Length;
+                    obj.Prim.TextColor.ToBytes(data, pos, false);
+                    pos += 4;
+                }
+                if ((flags & CompressedFlags.MediaURL) != 0)
+                {
+                    Buffer.BlockCopy(mediaURLBytes, 0, data, pos, mediaURLBytes.Length);
+                    pos += mediaURLBytes.Length;
+                }
+                if ((flags & CompressedFlags.HasParticles) != 0)
+                {
+                    Buffer.BlockCopy(particleBytes, 0, data, pos, particleBytes.Length);
+                    pos += particleBytes.Length;
+                }
+
+                // Extra Params
+                Buffer.BlockCopy(extraParamBytes, 0, data, pos, extraParamBytes.Length);
+                pos += extraParamBytes.Length;
+
+                if ((flags & CompressedFlags.HasSound) != 0)
+                {
+                    obj.Prim.Sound.ToBytes(data, pos);
+                    pos += 16;
+                    Utils.FloatToBytes(obj.Prim.SoundGain, data, pos);
+                    pos += 4;
+                    data[pos++] = (byte)obj.Prim.SoundFlags;
+                    Utils.FloatToBytes(obj.Prim.SoundRadius, data, pos);
+                    pos += 4;
+                }
+                if ((flags & CompressedFlags.HasNameValues) != 0)
+                {
+                    Buffer.BlockCopy(nameValueBytes, 0, data, pos, nameValueBytes.Length);
+                    pos += nameValueBytes.Length;
+                }
+
+                // Path PrimData
+                data[pos++] = (byte)obj.Prim.PrimData.PathCurve;
+                Utils.UInt16ToBytes(Primitive.PackBeginCut(obj.Prim.PrimData.PathBegin), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Primitive.PackEndCut(obj.Prim.PrimData.PathEnd), data, pos); pos += 2;
+                data[pos++] = Primitive.PackPathScale(obj.Prim.PrimData.PathScaleX);
+                data[pos++] = Primitive.PackPathScale(obj.Prim.PrimData.PathScaleY);
+                data[pos++] = (byte)Primitive.PackPathShear(obj.Prim.PrimData.PathShearX);
+                data[pos++] = (byte)Primitive.PackPathShear(obj.Prim.PrimData.PathShearY);
+                data[pos++] = (byte)Primitive.PackPathTwist(obj.Prim.PrimData.PathTwist);
+                data[pos++] = (byte)Primitive.PackPathTwist(obj.Prim.PrimData.PathTwistBegin);
+                data[pos++] = (byte)Primitive.PackPathTwist(obj.Prim.PrimData.PathRadiusOffset);
+                data[pos++] = (byte)Primitive.PackPathTaper(obj.Prim.PrimData.PathTaperX);
+                data[pos++] = (byte)Primitive.PackPathTaper(obj.Prim.PrimData.PathTaperY);
+                data[pos++] = Primitive.PackPathRevolutions(obj.Prim.PrimData.PathRevolutions);
+                data[pos++] = (byte)Primitive.PackPathTwist(obj.Prim.PrimData.PathSkew);
+                // Profile PrimData
+                data[pos++] = obj.Prim.PrimData.profileCurve;
+                Utils.UInt16ToBytes(Primitive.PackBeginCut(obj.Prim.PrimData.ProfileBegin), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Primitive.PackEndCut(obj.Prim.PrimData.ProfileEnd), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Primitive.PackProfileHollow(obj.Prim.PrimData.ProfileHollow), data, pos); pos += 2;
+
+                // Texture Length
+                Utils.UIntToBytes((uint)textureBytes.Length, data, pos);
+                pos += 4;
+                // Texture Entry
+                Buffer.BlockCopy(textureBytes, 0, data, pos, textureBytes.Length);
+                pos += textureBytes.Length;
+
+                if ((flags & CompressedFlags.TextureAnimation) != 0)
+                {
+                    Utils.UIntToBytes((uint)textureAnimBytes.Length, data, pos);
+                    pos += 4;
+                    Buffer.BlockCopy(textureAnimBytes, 0, data, pos, textureAnimBytes.Length);
+                    pos += textureAnimBytes.Length;
+                }
+
+                #endregion Packet serialization
+
+                #region Packet sending
+
+                //Logger.DebugLog("Sending ObjectUpdateCompressed with " + flags.ToString());
+
+                if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
+                {
+                    // Send an update out to the creator
+                    ObjectUpdateCompressedPacket updateToOwner = new ObjectUpdateCompressedPacket();
+                    updateToOwner.RegionData.RegionHandle = regionHandle;
+                    updateToOwner.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                    updateToOwner.ObjectData = new ObjectUpdateCompressedPacket.ObjectDataBlock[1];
+                    updateToOwner.ObjectData[0] = new ObjectUpdateCompressedPacket.ObjectDataBlock();
+                    updateToOwner.ObjectData[0].UpdateFlags = (uint)(obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner);
+                    updateToOwner.ObjectData[0].Data = data;
+
+                    server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
+                }
+
+                // Send an update out to everyone else
+                ObjectUpdateCompressedPacket updateToOthers = new ObjectUpdateCompressedPacket();
+                updateToOthers.RegionData.RegionHandle = regionHandle;
+                updateToOthers.RegionData.TimeDilation = UInt16.MaxValue;
+                updateToOthers.ObjectData = new ObjectUpdateCompressedPacket.ObjectDataBlock[1];
+                updateToOthers.ObjectData[0] = new ObjectUpdateCompressedPacket.ObjectDataBlock();
+                updateToOthers.ObjectData[0].UpdateFlags = (uint)obj.Prim.Flags;
+                updateToOthers.ObjectData[0].Data = data;
+
+                server.Scene.ForEachAgent(
+                    delegate(Agent recipient)
+                    {
+                        if (recipient.ID != obj.Prim.OwnerID)
+                            server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
+                    }
+                );
+
+                #endregion Packet sending
+
+                #endregion ObjectUpdateCompressed
+            }
+            else
+            {
+                #region ImprovedTerseObjectUpdate
+
+                Logger.DebugLog("Sending ImprovedTerseObjectUpdate");
+
+                int pos = 0;
+                byte[] data = new byte[(obj.Prim is Avatar ? 60 : 44)];
+
+                // LocalID
+                Utils.UIntToBytes(obj.Prim.LocalID, data, pos);
+                pos += 4;
+                // Avatar/CollisionPlane
+                data[pos++] = obj.Prim.PrimData.State;
+                if (obj.Prim is Avatar)
+                {
+                    data[pos++] = 1;
+                    obj.Prim.CollisionPlane.ToBytes(data, pos);
+                    pos += 16;
+                }
+                else
+                {
+                    ++pos;
+                }
+                // Position
+                obj.Prim.Position.ToBytes(data, pos);
+                pos += 12;
+
+                // Velocity
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.X, -128.0f, 128.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.Y, -128.0f, 128.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.Z, -128.0f, 128.0f), data, pos); pos += 2;
+                // Acceleration
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.X, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.Y, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.Z, -64.0f, 64.0f), data, pos); pos += 2;
+                // Rotation
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.X, -1.0f, 1.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.Y, -1.0f, 1.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.Z, -1.0f, 1.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.W, -1.0f, 1.0f), data, pos); pos += 2;
+                // Angular Velocity
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.X, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.Y, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.Z, -64.0f, 64.0f), data, pos); pos += 2;
+
+                ImprovedTerseObjectUpdatePacket update = new ImprovedTerseObjectUpdatePacket();
+                update.RegionData.RegionHandle = RegionHandle;
+                update.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                update.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[1];
+                update.ObjectData[0] = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
+                update.ObjectData[0].Data = data;
+
+                if ((updateFlags & UpdateFlags.Textures) != 0)
+                {
+                    byte[] textureBytes = obj.Prim.Textures.GetBytes();
+                    byte[] textureEntry = new byte[textureBytes.Length + 4];
+
+                    // Texture Length
+                    Utils.IntToBytes(textureBytes.Length, textureEntry, 0);
+                    // Texture
+                    Buffer.BlockCopy(textureBytes, 0, textureEntry, 4, textureBytes.Length);
+
+                    update.ObjectData[0].TextureEntry = textureEntry;
+                }
+                else
+                {
+                    update.ObjectData[0].TextureEntry = Utils.EmptyBytes;
+                }
+
+                server.UDP.BroadcastPacket(update, PacketCategory.State);
+
+                #endregion ImprovedTerseObjectUpdate
             }
         }
 
