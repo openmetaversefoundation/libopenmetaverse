@@ -755,7 +755,7 @@ namespace OpenMetaverse
             image.ObjectData = new ObjectImagePacket.ObjectDataBlock[1];
             image.ObjectData[0] = new ObjectImagePacket.ObjectDataBlock();
             image.ObjectData[0].ObjectLocalID = localID;
-            image.ObjectData[0].TextureEntry = textures.ToBytes();
+            image.ObjectData[0].TextureEntry = textures.GetBytes();
             image.ObjectData[0].MediaURL = Utils.StringToBytes(mediaUrl);
 
             Client.Network.SendPacket(image, simulator);
@@ -1537,7 +1537,7 @@ namespace OpenMetaverse
 
                         // Sound information
                         prim.Sound = block.Sound;
-                        prim.SoundFlags = block.Flags;
+                        prim.SoundFlags = (SoundFlags)block.Flags;
                         prim.SoundGain = block.Gain;
                         prim.SoundRadius = block.Radius;
 
@@ -1558,8 +1558,24 @@ namespace OpenMetaverse
                         prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
 
                         // PCode-specific data
-                        prim.GenericData = block.Data;
-
+                        switch (pcode)
+                        {
+                            case PCode.Grass:
+                            case PCode.Tree:
+                            case PCode.NewTree:
+                                if (block.Data.Length == 1)
+                                    prim.TreeSpecies = (Tree)block.Data[0];
+                                else
+                                    Logger.Log("Got a foliage update with an invalid TreeSpecies field", Helpers.LogLevel.Warning);
+                                prim.ScratchPad = Utils.EmptyBytes;
+                                break;
+                            default:
+                                prim.ScratchPad = new byte[block.Data.Length];
+                                if (block.Data.Length > 0)
+                                    Buffer.BlockCopy(block.Data, 0, prim.ScratchPad, 0, prim.ScratchPad.Length);
+                                break;
+                        }
+                        
                         // Packed parameters
                         prim.CollisionPlane = collisionPlane;
                         prim.Position = position;
@@ -1614,7 +1630,7 @@ namespace OpenMetaverse
                         avatar.AngularVelocity = angularVelocity;
                         avatar.NameValues = nameValues;
                         avatar.PrimData = data;
-                        avatar.GenericData = block.Data;
+                        if (block.Data.Length > 0) Logger.Log("Unexpected Data field for an avatar update, length " + block.Data.Length, Helpers.LogLevel.Warning);
                         avatar.ParentID = block.ParentID;
                         avatar.RegionHandle = update.RegionData.RegionHandle;
 
@@ -1747,7 +1763,7 @@ namespace OpenMetaverse
                         Utils.UInt16ToFloat(block.Data, pos + 4, -1.0f, 1.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 6, -1.0f, 1.0f));
                     pos += 8;
-                    // Angular velocity
+                    // Angular velocity (omega)
                     update.AngularVelocity = new Vector3(
                         Utils.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
@@ -1892,15 +1908,17 @@ namespace OpenMetaverse
                     // Tree data
                     if ((flags & CompressedFlags.Tree) != 0)
                     {
-                        prim.GenericData = new byte[1];
-                        prim.GenericData[0] = block.Data[i++];
+                        prim.TreeSpecies = (Tree)block.Data[i++];
+                        prim.ScratchPad = Utils.EmptyBytes;
                     }
                     // Scratch pad
                     else if ((flags & CompressedFlags.ScratchPad) != 0)
                     {
+                        prim.TreeSpecies = (Tree)0;
+
                         int size = block.Data[i++];
-                        prim.GenericData = new byte[size];
-                        Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
+                        prim.ScratchPad = new byte[size];
+                        Buffer.BlockCopy(block.Data, i, prim.ScratchPad, 0, size);
                         i += size;
                     }
 
@@ -1920,7 +1938,6 @@ namespace OpenMetaverse
 
                         // Text color
                         prim.TextColor = new Color4(block.Data, i, false);
-                        // FIXME: Is alpha inversed here as well?
                         i += 4;
                     }
                     else
@@ -1960,7 +1977,7 @@ namespace OpenMetaverse
 
                         prim.SoundGain = Utils.BytesToFloat(block.Data, i);
                         i += 4;
-                        prim.SoundFlags = block.Data[i++];
+                        prim.SoundFlags = (SoundFlags)block.Data[i++];
                         prim.SoundRadius = Utils.BytesToFloat(block.Data, i);
                         i += 4;
                     }

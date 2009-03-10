@@ -72,13 +72,13 @@ namespace Simian.Extensions
             SimulationObject simObj = new SimulationObject(prim, server);
             if (MasterAgent != null)
                 simObj.Prim.OwnerID = MasterAgent.ID;
-            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnNewAttachment(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
@@ -101,8 +101,9 @@ namespace Simian.Extensions
             SimulationObject obj;
             if (server.Scene.TryGetObject(update.LocalID, out obj))
             {
-                server.Scene.ObjectTransform(this, obj, update.Position, update.Rotation, update.Velocity,
-                    update.Acceleration, update.AngularVelocity);
+                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None,
+                    UpdateFlags.Acceleration | UpdateFlags.AngularVelocity | UpdateFlags.CollisionPlane |
+                    UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.Velocity);
             }
 
             if (update.LocalID == client.Self.LocalID)

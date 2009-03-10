@@ -4,6 +4,7 @@ using System.Threading;
 using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Rendering;
 
 namespace Simian.Extensions
 {
@@ -46,6 +47,8 @@ namespace Simian.Extensions
         {
             this.server = server;
 
+            server.Scene.OnObjectAddOrUpdate += Scene_OnObjectAddOrUpdate;
+
             server.UDP.RegisterPacketCallback(PacketType.AgentRequestSit, AgentRequestSitHandler);
             server.UDP.RegisterPacketCallback(PacketType.AgentSit, AgentSitHandler);
             server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
@@ -63,6 +66,27 @@ namespace Simian.Extensions
                 updateTimer.Dispose();
                 updateTimer = null;
             }
+        }
+
+        void Scene_OnObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags update)
+        {
+            bool forceMeshing = false;
+            bool forceTransform = false;
+
+            if ((update & UpdateFlags.Scale) != 0 ||
+                (update & UpdateFlags.Position) != 0 ||
+                (update & UpdateFlags.Rotation) != 0)
+            {
+                forceTransform = true;
+            }
+
+            if ((update & UpdateFlags.PrimData) != 0)
+            {
+                forceMeshing = true;
+            }
+
+            // TODO: This doesn't update children prims when their parents move
+            obj.GetWorldMesh(DetailLevel.Low, forceMeshing, forceTransform);
         }
 
         void UpdateTimer_Elapsed(object sender)
@@ -427,12 +451,13 @@ namespace Simian.Extensions
                 {
                     agent.Avatar.Prim.Flags &= ~PrimFlags.Physics;
                     agent.Avatar.Prim.ParentID = obj.Prim.LocalID;
-                    agent.Avatar.Prim.Position = Vector3.Zero;
-                    agent.Avatar.Prim.Position.X = obj.Prim.Scale.X * 0.5f;
-                    agent.Avatar.Prim.Position.Z = obj.Prim.Scale.Z * 0.5f;
-                    agent.Avatar.Prim.Position.Z += agent.Avatar.Prim.Scale.Z * 0.33f;
+                    agent.Avatar.Prim.Position = new Vector3(
+                        obj.Prim.Scale.X * 0.5f,
+                        obj.Prim.Scale.Z * 0.5f,
+                        agent.Avatar.Prim.Scale.Z * 0.33f);
 
-                    server.Scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None);
+                    server.Scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None,
+                        UpdateFlags.PrimFlags | UpdateFlags.ParentID | UpdateFlags.Position);
                     server.Avatars.SetDefaultAnimation(agent, Animations.SIT);
                     server.Avatars.SendAnimations(agent);
                 }
@@ -450,40 +475,36 @@ namespace Simian.Extensions
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
-            if (agent.Avatar.Prim.ParentID == 0)
-                agent.Avatar.Prim.Rotation = update.AgentData.BodyRotation;
-
-            agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
-            agent.State = (AgentState)update.AgentData.State;
-            agent.HideTitle = update.AgentData.Flags != 0;
-
-            if (agent.Avatar.Prim.ParentID > 0 && (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP) == AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP)
+            SimulationObject obj;
+            if (server.Scene.TryGetObject(agent.ID, out obj))
             {
-                SimulationObject obj;
-                if (server.Scene.TryGetObject(agent.Avatar.Prim.ParentID, out obj))
+                if (agent.Avatar.Prim.ParentID == 0)
+                    agent.Avatar.Prim.Rotation = update.AgentData.BodyRotation;
+
+                agent.ControlFlags = (AgentManager.ControlFlags)update.AgentData.ControlFlags;
+                agent.State = (AgentState)update.AgentData.State;
+                agent.HideTitle = update.AgentData.Flags != 0;
+
+                // Check for standing up
+                SimulationObject parent;
+                if (server.Scene.TryGetObject(agent.Avatar.Prim.ParentID, out parent) &&
+                    agent.Avatar.Prim.ParentID > 0 &&
+                    (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP) == AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP)
                 {
-                    agent.Avatar.Prim.Position = obj.Prim.Position
-                        + Vector3.Transform(obj.SitPosition, Matrix4.CreateFromQuaternion(obj.SitRotation))
+                    agent.Avatar.Prim.Position = parent.Prim.Position
+                        + Vector3.Transform(parent.SitPosition, Matrix4.CreateFromQuaternion(parent.SitRotation))
                         + Vector3.UnitZ;
-                }
-                else
-                {
-                    //TODO: get position from course locations?
-                    agent.Avatar.Prim.Position = Vector3.Zero;
+
+                    agent.Avatar.Prim.ParentID = 0;
+                    
+                    server.Avatars.SetDefaultAnimation(agent, Animations.STAND);
+                    server.Avatars.SendAnimations(agent);
+
+                    agent.Avatar.Prim.Flags |= PrimFlags.Physics;
                 }
 
-                agent.Avatar.Prim.ParentID = 0;
-                
-                server.Avatars.SetDefaultAnimation(agent, Animations.STAND);
-                server.Avatars.SendAnimations(agent);
-
-                agent.Avatar.Prim.Flags |= PrimFlags.Physics;
+                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position | UpdateFlags.Rotation);
             }
-
-            ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar.Prim,
-                server.Scene.RegionHandle, agent.Avatar.Prim.Flags, 0);
-
-            server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);
         }
 
         void SetAlwaysRunHandler(Packet packet, Agent agent)

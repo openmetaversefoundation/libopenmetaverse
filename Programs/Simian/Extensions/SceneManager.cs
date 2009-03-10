@@ -43,12 +43,8 @@ namespace Simian.Extensions
         TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
         Vector2[,] windSpeeds = new Vector2[16, 16];
 
-        public event ObjectAddCallback OnObjectAdd;
+        public event ObjectAddOrUpdateCallback OnObjectAddOrUpdate;
         public event ObjectRemoveCallback OnObjectRemove;
-        public event ObjectTransformCallback OnObjectTransform;
-        public event ObjectFlagsCallback OnObjectFlags;
-        public event ObjectModifyCallback OnObjectModify;
-        public event ObjectModifyTexturesCallback OnObjectModifyTextures;
         public event ObjectSetRotationAxisCallback OnObjectSetRotationAxis;
         public event ObjectApplyImpulseCallback OnObjectApplyImpulse;
         public event ObjectApplyRotationalImpulseCallback OnObjectApplyRotationalImpulse;
@@ -94,8 +90,748 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            ForEachAgent(delegate(Agent agent) { AgentRemove(this, agent); });
+            while (sceneAgents.Count > 0)
+            {
+                Dictionary<UUID, Agent>.ValueCollection.Enumerator e = sceneAgents.Values.GetEnumerator();
+                e.MoveNext();
+                AgentRemove(this, e.Current);
+            }
         }
+
+        public void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags)
+        {
+            if (OnObjectAddOrUpdate != null)
+            {
+                OnObjectAddOrUpdate(sender, obj, ownerID, scriptStartParam, creatorFlags, updateFlags);
+            }
+
+            #region Initialize new objects
+
+            // Check if the object already exists in the scene
+            if (!sceneObjects.ContainsKey(obj.Prim.ID))
+            {
+                // Enable some default flags that all objects will have
+                obj.Prim.Flags |= server.Permissions.GetDefaultObjectFlags();
+
+                // Object did not exist before, so there's no way it could contain inventory
+                obj.Prim.Flags |= PrimFlags.InventoryEmpty;
+
+                // Fun Fact: Prim.OwnerID is only used by the LL viewer to mute sounds
+                obj.Prim.OwnerID = ownerID;
+
+                // Other than storing tree species, I have no idea what this does
+                obj.Prim.ScratchPad = Utils.EmptyBytes;
+
+                // Assign a unique LocalID to this object if no LocalID is set
+                if (obj.Prim.LocalID == 0)
+                    obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+
+                // Assign a random ID to this object if no ID is set
+                if (obj.Prim.ID == UUID.Zero)
+                    obj.Prim.ID = UUID.Random();
+
+                // Set the RegionHandle if no RegionHandle is set
+                if (obj.Prim.RegionHandle == 0)
+                    obj.Prim.RegionHandle = server.Scene.RegionHandle;
+
+                // Make sure this object has properties
+                if (obj.Prim.Properties == null)
+                {
+                    obj.Prim.Properties = new Primitive.ObjectProperties();
+                    obj.Prim.Properties.CreationDate = DateTime.Now;
+                    obj.Prim.Properties.CreatorID = ownerID;
+                    obj.Prim.Properties.Name = "New Object";
+                    obj.Prim.Properties.ObjectID = obj.Prim.ID;
+                    obj.Prim.Properties.OwnerID = ownerID;
+                    obj.Prim.Properties.Permissions = server.Permissions.GetDefaultPermissions();
+                    obj.Prim.Properties.SalePrice = 10;
+                }
+
+                // Set the default scale
+                if (obj.Prim.Scale == Vector3.Zero)
+                    obj.Prim.Scale = new Vector3(0.5f, 0.5f, 0.5f);
+
+                // Set the collision plane
+                if (obj.Prim.CollisionPlane == Vector4.Zero)
+                    obj.Prim.CollisionPlane = Vector4.UnitW;
+
+                // Set default textures if none are set
+                if (obj.Prim.Textures == null)
+                    obj.Prim.Textures = new Primitive.TextureEntry(new UUID("89556747-24cb-43ed-920b-47caed15465f")); // Plywood
+
+                // Add the object to the scene dictionary
+                sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
+            }
+
+            #endregion Initialize new objects
+
+            // Reset the prim CRC
+            obj.CRC = 0;
+
+            #region UpdateFlags to packet type conversion
+
+            bool canUseCompressed = true;
+            bool canUseImproved = true;
+
+            if ((updateFlags & UpdateFlags.FullUpdate) == UpdateFlags.FullUpdate || creatorFlags != PrimFlags.None)
+            {
+                canUseCompressed = false;
+                canUseImproved = false;
+            }
+            else
+            {
+                if ((updateFlags & UpdateFlags.Velocity) != 0 ||
+                    (updateFlags & UpdateFlags.Acceleration) != 0 ||
+                    (updateFlags & UpdateFlags.CollisionPlane) != 0 ||
+                    (updateFlags & UpdateFlags.Joint) != 0)
+                {
+                    canUseCompressed = false;
+                }
+                
+                if ((updateFlags & UpdateFlags.PrimFlags) != 0 ||
+                    (updateFlags & UpdateFlags.ParentID) != 0 ||
+                    (updateFlags & UpdateFlags.Scale) != 0 ||
+                    (updateFlags & UpdateFlags.PrimData) != 0 ||
+                    (updateFlags & UpdateFlags.Text) != 0 ||
+                    (updateFlags & UpdateFlags.NameValue) != 0 ||
+                    (updateFlags & UpdateFlags.ExtraData) != 0 ||
+                    (updateFlags & UpdateFlags.TextureAnim) != 0 ||
+                    (updateFlags & UpdateFlags.Sound) != 0 ||
+                    (updateFlags & UpdateFlags.Particles) != 0 ||
+                    (updateFlags & UpdateFlags.Material) != 0 ||
+                    (updateFlags & UpdateFlags.ClickAction) != 0 ||
+                    (updateFlags & UpdateFlags.MediaURL) != 0 ||
+                    (updateFlags & UpdateFlags.Joint) != 0)
+                {
+                    canUseImproved = false;
+                }
+            }
+
+            #endregion UpdateFlags to packet type conversion
+
+            SendObjectPacket(obj, canUseCompressed, canUseImproved, creatorFlags, updateFlags);
+        }
+
+        void SendObjectPacket(SimulationObject obj, bool canUseCompressed, bool canUseImproved, PrimFlags creatorFlags, UpdateFlags updateFlags)
+        {
+            if (!canUseImproved && !canUseCompressed)
+            {
+                #region ObjectUpdate
+
+                Logger.DebugLog("Sending ObjectUpdate");
+
+                if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
+                {
+                    // Send an update out to the creator
+                    ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
+                        obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
+                    server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
+                }
+
+                // Send an update out to everyone else
+                ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
+                    obj.Prim.Flags, obj.CRC);
+                server.Scene.ForEachAgent(
+                    delegate(Agent recipient)
+                    {
+                        if (recipient.ID != obj.Prim.OwnerID)
+                            server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
+                    }
+                );
+
+                #endregion ObjectUpdate
+            }
+            else if (!canUseImproved)
+            {
+                #region ObjectUpdateCompressed
+
+                ObjectUpdateCompressedPacket update = new ObjectUpdateCompressedPacket();
+                update.RegionData.RegionHandle = RegionHandle;
+                update.RegionData.TimeDilation = (ushort)(1f * (float)UInt16.MaxValue); // TODO: Implement this
+                update.ObjectData = new ObjectUpdateCompressedPacket.ObjectDataBlock[1];
+                update.ObjectData[0] = new ObjectUpdateCompressedPacket.ObjectDataBlock();
+
+                CompressedFlags flags = 0;
+                int size = 0;
+                byte[] textBytes;
+                byte[] mediaURLBytes;
+
+                if ((updateFlags & UpdateFlags.AngularVelocity) != 0)
+                {
+                    flags |= CompressedFlags.HasAngularVelocity;
+                    size += 12;
+                }
+                if ((updateFlags & UpdateFlags.ParentID) != 0)
+                {
+                    flags |= CompressedFlags.HasParent;
+                    size += 4;
+                }
+                if ((updateFlags & UpdateFlags.ScratchPad) != 0)
+                {
+                    switch (obj.Prim.PrimData.PCode)
+                    {
+                        case PCode.Grass:
+                        case PCode.Tree:
+                        case PCode.NewTree:
+                            flags |= CompressedFlags.Tree;
+                            size += 2;
+                            break;
+                        default:
+                            flags |= CompressedFlags.ScratchPad;
+                            size += 1 + obj.Prim.ScratchPad.Length;
+                            break;
+                    }
+                }
+                if ((updateFlags & UpdateFlags.Text) != 0)
+                {
+                    flags |= CompressedFlags.HasText;
+                    textBytes = Utils.StringToBytes(obj.Prim.Text);
+                    size += textBytes.Length;
+                }
+                if ((updateFlags & UpdateFlags.MediaURL) != 0)
+                {
+                    flags |= CompressedFlags.MediaURL;
+                    mediaURLBytes = Utils.StringToBytes(obj.Prim.MediaURL);
+                    size += mediaURLBytes.Length;
+                }
+                if ((updateFlags & UpdateFlags.Particles) != 0)
+                {
+                    flags |= CompressedFlags.HasParticles;
+                    // size +=
+                }
+                // Extra Params
+                if ((updateFlags & UpdateFlags.Sound) != 0)
+                {
+                    flags |= CompressedFlags.HasSound;
+                }
+                if ((updateFlags & UpdateFlags.NameValue) != 0)
+                {
+                    flags |= CompressedFlags.HasNameValues;
+                    //size += 
+                }
+                // PrimData
+                // Texture Length
+                // Texture Entry
+                if ((updateFlags & UpdateFlags.TextureAnim) != 0)
+                {
+                    flags |= CompressedFlags.TextureAnimation;
+                    // size += 4 +
+                }
+
+                Logger.DebugLog("Sending ObjectUpdateCompressed with " + flags.ToString());
+
+                update.ObjectData[0].UpdateFlags = (uint)flags;
+                //update.ObjectData[0].Data = data;
+                //server.UDP.BroadcastPacket(update, PacketCategory.State);
+
+                #endregion ObjectUpdateCompressed
+            }
+            else
+            {
+                #region ImprovedTerseObjectUpdate
+
+                Logger.DebugLog("Sending ImprovedTerseObjectUpdate");
+
+                int pos = 0;
+                byte[] data = new byte[(obj.Prim is Avatar ? 60 : 44)];
+
+                // LocalID
+                Utils.UIntToBytes(obj.Prim.LocalID, data, pos);
+                pos += 4;
+                // Avatar/CollisionPlane
+                data[pos++] = obj.Prim.PrimData.State;
+                if (obj.Prim is Avatar)
+                {
+                    data[pos++] = 1;
+                    obj.Prim.CollisionPlane.ToBytes(data, pos);
+                    pos += 16;
+                }
+                else
+                {
+                    ++pos;
+                }
+                // Position
+                obj.Prim.Position.ToBytes(data, pos);
+                pos += 12;
+
+                // Velocity
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.X, -128.0f, 128.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.Y, -128.0f, 128.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Velocity.Z, -128.0f, 128.0f), data, pos); pos += 2;
+                // Acceleration
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.X, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.Y, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Acceleration.Z, -64.0f, 64.0f), data, pos); pos += 2;
+                // Rotation
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.X, -1.0f, 1.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.Y, -1.0f, 1.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.Z, -1.0f, 1.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.Rotation.W, -1.0f, 1.0f), data, pos); pos += 2;
+                // Angular Velocity
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.X, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.Y, -64.0f, 64.0f), data, pos); pos += 2;
+                Utils.UInt16ToBytes(Utils.FloatToUInt16(obj.Prim.AngularVelocity.Z, -64.0f, 64.0f), data, pos); pos += 2;
+
+                ImprovedTerseObjectUpdatePacket update = new ImprovedTerseObjectUpdatePacket();
+                update.RegionData.RegionHandle = RegionHandle;
+                update.RegionData.TimeDilation = (ushort)(1f * (float)UInt16.MaxValue); // TODO: Implement this
+                update.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[1];
+                update.ObjectData[0] = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
+                update.ObjectData[0].Data = data;
+
+                if ((updateFlags & UpdateFlags.Textures) != 0)
+                {
+                    byte[] textureBytes = obj.Prim.Textures.GetBytes();
+                    byte[] textureEntry = new byte[textureBytes.Length + 4];
+
+                    // Texture Length
+                    Utils.IntToBytes(textureBytes.Length, textureEntry, 0);
+                    // Texture
+                    Buffer.BlockCopy(textureBytes, 0, textureEntry, 4, textureBytes.Length);
+
+                    update.ObjectData[0].TextureEntry = textureEntry;
+                }
+                else
+                {
+                    update.ObjectData[0].TextureEntry = Utils.EmptyBytes;
+                }
+
+                server.UDP.BroadcastPacket(update, PacketCategory.State);
+
+                #endregion ImprovedTerseObjectUpdate
+            }
+        }
+
+        public bool ObjectRemove(object sender, uint localID)
+        {
+            SimulationObject obj;
+            Agent agent;
+
+            if (sceneObjects.TryGetValue(localID, out obj))
+            {
+                if (sceneAgents.TryGetValue(obj.Prim.ID, out agent))
+                    AgentRemove(sender, agent);
+
+                if (OnObjectRemove != null)
+                    OnObjectRemove(sender, obj);
+
+                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
+
+                KillObjectPacket kill = new KillObjectPacket();
+                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool ObjectRemove(object sender, UUID id)
+        {
+            SimulationObject obj;
+            Agent agent;
+
+            if (sceneAgents.TryGetValue(id, out agent))
+                AgentRemove(sender, agent);
+
+            if (sceneObjects.TryGetValue(id, out obj))
+            {
+                if (OnObjectRemove != null)
+                    OnObjectRemove(sender, obj);
+
+                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
+
+                KillObjectPacket kill = new KillObjectPacket();
+                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+                kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                return true;
+            }
+
+            return false;
+        }
+
+        void AgentRemove(object sender, Agent agent)
+        {
+            if (OnAgentRemove != null)
+                OnAgentRemove(sender, agent);
+
+            Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
+
+            lock (sceneAgents) sceneAgents.Remove(agent.ID);
+
+            KillObjectPacket kill = new KillObjectPacket();
+            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+            kill.ObjectData[0].ID = agent.Avatar.Prim.LocalID;
+
+            server.UDP.BroadcastPacket(kill, PacketCategory.State);
+
+            // Kill the EventQueue
+            RemoveEventQueue(agent.ID);
+
+            // Remove the UDP client
+            server.UDP.RemoveClient(agent);
+
+            // Notify everyone in the scene that this agent has gone offline
+            OfflineNotificationPacket offline = new OfflineNotificationPacket();
+            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
+            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
+            offline.AgentBlock[0].AgentID = agent.ID;
+            server.UDP.BroadcastPacket(offline, PacketCategory.State);
+        }
+
+        public void ObjectSetRotationAxis(object sender, SimulationObject obj, Vector3 rotationAxis)
+        {
+            if (OnObjectSetRotationAxis != null)
+            {
+                OnObjectSetRotationAxis(sender, obj, rotationAxis);
+            }
+
+            // Update the object
+            obj.RotationAxis = rotationAxis;
+        }
+
+        public void ObjectApplyImpulse(object sender, SimulationObject obj, Vector3 impulse)
+        {
+            if (OnObjectApplyImpulse != null)
+            {
+                OnObjectApplyImpulse(sender, obj, impulse);
+            }
+
+            // FIXME:
+        }
+
+        public void ObjectApplyRotationalImpulse(object sender, SimulationObject obj, Vector3 impulse)
+        {
+            if (OnObjectApplyRotationalImpulse != null)
+            {
+                OnObjectApplyRotationalImpulse(sender, obj, impulse);
+            }
+
+            // FIXME:
+        }
+
+        public void ObjectSetTorque(object sender, SimulationObject obj, Vector3 torque)
+        {
+            if (OnObjectSetTorque != null)
+            {
+                OnObjectSetTorque(sender, obj, torque);
+            }
+
+            obj.Torque = torque;
+        }
+
+        public void ObjectAnimate(object sender, UUID senderID, UUID objectID, AnimationTrigger[] animations)
+        {
+            if (OnObjectAnimate != null)
+            {
+                OnObjectAnimate(sender, senderID, objectID, animations);
+            }
+
+            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
+            sendAnim.Sender.ID = senderID;
+            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[1];
+            sendAnim.AnimationSourceList[0] = new AvatarAnimationPacket.AnimationSourceListBlock();
+            sendAnim.AnimationSourceList[0].ObjectID = objectID;
+
+            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[animations.Length];
+            for (int i = 0; i < animations.Length; i++)
+            {
+                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
+                sendAnim.AnimationList[i].AnimID = animations[i].AnimationID;
+                sendAnim.AnimationList[i].AnimSequenceID = animations[i].SequenceID;
+            }
+
+            server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+        }
+
+        public void ObjectChat(object sender, UUID ownerID, UUID sourceID, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType,
+            string fromName, Vector3 position, int channel, string message)
+        {
+            if (OnObjectChat != null)
+            {
+                OnObjectChat(sender, ownerID, sourceID, audible, type, sourceType, fromName, position, channel, message);
+            }
+
+            if (channel == 0)
+            {
+                // TODO: Reduction provider will impose the chat radius
+                ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
+                chat.ChatData.Audible = (byte)audible;
+                chat.ChatData.ChatType = (byte)type;
+                chat.ChatData.OwnerID = ownerID;
+                chat.ChatData.SourceID = sourceID;
+                chat.ChatData.SourceType = (byte)sourceType;
+                chat.ChatData.Position = position;
+                chat.ChatData.FromName = Utils.StringToBytes(fromName);
+                chat.ChatData.Message = Utils.StringToBytes(message);
+
+                server.UDP.BroadcastPacket(chat, PacketCategory.Messaging);
+            }
+        }
+
+        public void ObjectUndo(object sender, SimulationObject obj)
+        {
+            if (OnObjectUndo != null)
+            {
+                OnObjectUndo(sender, obj);
+            }
+
+            Primitive prim = obj.UndoSteps.DequeueLast();
+            if (prim != null)
+            {
+                Logger.Log(String.Format("Performing undo on object {0}", obj.Prim.ID), Helpers.LogLevel.Debug);
+
+                obj.RedoSteps.Enqueue(prim);
+                obj.Prim = prim;
+
+                // Inform clients
+                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            }
+            else
+            {
+                Logger.Log(String.Format("Undo requested on object {0} with no remaining undo steps", obj.Prim.ID),
+                    Helpers.LogLevel.Debug);
+            }
+        }
+
+        public void ObjectRedo(object sender, SimulationObject obj)
+        {
+            if (OnObjectRedo != null)
+            {
+                OnObjectRedo(sender, obj);
+            }
+
+            Primitive prim = obj.RedoSteps.DequeueLast();
+            if (prim != null)
+            {
+                Logger.Log(String.Format("Performing redo on object {0}", obj.Prim.ID), Helpers.LogLevel.Debug);
+
+                obj.UndoSteps.Enqueue(prim);
+                obj.Prim = prim;
+
+                // Inform clients
+                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            }
+            else
+            {
+                Logger.Log(String.Format("Redo requested on object {0} with no remaining redo steps", obj.Prim.ID),
+                    Helpers.LogLevel.Debug);
+            }
+        }
+
+        public void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain)
+        {
+            if (OnTriggerSound != null)
+            {
+                OnTriggerSound(sender, objectID, parentID, ownerID, soundID, position, gain);
+            }
+
+            SoundTriggerPacket sound = new SoundTriggerPacket();
+            sound.SoundData.Handle = server.Scene.RegionHandle;
+            sound.SoundData.ObjectID = objectID;
+            sound.SoundData.ParentID = parentID;
+            sound.SoundData.OwnerID = ownerID;
+            sound.SoundData.Position = position;
+            sound.SoundData.SoundID = soundID;
+            sound.SoundData.Gain = gain;
+
+            server.UDP.BroadcastPacket(sound, PacketCategory.State);
+        }
+
+        public void TriggerEffects(object sender, ViewerEffect[] effects)
+        {
+            if (OnTriggerEffects != null)
+            {
+                OnTriggerEffects(sender, effects);
+            }
+
+            ViewerEffectPacket effect = new ViewerEffectPacket();
+            effect.AgentData.AgentID = UUID.Zero;
+            effect.AgentData.SessionID = UUID.Zero;
+
+            effect.Effect = new ViewerEffectPacket.EffectBlock[effects.Length];
+
+            for (int i = 0; i < effects.Length; i++)
+            {
+                ViewerEffect currentEffect = effects[i];
+                ViewerEffectPacket.EffectBlock block = new ViewerEffectPacket.EffectBlock();
+
+                block.AgentID = currentEffect.AgentID;
+                block.Color = currentEffect.Color.GetBytes(true);
+                block.Duration = currentEffect.Duration;
+                block.ID = currentEffect.EffectID;
+                block.Type = (byte)currentEffect.Type;
+                block.TypeData = currentEffect.TypeData;
+
+                effect.Effect[i] = block;
+            }
+
+            server.UDP.BroadcastPacket(effect, PacketCategory.State);
+        }
+
+        public bool ContainsObject(uint localID)
+        {
+            return sceneObjects.ContainsKey(localID);
+        }
+
+        public bool ContainsObject(UUID id)
+        {
+            return sceneObjects.ContainsKey(id);
+        }
+
+        public int ObjectCount()
+        {
+            return sceneObjects.Count;
+        }
+
+        public bool TryGetObject(uint localID, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(localID, out obj);
+        }
+
+        public bool TryGetObject(UUID id, out SimulationObject obj)
+        {
+            return sceneObjects.TryGetValue(id, out obj);
+        }
+
+        public bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags)
+        {
+            // Check if the agent already exists in the scene
+            lock (sceneAgents)
+            {
+                if (sceneAgents.ContainsKey(agent.ID))
+                    sceneAgents.Remove(agent.ID);
+            }
+
+            // Avatars always have physics
+            agent.Avatar.Prim.Flags |= PrimFlags.Physics;
+
+            // Default avatar values
+            agent.Avatar.Prim.Position = new Vector3(128f, 128f, 25f);
+            agent.Avatar.Prim.Rotation = Quaternion.Identity;
+            agent.Avatar.Prim.Scale = new Vector3(0.45f, 0.6f, 1.9f);
+            agent.Avatar.Prim.PrimData.Material = Material.Flesh;
+            agent.Avatar.Prim.PrimData.PCode = PCode.Avatar;
+            agent.Avatar.Prim.Textures = new Primitive.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
+
+            // Set the avatar name
+            NameValue[] name = new NameValue[2];
+            name[0] = new NameValue("FirstName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
+                NameValue.SendtoType.SimViewer, agent.FirstName);
+            name[1] = new NameValue("LastName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
+                NameValue.SendtoType.SimViewer, agent.LastName);
+            agent.Avatar.Prim.NameValues = name;
+
+            // Give testers a provisionary balance of 1000L
+            agent.Balance = 1000;
+
+            // Some default avatar prim properties
+            agent.Avatar.Prim.Properties = new Primitive.ObjectProperties();
+            agent.Avatar.Prim.Properties.CreationDate = Utils.UnixTimeToDateTime(agent.CreationTime);
+            agent.Avatar.Prim.Properties.Name = agent.FullName;
+            agent.Avatar.Prim.Properties.ObjectID = agent.ID;
+
+            if (agent.Avatar.Prim.LocalID == 0)
+            {
+                // Assign a unique LocalID to this agent
+                agent.Avatar.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
+            }
+
+            if (OnAgentAdd != null)
+                OnAgentAdd(sender, agent, creatorFlags);
+
+            // Add the agent to the scene dictionary
+            lock (sceneAgents) sceneAgents[agent.ID] = agent;
+
+            // Send out an update to everyone
+            //ObjectAdd(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None);
+
+            return true;
+        }
+
+        public void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
+        {
+            if (OnAgentAppearance != null)
+            {
+                OnAgentAppearance(sender, agent, textures, visualParams);
+            }
+
+            // Broadcast an object update for this avatar
+            // TODO: Is this necessary here?
+            //ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
+            //    regionHandle, agent.Flags);
+            //server.UDP.BroadcastPacket(update, PacketCategory.State);
+
+            // Update the avatar
+            agent.Avatar.Prim.Textures = textures;
+            if (visualParams != null && visualParams.Length > 1)
+                agent.VisualParams = visualParams;
+
+            if (agent.VisualParams != null)
+            {
+                // Send the appearance packet to all other clients
+                AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
+                ForEachAgent(
+                    delegate(Agent recipient)
+                    {
+                        if (recipient != agent)
+                            server.UDP.SendPacket(recipient.ID, appearance, PacketCategory.State);
+                    }
+                );
+            }
+        }
+
+        public void ForEachObject(Action<SimulationObject> action)
+        {
+            sceneObjects.ForEach(action);
+        }
+
+        public SimulationObject FindObject(Predicate<SimulationObject> predicate)
+        {
+            return sceneObjects.FindValue(predicate);
+        }
+
+        public bool TryGetAgent(UUID id, out Agent agent)
+        {
+            return sceneAgents.TryGetValue(id, out agent);
+        }
+
+        public int AgentCount()
+        {
+            return sceneAgents.Count;
+        }
+
+        public void ForEachAgent(Action<Agent> action)
+        {
+            lock (sceneAgents)
+            {
+                foreach (Agent agent in sceneAgents.Values)
+                    action(agent);
+            }
+        }
+
+        public Agent FindAgent(Predicate<Agent> predicate)
+        {
+            lock (sceneAgents)
+            {
+                foreach (Agent agent in sceneAgents.Values)
+                {
+                    if (predicate(agent))
+                        return agent;
+                }
+            }
+
+            return null;
+        }
+
+        #region Terrain and Wind
 
         public float GetTerrainHeightAt(float fx, float fy)
         {
@@ -208,656 +944,7 @@ namespace Simian.Extensions
             windSpeeds[y, x] = windSpeed;
         }
 
-        public bool ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags)
-        {
-            if (OnObjectAdd != null)
-            {
-                OnObjectAdd(sender, obj, ownerID, scriptStartParam, creatorFlags);
-            }
-
-            // Check if the object already exists in the scene
-            SimulationObject oldObj;
-            if (sceneObjects.TryGetValue(obj.Prim.ID, out oldObj))
-            {
-                sceneObjects.Remove(oldObj.Prim.LocalID, oldObj.Prim.ID);
-
-                // Point the new object at the old undo/redo queues
-                obj.UndoSteps = oldObj.UndoSteps;
-                obj.RedoSteps = oldObj.RedoSteps;
-            }
-            else
-            {
-                // Enable some default flags that all objects will have
-                obj.Prim.Flags |= server.Permissions.GetDefaultObjectFlags();
-
-                // Object did not exist before, so there's no way it could contain inventory
-                obj.Prim.Flags |= PrimFlags.InventoryEmpty;
-
-                // Fun Fact: Prim.OwnerID is only used by the LL viewer to mute sounds
-                obj.Prim.OwnerID = ownerID;
-
-                // Assign a unique LocalID to this object if no LocalID is set
-                if (obj.Prim.LocalID == 0)
-                    obj.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
-
-                // Assign a random ID to this object if no ID is set
-                if (obj.Prim.ID == UUID.Zero)
-                    obj.Prim.ID = UUID.Random();
-
-                // Set the RegionHandle if no RegionHandle is set
-                if (obj.Prim.RegionHandle == 0)
-                    obj.Prim.RegionHandle = server.Scene.RegionHandle;
-
-                // Make sure this object has properties
-                if (obj.Prim.Properties == null)
-                {
-                    obj.Prim.Properties = new Primitive.ObjectProperties();
-                    obj.Prim.Properties.CreationDate = DateTime.Now;
-                    obj.Prim.Properties.CreatorID = ownerID;
-                    obj.Prim.Properties.Name = "New Object";
-                    obj.Prim.Properties.ObjectID = obj.Prim.ID;
-                    obj.Prim.Properties.OwnerID = ownerID;
-                    obj.Prim.Properties.Permissions = server.Permissions.GetDefaultPermissions();
-                    obj.Prim.Properties.SalePrice = 10;
-                }
-
-                // Set the default scale
-                if (obj.Prim.Scale == Vector3.Zero)
-                    obj.Prim.Scale = new Vector3(0.5f, 0.5f, 0.5f);
-
-                // Set default textures if none are set
-                if (obj.Prim.Textures == null)
-                    obj.Prim.Textures = new Primitive.TextureEntry(new UUID("89556747-24cb-43ed-920b-47caed15465f")); // Plywood
-            }
-
-            // Reset the prim CRC
-            obj.CRC = 0;
-
-            // Add the object to the scene dictionary
-            sceneObjects.Add(obj.Prim.LocalID, obj.Prim.ID, obj);
-
-            if (sceneAgents.ContainsKey(obj.Prim.OwnerID))
-            {
-                // Send an update out to the creator
-                ObjectUpdatePacket updateToOwner = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                    obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
-                server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
-            }
-
-            // Send an update out to everyone else
-            ObjectUpdatePacket updateToOthers = SimulationObject.BuildFullUpdate(obj.Prim, regionHandle,
-                obj.Prim.Flags, obj.CRC);
-            server.Scene.ForEachAgent(
-                delegate(Agent recipient)
-                {
-                    if (recipient.ID != obj.Prim.OwnerID)
-                        server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
-                }
-            );
-
-            return true;
-        }
-
-        public bool ObjectRemove(object sender, uint localID)
-        {
-            SimulationObject obj;
-            Agent agent;
-
-            if (sceneObjects.TryGetValue(localID, out obj))
-            {
-                if (sceneAgents.TryGetValue(obj.Prim.ID, out agent))
-                    AgentRemove(sender, agent);
-
-                if (OnObjectRemove != null)
-                    OnObjectRemove(sender, obj);
-
-                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
-
-                KillObjectPacket kill = new KillObjectPacket();
-                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                kill.ObjectData[0].ID = obj.Prim.LocalID;
-
-                server.UDP.BroadcastPacket(kill, PacketCategory.State);
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool ObjectRemove(object sender, UUID id)
-        {
-            SimulationObject obj;
-            Agent agent;
-
-            if (sceneAgents.TryGetValue(id, out agent))
-                AgentRemove(sender, agent);
-
-            if (sceneObjects.TryGetValue(id, out obj))
-            {
-                if (OnObjectRemove != null)
-                    OnObjectRemove(sender, obj);
-
-                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
-
-                KillObjectPacket kill = new KillObjectPacket();
-                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                kill.ObjectData[0].ID = obj.Prim.LocalID;
-
-                server.UDP.BroadcastPacket(kill, PacketCategory.State);
-                return true;
-            }
-
-            return false;
-        }
-
-        void AgentRemove(object sender, Agent agent)
-        {
-            if (OnAgentRemove != null)
-                OnAgentRemove(sender, agent);
-
-            Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
-
-            sceneAgents.Remove(agent.ID);
-
-            KillObjectPacket kill = new KillObjectPacket();
-            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-            kill.ObjectData[0].ID = agent.Avatar.Prim.LocalID;
-
-            server.UDP.BroadcastPacket(kill, PacketCategory.State);
-
-            // Kill the EventQueue
-            RemoveEventQueue(agent.ID);
-
-            // Remove the UDP client
-            server.UDP.RemoveClient(agent);
-
-            // Notify everyone in the scene that this agent has gone offline
-            OfflineNotificationPacket offline = new OfflineNotificationPacket();
-            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
-            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-            offline.AgentBlock[0].AgentID = agent.ID;
-            server.UDP.BroadcastPacket(offline, PacketCategory.State);
-        }
-
-        public void ObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation,
-            Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity)
-        {
-            if (OnObjectTransform != null)
-            {
-                OnObjectTransform(sender, obj, position, rotation, velocity, acceleration, angularVelocity);
-            }
-
-            // Add an undo step for prims (not avatars)
-            if (!(obj.Prim is Avatar))
-                obj.CreateUndoStep();
-
-            // Update the object
-            obj.Prim.Position = position;
-            obj.Prim.Rotation = rotation;
-            obj.Prim.Velocity = velocity;
-            obj.Prim.Acceleration = acceleration;
-            obj.Prim.AngularVelocity = angularVelocity;
-
-            // Reset the prim CRC
-            obj.CRC = 0;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj.Prim);
-        }
-
-        public void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags)
-        {
-            if (OnObjectFlags != null)
-            {
-                OnObjectFlags(sender, obj, flags);
-            }
-
-            // Add an undo step for prims (not avatars)
-            if (!(obj.Prim is Avatar))
-                obj.CreateUndoStep();
-
-            // Update the object
-            obj.Prim.Flags = flags;
-
-            // Reset the prim CRC
-            obj.CRC = 0;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj.Prim);
-        }
-
-        public void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
-        {
-            if (OnObjectModify != null)
-            {
-                OnObjectModify(sender, obj, data);
-            }
-
-            // Add an undo step for prims (not avatars)
-            if (!(obj.Prim is Avatar))
-                obj.CreateUndoStep();
-
-            // Update the object
-            obj.Prim.PrimData = data;
-
-            // Reset the prim CRC
-            obj.CRC = 0;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj.Prim);
-        }
-
-        public void ObjectModifyTextures(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry)
-        {
-            if (OnObjectModifyTextures != null)
-            {
-                OnObjectModifyTextures(sender, obj, mediaURL, textureEntry);
-            }
-
-            // Add an undo step for prims (not avatars)
-            if (!(obj.Prim is Avatar))
-                obj.CreateUndoStep();
-
-            // Update the object
-            obj.Prim.Textures = textureEntry;
-            obj.Prim.MediaURL = mediaURL;
-
-            // Reset the prim CRC
-            obj.CRC = 0;
-
-            // Inform clients
-            BroadcastObjectUpdate(obj.Prim);
-        }
-
-        public void ObjectSetRotationAxis(object sender, SimulationObject obj, Vector3 rotationAxis)
-        {
-            if (OnObjectSetRotationAxis != null)
-            {
-                OnObjectSetRotationAxis(sender, obj, rotationAxis);
-            }
-
-            // Update the object
-            obj.RotationAxis = rotationAxis;
-        }
-
-        public void ObjectApplyImpulse(object sender, SimulationObject obj, Vector3 impulse)
-        {
-            if (OnObjectApplyImpulse != null)
-            {
-                OnObjectApplyImpulse(sender, obj, impulse);
-            }
-
-            // FIXME:
-        }
-
-        public void ObjectApplyRotationalImpulse(object sender, SimulationObject obj, Vector3 impulse)
-        {
-            if (OnObjectApplyRotationalImpulse != null)
-            {
-                OnObjectApplyRotationalImpulse(sender, obj, impulse);
-            }
-
-            // FIXME:
-        }
-
-        public void ObjectSetTorque(object sender, SimulationObject obj, Vector3 torque)
-        {
-            if (OnObjectSetTorque != null)
-            {
-                OnObjectSetTorque(sender, obj, torque);
-            }
-
-            obj.Torque = torque;
-        }
-
-        public void ObjectAnimate(object sender, UUID senderID, UUID objectID, AnimationTrigger[] animations)
-        {
-            if (OnObjectAnimate != null)
-            {
-                OnObjectAnimate(sender, senderID, objectID, animations);
-            }
-
-            AvatarAnimationPacket sendAnim = new AvatarAnimationPacket();
-            sendAnim.Sender.ID = senderID;
-            sendAnim.AnimationSourceList = new AvatarAnimationPacket.AnimationSourceListBlock[1];
-            sendAnim.AnimationSourceList[0] = new AvatarAnimationPacket.AnimationSourceListBlock();
-            sendAnim.AnimationSourceList[0].ObjectID = objectID;
-
-            sendAnim.AnimationList = new AvatarAnimationPacket.AnimationListBlock[animations.Length];
-            for (int i = 0; i < animations.Length; i++)
-            {
-                sendAnim.AnimationList[i] = new AvatarAnimationPacket.AnimationListBlock();
-                sendAnim.AnimationList[i].AnimID = animations[i].AnimationID;
-                sendAnim.AnimationList[i].AnimSequenceID = animations[i].SequenceID;
-            }
-
-            server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
-        }
-
-        public void ObjectChat(object sender, UUID ownerID, UUID sourceID, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType,
-            string fromName, Vector3 position, int channel, string message)
-        {
-            if (OnObjectChat != null)
-            {
-                OnObjectChat(sender, ownerID, sourceID, audible, type, sourceType, fromName, position, channel, message);
-            }
-
-            if (channel == 0)
-            {
-                // TODO: Reduction provider will impose the chat radius
-                ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
-                chat.ChatData.Audible = (byte)audible;
-                chat.ChatData.ChatType = (byte)type;
-                chat.ChatData.OwnerID = ownerID;
-                chat.ChatData.SourceID = sourceID;
-                chat.ChatData.SourceType = (byte)sourceType;
-                chat.ChatData.Position = position;
-                chat.ChatData.FromName = Utils.StringToBytes(fromName);
-                chat.ChatData.Message = Utils.StringToBytes(message);
-
-                server.UDP.BroadcastPacket(chat, PacketCategory.Messaging);
-            }
-        }
-
-        public void ObjectUndo(object sender, SimulationObject obj)
-        {
-            if (OnObjectUndo != null)
-            {
-                OnObjectUndo(sender, obj);
-            }
-
-            Primitive prim = obj.UndoSteps.DequeueLast();
-            if (prim != null)
-            {
-                Logger.Log(String.Format("Performing undo on object {0}", obj.Prim.ID), Helpers.LogLevel.Debug);
-
-                obj.RedoSteps.Enqueue(prim);
-                obj.Prim = prim;
-
-                // Inform clients
-                BroadcastObjectUpdate(obj.Prim);
-            }
-            else
-            {
-                Logger.Log(String.Format("Undo requested on object {0} with no remaining undo steps", obj.Prim.ID),
-                    Helpers.LogLevel.Debug);
-            }
-        }
-
-        public void ObjectRedo(object sender, SimulationObject obj)
-        {
-            if (OnObjectRedo != null)
-            {
-                OnObjectRedo(sender, obj);
-            }
-
-            Primitive prim = obj.RedoSteps.DequeueLast();
-            if (prim != null)
-            {
-                Logger.Log(String.Format("Performing redo on object {0}", obj.Prim.ID), Helpers.LogLevel.Debug);
-
-                obj.UndoSteps.Enqueue(prim);
-                obj.Prim = prim;
-
-                // Inform clients
-                BroadcastObjectUpdate(obj.Prim);
-            }
-            else
-            {
-                Logger.Log(String.Format("Redo requested on object {0} with no remaining redo steps", obj.Prim.ID),
-                    Helpers.LogLevel.Debug);
-            }
-        }
-
-        public void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain)
-        {
-            if (OnTriggerSound != null)
-            {
-                OnTriggerSound(sender, objectID, parentID, ownerID, soundID, position, gain);
-            }
-
-            SoundTriggerPacket sound = new SoundTriggerPacket();
-            sound.SoundData.Handle = server.Scene.RegionHandle;
-            sound.SoundData.ObjectID = objectID;
-            sound.SoundData.ParentID = parentID;
-            sound.SoundData.OwnerID = ownerID;
-            sound.SoundData.Position = position;
-            sound.SoundData.SoundID = soundID;
-            sound.SoundData.Gain = gain;
-
-            server.UDP.BroadcastPacket(sound, PacketCategory.State);
-        }
-
-        public void TriggerEffects(object sender, ViewerEffect[] effects)
-        {
-            if (OnTriggerEffects != null)
-            {
-                OnTriggerEffects(sender, effects);
-            }
-
-            ViewerEffectPacket effect = new ViewerEffectPacket();
-            effect.AgentData.AgentID = UUID.Zero;
-            effect.AgentData.SessionID = UUID.Zero;
-
-            effect.Effect = new ViewerEffectPacket.EffectBlock[effects.Length];
-
-            for (int i = 0; i < effects.Length; i++)
-            {
-                ViewerEffect currentEffect = effects[i];
-                ViewerEffectPacket.EffectBlock block = new ViewerEffectPacket.EffectBlock();
-
-                block.AgentID = currentEffect.AgentID;
-                block.Color = currentEffect.Color.GetBytes(true);
-                block.Duration = currentEffect.Duration;
-                block.ID = currentEffect.EffectID;
-                block.Type = (byte)currentEffect.Type;
-                block.TypeData = currentEffect.TypeData;
-
-                effect.Effect[i] = block;
-            }
-
-            server.UDP.BroadcastPacket(effect, PacketCategory.State);
-        }
-
-        public bool ContainsObject(uint localID)
-        {
-            return sceneObjects.ContainsKey(localID);
-        }
-
-        public bool ContainsObject(UUID id)
-        {
-            return sceneObjects.ContainsKey(id);
-        }
-
-        public int ObjectCount()
-        {
-            return sceneObjects.Count;
-        }
-
-        public bool TryGetObject(uint localID, out SimulationObject obj)
-        {
-            return sceneObjects.TryGetValue(localID, out obj);
-        }
-
-        public bool TryGetObject(UUID id, out SimulationObject obj)
-        {
-            return sceneObjects.TryGetValue(id, out obj);
-        }
-
-        public bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags)
-        {
-            // Check if the agent already exists in the scene
-            if (sceneAgents.ContainsKey(agent.ID))
-                sceneAgents.Remove(agent.ID);
-
-            // Avatars always have physics
-            agent.Avatar.Prim.Flags |= PrimFlags.Physics;
-
-            // Default avatar values
-            agent.Avatar.Prim.Position = new Vector3(128f, 128f, 25f);
-            agent.Avatar.Prim.Rotation = Quaternion.Identity;
-            agent.Avatar.Prim.Scale = new Vector3(0.45f, 0.6f, 1.9f);
-            agent.Avatar.Prim.PrimData.Material = Material.Flesh;
-            agent.Avatar.Prim.PrimData.PCode = PCode.Avatar;
-            agent.Avatar.Prim.Textures = new Primitive.TextureEntry(new UUID("c228d1cf-4b5d-4ba8-84f4-899a0796aa97"));
-
-            // Set the avatar name
-            NameValue[] name = new NameValue[2];
-            name[0] = new NameValue("FirstName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
-                NameValue.SendtoType.SimViewer, agent.FirstName);
-            name[1] = new NameValue("LastName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
-                NameValue.SendtoType.SimViewer, agent.LastName);
-            agent.Avatar.Prim.NameValues = name;
-
-            // Give testers a provisionary balance of 1000L
-            agent.Balance = 1000;
-
-            // Some default avatar prim properties
-            agent.Avatar.Prim.Properties = new Primitive.ObjectProperties();
-            agent.Avatar.Prim.Properties.CreationDate = Utils.UnixTimeToDateTime(agent.CreationTime);
-            agent.Avatar.Prim.Properties.Name = agent.FullName;
-            agent.Avatar.Prim.Properties.ObjectID = agent.ID;
-
-            if (agent.Avatar.Prim.LocalID == 0)
-            {
-                // Assign a unique LocalID to this agent
-                agent.Avatar.Prim.LocalID = (uint)Interlocked.Increment(ref currentLocalID);
-            }
-
-            if (OnAgentAdd != null)
-                OnAgentAdd(sender, agent, creatorFlags);
-
-            // Add the agent to the scene dictionary
-            sceneAgents[agent.ID] = agent;
-
-            // Send out an update to everyone
-            //ObjectAdd(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None);
-
-            return true;
-        }
-
-        public void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
-        {
-            if (OnAgentAppearance != null)
-            {
-                OnAgentAppearance(sender, agent, textures, visualParams);
-            }
-
-            // Broadcast an object update for this avatar
-            // TODO: Is this necessary here?
-            //ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
-            //    regionHandle, agent.Flags);
-            //server.UDP.BroadcastPacket(update, PacketCategory.State);
-
-            // Update the avatar
-            agent.Avatar.Prim.Textures = textures;
-            if (visualParams != null && visualParams.Length > 1)
-                agent.VisualParams = visualParams;
-
-            if (agent.VisualParams != null)
-            {
-                // Send the appearance packet to all other clients
-                AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
-                ForEachAgent(
-                    delegate(Agent recipient)
-                    {
-                        if (recipient != agent)
-                            server.UDP.SendPacket(recipient.ID, appearance, PacketCategory.State);
-                    }
-                );
-            }
-        }
-
-        public void ForEachObject(Action<SimulationObject> action)
-        {
-            sceneObjects.ForEach(action);
-        }
-
-        public SimulationObject FindObject(Predicate<SimulationObject> predicate)
-        {
-            return sceneObjects.FindValue(predicate);
-        }
-
-        public bool TryGetAgent(UUID id, out Agent agent)
-        {
-            return sceneAgents.TryGetValue(id, out agent);
-        }
-
-        public int AgentCount()
-        {
-            return sceneAgents.Count;
-        }
-
-        public void ForEachAgent(Action<Agent> action)
-        {
-            lock (sceneAgents)
-            {
-                foreach (Agent agent in sceneAgents.Values)
-                    action(agent);
-            }
-        }
-
-        public Agent FindAgent(Predicate<Agent> predicate)
-        {
-            lock (sceneAgents)
-            {
-                foreach (Agent agent in sceneAgents.Values)
-                {
-                    if (predicate(agent))
-                        return agent;
-                }
-            }
-
-            return null;
-        }
-
-        public bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
-        {
-            UUID agentID = (UUID)state;
-
-            OSDArray array = OSDParser.DeserializeLLSDXml(request.Body) as OSDArray;
-            if (array != null)
-            {
-                OSDMap osdResponse = new OSDMap();
-
-                for (int i = 0; i < array.Count; i++)
-                {
-                    string capName = array[i].AsString();
-
-                    switch (capName)
-                    {
-                        case "EventQueueGet":
-                            Uri eqCap = null;
-
-                            // Check if this agent already has an event queue
-                            EventQueueServerCap eqServer;
-                            if (eventQueues.TryGetValue(agentID, out eqServer))
-                                eqCap = eqServer.Capability;
-
-                            // If not, create one
-                            if (eqCap == null)
-                                eqCap = CreateEventQueue(agentID);
-
-                            osdResponse.Add("EventQueueGet", OSD.FromUri(eqCap));
-                            break;
-                    }
-                }
-
-                byte[] responseData = OSDParser.SerializeLLSDXmlBytes(osdResponse);
-                response.ContentLength = responseData.Length;
-                response.Body.Write(responseData, 0, responseData.Length);
-                response.Body.Flush();
-            }
-            else
-            {
-                response.Status = HttpStatusCode.BadRequest;
-            }
-
-            return true;
-        }
+        #endregion Terrain and Wind
 
         public Uri CreateEventQueue(UUID agentID)
         {
@@ -907,52 +994,83 @@ namespace Simian.Extensions
             }
         }
 
+        public bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
+        {
+            UUID agentID = (UUID)state;
+
+            OSDArray array = OSDParser.DeserializeLLSDXml(request.Body) as OSDArray;
+            if (array != null)
+            {
+                OSDMap osdResponse = new OSDMap();
+
+                for (int i = 0; i < array.Count; i++)
+                {
+                    string capName = array[i].AsString();
+
+                    switch (capName)
+                    {
+                        case "EventQueueGet":
+                            Uri eqCap = null;
+
+                            // Check if this agent already has an event queue
+                            EventQueueServerCap eqServer;
+                            if (eventQueues.TryGetValue(agentID, out eqServer))
+                                eqCap = eqServer.Capability;
+
+                            // If not, create one
+                            if (eqCap == null)
+                                eqCap = CreateEventQueue(agentID);
+
+                            osdResponse.Add("EventQueueGet", OSD.FromUri(eqCap));
+                            break;
+                    }
+                }
+
+                byte[] responseData = OSDParser.SerializeLLSDXmlBytes(osdResponse);
+                response.ContentLength = responseData.Length;
+                response.Body.Write(responseData, 0, responseData.Length);
+                response.Body.Flush();
+            }
+            else
+            {
+                response.Status = HttpStatusCode.BadRequest;
+            }
+
+            return true;
+        }
+
         bool EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
         {
             EventQueueServer eqServer = (EventQueueServer)state;
             return eqServer.EventQueueHandler(context, request, response);
         }
 
-        // FIXME: This function needs to go away as soon as we stop sending full object updates for everything
-        void BroadcastObjectUpdate(Primitive prim)
-        {
-            SimulationObject obj;
-            if (TryGetObject(prim.ID, out obj))
-                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
-        }
-
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
         {
             // Add this avatar as an object in the scene
-            if (ObjectAddOrUpdate(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None))
-            {
-                // Send a response back to the client
-                AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
-                complete.AgentData.AgentID = agent.ID;
-                complete.AgentData.SessionID = agent.SessionID;
-                complete.Data.LookAt = Vector3.UnitX;
-                complete.Data.Position = agent.Avatar.Prim.Position;
-                complete.Data.RegionHandle = regionHandle;
-                complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
-                complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
+            ObjectAddOrUpdate(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
 
-                server.UDP.SendPacket(agent.ID, complete, PacketCategory.Transaction);
+            // Send a response back to the client
+            AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
+            complete.AgentData.AgentID = agent.ID;
+            complete.AgentData.SessionID = agent.SessionID;
+            complete.Data.LookAt = Vector3.UnitX;
+            complete.Data.Position = agent.Avatar.Prim.Position;
+            complete.Data.RegionHandle = regionHandle;
+            complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
+            complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
-                // Send updates and appearances for every avatar to this new avatar
-                SynchronizeStateTo(agent);
+            server.UDP.SendPacket(agent.ID, complete, PacketCategory.Transaction);
 
-                //HACK: Notify everyone when someone logs on to the simulator
-                OnlineNotificationPacket online = new OnlineNotificationPacket();
-                online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
-                online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
-                online.AgentBlock[0].AgentID = agent.ID;
-                server.UDP.BroadcastPacket(online, PacketCategory.State);
-            }
-            else
-            {
-                Logger.Log("Received a CompleteAgentMovement but failed to insert avatar into the scene: " +
-                    agent.FullName, Helpers.LogLevel.Warning);
-            }
+            // Send updates and appearances for every avatar to this new avatar
+            SynchronizeStateTo(agent);
+
+            //HACK: Notify everyone when someone logs on to the simulator
+            OnlineNotificationPacket online = new OnlineNotificationPacket();
+            online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
+            online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
+            online.AgentBlock[0].AgentID = agent.ID;
+            server.UDP.BroadcastPacket(online, PacketCategory.State);
         }
 
         // HACK: The reduction provider will deprecate this at some point
@@ -1069,7 +1187,7 @@ namespace Simian.Extensions
         static AvatarAppearancePacket BuildAppearancePacket(Agent agent)
         {
             AvatarAppearancePacket appearance = new AvatarAppearancePacket();
-            appearance.ObjectData.TextureEntry = agent.Avatar.Prim.Textures.ToBytes();
+            appearance.ObjectData.TextureEntry = agent.Avatar.Prim.Textures.GetBytes();
             appearance.Sender.ID = agent.ID;
             appearance.Sender.IsTrial = false;
 

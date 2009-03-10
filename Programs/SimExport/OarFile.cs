@@ -202,7 +202,7 @@ namespace SimExport
 
             byte[] te;
             if (prim.Textures != null)
-                te = prim.Textures.ToBytes();
+                te = prim.Textures.GetBytes();
             else
                 te = Utils.EmptyBytes;
 

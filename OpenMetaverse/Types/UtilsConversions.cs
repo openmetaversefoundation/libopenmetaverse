@@ -409,6 +409,14 @@ namespace OpenMetaverse
                 return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length);
         }
 
+        public static string BytesToString(byte[] bytes, int index, int count)
+        {
+            if (bytes.Length > index + count && bytes[index + count - 1] == 0x00)
+                return UTF8Encoding.UTF8.GetString(bytes, index, count - 1);
+            else
+                return UTF8Encoding.UTF8.GetString(bytes, index, count);
+        }
+
         /// <summary>
         /// Converts a byte array to a string containing hexadecimal characters
         /// </summary>
@@ -636,6 +644,16 @@ namespace OpenMetaverse
                 fval = 0.0f;
 
             return fval;
+        }
+
+        public static ushort FloatToUInt16(float value, float lower, float upper)
+        {
+            float delta = upper - lower;
+            value -= lower;
+            value /= delta;
+            value *= (float)UInt16.MaxValue;
+
+            return (ushort)value;
         }
 
         #endregion Packed Values

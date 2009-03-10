@@ -16,10 +16,6 @@ namespace Simian.Extensions
         public void Start(Simian server)
         {
             this.server = server;
-
-            server.Scene.OnObjectAdd += Scene_OnObjectAdd;
-            server.Scene.OnObjectModify += Scene_OnObjectModify;
-            server.Scene.OnObjectTransform += Scene_OnObjectTransform;
         }
 
         public void Stop()
@@ -404,30 +400,5 @@ namespace Simian.Extensions
 
             return returnMass;
         }
-
-        #region Callbacks
-
-        void Scene_OnObjectAdd(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags)
-        {
-            // TODO: This doesn't update children prims when their parents move. "World meshes" are a bad approach in general,
-            // the transforms should probably be applied to the mesh in the collision test
-            obj.GetWorldMesh(DetailLevel.Low, true, true);
-        }
-
-        void Scene_OnObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data)
-        {
-            obj.GetWorldMesh(DetailLevel.Low, true, false);
-        }
-
-        void Scene_OnObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity,
-            Vector3 acceleration, Vector3 angularVelocity)
-        {
-            // TODO: This doesn't update children prims when their parents move. "World meshes" are a bad approach in general,
-            // the transforms should probably be applied to the mesh in the collision test
-            if (position != obj.Prim.Position || rotation != obj.Prim.Rotation)
-                obj.GetWorldMesh(DetailLevel.Low, false, true);
-        }
-
-        #endregion Callbacks
     }
 }

@@ -331,14 +331,9 @@ namespace Simian.Extensions
             SimulationObject obj;
             if (server.Scene.TryGetObject(update.AgentData.AgentID, out obj))
             {
-                server.Scene.ObjectTransform(this, obj, obj.Prim.Position, update.AgentData.BodyRotation, obj.Prim.Velocity,
-                    obj.Prim.Acceleration, obj.Prim.AngularVelocity);
+                obj.Prim.Rotation = update.AgentData.BodyRotation;
+                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Rotation);
             }
-
-            /*ObjectUpdatePacket fullUpdate = SimulationObject.BuildFullUpdate(agent.Avatar,
-                server.Scene.RegionHandle, agent.Flags);
-
-            server.UDP.BroadcastPacket(fullUpdate, PacketCategory.State);*/
         }
 
         void SetAlwaysRunHandler(Packet packet, Agent agent)

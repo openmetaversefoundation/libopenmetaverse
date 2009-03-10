@@ -942,22 +942,22 @@ namespace Simian.Extensions
             if ((status & ScriptTypes.STATUS_PHYSICS) == ScriptTypes.STATUS_PHYSICS)
             {
                 if (value == 1)
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags | PrimFlags.Physics);
+                    hostObject.Prim.Flags |= PrimFlags.Physics;
                 else
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags & ~PrimFlags.Physics);
+                    hostObject.Prim.Flags &= ~PrimFlags.Physics;
             }
 
             if ((status & ScriptTypes.STATUS_PHANTOM) == ScriptTypes.STATUS_PHANTOM)
             {
                 if (value == 1)
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags | PrimFlags.Phantom);
+                    hostObject.Prim.Flags |= PrimFlags.Phantom;
                 else
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags & ~PrimFlags.Phantom);
+                    hostObject.Prim.Flags &= ~PrimFlags.Phantom;
             }
 
             if ((status & ScriptTypes.STATUS_CAST_SHADOWS) == ScriptTypes.STATUS_CAST_SHADOWS)
             {
-                server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags | PrimFlags.CastShadows);
+                hostObject.Prim.Flags |= PrimFlags.CastShadows;
             }
 
             if ((status & ScriptTypes.STATUS_ROTATE_X) == ScriptTypes.STATUS_ROTATE_X)
@@ -983,25 +983,25 @@ namespace Simian.Extensions
             if ((status & ScriptTypes.STATUS_DIE_AT_EDGE) == ScriptTypes.STATUS_DIE_AT_EDGE)
             {
                 if (value == 1)
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags | PrimFlags.DieAtEdge);
+                    hostObject.Prim.Flags |= PrimFlags.DieAtEdge;
                 else
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags & ~PrimFlags.DieAtEdge);
+                    hostObject.Prim.Flags &= ~PrimFlags.DieAtEdge;
             }
 
             if ((status & ScriptTypes.STATUS_RETURN_AT_EDGE) == ScriptTypes.STATUS_RETURN_AT_EDGE)
             {
                 if (value == 1)
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags | PrimFlags.ReturnAtEdge);
+                    hostObject.Prim.Flags |= PrimFlags.ReturnAtEdge;
                 else
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags & ~PrimFlags.ReturnAtEdge);
+                    hostObject.Prim.Flags &= ~PrimFlags.ReturnAtEdge;
             }
 
             if ((status & ScriptTypes.STATUS_SANDBOX) == ScriptTypes.STATUS_SANDBOX)
             {
                 if (value == 1)
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags | PrimFlags.Sandbox);
+                    hostObject.Prim.Flags |= PrimFlags.Sandbox;
                 else
-                    server.Scene.ObjectFlags(this, hostObject, hostObject.Prim.Flags & ~PrimFlags.Sandbox);
+                    hostObject.Prim.Flags &= ~PrimFlags.Sandbox;
             }
 
             if (statusrotationaxis != 0)
@@ -1021,6 +1021,8 @@ namespace Simian.Extensions
 
                 server.Scene.ObjectSetRotationAxis(this, parent, rotationAxis);
             }
+
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
         }
 
         public LSL_Integer llGetStatus(int status)
@@ -1076,7 +1078,7 @@ namespace Simian.Extensions
 
             // TODO: Apply constraints
             hostObject.Prim.Scale = new Vector3((float)scale.x, (float)scale.y, (float)scale.z);
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Scale);
         }
 
         public LSL_Vector llGetScale()
@@ -1090,7 +1092,7 @@ namespace Simian.Extensions
             hostObject.AddScriptLPS(1);
 
             hostObject.Prim.ClickAction = (ClickAction)action;
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.ClickAction);
         }
 
         public void llSetColor(LSL_Vector color, int face)
@@ -1255,8 +1257,8 @@ namespace Simian.Extensions
 
             // Child prims do not have velocity, only parents
             SimulationObject parent = hostObject.GetLinksetParent();
-            server.Scene.ObjectTransform(this, parent, parent.Prim.Position, parent.Prim.Rotation, velocity, parent.Prim.Acceleration,
-                parent.Prim.AngularVelocity);
+            parent.Prim.Velocity = velocity;
+            server.Scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Velocity);
         }
 
         public LSL_Vector llGetForce()
@@ -1459,28 +1461,55 @@ namespace Simian.Extensions
 
             hostObject.Prim.Sound = KeyOrName(sound);
             hostObject.Prim.SoundGain = (float)volume;
-            hostObject.Prim.SoundFlags = 1; // TODO: ???
-            hostObject.Prim.SoundRadius = 20; // TODO: Randomly selected
+            hostObject.Prim.SoundFlags = SoundFlags.Loop;
+            hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
 
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llLoopSoundMaster(string sound, double volume)
         {
             hostObject.AddScriptLPS(1);
-            NotImplemented("llLoopSoundMaster");
+
+            if (hostObject.Prim.Sound != UUID.Zero)
+                llStopSound();
+
+            hostObject.Prim.Sound = KeyOrName(sound);
+            hostObject.Prim.SoundGain = (float)volume;
+            hostObject.Prim.SoundFlags = SoundFlags.Loop | SoundFlags.SyncMaster;
+            hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
+
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llLoopSoundSlave(string sound, double volume)
         {
             hostObject.AddScriptLPS(1);
-            NotImplemented("llLoopSoundSlave");
+
+            if (hostObject.Prim.Sound != UUID.Zero)
+                llStopSound();
+
+            hostObject.Prim.Sound = KeyOrName(sound);
+            hostObject.Prim.SoundGain = (float)volume;
+            hostObject.Prim.SoundFlags = SoundFlags.Loop | SoundFlags.SyncSlave;
+            hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
+
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llPlaySoundSlave(string sound, double volume)
         {
             hostObject.AddScriptLPS(1);
-            NotImplemented("llPlaySoundSlave");
+
+            if (hostObject.Prim.Sound != UUID.Zero)
+                llStopSound();
+
+            hostObject.Prim.Sound = KeyOrName(sound);
+            hostObject.Prim.SoundGain = (float)volume;
+            hostObject.Prim.SoundFlags = SoundFlags.SyncSlave;
+            hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
+
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llTriggerSound(string sound, double volume)
@@ -1498,17 +1527,26 @@ namespace Simian.Extensions
             hostObject.AddScriptLPS(1);
 
             hostObject.Prim.Sound = UUID.Zero;
-            hostObject.Prim.SoundGain = 0;
-            hostObject.Prim.SoundFlags = 0;
-            hostObject.Prim.SoundRadius = 0;
+            hostObject.Prim.SoundGain = 0f;
+            hostObject.Prim.SoundFlags = SoundFlags.None;
+            hostObject.Prim.SoundRadius = 0f;
 
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llPreloadSound(string sound)
         {
             hostObject.AddScriptLPS(1);
-            NotImplemented("llPreloadSound");
+
+            if (hostObject.Prim.Sound != UUID.Zero)
+                llStopSound();
+
+            hostObject.Prim.Sound = KeyOrName(sound);
+            hostObject.Prim.SoundGain = 0f;
+            hostObject.Prim.SoundFlags = SoundFlags.Queue; // TODO: Is this correct?
+            hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
+
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
             // ScriptSleep(1000);
         }
 
@@ -1838,11 +1876,10 @@ namespace Simian.Extensions
                         newObj.Prim.Rotation = llrot;
                     }
 
-                    if (server.Scene.ObjectAddOrUpdate(this, newObj, hostObject.Prim.Properties.OwnerID, param, PrimFlags.None) &&
-                        newObj.Prim.ParentID == 0)
-                    {
+                    server.Scene.ObjectAddOrUpdate(this, newObj, hostObject.Prim.Properties.OwnerID, param, PrimFlags.None, UpdateFlags.FullUpdate);
+
+                    if (newObj.Prim.ParentID == 0)
                         newParent = newObj;
-                    }
                 }
 
                 if (newParent != null)
@@ -2064,8 +2101,9 @@ namespace Simian.Extensions
             if (targetHeight > 0f)
                 newPosition.Z = targetHeight;
 
-            server.Scene.ObjectTransform(this, parent, newPosition, parent.Prim.Rotation, parent.Prim.Velocity,
-                parent.Prim.Acceleration, parent.Prim.AngularVelocity);
+            parent.Prim.Position = newPosition;
+            // Don't set UpdateFlags.PrimFlags since Flying is a server-side only flag
+            server.Scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position);
         }
 
         public void llStopHover()
@@ -2075,8 +2113,9 @@ namespace Simian.Extensions
             SimulationObject parent = hostObject.GetLinksetParent();
             parent.Prim.Flags &= ~PrimFlags.Flying;
 
-            server.Scene.ObjectTransform(this, parent, parent.Prim.Position, parent.Prim.Rotation, parent.Prim.Velocity,
-                parent.Prim.Acceleration, parent.Prim.AngularVelocity);
+            // Trigger an object transformation even though we don't directly manipulate any parameters that are sent
+            // to the client. This will make sure the physics engine realizes the flying flag has been turned off
+            server.Scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position);
         }
 
         public void llMinEventDelay(double delay)
@@ -2184,8 +2223,8 @@ namespace Simian.Extensions
             Vector3 angVel = new Vector3((float)axis.x, (float)axis.y, (float)axis.z);
             angVel *= (float)spinrate;
 
-            server.Scene.ObjectTransform(this, hostObject, hostObject.Prim.Position, hostObject.Prim.Rotation,
-                hostObject.Prim.Velocity, hostObject.Prim.Acceleration, angVel);
+            hostObject.Prim.AngularVelocity = angVel;
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.AngularVelocity);
         }
 
         public LSL_Integer llGetStartParameter()
@@ -2510,7 +2549,7 @@ namespace Simian.Extensions
                 (float)Utils.Clamp(alpha, 0f, 1f));
             hostObject.Prim.Text = text;
 
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Text);
         }
 
         public LSL_Float llWater(LSL_Vector offset)
@@ -3406,7 +3445,7 @@ namespace Simian.Extensions
             pTexAnim.Start = (float)start;
 
             hostObject.Prim.TextureAnim = pTexAnim;
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.TextureAnim);
         }
 
         public void llTriggerSoundLimited(string sound, double volume, LSL_Vector top_north_east, LSL_Vector bottom_south_west)
@@ -3754,7 +3793,7 @@ namespace Simian.Extensions
                 hostObject.Prim.ParticleSys = prules;
             }
 
-            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Particles);
         }
 
         public void llGroundRepel(double height, int water, double tau)
@@ -5158,7 +5197,7 @@ namespace Simian.Extensions
                 texcolor.A = Utils.Clamp((float)alpha, 0.0f, 1.0f);
                 tex.FaceTextures[face].RGBA = texcolor;
 
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
+                server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
@@ -5176,7 +5215,7 @@ namespace Simian.Extensions
                 texcolor.A = Utils.Clamp((float)alpha, 0.0f, 1.0f);
                 tex.DefaultTexture.RGBA = texcolor;
 
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
+                server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
             }
         }
 
@@ -5202,7 +5241,7 @@ namespace Simian.Extensions
                 part.Prim.PrimData.PathCurve = PathCurve.Line;
             }
 
-            server.Scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData | UpdateFlags.PrimData);
         }
 
         private void SetPointLight(SimulationObject part, bool light, LSL_Vector color, float intensity, float radius, float falloff)
@@ -5225,7 +5264,7 @@ namespace Simian.Extensions
                 part.Prim.Light = null;
             }
 
-            server.Scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData);
         }
 
         private LSL_Vector GetColor(SimulationObject part, int face)
@@ -5528,7 +5567,7 @@ namespace Simian.Extensions
             prim.Prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut((ushort)(50000.0 * dimple.x));
             prim.Prim.PrimData.ProfileEnd = Primitive.UnpackBeginCut((ushort)(50000.0 * (1.0 - dimple.y)));
 
-            server.Scene.ObjectAddOrUpdate(this, prim, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, prim, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimData);
         }
 
         private void SetPrimitiveShapeParams(SimulationObject prim, int holeshape, LSL_Vector cut, float hollow, LSL_Vector twist,
@@ -5919,10 +5958,11 @@ namespace Simian.Extensions
                         string ph = rules.Data[idx++].ToString();
 
                         if (ph.Equals("1"))
-                            server.Scene.ObjectFlags(this, parent, parent.Prim.Flags | PrimFlags.Phantom);
+                            parent.Prim.Flags |= PrimFlags.Phantom;
                         else
-                            server.Scene.ObjectFlags(this, parent, parent.Prim.Flags & ~PrimFlags.Phantom);
+                            parent.Prim.Flags &= ~PrimFlags.Phantom;
 
+                        server.Scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
                         break;
                     case ScriptTypes.PRIM_PHYSICS:
                         if (remain < 1) return;
@@ -5930,10 +5970,11 @@ namespace Simian.Extensions
                         string phy = rules.Data[idx++].ToString();
 
                         if (phy.Equals("1"))
-                            server.Scene.ObjectFlags(this, parent, parent.Prim.Flags & ~PrimFlags.Phantom);
+                            parent.Prim.Flags |= PrimFlags.Phantom;
                         else
-                            server.Scene.ObjectFlags(this, parent, parent.Prim.Flags & ~PrimFlags.Physics);
+                            parent.Prim.Flags &= ~PrimFlags.Physics;
 
+                        server.Scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
                         break;
                     case ScriptTypes.PRIM_TEMP_ON_REZ:
                         if (remain < 1) return;
@@ -5941,10 +5982,11 @@ namespace Simian.Extensions
                         string temp = rules.Data[idx++].ToString();
 
                         if (temp.Equals("1"))
-                            server.Scene.ObjectFlags(this, parent, parent.Prim.Flags & ~PrimFlags.TemporaryOnRez);
+                            parent.Prim.Flags |= PrimFlags.TemporaryOnRez;
                         else
-                            server.Scene.ObjectFlags(this, parent, parent.Prim.Flags & ~PrimFlags.TemporaryOnRez);
+                            parent.Prim.Flags &= ~PrimFlags.TemporaryOnRez;
 
+                        server.Scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
                         break;
                 }
             }
@@ -5959,7 +6001,7 @@ namespace Simian.Extensions
                 return;
 
             part.Prim.Scale = new Vector3((float)scale.x, (float)scale.y, (float)scale.z);
-            server.Scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None);
+            server.Scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Scale);
         }
 
         private void SetColor(SimulationObject part, LSL_Vector color, int face)
@@ -5974,11 +6016,15 @@ namespace Simian.Extensions
                 texcolor.G = Utils.Clamp((float)color.y, 0.0f, 1.0f);
                 texcolor.B = Utils.Clamp((float)color.z, 0.0f, 1.0f);
                 tex.FaceTextures[face].RGBA = texcolor;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
+                texcolor = tex.DefaultTexture.RGBA;
+                texcolor.R = Utils.Clamp((float)color.x, 0.0f, 1.0f);
+                texcolor.G = Utils.Clamp((float)color.y, 0.0f, 1.0f);
+                texcolor.B = Utils.Clamp((float)color.z, 0.0f, 1.0f);
+                tex.DefaultTexture.RGBA = texcolor;
+
                 for (uint i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -5989,15 +6035,11 @@ namespace Simian.Extensions
                         texcolor.B = Utils.Clamp((float)color.z, 0.0f, 1.0f);
                         tex.FaceTextures[i].RGBA = texcolor;
                     }
-                    texcolor = tex.DefaultTexture.RGBA;
-                    texcolor.R = Utils.Clamp((float)color.x, 0.0f, 1.0f);
-                    texcolor.G = Utils.Clamp((float)color.y, 0.0f, 1.0f);
-                    texcolor.B = Utils.Clamp((float)color.z, 0.0f, 1.0f);
-                    tex.DefaultTexture.RGBA = texcolor;
                 }
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         public void SetGlow(SimulationObject part, int face, float glow)
@@ -6008,26 +6050,24 @@ namespace Simian.Extensions
             {
                 tex.CreateFace((uint)face);
                 tex.FaceTextures[face].Glow = glow;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.Glow = glow;
+
                 for (uint i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
                         tex.FaceTextures[i].Glow = glow;
-
-                    tex.DefaultTexture.Glow = glow;
                 }
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         public void SetShiny(SimulationObject part, int face, int shiny, Bumpiness bump)
         {
-
             Shininess sval = new Shininess();
 
             switch (shiny)
@@ -6056,11 +6096,12 @@ namespace Simian.Extensions
                 tex.CreateFace((uint)face);
                 tex.FaceTextures[face].Shiny = sval;
                 tex.FaceTextures[face].Bump = bump;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.Shiny = sval;
+                tex.DefaultTexture.Bump = bump;
+
                 for (uint i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -6068,12 +6109,11 @@ namespace Simian.Extensions
                         tex.FaceTextures[i].Shiny = sval;
                         tex.FaceTextures[i].Bump = bump; ;
                     }
-                    tex.DefaultTexture.Shiny = sval;
-                    tex.DefaultTexture.Bump = bump;
                 }
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         public void SetFullBright(SimulationObject part, int face, bool bright)
@@ -6084,11 +6124,11 @@ namespace Simian.Extensions
             {
                 tex.CreateFace((uint)face);
                 tex.FaceTextures[face].Fullbright = bright;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.Fullbright = bright;
+
                 for (uint i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -6096,11 +6136,10 @@ namespace Simian.Extensions
                         tex.FaceTextures[i].Fullbright = bright;
                     }
                 }
-
-                tex.DefaultTexture.Fullbright = bright;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void SetTexture(SimulationObject part, string texture, int face)
@@ -6120,11 +6159,11 @@ namespace Simian.Extensions
                 Primitive.TextureEntryFace texface = tex.CreateFace((uint)face);
                 texface.TextureID = textureID;
                 tex.FaceTextures[face] = texface;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.TextureID = textureID;
+
                 for (uint i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -6132,11 +6171,10 @@ namespace Simian.Extensions
                         tex.FaceTextures[i].TextureID = textureID;
                     }
                 }
-
-                tex.DefaultTexture.TextureID = textureID;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void ScaleTexture(SimulationObject part, double u, double v, int face)
@@ -6149,11 +6187,12 @@ namespace Simian.Extensions
                 texface.RepeatU = (float)u;
                 texface.RepeatV = (float)v;
                 tex.FaceTextures[face] = texface;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.RepeatU = (float)u;
+                tex.DefaultTexture.RepeatV = (float)v;
+
                 for (int i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -6162,12 +6201,10 @@ namespace Simian.Extensions
                         tex.FaceTextures[i].RepeatV = (float)v;
                     }
                 }
-
-                tex.DefaultTexture.RepeatU = (float)u;
-                tex.DefaultTexture.RepeatV = (float)v;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void OffsetTexture(SimulationObject part, double u, double v, int face)
@@ -6180,11 +6217,12 @@ namespace Simian.Extensions
                 texface.OffsetU = (float)u;
                 texface.OffsetV = (float)v;
                 tex.FaceTextures[face] = texface;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.OffsetU = (float)u;
+                tex.DefaultTexture.OffsetV = (float)v;
+
                 for (int i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -6193,12 +6231,10 @@ namespace Simian.Extensions
                         tex.FaceTextures[i].OffsetV = (float)v;
                     }
                 }
-
-                tex.DefaultTexture.OffsetU = (float)u;
-                tex.DefaultTexture.OffsetV = (float)v;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void RotateTexture(SimulationObject part, double rotation, int face)
@@ -6210,11 +6246,11 @@ namespace Simian.Extensions
                 Primitive.TextureEntryFace texface = tex.CreateFace((uint)face);
                 texface.Rotation = (float)rotation;
                 tex.FaceTextures[face] = texface;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
             if (face == ScriptTypes.ALL_SIDES)
             {
+                tex.DefaultTexture.Rotation = (float)rotation;
+
                 for (int i = 0; i < GetNumberOfSides(part); i++)
                 {
                     if (tex.FaceTextures[i] != null)
@@ -6222,11 +6258,10 @@ namespace Simian.Extensions
                         tex.FaceTextures[i].Rotation = (float)rotation;
                     }
                 }
-
-                tex.DefaultTexture.Rotation = (float)rotation;
-
-                server.Scene.ObjectModifyTextures(this, part, part.Prim.MediaURL, tex);
             }
+
+            part.Prim.Textures = tex;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void SetPos(SimulationObject part, LSL_Vector targetPos)
@@ -6236,16 +6271,14 @@ namespace Simian.Extensions
             if (llVecDist(currentPos, targetPos) > 10.0f * SCRIPT_DISTANCE_FACTOR)
                 targetPos = currentPos + SCRIPT_DISTANCE_FACTOR * 10.0f * llVecNorm(targetPos - currentPos);
 
-            Vector3 newPos = new Vector3((float)targetPos.x, (float)targetPos.y, (float)targetPos.z);
-
-            server.Scene.ObjectTransform(this, part, newPos, part.Prim.Rotation, part.Prim.Velocity, part.Prim.Acceleration,
-                part.Prim.AngularVelocity);
+            part.Prim.Position = new Vector3((float)targetPos.x, (float)targetPos.y, (float)targetPos.z);
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position);
         }
 
         private void SetRot(SimulationObject part, Quaternion rot)
         {
-            server.Scene.ObjectTransform(this, part, part.Prim.Position, rot, part.Prim.Velocity, part.Prim.Acceleration,
-                part.Prim.AngularVelocity);
+            part.Prim.Rotation = rot;
+            server.Scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Rotation);
         }
 
         private LSL_Vector GetTextureOffset(SimulationObject part, int face)

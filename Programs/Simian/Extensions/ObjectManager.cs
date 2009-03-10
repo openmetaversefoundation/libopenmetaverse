@@ -164,7 +164,7 @@ namespace Simian.Extensions
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAddOrUpdate(this, simObj, agent.ID, 0, flags);
+            server.Scene.ObjectAddOrUpdate(this, simObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
         }
 
         void ObjectAttachHandler(Packet packet, Agent agent)
@@ -174,18 +174,21 @@ namespace Simian.Extensions
             for (int i = 0; i < attach.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (!server.Scene.TryGetObject(attach.ObjectData[i].ObjectLocalID, out obj))
-                    continue;
+                if (server.Scene.TryGetObject(attach.ObjectData[i].ObjectLocalID, out obj))
+                {
+                    obj.BeforeAttachmentRotation = attach.ObjectData[i].Rotation;
 
-                obj.Prim.ParentID = agent.Avatar.Prim.LocalID;
-                obj.Prim.Position = Vector3.Zero; //TODO: simulationObject.AttachmentPoint
-                obj.Prim.Rotation = attach.ObjectData[i].Rotation;  //TODO: simulationObject.AttachmentRot ?
+                    obj.Prim.ParentID = agent.Avatar.Prim.LocalID;
+                    obj.Prim.Position = obj.AttachmentPosition;
+                    obj.Prim.Rotation = obj.AttachmentRotation;
 
-                AttachmentPoint point = (AttachmentPoint)attach.AgentData.AttachmentPoint;
-                obj.Prim.PrimData.AttachmentPoint = point == AttachmentPoint.Default ? obj.LastAttachmentPoint : point;
+                    AttachmentPoint point = (AttachmentPoint)attach.AgentData.AttachmentPoint;
+                    obj.Prim.PrimData.AttachmentPoint = (point == AttachmentPoint.Default ? obj.LastAttachmentPoint : point);
 
-                // Send an update out to everyone
-                server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, obj.Prim.Flags);
+                    // Send an update out to everyone
+                    server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, obj.Prim.Flags,
+                        UpdateFlags.ParentID | UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.AttachmentPoint);
+                }
             }
         }
 
@@ -209,7 +212,7 @@ namespace Simian.Extensions
                     newObj.Prim.LocalID = 0;
                     newObj.Prim.Properties.CreationDate = DateTime.Now;
 
-                    server.Scene.ObjectAddOrUpdate(this, newObj, agent.ID, 0, flags);
+                    server.Scene.ObjectAddOrUpdate(this, newObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
                 }
                 else
                 {
@@ -310,12 +313,12 @@ namespace Simian.Extensions
                 SimulationObject obj;
                 if (!server.Scene.TryGetObject(link.ObjectData[i].ObjectLocalID, out obj))
                 {
-                    //TODO: send an error message
+                    //TODO: Send an error message
                     return;
                 }
                 else if (obj.Prim.OwnerID != agent.ID)
                 {
-                    //TODO: send an error message
+                    //TODO: Do a full permissions check
                     return;
                 }
                 else
@@ -330,32 +333,35 @@ namespace Simian.Extensions
 
                 if (linkSet[i].Prim.ParentID > 0)
                 {
-                    //previously linked children
+                    // Previously linked children
                     SimulationObject parent;
                     if (server.Scene.TryGetObject(linkSet[i].Prim.ParentID, out parent))
                     {
-                        //re-add old root orientation
-                        linkSet[i].Prim.Position = parent.Prim.Position + Vector3.Transform(linkSet[i].Prim.Position, Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
+                        // Re-add old root orientation
+                        linkSet[i].Prim.Position = parent.Prim.Position + Vector3.Transform(linkSet[i].Prim.Position,
+                            Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
                         linkSet[i].Prim.Rotation *= parent.Prim.Rotation;
                     }
                 }
 
                 if (i > 0)
                 {
-                    //subtract root prim orientation
-                    linkSet[i].Prim.Position = Vector3.Transform(linkSet[i].Prim.Position - linkSet[0].Prim.Position, Matrix4.CreateFromQuaternion(Quaternion.Identity / linkSet[0].Prim.Rotation));
+                    // Subtract root prim orientation
+                    linkSet[i].Prim.Position = Vector3.Transform(linkSet[i].Prim.Position - linkSet[0].Prim.Position,
+                        Matrix4.CreateFromQuaternion(Quaternion.Identity / linkSet[0].Prim.Rotation));
                     linkSet[i].Prim.Rotation /= linkSet[0].Prim.Rotation;
 
-                    //set parent ID
+                    // Set parent ID
                     linkSet[i].Prim.ParentID = linkSet[0].Prim.LocalID;
                 }
                 else
                 {
-                    //root prim
+                    // Root prim
                     linkSet[i].Prim.ParentID = 0;
                 }
 
-                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
+                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
+                    UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.ParentID);
             }
         }
 
@@ -369,12 +375,12 @@ namespace Simian.Extensions
                 SimulationObject obj;
                 if (!server.Scene.TryGetObject(delink.ObjectData[i].ObjectLocalID, out obj))
                 {
-                    //TODO: send an error message
+                    //TODO: Send an error message
                     return;
                 }
                 else if (obj.Prim.OwnerID != agent.ID)
                 {
-                    //TODO: send an error message
+                    //TODO: Do a full permissions check
                     return;
                 }
                 else
@@ -388,14 +394,16 @@ namespace Simian.Extensions
                 linkSet[i].Prim.ParentID = 0;
                 linkSet[i].LinkNumber = 0;
 
-                //add root prim orientation to child prims
+                // Add root prim orientation to child prims
                 if (i > 0)
                 {
-                    linkSet[i].Prim.Position = linkSet[0].Prim.Position + Vector3.Transform(linkSet[i].Prim.Position, Matrix4.CreateFromQuaternion(linkSet[0].Prim.Rotation));
+                    linkSet[i].Prim.Position = linkSet[0].Prim.Position + Vector3.Transform(linkSet[i].Prim.Position,
+                        Matrix4.CreateFromQuaternion(linkSet[0].Prim.Rotation));
                     linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
                 }
 
-                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags);
+                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
+                    UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.ParentID);
             }
         }
 
@@ -431,7 +439,8 @@ namespace Simian.Extensions
                     data.ProfileEnd = Primitive.UnpackEndCut(block.ProfileEnd);
                     data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
-                    server.Scene.ObjectModify(this, obj, data);
+                    obj.Prim.PrimData = data;
+                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimData);
                 }
                 else
                 {
@@ -470,7 +479,8 @@ namespace Simian.Extensions
                 else
                     flags &= ~PrimFlags.Physics;
 
-                server.Scene.ObjectFlags(this, obj, flags);
+                obj.Prim.Flags = flags;
+                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
             }
             else
             {
@@ -523,7 +533,7 @@ namespace Simian.Extensions
                         }
                     }
 
-                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None);
+                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData);
                 }
             }
         }
@@ -536,9 +546,11 @@ namespace Simian.Extensions
             {
                 SimulationObject obj;
                 if (server.Scene.TryGetObject(image.ObjectData[i].ObjectLocalID, out obj))
-                    server.Scene.ObjectModifyTextures(this, obj,
-                        Utils.BytesToString(image.ObjectData[i].MediaURL),
-                        new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length));
+                {
+                    obj.Prim.MediaURL = Utils.BytesToString(image.ObjectData[i].MediaURL);
+                    obj.Prim.Textures = new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length);
+                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.MediaURL | UpdateFlags.Textures);
+                }
             }
         }
 
@@ -665,18 +677,23 @@ namespace Simian.Extensions
                     Quaternion rotation = obj.Prim.Rotation;
                     Vector3 scale = obj.Prim.Scale;
 
+                    UpdateFlags updateFlags = UpdateFlags.None;
+
                     if ((type & UpdateType.Position) != 0)
                     {
+                        updateFlags |= UpdateFlags.Position;
                         position = new Vector3(block.Data, pos);
                         pos += 12;
                     }
                     if ((type & UpdateType.Rotation) != 0)
                     {
+                        updateFlags |= UpdateFlags.Rotation;
                         rotation = new Quaternion(block.Data, pos, true);
                         pos += 12;
                     }
                     if ((type & UpdateType.Scale) != 0)
                     {
+                        updateFlags |= UpdateFlags.Scale;
                         scaled = true;
                         scale = new Vector3(block.Data, pos);
                         pos += 12;
@@ -685,19 +702,11 @@ namespace Simian.Extensions
                         //bool uniform = ((type & UpdateType.Uniform) != 0);
                     }
 
-                    if (scaled)
-                    {
-                        obj.Prim.Position = position;
-                        obj.Prim.Rotation = rotation;
-                        obj.Prim.Scale = scale;
+                    obj.Prim.Position = position;
+                    obj.Prim.Rotation = rotation;
+                    if (scaled) obj.Prim.Scale = scale;
 
-                        server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, PrimFlags.None);
-                    }
-                    else
-                    {
-                        server.Scene.ObjectTransform(this, obj, position, rotation,
-                            obj.Prim.Velocity, obj.Prim.Acceleration, obj.Prim.AngularVelocity);
-                    }
+                    server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, PrimFlags.None, updateFlags);
                 }
                 else
                 {

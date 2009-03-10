@@ -970,7 +970,7 @@ namespace OpenMetaverse
                 }
 
                 // Set the packet TextureEntry
-                set.ObjectData.TextureEntry = te.ToBytes();
+                set.ObjectData.TextureEntry = te.GetBytes();
             }
 
             // FIXME: Our hackish algorithm is making squished avatars. See

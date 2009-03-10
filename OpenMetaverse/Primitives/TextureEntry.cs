@@ -842,7 +842,7 @@ namespace OpenMetaverse
             /// 
             /// </summary>
             /// <returns></returns>
-            public byte[] ToBytes()
+            public byte[] GetBytes()
             {
                 if (DefaultTexture == null)
                     return Utils.EmptyBytes;

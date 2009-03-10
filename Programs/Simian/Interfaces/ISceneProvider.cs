@@ -6,6 +6,39 @@ using OpenMetaverse.StructuredData;
 
 namespace Simian
 {
+    /// <summary>
+    /// Specifies that fields that have been changed in a call to ISceneProvider.ObjectAddOrUpdate
+    /// </summary>
+    [Flags]
+    public enum UpdateFlags : uint
+    {
+        None = 0,
+        AttachmentPoint = 1 << 0,
+        Material = 1 << 1,
+        ClickAction = 1 << 2,
+        Scale = 1 << 3,
+        ParentID = 1 << 4,
+        PrimFlags = 1 << 5,
+        PrimData = 1 << 6,
+        MediaURL = 1 << 7,
+        ScratchPad = 1 << 8,
+        Textures = 1 << 9,
+        TextureAnim = 1 << 10,
+        NameValue = 1 << 11,
+        Position = 1 << 12,
+        Rotation = 1 << 13,
+        Velocity = 1 << 14,
+        Acceleration = 1 << 15,
+        AngularVelocity = 1 << 16,
+        CollisionPlane = 1 << 17,
+        Text = 1 << 18,
+        Particles = 1 << 19,
+        ExtraData = 1 << 20,
+        Sound = 1 << 21,
+        Joint = 1 << 22,
+        FullUpdate = UInt32.MaxValue
+    }
+
     #region Scene related classes
 
     public class TerrainPatch
@@ -52,12 +85,8 @@ namespace Simian
 
     #endregion Scene related classes
 
-    public delegate void ObjectAddCallback(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags);
+    public delegate void ObjectAddOrUpdateCallback(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
     public delegate void ObjectRemoveCallback(object sender, SimulationObject obj);
-    public delegate void ObjectTransformCallback(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity);
-    public delegate void ObjectFlagsCallback(object sender, SimulationObject obj, PrimFlags flags);
-    public delegate void ObjectModifyCallback(object sender, SimulationObject obj, Primitive.ConstructionData data);
-    public delegate void ObjectModifyTexturesCallback(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
     public delegate void ObjectSetRotationAxisCallback(object sender, SimulationObject obj, Vector3 rotationAxis);
     public delegate void ObjectApplyImpulseCallback(object sender, SimulationObject obj, Vector3 impulse);
     public delegate void ObjectApplyRotationalImpulseCallback(object sender, SimulationObject obj, Vector3 impulse);
@@ -76,12 +105,8 @@ namespace Simian
 
     public interface ISceneProvider
     {
-        event ObjectAddCallback OnObjectAdd;
+        event ObjectAddOrUpdateCallback OnObjectAddOrUpdate;
         event ObjectRemoveCallback OnObjectRemove;
-        event ObjectTransformCallback OnObjectTransform;
-        event ObjectFlagsCallback OnObjectFlags;
-        event ObjectModifyCallback OnObjectModify;
-        event ObjectModifyTexturesCallback OnObjectModifyTextures;
         event ObjectSetRotationAxisCallback OnObjectSetRotationAxis;
         event ObjectApplyImpulseCallback OnObjectApplyImpulse;
         event ObjectApplyRotationalImpulseCallback OnObjectApplyRotationalImpulse;
@@ -112,13 +137,9 @@ namespace Simian
         uint TerrainPatchCountWidth { get; }
         uint TerrainPatchCountHeight { get; }
 
-        bool ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags);
+        void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
         bool ObjectRemove(object sender, uint localID);
         bool ObjectRemove(object sender, UUID id);
-        void ObjectTransform(object sender, SimulationObject obj, Vector3 position, Quaternion rotation, Vector3 velocity, Vector3 acceleration, Vector3 angularVelocity);
-        void ObjectFlags(object sender, SimulationObject obj, PrimFlags flags);
-        void ObjectModify(object sender, SimulationObject obj, Primitive.ConstructionData data);
-        void ObjectModifyTextures(object sender, SimulationObject obj, string mediaURL, Primitive.TextureEntry textureEntry);
         void ObjectSetRotationAxis(object sender, SimulationObject obj, Vector3 rotationAxis);
         void ObjectApplyImpulse(object sender, SimulationObject obj, Vector3 impulse);
         void ObjectApplyRotationalImpulse(object sender, SimulationObject obj, Vector3 impulse);

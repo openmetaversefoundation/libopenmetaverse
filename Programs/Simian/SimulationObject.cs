@@ -27,10 +27,20 @@ namespace Simian
         public Vector3 Torque;
         /// <summary>Last point the object was attached to (right hand by default)</summary>
         public AttachmentPoint LastAttachmentPoint = AttachmentPoint.RightHand;
-        /// <summary>Seat offset</summary>
+        /// <summary>Saved seat offset. Applied to avatars that sit on this object</summary>
         public Vector3 SitPosition;
-        /// <summary>Seat rotation</summary>
+        /// <summary>Saved seat rotation. Applied to avatars that sit on this object</summary>
         public Quaternion SitRotation = Quaternion.Identity;
+        /// <summary>Saved attachment offset. Applied to this object when it is attached
+        /// to an avatar</summary>
+        public Vector3 AttachmentPosition;
+        /// <summary>Saved attachment rotation. Applied to this object when it is attached
+        /// to an avatar</summary>
+        public Quaternion AttachmentRotation = Quaternion.Identity;
+        /// <summary>Rotation that is saved when this object is attached to an avatar.
+        /// Will be applied to the object when it is dropped. This is always the world
+        /// rotation, since it is only applicable to parent objects</summary>
+        public Quaternion BeforeAttachmentRotation = Quaternion.Identity;
 
         protected Simian Server;
         protected SimpleMesh[] Meshes;
@@ -247,62 +257,74 @@ namespace Simian
             return update;
         }
 
-        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive obj, PrimFlags flags, uint crc)
+        public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive prim, PrimFlags flags, uint crc)
         {
             byte[] objectData = new byte[60];
-            obj.Position.ToBytes(objectData, 0);
-            obj.Velocity.ToBytes(objectData, 12);
-            obj.Acceleration.ToBytes(objectData, 24);
-            obj.Rotation.ToBytes(objectData, 36);
-            obj.AngularVelocity.ToBytes(objectData, 48);
+            prim.Position.ToBytes(objectData, 0);
+            prim.Velocity.ToBytes(objectData, 12);
+            prim.Acceleration.ToBytes(objectData, 24);
+            prim.Rotation.ToBytes(objectData, 36);
+            prim.AngularVelocity.ToBytes(objectData, 48);
 
             ObjectUpdatePacket.ObjectDataBlock update = new ObjectUpdatePacket.ObjectDataBlock();
-            update.ClickAction = (byte)obj.ClickAction;
+            update.ClickAction = (byte)prim.ClickAction;
             update.CRC = crc;
-            update.ExtraParams = obj.GetExtraParamsBytes();
+            update.ExtraParams = prim.GetExtraParamsBytes();
             update.Flags = (byte)flags;
-            update.FullID = obj.ID;
-            update.Gain = obj.SoundGain;
-            update.ID = obj.LocalID;
-            update.JointAxisOrAnchor = obj.JointAxisOrAnchor;
-            update.JointPivot = obj.JointPivot;
-            update.JointType = (byte)obj.Joint;
-            update.Material = (byte)obj.PrimData.Material;
-            update.MediaURL = Utils.StringToBytes(obj.MediaURL);
-            update.NameValue = Utils.StringToBytes(NameValue.NameValuesToString(obj.NameValues));
+            update.FullID = prim.ID;
+            update.Gain = prim.SoundGain;
+            update.ID = prim.LocalID;
+            update.JointAxisOrAnchor = prim.JointAxisOrAnchor;
+            update.JointPivot = prim.JointPivot;
+            update.JointType = (byte)prim.Joint;
+            update.Material = (byte)prim.PrimData.Material;
+            update.MediaURL = Utils.StringToBytes(prim.MediaURL);
+            update.NameValue = Utils.StringToBytes(NameValue.NameValuesToString(prim.NameValues));
             update.ObjectData = objectData;
-            update.OwnerID = (obj.Properties != null ? obj.Properties.OwnerID : UUID.Zero);
-            update.ParentID = obj.ParentID;
-            update.PathBegin = Primitive.PackBeginCut(obj.PrimData.PathBegin);
-            update.PathCurve = (byte)obj.PrimData.PathCurve;
-            update.PathEnd = Primitive.PackEndCut(obj.PrimData.PathEnd);
-            update.PathRadiusOffset = Primitive.PackPathTwist(obj.PrimData.PathRadiusOffset);
-            update.PathRevolutions = Primitive.PackPathRevolutions(obj.PrimData.PathRevolutions);
-            update.PathScaleX = Primitive.PackPathScale(obj.PrimData.PathScaleX);
-            update.PathScaleY = Primitive.PackPathScale(obj.PrimData.PathScaleY);
-            update.PathShearX = (byte)Primitive.PackPathShear(obj.PrimData.PathShearX);
-            update.PathShearY = (byte)Primitive.PackPathShear(obj.PrimData.PathShearY);
-            update.PathSkew = Primitive.PackPathTwist(obj.PrimData.PathSkew);
-            update.PathTaperX = Primitive.PackPathTaper(obj.PrimData.PathTaperX);
-            update.PathTaperY = Primitive.PackPathTaper(obj.PrimData.PathTaperY);
-            update.PathTwist = Primitive.PackPathTwist(obj.PrimData.PathTwist);
-            update.PathTwistBegin = Primitive.PackPathTwist(obj.PrimData.PathTwistBegin);
-            update.PCode = (byte)obj.PrimData.PCode;
-            update.ProfileBegin = Primitive.PackBeginCut(obj.PrimData.ProfileBegin);
-            update.ProfileCurve = (byte)obj.PrimData.ProfileCurve;
-            update.ProfileEnd = Primitive.PackEndCut(obj.PrimData.ProfileEnd);
-            update.ProfileHollow = Primitive.PackProfileHollow(obj.PrimData.ProfileHollow);
-            update.PSBlock = obj.ParticleSys.GetBytes();
-            update.TextColor = obj.TextColor.GetBytes(true);
-            update.TextureAnim = obj.TextureAnim.GetBytes();
-            update.TextureEntry = obj.Textures == null ? Utils.EmptyBytes : obj.Textures.ToBytes();
-            update.Radius = obj.SoundRadius;
-            update.Scale = obj.Scale;
-            update.Sound = obj.Sound;
-            update.State = obj.PrimData.State;
-            update.Text = Utils.StringToBytes(obj.Text);
+            update.OwnerID = (prim.Properties != null ? prim.Properties.OwnerID : UUID.Zero);
+            update.ParentID = prim.ParentID;
+            update.PathBegin = Primitive.PackBeginCut(prim.PrimData.PathBegin);
+            update.PathCurve = (byte)prim.PrimData.PathCurve;
+            update.PathEnd = Primitive.PackEndCut(prim.PrimData.PathEnd);
+            update.PathRadiusOffset = Primitive.PackPathTwist(prim.PrimData.PathRadiusOffset);
+            update.PathRevolutions = Primitive.PackPathRevolutions(prim.PrimData.PathRevolutions);
+            update.PathScaleX = Primitive.PackPathScale(prim.PrimData.PathScaleX);
+            update.PathScaleY = Primitive.PackPathScale(prim.PrimData.PathScaleY);
+            update.PathShearX = (byte)Primitive.PackPathShear(prim.PrimData.PathShearX);
+            update.PathShearY = (byte)Primitive.PackPathShear(prim.PrimData.PathShearY);
+            update.PathSkew = Primitive.PackPathTwist(prim.PrimData.PathSkew);
+            update.PathTaperX = Primitive.PackPathTaper(prim.PrimData.PathTaperX);
+            update.PathTaperY = Primitive.PackPathTaper(prim.PrimData.PathTaperY);
+            update.PathTwist = Primitive.PackPathTwist(prim.PrimData.PathTwist);
+            update.PathTwistBegin = Primitive.PackPathTwist(prim.PrimData.PathTwistBegin);
+            update.PCode = (byte)prim.PrimData.PCode;
+            update.ProfileBegin = Primitive.PackBeginCut(prim.PrimData.ProfileBegin);
+            update.ProfileCurve = (byte)prim.PrimData.ProfileCurve;
+            update.ProfileEnd = Primitive.PackEndCut(prim.PrimData.ProfileEnd);
+            update.ProfileHollow = Primitive.PackProfileHollow(prim.PrimData.ProfileHollow);
+            update.PSBlock = prim.ParticleSys.GetBytes();
+            update.TextColor = prim.TextColor.GetBytes(true);
+            update.TextureAnim = prim.TextureAnim.GetBytes();
+            update.TextureEntry = prim.Textures == null ? Utils.EmptyBytes : prim.Textures.GetBytes();
+            update.Radius = prim.SoundRadius;
+            update.Scale = prim.Scale;
+            update.Sound = prim.Sound;
+            update.State = prim.PrimData.State;
+            update.Text = Utils.StringToBytes(prim.Text);
             update.UpdateFlags = (uint)flags;
-            update.Data = obj.GenericData == null ? Utils.EmptyBytes : obj.GenericData;
+            switch (prim.PrimData.PCode)
+            {
+                case PCode.Grass:
+                case PCode.Tree:
+                case PCode.NewTree:
+                    update.Data = new byte[1];
+                    update.Data[0] = (byte)prim.TreeSpecies;
+                    break;
+                default:
+                    update.Data = new byte[prim.ScratchPad.Length];
+                    Buffer.BlockCopy(prim.ScratchPad, 0, update.Data, 0, update.Data.Length);
+                    break;
+            }
 
             return update;
         }

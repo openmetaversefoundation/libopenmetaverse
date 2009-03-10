@@ -139,6 +139,28 @@ namespace OpenMetaverse
         ZlibCompressed = 0x80000000
     }
 
+    /// <summary>
+    /// Sound flags for sounds attached to primitives
+    /// </summary>
+    [Flags]
+    public enum SoundFlags : byte
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        Loop = 0x01,
+        /// <summary></summary>
+        SyncMaster = 0x02,
+        /// <summary></summary>
+        SyncSlave = 0x04,
+        /// <summary></summary>
+        SyncPending = 0x08,
+        /// <summary></summary>
+        Queue = 0x10,
+        /// <summary></summary>
+        Stop = 0x20
+    }
+
     public enum ProfileCurve : byte
     {
         Circle = 0x00,
@@ -1004,8 +1026,11 @@ namespace OpenMetaverse
         public ulong RegionHandle;
         /// <summary></summary>
         public PrimFlags Flags;
+        /// <summary>Foliage type for this primitive. Only applicable if this
+        /// primitive is foliage</summary>
+        public Tree TreeSpecies;
         /// <summary>Unknown</summary>
-        public byte[] GenericData;
+        public byte[] ScratchPad;
         /// <summary></summary>
         public Vector3 Position;
         /// <summary></summary>
@@ -1034,7 +1059,7 @@ namespace OpenMetaverse
         /// active</summary>
         public UUID OwnerID;
         /// <summary></summary>
-        public byte SoundFlags;
+        public SoundFlags SoundFlags;
         /// <summary></summary>
         public float SoundGain;
         /// <summary></summary>
@@ -1150,14 +1175,14 @@ namespace OpenMetaverse
             ParentID = prim.ParentID;
             RegionHandle = prim.RegionHandle;
             Flags = prim.Flags;
-            if (prim.GenericData != null)
+            TreeSpecies = prim.TreeSpecies;
+            if (prim.ScratchPad != null)
             {
-                if (GenericData == null || GenericData.Length != prim.GenericData.Length)
-                    GenericData = new byte[prim.GenericData.Length];
-                Buffer.BlockCopy(prim.GenericData, 0, GenericData, 0, prim.GenericData.Length);
+                ScratchPad = new byte[prim.ScratchPad.Length];
+                Buffer.BlockCopy(prim.ScratchPad, 0, ScratchPad, 0, ScratchPad.Length);
             }
             else
-                GenericData = null;
+                ScratchPad = null;
             Position = prim.Position;
             Scale = prim.Scale;
             Rotation = prim.Rotation;
@@ -1193,7 +1218,7 @@ namespace OpenMetaverse
             // FIXME: Get a real copy constructor for TextureEntry instead of serializing to bytes and back
             if (prim.Textures != null)
             {
-                byte[] textureBytes = prim.Textures.ToBytes();
+                byte[] textureBytes = prim.Textures.GetBytes();
                 Textures = new TextureEntry(textureBytes, 0, textureBytes.Length);
             }
             else
