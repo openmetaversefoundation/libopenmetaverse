@@ -9,6 +9,9 @@ namespace Simian.Extensions
 {
     public class Periscope : IExtension<Simian>
     {
+        // Change this to login to a different grid
+        const string PERISCOPE_LOGIN_URI = Settings.AGNI_LOGIN_SERVER;
+
         public Agent MasterAgent = null;
 
         Simian server;
@@ -295,6 +298,20 @@ namespace Simian.Extensions
                         server.Avatars.SendAlert(agent, String.Format("Downloading textures: {0}, Queued textures: {1}",
                             imageDelivery.Pipeline.CurrentCount, imageDelivery.Pipeline.QueuedCount));
                         return;
+                    case "/save":
+                        if (messageParts.Length == 2)
+                        {
+                            string filename = messageParts[1];
+                            string directoryname = System.IO.Path.GetFileNameWithoutExtension(filename);
+
+                            Logger.Log(String.Format("Preparing to serialize {0} objects", server.Scene.ObjectCount()), Helpers.LogLevel.Info);
+                            OarFile.SavePrims(server, directoryname + "/objects");
+                            Logger.Log("Saving " + directoryname, Helpers.LogLevel.Info);
+                            OarFile.PackageArchive(directoryname, filename);
+                            System.IO.Directory.Delete(directoryname, true);
+                            Logger.Log("Done", Helpers.LogLevel.Info);
+                        }
+                        return;
                     case "/nudemod":
                         //int count = 0;
                         // FIXME: AvatarAppearance locks the agents dictionary. Need to be able to copy the agents dictionary?
@@ -356,6 +373,7 @@ namespace Simian.Extensions
 
                         LoginParams login = client.Network.DefaultLoginParams(agent.FirstName, agent.LastName, agent.PasswordHash,
                             "Simian Periscope", "1.0.0");
+                        login.URI = PERISCOPE_LOGIN_URI;
                         login.Start = "last";
                         client.Network.Login(login);
 

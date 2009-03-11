@@ -2163,6 +2163,9 @@ namespace OpenMetaverse
         /// false</returns>
         public bool Teleport(string simName, Vector3 position, Vector3 lookAt)
         {
+            if (Client.Network.CurrentSim == null)
+                return false;
+
             teleportStat = TeleportStatus.None;
             simName = simName.ToLower();
 

@@ -382,7 +382,7 @@ namespace OpenMetaverse.Imaging
                         }
 
                         // More sanity checking
-                        if (layerInfo[layerInfo.Length - 1].End <= encoded.Length - 1)
+                        if (layerInfo.Length == 0 || layerInfo[layerInfo.Length - 1].End <= encoded.Length - 1)
                         {
                             success = true;
 
