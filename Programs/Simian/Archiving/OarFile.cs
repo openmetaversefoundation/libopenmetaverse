@@ -11,7 +11,7 @@ namespace Simian
     public class Linkset
     {
         public SimulationObject Parent;
-        public List<SimulationObject> Children = new List<SimulationObject>();
+        public List<SimulationObject> Children;
     }
 
     public class OarFile
@@ -53,14 +53,16 @@ namespace Simian
             archive.Close();
         }
 
-        public static void SavePrims(Simian server, string path)
+        public static void SavePrims(Simian server, string primsPath, string assetsPath, string textureCacheFolder)
         {
+            Dictionary<UUID, UUID> textureList = new Dictionary<UUID, UUID>();
+
             // Delete all of the old linkset files
-            try
-            {
-                Directory.Delete(path, true);
-                Directory.CreateDirectory(path);
-            }
+            try { Directory.Delete(primsPath, true); }
+            catch (Exception) { }
+
+            // Create a new folder for the linkset files
+            try { Directory.CreateDirectory(primsPath); }
             catch (Exception ex)
             {
                 Logger.Log("Failed saving prims: " + ex.Message, Helpers.LogLevel.Error);
@@ -81,16 +83,74 @@ namespace Simian
                 {
                     Linkset linkset = new Linkset();
                     linkset.Parent = p;
+                    linkset.Children = p.GetChildren();
 
-                    server.Scene.ForEachObject(delegate(SimulationObject q)
-                    {
-                        if (q.Prim.ParentID == p.Prim.LocalID)
-                            linkset.Children.Add(q);
-                    });
+                    SaveLinkset(linkset, Path.Combine(primsPath, "Primitive_" + linkset.Parent.Prim.ID.ToString() + ".xml"));
+                }
 
-                    SaveLinkset(linkset, path + "/Primitive_" + linkset.Parent.Prim.ID.ToString() + ".xml");
+                // Add all of the textures on this prim to the save list
+                for (int i = 0; i < p.Prim.Textures.FaceTextures.Length; i++)
+                {
+                    Primitive.TextureEntryFace face = p.Prim.Textures.FaceTextures[i];
+                    if (face != null && !textureList.ContainsKey(face.TextureID))
+                        textureList.Add(face.TextureID, face.TextureID);
                 }
             }
+
+            SaveTextures(new List<UUID>(textureList.Keys), assetsPath, textureCacheFolder);
+        }
+
+        public static void SaveTextures(IList<UUID> textures, string assetsPath, string textureCacheFolder)
+        {
+            int count = 0;
+
+            // Delete the assets folder
+            try { Directory.Delete(assetsPath, true); }
+            catch (Exception) { }
+
+            // Create a new assets folder
+            try { Directory.CreateDirectory(assetsPath); }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed saving assets: " + ex.Message, Helpers.LogLevel.Error);
+                return;
+            }
+
+            // Create a map of all of the textures in the cache
+            string[] files = Directory.GetFiles(textureCacheFolder, "*.texture", SearchOption.TopDirectoryOnly);
+            Dictionary<UUID, string> idToFiles = new Dictionary<UUID, string>(files.Length);
+            for (int i = 0; i < files.Length; i++)
+            {
+                string file = files[i];
+                UUID id;
+
+                if (UUID.TryParse(Path.GetFileNameWithoutExtension(file), out id))
+                    idToFiles[id] = file;
+            }
+
+            for (int i = 0; i < textures.Count; i++)
+            {
+                UUID texture = textures[i];
+
+                if (idToFiles.ContainsKey(texture))
+                {
+                    try
+                    {
+                        File.Copy(idToFiles[texture], Path.Combine(assetsPath, texture.ToString() + "_texture.jp2"));
+                        ++count;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Failed to save texture " + texture.ToString() + ": " + ex.Message, Helpers.LogLevel.Error);
+                    }
+                }
+                else
+                {
+                    Logger.Log("Skipping missing texture " + texture.ToString(), Helpers.LogLevel.Warning);
+                }
+            }
+
+            Logger.Log("Copied " + count + " textures to the asset archive folder", Helpers.LogLevel.Info);
         }
 
         static void SaveLinkset(Linkset linkset, string filename)
@@ -148,7 +208,10 @@ namespace Simian
                 groupPosition = parent.Prim.Position;
 
             WriteVector(writer, "GroupPosition", groupPosition);
-            WriteVector(writer, "OffsetPosition", groupPosition - prim.Prim.Position);
+            if (prim.Prim.ParentID == 0)
+                WriteVector(writer, "OffsetPosition", Vector3.Zero);
+            else
+                WriteVector(writer, "OffsetPosition", prim.Prim.Position);
             WriteQuaternion(writer, "RotationOffset", prim.Prim.Rotation);
             WriteVector(writer, "Velocity", Vector3.Zero);
             WriteVector(writer, "RotationalVelocity", Vector3.Zero);
@@ -156,10 +219,10 @@ namespace Simian
             WriteVector(writer, "Acceleration", Vector3.Zero);
             writer.WriteElementString("Description", prim.Prim.Properties.Description);
             writer.WriteStartElement("Color");
-            writer.WriteElementString("R", prim.Prim.TextColor.R.ToString());
-            writer.WriteElementString("G", prim.Prim.TextColor.G.ToString());
-            writer.WriteElementString("B", prim.Prim.TextColor.B.ToString());
-            writer.WriteElementString("A", prim.Prim.TextColor.G.ToString());
+                writer.WriteElementString("R", prim.Prim.TextColor.R.ToString());
+                writer.WriteElementString("G", prim.Prim.TextColor.G.ToString());
+                writer.WriteElementString("B", prim.Prim.TextColor.B.ToString());
+                writer.WriteElementString("A", prim.Prim.TextColor.G.ToString());
             writer.WriteEndElement();
             writer.WriteElementString("Text", prim.Prim.Text);
             writer.WriteElementString("SitName", prim.Prim.Properties.SitName);

@@ -310,8 +310,15 @@ namespace Simian
                     update.Data[0] = (byte)prim.TreeSpecies;
                     break;
                 default:
-                    update.Data = new byte[prim.ScratchPad.Length];
-                    Buffer.BlockCopy(prim.ScratchPad, 0, update.Data, 0, update.Data.Length);
+                    if (prim.ScratchPad != null)
+                    {
+                        update.Data = new byte[prim.ScratchPad.Length];
+                        Buffer.BlockCopy(prim.ScratchPad, 0, update.Data, 0, update.Data.Length);
+                    }
+                    else
+                    {
+                        update.Data = new byte[0];
+                    }
                     break;
             }
 

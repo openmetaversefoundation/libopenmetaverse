@@ -20,6 +20,7 @@ namespace Simian
     {
         public const string CONFIG_FILE = "Simian.ini";
         public const string DATA_DIR = "SimianData/";
+        public const string ASSET_CACHE_DIR = "SimianData/AssetCache/";
 
         public int UDPPort { get { return 9000; } }
         public int HttpPort { get { return 8002; } }

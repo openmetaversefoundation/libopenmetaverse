@@ -90,12 +90,14 @@ namespace Simian.Extensions
 
         public void Stop()
         {
-            while (sceneAgents.Count > 0)
+            lock (sceneAgents)
             {
-                Dictionary<UUID, Agent>.ValueCollection.Enumerator e = sceneAgents.Values.GetEnumerator();
-                e.MoveNext();
-                AgentRemove(this, e.Current);
+                List<Agent> agents = new List<Agent>(sceneAgents.Values);
+                for (int i = 0; i < agents.Count; i++)
+                    ObjectRemove(this, agents[i].ID);
             }
+
+            Logger.DebugLog("SceneManager is stopped");
         }
 
         #region Object Interfaces
@@ -246,11 +248,11 @@ namespace Simian.Extensions
             SimulationObject obj;
             Agent agent;
 
-            if (sceneAgents.TryGetValue(id, out agent))
-                AgentRemove(sender, agent);
-
             if (sceneObjects.TryGetValue(id, out obj))
             {
+                if (sceneAgents.TryGetValue(id, out agent))
+                    AgentRemove(sender, agent);
+
                 if (OnObjectRemove != null)
                     OnObjectRemove(sender, obj);
 
@@ -443,6 +445,11 @@ namespace Simian.Extensions
             return sceneObjects.FindValue(predicate);
         }
 
+        public int RemoveAllObjects(Predicate<SimulationObject> predicate)
+        {
+            return sceneObjects.RemoveAll(predicate);
+        }
+
         public void TriggerSound(object sender, UUID objectID, UUID parentID, UUID ownerID, UUID soundID, Vector3 position, float gain)
         {
             if (OnTriggerSound != null)
@@ -546,9 +553,7 @@ namespace Simian.Extensions
             // Add the agent to the scene dictionary
             lock (sceneAgents) sceneAgents[agent.ID] = agent;
 
-            // Send out an update to everyone
-            //ObjectAdd(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None);
-
+            Logger.Log("Added agent " + agent.FullName + " to the scene", Helpers.LogLevel.Info);
             return true;
         }
 
@@ -560,13 +565,6 @@ namespace Simian.Extensions
             Logger.Log("Removing agent " + agent.FullName + " from the scene", Helpers.LogLevel.Info);
 
             lock (sceneAgents) sceneAgents.Remove(agent.ID);
-
-            KillObjectPacket kill = new KillObjectPacket();
-            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-            kill.ObjectData[0].ID = agent.Avatar.Prim.LocalID;
-
-            server.UDP.BroadcastPacket(kill, PacketCategory.State);
 
             // Kill the EventQueue
             RemoveEventQueue(agent.ID);
@@ -645,6 +643,25 @@ namespace Simian.Extensions
             }
 
             return null;
+        }
+
+        public int RemoveAllAgents(Predicate<Agent> predicate)
+        {
+            List<UUID> list = new List<UUID>();
+
+            lock (sceneAgents)
+            {
+                foreach (KeyValuePair<UUID, Agent> kvp in sceneAgents)
+                {
+                    if (predicate(kvp.Value))
+                        list.Add(kvp.Key);
+                }
+
+                for (int i = 0; i < list.Count; i++)
+                    sceneAgents.Remove(list[i]);
+            }
+
+            return list.Count;
         }
 
         #endregion Agent Interfaces

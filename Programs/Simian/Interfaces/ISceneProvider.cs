@@ -168,11 +168,13 @@ namespace Simian
         bool TryGetObject(UUID id, out SimulationObject obj);
         void ForEachObject(Action<SimulationObject> obj);
         SimulationObject FindObject(Predicate<SimulationObject> predicate);
+        int RemoveAllObjects(Predicate<SimulationObject> predicate);
         
         int AgentCount();
         bool TryGetAgent(UUID id, out Agent agent);
         void ForEachAgent(Action<Agent> action);
         Agent FindAgent(Predicate<Agent> predicate);
+        int RemoveAllAgents(Predicate<Agent> predicate);
 
         void SendEvent(Agent agent, string name, OSDMap body);
         bool HasRunningEventQueue(Agent agent);

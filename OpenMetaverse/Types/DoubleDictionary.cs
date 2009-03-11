@@ -179,6 +179,51 @@ namespace OpenMetaverse
             return default(TValue);
         }
 
+        public IList<TValue> FindAll(Predicate<TValue> predicate)
+        {
+            IList<TValue> list = new List<TValue>();
+
+            lock (syncObject)
+            {
+                foreach (TValue value in Dictionary1.Values)
+                {
+                    if (predicate(value))
+                        list.Add(value);
+                }
+            }
+
+            return list;
+        }
+
+        public int RemoveAll(Predicate<TValue> predicate)
+        {
+            IList<TKey1> list = new List<TKey1>();
+
+            lock (syncObject)
+            {
+                foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
+                {
+                    if (predicate(kvp.Value))
+                        list.Add(kvp.Key);
+                }
+
+                IList<TKey2> list2 = new List<TKey2>(list.Count);
+                foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
+                {
+                    if (predicate(kvp.Value))
+                        list2.Add(kvp.Key);
+                }
+
+                for (int i = 0; i < list.Count; i++)
+                    Dictionary1.Remove(list[i]);
+
+                for (int i = 0; i < list2.Count; i++)
+                    Dictionary2.Remove(list2[i]);
+            }
+
+            return list.Count;
+        }
+
         public TValue this[TKey1 key1]
         {
             get { return Dictionary1[key1]; }

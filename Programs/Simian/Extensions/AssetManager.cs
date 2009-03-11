@@ -9,8 +9,6 @@ namespace Simian.Extensions
 {
     public class AssetManager : IExtension<Simian>, IAssetProvider
     {
-        public const string UPLOAD_DIR = "uploadedAssets";
-
         Simian server;
         Dictionary<UUID, Asset> AssetStore = new Dictionary<UUID, Asset>();
         string UploadDir;
@@ -23,7 +21,7 @@ namespace Simian.Extensions
         {
             this.server = server;
 
-            UploadDir = Path.Combine(Simian.DATA_DIR, UPLOAD_DIR);
+            UploadDir = Simian.ASSET_CACHE_DIR;
 
             // Try to create the data directories if they don't already exist
             if (!Directory.Exists(Simian.DATA_DIR))
