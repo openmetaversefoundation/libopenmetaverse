@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ExtensionLoader;
 using OpenMetaverse;
 
-namespace Simian.Extensions
+namespace Simian
 {
     // FIXME: Implement this class
     class MessagingLocal : IExtension<Simian>, IMessagingProvider
@@ -16,9 +16,10 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server)
         {
             this.server = server;
+            return true;
         }
 
         public void Stop()

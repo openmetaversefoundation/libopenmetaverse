@@ -33,7 +33,7 @@ namespace Simian
 
     public interface IScriptApi
     {
-        void Start(Simian server, SimulationObject hostObject, UUID scriptID, bool isGodMode, bool automaticLinkPermission);
+        void Start(ISceneProvider scene, SimulationObject hostObject, UUID scriptID, bool isGodMode, bool automaticLinkPermission);
         void Stop();
 
         void state(string newState);

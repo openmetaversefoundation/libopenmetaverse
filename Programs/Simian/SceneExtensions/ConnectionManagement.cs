@@ -3,23 +3,24 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class ConnectionManagement : IExtension<Simian>
+    public class ConnectionManagement : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
 
         public ConnectionManagement()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, UseCircuitCodeHandler);
-            server.UDP.RegisterPacketCallback(PacketType.StartPingCheck, StartPingCheckHandler);
-            server.UDP.RegisterPacketCallback(PacketType.LogoutRequest, LogoutRequestHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, UseCircuitCodeHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.StartPingCheck, StartPingCheckHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.LogoutRequest, LogoutRequestHandler);
+            return true;
         }
 
         public void Stop()
@@ -32,11 +33,11 @@ namespace Simian.Extensions
             handshake.RegionInfo.BillableFactor = 0f;
             handshake.RegionInfo.CacheID = UUID.Random();
             handshake.RegionInfo.IsEstateManager = false;
-            handshake.RegionInfo.RegionFlags = (uint)server.Scene.RegionFlags;
+            handshake.RegionInfo.RegionFlags = (uint)scene.RegionFlags;
             handshake.RegionInfo.SimOwner = UUID.Random();
             handshake.RegionInfo.SimAccess = (byte)SimAccess.Min;
-            handshake.RegionInfo.SimName = Utils.StringToBytes(server.Scene.RegionName);
-            handshake.RegionInfo.WaterHeight = server.Scene.WaterHeight;
+            handshake.RegionInfo.SimName = Utils.StringToBytes(scene.RegionName);
+            handshake.RegionInfo.WaterHeight = scene.WaterHeight;
             handshake.RegionInfo.TerrainBase0 = UUID.Zero;
             handshake.RegionInfo.TerrainBase1 = UUID.Zero;
             handshake.RegionInfo.TerrainBase2 = UUID.Zero;
@@ -53,9 +54,9 @@ namespace Simian.Extensions
             handshake.RegionInfo.TerrainStartHeight01 = 40f;
             handshake.RegionInfo.TerrainStartHeight10 = 0f;
             handshake.RegionInfo.TerrainStartHeight11 = 40f;
-            handshake.RegionInfo2.RegionID = server.Scene.RegionID;
+            handshake.RegionInfo2.RegionID = scene.RegionID;
 
-            server.UDP.SendPacket(agent.ID, handshake, PacketCategory.Transaction);
+            scene.UDP.SendPacket(agent.ID, handshake, PacketCategory.Transaction);
         }
 
         void StartPingCheckHandler(Packet packet, Agent agent)
@@ -66,7 +67,7 @@ namespace Simian.Extensions
             complete.Header.Reliable = false;
             complete.PingID.PingID = start.PingID.PingID;
 
-            server.UDP.SendPacket(agent.ID, complete, PacketCategory.Overhead);
+            scene.UDP.SendPacket(agent.ID, complete, PacketCategory.Overhead);
         }
 
         void LogoutRequestHandler(Packet packet, Agent agent)
@@ -78,9 +79,9 @@ namespace Simian.Extensions
             reply.InventoryData[0] = new LogoutReplyPacket.InventoryDataBlock();
             reply.InventoryData[0].ItemID = UUID.Zero;
 
-            server.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
+            scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
 
-            server.Scene.ObjectRemove(this, agent.ID);
+            scene.ObjectRemove(this, agent.ID);
         }
     }
 }

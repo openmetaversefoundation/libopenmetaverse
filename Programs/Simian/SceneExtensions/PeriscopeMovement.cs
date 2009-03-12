@@ -5,7 +5,7 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class PeriscopeMovement
     {
@@ -27,7 +27,7 @@ namespace Simian.Extensions
 
         const float SQRT_TWO = 1.41421356f;
 
-        Simian server;
+        ISceneProvider scene;
         Periscope periscope;
         Timer updateTimer;
         long lastTick;
@@ -38,13 +38,13 @@ namespace Simian.Extensions
             set { Interlocked.Exchange(ref lastTick, value); }
         }
 
-        public PeriscopeMovement(Simian server, Periscope periscope)
+        public PeriscopeMovement(ISceneProvider scene, Periscope periscope)
         {
-            this.server = server;
+            this.scene = scene;
             this.periscope = periscope;
 
-            server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
-            server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
 
             updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             LastTick = Environment.TickCount;
@@ -66,7 +66,7 @@ namespace Simian.Extensions
             float seconds = (float)((tick - LastTick) / 1000f);
             LastTick = tick;
 
-            server.Scene.ForEachAgent(
+            scene.ForEachAgent(
                 delegate(Agent agent)
                 {
                     // Don't handle movement for the master agent or foreign agents
@@ -110,10 +110,10 @@ namespace Simian.Extensions
                             speed /= SQRT_TWO;
 
                         Vector3 agentPosition = agent.Avatar.GetSimulatorPosition();
-                        float oldFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+                        float oldFloor = scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
 
                         agentPosition += (move * speed);
-                        float newFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+                        float newFloor = scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
 
                         if (!flying && newFloor != oldFloor)
                             speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
@@ -125,7 +125,7 @@ namespace Simian.Extensions
                         // Z acceleration resulting from gravity
                         float gravity = 0f;
 
-                        float waterChestHeight = server.Scene.WaterHeight - (agent.Avatar.Prim.Scale.Z * .33f);
+                        float waterChestHeight = scene.WaterHeight - (agent.Avatar.Prim.Scale.Z * .33f);
 
                         if (flying)
                         {
@@ -142,29 +142,29 @@ namespace Simian.Extensions
 
                             if (move.X != 0 || move.Y != 0)
                             { //flying horizontally
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.FLY))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.FLY))
                                     animsChanged = true;
                             }
                             else if (move.Z > 0)
                             { //flying straight up
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
                                     animsChanged = true;
                             }
                             else if (move.Z < 0)
                             { //flying straight down
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
                                     animsChanged = true;
                             }
                             else
                             { //hovering in the air
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
                                     animsChanged = true;
                             }
                         }
                         else if (agent.Avatar.Prim.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Prim.Position.Z <= waterChestHeight)
                         { //falling, floating, or landing from a jump
 
-                            if (agent.Avatar.Prim.Position.Z > server.Scene.WaterHeight)
+                            if (agent.Avatar.Prim.Position.Z > scene.WaterHeight)
                             { //above water
 
                                 move = Vector3.Zero; //override controls while drifting
@@ -184,7 +184,7 @@ namespace Simian.Extensions
                                     { //falling
                                         if (fallElapsed > FALL_DELAY)
                                         { //falling long enough to trigger the animation
-                                            if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
                                                 animsChanged = true;
                                         }
                                     }
@@ -207,7 +207,7 @@ namespace Simian.Extensions
                                 if (!jumping)
                                 { //begin prejump
                                     move.Z = 0; //override Z control
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
                                         animsChanged = true;
 
                                     agent.TickJump = Environment.TickCount;
@@ -222,7 +222,7 @@ namespace Simian.Extensions
                                         return;
                                     }
 
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
                                         animsChanged = true;
 
                                     agent.Avatar.Prim.Velocity.X += agent.Avatar.Prim.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
@@ -246,17 +246,17 @@ namespace Simian.Extensions
 
                                     if (move.Z < 0)
                                     { //crouchwalking
-                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
                                             animsChanged = true;
                                     }
                                     else if (agent.Running)
                                     { //running
-                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.RUN))
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.RUN))
                                             animsChanged = true;
                                     }
                                     else
                                     { //walking
-                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.WALK))
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.WALK))
                                             animsChanged = true;
                                     }
                                 }
@@ -264,12 +264,12 @@ namespace Simian.Extensions
                                 { //walking
                                     if (move.Z < 0)
                                     { //crouching
-                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
                                             animsChanged = true;
                                     }
                                     else
                                     { //standing
-                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.STAND))
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.STAND))
                                             animsChanged = true;
                                     }
                                 }
@@ -277,7 +277,7 @@ namespace Simian.Extensions
                         }
 
                         if (animsChanged)
-                            server.Avatars.SendAnimations(agent);
+                            scene.Avatars.SendAnimations(agent);
 
                         float maxVel = AVATAR_TERMINAL_VELOCITY * seconds;
 
@@ -329,10 +329,10 @@ namespace Simian.Extensions
             }
 
             SimulationObject obj;
-            if (server.Scene.TryGetObject(update.AgentData.AgentID, out obj))
+            if (scene.TryGetObject(update.AgentData.AgentID, out obj))
             {
                 obj.Prim.Rotation = update.AgentData.BodyRotation;
-                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Rotation);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Rotation);
             }
         }
 

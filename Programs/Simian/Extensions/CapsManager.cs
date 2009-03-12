@@ -7,7 +7,7 @@ using OpenMetaverse;
 using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class CapsManager : IExtension<Simian>, ICapabilitiesProvider
     {
@@ -18,11 +18,12 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server)
         {
             this.server = server;
             capsServer = new CapsServer(server.HttpServer, @"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
             capsServer.Start();
+            return true;
         }
 
         public void Stop()
@@ -34,21 +35,13 @@ namespace Simian.Extensions
         public Uri CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state)
         {
             UUID capID = capsServer.CreateCapability(localHandler, clientCertRequired, state);
-            return new Uri(
-                (server.SSL ? "https://" : "http://") +
-                server.HostName +
-                (server.HttpPort == 80 ? String.Empty : ":" + server.HttpPort) +
-                "/caps/" + capID.ToString());
+            return new Uri(server.HttpUri, "/caps/" + capID.ToString());
         }
 
         public Uri CreateCapability(Uri remoteHandler, bool clientCertRequired)
         {
             UUID capID = capsServer.CreateCapability(remoteHandler, clientCertRequired);
-            return new Uri(
-                (server.SSL ? "https://" : "http://") +
-                server.HostName +
-                (server.HttpPort == 80 ? String.Empty : ":" + server.HttpPort) +
-                "/caps/" + capID.ToString());
+            return new Uri(server.HttpUri, "/caps/" + capID.ToString());
         }
 
         public bool RemoveCapability(Uri cap)

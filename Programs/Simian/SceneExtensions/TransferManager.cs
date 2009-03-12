@@ -4,25 +4,26 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class TransferManager : IExtension<Simian>
+    public class TransferManager : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
 
         public TransferManager()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.UDP.RegisterPacketCallback(PacketType.AssetUploadRequest, new PacketCallback(AssetUploadRequestHandler));
-            server.UDP.RegisterPacketCallback(PacketType.SendXferPacket, new PacketCallback(SendXferPacketHandler));
-            server.UDP.RegisterPacketCallback(PacketType.AbortXfer, new PacketCallback(AbortXferHandler));
-            server.UDP.RegisterPacketCallback(PacketType.TransferRequest, new PacketCallback(TransferRequestHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.AssetUploadRequest, new PacketCallback(AssetUploadRequestHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.SendXferPacket, new PacketCallback(SendXferPacketHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.AbortXfer, new PacketCallback(AbortXferHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.TransferRequest, new PacketCallback(TransferRequestHandler));
+            return true;
         }
 
         public void Stop()
@@ -53,14 +54,14 @@ namespace Simian.Extensions
                 asset.Temporary = (request.AssetBlock.Tempfile | request.AssetBlock.StoreLocal);
 
                 // Store the asset
-                server.Assets.StoreAsset(asset);
+                scene.Server.Assets.StoreAsset(asset);
 
                 // Send a success response
                 AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
                 complete.AssetBlock.Success = true;
                 complete.AssetBlock.Type = request.AssetBlock.Type;
                 complete.AssetBlock.UUID = assetID;
-                server.UDP.SendPacket(agent.ID, complete, PacketCategory.Inventory);
+                scene.UDP.SendPacket(agent.ID, complete, PacketCategory.Inventory);
             }
             else
             {
@@ -89,7 +90,7 @@ namespace Simian.Extensions
                 lock (CurrentUploads)
                     CurrentUploads[xfer.XferID.ID] = asset;
 
-                server.UDP.SendPacket(agent.ID, xfer, PacketCategory.Inventory);
+                scene.UDP.SendPacket(agent.ID, xfer, PacketCategory.Inventory);
             }
         }
 
@@ -118,7 +119,7 @@ namespace Simian.Extensions
                     ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
                     confirm.XferID.ID = xfer.XferID.ID;
                     confirm.XferID.Packet = xfer.XferID.Packet;
-                    server.UDP.SendPacket(agent.ID, confirm, PacketCategory.Asset);
+                    scene.UDP.SendPacket(agent.ID, confirm, PacketCategory.Asset);
                 }
                 else
                 {
@@ -129,7 +130,7 @@ namespace Simian.Extensions
                     ConfirmXferPacketPacket confirm = new ConfirmXferPacketPacket();
                     confirm.XferID.ID = xfer.XferID.ID;
                     confirm.XferID.Packet = xfer.XferID.Packet;
-                    server.UDP.SendPacket(agent.ID, confirm, PacketCategory.Asset);
+                    scene.UDP.SendPacket(agent.ID, confirm, PacketCategory.Asset);
 
                     if ((xfer.XferID.Packet & (uint)0x80000000) != 0)
                     {
@@ -139,13 +140,13 @@ namespace Simian.Extensions
                         lock (CurrentUploads)
                             CurrentUploads.Remove(xfer.XferID.ID);
 
-                        server.Assets.StoreAsset(asset);
+                        scene.Server.Assets.StoreAsset(asset);
 
                         AssetUploadCompletePacket complete = new AssetUploadCompletePacket();
                         complete.AssetBlock.Success = true;
                         complete.AssetBlock.Type = (sbyte)asset.AssetType;
                         complete.AssetBlock.UUID = asset.AssetID;
-                        server.UDP.SendPacket(agent.ID, complete, PacketCategory.Asset);
+                        scene.UDP.SendPacket(agent.ID, complete, PacketCategory.Asset);
                     }
                 }
             }
@@ -210,7 +211,7 @@ namespace Simian.Extensions
 
                     // Check if we have this asset
                     Asset asset;
-                    if (server.Assets.TryGetAsset(assetID, out asset))
+                    if (scene.Server.Assets.TryGetAsset(assetID, out asset))
                     {
                         if (asset.AssetType == type)
                         {
@@ -221,7 +222,7 @@ namespace Simian.Extensions
                             response.TransferInfo.Status = (int)StatusCode.OK;
                             response.TransferInfo.TargetType = (int)TargetType.Unknown; // Doesn't seem to be used by the client
 
-                            server.UDP.SendPacket(agent.ID, response, PacketCategory.Asset);
+                            scene.UDP.SendPacket(agent.ID, response, PacketCategory.Asset);
 
                             // Transfer system does not wait for ACKs, just sends all of the
                             // packets for this transfer out
@@ -245,7 +246,7 @@ namespace Simian.Extensions
                                 else
                                     transfer.TransferData.Status = (int)StatusCode.OK;
 
-                                server.UDP.SendPacket(agent.ID, transfer, PacketCategory.Asset);
+                                scene.UDP.SendPacket(agent.ID, transfer, PacketCategory.Asset);
                             }
                         }
                         else
@@ -265,7 +266,7 @@ namespace Simian.Extensions
                         response.TransferInfo.Status = (int)StatusCode.UnknownSource;
                         response.TransferInfo.TargetType = (int)TargetType.Unknown;
 
-                        server.UDP.SendPacket(agent.ID, response, PacketCategory.Asset);
+                        scene.UDP.SendPacket(agent.ID, response, PacketCategory.Asset);
                     }
                 }
                 else if (source == SourceType.SimEstate)

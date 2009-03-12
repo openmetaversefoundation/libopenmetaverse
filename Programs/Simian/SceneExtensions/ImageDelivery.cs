@@ -5,7 +5,7 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class ImageDownload
     {
@@ -102,20 +102,21 @@ namespace Simian.Extensions
         }
     }
 
-    public class ImageDelivery : IExtension<Simian>
+    public class ImageDelivery : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
         Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
 
         public ImageDelivery()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.UDP.RegisterPacketCallback(PacketType.RequestImage, RequestImageHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.RequestImage, RequestImageHandler);
+            return true;
         }
 
         public void Stop()
@@ -170,7 +171,7 @@ namespace Simian.Extensions
 
                     // New download, check if we have this image
                     Asset asset;
-                    if (server.Assets.TryGetAsset(block.Image, out asset) && asset is AssetTexture)
+                    if (scene.Server.Assets.TryGetAsset(block.Image, out asset) && asset is AssetTexture)
                     {
                         SendTexture(agent, (AssetTexture)asset, block.DiscardLevel, (int)block.Packet, block.DownloadPriority);
                     }
@@ -180,7 +181,7 @@ namespace Simian.Extensions
 
                         ImageNotInDatabasePacket notfound = new ImageNotInDatabasePacket();
                         notfound.ImageID.ID = block.Image;
-                        server.UDP.SendPacket(agent.ID, notfound, PacketCategory.Texture);
+                        scene.UDP.SendPacket(agent.ID, notfound, PacketCategory.Texture);
                     }
                 }
             }
@@ -217,7 +218,7 @@ namespace Simian.Extensions
                     Helpers.LogLevel.Error);
             }
 
-            server.UDP.SendPacket(agent.ID, data, PacketCategory.Texture);
+            scene.UDP.SendPacket(agent.ID, data, PacketCategory.Texture);
 
             // Check if ImagePacket packets need to be sent to complete this transfer
             if (download.CurrentPacket <= download.StopPacket)
@@ -258,7 +259,7 @@ namespace Simian.Extensions
                                         imagePacketSize), Helpers.LogLevel.Error);
                                 }
 
-                                server.UDP.SendPacket(agent.ID, transfer, PacketCategory.Texture);
+                                scene.UDP.SendPacket(agent.ID, transfer, PacketCategory.Texture);
 
                                 ++download.CurrentPacket;
                             }

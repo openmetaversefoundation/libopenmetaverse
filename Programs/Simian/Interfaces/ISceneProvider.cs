@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using HttpServer;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
@@ -123,12 +124,23 @@ namespace Simian
         event TerrainUpdateCallback OnTerrainUpdate;
         event WindUpdateCallback OnWindUpdate;
 
-        uint RegionX { get; }
-        uint RegionY { get; }
+        Simian Server { get; }
+        IAvatarProvider Avatars { get; }
+        IParcelProvider Parcels { get; }
+        IPhysicsProvider Physics { get; }
+        IScriptEngine ScriptEngine { get; }
+        ITaskInventoryProvider TaskInventory { get; }
+        IUDPProvider UDP { get; }
+
+        uint RegionX { get; set; }
+        uint RegionY { get; set; }
         ulong RegionHandle { get; }
         UUID RegionID { get; }
-        string RegionName { get; }
+        string RegionName { get; set; }
         RegionFlags RegionFlags { get; }
+        Vector3 DefaultLookAt { get; }
+        Vector3 DefaultPosition { get; }
+        IPEndPoint IPAndPort { get; set; }
 
         float WaterHeight { get; }
 
@@ -136,6 +148,9 @@ namespace Simian
         uint TerrainPatchHeight { get; }
         uint TerrainPatchCountWidth { get; }
         uint TerrainPatchCountHeight { get; }
+
+        bool Start(Simian server, string name, IPEndPoint endpoint, uint regionX, uint regionY, string defaultTerrainFile, int staticObjects, int physicalObjects);
+        void Stop();
 
         void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
         bool ObjectRemove(object sender, uint localID);

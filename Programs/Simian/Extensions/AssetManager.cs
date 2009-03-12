@@ -5,7 +5,7 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class AssetManager : IExtension<Simian>, IAssetProvider
     {
@@ -17,7 +17,7 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server)
         {
             this.server = server;
 
@@ -27,16 +27,25 @@ namespace Simian.Extensions
             if (!Directory.Exists(Simian.DATA_DIR))
             {
                 try { Directory.CreateDirectory(Simian.DATA_DIR); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex); }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
+                    return false;
+                }
             }
             if (!Directory.Exists(UploadDir))
             {
                 try { Directory.CreateDirectory(UploadDir); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Warning, ex); }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message, Helpers.LogLevel.Error, ex);
+                    return false;
+                }
             }
 
             LoadAssets(Simian.DATA_DIR);
             LoadAssets(UploadDir);
+            return true;
         }
 
         public void Stop()

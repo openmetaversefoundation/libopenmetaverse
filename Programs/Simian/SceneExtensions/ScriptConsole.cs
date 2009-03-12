@@ -4,7 +4,7 @@ using System.Reflection;
 using ExtensionLoader;
 using OpenMetaverse;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class ScriptFunction
     {
@@ -14,9 +14,9 @@ namespace Simian.Extensions
         public Type Return;
     }
 
-    public class ScriptConsole : IExtension<Simian>
+    public class ScriptConsole : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
         IScriptApi api;
         Dictionary<string, ScriptFunction> functions;
 
@@ -24,13 +24,13 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
             // Create a single local scripting API instance that we will manage
             api = new ScriptApi();
-            api.Start(server, null, UUID.Zero, false, false);
+            api.Start(scene, null, UUID.Zero, false, false);
 
             // Create a dictionary of all of the scripting functions
             functions = new Dictionary<string, ScriptFunction>();
@@ -56,7 +56,8 @@ namespace Simian.Extensions
                 }
             }
 
-            server.Scene.OnObjectChat += new ObjectChatCallback(Scene_OnObjectChat);
+            scene.OnObjectChat += Scene_OnObjectChat;
+            return true;
         }
 
         public void Stop()
@@ -76,7 +77,7 @@ namespace Simian.Extensions
             }
             message += ")";
 
-            server.Scene.ObjectChat(this, UUID.Zero, UUID.Zero, ChatAudibleLevel.Fully, ChatType.OwnerSay, ChatSourceType.Object,
+            scene.ObjectChat(this, UUID.Zero, UUID.Zero, ChatAudibleLevel.Fully, ChatType.OwnerSay, ChatSourceType.Object,
                 "Script Console", Vector3.Zero, 0, message);
         }
 
@@ -197,18 +198,18 @@ namespace Simian.Extensions
                                 {
                                     // Find the avatar that sent this chat
                                     SimulationObject avatar;
-                                    if (server.Scene.TryGetObject(ownerID, out avatar))
+                                    if (scene.TryGetObject(ownerID, out avatar))
                                     {
                                         // Lock the API, setup the member values, and invoke the function
                                         lock (api)
                                         {
-                                            api.Start(server, avatar, UUID.Random(), false, false);
+                                            api.Start(scene, avatar, UUID.Random(), false, false);
 
                                             object ret = function.Method.Invoke(api, objParameters);
 
                                             if (ret != null)
                                             {
-                                                server.Scene.ObjectChat(this, UUID.Zero, UUID.Zero, ChatAudibleLevel.Fully, ChatType.OwnerSay,
+                                                scene.ObjectChat(this, UUID.Zero, UUID.Zero, ChatAudibleLevel.Fully, ChatType.OwnerSay,
                                                     ChatSourceType.Object, "Script Console", Vector3.Zero, 0, ret.ToString());
                                             }
 

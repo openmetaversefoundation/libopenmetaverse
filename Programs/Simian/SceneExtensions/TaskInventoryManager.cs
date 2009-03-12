@@ -4,20 +4,21 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
     // FIXME: Implement this class
-    class TaskInventoryManager : IExtension<Simian>, ITaskInventoryProvider
+    class TaskInventoryManager : IExtension<ISceneProvider>, ITaskInventoryProvider
     {
-        Simian server;
+        ISceneProvider scene;
 
         public TaskInventoryManager()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
+            return true;
         }
 
         public void Stop()

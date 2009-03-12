@@ -2,7 +2,7 @@
 using ExtensionLoader;
 using OpenMetaverse;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class PermissionsFreeForAll : IExtension<Simian>, IPermissionsProvider
     {
@@ -12,9 +12,10 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server)
         {
             this.server = server;
+            return true;
         }
 
         public void Stop()

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ExtensionLoader;
@@ -14,7 +15,7 @@ using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Http;
 
-namespace Simian.Extensions
+namespace Simian
 {
     class EventQueueServerCap
     {
@@ -28,20 +29,17 @@ namespace Simian.Extensions
         }
     }
 
-    public class SceneManager : IExtension<Simian>, ISceneProvider
+    public class SceneManager : ISceneProvider
     {
-        Simian server;
-        // Contains all scene objects, including prims and avatars
-        DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
-        // A duplicate of the avatar information stored in sceneObjects, improves operations such as iterating over all agents
-        Dictionary<UUID, Agent> sceneAgents = new Dictionary<UUID, Agent>();
-        // Event queues for each avatar in the scene
-        Dictionary<UUID, EventQueueServerCap> eventQueues = new Dictionary<UUID, EventQueueServerCap>();
-        int currentLocalID = 1;
-        ulong regionHandle;
-        UUID regionID = UUID.Random();
-        TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
-        Vector2[,] windSpeeds = new Vector2[16, 16];
+        // Interfaces. Although no other classes will access these interfaces directly
+        // (getters are used instead), they must be marked public so ExtensionLoader 
+        // can automatically assign them
+        public IAvatarProvider avatars;
+        public IParcelProvider parcels;
+        public IPhysicsProvider physics;
+        public IScriptEngine scriptEngine;
+        public ITaskInventoryProvider taskInventory;
+        public IUDPProvider udp;
 
         public event ObjectAddOrUpdateCallback OnObjectAddOrUpdate;
         public event ObjectRemoveCallback OnObjectRemove;
@@ -61,12 +59,39 @@ namespace Simian.Extensions
         public event TerrainUpdateCallback OnTerrainUpdate;
         public event WindUpdateCallback OnWindUpdate;
 
-        public uint RegionX { get { return 7777; } }
-        public uint RegionY { get { return 7777; } }
+        public Simian Server { get { return server; } }
+        public IAvatarProvider Avatars { get { return avatars; } }
+        public IParcelProvider Parcels { get { return parcels; } }
+        public IPhysicsProvider Physics { get { return physics; } }
+        public IScriptEngine ScriptEngine { get { return scriptEngine; } }
+        public ITaskInventoryProvider TaskInventory { get { return taskInventory; } }
+        public IUDPProvider UDP { get { return udp; } }
+
+        public uint RegionX
+        {
+            get { return regionX; }
+            set
+            {
+                regionX = value;
+                regionHandle = Utils.UIntsToLong(regionX * 256, regionY * 256);
+            }
+        }
+        public uint RegionY
+        {
+            get { return regionY; }
+            set
+            {
+                regionY = value;
+                regionHandle = Utils.UIntsToLong(regionX * 256, regionY * 256);
+            }
+        }
         public ulong RegionHandle { get { return regionHandle; } }
         public UUID RegionID { get { return regionID; } }
-        public string RegionName { get { return "Simian"; } }
+        public string RegionName { get { return regionName; } set { regionName = value; } }
         public RegionFlags RegionFlags { get { return RegionFlags.None; } }
+        public IPEndPoint IPAndPort { get { return endpoint; } set { endpoint = value; } }
+        public Vector3 DefaultPosition { get { return defaultPosition; } }
+        public Vector3 DefaultLookAt { get { return defaultLookAt; } }
 
         public float WaterHeight { get { return 20f; } }
 
@@ -75,21 +100,91 @@ namespace Simian.Extensions
         public uint TerrainPatchCountWidth { get { return 16; } }
         public uint TerrainPatchCountHeight { get { return 16; } }
 
+        Simian server;
+        // Contains all scene objects, including prims and avatars
+        DoubleDictionary<uint, UUID, SimulationObject> sceneObjects = new DoubleDictionary<uint, UUID, SimulationObject>();
+        // A duplicate of the avatar information stored in sceneObjects, improves operations such as iterating over all agents
+        Dictionary<UUID, Agent> sceneAgents = new Dictionary<UUID, Agent>();
+        // Event queues for each avatar in the scene
+        Dictionary<UUID, EventQueueServerCap> eventQueues = new Dictionary<UUID, EventQueueServerCap>();
+        int currentLocalID = 1;
+        ulong regionHandle;
+        UUID regionID = UUID.Random();
+        TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
+        Vector2[,] windSpeeds = new Vector2[16, 16];
+        ExtensionLoader<ISceneProvider> extensions = new ExtensionLoader<ISceneProvider>();
+        IPEndPoint endpoint;
+        uint regionX;
+        uint regionY;
+        string regionName;
+        Vector3 defaultPosition = new Vector3(128f, 128f, 30f);
+        Vector3 defaultLookAt = Vector3.UnitX;
+
         public SceneManager()
         {
-            regionHandle = Utils.UIntsToLong(RegionX * 256, RegionY * 256);
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server, string name, IPEndPoint endpoint, uint regionX, uint regionY,
+            string defaultTerrainFile, int staticObjects, int physicalObjects)
         {
             this.server = server;
+            this.regionName = name;
+            this.endpoint = endpoint;
 
-            server.UDP.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler));
-            LoadTerrain(Simian.DATA_DIR + "heightmap.tga");
+            // Set the properties because this will automatically update the regionHandle
+            RegionX = regionX;
+            RegionY = regionY;
+
+            #region ISceneProvider Extension Loading
+
+            try
+            {
+                // Create a list of references for .cs extensions that are compiled at runtime
+                List<string> references = new List<string>();
+                references.Add("OpenMetaverseTypes.dll");
+                references.Add("OpenMetaverse.dll");
+                references.Add("Simian.exe");
+
+                // Load extensions from the current executing assembly, Simian.*.dll assemblies on disk, and
+                // Simian.*.cs source files on disk.
+                extensions.LoadAllExtensions(Assembly.GetExecutingAssembly(),
+                    AppDomain.CurrentDomain.BaseDirectory, server.ExtensionList, references,
+                    "Simian.*.dll", "Simian.*.cs");
+
+                // Automatically assign extensions that implement interfaces to the list of interface
+                // variables in "assignables"
+                extensions.AssignExtensions(this, extensions.GetInterfaces(this));
+
+                // Start all of the extensions
+                foreach (IExtension<ISceneProvider> extension in extensions.Extensions)
+                {
+                    Logger.Log("Starting Scene extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                    extension.Start(this);
+                }
+            }
+            catch (ExtensionException ex)
+            {
+                Logger.Log("SceneManager extension loading failed, shutting down: " + ex.Message, Helpers.LogLevel.Error);
+                Stop();
+                return false;
+            }
+
+            #endregion ISceneProvider Extension Loading
+
+            udp.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler));
+            
+            if (!String.IsNullOrEmpty(defaultTerrainFile))
+                LoadTerrain(Simian.DATA_DIR + defaultTerrainFile);
+
+            return true;
         }
 
         public void Stop()
         {
+            Logger.Log("Stopping region " + regionName, Helpers.LogLevel.Info);
+
+            // Remove all of the agents from the scene. This will shutdown UDP connections and event queues to
+            // each of the agents as well
             lock (sceneAgents)
             {
                 List<Agent> agents = new List<Agent>(sceneAgents.Values);
@@ -97,7 +192,14 @@ namespace Simian.Extensions
                     ObjectRemove(this, agents[i].ID);
             }
 
-            Logger.DebugLog("SceneManager is stopped");
+            // Stop ISceneProvider extensions
+            foreach (IExtension<ISceneProvider> extension in extensions.Extensions)
+            {
+                Logger.Log("Stopping Scene extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                extension.Stop();
+            }
+
+            Logger.Log("Region " + regionName + " is stopped", Helpers.LogLevel.Info);
         }
 
         #region Object Interfaces
@@ -136,7 +238,7 @@ namespace Simian.Extensions
 
                 // Set the RegionHandle if no RegionHandle is set
                 if (obj.Prim.RegionHandle == 0)
-                    obj.Prim.RegionHandle = server.Scene.RegionHandle;
+                    obj.Prim.RegionHandle = regionHandle;
 
                 // Make sure this object has properties
                 if (obj.Prim.Properties == null)
@@ -236,7 +338,7 @@ namespace Simian.Extensions
                 kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                 kill.ObjectData[0].ID = obj.Prim.LocalID;
 
-                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                udp.BroadcastPacket(kill, PacketCategory.State);
                 return true;
             }
 
@@ -263,7 +365,7 @@ namespace Simian.Extensions
                 kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                 kill.ObjectData[0].ID = obj.Prim.LocalID;
 
-                server.UDP.BroadcastPacket(kill, PacketCategory.State);
+                udp.BroadcastPacket(kill, PacketCategory.State);
                 return true;
             }
 
@@ -332,7 +434,7 @@ namespace Simian.Extensions
                 sendAnim.AnimationList[i].AnimSequenceID = animations[i].SequenceID;
             }
 
-            server.UDP.BroadcastPacket(sendAnim, PacketCategory.State);
+            udp.BroadcastPacket(sendAnim, PacketCategory.State);
         }
 
         public void ObjectChat(object sender, UUID ownerID, UUID sourceID, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType,
@@ -356,7 +458,7 @@ namespace Simian.Extensions
                 chat.ChatData.FromName = Utils.StringToBytes(fromName);
                 chat.ChatData.Message = Utils.StringToBytes(message);
 
-                server.UDP.BroadcastPacket(chat, PacketCategory.Messaging);
+                udp.BroadcastPacket(chat, PacketCategory.Messaging);
             }
         }
 
@@ -376,7 +478,7 @@ namespace Simian.Extensions
                 obj.Prim = prim;
 
                 // Inform clients
-                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
             }
             else
             {
@@ -401,7 +503,7 @@ namespace Simian.Extensions
                 obj.Prim = prim;
 
                 // Inform clients
-                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
             }
             else
             {
@@ -458,7 +560,7 @@ namespace Simian.Extensions
             }
 
             SoundTriggerPacket sound = new SoundTriggerPacket();
-            sound.SoundData.Handle = server.Scene.RegionHandle;
+            sound.SoundData.Handle = regionHandle;
             sound.SoundData.ObjectID = objectID;
             sound.SoundData.ParentID = parentID;
             sound.SoundData.OwnerID = ownerID;
@@ -466,7 +568,7 @@ namespace Simian.Extensions
             sound.SoundData.SoundID = soundID;
             sound.SoundData.Gain = gain;
 
-            server.UDP.BroadcastPacket(sound, PacketCategory.State);
+            udp.BroadcastPacket(sound, PacketCategory.State);
         }
 
         public void TriggerEffects(object sender, ViewerEffect[] effects)
@@ -497,7 +599,7 @@ namespace Simian.Extensions
                 effect.Effect[i] = block;
             }
 
-            server.UDP.BroadcastPacket(effect, PacketCategory.State);
+            udp.BroadcastPacket(effect, PacketCategory.State);
         }
 
         #endregion Object Interfaces
@@ -506,12 +608,18 @@ namespace Simian.Extensions
 
         public bool AgentAdd(object sender, Agent agent, PrimFlags creatorFlags)
         {
+            // Sanity check, since this should have already been done
+            agent.Avatar.Prim.ID = agent.Info.ID;
+
             // Check if the agent already exists in the scene
             lock (sceneAgents)
             {
                 if (sceneAgents.ContainsKey(agent.ID))
                     sceneAgents.Remove(agent.ID);
             }
+
+            // Update the current region handle
+            agent.Avatar.Prim.RegionHandle = regionHandle;
 
             // Avatars always have physics
             agent.Avatar.Prim.Flags |= PrimFlags.Physics;
@@ -527,17 +635,17 @@ namespace Simian.Extensions
             // Set the avatar name
             NameValue[] name = new NameValue[2];
             name[0] = new NameValue("FirstName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
-                NameValue.SendtoType.SimViewer, agent.FirstName);
+                NameValue.SendtoType.SimViewer, agent.Info.FirstName);
             name[1] = new NameValue("LastName", NameValue.ValueType.String, NameValue.ClassType.ReadWrite,
-                NameValue.SendtoType.SimViewer, agent.LastName);
+                NameValue.SendtoType.SimViewer, agent.Info.LastName);
             agent.Avatar.Prim.NameValues = name;
 
             // Give testers a provisionary balance of 1000L
-            agent.Balance = 1000;
+            agent.Info.Balance = 1000;
 
             // Some default avatar prim properties
             agent.Avatar.Prim.Properties = new Primitive.ObjectProperties();
-            agent.Avatar.Prim.Properties.CreationDate = Utils.UnixTimeToDateTime(agent.CreationTime);
+            agent.Avatar.Prim.Properties.CreationDate = Utils.UnixTimeToDateTime(agent.Info.CreationTime);
             agent.Avatar.Prim.Properties.Name = agent.FullName;
             agent.Avatar.Prim.Properties.ObjectID = agent.ID;
 
@@ -570,14 +678,14 @@ namespace Simian.Extensions
             RemoveEventQueue(agent.ID);
 
             // Remove the UDP client
-            server.UDP.RemoveClient(agent);
+            udp.RemoveClient(agent);
 
             // Notify everyone in the scene that this agent has gone offline
             OfflineNotificationPacket offline = new OfflineNotificationPacket();
             offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
             offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
             offline.AgentBlock[0].AgentID = agent.ID;
-            server.UDP.BroadcastPacket(offline, PacketCategory.State);
+            udp.BroadcastPacket(offline, PacketCategory.State);
         }
 
         public void AgentAppearance(object sender, Agent agent, Primitive.TextureEntry textures, byte[] visualParams)
@@ -591,14 +699,14 @@ namespace Simian.Extensions
             // TODO: Is this necessary here?
             //ObjectUpdatePacket update = SimulationObject.BuildFullUpdate(agent.Avatar,
             //    regionHandle, agent.Flags);
-            //server.UDP.BroadcastPacket(update, PacketCategory.State);
+            //scene.UDP.BroadcastPacket(update, PacketCategory.State);
 
             // Update the avatar
             agent.Avatar.Prim.Textures = textures;
             if (visualParams != null && visualParams.Length > 1)
-                agent.VisualParams = visualParams;
+                agent.Info.VisualParams = visualParams;
 
-            if (agent.VisualParams != null)
+            if (agent.Info.VisualParams != null)
             {
                 // Send the appearance packet to all other clients
                 AvatarAppearancePacket appearance = BuildAppearancePacket(agent);
@@ -606,7 +714,7 @@ namespace Simian.Extensions
                     delegate(Agent recipient)
                     {
                         if (recipient != agent)
-                            server.UDP.SendPacket(recipient.ID, appearance, PacketCategory.State);
+                            udp.SendPacket(recipient.ID, appearance, PacketCategory.State);
                     }
                 );
             }
@@ -745,7 +853,7 @@ namespace Simian.Extensions
             heightmap[y, x].Height = copy;
 
             LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap[y, x].Height, (int)x, (int)y);
-            server.UDP.BroadcastPacket(layer, PacketCategory.Terrain);
+            udp.BroadcastPacket(layer, PacketCategory.Terrain);
         }
 
         public Vector2 GetWindSpeedAt(float fx, float fy)
@@ -901,7 +1009,7 @@ namespace Simian.Extensions
             complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
             complete.SimData.ChannelVersion = Utils.StringToBytes("Simian");
 
-            server.UDP.SendPacket(agent.ID, complete, PacketCategory.Transaction);
+            udp.SendPacket(agent.ID, complete, PacketCategory.Transaction);
 
             // Send updates and appearances for every avatar to this new avatar
             SynchronizeStateTo(agent);
@@ -911,7 +1019,7 @@ namespace Simian.Extensions
             online.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[1];
             online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
             online.AgentBlock[0].AgentID = agent.ID;
-            server.UDP.BroadcastPacket(online, PacketCategory.State);
+            udp.BroadcastPacket(online, PacketCategory.State);
         }
 
         #endregion Callback Handlers
@@ -920,18 +1028,18 @@ namespace Simian.Extensions
         void SynchronizeStateTo(Agent agent)
         {
             // Send the parcel overlay
-            server.Parcels.SendParcelOverlay(agent);
+            parcels.SendParcelOverlay(agent);
 
             // Send object updates for objects and avatars
             sceneObjects.ForEach(delegate(SimulationObject obj)
             {
                 ObjectUpdatePacket update = new ObjectUpdatePacket();
                 update.RegionData.RegionHandle = regionHandle;
-                update.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                update.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
                 update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
                 update.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim, obj.Prim.Flags, obj.CRC);
 
-                server.UDP.SendPacket(agent.ID, update, PacketCategory.State);
+                udp.SendPacket(agent.ID, update, PacketCategory.State);
             });
 
             // Send appearances for all avatars
@@ -942,7 +1050,7 @@ namespace Simian.Extensions
                     {
                         // Send appearances for this avatar
                         AvatarAppearancePacket appearance = BuildAppearancePacket(otherAgent);
-                        server.UDP.SendPacket(agent.ID, appearance, PacketCategory.State);
+                        udp.SendPacket(agent.ID, appearance, PacketCategory.State);
                     }
                 }
             );
@@ -1026,7 +1134,7 @@ namespace Simian.Extensions
                 for (int x = 0; x < 16; x++)
                 {
                     LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap[y, x].Height, x, y);
-                    server.UDP.SendPacket(agent.ID, layer, PacketCategory.Terrain);
+                    udp.SendPacket(agent.ID, layer, PacketCategory.Terrain);
                 }
             }
         }
@@ -1044,12 +1152,12 @@ namespace Simian.Extensions
                     // Send an update out to the creator
                     ObjectUpdatePacket updateToOwner = new ObjectUpdatePacket();
                     updateToOwner.RegionData.RegionHandle = regionHandle;
-                    updateToOwner.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                    updateToOwner.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
                     updateToOwner.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
                     updateToOwner.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim,
                         obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
 
-                    server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
+                    udp.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
                 }
 
                 // Send an update out to everyone else
@@ -1060,11 +1168,11 @@ namespace Simian.Extensions
                 updateToOthers.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim,
                     obj.Prim.Flags, obj.CRC);
 
-                server.Scene.ForEachAgent(
+                ForEachAgent(
                     delegate(Agent recipient)
                     {
                         if (recipient.ID != obj.Prim.OwnerID)
-                            server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
+                            udp.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
                     }
                 );
 
@@ -1307,13 +1415,13 @@ namespace Simian.Extensions
                     // Send an update out to the creator
                     ObjectUpdateCompressedPacket updateToOwner = new ObjectUpdateCompressedPacket();
                     updateToOwner.RegionData.RegionHandle = regionHandle;
-                    updateToOwner.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                    updateToOwner.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
                     updateToOwner.ObjectData = new ObjectUpdateCompressedPacket.ObjectDataBlock[1];
                     updateToOwner.ObjectData[0] = new ObjectUpdateCompressedPacket.ObjectDataBlock();
                     updateToOwner.ObjectData[0].UpdateFlags = (uint)(obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner);
                     updateToOwner.ObjectData[0].Data = data;
 
-                    server.UDP.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
+                    udp.SendPacket(obj.Prim.OwnerID, updateToOwner, PacketCategory.State);
                 }
 
                 // Send an update out to everyone else
@@ -1325,11 +1433,11 @@ namespace Simian.Extensions
                 updateToOthers.ObjectData[0].UpdateFlags = (uint)obj.Prim.Flags;
                 updateToOthers.ObjectData[0].Data = data;
 
-                server.Scene.ForEachAgent(
+                ForEachAgent(
                     delegate(Agent recipient)
                     {
                         if (recipient.ID != obj.Prim.OwnerID)
-                            server.UDP.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
+                            udp.SendPacket(recipient.ID, updateToOthers, PacketCategory.State);
                     }
                 );
 
@@ -1385,7 +1493,7 @@ namespace Simian.Extensions
 
                 ImprovedTerseObjectUpdatePacket update = new ImprovedTerseObjectUpdatePacket();
                 update.RegionData.RegionHandle = RegionHandle;
-                update.RegionData.TimeDilation = (ushort)(server.Physics.TimeDilation * (float)UInt16.MaxValue);
+                update.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
                 update.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[1];
                 update.ObjectData[0] = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
                 update.ObjectData[0].Data = data;
@@ -1407,7 +1515,7 @@ namespace Simian.Extensions
                     update.ObjectData[0].TextureEntry = Utils.EmptyBytes;
                 }
 
-                server.UDP.BroadcastPacket(update, PacketCategory.State);
+                udp.BroadcastPacket(update, PacketCategory.State);
 
                 #endregion ImprovedTerseObjectUpdate
             }
@@ -1420,16 +1528,17 @@ namespace Simian.Extensions
             appearance.Sender.ID = agent.ID;
             appearance.Sender.IsTrial = false;
 
-            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[agent.VisualParams.Length];
-            for (int i = 0; i < agent.VisualParams.Length; i++)
+            int count = agent.Info.VisualParams != null ? agent.Info.VisualParams.Length : 0;
+
+            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[count];
+            for (int i = 0; i < count; i++)
             {
                 appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
-                appearance.VisualParam[i].ParamValue = agent.VisualParams[i];
+                appearance.VisualParam[i].ParamValue = agent.Info.VisualParams[i];
             }
 
-            if (agent.VisualParams.Length != 218)
-                Logger.Log("Built an appearance packet with VisualParams.Length=" + agent.VisualParams.Length,
-                    Helpers.LogLevel.Warning);
+            if (count != 218)
+                Logger.Log("Built an odd appearance packet with VisualParams.Length=" + count, Helpers.LogLevel.Warning);
 
             return appearance;
         }

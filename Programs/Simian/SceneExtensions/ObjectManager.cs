@@ -6,36 +6,36 @@ using OpenMetaverse;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class ObjectManager : IExtension<Simian>
+    public class ObjectManager : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
         
         public ObjectManager()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.UDP.RegisterPacketCallback(PacketType.ObjectAdd, new PacketCallback(ObjectAddHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectAttach, new PacketCallback(ObjectAttachHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectDuplicate, new PacketCallback(ObjectDuplicateHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectSelect, new PacketCallback(ObjectSelectHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectDeselect, new PacketCallback(ObjectDeselectHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectLink, new PacketCallback(ObjectLinkHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectDelink, new PacketCallback(ObjectDelinkHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectShape, new PacketCallback(ObjectShapeHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectFlagUpdate, new PacketCallback(ObjectFlagUpdateHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectExtraParams, new PacketCallback(ObjectExtraParamsHandler));
-            server.UDP.RegisterPacketCallback(PacketType.ObjectImage, new PacketCallback(ObjectImageHandler));
-            server.UDP.RegisterPacketCallback(PacketType.Undo, new PacketCallback(UndoHandler));
-            server.UDP.RegisterPacketCallback(PacketType.Redo, new PacketCallback(RedoHandler));
-            server.UDP.RegisterPacketCallback(PacketType.DeRezObject, new PacketCallback(DeRezObjectHandler));
-            server.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, new PacketCallback(MultipleObjectUpdateHandler));
-            server.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, new PacketCallback(RequestObjectPropertiesFamilyHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectAdd, ObjectAddHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectAttach, ObjectAttachHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectDuplicate, ObjectDuplicateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectSelect, ObjectSelectHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectDeselect, ObjectDeselectHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectLink, ObjectLinkHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectDelink, ObjectDelinkHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectShape, ObjectShapeHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectFlagUpdate, ObjectFlagUpdateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectExtraParams, ObjectExtraParamsHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectImage, ObjectImageHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.Undo, UndoHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.Redo, RedoHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.MultipleObjectUpdate, MultipleObjectUpdateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.RequestObjectPropertiesFamily, RequestObjectPropertiesFamilyHandler);
+            return true;
         }
 
         public void Stop()
@@ -65,10 +65,10 @@ namespace Simian.Extensions
                 if (add.ObjectData.RayTargetID != UUID.Zero)
                 {
                     SimulationObject obj;
-                    if (server.Scene.TryGetObject(add.ObjectData.RayTargetID, out obj))
+                    if (scene.TryGetObject(add.ObjectData.RayTargetID, out obj))
                     {
                         // Test for a collision with the specified object
-                        position = server.Physics.ObjectCollisionTest(add.ObjectData.RayStart, add.ObjectData.RayEnd, obj);
+                        position = scene.Physics.ObjectCollisionTest(add.ObjectData.RayStart, add.ObjectData.RayEnd, obj);
                     }
                 }
 
@@ -154,17 +154,17 @@ namespace Simian.Extensions
             prim.Properties.Name = "New Object";
             prim.Properties.ObjectID = prim.ID;
             prim.Properties.OwnerID = prim.OwnerID;
-            prim.Properties.Permissions = server.Permissions.GetDefaultPermissions();
+            prim.Properties.Permissions = scene.Server.Permissions.GetDefaultPermissions();
             prim.Properties.SalePrice = 10;
 
-            prim.RegionHandle = server.Scene.RegionHandle;
+            prim.RegionHandle = scene.RegionHandle;
             prim.Rotation = add.ObjectData.Rotation;
             prim.Scale = scale;
             prim.TextColor = Color4.Black;
 
             // Add this prim to the object database
-            SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAddOrUpdate(this, simObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
+            SimulationObject simObj = new SimulationObject(prim, scene);
+            scene.ObjectAddOrUpdate(this, simObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
         }
 
         void ObjectAttachHandler(Packet packet, Agent agent)
@@ -174,7 +174,7 @@ namespace Simian.Extensions
             for (int i = 0; i < attach.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(attach.ObjectData[i].ObjectLocalID, out obj))
+                if (scene.TryGetObject(attach.ObjectData[i].ObjectLocalID, out obj))
                 {
                     obj.BeforeAttachmentRotation = attach.ObjectData[i].Rotation;
 
@@ -186,7 +186,7 @@ namespace Simian.Extensions
                     obj.Prim.PrimData.AttachmentPoint = (point == AttachmentPoint.Default ? obj.LastAttachmentPoint : point);
 
                     // Send an update out to everyone
-                    server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, obj.Prim.Flags,
+                    scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, obj.Prim.Flags,
                         UpdateFlags.ParentID | UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.AttachmentPoint);
                 }
             }
@@ -204,7 +204,7 @@ namespace Simian.Extensions
                 uint dupeID = duplicate.ObjectData[i].ObjectLocalID;
 
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(dupeID, out obj))
+                if (scene.TryGetObject(dupeID, out obj))
                 {
                     SimulationObject newObj = new SimulationObject(obj);
                     newObj.Prim.Position += offset;
@@ -212,7 +212,7 @@ namespace Simian.Extensions
                     newObj.Prim.LocalID = 0;
                     newObj.Prim.Properties.CreationDate = DateTime.Now;
 
-                    server.Scene.ObjectAddOrUpdate(this, newObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
+                    scene.ObjectAddOrUpdate(this, newObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
                 }
                 else
                 {
@@ -223,7 +223,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = dupeID;
-                    server.UDP.SendPacket(agent.ID, kill, PacketCategory.State);
+                    scene.UDP.SendPacket(agent.ID, kill, PacketCategory.State);
                 }
             }
         }
@@ -239,7 +239,7 @@ namespace Simian.Extensions
                 properties.ObjectData[0] = new ObjectPropertiesPacket.ObjectDataBlock();
 
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(select.ObjectData[i].ObjectLocalID, out obj))
+                if (scene.TryGetObject(select.ObjectData[i].ObjectLocalID, out obj))
                 {
                     //Logger.DebugLog("Selecting object " + obj.Prim.LocalID);
 
@@ -263,7 +263,7 @@ namespace Simian.Extensions
                     properties.ObjectData[0].TextureID = Utils.EmptyBytes; // FIXME: What is this?
                     properties.ObjectData[0].TouchName = Utils.StringToBytes(obj.Prim.Properties.TouchName);
 
-                    server.UDP.SendPacket(agent.ID, properties, PacketCategory.Transaction);
+                    scene.UDP.SendPacket(agent.ID, properties, PacketCategory.Transaction);
                 }
                 else
                 {
@@ -280,7 +280,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = select.ObjectData[i].ObjectLocalID;
-                    server.UDP.SendPacket(agent.ID, kill, PacketCategory.State);
+                    scene.UDP.SendPacket(agent.ID, kill, PacketCategory.State);
                 }
             }
             
@@ -295,7 +295,7 @@ namespace Simian.Extensions
                 uint localID = deselect.ObjectData[i].ObjectLocalID;
 
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(localID, out obj))
+                if (scene.TryGetObject(localID, out obj))
                 {
                     //Logger.DebugLog("Deselecting object " + obj.Prim.LocalID);
                 }
@@ -311,7 +311,7 @@ namespace Simian.Extensions
             for (int i = 0; i < link.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (!server.Scene.TryGetObject(link.ObjectData[i].ObjectLocalID, out obj))
+                if (!scene.TryGetObject(link.ObjectData[i].ObjectLocalID, out obj))
                 {
                     //TODO: Send an error message
                     return;
@@ -335,7 +335,7 @@ namespace Simian.Extensions
                 {
                     // Previously linked children
                     SimulationObject parent;
-                    if (server.Scene.TryGetObject(linkSet[i].Prim.ParentID, out parent))
+                    if (scene.TryGetObject(linkSet[i].Prim.ParentID, out parent))
                     {
                         // Re-add old root orientation
                         linkSet[i].Prim.Position = parent.Prim.Position + Vector3.Transform(linkSet[i].Prim.Position,
@@ -360,7 +360,7 @@ namespace Simian.Extensions
                     linkSet[i].Prim.ParentID = 0;
                 }
 
-                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
+                scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
                     UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.ParentID);
             }
         }
@@ -373,7 +373,7 @@ namespace Simian.Extensions
             for (int i = 0; i < delink.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (!server.Scene.TryGetObject(delink.ObjectData[i].ObjectLocalID, out obj))
+                if (!scene.TryGetObject(delink.ObjectData[i].ObjectLocalID, out obj))
                 {
                     //TODO: Send an error message
                     return;
@@ -402,7 +402,7 @@ namespace Simian.Extensions
                     linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
                 }
 
-                server.Scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
+                scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
                     UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.ParentID);
             }
         }
@@ -416,7 +416,7 @@ namespace Simian.Extensions
                 ObjectShapePacket.ObjectDataBlock block = shape.ObjectData[i];
 
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(block.ObjectLocalID, out obj))
+                if (scene.TryGetObject(block.ObjectLocalID, out obj))
                 {
                     Primitive.ConstructionData data = obj.Prim.PrimData;
 
@@ -440,7 +440,7 @@ namespace Simian.Extensions
                     data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
                     obj.Prim.PrimData = data;
-                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimData);
+                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimData);
                 }
                 else
                 {
@@ -455,7 +455,7 @@ namespace Simian.Extensions
             ObjectFlagUpdatePacket update = (ObjectFlagUpdatePacket)packet;
 
             SimulationObject obj;
-            if (server.Scene.TryGetObject(update.AgentData.ObjectLocalID, out obj))
+            if (scene.TryGetObject(update.AgentData.ObjectLocalID, out obj))
             {
                 PrimFlags flags = obj.Prim.Flags;
 
@@ -480,7 +480,7 @@ namespace Simian.Extensions
                     flags &= ~PrimFlags.Physics;
 
                 obj.Prim.Flags = flags;
-                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
             }
             else
             {
@@ -498,7 +498,7 @@ namespace Simian.Extensions
                 ObjectExtraParamsPacket.ObjectDataBlock block = extra.ObjectData[i];
 
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(block.ObjectLocalID, out obj))
+                if (scene.TryGetObject(block.ObjectLocalID, out obj))
                 {
                     ExtraParamType type = (ExtraParamType)block.ParamType;
                     
@@ -533,7 +533,7 @@ namespace Simian.Extensions
                         }
                     }
 
-                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData);
+                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData);
                 }
             }
         }
@@ -545,11 +545,11 @@ namespace Simian.Extensions
             for (int i = 0; i < image.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(image.ObjectData[i].ObjectLocalID, out obj))
+                if (scene.TryGetObject(image.ObjectData[i].ObjectLocalID, out obj))
                 {
                     obj.Prim.MediaURL = Utils.BytesToString(image.ObjectData[i].MediaURL);
                     obj.Prim.Textures = new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length);
-                    server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.MediaURL | UpdateFlags.Textures);
+                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.MediaURL | UpdateFlags.Textures);
                 }
             }
         }
@@ -561,8 +561,8 @@ namespace Simian.Extensions
             for (int i = 0; i < undo.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(undo.ObjectData[i].ObjectID, out obj))
-                    server.Scene.ObjectUndo(this, obj);
+                if (scene.TryGetObject(undo.ObjectData[i].ObjectID, out obj))
+                    scene.ObjectUndo(this, obj);
             }
         }
 
@@ -573,88 +573,8 @@ namespace Simian.Extensions
             for (int i = 0; i < redo.ObjectData.Length; i++)
             {
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(redo.ObjectData[i].ObjectID, out obj))
-                    server.Scene.ObjectRedo(this, obj);
-            }
-        }
-
-        void DeRezObjectHandler(Packet packet, Agent agent)
-        {
-            DeRezObjectPacket derez = (DeRezObjectPacket)packet;
-            DeRezDestination destination = (DeRezDestination)derez.AgentBlock.Destination;
-            
-            // TODO: Check permissions
-            for (int i = 0; i < derez.ObjectData.Length; i++)
-            {
-                uint localID = derez.ObjectData[i].ObjectLocalID;
-
-                SimulationObject obj;
-                if (server.Scene.TryGetObject(localID, out obj))
-                {
-                    switch (destination)
-                    {
-                        case DeRezDestination.AgentInventorySave:
-                            Logger.Log("DeRezObject: Got an AgentInventorySave, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.AgentInventoryCopy:
-                            Logger.Log("DeRezObject: Got an AgentInventorySave, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.TaskInventory:
-                            Logger.Log("DeRezObject: Got a TaskInventory, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.Attachment:
-                            Logger.Log("DeRezObject: Got an Attachment, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.AgentInventoryTake:
-                            Logger.Log("DeRezObject: Got an AgentInventoryTake, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.ForceToGodInventory:
-                            Logger.Log("DeRezObject: Got a ForceToGodInventory, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.TrashFolder:
-                            InventoryObject invObj;
-                            if (server.Inventory.TryGetInventory(agent.ID, derez.AgentBlock.DestinationID, out invObj) &&
-                                invObj is InventoryFolder)
-                            {
-                                // FIXME: Handle children
-                                InventoryFolder trash = (InventoryFolder)invObj;
-                                server.Inventory.CreateItem(agent.ID, obj.Prim.Properties.Name, obj.Prim.Properties.Description, InventoryType.Object,
-                                    AssetType.Object, obj.Prim.ID, trash.ID, PermissionMask.All, PermissionMask.All, agent.ID,
-                                    obj.Prim.Properties.CreatorID, derez.AgentBlock.TransactionID, 0, true);
-                                server.Scene.ObjectRemove(this, obj.Prim.LocalID);
-
-                                Logger.DebugLog(String.Format("Derezzed prim {0} to agent inventory trash", obj.Prim.LocalID));
-                            }
-                            else
-                            {
-                                Logger.Log("DeRezObject: Got a TrashFolder with an invalid trash folder: " +
-                                    derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            }
-                            break;
-                        case DeRezDestination.AttachmentToInventory:
-                            Logger.Log("DeRezObject: Got an AttachmentToInventory, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.AttachmentExists:
-                            Logger.Log("DeRezObject: Got an AttachmentExists, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.ReturnToOwner:
-                            Logger.Log("DeRezObject: Got a ReturnToOwner, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                        case DeRezDestination.ReturnToLastOwner:
-                            Logger.Log("DeRezObject: Got a ReturnToLastOwner, DestID: " +
-                                derez.AgentBlock.DestinationID.ToString(), Helpers.LogLevel.Warning);
-                            break;
-                    }
-                }
+                if (scene.TryGetObject(redo.ObjectData[i].ObjectID, out obj))
+                    scene.ObjectRedo(this, obj);
             }
         }
 
@@ -668,7 +588,7 @@ namespace Simian.Extensions
                 MultipleObjectUpdatePacket.ObjectDataBlock block = update.ObjectData[i];
 
                 SimulationObject obj;
-                if (server.Scene.TryGetObject(block.ObjectLocalID, out obj))
+                if (scene.TryGetObject(block.ObjectLocalID, out obj))
                 {
                     UpdateType type = (UpdateType)block.Type;
                     //bool linked = ((type & UpdateType.Linked) != 0);
@@ -706,7 +626,7 @@ namespace Simian.Extensions
                     obj.Prim.Rotation = rotation;
                     if (scaled) obj.Prim.Scale = scale;
 
-                    server.Scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, PrimFlags.None, updateFlags);
+                    scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, PrimFlags.None, updateFlags);
                 }
                 else
                 {
@@ -715,7 +635,7 @@ namespace Simian.Extensions
                     kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
                     kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
                     kill.ObjectData[0].ID = block.ObjectLocalID;
-                    server.UDP.SendPacket(agent.ID, kill, PacketCategory.State);
+                    scene.UDP.SendPacket(agent.ID, kill, PacketCategory.State);
                 }
             }
         }
@@ -726,7 +646,7 @@ namespace Simian.Extensions
             ReportType type = (ReportType)request.ObjectData.RequestFlags;
 
             SimulationObject obj;
-            if (server.Scene.TryGetObject(request.ObjectData.ObjectID, out obj))
+            if (scene.TryGetObject(request.ObjectData.ObjectID, out obj))
             {
                 ObjectPropertiesFamilyPacket props = new ObjectPropertiesFamilyPacket();
                 props.ObjectData.BaseMask = (uint)obj.Prim.Properties.Permissions.BaseMask;
@@ -746,7 +666,7 @@ namespace Simian.Extensions
                 props.ObjectData.SalePrice = obj.Prim.Properties.SalePrice;
                 props.ObjectData.SaleType = (byte)obj.Prim.Properties.SaleType;
 
-                server.UDP.SendPacket(agent.ID, props, PacketCategory.Transaction);
+                scene.UDP.SendPacket(agent.ID, props, PacketCategory.Transaction);
             }
             else
             {

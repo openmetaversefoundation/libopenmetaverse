@@ -42,7 +42,7 @@ namespace Simian
         /// rotation, since it is only applicable to parent objects</summary>
         public Quaternion BeforeAttachmentRotation = Quaternion.Identity;
 
-        protected Simian Server;
+        protected ISceneProvider Scene;
         protected SimpleMesh[] Meshes;
         protected SimpleMesh[] WorldTransformedMeshes;
 
@@ -79,16 +79,16 @@ namespace Simian
         public SimulationObject(SimulationObject obj)
         {
             Prim = new Primitive(obj.Prim);
-            Server = obj.Server;
+            Scene = obj.Scene;
             LinkNumber = obj.LinkNumber;
             Frozen = obj.Frozen;
             // Skip everything else because it can be lazily reconstructed
         }
 
-        public SimulationObject(Primitive prim, Simian server)
+        public SimulationObject(Primitive prim, ISceneProvider scene)
         {
             Prim = prim;
-            Server = server;
+            Scene = scene;
         }
 
         public SimulationObject GetLinksetParent()
@@ -98,7 +98,7 @@ namespace Simian
                 return this;
 
             SimulationObject parent;
-            if (Server.Scene.TryGetObject(Prim.ParentID, out parent))
+            if (Scene.TryGetObject(Prim.ParentID, out parent))
             {
                 // Check if this is the root object, but is attached to an avatar
                 if (parent.Prim is Avatar)
@@ -118,7 +118,7 @@ namespace Simian
         {
             Logger.DebugLog("Running expensive SimulationObject.GetLinksetPrim() function");
 
-            return Server.Scene.FindObject(delegate(SimulationObject obj)
+            return Scene.FindObject(delegate(SimulationObject obj)
                 { return obj.Prim.ParentID == this.Prim.ParentID && obj.LinkNumber == linkNum; });
         }
 
@@ -127,7 +127,7 @@ namespace Simian
             Logger.DebugLog("Running expensive SimulationObject.GetChildren() function");
 
             List<SimulationObject> children = new List<SimulationObject>();
-            Server.Scene.ForEachObject(delegate(SimulationObject obj)
+            Scene.ForEachObject(delegate(SimulationObject obj)
                 { if (obj.Prim.ParentID == this.Prim.LocalID) children.Add(obj); });
             return children;
         }
@@ -151,7 +151,7 @@ namespace Simian
             SimulationObject parent;
             Vector3 position = Prim.Position;
 
-            if (Prim.ParentID != 0 && Server.Scene.TryGetObject(Prim.ParentID, out parent))
+            if (Prim.ParentID != 0 && Scene.TryGetObject(Prim.ParentID, out parent))
                 position += Vector3.Transform(parent.Prim.Position, Matrix4.CreateFromQuaternion(parent.Prim.Rotation));
 
             return position;
@@ -162,7 +162,7 @@ namespace Simian
             SimulationObject parent;
             Quaternion rotation = Prim.Rotation;
 
-            if (Prim.ParentID != 0 && Server.Scene.TryGetObject(Prim.ParentID, out parent))
+            if (Prim.ParentID != 0 && Scene.TryGetObject(Prim.ParentID, out parent))
                 rotation *= parent.Prim.Rotation;
 
             return rotation;
@@ -193,7 +193,7 @@ namespace Simian
             }
             else
             {
-                SimpleMesh mesh = Server.Mesher.GenerateSimpleMesh(Prim, lod);
+                SimpleMesh mesh = Scene.Server.Mesher.GenerateSimpleMesh(Prim, lod);
                 Meshes[i] = mesh;
                 return mesh;
             }

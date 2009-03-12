@@ -4,7 +4,7 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class RenderingPluginMesher : IExtension<Simian>, IMeshingProvider
     {
@@ -15,7 +15,7 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server)
         {
             this.server = server;
 
@@ -35,11 +35,12 @@ namespace Simian.Extensions
                 else
                 {
                     Logger.Log("No suitable OpenMetaverse.Rendering plugins found", Helpers.LogLevel.Error);
-                    return;
+                    return false;
                 }
             }
 
             Renderer = RenderingLoader.LoadRenderer(renderer);
+            return true;
         }
 
         public void Stop()

@@ -71,9 +71,9 @@ namespace Simian
         }
     }
 
-    public class UDPManager : IExtension<Simian>, IUDPProvider
+    public class UDPManager : IExtension<ISceneProvider>, IUDPProvider
     {
-        Simian server;
+        ISceneProvider scene;
         UDPServer udpServer;
 
         public event OutgoingPacketCallback OnOutgoingPacket;
@@ -82,10 +82,11 @@ namespace Simian
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
-            udpServer = new UDPServer(server.UDPPort, server);
+            this.scene = scene;
+            udpServer = new UDPServer(scene.IPAndPort, scene);
+            return true;
         }
 
         public void Stop()
@@ -131,7 +132,7 @@ namespace Simian
     {
         /// <summary>This is only used to fetch unassociated agents, which will
         /// be exposed through a login interface at some point</summary>
-        Simian server;
+        ISceneProvider scene;
         /// <summary>Handlers for incoming packets</summary>
         PacketEventDictionary packetEvents = new PacketEventDictionary();
         /// <summary>Incoming packets that are awaiting handling</summary>
@@ -143,10 +144,11 @@ namespace Simian
         /// <summary></summary>
         int currentCircuitCode = 0;
 
-        public UDPServer(int port, Simian server)
-            : base(port)
+        // FIXME: Upgrade UDPBase to be able to listen on different endpoints
+        public UDPServer(IPEndPoint endpoint, ISceneProvider scene)
+            : base(endpoint.Port)
         {
-            this.server = server;
+            this.scene = scene;
 
             Start();
 
@@ -186,7 +188,7 @@ namespace Simian
             lock (unassociatedAgents)
                 unassociatedAgents[circuitCode] = agent;
 
-            Logger.Log("Created circuit " + circuitCode + " for " + agent.FirstName, Helpers.LogLevel.Info);
+            Logger.Log("Created circuit " + circuitCode + " for " + agent.FullName, Helpers.LogLevel.Info);
 
             return circuitCode;
         }
@@ -424,7 +426,7 @@ namespace Simian
                                 Logger.Log(String.Format("Ack timeout for {0}, disconnecting", client.Agent.FullName),
                                     Helpers.LogLevel.Warning);
 
-                                server.Scene.ObjectRemove(this, client.Agent.ID);
+                                scene.ObjectRemove(this, client.Agent.ID);
                                 return;
                             }
                         }
@@ -473,7 +475,7 @@ namespace Simian
                     {
                         Logger.Log("Client UDP reference already exists for " + agent.ID.ToString() + ", removing",
                             Helpers.LogLevel.Warning);
-                        server.Scene.ObjectRemove(this, agent.ID);
+                        scene.ObjectRemove(this, agent.ID);
                         clients.Remove(agent.ID);
                     }
 
@@ -622,7 +624,7 @@ namespace Simian
                 if (unassociatedAgents.TryGetValue(circuitCode, out agent))
                 {
                     unassociatedAgents.Remove(circuitCode);
-                    server.Scene.AgentAdd(this, agent, PrimFlags.None);
+                    scene.AgentAdd(this, agent, PrimFlags.None);
                     return true;
                 }
                 else

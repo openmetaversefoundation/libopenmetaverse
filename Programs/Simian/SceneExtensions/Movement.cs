@@ -6,9 +6,9 @@ using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Rendering;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class Movement : IExtension<Simian>
+    public class Movement : IExtension<ISceneProvider>
     {
         const int UPDATE_ITERATION = 100; //rate in milliseconds to send ObjectUpdate
         const bool ENVIRONMENT_SOUNDS = true; //collision sounds, splashing, etc
@@ -29,7 +29,7 @@ namespace Simian.Extensions
 
         const float SQRT_TWO = 1.41421356f;
 
-        Simian server;
+        ISceneProvider scene;
         Timer updateTimer;
         long lastTick;
 
@@ -43,20 +43,21 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.Scene.OnObjectAddOrUpdate += Scene_OnObjectAddOrUpdate;
+            scene.OnObjectAddOrUpdate += Scene_OnObjectAddOrUpdate;
 
-            server.UDP.RegisterPacketCallback(PacketType.AgentRequestSit, AgentRequestSitHandler);
-            server.UDP.RegisterPacketCallback(PacketType.AgentSit, AgentSitHandler);
-            server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
-            server.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentRequestSit, AgentRequestSitHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentSit, AgentSitHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.SetAlwaysRun, SetAlwaysRunHandler);
 
             updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed));
             LastTick = Environment.TickCount;
             updateTimer.Change(UPDATE_ITERATION, UPDATE_ITERATION);
+            return true;
         }
 
         public void Stop()
@@ -95,7 +96,7 @@ namespace Simian.Extensions
             float seconds = (float)((tick  - LastTick) / 1000f);
             LastTick = tick;
 
-            server.Scene.ForEachAgent(
+            scene.ForEachAgent(
                 delegate(Agent agent)
                 {
                     if ((agent.Avatar.Prim.Flags & PrimFlags.Physics) == 0)
@@ -139,10 +140,10 @@ namespace Simian.Extensions
                         speed /= SQRT_TWO;
 
                     Vector3 agentPosition = agent.Avatar.GetSimulatorPosition();
-                    float oldFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+                    float oldFloor = scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
 
                     agentPosition += (move * speed);
-                    float newFloor = server.Scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+                    float newFloor = scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
 
                     if (!flying && newFloor != oldFloor)
                         speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
@@ -169,12 +170,12 @@ namespace Simian.Extensions
                             rayStart.Z - 0.01f
                             );
 
-                        server.Scene.ForEachObject(delegate(SimulationObject obj)
+                        scene.ForEachObject(delegate(SimulationObject obj)
                         {
                             //HACK: check nearby objects (what did you expect, octree?)
                             if (Vector3.Distance(rayStart, obj.Prim.Position) <= 15f)
                             {
-                                Vector3 collision = server.Physics.ObjectCollisionTest(rayStart, rayEnd, obj);
+                                Vector3 collision = scene.Physics.ObjectCollisionTest(rayStart, rayEnd, obj);
 
                                 if (collision != rayEnd) //we collided!
                                 {
@@ -189,7 +190,7 @@ namespace Simian.Extensions
                     // Z acceleration resulting from gravity
                     float gravity = 0f;
 
-                    float waterChestHeight = server.Scene.WaterHeight - (agent.Avatar.Prim.Scale.Z * .33f);
+                    float waterChestHeight = scene.WaterHeight - (agent.Avatar.Prim.Scale.Z * .33f);
 
                     if (flying)
                     {
@@ -206,22 +207,22 @@ namespace Simian.Extensions
 
                         if (move.X != 0 || move.Y != 0)
                         { //flying horizontally
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.FLY))
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.FLY))
                                 animsChanged = true;
                         }
                         else if (move.Z > 0)
                         { //flying straight up
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
                                 animsChanged = true;
                         }
                         else if (move.Z < 0)
                         { //flying straight down
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
                                 animsChanged = true;
                         }
                         else
                         { //hovering in the air
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
                                 animsChanged = true;
                         }
                     }
@@ -229,7 +230,7 @@ namespace Simian.Extensions
                     else if (agent.Avatar.Prim.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Prim.Position.Z <= waterChestHeight)
                     { //falling, floating, or landing from a jump
 
-                        if (agent.Avatar.Prim.Position.Z > server.Scene.WaterHeight)
+                        if (agent.Avatar.Prim.Position.Z > scene.WaterHeight)
                         { //above water
 
                             //override controls while drifting
@@ -253,7 +254,7 @@ namespace Simian.Extensions
                                 { //falling
                                     if (fallElapsed > FALL_DELAY)
                                     { //falling long enough to trigger the animation
-                                        if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
                                             animsChanged = true;
                                     }
                                 }
@@ -269,17 +270,17 @@ namespace Simian.Extensions
 
                             if (move.Z > 0)
                             {
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
                                     animsChanged = true;
                             }
                             else if (move.X != 0 || move.Y != 0)
                             {
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.FLYSLOW))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.FLYSLOW))
                                     animsChanged = true;
                             }
                             else
                             {
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
                                     animsChanged = true;
                             }
                         }
@@ -290,7 +291,7 @@ namespace Simian.Extensions
                             agent.Avatar.Prim.Velocity *= 0.5f * seconds;
                             agent.Avatar.Prim.Velocity.Z += 0.75f * seconds;
 
-                            if (server.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
                                 animsChanged = true;
                         }
                     }
@@ -310,7 +311,7 @@ namespace Simian.Extensions
                             if (!jumping)
                             { //begin prejump
                                 move.Z = 0; //override Z control
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
                                     animsChanged = true;
 
                                 agent.TickJump = Environment.TickCount;
@@ -325,7 +326,7 @@ namespace Simian.Extensions
                                     return;
                                 }
 
-                                if (server.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
                                     animsChanged = true;
 
                                 agent.Avatar.Prim.Velocity.X += agent.Avatar.Prim.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
@@ -347,17 +348,17 @@ namespace Simian.Extensions
 
                                 if (move.Z < 0)
                                 { //crouchwalking
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
                                         animsChanged = true;
                                 }
                                 else if (agent.Running)
                                 { //running
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.RUN))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.RUN))
                                         animsChanged = true;
                                 }
                                 else
                                 { //walking
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.WALK))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.WALK))
                                         animsChanged = true;
                                 }
                             }
@@ -365,12 +366,12 @@ namespace Simian.Extensions
                             { //walking
                                 if (move.Z < 0)
                                 { //crouching
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
                                         animsChanged = true;
                                 }
                                 else
                                 { //standing
-                                    if (server.Avatars.SetDefaultAnimation(agent, Animations.STAND))
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.STAND))
                                         animsChanged = true;
                                 }
                             }
@@ -378,7 +379,7 @@ namespace Simian.Extensions
                     }
 
                     if (animsChanged)
-                        server.Avatars.SendAnimations(agent);
+                        scene.Avatars.SendAnimations(agent);
 
                     float maxVel = AVATAR_TERMINAL_VELOCITY * seconds;
 
@@ -417,7 +418,7 @@ namespace Simian.Extensions
             AgentRequestSitPacket request = (AgentRequestSitPacket)packet;
 
             SimulationObject obj;
-            if (server.Scene.TryGetObject(request.TargetObject.TargetID, out obj))
+            if (scene.TryGetObject(request.TargetObject.TargetID, out obj))
             {
                 agent.RequestedSitTarget = request.TargetObject.TargetID;
                 agent.RequestedSitOffset = request.TargetObject.Offset;
@@ -431,7 +432,7 @@ namespace Simian.Extensions
                 response.SitTransform.SitPosition = request.TargetObject.Offset;
                 response.SitTransform.SitRotation = obj.SitRotation;
 
-                server.UDP.SendPacket(agent.ID, response, PacketCategory.State);
+                scene.UDP.SendPacket(agent.ID, response, PacketCategory.State);
             }
             else
             {
@@ -447,7 +448,7 @@ namespace Simian.Extensions
             {
                 SimulationObject obj;
                 SimulationObject avObj;
-                if (server.Scene.TryGetObject(agent.RequestedSitTarget, out obj) && server.Scene.TryGetObject(agent.ID, out avObj))
+                if (scene.TryGetObject(agent.RequestedSitTarget, out obj) && scene.TryGetObject(agent.ID, out avObj))
                 {
                     agent.Avatar.Prim.Flags &= ~PrimFlags.Physics;
                     agent.Avatar.Prim.ParentID = obj.Prim.LocalID;
@@ -456,10 +457,10 @@ namespace Simian.Extensions
                         obj.Prim.Scale.Z * 0.5f,
                         agent.Avatar.Prim.Scale.Z * 0.33f);
 
-                    server.Scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None,
+                    scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None,
                         UpdateFlags.PrimFlags | UpdateFlags.ParentID | UpdateFlags.Position);
-                    server.Avatars.SetDefaultAnimation(agent, Animations.SIT);
-                    server.Avatars.SendAnimations(agent);
+                    scene.Avatars.SetDefaultAnimation(agent, Animations.SIT);
+                    scene.Avatars.SendAnimations(agent);
                 }
                 else
                 {
@@ -476,7 +477,7 @@ namespace Simian.Extensions
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
             SimulationObject obj;
-            if (server.Scene.TryGetObject(agent.ID, out obj))
+            if (scene.TryGetObject(agent.ID, out obj))
             {
                 if (agent.Avatar.Prim.ParentID == 0)
                     agent.Avatar.Prim.Rotation = update.AgentData.BodyRotation;
@@ -487,7 +488,7 @@ namespace Simian.Extensions
 
                 // Check for standing up
                 SimulationObject parent;
-                if (server.Scene.TryGetObject(agent.Avatar.Prim.ParentID, out parent) &&
+                if (scene.TryGetObject(agent.Avatar.Prim.ParentID, out parent) &&
                     agent.Avatar.Prim.ParentID > 0 &&
                     (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP) == AgentManager.ControlFlags.AGENT_CONTROL_STAND_UP)
                 {
@@ -497,13 +498,13 @@ namespace Simian.Extensions
 
                     agent.Avatar.Prim.ParentID = 0;
                     
-                    server.Avatars.SetDefaultAnimation(agent, Animations.STAND);
-                    server.Avatars.SendAnimations(agent);
+                    scene.Avatars.SetDefaultAnimation(agent, Animations.STAND);
+                    scene.Avatars.SendAnimations(agent);
 
                     agent.Avatar.Prim.Flags |= PrimFlags.Physics;
                 }
 
-                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position | UpdateFlags.Rotation);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position | UpdateFlags.Rotation);
             }
         }
 

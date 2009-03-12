@@ -33,7 +33,7 @@ namespace Simian
     /// Coupled with RegisterCallback(), this is triggered whenever a packet
     /// of a registered type is received
     /// </summary>
-    public delegate void PacketCallback(Packet packet, Agent agent);
+    public delegate void PacketCallback(Packet packet, /*ISceneProvider scene,*/ Agent agent);
     /// <summary>
     /// Triggered whenever a packet is going to be sent out to one or more
     /// clients

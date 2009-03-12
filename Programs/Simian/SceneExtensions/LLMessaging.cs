@@ -4,25 +4,36 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class FriendManager : IExtension<Simian>
+    public class LLMessaging : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
 
-        public FriendManager()
+        public LLMessaging()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, new PacketCallback(ImprovedInstantMessageHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, ChatFromViewerHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ImprovedInstantMessage, ImprovedInstantMessageHandler);
+            return true;
         }
 
         public void Stop()
         {
+        }
+
+        void ChatFromViewerHandler(Packet packet, Agent agent)
+        {
+            ChatFromViewerPacket viewerChat = (ChatFromViewerPacket)packet;
+
+            scene.ObjectChat(this, agent.ID, agent.ID, ChatAudibleLevel.Fully, (ChatType)viewerChat.ChatData.Type,
+                ChatSourceType.Agent, agent.FullName, agent.Avatar.GetSimulatorPosition(), viewerChat.ChatData.Channel,
+                Utils.BytesToString(viewerChat.ChatData.Message));
         }
 
         void ImprovedInstantMessageHandler(Packet packet, Agent agent)
@@ -30,14 +41,42 @@ namespace Simian.Extensions
             ImprovedInstantMessagePacket im = (ImprovedInstantMessagePacket)packet;
             InstantMessageDialog dialog = (InstantMessageDialog)im.MessageBlock.Dialog;
 
-            if (dialog == InstantMessageDialog.FriendshipOffered || dialog == InstantMessageDialog.FriendshipAccepted || dialog == InstantMessageDialog.FriendshipDeclined)
+            if (dialog == InstantMessageDialog.MessageFromAgent)
             {
                 // HACK: Only works for agents currently online
                 Agent recipient;
-                if (server.Scene.TryGetAgent(im.MessageBlock.ToAgentID, out recipient))
+                if (scene.TryGetAgent(im.MessageBlock.ToAgentID, out recipient))
+                {
+                    // FIXME: Look into the fields we are setting to default values
+                    ImprovedInstantMessagePacket sendIM = new ImprovedInstantMessagePacket();
+                    sendIM.MessageBlock.RegionID = scene.RegionID;
+                    sendIM.MessageBlock.ParentEstateID = 1;
+                    sendIM.MessageBlock.FromGroup = false;
+                    sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.FullName);
+                    sendIM.MessageBlock.ToAgentID = im.MessageBlock.ToAgentID;
+                    sendIM.MessageBlock.Dialog = im.MessageBlock.Dialog;
+                    sendIM.MessageBlock.Offline = (byte)InstantMessageOnline.Online;
+                    sendIM.MessageBlock.ID = agent.ID;
+                    sendIM.MessageBlock.Message = im.MessageBlock.Message;
+                    sendIM.MessageBlock.BinaryBucket = Utils.EmptyBytes;
+                    sendIM.MessageBlock.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
+                    sendIM.MessageBlock.Position = agent.Avatar.GetSimulatorPosition();
+
+                    sendIM.AgentData.AgentID = agent.ID;
+
+                    scene.UDP.SendPacket(recipient.ID, sendIM, PacketCategory.Messaging);
+                }
+            }
+            else if (dialog == InstantMessageDialog.FriendshipOffered ||
+                dialog == InstantMessageDialog.FriendshipAccepted ||
+                dialog == InstantMessageDialog.FriendshipDeclined)
+            {
+                // HACK: Only works for agents currently online
+                Agent recipient;
+                if (scene.TryGetAgent(im.MessageBlock.ToAgentID, out recipient))
                 {
                     ImprovedInstantMessagePacket sendIM = new ImprovedInstantMessagePacket();
-                    sendIM.MessageBlock.RegionID = server.Scene.RegionID;
+                    sendIM.MessageBlock.RegionID = scene.RegionID;
                     sendIM.MessageBlock.ParentEstateID = 1;
                     sendIM.MessageBlock.FromGroup = false;
                     sendIM.MessageBlock.FromAgentName = Utils.StringToBytes(agent.FullName);
@@ -52,12 +91,12 @@ namespace Simian.Extensions
 
                     sendIM.AgentData.AgentID = agent.ID;
 
-                    server.UDP.SendPacket(recipient.ID, sendIM, PacketCategory.Transaction);
+                    scene.UDP.SendPacket(recipient.ID, sendIM, PacketCategory.Transaction);
 
                     if (dialog == InstantMessageDialog.FriendshipAccepted)
                     {
-                        bool receiverOnline = server.Scene.ContainsObject(agent.ID);
-                        bool senderOnline = server.Scene.ContainsObject(recipient.ID);
+                        bool receiverOnline = scene.ContainsObject(agent.ID);
+                        bool senderOnline = scene.ContainsObject(recipient.ID);
 
                         if (receiverOnline)
                         {
@@ -67,7 +106,7 @@ namespace Simian.Extensions
                                 notify.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[0];
                                 notify.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
                                 notify.AgentBlock[0].AgentID = agent.ID;
-                                server.UDP.SendPacket(recipient.ID, notify, PacketCategory.State);
+                                scene.UDP.SendPacket(recipient.ID, notify, PacketCategory.State);
                             }
                             else
                             {
@@ -75,7 +114,7 @@ namespace Simian.Extensions
                                 notify.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[0];
                                 notify.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
                                 notify.AgentBlock[0].AgentID = agent.ID;
-                                server.UDP.SendPacket(recipient.ID, notify, PacketCategory.State);
+                                scene.UDP.SendPacket(recipient.ID, notify, PacketCategory.State);
                             }
                         }
 
@@ -87,7 +126,7 @@ namespace Simian.Extensions
                                 notify.AgentBlock = new OnlineNotificationPacket.AgentBlockBlock[0];
                                 notify.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
                                 notify.AgentBlock[0].AgentID = recipient.ID;
-                                server.UDP.SendPacket(agent.ID, notify, PacketCategory.State);
+                                scene.UDP.SendPacket(agent.ID, notify, PacketCategory.State);
                             }
                             else
                             {
@@ -95,7 +134,7 @@ namespace Simian.Extensions
                                 notify.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[0];
                                 notify.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
                                 notify.AgentBlock[0].AgentID = recipient.ID;
-                                server.UDP.SendPacket(agent.ID, notify, PacketCategory.State);
+                                scene.UDP.SendPacket(agent.ID, notify, PacketCategory.State);
                             }
                         }
                     }

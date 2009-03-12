@@ -4,23 +4,23 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    class Money : IExtension<Simian>
+    public class LLMoney : IExtension<ISceneProvider>
     {
-        Simian server;
+        ISceneProvider scene;
 
-        public Money()
+        public LLMoney()
         {
-            
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
-            server.UDP.RegisterPacketCallback(PacketType.MoneyBalanceRequest, new PacketCallback(MoneyBalanceRequestHandler));
-            server.UDP.RegisterPacketCallback(PacketType.MoneyTransferRequest, new PacketCallback(MoneyTransferRequestHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.MoneyBalanceRequest, MoneyBalanceRequestHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.MoneyTransferRequest, MoneyTransferRequestHandler);
+            return true;
         }
 
         public void Stop()
@@ -31,11 +31,11 @@ namespace Simian.Extensions
         {
             MoneyBalanceReplyPacket reply = new MoneyBalanceReplyPacket();
             reply.MoneyData.AgentID = agent.ID;
-            reply.MoneyData.MoneyBalance = agent.Balance;
+            reply.MoneyData.MoneyBalance = agent.Info.Balance;
             reply.MoneyData.TransactionID = transactionID;
             reply.MoneyData.Description = Utils.StringToBytes(message);
 
-            server.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
+            scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
         }
 
         void MoneyBalanceRequestHandler(Packet packet, Agent agent)
@@ -49,15 +49,15 @@ namespace Simian.Extensions
         {
             MoneyTransferRequestPacket request = (MoneyTransferRequestPacket)packet;
 
-            if (request.MoneyData.Amount < 0 || request.MoneyData.Amount > agent.Balance)
+            if (request.MoneyData.Amount < 0 || request.MoneyData.Amount > agent.Info.Balance)
                 return;
 
             // HACK: Only works for sending money to someone who is online
             Agent recipient;
-            if (server.Scene.TryGetAgent(request.MoneyData.DestID, out recipient))
+            if (scene.TryGetAgent(request.MoneyData.DestID, out recipient))
             {
-                agent.Balance -= request.MoneyData.Amount;
-                recipient.Balance += request.MoneyData.Amount;
+                agent.Info.Balance -= request.MoneyData.Amount;
+                recipient.Info.Balance += request.MoneyData.Amount;
 
                 SendBalance(agent, UUID.Zero, String.Format("You paid L${0} to {1}.", request.MoneyData.Amount, recipient.FullName));
                 SendBalance(agent, UUID.Zero, String.Format("{1} paid you L${0}.", request.MoneyData.Amount, agent.FullName));

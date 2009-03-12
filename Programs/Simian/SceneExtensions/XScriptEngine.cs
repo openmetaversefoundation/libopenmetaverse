@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using ExtensionLoader;
 using OpenMetaverse;
 
-namespace Simian.Extensions
+namespace Simian
 {
     // FIXME: Implement this class
-    class XScriptEngine : IExtension<Simian>, IScriptEngine
+    class XScriptEngine : IExtension<ISceneProvider>, IScriptEngine
     {
-        Simian server;
+        ISceneProvider scene;
 
         public XScriptEngine()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
+            return true;
         }
 
         public void Stop()

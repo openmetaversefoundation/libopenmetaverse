@@ -18,37 +18,34 @@ namespace Simian
 {
     public partial class Simian
     {
-        public const string CONFIG_FILE = "Simian.ini";
         public const string DATA_DIR = "SimianData/";
-        public const string ASSET_CACHE_DIR = "SimianData/AssetCache/";
+        public const string CONFIG_FILE = DATA_DIR + "Simian.ini";
+        public const string REGION_CONFIG_DIR = DATA_DIR + "RegionConfig/";
+        public const string ASSET_CACHE_DIR = DATA_DIR + "AssetCache/";
+        public const string DEFAULT_ASSET_DIR = DATA_DIR + "DefaultAssets/";
 
-        public int UDPPort { get { return 9000; } }
-        public int HttpPort { get { return 8002; } }
-        public bool SSL { get { return false; } }
-        public string HostName { get { return Dns.GetHostName(); } }
-
+        public Uri HttpUri;
         public HttpListener HttpServer;
         public IniConfigSource ConfigFile;
+        public List<string> ExtensionList;
 
-        // Interfaces
-        public IAuthenticationProvider Authentication;
+        // Server Interfaces
         public IAccountProvider Accounts;
-        public IUDPProvider UDP;
-        public ISceneProvider Scene;
         public IAssetProvider Assets;
-        public IPermissionsProvider Permissions;
-        public IAvatarProvider Avatars;
-        public IInventoryProvider Inventory;
-        public ITaskInventoryProvider TaskInventory;
-        public IParcelProvider Parcels;
-        public IMeshingProvider Mesher;
+        public IAuthenticationProvider Authentication;
         public ICapabilitiesProvider Capabilities;
-        public IScriptEngine ScriptEngine;
+        public IGridProvider Grid;
+        public IInventoryProvider Inventory;
+        public IMeshingProvider Mesher;
         public IMessagingProvider Messages;
-        public IPhysicsProvider Physics;
+        public IPermissionsProvider Permissions;
 
+        // Regions/Scenes
+        public List<ISceneProvider> Scenes = new List<ISceneProvider>();
         // Persistent extensions
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();
+
+        ExtensionLoader<Simian> extensions = new ExtensionLoader<Simian>();
 
         public Simian()
         {
@@ -56,14 +53,15 @@ namespace Simian
 
         public bool Start()
         {
-            List<string> extensionList = null;
+            IConfig httpConfig;
 
             try
             {
                 // Load the extension list (and ordering) from our config file
                 ConfigFile = new IniConfigSource(CONFIG_FILE);
+                httpConfig = ConfigFile.Configs["Http"];
                 IConfig extensionConfig = ConfigFile.Configs["Extensions"];
-                extensionList = new List<string>(extensionConfig.GetKeys());
+                ExtensionList = new List<string>(extensionConfig.GetKeys());
             }
             catch (Exception)
             {
@@ -71,9 +69,51 @@ namespace Simian
                 return false;
             }
 
-            // TODO: SSL support
-            HttpServer = HttpListener.Create(log4netLogWriter.Instance, IPAddress.Any, HttpPort);
+            #region HTTP Server
+
+            int port = httpConfig.GetInt("ListenPort");
+            string hostname = httpConfig.GetString("Hostname", null);
+            string sslCertFile = httpConfig.GetString("SSLCertFile", null);
+            IPAddress address = IPAddress.Any;
+
+            if (String.IsNullOrEmpty(hostname))
+            {
+                hostname = Dns.GetHostName();
+            }
+            else
+            {
+                IPHostEntry entry = Dns.GetHostEntry(hostname);
+                if (entry != null && entry.AddressList.Length > 0)
+                    address = entry.AddressList[0];
+            }
+
+            if (!String.IsNullOrEmpty(sslCertFile))
+            {
+                // HTTPS mode
+                X509Certificate serverCert;
+                try { serverCert = X509Certificate.CreateFromCertFile(sslCertFile); }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to load SSL certificate file \"" + sslCertFile + "\": " + ex.Message,
+                        Helpers.LogLevel.Error);
+                    return false;
+                }
+                HttpServer = HttpListener.Create(log4netLogWriter.Instance, address, port, serverCert);
+                HttpUri = new Uri("https://" + hostname + (port != 80 ? (":" + port) : String.Empty));
+            }
+            else
+            {
+                // HTTP mode
+                HttpServer = HttpListener.Create(log4netLogWriter.Instance, address, port);
+                HttpUri = new Uri("http://" + hostname + (port != 80 ? (":" + port) : String.Empty));
+            }
+
             HttpServer.Start(10);
+            Logger.Log("Simian is listening at " + HttpUri.ToString(), Helpers.LogLevel.Info);
+
+            #endregion HTTP Server
+
+            #region Server Extensions
 
             try
             {
@@ -83,15 +123,15 @@ namespace Simian
                 references.Add("OpenMetaverse.dll");
                 references.Add("Simian.exe");
 
-                // Search the Simian class for member variables that are interfaces
-                List<FieldInfo> assignables = ExtensionLoader<Simian>.GetInterfaces(this);
-
                 // Load extensions from the current executing assembly, Simian.*.dll assemblies on disk, and
-                // Simian.*.cs source files on disk. Automatically assign extensions that implement interfaces
-                // to the list of interface variables in "assignables"
-                ExtensionLoader<Simian>.LoadAllExtensions(Assembly.GetExecutingAssembly(),
-                    AppDomain.CurrentDomain.BaseDirectory, extensionList, references,
-                    "Simian.*.dll", "Simian.*.cs", this, assignables);
+                // Simian.*.cs source files on disk.
+                extensions.LoadAllExtensions(Assembly.GetExecutingAssembly(),
+                    AppDomain.CurrentDomain.BaseDirectory, ExtensionList, references,
+                    "Simian.*.dll", "Simian.*.cs");
+
+                // Automatically assign extensions that implement interfaces to the list of interface
+                // variables in "assignables"
+                extensions.AssignExtensions(this, extensions.GetInterfaces(this));
             }
             catch (ExtensionException ex)
             {
@@ -100,7 +140,7 @@ namespace Simian
                 return false;
             }
 
-            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
                 // Track all of the extensions with persistence
                 if (extension is IPersistable)
@@ -108,29 +148,89 @@ namespace Simian
             }
 
             // Start all of the extensions
-            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
-                Logger.Log("Starting extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                Logger.Log("Starting Simian extension " + extension.GetType().Name, Helpers.LogLevel.Info);
                 extension.Start(this);
             }
+
+            #endregion Server Extensions
+
+            #region Region Loading
+
+            try
+            {
+                string[] configFiles = Directory.GetFiles(REGION_CONFIG_DIR, "*.ini", SearchOption.AllDirectories);
+
+                for (int i = 0; i < configFiles.Length; i++)
+                {
+                    IniConfigSource source = new IniConfigSource(configFiles[i]);
+                    IConfig regionConfig = source.Configs["Region"];
+
+                    string name = regionConfig.GetString("Name", null);
+                    string defaultTerrain = regionConfig.GetString("DefaultTerrain", null);
+                    int udpPort = regionConfig.GetInt("UDPPort", 0);
+                    uint regionX, regionY;
+                    UInt32.TryParse(regionConfig.GetString("RegionX", "0"), out regionX);
+                    UInt32.TryParse(regionConfig.GetString("RegionY", "0"), out regionY);
+                    int staticObjectLimit = regionConfig.GetInt("StaticObjectLimit", 0);
+                    int physicalObjectLimit = regionConfig.GetInt("PhysicalObjectLimit", 0);
+
+                    if (String.IsNullOrEmpty(name) || regionX == 0 || regionY == 0)
+                    {
+                        Logger.Log("Incomplete information in " + configFiles[i] + ", skipping", Helpers.LogLevel.Warning);
+                        continue;
+                    }
+
+                    // Get the IPEndPoint for this region
+                    IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 9000);
+
+                    // TODO: Support non-SceneManager scenes?
+                    ISceneProvider scene = new SceneManager();
+                    scene.Start(this, name, endpoint, regionX, regionY, defaultTerrain, staticObjectLimit, physicalObjectLimit);
+                    Scenes.Add(scene);
+
+                    // FIXME: Use IGridProvider to actually register the scenes into spaces
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to load region config files: " + ex.Message, Helpers.LogLevel.Error);
+                return false;
+            }
+
+            #endregion Region Loading
 
             return true;
         }
 
         public void Stop()
         {
-            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
+            // FIXME: Scenes shouldn't be publically exposed. This will end in tears
+            for (int i = 0; i < Scenes.Count; i++)
+            {
+                Scenes[i].Stop();
+            }
+
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
                 // Stop persistence providers first
                 if (extension is IPersistenceProvider)
+                {
+                    Logger.Log("Stopping Simian extension " + extension.GetType().Name, Helpers.LogLevel.Info);
                     extension.Stop();
+                }
             }
 
-            foreach (IExtension<Simian> extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
                 // Stop all other extensions
                 if (!(extension is IPersistenceProvider))
+                {
+                    Logger.Log("Stopping Simian extension " + extension.GetType().Name, Helpers.LogLevel.Info);
                     extension.Stop();
+                }
             }
 
             HttpServer.Stop();

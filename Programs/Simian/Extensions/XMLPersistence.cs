@@ -6,7 +6,7 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
-namespace Simian.Extensions
+namespace Simian
 {
     public class XMLPersistence : IExtension<Simian>, IPersistenceProvider
     {
@@ -16,7 +16,7 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(Simian server)
         {
             this.server = server;
 
@@ -30,12 +30,13 @@ namespace Simian.Extensions
             }
             catch (FileNotFoundException)
             {
-                return;
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed to load saved data: " + ex.Message, Helpers.LogLevel.Error);
-                return;
+                Logger.Log("Failed to load saved data. You may have to move or delete simiandata.xml: " +
+                    ex.Message, Helpers.LogLevel.Error);
+                return false;
             }
 
             if (osd is OSDMap)
@@ -58,6 +59,8 @@ namespace Simian.Extensions
                     }
                 }
             }
+
+            return true;
         }
 
         public void Stop()

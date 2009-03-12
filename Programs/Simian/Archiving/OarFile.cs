@@ -53,7 +53,7 @@ namespace Simian
             archive.Close();
         }
 
-        public static void SavePrims(Simian server, string primsPath, string assetsPath, string textureCacheFolder)
+        public static void SavePrims(ISceneProvider scene, string primsPath, string assetsPath, string textureCacheFolder)
         {
             Dictionary<UUID, UUID> textureList = new Dictionary<UUID, UUID>();
 
@@ -71,7 +71,7 @@ namespace Simian
 
             // Copy the double dictionary to a temporary list for iterating
             List<SimulationObject> primList = new List<SimulationObject>();
-            server.Scene.ForEachObject(delegate(SimulationObject prim)
+            scene.ForEachObject(delegate(SimulationObject prim)
             {
                 if (!(prim.Prim is Avatar))
                     primList.Add(prim);

@@ -7,9 +7,10 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public class Agent
+    public class AgentInfo
     {
         // Account
+        public UUID ID;
         public string FirstName;
         public string LastName;
         public string PasswordHash;
@@ -28,10 +29,6 @@ namespace Simian
         public ulong HomeRegionHandle;
         public Vector3 HomePosition;
         public Vector3 HomeLookAt;
-        public Vector3 CurrentLookAt;
-        public UUID RequestedSitTarget;
-        public Vector3 RequestedSitOffset;
-        public ulong CurrentRegionHandle;
 
         // Profile
         public UUID PartnerID;
@@ -62,32 +59,27 @@ namespace Simian
         public UUID UndershirtItem;
         public UUID UnderpantsItem;
         public UUID SkirtItem;
+    }
 
-        // Temporary
-        [NonSerialized]
+    public class Agent
+    {
+        public AgentInfo Info;
         public SimulationObject Avatar;
-        [NonSerialized]
         public UUID SessionID;
-        [NonSerialized]
         public UUID SecureSessionID;
-        [NonSerialized]
         public uint CircuitCode;
-        [NonSerialized]
         public bool Running;
-        [NonSerialized]
         public int TickFall;
-        [NonSerialized]
         public int TickJump;
-        [NonSerialized]
         public int TickLastPacketReceived;
-        [NonSerialized]
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
-        [NonSerialized]
         public AnimationSet Animations = new AnimationSet();
-        [NonSerialized]
         public AgentState State;
-        [NonSerialized]
         public bool HideTitle;
+        public Uri SeedCapability;
+        public Vector3 CurrentLookAt;
+        public UUID RequestedSitTarget;
+        public Vector3 RequestedSitOffset;
 
         public UUID ID
         {
@@ -98,23 +90,24 @@ namespace Simian
         {
             get
             {
-                bool hasFirst = !String.IsNullOrEmpty(FirstName);
-                bool hasLast = !String.IsNullOrEmpty(LastName);
+                bool hasFirst = !String.IsNullOrEmpty(Info.FirstName);
+                bool hasLast = !String.IsNullOrEmpty(Info.LastName);
 
                 if (hasFirst && hasLast)
-                    return String.Format("{0} {1}", FirstName, LastName);
+                    return String.Format("{0} {1}", Info.FirstName, Info.LastName);
                 else if (hasFirst)
-                    return FirstName;
+                    return Info.FirstName;
                 else if (hasLast)
-                    return LastName;
+                    return Info.LastName;
                 else
                     return String.Empty;
             }
         }
 
-        public Agent(SimulationObject avatar)
+        public Agent(SimulationObject avatar, AgentInfo info)
         {
             Avatar = avatar;
+            Info = info;
         }
     }
 }

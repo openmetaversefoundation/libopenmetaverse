@@ -3,11 +3,11 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class PhysicsSimple : IExtension<Simian>, IPhysicsProvider
+    public class PhysicsSimple : IExtension<ISceneProvider>, IPhysicsProvider
     {
-        Simian server;
+        ISceneProvider scene;
 
         public float TimeDilation
         {
@@ -18,9 +18,10 @@ namespace Simian.Extensions
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
+            return true;
         }
 
         public void Stop()
@@ -67,7 +68,7 @@ namespace Simian.Extensions
         public bool TryGetObjectMass(UUID objectID, out float mass)
         {
             SimulationObject obj;
-            if (server.Scene.TryGetObject(objectID, out obj))
+            if (scene.TryGetObject(objectID, out obj))
             {
                 mass = CalculateMass(obj.Prim);
                 return true;

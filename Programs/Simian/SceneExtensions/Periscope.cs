@@ -6,30 +6,31 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class Periscope : IExtension<Simian>
+    public class Periscope : IExtension<ISceneProvider>
     {
         // Change this to login to a different grid
         const string PERISCOPE_LOGIN_URI = Settings.AGNI_LOGIN_SERVER;
 
         public Agent MasterAgent = null;
 
-        Simian server;
+        ISceneProvider scene;
         GridClient client;
         PeriscopeImageDelivery imageDelivery;
         PeriscopeMovement movement;
         PeriscopeTransferManager transferManager;
         bool ignoreObjectKill = false;
         object loginLock = new object();
+        string lastPasswordHash = String.Empty;
 
         public Periscope()
         {
         }
 
-        public void Start(Simian server)
+        public bool Start(ISceneProvider scene)
         {
-            this.server = server;
+            this.scene = scene;
 
             client = new GridClient();
             Settings.LOG_LEVEL = Helpers.LogLevel.Info;
@@ -49,17 +50,18 @@ namespace Simian.Extensions
             client.Network.RegisterCallback(PacketType.AvatarAnimation, AvatarAnimationHandler);
             client.Network.RegisterCallback(PacketType.RegionHandshake, RegionHandshakeHandler);
 
-            server.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
-            server.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, ChatFromViewerHandler);
-            server.UDP.RegisterPacketCallback(PacketType.ObjectGrab, ObjectGrabHandler);
-            server.UDP.RegisterPacketCallback(PacketType.ObjectGrabUpdate, ObjectGrabUpdateHandler);
-            server.UDP.RegisterPacketCallback(PacketType.ObjectDeGrab, ObjectDeGrabHandler);
-            server.UDP.RegisterPacketCallback(PacketType.ViewerEffect, ViewerEffectHandler);
-            server.UDP.RegisterPacketCallback(PacketType.AgentAnimation, AgentAnimationHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentUpdate, AgentUpdateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ChatFromViewer, ChatFromViewerHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectGrab, ObjectGrabHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectGrabUpdate, ObjectGrabUpdateHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ObjectDeGrab, ObjectDeGrabHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ViewerEffect, ViewerEffectHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentAnimation, AgentAnimationHandler);
 
-            imageDelivery = new PeriscopeImageDelivery(server, client);
-            movement = new PeriscopeMovement(server, this);
-            transferManager = new PeriscopeTransferManager(server, client);
+            imageDelivery = new PeriscopeImageDelivery(scene, client);
+            movement = new PeriscopeMovement(scene, this);
+            transferManager = new PeriscopeTransferManager(scene, client);
+            return true;
         }
 
         public void Stop()
@@ -74,32 +76,26 @@ namespace Simian.Extensions
 
         void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
-            SimulationObject simObj = new SimulationObject(prim, server);
+            SimulationObject simObj = new SimulationObject(prim, scene);
             if (MasterAgent != null)
                 simObj.Prim.OwnerID = MasterAgent.ID;
-            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnNewAttachment(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
-            SimulationObject simObj = new SimulationObject(prim, server);
-            server.Scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            SimulationObject simObj = new SimulationObject(prim, scene);
+            scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
-            ulong localRegionHandle = Utils.UIntsToLong(256 * server.Scene.RegionX, 256 * server.Scene.RegionY);
-
             // Add the avatar to both the agents list and the scene objects
-            SimulationObject obj = new SimulationObject(avatar, server);
-            Agent agent = new Agent(obj);
-            agent.Avatar.Prim.ID = avatar.ID;
-            agent.CurrentRegionHandle = localRegionHandle;
-            agent.FirstName = avatar.FirstName;
-            agent.LastName = avatar.LastName;
+            SimulationObject obj = new SimulationObject(avatar, scene);
+            Agent agent = new Agent(obj, AgentInfoFromAvatar(avatar));
 
-            server.Scene.AgentAdd(this, agent, avatar.Flags);
-            server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            scene.AgentAdd(this, agent, avatar.Flags);
+            scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
@@ -111,7 +107,7 @@ namespace Simian.Extensions
             if (update.Avatar) flags |= UpdateFlags.CollisionPlane;
             if (update.Textures != null) flags |= UpdateFlags.Textures;
 
-            if (server.Scene.TryGetObject(update.LocalID, out obj))
+            if (scene.TryGetObject(update.LocalID, out obj))
             {
                 obj.Prim.Acceleration = update.Acceleration;
                 obj.Prim.AngularVelocity = update.AngularVelocity;
@@ -121,7 +117,7 @@ namespace Simian.Extensions
                 if (update.Avatar) obj.Prim.CollisionPlane = update.CollisionPlane;
                 if (update.Textures != null) obj.Prim.Textures = update.Textures;
 
-                server.Scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, flags);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, flags);
             }
 
             if (update.LocalID == client.Self.LocalID)
@@ -134,14 +130,14 @@ namespace Simian.Extensions
                 if (update.Avatar) MasterAgent.Avatar.Prim.CollisionPlane = update.CollisionPlane;
                 if (update.Textures != null) MasterAgent.Avatar.Prim.Textures = update.Textures;
 
-                server.Scene.ObjectAddOrUpdate(this, MasterAgent.Avatar, MasterAgent.ID, 0, PrimFlags.None, flags);
+                scene.ObjectAddOrUpdate(this, MasterAgent.Avatar, MasterAgent.ID, 0, PrimFlags.None, flags);
             }
         }
 
         void Objects_OnObjectKilled(Simulator simulator, uint objectID)
         {
             if (!ignoreObjectKill)
-                server.Scene.ObjectRemove(this, objectID);
+                scene.ObjectRemove(this, objectID);
         }
 
         void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture,
@@ -152,16 +148,16 @@ namespace Simian.Extensions
             byte[] vp = (visualParams != null && visualParams.Count > 1 ? visualParams.ToArray() : null);
 
             Agent agent;
-            if (server.Scene.TryGetAgent(avatarID, out agent))
+            if (scene.TryGetAgent(avatarID, out agent))
             {
-                Logger.Log("[Periscope] Updating foreign avatar appearance for " + agent.FirstName + " " + agent.LastName, Helpers.LogLevel.Info);
-                server.Scene.AgentAppearance(this, agent, te, vp);
+                Logger.Log("[Periscope] Updating foreign avatar appearance for " + agent.FullName, Helpers.LogLevel.Info);
+                scene.AgentAppearance(this, agent, te, vp);
             }
 
             if (avatarID == client.Self.AgentID)
             {
                 Logger.Log("[Periscope] Updating foreign avatar appearance for the MasterAgent", Helpers.LogLevel.Info);
-                server.Scene.AgentAppearance(this, MasterAgent, te, vp);
+                scene.AgentAppearance(this, MasterAgent, te, vp);
             }
         }
 
@@ -176,26 +172,26 @@ namespace Simian.Extensions
                 }
             }
 
-            server.Scene.SetTerrainPatch(this, (uint)x, (uint)y, patchData);
+            scene.SetTerrainPatch(this, (uint)x, (uint)y, patchData);
         }
 
         void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType,
             string fromName, UUID id, UUID ownerid, Vector3 position)
         {
-            server.Scene.ObjectChat(this, ownerid, id, audible, type, sourceType, fromName, position, 0, message);
+            scene.ObjectChat(this, ownerid, id, audible, type, sourceType, fromName, position, 0, message);
         }
 
         void Self_OnTeleport(string message, TeleportStatus status, TeleportFlags flags)
         {
             if (status == TeleportStatus.Finished)
             {
-                ulong localRegionHandle = server.Scene.RegionHandle;
+                ulong localRegionHandle = scene.RegionHandle;
 
-                server.Scene.RemoveAllAgents(
+                scene.RemoveAllAgents(
                     delegate(Agent agent)
                     { return agent.Avatar.Prim.RegionHandle != client.Network.CurrentSim.Handle && agent.Avatar.Prim.RegionHandle != localRegionHandle; });
 
-                server.Scene.RemoveAllObjects(
+                scene.RemoveAllObjects(
                     delegate(SimulationObject obj)
                     { return obj.Prim.RegionHandle != client.Network.CurrentSim.Handle && obj.Prim.RegionHandle != localRegionHandle; });
             }
@@ -212,7 +208,7 @@ namespace Simian.Extensions
             AvatarAnimationPacket animations = (AvatarAnimationPacket)packet;
             
             Agent agent;
-            if (server.Scene.TryGetAgent(animations.Sender.ID, out agent))
+            if (scene.TryGetAgent(animations.Sender.ID, out agent))
             {
                 agent.Animations.Clear();
 
@@ -222,7 +218,7 @@ namespace Simian.Extensions
                     agent.Animations.Add(block.AnimID, block.AnimSequenceID);
                 }
 
-                server.Avatars.SendAnimations(agent);
+                scene.Avatars.SendAnimations(agent);
             }
 
             if (animations.Sender.ID == client.Self.AgentID)
@@ -235,7 +231,7 @@ namespace Simian.Extensions
                     MasterAgent.Animations.Add(block.AnimID, block.AnimSequenceID);
                 }
 
-                server.Avatars.SendAnimations(MasterAgent);
+                scene.Avatars.SendAnimations(MasterAgent);
             }
         }
 
@@ -245,12 +241,12 @@ namespace Simian.Extensions
 
             handshake.RegionInfo.SimOwner = (MasterAgent != null ? MasterAgent.ID : UUID.Zero);
             handshake.RegionInfo.RegionFlags &= ~(uint)RegionFlags.NoFly;
-            handshake.RegionInfo2.RegionID = server.Scene.RegionID;
+            handshake.RegionInfo2.RegionID = scene.RegionID;
 
             // TODO: Need more methods to manipulate the scene so we can apply these properties.
             // Right now this only gets sent out to people who are logged in when the master avatar
             // is already logged in
-            server.UDP.BroadcastPacket(handshake, PacketCategory.Transaction);
+            scene.UDP.BroadcastPacket(handshake, PacketCategory.Transaction);
         }
 
         #region Simian client packet handlers
@@ -277,18 +273,18 @@ namespace Simian.Extensions
                             Single.TryParse(messageParts[3], out y) &&
                             Single.TryParse(messageParts[4], out z))
                         {
-                            server.Avatars.SendAlert(agent, String.Format("Attempting teleport to {0} <{1}, {2}, {3}>",
+                            scene.Avatars.SendAlert(agent, String.Format("Attempting teleport to {0} <{1}, {2}, {3}>",
                                 messageParts[1], messageParts[2], messageParts[3], messageParts[4]));
                             client.Self.Teleport(messageParts[1], new Vector3(x, y, z));
                         }
                         else
                         {
-                            server.Avatars.SendAlert(agent, "Usage: /teleport \"sim name\" x y z");
+                            scene.Avatars.SendAlert(agent, "Usage: /teleport \"sim name\" x y z");
                         }
                         return;
                     }
                     case "/stats":
-                        server.Avatars.SendAlert(agent, String.Format("Downloading textures: {0}, Queued textures: {1}",
+                        scene.Avatars.SendAlert(agent, String.Format("Downloading textures: {0}, Queued textures: {1}",
                             imageDelivery.Pipeline.CurrentCount, imageDelivery.Pipeline.QueuedCount));
                         return;
                     case "/objectkill":
@@ -297,12 +293,12 @@ namespace Simian.Extensions
                             if (messageParts[1] == "off" || messageParts[1] == "0")
                             {
                                 ignoreObjectKill = true;
-                                server.Avatars.SendAlert(agent, "Ignoring upstream ObjectKill packets");
+                                scene.Avatars.SendAlert(agent, "Ignoring upstream ObjectKill packets");
                             }
                             else
                             {
                                 ignoreObjectKill = false;
-                                server.Avatars.SendAlert(agent, "Enabling upstream ObjectKill packets");
+                                scene.Avatars.SendAlert(agent, "Enabling upstream ObjectKill packets");
                             }
                         }
                         return;
@@ -316,8 +312,8 @@ namespace Simian.Extensions
                             Thread saveThread = new Thread(new ThreadStart(
                                 delegate()
                                 {
-                                    Logger.Log(String.Format("Preparing to serialize {0} objects", server.Scene.ObjectCount()), Helpers.LogLevel.Info);
-                                    OarFile.SavePrims(server, directoryname + "/objects", directoryname + "/assets", Simian.ASSET_CACHE_DIR);
+                                    Logger.Log(String.Format("Preparing to serialize {0} objects", scene.ObjectCount()), Helpers.LogLevel.Info);
+                                    OarFile.SavePrims(scene, directoryname + "/objects", directoryname + "/assets", Simian.ASSET_CACHE_DIR);
 
                                     try { Directory.Delete(directoryname + "/terrains", true); }
                                     catch (Exception) { }
@@ -332,7 +328,7 @@ namespace Simian.Extensions
                                             {
                                                 for (int x = 0; x < 256; x++)
                                                 {
-                                                    float t = server.Scene.GetTerrainHeightAt(x, y);
+                                                    float t = scene.GetTerrainHeightAt(x, y);
                                                     stream.Write(BitConverter.GetBytes(t), 0, 4);
                                                 }
                                             }
@@ -351,11 +347,11 @@ namespace Simian.Extensions
                                     catch (Exception ex)
                                     { Logger.Log("Failed to delete temporary directory " + directoryname + ": " + ex.Message, Helpers.LogLevel.Error); }
 
-                                    server.Avatars.SendAlert(agent, "Finished OAR export to " + filename);
+                                    scene.Avatars.SendAlert(agent, "Finished OAR export to " + filename);
                                 }));
 
                             saveThread.Start();
-                            server.Avatars.SendAlert(agent, "Starting OAR export to " + filename);
+                            scene.Avatars.SendAlert(agent, "Starting OAR export to " + filename);
                         }
                         return;
                     }
@@ -379,21 +375,21 @@ namespace Simian.Extensions
                                 curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperShirt] = null;
                                 curAgent.Avatar.Textures.FaceTextures[(int)AppearanceManager.TextureIndex.UpperUndershirt] = null;
 
-                                server.Scene.AvatarAppearance(this, curAgent, curAgent.Avatar.Textures, curAgent.VisualParams);
+                                scene.AvatarAppearance(this, curAgent, curAgent.Avatar.Textures, curAgent.VisualParams);
                                 ++count;
                             }
                         }
 
-                        server.Avatars.SendAlert(agent, String.Format("Modified appearances for {0} avatar(s)", count));*/
+                        scene.Avatars.SendAlert(agent, String.Format("Modified appearances for {0} avatar(s)", count));*/
                         return;
                 }
             }
             
             string finalMessage;
-            if (agent.FirstName == client.Self.FirstName && agent.LastName == client.Self.LastName)
+            if (agent.Info.FirstName == client.Self.FirstName && agent.Info.LastName == client.Self.LastName)
                 finalMessage = message;
             else
-                finalMessage = String.Format("<{0} {1}> {2}", agent.FirstName, agent.LastName, message);
+                finalMessage = String.Format("<{0} {1}> {2}", agent.Info.FirstName, agent.Info.LastName, message);
 
             client.Self.Chat(finalMessage, chat.ChatData.Channel, (ChatType)chat.ChatData.Type);
         }
@@ -402,20 +398,23 @@ namespace Simian.Extensions
         {
             AgentUpdatePacket update = (AgentUpdatePacket)packet;
 
-            if (MasterAgent == null || (!client.Network.Connected && client.Network.LoginStatusCode == LoginStatus.Failed))
+            if (MasterAgent == null ||
+                (!client.Network.Connected && client.Network.LoginStatusCode == LoginStatus.Failed && agent.Info.PasswordHash != lastPasswordHash))
             {
                 MasterAgent = null;
+                // To keep from repeatedly trying to login with a bad password
+                lastPasswordHash = agent.Info.PasswordHash;
 
                 lock (loginLock)
                 {
                     // Double-checked locking to avoid hitting the loginLock each time
-                    if (MasterAgent == null && server.Scene.TryGetAgent(update.AgentData.AgentID, out MasterAgent))
+                    if (MasterAgent == null && scene.TryGetAgent(update.AgentData.AgentID, out MasterAgent))
                     {
                         Logger.Log(String.Format("[Periscope] {0} {1} is the controlling agent",
-                            MasterAgent.FirstName, MasterAgent.LastName), Helpers.LogLevel.Info);
+                            MasterAgent.Info.FirstName, MasterAgent.Info.LastName), Helpers.LogLevel.Info);
 
-                        LoginParams login = client.Network.DefaultLoginParams(agent.FirstName, agent.LastName, agent.PasswordHash,
-                            "Simian Periscope", "1.0.0");
+                        LoginParams login = client.Network.DefaultLoginParams(agent.Info.FirstName, agent.Info.LastName,
+                            agent.Info.PasswordHash, "Simian Periscope", "1.0.0");
                         login.URI = PERISCOPE_LOGIN_URI;
                         login.Start = "last";
                         client.Network.Login(login);
@@ -508,6 +507,23 @@ namespace Simian.Extensions
         }
 
         #endregion Simian client packet handlers
+
+        AgentInfo AgentInfoFromAvatar(Avatar avatar)
+        {
+            // Some parts of the code use the FirstName/LastName, and other extensions
+            // might try to access this data. Fill in enough to keep things sane
+            AgentInfo info = new AgentInfo();
+            info.AccessLevel = String.Empty;
+            info.Balance = 0;
+            info.CreationTime = Utils.DateTimeToUnixTime(Utils.Epoch);
+            info.FirstName = avatar.FirstName;
+            info.Height = 1.9f;
+            info.ID = avatar.ID;
+            info.LastLoginTime = Utils.DateTimeToUnixTime(DateTime.Now);
+            info.LastName = avatar.LastName;
+
+            return info;
+        }
 
         static void EraseTexture(Avatar avatar, AppearanceManager.TextureIndex texture)
         {

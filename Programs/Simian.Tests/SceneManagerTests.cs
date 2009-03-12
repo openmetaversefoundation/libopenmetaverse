@@ -3,17 +3,14 @@ using System.Threading;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using ExtensionLoader;
-using Simian;
-using Simian.Extensions;
 using NUnit.Framework;
 
-namespace SimianTests
+namespace Simian.Tests
 {
     [TestFixture(Description = "Simian.Extensions.SceneManager")]
     public class SceneManagerTest
     {
-        Simian.Simian simian;
-        SceneManager sceneManager;
+        Simian simian;
         Random rand = new Random();
         Agent agent;
         Agent observer;
@@ -21,25 +18,20 @@ namespace SimianTests
         [SetUp]
         public void Start()
         {
-            simian = new Simian.Simian();
-            simian.UDP = new UDPManager();
-            (simian.UDP as IExtension<Simian.Simian>).Start(simian);
-            sceneManager = new SceneManager();
-            simian.Scene = sceneManager;
-            sceneManager.Start(simian);
+            simian = new Simian();
+            simian.Start();
 
             agent = CreateDummyAgent();
-            simian.Scene.AgentAdd(this, agent, PrimFlags.None);
+            simian.Scenes[0].AgentAdd(this, agent, PrimFlags.None);
 
             observer = CreateDummyAgent();
-            simian.Scene.AgentAdd(this, observer, PrimFlags.None);
+            simian.Scenes[0].AgentAdd(this, observer, PrimFlags.None);
         }
 
         [TearDown]
         public void Stop()
         {
-            sceneManager.Stop();
-            (simian.UDP as IExtension<Simian.Simian>).Stop();
+            simian.Stop();
         }
 
         [Test]
@@ -74,11 +66,11 @@ namespace SimianTests
                 }
             );
 
-            simian.UDP.OnOutgoingPacket += callback;
-            sceneManager.AgentAppearance(this, agent, textures, visualParams);
+            simian.Scenes[0].UDP.OnOutgoingPacket += callback;
+            simian.Scenes[0].AgentAppearance(this, agent, textures, visualParams);
 
             Assert.IsTrue(callbackEvent.WaitOne(1000, false), "Timed out waiting for callback");
-            simian.UDP.OnOutgoingPacket -= callback;
+            simian.Scenes[0].UDP.OnOutgoingPacket -= callback;
             
             Assert.That(receivedAgentID == agent.ID, "Agent ID mismatch");
             
@@ -97,7 +89,11 @@ namespace SimianTests
 
         Agent CreateDummyAgent()
         {
-            Agent agent = new Agent(new SimulationObject(new Avatar(), simian));
+            AgentInfo info = new AgentInfo();
+            info.FirstName = "Dummy";
+            info.LastName = "Agent";
+
+            Agent agent = new Agent(new SimulationObject(new Avatar(), simian.Scenes[0]), info);
             agent.Avatar.Prim.ID = UUID.Random();
             agent.SessionID = UUID.Random();
             agent.Avatar.Prim.Position = new Vector3(128f, 128f, 40f);
