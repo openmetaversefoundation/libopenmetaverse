@@ -124,12 +124,13 @@ namespace Simian
         {
         }
 
-        public bool Start(Simian server, string name, IPEndPoint endpoint, uint regionX, uint regionY,
+        public bool Start(Simian server, string name, IPEndPoint endpoint, UUID regionID, uint regionX, uint regionY,
             string defaultTerrainFile, int staticObjects, int physicalObjects)
         {
             this.server = server;
             this.regionName = name;
             this.endpoint = endpoint;
+            this.regionID = regionID;
 
             // Set the properties because this will automatically update the regionHandle
             RegionX = regionX;
@@ -176,6 +177,8 @@ namespace Simian
             if (!String.IsNullOrEmpty(defaultTerrainFile))
                 LoadTerrain(Simian.DATA_DIR + defaultTerrainFile);
 
+            Logger.Log(String.Format("Region {0} online at ({1},{2}) listening on {3}", name, regionX, regionY, endpoint),
+                Helpers.LogLevel.Info);
             return true;
         }
 

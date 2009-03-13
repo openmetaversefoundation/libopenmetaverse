@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -23,6 +24,7 @@ namespace Simian
         public const string REGION_CONFIG_DIR = DATA_DIR + "RegionConfig/";
         public const string ASSET_CACHE_DIR = DATA_DIR + "AssetCache/";
         public const string DEFAULT_ASSET_DIR = DATA_DIR + "DefaultAssets/";
+        public const int DEFAULT_UDP_PORT = 9000;
 
         public Uri HttpUri;
         public HttpListener HttpServer;
@@ -53,6 +55,8 @@ namespace Simian
 
         public bool Start()
         {
+            IPHostEntry entry;
+            IPAddress address;
             IConfig httpConfig;
 
             try
@@ -74,17 +78,26 @@ namespace Simian
             int port = httpConfig.GetInt("ListenPort");
             string hostname = httpConfig.GetString("Hostname", null);
             string sslCertFile = httpConfig.GetString("SSLCertFile", null);
-            IPAddress address = IPAddress.Any;
 
             if (String.IsNullOrEmpty(hostname))
             {
                 hostname = Dns.GetHostName();
+                entry = Dns.GetHostEntry(hostname);
+                address = IPAddress.Any;
             }
             else
             {
-                IPHostEntry entry = Dns.GetHostEntry(hostname);
+                entry = Dns.GetHostEntry(hostname);
                 if (entry != null && entry.AddressList.Length > 0)
+                {
                     address = entry.AddressList[0];
+                }
+                else
+                {
+                    Logger.Log("Could not resolve an IP address from hostname " + hostname + ", binding to all interfaces",
+                        Helpers.LogLevel.Warning);
+                    address = IPAddress.Any;
+                }
             }
 
             if (!String.IsNullOrEmpty(sslCertFile))
@@ -173,25 +186,80 @@ namespace Simian
                     uint regionX, regionY;
                     UInt32.TryParse(regionConfig.GetString("RegionX", "0"), out regionX);
                     UInt32.TryParse(regionConfig.GetString("RegionY", "0"), out regionY);
+                    string certFile = regionConfig.GetString("RegionCertificate", null);
                     int staticObjectLimit = regionConfig.GetInt("StaticObjectLimit", 0);
                     int physicalObjectLimit = regionConfig.GetInt("PhysicalObjectLimit", 0);
 
-                    if (String.IsNullOrEmpty(name) || regionX == 0 || regionY == 0)
+                    if (String.IsNullOrEmpty(name) || regionX == 0 || regionY == 0 || String.IsNullOrEmpty(certFile))
                     {
                         Logger.Log("Incomplete information in " + configFiles[i] + ", skipping", Helpers.LogLevel.Warning);
                         continue;
                     }
 
-                    // Get the IPEndPoint for this region
-                    IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 9000);
+                    #region IPEndPoint Assignment
+
+                    IPEndPoint endpoint;
+
+                    if (udpPort != 0)
+                    {
+                        endpoint = new IPEndPoint(address, udpPort);
+                    }
+                    else
+                    {
+                        udpPort = DEFAULT_UDP_PORT;
+
+                        while (true)
+                        {
+                            endpoint = new IPEndPoint(address, udpPort);
+                            Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                            try
+                            {
+                                udpSocket.Bind(endpoint);
+                                udpSocket.Close();
+                                break;
+                            }
+                            catch (SocketException)
+                            {
+                                ++udpPort;
+                            }
+                        }
+                    }
+
+                    #endregion IPEndPoint Assignment
+
+                    #region Grid Registration
+
+                    X509Certificate2 regionCert;
+
+                    try
+                    {
+                        regionCert = new X509Certificate2(DATA_DIR + certFile);
+                    }
+                    catch (Exception)
+                    {
+                        Logger.Log("Failed to load region certificate file from " + certFile, Helpers.LogLevel.Error);
+                        continue;
+                    }
+
+                    RegionInfo info = new RegionInfo();
+                    info.Handle = Utils.UIntsToLong(256 * regionX, 256 * regionY);
+                    info.HttpServer = HttpUri;
+                    info.IPAndPort = endpoint;
+                    info.Name = name;
+                    info.Online = true;
+
+                    if (!Grid.TryRegisterGridSpace(info, regionCert, out info.ID))
+                    {
+                        Logger.Log("Failed to register grid space for region " + name, Helpers.LogLevel.Error);
+                        continue;
+                    }
+
+                    #endregion Grid Registration
 
                     // TODO: Support non-SceneManager scenes?
                     ISceneProvider scene = new SceneManager();
-                    scene.Start(this, name, endpoint, regionX, regionY, defaultTerrain, staticObjectLimit, physicalObjectLimit);
+                    scene.Start(this, name, endpoint, info.ID, regionX, regionY, defaultTerrain, staticObjectLimit, physicalObjectLimit);
                     Scenes.Add(scene);
-
-                    // FIXME: Use IGridProvider to actually register the scenes into spaces
-                    break;
                 }
             }
             catch (Exception ex)

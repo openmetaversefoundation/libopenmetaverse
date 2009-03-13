@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using ExtensionLoader;
 using OpenMetaverse;
 
@@ -7,6 +9,7 @@ namespace Simian
     public class GridLocal : IExtension<Simian>, IGridProvider
     {
         Simian server;
+        DoubleDictionary<ulong, UUID, RegionInfo> grid = new DoubleDictionary<ulong, UUID, RegionInfo>();
 
         public GridLocal()
         {
@@ -22,41 +25,52 @@ namespace Simian
         {
         }
 
-        public bool TryRegisterGridSpace(RegionInfo region, out UUID regionID)
+        public bool TryRegisterGridSpace(RegionInfo regionInfo, X509Certificate2 regionCert, out UUID regionID)
+        {
+            // No need to check the certificate since the requests are all local
+
+            // Check the coordinates
+            if (!grid.ContainsKey(regionInfo.Handle))
+            {
+                regionID = UUID.Random();
+                grid.Add(regionInfo.Handle, regionID, regionInfo);
+                return true;
+            }
+            else
+            {
+                regionID = UUID.Zero;
+                return false;
+            }
+        }
+
+        public bool TryRegisterAnyGridSpace(RegionInfo region, X509Certificate2 regionCert, bool isolated, out UUID regionID)
         {
             regionID = UUID.Zero;
             return false;
         }
 
-        public bool TryRegisterAnyGridSpace(RegionInfo region, bool isolated, out UUID regionID)
+        public bool UnregisterGridSpace(UUID regionID, X509Certificate2 regionCert)
         {
-            regionID = UUID.Zero;
-            return false;
+            return grid.Remove(regionID);
         }
 
-        public bool UnregisterGridSpace(RegionInfo region)
-        {
-            return false;
-        }
-
-        public void RegionUpdate(RegionInfo region)
+        public void RegionUpdate(UUID regionID, X509Certificate2 regionCert)
         {
         }
 
-        public void RegionHeartbeat(RegionInfo region)
+        public void RegionHeartbeat(UUID regionID, X509Certificate2 regionCert)
         {
         }
 
-        public bool TryGetRegion(UUID regionID, out RegionInfo region)
+        public bool TryGetRegion(UUID regionID, X509Certificate2 regionCert, out RegionInfo region)
         {
-            region = null;
-            return false;
+            return grid.TryGetValue(regionID, out region);
         }
 
-        public bool TryGetRegion(uint x, uint y, out RegionInfo region)
+        public bool TryGetRegion(uint regionX, uint regionY, X509Certificate2 regionCert, out RegionInfo region)
         {
-            region = null;
-            return false;
+            ulong handle = Utils.UIntsToLong(256 * regionX, 256 * regionY);
+            return grid.TryGetValue(handle, out region);
         }
 
         public ISceneProvider GetDefaultLocalScene()

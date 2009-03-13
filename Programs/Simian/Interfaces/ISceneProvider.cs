@@ -149,7 +149,7 @@ namespace Simian
         uint TerrainPatchCountWidth { get; }
         uint TerrainPatchCountHeight { get; }
 
-        bool Start(Simian server, string name, IPEndPoint endpoint, uint regionX, uint regionY, string defaultTerrainFile, int staticObjects, int physicalObjects);
+        bool Start(Simian server, string name, IPEndPoint endpoint, UUID regionID, uint regionX, uint regionY, string defaultTerrainFile, int staticObjects, int physicalObjects);
         void Stop();
 
         void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
