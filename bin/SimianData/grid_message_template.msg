@@ -5,6 +5,7 @@
 	agent_id: uuid,
 	session_id: uuid,
 	secure_session_id: uuid,
+	circuit_code: integer,
 	first_name: string,
 	last_name: string,
 	callback_uri: uri

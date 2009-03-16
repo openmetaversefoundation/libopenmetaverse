@@ -221,7 +221,7 @@ namespace Simian
             lock (unassociatedAgents)
                 unassociatedAgents[circuitCode] = agent;
 
-            Logger.Log("Created circuit " + circuitCode + " for " + agent.FullName, Helpers.LogLevel.Info);
+            Logger.Log("Created circuit using existing code " + circuitCode + " for " + agent.FullName, Helpers.LogLevel.Info);
         }
 
         public void BroadcastPacket(Packet packet, PacketCategory category)

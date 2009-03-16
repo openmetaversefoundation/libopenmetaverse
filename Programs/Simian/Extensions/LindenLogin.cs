@@ -206,15 +206,6 @@ namespace Simian
                     // Assign a circuit code and track the agent as an unassociated agent (no UDP connection yet)
                     agent.CircuitCode = scene.UDP.CreateCircuit(agent);
 
-                    // Get the IP address of the sim (IPAndPort may be storing IPAdress.Any, aka 0.0.0.0)
-                    IPAddress simIP = scene.IPAndPort.Address;
-                    if (simIP == IPAddress.Any)
-                    {
-                        // Get this machine's IP address
-                        IPHostEntry entry = Dns.GetHostEntry(server.HttpUri.DnsSafeHost);
-                        simIP = entry.AddressList.Length > 0 ? entry.AddressList[entry.AddressList.Length - 1] : IPAddress.Loopback;
-                    }
-
                     response.AgentID = agent.ID;
                     response.SecureSessionID = agent.SecureSessionID;
                     response.SessionID = agent.SessionID;
@@ -240,7 +231,7 @@ namespace Simian
 
                     response.SecondsSinceEpoch = DateTime.Now;
                     response.SeedCapability = agent.SeedCapability.ToString();
-                    response.SimIP = simIP;
+                    response.SimIP = scene.IPAndPort.Address;
                     response.SimPort = (ushort)scene.IPAndPort.Port;
                     response.StartLocation = "last"; // FIXME:
                     response.Success = true;

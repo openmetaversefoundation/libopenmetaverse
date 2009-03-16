@@ -236,6 +236,10 @@ namespace Simian
                         }
                     }
 
+                    // Make sure 0.0.0.0 gets replaced with a valid IP address
+                    if (endpoint.Address == IPAddress.Any)
+                        endpoint.Address = entry.AddressList.Length > 0 ? entry.AddressList[entry.AddressList.Length - 1] : IPAddress.Loopback;
+
                     #endregion IPEndPoint Assignment
 
                     #region Grid Registration

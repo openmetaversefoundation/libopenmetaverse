@@ -1026,6 +1026,7 @@ namespace Simian
                 UUID agentID = map["agent_id"].AsUUID();
                 UUID sessionID = map["session_id"].AsUUID();
                 UUID secureSessionID = map["secure_session_id"].AsUUID();
+                uint circuitCode = (uint)map["circuit_code"].AsInteger();
                 // TODO: Send an identity url and token instead so we can pull down all of the information
                 string firstName = map["first_name"].AsString();
                 string lastName = map["last_name"].AsString();
@@ -1070,7 +1071,8 @@ namespace Simian
                         enableClientCompleteCallbacks[agentID] = callbackUri;
 
                     // Assign a circuit code and track the agent as an unassociated agent (no UDP connection yet)
-                    agent.CircuitCode = udp.CreateCircuit(agent);
+                    udp.CreateCircuit(agent, circuitCode);
+                    agent.CircuitCode = circuitCode;
 
                     osdResponse["success"] = OSD.FromBoolean(true);
                 }
@@ -1234,6 +1236,7 @@ namespace Simian
                     map["agent_id"] = OSD.FromUUID(agent.ID);
                     map["session_id"] = OSD.FromUUID(agent.SessionID);
                     map["secure_session_id"] = OSD.FromUUID(agent.SecureSessionID);
+                    map["circuit_code"] = OSD.FromInteger((int)agent.CircuitCode);
                     map["first_name"] = OSD.FromString(agent.Info.FirstName);
                     map["last_name"] = OSD.FromString(agent.Info.LastName);
                     map["callback_uri"] = OSD.FromUri(callbackUri);
