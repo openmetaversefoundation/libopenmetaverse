@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using HttpServer;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
@@ -149,7 +150,7 @@ namespace Simian
         uint TerrainPatchCountWidth { get; }
         uint TerrainPatchCountHeight { get; }
 
-        bool Start(Simian server, string name, IPEndPoint endpoint, UUID regionID, uint regionX, uint regionY, string defaultTerrainFile, int staticObjects, int physicalObjects);
+        bool Start(Simian server, RegionInfo regionInfo, X509Certificate2 regionCert, string defaultTerrainFile, int staticObjects, int physicalObjects);
         void Stop();
 
         void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
@@ -194,5 +195,8 @@ namespace Simian
         void SendEvent(Agent agent, string name, OSDMap body);
         bool HasRunningEventQueue(Agent agent);
         bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
+
+        bool EnableClientCapHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
+        bool EnableClientCompleteCapHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
     }
 }

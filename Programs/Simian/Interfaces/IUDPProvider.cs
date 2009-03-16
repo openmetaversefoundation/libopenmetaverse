@@ -44,14 +44,23 @@ namespace Simian
     /// <param name="category">The specified category of the outgoing packet</param>
     /// <returns>True to continue sending this packet, otherwise false</returns>
     public delegate bool OutgoingPacketCallback(Packet packet, UUID agentID, PacketCategory category);
+    /// <summary>
+    /// Triggered when an agent establishes a UDP connection
+    /// </summary>
+    /// <param name="agent">Agent that now has a UDP connection</param>
+    /// <param name="circuitCode">Circuit code that was used to identify the agent
+    /// during connection establishment</param>
+    public delegate void AgentConnectionCallback(Agent agent, uint circuitCode);
 
     public interface IUDPProvider
     {
         event OutgoingPacketCallback OnOutgoingPacket;
+        event AgentConnectionCallback OnAgentConnection;
 
         void AddClient(Agent agent, IPEndPoint endpoint);
         bool RemoveClient(Agent agent);
         uint CreateCircuit(Agent agent);
+        void CreateCircuit(Agent agent, uint circuitCode);
 
         void SendPacket(UUID agentID, Packet packet, PacketCategory category);
         void BroadcastPacket(Packet packet, PacketCategory category);

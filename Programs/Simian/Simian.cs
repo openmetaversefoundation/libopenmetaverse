@@ -59,6 +59,8 @@ namespace Simian
             IPAddress address;
             IConfig httpConfig;
 
+            #region Config Parsing
+
             try
             {
                 // Load the extension list (and ordering) from our config file
@@ -72,6 +74,8 @@ namespace Simian
                 Logger.Log("Failed to load [Extensions] section from " + CONFIG_FILE, Helpers.LogLevel.Error);
                 return false;
             }
+
+            #endregion Config Parsing
 
             #region HTTP Server
 
@@ -177,6 +181,11 @@ namespace Simian
 
                 for (int i = 0; i < configFiles.Length; i++)
                 {
+                    // TODO: Support non-SceneManager scenes?
+                    ISceneProvider scene = new SceneManager();
+
+                    #region Config Parsing
+
                     IniConfigSource source = new IniConfigSource(configFiles[i]);
                     IConfig regionConfig = source.Configs["Region"];
 
@@ -195,6 +204,8 @@ namespace Simian
                         Logger.Log("Incomplete information in " + configFiles[i] + ", skipping", Helpers.LogLevel.Warning);
                         continue;
                     }
+
+                    #endregion Config Parsing
 
                     #region IPEndPoint Assignment
 
@@ -241,14 +252,16 @@ namespace Simian
                         continue;
                     }
 
-                    RegionInfo info = new RegionInfo();
-                    info.Handle = Utils.UIntsToLong(256 * regionX, 256 * regionY);
-                    info.HttpServer = HttpUri;
-                    info.IPAndPort = endpoint;
-                    info.Name = name;
-                    info.Online = true;
+                    RegionInfo regionInfo = new RegionInfo();
+                    regionInfo.Handle = Utils.UIntsToLong(256 * regionX, 256 * regionY);
+                    regionInfo.HttpServer = HttpUri;
+                    regionInfo.IPAndPort = endpoint;
+                    regionInfo.Name = name;
+                    regionInfo.Online = true;
+                    // Create a capability for other regions to initiate a client connection to this region
+                    regionInfo.EnableClientCap = Capabilities.CreateCapability(scene.EnableClientCapHandler, false, null);
 
-                    if (!Grid.TryRegisterGridSpace(info, regionCert, out info.ID))
+                    if (!Grid.TryRegisterGridSpace(regionInfo, regionCert, out regionInfo.ID))
                     {
                         Logger.Log("Failed to register grid space for region " + name, Helpers.LogLevel.Error);
                         continue;
@@ -256,9 +269,7 @@ namespace Simian
 
                     #endregion Grid Registration
 
-                    // TODO: Support non-SceneManager scenes?
-                    ISceneProvider scene = new SceneManager();
-                    scene.Start(this, name, endpoint, info.ID, regionX, regionY, defaultTerrain, staticObjectLimit, physicalObjectLimit);
+                    scene.Start(this, regionInfo, regionCert, defaultTerrain, staticObjectLimit, physicalObjectLimit);
                     Scenes.Add(scene);
                 }
             }

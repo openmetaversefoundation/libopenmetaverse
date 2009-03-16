@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse;
@@ -6,7 +7,7 @@ using OpenMetaverse.StructuredData;
 
 namespace Simian
 {
-    public class RegionInfo
+    public struct RegionInfo
     {
         public string Name;
         public UUID ID;
@@ -16,6 +17,7 @@ namespace Simian
         public Uri HttpServer;
         public UUID MapTextureID;
         public Uri Owner;
+        public Uri EnableClientCap;
 
         public uint X
         {
@@ -23,7 +25,7 @@ namespace Simian
             {
                 uint x, y;
                 OpenMetaverse.Utils.LongToUInts(Handle, out x, out y);
-                return x;
+                return x / 256;
             }
 
             set
@@ -40,7 +42,7 @@ namespace Simian
             {
                 uint x, y;
                 OpenMetaverse.Utils.LongToUInts(Handle, out x, out y);
-                return y;
+                return y / 256;
             }
 
             set
@@ -50,51 +52,20 @@ namespace Simian
                 Handle = OpenMetaverse.Utils.UIntsToLong(x, value);
             }
         }
-
-        public OSDMap SerializeToOSD()
-        {
-            OSDMap osdata = new OSDMap();
-
-            osdata["handle"] = OSD.FromULong(Handle);
-            osdata["id"] = OSD.FromUUID(ID);
-            osdata["map_texture_id"] = OSD.FromUUID(MapTextureID);
-            osdata["name"] = OSD.FromString(Name);
-            osdata["owner"] = OSD.FromUri(Owner);
-            osdata["ipaddr"] = OSD.FromString(IPAndPort.Address.ToString());
-            osdata["port"] = OSD.FromInteger(IPAndPort.Port);
-
-            return osdata;
-        }
-
-        public void Deserialize(OSD osdata)
-        {
-            if (osdata.Type == OSDType.Map)
-            {
-                OSDMap map = (OSDMap)osdata;
-
-                Handle = map["handle"].AsULong();
-                ID = map["id"].AsUUID();
-                MapTextureID = map["map_texture_id"].AsUUID();
-                Name = map["name"].AsString();
-                Owner = map["owner"].AsUri();
-
-                IPAddress address;
-                if (IPAddress.TryParse(map["ipaddr"].AsString(), out address))
-                    IPAndPort = new IPEndPoint(address, map["port"].AsInteger());
-            }
-        }
     }
 
-    public delegate void NeighborSimNotice(RegionInfo neighbor, bool online);
+    public delegate void RegionUpdateCallback(RegionInfo regionInfo);
 
     public interface IGridProvider
     {
+        event RegionUpdateCallback OnRegionUpdate;
+
         bool TryRegisterGridSpace(RegionInfo regionInfo, X509Certificate2 regionCert, out UUID regionID);
         /// <summary>
         /// Attempts to register any available space closest to the given grid
         /// coordinates
         /// </summary>
-        /// <param name="region">Information about the region to be registered.
+        /// <param name="regionInfo">Information about the region to be registered.
         /// The X, Y, and Handle values may be modified if the exact grid
         /// coordinate requested is not available</param>
         /// <param name="regionCert">SSL client certificate file for the region.
@@ -104,10 +75,10 @@ namespace Simian
         /// <param name="regionID">The unique identifier of the registered
         /// region upon success. This will also be assigned to region.ID</param>
         /// <returns>True if the registration was successful, otherwise false</returns>
-        bool TryRegisterAnyGridSpace(RegionInfo region, X509Certificate2 regionCert, bool isolated, out UUID regionID);
+        bool TryRegisterAnyGridSpace(RegionInfo regionInfo, X509Certificate2 regionCert, bool isolated, out UUID regionID);
         bool UnregisterGridSpace(UUID regionID, X509Certificate2 regionCert);
 
-        void RegionUpdate(UUID regionID, X509Certificate2 regionCert);
+        void RegionUpdate(RegionInfo regionInfo, X509Certificate2 regionCert);
         void RegionHeartbeat(UUID regionID, X509Certificate2 regionCert);
 
         bool TryGetRegion(UUID regionID, X509Certificate2 regionCert, out RegionInfo region);

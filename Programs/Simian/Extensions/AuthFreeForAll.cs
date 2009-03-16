@@ -100,9 +100,15 @@ namespace Simian
             }
 
             if (password == agentInfo.PasswordHash)
+            {
+                Logger.Log("Authenticated account for " + fullName, Helpers.LogLevel.Info);
                 return agentInfo.ID;
+            }
             else
+            {
+                Logger.Log("Authentication failed for " + fullName, Helpers.LogLevel.Warning);
                 return UUID.Zero;
+            }
         }
     }
 }

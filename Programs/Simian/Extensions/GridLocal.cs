@@ -8,8 +8,11 @@ namespace Simian
 {
     public class GridLocal : IExtension<Simian>, IGridProvider
     {
+        public event RegionUpdateCallback OnRegionUpdate;
+
         Simian server;
         DoubleDictionary<ulong, UUID, RegionInfo> grid = new DoubleDictionary<ulong, UUID, RegionInfo>();
+        object syncRoot = new object();
 
         public GridLocal()
         {
@@ -29,33 +32,78 @@ namespace Simian
         {
             // No need to check the certificate since the requests are all local
 
-            // Check the coordinates
-            if (!grid.ContainsKey(regionInfo.Handle))
+            lock (syncRoot)
             {
-                regionID = UUID.Random();
-                grid.Add(regionInfo.Handle, regionID, regionInfo);
-                return true;
-            }
-            else
-            {
-                regionID = UUID.Zero;
-                return false;
+                // Check the coordinates
+                if (!grid.ContainsKey(regionInfo.Handle))
+                {
+                    regionID = UUID.Random();
+                    grid.Add(regionInfo.Handle, regionID, regionInfo);
+                    return true;
+                }
+                else
+                {
+                    regionID = UUID.Zero;
+                    return false;
+                }
             }
         }
 
-        public bool TryRegisterAnyGridSpace(RegionInfo region, X509Certificate2 regionCert, bool isolated, out UUID regionID)
+        public bool TryRegisterAnyGridSpace(RegionInfo regionInfo, X509Certificate2 regionCert, bool isolated, out UUID regionID)
         {
             regionID = UUID.Zero;
+            regionInfo.Online = false;
             return false;
         }
 
         public bool UnregisterGridSpace(UUID regionID, X509Certificate2 regionCert)
         {
-            return grid.Remove(regionID);
+            lock (syncRoot)
+            {
+                RegionInfo regionInfo;
+                if (grid.TryGetValue(regionID, out regionInfo))
+                {
+                    regionInfo.Online = false;
+                    grid.Remove(regionID);
+
+                    if (OnRegionUpdate != null)
+                    {
+                        OnRegionUpdate(regionInfo);
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
-        public void RegionUpdate(UUID regionID, X509Certificate2 regionCert)
+        public void RegionUpdate(RegionInfo regionInfo, X509Certificate2 regionCert)
         {
+            lock (syncRoot)
+            {
+                RegionInfo oldRegionInfo;
+                if (grid.TryGetValue(regionInfo.ID, out oldRegionInfo))
+                {
+                    // TODO: Handle requests to move the region
+                    //oldRegionInfo.Handle
+
+                    oldRegionInfo.HttpServer = regionInfo.HttpServer;
+                    oldRegionInfo.IPAndPort = regionInfo.IPAndPort;
+                    oldRegionInfo.MapTextureID = regionInfo.MapTextureID;
+                    oldRegionInfo.Name = regionInfo.Name;
+                    oldRegionInfo.Owner = regionInfo.Owner;
+                    oldRegionInfo.Online = regionInfo.Online;
+                    oldRegionInfo.EnableClientCap = regionInfo.EnableClientCap;
+
+                    if (OnRegionUpdate != null)
+                    {
+                        OnRegionUpdate(oldRegionInfo);
+                    }
+                }
+            }
         }
 
         public void RegionHeartbeat(UUID regionID, X509Certificate2 regionCert)

@@ -80,6 +80,7 @@ namespace Simian
         public Vector3 CurrentLookAt;
         public UUID RequestedSitTarget;
         public Vector3 RequestedSitOffset;
+        public bool[] NeighborConnections = new bool[8];
 
         public UUID ID
         {

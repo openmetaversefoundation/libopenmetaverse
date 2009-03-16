@@ -73,6 +73,8 @@ namespace Simian
 
     public class UDPManager : IExtension<ISceneProvider>, IUDPProvider
     {
+        public event AgentConnectionCallback OnAgentConnection;
+
         ISceneProvider scene;
         UDPServer udpServer;
 
@@ -85,7 +87,7 @@ namespace Simian
         public bool Start(ISceneProvider scene)
         {
             this.scene = scene;
-            udpServer = new UDPServer(scene.IPAndPort, scene);
+            udpServer = new UDPServer(scene.IPAndPort, scene, this);
             return true;
         }
 
@@ -110,6 +112,11 @@ namespace Simian
             return udpServer.CreateCircuit(agent);
         }
 
+        public void CreateCircuit(Agent agent, uint circuitCode)
+        {
+            udpServer.CreateCircuit(agent, circuitCode);
+        }
+
         public void SendPacket(UUID agentID, Packet packet, PacketCategory category)
         {
             if (OnOutgoingPacket == null || OnOutgoingPacket(packet, agentID, category))
@@ -126,6 +133,14 @@ namespace Simian
         {
             udpServer.RegisterPacketCallback(type, callback);
         }
+
+        internal void TriggerAgentConnectionCallback(Agent agent, uint circuitCode)
+        {
+            if (OnAgentConnection != null)
+            {
+                OnAgentConnection(agent, circuitCode);
+            }
+        }
     }
 
     public class UDPServer : UDPBase
@@ -141,14 +156,17 @@ namespace Simian
         DoubleDictionary<UUID, IPEndPoint, UDPClient> clients = new DoubleDictionary<UUID, IPEndPoint, UDPClient>();
         /// <summary></summary>
         Dictionary<uint, Agent> unassociatedAgents = new Dictionary<uint, Agent>();
-        /// <summary></summary>
-        int currentCircuitCode = 0;
+        /// <summary>Generates new circuit codes</summary>
+        Random circuitCodeGenerator = new Random();
+        /// <summary>Reference to the UDPManager for triggering functions</summary>
+        UDPManager manager;
 
         // FIXME: Upgrade UDPBase to be able to listen on different endpoints
-        public UDPServer(IPEndPoint endpoint, ISceneProvider scene)
+        public UDPServer(IPEndPoint endpoint, ISceneProvider scene, UDPManager manager)
             : base(endpoint.Port)
         {
             this.scene = scene;
+            this.manager = manager;
 
             Start();
 
@@ -182,15 +200,28 @@ namespace Simian
 
         public uint CreateCircuit(Agent agent)
         {
-            uint circuitCode = (uint)Interlocked.Increment(ref currentCircuitCode);
+            uint circuitCode = 0;
 
-            // Put this client in the list of clients that have not been associated with an IPEndPoint yet
+            lock (unassociatedAgents)
+            {
+                // Generate a random circuit code that is not currently in use
+                do { circuitCode = (uint)circuitCodeGenerator.Next(); }
+                while (unassociatedAgents.ContainsKey(circuitCode));
+
+                // Put this client in the list of clients that have not been associated with an IPEndPoint yet
+                unassociatedAgents[circuitCode] = agent;
+            }
+
+            Logger.Log("Created circuit " + circuitCode + " for " + agent.FullName, Helpers.LogLevel.Info);
+            return circuitCode;
+        }
+
+        public void CreateCircuit(Agent agent, uint circuitCode)
+        {
             lock (unassociatedAgents)
                 unassociatedAgents[circuitCode] = agent;
 
             Logger.Log("Created circuit " + circuitCode + " for " + agent.FullName, Helpers.LogLevel.Info);
-
-            return circuitCode;
         }
 
         public void BroadcastPacket(Packet packet, PacketCategory category)
@@ -625,6 +656,8 @@ namespace Simian
                 {
                     unassociatedAgents.Remove(circuitCode);
                     scene.AgentAdd(this, agent, PrimFlags.None);
+
+                    manager.TriggerAgentConnectionCallback(agent, circuitCode);
                     return true;
                 }
                 else

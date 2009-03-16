@@ -1130,7 +1130,7 @@ namespace OpenMetaverse
                 // don't reconnect if we're already connected or attempting to connect
                 if (FindSimulator(endPoint) != null) return;
 
-                if (Connect(ip, port, rh, false, LoginSeedCapability) == null)
+                if (Connect(ip, port, rh, false, null) == null)
                 {
                     Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
                         Helpers.LogLevel.Error, Client);

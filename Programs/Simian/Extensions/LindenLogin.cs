@@ -199,17 +199,21 @@ namespace Simian
 
                     // Create a seed capability for this agent
                     agent.SeedCapability = server.Capabilities.CreateCapability(scene.SeedCapabilityHandler, false, agentID);
-                    
-                    // Assign a circuit code and insert the agent into the unassociatedAgents dictionary
-                    agent.CircuitCode = scene.UDP.CreateCircuit(agent);
 
                     agent.TickLastPacketReceived = Environment.TickCount;
                     agent.Info.LastLoginTime = Utils.DateTimeToUnixTime(DateTime.Now);
 
-                    // Get this machine's IP address
-                    IPHostEntry entry = Dns.GetHostEntry(System.Environment.MachineName);
-                    IPAddress simIP = entry.AddressList.Length > 0 ?
-                        entry.AddressList[entry.AddressList.Length - 1] : IPAddress.Loopback;
+                    // Assign a circuit code and track the agent as an unassociated agent (no UDP connection yet)
+                    agent.CircuitCode = scene.UDP.CreateCircuit(agent);
+
+                    // Get the IP address of the sim (IPAndPort may be storing IPAdress.Any, aka 0.0.0.0)
+                    IPAddress simIP = scene.IPAndPort.Address;
+                    if (simIP == IPAddress.Any)
+                    {
+                        // Get this machine's IP address
+                        IPHostEntry entry = Dns.GetHostEntry(server.HttpUri.DnsSafeHost);
+                        simIP = entry.AddressList.Length > 0 ? entry.AddressList[entry.AddressList.Length - 1] : IPAddress.Loopback;
+                    }
 
                     response.AgentID = agent.ID;
                     response.SecureSessionID = agent.SecureSessionID;
@@ -240,6 +244,8 @@ namespace Simian
                     response.SimPort = (ushort)scene.IPAndPort.Port;
                     response.StartLocation = "last"; // FIXME:
                     response.Success = true;
+
+                    Logger.DebugLog("Sending a login success response with circuit_code " + response.CircuitCode);
                 }
                 else
                 {

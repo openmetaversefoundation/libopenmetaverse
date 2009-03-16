@@ -37,8 +37,8 @@ namespace OpenMetaverse.Http
             long totalBytesToReceive, long totalBytesToSend);
         public delegate void CompleteCallback(CapsClient client, OSD result, Exception error);
 
-        public ProgressCallback OnProgress;
-        public CompleteCallback OnComplete;
+        public event ProgressCallback OnProgress;
+        public event CompleteCallback OnComplete;
 
         public IWebProxy Proxy;
         public object UserData;

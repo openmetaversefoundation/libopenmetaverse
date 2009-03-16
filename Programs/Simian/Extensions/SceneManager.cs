@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using ExtensionLoader;
 using HttpServer;
@@ -92,9 +93,7 @@ namespace Simian
         public IPEndPoint IPAndPort { get { return endpoint; } set { endpoint = value; } }
         public Vector3 DefaultPosition { get { return defaultPosition; } }
         public Vector3 DefaultLookAt { get { return defaultLookAt; } }
-
         public float WaterHeight { get { return 20f; } }
-
         public uint TerrainPatchWidth { get { return 16; } }
         public uint TerrainPatchHeight { get { return 16; } }
         public uint TerrainPatchCountWidth { get { return 16; } }
@@ -119,22 +118,27 @@ namespace Simian
         string regionName;
         Vector3 defaultPosition = new Vector3(128f, 128f, 30f);
         Vector3 defaultLookAt = Vector3.UnitX;
+        /// <summary>Track the eight neighboring tiles around us</summary>
+        RegionInfo[] neighbors = new RegionInfo[8];
+        /// <summary>List of callback URIs for pending client connections. When a new client connection
+        /// is established for a client in this dictionary, an enable_client_complete message will be
+        /// sent to the associated URI</summary>
+        Dictionary<UUID, Uri> enableClientCompleteCallbacks = new Dictionary<UUID, Uri>();
 
         public SceneManager()
         {
         }
 
-        public bool Start(Simian server, string name, IPEndPoint endpoint, UUID regionID, uint regionX, uint regionY,
-            string defaultTerrainFile, int staticObjects, int physicalObjects)
+        public bool Start(Simian server, RegionInfo regionInfo, X509Certificate2 regionCert, string defaultTerrainFile, int staticObjects, int physicalObjects)
         {
             this.server = server;
-            this.regionName = name;
-            this.endpoint = endpoint;
-            this.regionID = regionID;
+            this.regionName = regionInfo.Name;
+            this.endpoint = regionInfo.IPAndPort;
+            this.regionID = regionInfo.ID;
 
             // Set the properties because this will automatically update the regionHandle
-            RegionX = regionX;
-            RegionY = regionY;
+            RegionX = regionInfo.X;
+            RegionY = regionInfo.Y;
 
             #region ISceneProvider Extension Loading
 
@@ -159,7 +163,10 @@ namespace Simian
                 // Start all of the extensions
                 foreach (IExtension<ISceneProvider> extension in extensions.Extensions)
                 {
-                    Logger.Log("Starting Scene extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                    // Only print the extension names if this is the first loaded scene
+                    if (server.Scenes.Count == 0)
+                        Logger.Log("Starting Scene extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+
                     extension.Start(this);
                 }
             }
@@ -172,14 +179,31 @@ namespace Simian
 
             #endregion ISceneProvider Extension Loading
 
-            udp.RegisterPacketCallback(PacketType.CompleteAgentMovement, new PacketCallback(CompleteAgentMovementHandler));
+            // Callback registration
+            server.Grid.OnRegionUpdate += Grid_OnRegionUpdate;
+            udp.OnAgentConnection += udp_OnAgentConnection;
+            udp.RegisterPacketCallback(PacketType.CompleteAgentMovement, CompleteAgentMovementHandler);
+            udp.RegisterPacketCallback(PacketType.ChatFromViewer, ChatHandler);
             
             if (!String.IsNullOrEmpty(defaultTerrainFile))
                 LoadTerrain(Simian.DATA_DIR + defaultTerrainFile);
 
-            Logger.Log(String.Format("Region {0} online at ({1},{2}) listening on {3}", name, regionX, regionY, endpoint),
+            Logger.Log(String.Format("Region {0} online at ({1},{2}) listening on {3}", regionName, regionX, regionY, endpoint),
                 Helpers.LogLevel.Info);
+
+            // Tell the grid that this region is online
+            regionInfo.Online = true;
+            server.Grid.RegionUpdate(regionInfo, regionCert);
+
             return true;
+        }
+
+        void ChatHandler(Packet packet, Agent agent)
+        {
+            ChatFromViewerPacket chat = (ChatFromViewerPacket)packet;
+            string message = Utils.BytesToString(chat.ChatData.Message);
+            if (message == "lol")
+                SendEvent(agent, "lol", new OSDMap());
         }
 
         public void Stop()
@@ -665,6 +689,7 @@ namespace Simian
             lock (sceneAgents) sceneAgents[agent.ID] = agent;
 
             Logger.Log("Added agent " + agent.FullName + " to the scene", Helpers.LogLevel.Info);
+
             return true;
         }
 
@@ -942,6 +967,10 @@ namespace Simian
             }
         }
 
+        #endregion Capabilities Interfaces
+
+        #region Callback Handlers
+
         public bool SeedCapabilityHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
         {
             UUID agentID = (UUID)state;
@@ -987,14 +1016,174 @@ namespace Simian
             return true;
         }
 
-        #endregion Capabilities Interfaces
+        public bool EnableClientCapHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
+        {
+            OSDMap map = OSDParser.DeserializeLLSDXml(request.Body) as OSDMap;
+            OSDMap osdResponse = new OSDMap();
 
-        #region Callback Handlers
+            if (map != null)
+            {
+                UUID agentID = map["agent_id"].AsUUID();
+                UUID sessionID = map["session_id"].AsUUID();
+                UUID secureSessionID = map["secure_session_id"].AsUUID();
+                // TODO: Send an identity url and token instead so we can pull down all of the information
+                string firstName = map["first_name"].AsString();
+                string lastName = map["last_name"].AsString();
+                Uri callbackUri = map["callback_uri"].AsUri();
+
+                Logger.Log(String.Format(
+                    "enable_client request. agent_id: {0}, session_id: {1}, secureSessionID: {2}, " +
+                    "first_name: {3}, last_name: {4}, callback_uri: {5}", agentID, sessionID, secureSessionID,
+                    firstName, lastName, callbackUri), Helpers.LogLevel.Info);
+
+                if (agentID != UUID.Zero && sessionID != UUID.Zero && secureSessionID != UUID.Zero &&
+                    !String.IsNullOrEmpty(firstName) && !String.IsNullOrEmpty(lastName))
+                {
+                    AgentInfo info = new AgentInfo();
+                    info.AccessLevel = "M";
+                    info.FirstName = firstName;
+                    info.Height = 1.9f;
+                    info.HomeLookAt = Vector3.UnitX;
+                    info.HomePosition = new Vector3(128f, 128f, 25f);
+                    info.HomeRegionHandle = regionHandle;
+                    info.ID = agentID;
+                    info.LastName = lastName;
+                    info.PasswordHash = String.Empty;
+
+                    Agent agent = new Agent(new SimulationObject(new Avatar(), this), info);
+
+                    // Set the avatar ID
+                    agent.Avatar.Prim.ID = agentID;
+
+                    // Random session IDs
+                    agent.SessionID = sessionID;
+                    agent.SecureSessionID = secureSessionID;
+
+                    // Create a seed capability for this agent
+                    agent.SeedCapability = server.Capabilities.CreateCapability(SeedCapabilityHandler, false, agentID);
+
+                    agent.TickLastPacketReceived = Environment.TickCount;
+                    agent.Info.LastLoginTime = Utils.DateTimeToUnixTime(DateTime.Now);
+
+                    // Add the callback URI to the list of pending enable_client_complete callbacks
+                    lock (enableClientCompleteCallbacks)
+                        enableClientCompleteCallbacks[agentID] = callbackUri;
+
+                    // Assign a circuit code and track the agent as an unassociated agent (no UDP connection yet)
+                    agent.CircuitCode = udp.CreateCircuit(agent);
+
+                    osdResponse["success"] = OSD.FromBoolean(true);
+                }
+                else
+                {
+                    osdResponse["success"] = OSD.FromBoolean(false);
+                    osdResponse["message"] = OSD.FromString("missing required fields for enable_client");
+                }
+            }
+            else
+            {
+                osdResponse["success"] = OSD.FromBoolean(false);
+                osdResponse["message"] = OSD.FromString("failed to parse enable_client message");
+            }
+
+            byte[] responseData = OSDParser.SerializeLLSDXmlBytes(osdResponse);
+            response.ContentLength = responseData.Length;
+            response.Body.Write(responseData, 0, responseData.Length);
+            response.Body.Flush();
+
+            return true;
+        }
+
+        public bool EnableClientCompleteCapHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
+        {
+            OSDMap map = OSDParser.DeserializeLLSDXml(request.Body) as OSDMap;
+            OSDMap osdResponse = new OSDMap();
+
+            if (map != null)
+            {
+                UUID agentID = map["agent_id"].AsUUID();
+                Uri seedCapability = map["seed_capability"].AsUri();
+
+                Logger.Log(String.Format("enable_client_complete response. agent_id: {0}, seed_capability: {1}",
+                    agentID, seedCapability), Helpers.LogLevel.Info);
+
+                if (enableClientCompleteCallbacks.Remove(agentID))
+                {
+                    // FIXME: Finish this
+                }
+            }
+
+            return true;
+        }
 
         bool EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state)
         {
             EventQueueServer eqServer = (EventQueueServer)state;
             return eqServer.EventQueueHandler(context, request, response);
+        }
+
+        void Grid_OnRegionUpdate(RegionInfo regionInfo)
+        {
+            // TODO: Detect regions coming online so we can call
+            // InformClientOfNeighbors(agent);
+            // for every agent
+
+            // Check if the sim was a neighbor
+            if (regionInfo.Handle == Utils.UIntsToLong(256 * (regionX - 1), 256 * (regionY + 1)))
+                neighbors[0] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * regionX, 256 * (regionY + 1)))
+                neighbors[1] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * (regionX + 1), 256 * (regionY + 1)))
+                neighbors[2] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * (regionX - 1), 256 * regionY))
+                neighbors[3] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * (regionX + 1), 256 * regionY))
+                neighbors[4] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * (regionX - 1), 256 * (regionY - 1)))
+                neighbors[5] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * regionX, 256 * (regionY - 1)))
+                neighbors[6] = regionInfo;
+            else if (regionInfo.Handle == Utils.UIntsToLong(256 * (regionX + 1), 256 * (regionY - 1)))
+                neighbors[7] = regionInfo;
+        }
+
+        void udp_OnAgentConnection(Agent agent, uint circuitCode)
+        {
+            Uri callbackUri;
+            if (enableClientCompleteCallbacks.TryGetValue(agent.ID, out callbackUri))
+            {
+                lock (enableClientCompleteCallbacks)
+                    enableClientCompleteCallbacks.Remove(agent.ID);
+
+                Logger.Log("Sending enable_client_complete callback to " + callbackUri.ToString(), Helpers.LogLevel.Info);
+
+                OSDMap map = new OSDMap(1);
+                map["agent_id"] = OSD.FromUUID(agent.ID);
+
+                AutoResetEvent waitEvent = new AutoResetEvent(false);
+
+                CapsClient request = new CapsClient(callbackUri);
+                request.OnComplete +=
+                    delegate(CapsClient client, OSD result, Exception error)
+                    {
+                        OSDMap response = result as OSDMap;
+                        if (response != null)
+                        {
+                            bool success = response["success"].AsBoolean();
+                            Logger.Log("enable_client_complete response: " + success, Helpers.LogLevel.Info);
+
+                            if (success)
+                            {
+                                Uri seedCapability = response["seed_capability"].AsUri();
+                            }
+                        }
+                        waitEvent.Set();
+                    };
+                request.StartRequest(map);
+
+                if (!waitEvent.WaitOne(30 * 1000, false))
+                    Logger.Log("enable_client_complete request timed out", Helpers.LogLevel.Warning);
+            }
         }
 
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
@@ -1006,7 +1195,7 @@ namespace Simian
             AgentMovementCompletePacket complete = new AgentMovementCompletePacket();
             complete.AgentData.AgentID = agent.ID;
             complete.AgentData.SessionID = agent.SessionID;
-            complete.Data.LookAt = Vector3.UnitX;
+            complete.Data.LookAt = Vector3.UnitX; // TODO: Properly implement LookAt someday
             complete.Data.Position = agent.Avatar.Prim.Position;
             complete.Data.RegionHandle = regionHandle;
             complete.Data.Timestamp = Utils.DateTimeToUnixTime(DateTime.Now);
@@ -1023,9 +1212,71 @@ namespace Simian
             online.AgentBlock[0] = new OnlineNotificationPacket.AgentBlockBlock();
             online.AgentBlock[0].AgentID = agent.ID;
             udp.BroadcastPacket(online, PacketCategory.State);
+
+            // Initiate the connection process for this agent to neighboring regions
+            InformClientOfNeighbors(agent);
         }
 
         #endregion Callback Handlers
+
+        void InformClientOfNeighbors(Agent agent)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (!agent.NeighborConnections[i] && neighbors[i].Online)
+                {
+                    Logger.Log("Sending enable_client for " + agent.FullName + " to neighbor " + neighbors[i].Name, Helpers.LogLevel.Info);
+
+                    // Create a callback for enable_client_complete
+                    Uri callbackUri = server.Capabilities.CreateCapability(EnableClientCompleteCapHandler, false, null);
+
+                    OSDMap map = new OSDMap();
+                    map["agent_id"] = OSD.FromUUID(agent.ID);
+                    map["session_id"] = OSD.FromUUID(agent.SessionID);
+                    map["secure_session_id"] = OSD.FromUUID(agent.SecureSessionID);
+                    map["first_name"] = OSD.FromString(agent.Info.FirstName);
+                    map["last_name"] = OSD.FromString(agent.Info.LastName);
+                    map["callback_uri"] = OSD.FromUri(callbackUri);
+
+                    AutoResetEvent waitEvent = new AutoResetEvent(false);
+
+                    CapsClient request = new CapsClient(neighbors[i].EnableClientCap);
+                    request.OnComplete +=
+                    delegate(CapsClient client, OSD result, Exception error)
+                    {
+                        OSDMap response = result as OSDMap;
+                        if (response != null)
+                        {
+                            bool success = response["success"].AsBoolean();
+                            Logger.Log("enable_client response: " + success, Helpers.LogLevel.Info);
+
+                            if (success)
+                            {
+                                // Send the EnableSimulator capability to clients
+                                OSDMap llsdSimInfo = new OSDMap(3);
+
+                                llsdSimInfo.Add("Handle", OSD.FromULong(neighbors[i].Handle));
+                                llsdSimInfo.Add("IP", OSD.FromBinary(neighbors[i].IPAndPort.Address.GetAddressBytes()));
+                                llsdSimInfo.Add("Port", OSD.FromInteger(neighbors[i].IPAndPort.Port));
+
+                                OSDArray arr = new OSDArray(1);
+                                arr.Add(llsdSimInfo);
+
+                                OSDMap llsdBody = new OSDMap(1);
+                                llsdBody.Add("SimulatorInfo", arr);
+
+                                SendEvent(agent, "EnableSimulator", llsdBody);
+                            }
+                        }
+                        waitEvent.Set();
+                    };
+                    request.StartRequest(map);
+
+                    if (!waitEvent.WaitOne(30 * 1000, false))
+                        Logger.Log("enable_client request timed out", Helpers.LogLevel.Warning);
+                }
+            }
+        }
 
         // HACK: The reduction provider will deprecate this at some point
         void SynchronizeStateTo(Agent agent)
@@ -1452,7 +1703,7 @@ namespace Simian
             {
                 #region ImprovedTerseObjectUpdate
 
-                Logger.DebugLog("Sending ImprovedTerseObjectUpdate");
+                //Logger.DebugLog("Sending ImprovedTerseObjectUpdate");
 
                 int pos = 0;
                 byte[] data = new byte[(obj.Prim is Avatar ? 60 : 44)];
