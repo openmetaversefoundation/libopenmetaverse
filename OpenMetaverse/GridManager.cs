@@ -63,7 +63,7 @@ namespace OpenMetaverse
         MatureEvent = 3,
         /// <summary>Popular location</summary>
         Popular = 4,
-        /// <summary>Location belonging to the current agent</summary>
+        /// <summary>Locations of avatar groups in a region</summary>
         AgentLocations = 6,
         /// <summary>Land for sale</summary>
         LandForSale = 7,

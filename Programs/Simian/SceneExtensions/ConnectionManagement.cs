@@ -20,6 +20,8 @@ namespace Simian
             scene.UDP.RegisterPacketCallback(PacketType.UseCircuitCode, UseCircuitCodeHandler);
             scene.UDP.RegisterPacketCallback(PacketType.StartPingCheck, StartPingCheckHandler);
             scene.UDP.RegisterPacketCallback(PacketType.LogoutRequest, LogoutRequestHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AgentThrottle, AgentThrottleHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.RegionHandshakeReply, RegionHandshakeReplyHandler);
             return true;
         }
 
@@ -82,6 +84,71 @@ namespace Simian
             scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
 
             scene.ObjectRemove(this, agent.ID);
+        }
+
+        void AgentThrottleHandler(Packet packet, Agent agent)
+        {
+            AgentThrottlePacket throttle = (AgentThrottlePacket)packet;
+
+            // TODO: These need to be transmitted to neighbor sims before child agent connections can be established
+            //throttle.Throttle.Throttles
+
+            // Initiate the connection process for this agent to neighboring regions
+            scene.InformClientOfNeighbors(agent);
+        }
+
+        void RegionHandshakeReplyHandler(Packet packet, Agent agent)
+        {
+            // Send updates and appearances for every avatar to this new avatar
+            SynchronizeStateTo(agent);
+        }
+
+        // HACK: The reduction provider will deprecate this at some point
+        void SynchronizeStateTo(Agent agent)
+        {
+            // Send the parcel overlay
+            scene.Parcels.SendParcelOverlay(agent);
+
+            // Send object updates for objects and avatars
+            scene.ForEachObject(delegate(SimulationObject obj)
+            {
+                ObjectUpdatePacket update = new ObjectUpdatePacket();
+                update.RegionData.RegionHandle = scene.RegionHandle;
+                update.RegionData.TimeDilation = (ushort)(scene.Physics.TimeDilation * (float)UInt16.MaxValue);
+                update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
+                update.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim, obj.Prim.Flags, obj.CRC);
+
+                scene.UDP.SendPacket(agent.ID, update, PacketCategory.State);
+            });
+
+            // Send appearances for all avatars
+            scene.ForEachAgent(
+                delegate(Agent otherAgent)
+                {
+                    if (otherAgent != agent)
+                    {
+                        // Send appearances for this avatar
+                        AvatarAppearancePacket appearance = otherAgent.BuildAppearancePacket();
+                        scene.UDP.SendPacket(agent.ID, appearance, PacketCategory.State);
+                    }
+                }
+            );
+
+            // Send terrain data
+            SendLayerData(agent);
+        }
+
+        void SendLayerData(Agent agent)
+        {
+            for (int y = 0; y < 16; y++)
+            {
+                for (int x = 0; x < 16; x++)
+                {
+                    float[,] heightmap = scene.GetTerrainPatch((uint)x, (uint)y);
+                    LayerDataPacket layer = TerrainCompressor.CreateLandPacket(heightmap, x, y);
+                    scene.UDP.SendPacket(agent.ID, layer, PacketCategory.Terrain);
+                }
+            }
         }
     }
 }

@@ -21,6 +21,9 @@ namespace Simian
 
     public class LLMap : IExtension<ISceneProvider>
     {
+        static readonly UUID WATER_TEXTURE = new UUID("af588c7c-52b0-4d9e-a888-1fe9d6c35f45");
+        static readonly UUID HYPERGRID_MAP_TEXTURE = new UUID("3f1f56ad-7811-42e6-b3c1-98b79fc5c360");
+
         ISceneProvider scene;
 
         public LLMap()
@@ -33,6 +36,7 @@ namespace Simian
 
             scene.UDP.RegisterPacketCallback(PacketType.MapLayerRequest, MapLayerRequestHandler);
             scene.UDP.RegisterPacketCallback(PacketType.MapBlockRequest, MapBlockRequestHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.MapItemRequest, MapItemRequestHandler);
             scene.UDP.RegisterPacketCallback(PacketType.TeleportRequest, TeleportRequestHandler);
             scene.UDP.RegisterPacketCallback(PacketType.TeleportLocationRequest, TeleportLocationRequestHandler);
             return true;
@@ -56,7 +60,7 @@ namespace Simian
             reply.LayerData[0].Left = 0;
             reply.LayerData[0].Top = UInt16.MaxValue;
             reply.LayerData[0].Right = UInt16.MaxValue;
-            reply.LayerData[0].ImageID = new UUID("89556747-24cb-43ed-920b-47caed15465f");
+            reply.LayerData[0].ImageID = WATER_TEXTURE;
 
             scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
         }
@@ -64,7 +68,10 @@ namespace Simian
         void MapBlockRequestHandler(Packet packet, Agent agent)
         {
             MapBlockRequestPacket request = (MapBlockRequestPacket)packet;
-            GridLayerType type = (GridLayerType)request.AgentData.Flags;
+            bool returnNonexistent = (request.AgentData.Flags == 0x10000);
+            GridLayerType type = (GridLayerType)(request.AgentData.Flags &~0x10000);
+
+            // FIXME: Use returnNonexistent
 
             MapBlockReplyPacket reply = new MapBlockReplyPacket();
             reply.AgentData.AgentID = agent.ID;
@@ -85,7 +92,7 @@ namespace Simian
             reply.Data[1] = new MapBlockReplyPacket.DataBlock();
             reply.Data[1].Access = (byte)SimAccess.Min;
             reply.Data[1].Agents = 0;
-            reply.Data[1].MapImageID = new UUID("89556747-24cb-43ed-920b-47caed15465f");
+            reply.Data[1].MapImageID = HYPERGRID_MAP_TEXTURE;
             reply.Data[1].Name = Utils.StringToBytes("HyperGrid Portal to OSGrid");
             reply.Data[1].RegionFlags = (uint)scene.RegionFlags;
             reply.Data[1].WaterHeight = (byte)scene.WaterHeight;
@@ -93,6 +100,36 @@ namespace Simian
             reply.Data[1].Y = (ushort)scene.RegionY;
 
             scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
+        }
+
+        void MapItemRequestHandler(Packet packet, Agent agent)
+        {
+            MapItemRequestPacket request = (MapItemRequestPacket)packet;
+
+            GridLayerType layerType = (GridLayerType)request.AgentData.Flags;
+            GridItemType itemType = (GridItemType)request.RequestData.ItemType;
+
+            uint regionX, regionY;
+            Utils.LongToUInts(request.RequestData.RegionHandle, out regionX, out regionY);
+
+            RegionInfo regionInfo;
+            if (scene.Server.Grid.TryGetRegion(regionX, regionY, scene.RegionCertificate, out regionInfo))
+            {
+                Logger.Log("MapItemRequest for " + itemType + " from layer " + layerType + " in " + regionInfo.Name, Helpers.LogLevel.Info);
+
+                MapItemReplyPacket reply = new MapItemReplyPacket();
+                reply.AgentData.AgentID = agent.ID;
+                reply.AgentData.Flags = request.AgentData.Flags;
+                reply.RequestData.ItemType = (uint)itemType;
+                reply.Data = new MapItemReplyPacket.DataBlock[0];
+
+                scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
+            }
+            else
+            {
+                Logger.Log("MapItemRequest for " + itemType + " from layer " + layerType + " in unknown region at " + regionX + "," + regionY,
+                    Helpers.LogLevel.Warning);
+            }
         }
 
         void TeleportRequestHandler(Packet packet, Agent agent)

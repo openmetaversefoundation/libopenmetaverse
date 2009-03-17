@@ -163,6 +163,8 @@ namespace GridImageUpload
                     UploadData = OpenJPEG.EncodeFromImage(bitmap, chkLossless.Checked);
 
                     Logger.Log("Finished encoding", Helpers.LogLevel.Info, Client);
+
+                    //System.IO.File.WriteAllBytes("out.jp2", UploadData);
                 }
             }
             catch (Exception ex)

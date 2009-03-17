@@ -133,6 +133,7 @@ namespace Simian
         ITaskInventoryProvider TaskInventory { get; }
         IUDPProvider UDP { get; }
 
+        X509Certificate2 RegionCertificate { get; }
         uint RegionX { get; set; }
         uint RegionY { get; set; }
         ulong RegionHandle { get; }
@@ -198,5 +199,7 @@ namespace Simian
 
         bool EnableClientCapHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
         bool EnableClientCompleteCapHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
+
+        void InformClientOfNeighbors(Agent agent);
     }
 }

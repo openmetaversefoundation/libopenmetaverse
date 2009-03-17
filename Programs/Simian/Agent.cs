@@ -110,5 +110,27 @@ namespace Simian
             Avatar = avatar;
             Info = info;
         }
+
+        public AvatarAppearancePacket BuildAppearancePacket()
+        {
+            AvatarAppearancePacket appearance = new AvatarAppearancePacket();
+            appearance.ObjectData.TextureEntry = this.Avatar.Prim.Textures.GetBytes();
+            appearance.Sender.ID = this.ID;
+            appearance.Sender.IsTrial = false;
+
+            int count = this.Info.VisualParams != null ? this.Info.VisualParams.Length : 0;
+
+            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[count];
+            for (int i = 0; i < count; i++)
+            {
+                appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
+                appearance.VisualParam[i].ParamValue = this.Info.VisualParams[i];
+            }
+
+            if (count != 218)
+                Logger.Log("Built an odd appearance packet with VisualParams.Length=" + count, Helpers.LogLevel.Warning);
+
+            return appearance;
+        }
     }
 }

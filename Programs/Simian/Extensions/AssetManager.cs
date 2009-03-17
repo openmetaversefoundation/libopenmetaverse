@@ -43,8 +43,9 @@ namespace Simian
                 }
             }
 
-            LoadAssets(Simian.DATA_DIR);
+            LoadAssets(Simian.DEFAULT_ASSET_DIR);
             LoadAssets(UploadDir);
+            Logger.Log("Local asset store loaded with " + AssetStore.Count + " assets", Helpers.LogLevel.Info);
             return true;
         }
 

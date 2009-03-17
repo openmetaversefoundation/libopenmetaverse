@@ -70,8 +70,8 @@ namespace OpenMetaverse.Http
         HttpListener server;
         BlockingQueue<EventQueueEvent> eventQueue;
         int currentID;
-        bool running;
-        bool threadRunning;
+        volatile bool running;
+        volatile bool threadRunning;
         IHttpClientContext context;
         IHttpRequest request;
         IHttpResponse response;
@@ -141,8 +141,11 @@ namespace OpenMetaverse.Http
                     if (threadRunning)
                     {
                         Logger.Log.Info("[EventQueue] New connection opened to the event queue while a previous connection is open. Closing old connection");
-                        // Kill the previous handler thread before starting a new one
-                        SendEvent(null);
+                        
+                        // If the old connection is still open, queue a signal to close it. Otherwise, just wait for the closed
+                        // connection to be detected by the handler thread
+                        if (context.Stream != null && context.Stream.CanWrite)
+                            SendEvent(null);
 
                         while (threadRunning && running)
                             Thread.Sleep(50);
@@ -188,7 +191,7 @@ namespace OpenMetaverse.Http
             EventQueueEvent eventQueueEvent = null;
             int totalMsPassed = 0;
 
-            while (running)
+            while (running && context.Stream != null && context.Stream.CanWrite)
             {
                 if (eventQueue.Dequeue(BATCH_WAIT_INTERVAL, ref eventQueueEvent))
                 {
