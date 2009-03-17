@@ -296,7 +296,7 @@ namespace Simian
                                 Logger.Log(String.Format("HyperGrid teleporting to {0} ({1}, {2}) @ {3}",
                                     link.RegionName, x, y, destination), Helpers.LogLevel.Info);
 
-                                OSDMap teleport = CapsMessages.TeleportFinish(agent.ID, 4, link.RegionHandle, seedCap, (byte)SimAccess.Min,
+                                OSDMap teleport = CapsMessages.TeleportFinish(agent.ID, 4, link.RegionHandle, seedCap, SimAccess.Min,
                                     entry.AddressList[0], link.UDPPort, TeleportFlags.ViaLocation);
 
                                 scene.SendEvent(agent, "TeleportFinish", teleport);

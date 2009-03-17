@@ -30,7 +30,6 @@ namespace Simian
         {
         }
 
-
         #region Xfer System
 
         void AssetUploadRequestHandler(Packet packet, Agent agent)
