@@ -7,12 +7,25 @@ namespace Simian
 {
     public class PhysicsSimple : IExtension<ISceneProvider>, IPhysicsProvider
     {
-        ISceneProvider scene;
+        // Run our own frames per second limiter on top of the limiting done by ISceneProvider
+        const int FRAMES_PER_SECOND = 10;
 
-        public float TimeDilation
-        {
-            get { return 1.0f; }
-        }
+        const float GRAVITY = 9.8f; //meters/sec
+        const float WALK_SPEED = 3f; //meters/sec
+        const float RUN_SPEED = 5f; //meters/sec
+        const float FLY_SPEED = 10f; //meters/sec
+        const float FALL_DELAY = 0.33f; //seconds before starting animation
+        const float FALL_FORGIVENESS = .25f; //fall buffer in meters
+        const float JUMP_IMPULSE_VERTICAL = 8.5f; //boost amount in meters/sec
+        const float JUMP_IMPULSE_HORIZONTAL = 10f; //boost amount in meters/sec
+        const float INITIAL_HOVER_IMPULSE = 2f; //boost amount in meters/sec
+        const float PREJUMP_DELAY = 0.25f; //seconds before actually jumping
+        const float AVATAR_TERMINAL_VELOCITY = 54f; //~120mph
+
+        const float SQRT_TWO = 1.41421356f;
+
+        ISceneProvider scene;
+        float elapsedSinceUpdate;
 
         public PhysicsSimple()
         {
@@ -21,11 +34,342 @@ namespace Simian
         public bool Start(ISceneProvider scene)
         {
             this.scene = scene;
+
+            scene.OnObjectAddOrUpdate += Scene_OnObjectAddOrUpdate;
             return true;
         }
 
         public void Stop()
         {
+        }
+
+        public void Update(float elapsedTime)
+        {
+            if (elapsedSinceUpdate >= 1f / (float)FRAMES_PER_SECOND)
+            {
+                elapsedTime = elapsedSinceUpdate;
+                elapsedSinceUpdate = 0f;
+            }
+            else
+            {
+                elapsedSinceUpdate += elapsedTime;
+                return;
+            }
+
+            scene.ForEachAgent(
+                delegate(Agent agent)
+                {
+                    if ((agent.Avatar.Prim.Flags & PrimFlags.Physics) == 0)
+                        return;
+
+                    bool animsChanged = false;
+
+                    // Create forward and left vectors from the current avatar rotation
+                    Matrix4 rotMatrix = Matrix4.CreateFromQuaternion(agent.Avatar.Prim.Rotation);
+                    Vector3 fwd = Vector3.Transform(Vector3.UnitX, rotMatrix);
+                    Vector3 left = Vector3.Transform(Vector3.UnitY, rotMatrix);
+
+                    // Check control flags
+                    bool heldForward = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_AT_POS) == AgentManager.ControlFlags.AGENT_CONTROL_AT_POS;
+                    bool heldBack = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_AT_NEG;
+                    bool heldLeft = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_POS;
+                    bool heldRight = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_LEFT_NEG;
+                    //bool heldTurnLeft = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_TURN_LEFT) == AgentManager.ControlFlags.AGENT_CONTROL_TURN_LEFT;
+                    //bool heldTurnRight = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT) == AgentManager.ControlFlags.AGENT_CONTROL_TURN_RIGHT;
+                    bool heldUp = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_POS) == AgentManager.ControlFlags.AGENT_CONTROL_UP_POS;
+                    bool heldDown = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG) == AgentManager.ControlFlags.AGENT_CONTROL_UP_NEG;
+                    bool flying = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_FLY) == AgentManager.ControlFlags.AGENT_CONTROL_FLY;
+                    //bool mouselook = (agent.ControlFlags & AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK) == AgentManager.ControlFlags.AGENT_CONTROL_MOUSELOOK;
+
+                    // direction in which the avatar is trying to move
+                    Vector3 move = Vector3.Zero;
+                    if (heldForward) { move.X += fwd.X; move.Y += fwd.Y; }
+                    if (heldBack) { move.X -= fwd.X; move.Y -= fwd.Y; }
+                    if (heldLeft) { move.X += left.X; move.Y += left.Y; }
+                    if (heldRight) { move.X -= left.X; move.Y -= left.Y; }
+                    if (heldUp) { move.Z += 1; }
+                    if (heldDown) { move.Z -= 1; }
+
+                    // is the avatar trying to move?
+                    bool moving = move != Vector3.Zero;
+                    bool jumping = agent.TickJump != 0;
+
+                    // 2-dimensional speed multipler
+                    float speed = elapsedTime * (flying ? FLY_SPEED : agent.Running && !jumping ? RUN_SPEED : WALK_SPEED);
+                    if ((heldForward || heldBack) && (heldLeft || heldRight))
+                        speed /= SQRT_TWO;
+
+                    Vector3 agentPosition = agent.Avatar.GetSimulatorPosition();
+                    float oldFloor = scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+
+                    agentPosition += (move * speed);
+                    float newFloor = scene.GetTerrainHeightAt(agentPosition.X, agentPosition.Y);
+
+                    if (!flying && newFloor != oldFloor)
+                        speed /= (1 + (SQRT_TWO * Math.Abs(newFloor - oldFloor)));
+
+                    //HACK: distance from avatar center to the bottom of its feet
+                    float distanceFromFloor = agent.Avatar.Prim.Scale.Z * .5f;
+
+                    float lowerLimit = newFloor + distanceFromFloor;
+
+                    //"bridge" physics
+                    if (agent.Avatar.Prim.Velocity != Vector3.Zero)
+                    {
+                        //start ray at our feet
+                        Vector3 rayStart = new Vector3(
+                            agent.Avatar.Prim.Position.X,
+                            agent.Avatar.Prim.Position.Y,
+                            agent.Avatar.Prim.Position.Z - distanceFromFloor
+                            );
+
+                        //end ray at 0.01m below our feet
+                        Vector3 rayEnd = new Vector3(
+                            rayStart.X,
+                            rayStart.Y,
+                            rayStart.Z - 0.01f
+                            );
+
+                        scene.ForEachObject(delegate(SimulationObject obj)
+                        {
+                            //HACK: check nearby objects (what did you expect, octree?)
+                            if (Vector3.Distance(rayStart, obj.Prim.Position) <= 15f)
+                            {
+                                Vector3 collision = scene.Physics.ObjectCollisionTest(rayStart, rayEnd, obj);
+
+                                if (collision != rayEnd) //we collided!
+                                {
+                                    //check if we are any higher than before
+                                    float height = collision.Z + distanceFromFloor;
+                                    if (height > lowerLimit) lowerLimit = height;
+                                }
+                            }
+                        });
+                    }
+
+                    // Z acceleration resulting from gravity
+                    float gravity = 0f;
+
+                    float waterChestHeight = scene.WaterHeight - (agent.Avatar.Prim.Scale.Z * .33f);
+
+                    if (flying)
+                    {
+                        agent.TickFall = 0;
+                        agent.TickJump = 0;
+
+                        //velocity falloff while flying
+                        agent.Avatar.Prim.Velocity.X *= 0.66f;
+                        agent.Avatar.Prim.Velocity.Y *= 0.66f;
+                        agent.Avatar.Prim.Velocity.Z *= 0.33f;
+
+                        if (agent.Avatar.Prim.Position.Z == lowerLimit)
+                            agent.Avatar.Prim.Velocity.Z += INITIAL_HOVER_IMPULSE;
+
+                        if (move.X != 0 || move.Y != 0)
+                        { //flying horizontally
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.FLY))
+                                animsChanged = true;
+                        }
+                        else if (move.Z > 0)
+                        { //flying straight up
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                                animsChanged = true;
+                        }
+                        else if (move.Z < 0)
+                        { //flying straight down
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_DOWN))
+                                animsChanged = true;
+                        }
+                        else
+                        { //hovering in the air
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
+                                animsChanged = true;
+                        }
+                    }
+                    else if (agent.Avatar.Prim.Position.Z > lowerLimit + FALL_FORGIVENESS || agent.Avatar.Prim.Position.Z <= waterChestHeight)
+                    { //falling, floating, or landing from a jump
+
+                        if (agent.Avatar.Prim.Position.Z > scene.WaterHeight)
+                        { //above water
+
+                            //override controls while drifting
+                            move = Vector3.Zero;
+
+                            //keep most of our horizontal inertia
+                            agent.Avatar.Prim.Velocity.X *= 0.975f;
+                            agent.Avatar.Prim.Velocity.Y *= 0.975f;
+
+                            float fallElapsed = (float)(Environment.TickCount - agent.TickFall) / 1000f;
+
+                            if (agent.TickFall == 0 || (fallElapsed > FALL_DELAY && agent.Avatar.Prim.Velocity.Z >= 0f))
+                            { //just started falling
+                                agent.TickFall = Environment.TickCount;
+                            }
+                            else
+                            {
+                                gravity = GRAVITY * fallElapsed * elapsedTime; //normal gravity
+
+                                if (!jumping)
+                                { //falling
+                                    if (fallElapsed > FALL_DELAY)
+                                    { //falling long enough to trigger the animation
+                                        if (scene.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                            animsChanged = true;
+                                    }
+                                }
+                            }
+                        }
+                        else if (agent.Avatar.Prim.Position.Z >= waterChestHeight)
+                        { //at the water line
+
+                            gravity = 0f;
+                            agent.Avatar.Prim.Velocity *= 0.5f;
+                            agent.Avatar.Prim.Velocity.Z = 0f;
+                            if (move.Z < 1) agent.Avatar.Prim.Position.Z = waterChestHeight;
+
+                            if (move.Z > 0)
+                            {
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER_UP))
+                                    animsChanged = true;
+                            }
+                            else if (move.X != 0 || move.Y != 0)
+                            {
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.FLYSLOW))
+                                    animsChanged = true;
+                            }
+                            else
+                            {
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.HOVER))
+                                    animsChanged = true;
+                            }
+                        }
+                        else
+                        { //underwater
+
+                            gravity = 0f; //buoyant
+                            agent.Avatar.Prim.Velocity *= 0.5f * elapsedTime;
+                            agent.Avatar.Prim.Velocity.Z += 0.75f * elapsedTime;
+
+                            if (scene.Avatars.SetDefaultAnimation(agent, Animations.FALLDOWN))
+                                animsChanged = true;
+                        }
+                    }
+                    else
+                    { //on the ground
+
+                        agent.TickFall = 0;
+
+                        //friction
+                        agent.Avatar.Prim.Acceleration *= 0.2f;
+                        agent.Avatar.Prim.Velocity *= 0.2f;
+
+                        agent.Avatar.Prim.Position.Z = lowerLimit;
+
+                        if (move.Z > 0)
+                        { //jumping
+                            if (!jumping)
+                            { //begin prejump
+                                move.Z = 0; //override Z control
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.PRE_JUMP))
+                                    animsChanged = true;
+
+                                agent.TickJump = Environment.TickCount;
+                            }
+                            else if (Environment.TickCount - agent.TickJump > PREJUMP_DELAY * 1000)
+                            { //start actual jump
+
+                                if (agent.TickJump == -1)
+                                {
+                                    //already jumping! end current jump
+                                    agent.TickJump = 0;
+                                    return;
+                                }
+
+                                if (scene.Avatars.SetDefaultAnimation(agent, Animations.JUMP))
+                                    animsChanged = true;
+
+                                agent.Avatar.Prim.Velocity.X += agent.Avatar.Prim.Acceleration.X * JUMP_IMPULSE_HORIZONTAL;
+                                agent.Avatar.Prim.Velocity.Y += agent.Avatar.Prim.Acceleration.Y * JUMP_IMPULSE_HORIZONTAL;
+                                agent.Avatar.Prim.Velocity.Z = JUMP_IMPULSE_VERTICAL * elapsedTime;
+
+                                agent.TickJump = -1; //flag that we are currently jumping
+                            }
+                            else move.Z = 0; //override Z control
+                        }
+
+                        else
+                        { //not jumping
+
+                            agent.TickJump = 0;
+
+                            if (move.X != 0 || move.Y != 0)
+                            { //not walking
+
+                                if (move.Z < 0)
+                                { //crouchwalking
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.CROUCHWALK))
+                                        animsChanged = true;
+                                }
+                                else if (agent.Running)
+                                { //running
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.RUN))
+                                        animsChanged = true;
+                                }
+                                else
+                                { //walking
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.WALK))
+                                        animsChanged = true;
+                                }
+                            }
+                            else
+                            { //walking
+                                if (move.Z < 0)
+                                { //crouching
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.CROUCH))
+                                        animsChanged = true;
+                                }
+                                else
+                                { //standing
+                                    if (scene.Avatars.SetDefaultAnimation(agent, Animations.STAND))
+                                        animsChanged = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (animsChanged)
+                        scene.Avatars.SendAnimations(agent);
+
+                    float maxVel = AVATAR_TERMINAL_VELOCITY * elapsedTime;
+
+                    // static acceleration when any control is held, otherwise none
+                    if (moving)
+                    {
+                        agent.Avatar.Prim.Acceleration = move * speed;
+                        if (agent.Avatar.Prim.Acceleration.Z < -maxVel)
+                            agent.Avatar.Prim.Acceleration.Z = -maxVel;
+                        else if (agent.Avatar.Prim.Acceleration.Z > maxVel)
+                            agent.Avatar.Prim.Acceleration.Z = maxVel;
+                    }
+                    else agent.Avatar.Prim.Acceleration = Vector3.Zero;
+
+                    agent.Avatar.Prim.Velocity += agent.Avatar.Prim.Acceleration - new Vector3(0f, 0f, gravity);
+                    if (agent.Avatar.Prim.Velocity.Z < -maxVel)
+                        agent.Avatar.Prim.Velocity.Z = -maxVel;
+                    else if (agent.Avatar.Prim.Velocity.Z > maxVel)
+                        agent.Avatar.Prim.Velocity.Z = maxVel;
+
+                    agent.Avatar.Prim.Position += agent.Avatar.Prim.Velocity;
+
+                    if (agent.Avatar.Prim.Position.X < 0) agent.Avatar.Prim.Position.X = 0f;
+                    else if (agent.Avatar.Prim.Position.X > 255) agent.Avatar.Prim.Position.X = 255f;
+
+                    if (agent.Avatar.Prim.Position.Y < 0) agent.Avatar.Prim.Position.Y = 0f;
+                    else if (agent.Avatar.Prim.Position.Y > 255) agent.Avatar.Prim.Position.Y = 255f;
+
+                    if (agent.Avatar.Prim.Position.Z < lowerLimit) agent.Avatar.Prim.Position.Z = lowerLimit;
+                }
+            );
         }
 
         public Vector3 ObjectCollisionTest(Vector3 rayStart, Vector3 rayEnd, SimulationObject obj)
@@ -78,6 +422,28 @@ namespace Simian
                 mass = 0f;
                 return false;
             }
+        }
+
+        void Scene_OnObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags update)
+        {
+            // Recompute meshes for 
+            bool forceMeshing = false;
+            bool forceTransform = false;
+
+            if ((update & UpdateFlags.Scale) != 0 ||
+                (update & UpdateFlags.Position) != 0 ||
+                (update & UpdateFlags.Rotation) != 0)
+            {
+                forceTransform = true;
+            }
+
+            if ((update & UpdateFlags.PrimData) != 0)
+            {
+                forceMeshing = true;
+            }
+
+            // TODO: This doesn't update children prims when their parents move
+            obj.GetWorldMesh(DetailLevel.Low, forceMeshing, forceTransform);
         }
 
         /// <summary>

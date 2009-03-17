@@ -32,6 +32,8 @@ namespace Simian
 
     public class SceneManager : ISceneProvider
     {
+        const int TARGET_FRAMES_PER_SECOND = 45;
+
         // Interfaces. Although no other classes will access these interfaces directly
         // (getters are used instead), they must be marked public so ExtensionLoader 
         // can automatically assign them
@@ -100,6 +102,7 @@ namespace Simian
         public uint TerrainPatchHeight { get { return 16; } }
         public uint TerrainPatchCountWidth { get { return 16; } }
         public uint TerrainPatchCountHeight { get { return 16; } }
+        public float TimeDilation { get { return TimeDilation; } }
 
         Simian server;
         // Contains all scene objects, including prims and avatars
@@ -130,6 +133,8 @@ namespace Simian
         /// is established for a client in this dictionary, an enable_client_complete message will be
         /// sent to the associated URI</summary>
         Dictionary<UUID, Uri> enableClientCompleteCallbacks = new Dictionary<UUID, Uri>();
+        float timeDilation;
+        bool running;
 
         public SceneManager()
         {
@@ -137,6 +142,8 @@ namespace Simian
 
         public bool Start(Simian server, RegionInfo regionInfo, X509Certificate2 regionCert, string defaultTerrainFile, int staticObjects, int physicalObjects)
         {
+            running = true;
+
             this.server = server;
             this.regionName = regionInfo.Name;
             this.endpoint = regionInfo.IPAndPort;
@@ -193,10 +200,15 @@ namespace Simian
             server.Grid.OnRegionUpdate += Grid_OnRegionUpdate;
             udp.OnAgentConnection += udp_OnAgentConnection;
             udp.RegisterPacketCallback(PacketType.CompleteAgentMovement, CompleteAgentMovementHandler);
-            udp.RegisterPacketCallback(PacketType.ChatFromViewer, ChatHandler);
             
+            // Load the default terrain for this sim
             if (!String.IsNullOrEmpty(defaultTerrainFile))
                 LoadTerrain(Simian.DATA_DIR + defaultTerrainFile);
+
+            // Start the physics thread
+            Thread physicsThread = new Thread(new ThreadStart(PhysicsThread));
+            physicsThread.Name = "Physics";
+            physicsThread.Start();
 
             Logger.Log(String.Format("Region {0} online at ({1},{2}) listening on {3}", regionName, regionX, regionY, endpoint),
                 Helpers.LogLevel.Info);
@@ -208,17 +220,11 @@ namespace Simian
             return true;
         }
 
-        void ChatHandler(Packet packet, Agent agent)
-        {
-            ChatFromViewerPacket chat = (ChatFromViewerPacket)packet;
-            string message = Utils.BytesToString(chat.ChatData.Message);
-            if (message == "lol")
-                SendEvent(agent, "lol", new OSDMap());
-        }
-
         public void Stop()
         {
             Logger.Log("Stopping region " + regionName, Helpers.LogLevel.Info);
+
+            running = false;
 
             // Remove all of the agents from the scene. This will shutdown UDP connections and event queues to
             // each of the agents as well
@@ -990,14 +996,8 @@ namespace Simian
                     // Create a callback for enable_client_complete
                     Uri callbackUri = server.Capabilities.CreateCapability(EnableClientCompleteCapHandler, false, null);
 
-                    OSDMap map = new OSDMap();
-                    map["agent_id"] = OSD.FromUUID(agent.ID);
-                    map["session_id"] = OSD.FromUUID(agent.SessionID);
-                    map["secure_session_id"] = OSD.FromUUID(agent.SecureSessionID);
-                    map["circuit_code"] = OSD.FromInteger((int)agent.CircuitCode);
-                    map["first_name"] = OSD.FromString(agent.Info.FirstName);
-                    map["last_name"] = OSD.FromString(agent.Info.LastName);
-                    map["callback_uri"] = OSD.FromUri(callbackUri);
+                    OSDMap enableClient = CapsMessages.EnableClient(agent.ID, agent.SessionID, agent.SecureSessionID,
+                        (int)agent.CircuitCode, agent.Info.FirstName, agent.Info.LastName, callbackUri);
 
                     AutoResetEvent waitEvent = new AutoResetEvent(false);
 
@@ -1014,24 +1014,15 @@ namespace Simian
                             if (success)
                             {
                                 // Send the EnableSimulator capability to clients
-                                OSDMap llsdSimInfo = new OSDMap(3);
+                                RegionInfo neighbor = neighbors[i];
+                                OSDMap enableSimulator = CapsMessages.EnableSimulator(neighbor.Handle, neighbor.IPAndPort.Address, neighbor.IPAndPort.Port);
 
-                                llsdSimInfo.Add("Handle", OSD.FromULong(neighbors[i].Handle));
-                                llsdSimInfo.Add("IP", OSD.FromBinary(neighbors[i].IPAndPort.Address.GetAddressBytes()));
-                                llsdSimInfo.Add("Port", OSD.FromInteger(neighbors[i].IPAndPort.Port));
-
-                                OSDArray arr = new OSDArray(1);
-                                arr.Add(llsdSimInfo);
-
-                                OSDMap llsdBody = new OSDMap(1);
-                                llsdBody.Add("SimulatorInfo", arr);
-
-                                SendEvent(agent, "EnableSimulator", llsdBody);
+                                SendEvent(agent, "EnableSimulator", enableSimulator);
                             }
                         }
                         waitEvent.Set();
                     };
-                    request.StartRequest(map);
+                    request.StartRequest(enableClient);
 
                     if (!waitEvent.WaitOne(30 * 1000, false))
                         Logger.Log("enable_client request timed out", Helpers.LogLevel.Warning);
@@ -1229,8 +1220,7 @@ namespace Simian
 
                 Logger.Log("Sending enable_client_complete callback to " + callbackUri.ToString(), Helpers.LogLevel.Info);
 
-                OSDMap map = new OSDMap(1);
-                map["agent_id"] = OSD.FromUUID(agent.ID);
+                OSDMap enableClientComplete = CapsMessages.EnableClientComplete(agent.ID);
 
                 AutoResetEvent waitEvent = new AutoResetEvent(false);
 
@@ -1251,7 +1241,7 @@ namespace Simian
                         }
                         waitEvent.Set();
                     };
-                request.StartRequest(map);
+                request.StartRequest(enableClientComplete);
 
                 if (!waitEvent.WaitOne(30 * 1000, false))
                     Logger.Log("enable_client_complete request timed out", Helpers.LogLevel.Warning);
@@ -1284,6 +1274,40 @@ namespace Simian
         }
 
         #endregion Callback Handlers
+
+        void PhysicsThread()
+        {
+            const float TARGET_FRAME_TIME = 1f / (float)TARGET_FRAMES_PER_SECOND;
+
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            float elapsedTime = 0f;
+            int sleepMS;
+
+            while (running)
+            {
+                stopwatch.Start();
+
+                physics.Update(elapsedTime);
+
+                // Measure the duration of this frame
+                stopwatch.Stop();
+                elapsedTime = (float)stopwatch.Elapsed.TotalSeconds;
+                stopwatch.Reset();
+
+                // Calculate time dilation and decide if we need to sleep to limit FPS
+                if (elapsedTime < TARGET_FRAME_TIME)
+                {
+                    timeDilation = (1f / elapsedTime) / (float)TARGET_FRAMES_PER_SECOND;
+                    sleepMS = (int)((TARGET_FRAME_TIME - elapsedTime) * 1000f);
+                    Thread.Sleep(sleepMS);
+                    elapsedTime = TARGET_FRAME_TIME;
+                }
+                else
+                {
+                    timeDilation = 1f;
+                }
+            }
+        }
 
         void LoadTerrain(string mapFile)
         {
@@ -1366,7 +1390,7 @@ namespace Simian
                     // Send an update out to the creator
                     ObjectUpdatePacket updateToOwner = new ObjectUpdatePacket();
                     updateToOwner.RegionData.RegionHandle = regionHandle;
-                    updateToOwner.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
+                    updateToOwner.RegionData.TimeDilation = (ushort)(timeDilation * (float)UInt16.MaxValue);
                     updateToOwner.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
                     updateToOwner.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim,
                         obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner, obj.CRC);
@@ -1629,7 +1653,7 @@ namespace Simian
                     // Send an update out to the creator
                     ObjectUpdateCompressedPacket updateToOwner = new ObjectUpdateCompressedPacket();
                     updateToOwner.RegionData.RegionHandle = regionHandle;
-                    updateToOwner.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
+                    updateToOwner.RegionData.TimeDilation = (ushort)(timeDilation * (float)UInt16.MaxValue);
                     updateToOwner.ObjectData = new ObjectUpdateCompressedPacket.ObjectDataBlock[1];
                     updateToOwner.ObjectData[0] = new ObjectUpdateCompressedPacket.ObjectDataBlock();
                     updateToOwner.ObjectData[0].UpdateFlags = (uint)(obj.Prim.Flags | creatorFlags | PrimFlags.ObjectYouOwner);
@@ -1707,7 +1731,7 @@ namespace Simian
 
                 ImprovedTerseObjectUpdatePacket update = new ImprovedTerseObjectUpdatePacket();
                 update.RegionData.RegionHandle = RegionHandle;
-                update.RegionData.TimeDilation = (ushort)(physics.TimeDilation * (float)UInt16.MaxValue);
+                update.RegionData.TimeDilation = (ushort)(timeDilation * (float)UInt16.MaxValue);
                 update.ObjectData = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock[1];
                 update.ObjectData[0] = new ImprovedTerseObjectUpdatePacket.ObjectDataBlock();
                 update.ObjectData[0].Data = data;

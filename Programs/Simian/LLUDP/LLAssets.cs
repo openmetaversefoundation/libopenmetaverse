@@ -6,12 +6,12 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public class TransferManager : IExtension<ISceneProvider>
+    public class LLAssets : IExtension<ISceneProvider>
     {
         ISceneProvider scene;
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
 
-        public TransferManager()
+        public LLAssets()
         {
         }
 

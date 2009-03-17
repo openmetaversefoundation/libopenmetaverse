@@ -8,11 +8,11 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public class ObjectManager : IExtension<ISceneProvider>
+    public class LLObjects : IExtension<ISceneProvider>
     {
         ISceneProvider scene;
-        
-        public ObjectManager()
+
+        public LLObjects()
         {
         }
 

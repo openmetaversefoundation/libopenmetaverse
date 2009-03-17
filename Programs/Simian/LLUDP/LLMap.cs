@@ -241,7 +241,7 @@ namespace Simian
 
                 scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
             }
-            // FIXME: Add XML config support for HyperGrid destinations
+            // FIXME: Add .ini config support for HyperGrid destinations
             /*else if (request.Info.RegionHandle == Utils.UIntsToLong((scene.RegionX + 1) * 256, scene.RegionY * 256))
             {
                 // Special case: adjacent simulator is the HyperGrid portal
@@ -296,21 +296,8 @@ namespace Simian
                                 Logger.Log(String.Format("HyperGrid teleporting to {0} ({1}, {2}) @ {3}",
                                     link.RegionName, x, y, destination), Helpers.LogLevel.Info);
 
-                                OSDMap info = new OSDMap();
-                                info.Add("AgentID", OSD.FromUUID(agent.ID));
-                                info.Add("LocationID", OSD.FromInteger(4)); // Unused by the client
-                                info.Add("RegionHandle", OSD.FromULong(link.RegionHandle));
-                                info.Add("SeedCapability", OSD.FromUri(seedCap));
-                                info.Add("SimAccess", OSD.FromInteger((byte)SimAccess.Min));
-                                info.Add("SimIP", OSD.FromBinary(entry.AddressList[0].GetAddressBytes()));
-                                info.Add("SimPort", OSD.FromInteger(link.UDPPort));
-                                info.Add("TeleportFlags", OSD.FromUInteger((uint)TeleportFlags.ViaLocation));
-
-                                OSDArray infoArray = new OSDArray(1);
-                                infoArray.Add(info);
-
-                                OSDMap teleport = new OSDMap();
-                                teleport.Add("Info", infoArray);
+                                OSDMap teleport = CapsMessages.TeleportFinish(agent.ID, 4, link.RegionHandle, seedCap, (byte)SimAccess.Min,
+                                    entry.AddressList[0], link.UDPPort, TeleportFlags.ViaLocation);
 
                                 scene.SendEvent(agent, "TeleportFinish", teleport);
                             }

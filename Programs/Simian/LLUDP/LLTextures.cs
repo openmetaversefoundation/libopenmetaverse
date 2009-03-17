@@ -102,12 +102,12 @@ namespace Simian
         }
     }
 
-    public class ImageDelivery : IExtension<ISceneProvider>
+    public class LLTextures : IExtension<ISceneProvider>
     {
         ISceneProvider scene;
         Dictionary<UUID, ImageDownload> CurrentDownloads = new Dictionary<UUID, ImageDownload>();
 
-        public ImageDelivery()
+        public LLTextures()
         {
         }
 

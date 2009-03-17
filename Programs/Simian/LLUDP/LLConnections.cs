@@ -5,11 +5,11 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public class ConnectionManagement : IExtension<ISceneProvider>
+    public class LLConnections : IExtension<ISceneProvider>
     {
         ISceneProvider scene;
 
-        public ConnectionManagement()
+        public LLConnections()
         {
         }
 
@@ -114,7 +114,7 @@ namespace Simian
             {
                 ObjectUpdatePacket update = new ObjectUpdatePacket();
                 update.RegionData.RegionHandle = scene.RegionHandle;
-                update.RegionData.TimeDilation = (ushort)(scene.Physics.TimeDilation * (float)UInt16.MaxValue);
+                update.RegionData.TimeDilation = (ushort)(scene.TimeDilation * (float)UInt16.MaxValue);
                 update.ObjectData = new ObjectUpdatePacket.ObjectDataBlock[1];
                 update.ObjectData[0] = SimulationObject.BuildUpdateBlock(obj.Prim, obj.Prim.Flags, obj.CRC);
 

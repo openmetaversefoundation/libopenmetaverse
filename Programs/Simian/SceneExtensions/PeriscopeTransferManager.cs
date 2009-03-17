@@ -10,8 +10,6 @@ namespace Simian
 {
     public class PeriscopeTransferManager
     {
-        public const string UPLOAD_DIR = "uploadedAssets";
-
         ISceneProvider scene;
         GridClient client;
         Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
