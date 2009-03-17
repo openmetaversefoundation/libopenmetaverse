@@ -17,7 +17,10 @@ namespace Simian
         public Uri HttpServer;
         public UUID MapTextureID;
         public Uri Owner;
+        public RegionFlags Flags;
+        public int AgentCount;
         public Uri EnableClientCap;
+        public float WaterHeight;
 
         public uint X
         {
@@ -83,6 +86,8 @@ namespace Simian
 
         bool TryGetRegion(UUID regionID, X509Certificate2 regionCert, out RegionInfo region);
         bool TryGetRegion(uint regionX, uint regionY, X509Certificate2 regionCert, out RegionInfo region);
+
+        IList<RegionInfo> GetRegionsInArea(int minX, int minY, int maxX, int maxY);
 
         /// <summary>
         /// Gets the default scene running on this server

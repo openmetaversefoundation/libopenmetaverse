@@ -121,6 +121,26 @@ namespace Simian
             return grid.TryGetValue(handle, out region);
         }
 
+        public IList<RegionInfo> GetRegionsInArea(int minX, int minY, int maxX, int maxY)
+        {
+            lock (syncRoot)
+            {
+                IList<RegionInfo> regions = grid.FindAll(
+                    delegate(RegionInfo region)
+                    {
+                        uint x, y;
+                        Utils.LongToUInts(region.Handle, out x, out y);
+                        x /= 256;
+                        y /= 256;
+
+                        return (x >= minX && y >= minY && x <= maxX && y <= maxY);
+                    }
+                );
+
+                return regions;
+            }
+        }
+
         public ISceneProvider GetDefaultLocalScene()
         {
             if (server.Scenes.Count > 0)

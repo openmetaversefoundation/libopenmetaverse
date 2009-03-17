@@ -198,12 +198,28 @@ namespace Simian
                     string certFile = regionConfig.GetString("RegionCertificate", null);
                     int staticObjectLimit = regionConfig.GetInt("StaticObjectLimit", 0);
                     int physicalObjectLimit = regionConfig.GetInt("PhysicalObjectLimit", 0);
+                    float waterHeight = regionConfig.GetFloat("WaterHeight", 0f);
+
+                    RegionFlags regionFlags = RegionFlags.None;
+                    if (regionConfig.GetBoolean("AllowDamage")) regionFlags |= RegionFlags.AllowDamage;
+                    if (regionConfig.GetBoolean("SunFixed")) regionFlags |= RegionFlags.SunFixed;
+                    if (regionConfig.GetBoolean("BlockTerraform")) regionFlags |= RegionFlags.BlockTerraform;
+                    if (regionConfig.GetBoolean("SkipScripts")) regionFlags |= RegionFlags.SkipScripts;
+                    if (regionConfig.GetBoolean("SkipPhysics")) regionFlags |= RegionFlags.SkipPhysics;
+                    if (regionConfig.GetBoolean("PublicAllowed")) regionFlags |= RegionFlags.PublicAllowed;
+                    if (regionConfig.GetBoolean("NoFly")) regionFlags |= RegionFlags.NoFly;
+                    if (regionConfig.GetBoolean("AllowDirectTeleport")) regionFlags |= RegionFlags.AllowDirectTeleport;
+                    if (regionConfig.GetBoolean("RestrictPushObject")) regionFlags |= RegionFlags.RestrictPushObject;
+                    if (regionConfig.GetBoolean("AllowParcelChanges")) regionFlags |= RegionFlags.AllowParcelChanges;
 
                     if (String.IsNullOrEmpty(name) || regionX == 0 || regionY == 0 || String.IsNullOrEmpty(certFile))
                     {
                         Logger.Log("Incomplete information in " + configFiles[i] + ", skipping", Helpers.LogLevel.Warning);
                         continue;
                     }
+
+                    // TODO: Real map tile image generation, perhaps?
+                    UUID mapTextureID = new UUID("89556747-24cb-43ed-920b-47caed15465f");
 
                     #endregion Config Parsing
 
@@ -261,6 +277,10 @@ namespace Simian
                     regionInfo.HttpServer = HttpUri;
                     regionInfo.IPAndPort = endpoint;
                     regionInfo.Name = name;
+                    regionInfo.MapTextureID = mapTextureID;
+                    regionInfo.Flags = regionFlags;
+                    regionInfo.AgentCount = 0;
+                    regionInfo.WaterHeight = waterHeight;
                     regionInfo.Online = true;
                     // Create a capability for other regions to initiate a client connection to this region
                     regionInfo.EnableClientCap = Capabilities.CreateCapability(scene.EnableClientCapHandler, false, null);

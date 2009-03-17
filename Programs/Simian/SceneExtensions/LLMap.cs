@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Xml;
@@ -51,6 +52,9 @@ namespace Simian
             MapLayerRequestPacket request = (MapLayerRequestPacket)packet;
             GridLayerType type = (GridLayerType)request.AgentData.Flags;
 
+            // FIXME: Do this properly. Use the grid service to get the aggregated map layers
+            // (lots of map tiles in a single texture == layer)
+
             MapLayerReplyPacket reply = new MapLayerReplyPacket();
             reply.AgentData.AgentID = agent.ID;
             reply.AgentData.Flags = (uint)type;
@@ -71,33 +75,82 @@ namespace Simian
             bool returnNonexistent = (request.AgentData.Flags == 0x10000);
             GridLayerType type = (GridLayerType)(request.AgentData.Flags &~0x10000);
 
-            // FIXME: Use returnNonexistent
+            IList<RegionInfo> regions = scene.Server.Grid.GetRegionsInArea(request.PositionData.MinX, request.PositionData.MinY,
+                request.PositionData.MaxX, request.PositionData.MaxY);
 
             MapBlockReplyPacket reply = new MapBlockReplyPacket();
             reply.AgentData.AgentID = agent.ID;
             reply.AgentData.Flags = (uint)type;
 
-            reply.Data = new MapBlockReplyPacket.DataBlock[2];
+            MapBlockReplyPacket.DataBlock[] blocks;
 
-            reply.Data[0] = new MapBlockReplyPacket.DataBlock();
-            reply.Data[0].Access = (byte)SimAccess.Min;
-            reply.Data[0].Agents = (byte)scene.AgentCount();
-            reply.Data[0].MapImageID = new UUID("89556747-24cb-43ed-920b-47caed15465f");
-            reply.Data[0].Name = Utils.StringToBytes(scene.RegionName);
-            reply.Data[0].RegionFlags = (uint)scene.RegionFlags;
-            reply.Data[0].WaterHeight = (byte)scene.WaterHeight;
-            reply.Data[0].X = (ushort)scene.RegionX;
-            reply.Data[0].Y = (ushort)scene.RegionY;
+            if (returnNonexistent)
+            {
+                int blockCountX = request.PositionData.MaxX + 1 - request.PositionData.MinX;
+                int blockCountY = request.PositionData.MaxY + 1 - request.PositionData.MinY;
+                blocks = new MapBlockReplyPacket.DataBlock[blockCountX * blockCountY];
+                int i = 0;
 
-            reply.Data[1] = new MapBlockReplyPacket.DataBlock();
-            reply.Data[1].Access = (byte)SimAccess.Min;
-            reply.Data[1].Agents = 0;
-            reply.Data[1].MapImageID = HYPERGRID_MAP_TEXTURE;
-            reply.Data[1].Name = Utils.StringToBytes("HyperGrid Portal to OSGrid");
-            reply.Data[1].RegionFlags = (uint)scene.RegionFlags;
-            reply.Data[1].WaterHeight = (byte)scene.WaterHeight;
-            reply.Data[1].X = (ushort)(scene.RegionX + 1);
-            reply.Data[1].Y = (ushort)scene.RegionY;
+                for (int y = request.PositionData.MinY; y <= request.PositionData.MaxY; y++)
+                {
+                    for (int x = request.PositionData.MinX; x <= request.PositionData.MaxX; x++)
+                    {
+                        blocks[i] = new MapBlockReplyPacket.DataBlock();
+                        blocks[i].X = (ushort)x;
+                        blocks[i].Y = (ushort)y;
+
+                        // See if we have data for this region
+                        RegionInfo? region = null;
+                        for (int j = 0; j < regions.Count; j++)
+                        {
+                            if (regions[j].X == x && regions[j].Y == y)
+                            {
+                                region = regions[j];
+                                break;
+                            }
+                        }
+
+                        if (region.HasValue)
+                        {
+                            blocks[i].Access = (byte)SimAccess.Min;
+                            blocks[i].Agents = (byte)region.Value.AgentCount;
+                            blocks[i].MapImageID = region.Value.MapTextureID;
+                            blocks[i].Name = Utils.StringToBytes(region.Value.Name);
+                            blocks[i].RegionFlags = (uint)region.Value.Flags;
+                            blocks[i].WaterHeight = (byte)region.Value.WaterHeight;
+                        }
+                        else
+                        {
+                            blocks[i].Name = Utils.EmptyBytes;
+                            blocks[i].MapImageID = WATER_TEXTURE;
+                        }
+
+                        ++i;
+                    }
+                }
+            }
+            else
+            {
+                blocks = new MapBlockReplyPacket.DataBlock[regions.Count];
+
+                for (int i = 0; i < regions.Count; i++)
+                {
+                    RegionInfo region = regions[i];
+
+                    blocks[i] = new MapBlockReplyPacket.DataBlock();
+                    blocks[i].X = (ushort)region.X;
+                    blocks[i].Y = (ushort)region.Y;
+                    blocks[i].Access = (byte)SimAccess.Min;
+                    blocks[i].Agents = (byte)region.AgentCount;
+                    blocks[i].MapImageID = region.MapTextureID;
+                    blocks[i].Name = Utils.StringToBytes(region.Name);
+                    blocks[i].RegionFlags = (uint)region.Flags;
+                    blocks[i].WaterHeight = (byte)region.WaterHeight;
+                }
+            }
+
+            // FIXME: Handle large numbers of blocks by splitting things up
+            reply.Data = blocks;
 
             scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
         }
@@ -188,11 +241,12 @@ namespace Simian
 
                 scene.UDP.SendPacket(agent.ID, reply, PacketCategory.Transaction);
             }
-            else if (request.Info.RegionHandle == Utils.UIntsToLong((scene.RegionX + 1) * 256, scene.RegionY * 256))
+            // FIXME: Add XML config support for HyperGrid destinations
+            /*else if (request.Info.RegionHandle == Utils.UIntsToLong((scene.RegionX + 1) * 256, scene.RegionY * 256))
             {
                 // Special case: adjacent simulator is the HyperGrid portal
                 HyperGridTeleport(agent, new Uri("http://osl2.nac.uci.edu:9006/"), request.Info.Position);
-            }
+            }*/
             else
             {
                 TeleportFailedPacket reply = new TeleportFailedPacket();

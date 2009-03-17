@@ -139,6 +139,7 @@ namespace Simian
         ulong RegionHandle { get; }
         UUID RegionID { get; }
         string RegionName { get; set; }
+        UUID MapTextureID { get; }
         RegionFlags RegionFlags { get; }
         Vector3 DefaultLookAt { get; }
         Vector3 DefaultPosition { get; }

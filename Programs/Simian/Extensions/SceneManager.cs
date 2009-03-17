@@ -90,11 +90,12 @@ namespace Simian
         public ulong RegionHandle { get { return regionHandle; } }
         public UUID RegionID { get { return regionID; } }
         public string RegionName { get { return regionName; } set { regionName = value; } }
-        public RegionFlags RegionFlags { get { return RegionFlags.None; } }
+        public RegionFlags RegionFlags { get { return regionFlags; } }
         public IPEndPoint IPAndPort { get { return endpoint; } set { endpoint = value; } }
         public Vector3 DefaultPosition { get { return defaultPosition; } }
         public Vector3 DefaultLookAt { get { return defaultLookAt; } }
-        public float WaterHeight { get { return 20f; } }
+        public UUID MapTextureID { get { return mapTextureID; } }
+        public float WaterHeight { get { return waterHeight; } }
         public uint TerrainPatchWidth { get { return 16; } }
         public uint TerrainPatchHeight { get { return 16; } }
         public uint TerrainPatchCountWidth { get { return 16; } }
@@ -110,6 +111,7 @@ namespace Simian
         int currentLocalID = 1;
         X509Certificate2 regionCert;
         ulong regionHandle;
+        RegionFlags regionFlags;
         UUID regionID = UUID.Random();
         TerrainPatch[,] heightmap = new TerrainPatch[16, 16];
         Vector2[,] windSpeeds = new Vector2[16, 16];
@@ -118,6 +120,8 @@ namespace Simian
         uint regionX;
         uint regionY;
         string regionName;
+        float waterHeight;
+        UUID mapTextureID;
         Vector3 defaultPosition = new Vector3(128f, 128f, 30f);
         Vector3 defaultLookAt = Vector3.UnitZ;
         /// <summary>Track the eight neighboring tiles around us</summary>
@@ -138,6 +142,9 @@ namespace Simian
             this.endpoint = regionInfo.IPAndPort;
             this.regionID = regionInfo.ID;
             this.regionCert = regionCert;
+            this.regionFlags = regionInfo.Flags;
+            this.mapTextureID = regionInfo.MapTextureID;
+            this.waterHeight = regionInfo.WaterHeight;
 
             // Set the properties because this will automatically update the regionHandle
             RegionX = regionInfo.X;
