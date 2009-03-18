@@ -385,8 +385,12 @@ namespace Prebuild.Core.Targets
                         }
                         else
                         {
-                            ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
-                            ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
+                            /* 
+                             * These two lines screw up the designer, ie: if you make a change to a form,
+                             * when you press Save VS corrups the .Designer.cs file 
+                             */
+                            //ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
+                            //ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
                             ps.WriteLine("      <SubType>" + subType + "</SubType>");
                         }
 						
