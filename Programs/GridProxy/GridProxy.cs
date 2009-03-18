@@ -481,6 +481,15 @@ namespace GridProxy
             }
 
             byte[] byteLine = reader.ReadLine();
+            if(byteLine==null)
+            {
+                //This dirty hack is part of the LIBOMV-457 workaround
+                //The connecting libomv client being proxied can manage to trigger a null from the ReadLine()
+                //The happens just after the seed request and is not seen again. TODO find this bug in the library.
+                netStream.Close(); client.Close();
+                return;
+            }
+
             if (byteLine != null) line = Encoding.UTF8.GetString(byteLine).Replace("\r", "");
 
             if (line == null)
@@ -559,6 +568,13 @@ namespace GridProxy
             }
             else if (new Regex(@"^/https?://.*$").Match(uri).Success)
             {
+                ProxyCaps(netStream, meth, uri.Substring(1), headers, content, reqNo);
+            }
+            else if (new Regex(@"^/https?:/.*$").Match(uri).Success)
+            {
+                //This is a libomv client and the proxy CAPS URI has been munged by the C# URI class
+                //Part of the LIBOMV-457 work around, TODO make this much nicer.
+                uri=uri.Replace(":/","://");
                 ProxyCaps(netStream, meth, uri.Substring(1), headers, content, reqNo);
             }
             else
@@ -1105,6 +1121,8 @@ namespace GridProxy
                 if (llsd != null) seed_capability = llsd.AsString();
 
                 if (sim_port == null || sim_ip == null || seed_capability == null) {
+                    if(map!=null)
+                        Console.WriteLine("Connection to server failed, returned LLSD error follows:\n"+map.ToString());
                     byte[] wr = Encoding.ASCII.GetBytes("HTTP/1.0 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n");
                     netStream.Write(wr, 0, wr.Length);
                     return;
