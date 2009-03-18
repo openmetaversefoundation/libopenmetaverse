@@ -1071,8 +1071,7 @@ namespace GridProxy
             lock (this) {
                 ServicePointManager.CertificatePolicy = new OpenMetaverse.AcceptAllCertificatePolicy();
                 AutoResetEvent remoteComplete = new AutoResetEvent(false);
-                //CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
-                CapsClient loginRequest = new CapsClient(new Uri("https://login1.aditi.lindenlab.com/cgi-bin/auth.cgi"));
+                CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
                 OSD response = null;
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(
                     delegate(CapsClient client, OSD result, Exception error)
@@ -1085,7 +1084,7 @@ namespace GridProxy
                         remoteComplete.Set();
                     }
                     );
-                loginRequest.StartRequest(content, "application/xml"); //xml+llsd
+                loginRequest.StartRequest(content, "application/xml+llsd"); //xml+llsd
                 remoteComplete.WaitOne(30000, false);
 
                 if (response == null) {
