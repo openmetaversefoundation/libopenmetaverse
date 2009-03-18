@@ -474,7 +474,10 @@ namespace OpenMetaverse
 
                         if (download.TimeSinceLastPacket > 5000)
                         {
-                            --download.DiscardLevel;
+                            if (download.DiscardLevel > 0)
+                            {
+                                --download.DiscardLevel;
+                            }
                             download.TimeSinceLastPacket = 0;
                             RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
                         }
