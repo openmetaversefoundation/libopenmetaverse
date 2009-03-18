@@ -36,11 +36,11 @@ namespace OpenMetaverse
         /// Rotation Keyframe count (used internally)
         /// </summary>
         private int rotationkeys;
-
+        
         /// <summary>
         /// Position Keyframe count (used internally)
         /// </summary>
-        private int positionkeys;\
+        private int positionkeys;
 
         public UInt16 unknown0; // Always 1
         public UInt16 unknown1; // Always 0
