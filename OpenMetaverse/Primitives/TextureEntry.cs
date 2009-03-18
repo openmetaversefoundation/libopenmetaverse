@@ -196,15 +196,49 @@ namespace OpenMetaverse
             private float offsetV;
             private float rotation;
             private float glow;
+            private byte materialb;
+            private byte mediab;
             private TextureAttributes hasAttribute;
             private UUID textureID;
             private TextureEntryFace DefaultTexture;
 
-            internal byte material;
-            internal byte media;
 
             #region Properties
 
+            /// <summary></summary>
+            internal byte material
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return materialb;
+                    else
+                        return DefaultTexture.material;
+                }
+                set
+                {
+                    materialb = value;
+                    hasAttribute |= TextureAttributes.Material;
+                }
+            }
+            
+            /// <summary></summary>
+            internal byte media
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Media) != 0)
+                        return mediab;
+                    else
+                        return DefaultTexture.media;
+                }
+                set
+                {
+                    mediab = value;
+                    hasAttribute |= TextureAttributes.Media;
+                }
+            }
+            
             /// <summary></summary>
             public Color4 RGBA
             {
