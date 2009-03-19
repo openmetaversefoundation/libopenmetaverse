@@ -148,12 +148,7 @@ namespace OpenMetaverse.StructuredData
                     break;
                 case OSDType.Real:
                     stream.WriteByte(realBinaryMarker);
-                    byte[] bytes = osd.AsBinary();
-                    
-                    if(BitConverter.IsLittleEndian)
-                        Array.Reverse(bytes);
-
-                    stream.Write(bytes, 0, doubleLength);
+                    stream.Write(osd.AsBinary(), 0, doubleLength);
                     break;
                 case OSDType.UUID:
                     stream.WriteByte(uuidBinaryMarker);

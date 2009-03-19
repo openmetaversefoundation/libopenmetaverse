@@ -391,7 +391,7 @@ namespace OpenMetaverse.StructuredData
         public override ulong AsULong() { return (ulong)value; }
         public override double AsReal() { return (double)value; }
         public override string AsString() { return value.ToString(); }
-        public override byte[] AsBinary() { return Utils.IntToBytes(value); }
+        public override byte[] AsBinary() { return Utils.IntToBytesBig(value); }
 
         public override string ToString() { return AsString(); }
     }
@@ -458,7 +458,7 @@ namespace OpenMetaverse.StructuredData
 
         public override double AsReal() { return value; }
         public override string AsString() { return value.ToString(Utils.EnUsCulture); }
-        public override byte[] AsBinary() { return Utils.DoubleToBytes(value); }
+        public override byte[] AsBinary() { return Utils.DoubleToBytesBig(value); }
         public override string ToString() { return AsString(); }
     }
 
@@ -627,13 +627,7 @@ namespace OpenMetaverse.StructuredData
         public override byte[] AsBinary()
         {
             TimeSpan ts = value.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-            byte[] bytes = Utils.DoubleToBytes(ts.TotalSeconds);
-
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-
-            return bytes;
+            return Utils.DoubleToBytesBig(ts.TotalSeconds);
         }
 
         public override DateTime AsDate() { return value; }
