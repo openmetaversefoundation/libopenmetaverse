@@ -112,6 +112,7 @@ namespace OpenMetaverse.StructuredData
         {
             MemoryStream stream = SerializeLLSDBinaryStream(osd);
             byte[] binaryData = stream.ToArray();
+
             stream.Close();
 
             return binaryData;
@@ -147,7 +148,12 @@ namespace OpenMetaverse.StructuredData
                     break;
                 case OSDType.Real:
                     stream.WriteByte(realBinaryMarker);
-                    stream.Write(osd.AsBinary(), 0, doubleLength);
+                    byte[] bytes = osd.AsBinary();
+                    
+                    if(BitConverter.IsLittleEndian)
+                        Array.Reverse(bytes);
+
+                    stream.Write(bytes, 0, doubleLength);
                     break;
                 case OSDType.UUID:
                     stream.WriteByte(uuidBinaryMarker);

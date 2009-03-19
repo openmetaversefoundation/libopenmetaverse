@@ -276,6 +276,9 @@ namespace OpenMetaverse
             bytes[2] = (byte)((value >> 16) % 256);
             bytes[3] = (byte)((value >> 24) % 256);
 
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
             return bytes;
         }
 
