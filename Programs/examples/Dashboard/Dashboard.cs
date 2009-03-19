@@ -29,7 +29,6 @@ namespace Dashboard
             //initialize client object
             Client = new GridClient();
             Client.Settings.USE_TEXTURE_CACHE = true;
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             LoginParams ClientLogin = Client.Network.DefaultLoginParams(firstName, lastName, password, "OpenMetaverse Dashboard", Assembly.GetExecutingAssembly().GetName().Version.ToString());
             ClientLogin.Start = "last";
 
@@ -40,6 +39,7 @@ namespace Dashboard
             inventoryTree1.Client = Client;
             localChat1.Client = Client;
             miniMap1.Client = Client;
+            statusOutput1.Client = Client;
 
             //double-click events
             avatarList1.OnAvatarDoubleClick += new AvatarList.AvatarDoubleClickCallback(avatarList1_OnAvatarDoubleClick);
@@ -50,22 +50,11 @@ namespace Dashboard
             Client.Network.BeginLogin(ClientLogin);
         }
 
-        private void SetLabelText(Label label, string text)
-        {
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { SetLabelText(label, text); });
-            else { label.Text = text; }
-        }
-
         private void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
             if (Client != null && Client.Network.Connected) Client.Network.Logout();
             Environment.Exit(0);
-        }
-
-        private void Network_OnLogin(LoginStatus login, string message)
-        {
-            SetLabelText(txtStatus, message);
         }
 
         private void avatarList1_OnAvatarDoubleClick(Avatar avatar)
