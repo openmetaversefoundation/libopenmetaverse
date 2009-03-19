@@ -8,21 +8,16 @@ namespace Simian
 {
     public class SimulationObject
     {
-        // TODO: Frozen and RotationAxis might want to become properties that access the parent values
-
+        /// <summary>Reference to the scene this object exists in</summary>
+        public ISceneProvider Scene;
         /// <summary>Reference to the primitive object this class wraps</summary>
         public Primitive Prim;
         /// <summary>Link number, if this object is part of a linkset</summary>
         public int LinkNumber;
-        /// <summary>True when an avatar grabs this object. Stops movement and
-        /// rotation</summary>
-        public bool Frozen;
         /// <summary>Holds the state of the object after each edit to enable undo</summary>
         public CircularQueue<Primitive> UndoSteps = new CircularQueue<Primitive>(10);
         /// <summary>Holds the state of the object after each undo to enable redo</summary>
         public CircularQueue<Primitive> RedoSteps = new CircularQueue<Primitive>(10);
-        /// <summary>Axis of rotation for the object in the physics engine</summary>
-        public Vector3 RotationAxis = Vector3.UnitY;
         /// <summary>A continual rotational impulse</summary>
         public Vector3 Torque;
         /// <summary>Last point the object was attached to (right hand by default)</summary>
@@ -41,12 +36,60 @@ namespace Simian
         /// Will be applied to the object when it is dropped. This is always the world
         /// rotation, since it is only applicable to parent objects</summary>
         public Quaternion BeforeAttachmentRotation = Quaternion.Identity;
+        /// <summary>Task inventory</summary>
+        public SimulationObjectInventory Inventory;
 
-        protected ISceneProvider Scene;
         protected SimpleMesh[] Meshes;
         protected SimpleMesh[] WorldTransformedMeshes;
 
+        bool frozen;
+        Vector3 rotationAxis = Vector3.UnitY;
         uint? crc;
+
+        #region Properties
+
+        /// <summary>True when an avatar grabs this object. Stops movement and
+        /// rotation</summary>
+        public bool Frozen
+        {
+            get
+            {
+                SimulationObject parent;
+                if (Prim.ParentID != 0 && Scene.TryGetObject(Prim.ID, out parent))
+                    return parent.Frozen;
+                else
+                    return frozen;
+            }
+            set
+            {
+                SimulationObject parent;
+                if (Prim.ParentID != 0 && Scene.TryGetObject(Prim.ID, out parent))
+                    parent.Frozen = value;
+                else
+                    frozen = value;
+            }
+        }
+
+        /// <summary>Axis of rotation for the object in the physics engine</summary>
+        public Vector3 RotationAxis
+        {
+            get
+            {
+                SimulationObject parent;
+                if (Prim.ParentID != 0 && Scene.TryGetObject(Prim.ID, out parent))
+                    return parent.RotationAxis;
+                else
+                    return rotationAxis;
+            }
+            set
+            {
+                SimulationObject parent;
+                if (Prim.ParentID != 0 && Scene.TryGetObject(Prim.ID, out parent))
+                    parent.RotationAxis = value;
+                else
+                    rotationAxis = value;
+            }
+        }
 
         public uint CRC
         {
@@ -76,12 +119,16 @@ namespace Simian
             }
         }
 
+        #endregion Properties
+
         public SimulationObject(SimulationObject obj)
         {
-            Prim = new Primitive(obj.Prim);
             Scene = obj.Scene;
+            Prim = new Primitive(obj.Prim);
+            Inventory = new SimulationObjectInventory(this);
             LinkNumber = obj.LinkNumber;
-            Frozen = obj.Frozen;
+            frozen = obj.frozen;
+            rotationAxis = obj.rotationAxis;
             // Skip everything else because it can be lazily reconstructed
         }
 
@@ -89,6 +136,7 @@ namespace Simian
         {
             Prim = prim;
             Scene = scene;
+            Inventory = new SimulationObjectInventory(this);
         }
 
         public SimulationObject GetLinksetParent()

@@ -1008,6 +1008,18 @@ namespace OpenMetaverse
                 Name = props.Name;
                 Description = props.Description;
             }
+
+            public byte[] GetTextureIDBytes()
+            {
+                if (TextureIDs == null || TextureIDs.Length == 0)
+                    return Utils.EmptyBytes;
+
+                byte[] bytes = new byte[16 * TextureIDs.Length];
+                for (int i = 0; i < TextureIDs.Length; i++)
+                    TextureIDs[i].ToBytes(bytes, 16 * i);
+
+                return bytes;
+            }
         }
 
         #endregion Subclasses

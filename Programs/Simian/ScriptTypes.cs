@@ -4,6 +4,22 @@ using System.Text.RegularExpressions;
 
 namespace Simian
 {
+    [Flags]
+    public enum Changed : uint
+    {
+        INVENTORY = 1,
+        COLOR = 2,
+        SHAPE = 4,
+        SCALE = 8,
+        TEXTURE = 16,
+        LINK = 32,
+        ALLOWED_DROP = 64,
+        OWNER = 128,
+        REGION_RESTART = 256,
+        REGION = 512,
+        TELEPORT = 1024
+    }
+
     public static class ScriptTypes
     {
         #region LSL Types

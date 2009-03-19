@@ -91,6 +91,19 @@ namespace OpenMetaverse
             OwnerMask = (PermissionMask)ownerMask;
         }
 
+        public Permissions GetNextPermissions()
+        {
+            uint nextMask = (uint)NextOwnerMask;
+
+            return new Permissions(
+                (uint)BaseMask & nextMask,
+                (uint)EveryoneMask & nextMask,
+                (uint)GroupMask & nextMask,
+                (uint)NextOwnerMask,
+                (uint)OwnerMask & nextMask
+                );
+        }
+
         public OSD GetOSD()
         {
             OSDMap permissions = new OSDMap(5);

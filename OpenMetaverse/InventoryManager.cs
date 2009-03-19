@@ -154,6 +154,25 @@ namespace OpenMetaverse
         ReturnToLastOwner = 10
     }
 
+    /// <summary>
+    /// Upper half of the Flags field for inventory items
+    /// </summary>
+    [Flags]
+    public enum InventoryItemFlags
+    {
+        None = 0,
+        LandmarkVisited = 1,
+        ObjectSlamPerm = 0x100,
+        ObjectSlamSale = 0x1000,
+        ObjectPermOverwriteBase = 0x010000,
+        ObjectPermOverwriteOwner = 0x020000,
+        ObjectPermOverwriteGroup = 0x040000,
+        ObjectPermOverwriteEveryone = 0x080000,
+        ObjectPermOverwriteNextOwner = 0x100000,
+        ObjectHasMultipleItems = 0x200000,
+        SharedSingleReference = 0x40000000,
+    }
+
     #endregion Enums
 
     #region Inventory Object Classes

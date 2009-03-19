@@ -1857,7 +1857,7 @@ namespace Simian
             }
 
             if ((item != null &&
-                scene.TaskInventory.TryGetAsset(hostObject.Prim.ID, item.AssetID, out asset) &&
+                scene.Server.Assets.TryGetAsset(item.AssetID, out asset) &&
                 asset is AssetPrim &&
                 scene.Server.Assets.TryDecodePrimAsset(((AssetPrim)asset).AssetData, out newLinkset)) ||
                 newLinkset != null)
@@ -2362,10 +2362,8 @@ namespace Simian
         {
             hostObject.AddScriptLPS(1);
 
-            InventoryTaskItem scriptItem = scene.TaskInventory.FindItem(hostObject.Prim.ID,
-                delegate(InventoryTaskItem item) { return item.ID == scriptID; });
-
-            if (scriptItem != null)
+            InventoryTaskItem scriptItem;
+            if (hostObject.Inventory.TryGetItem(scriptID, out scriptItem))
                 return scriptItem.PermissionGranter.ToString();
             else
                 return LSL_Key.Zero;
@@ -2375,12 +2373,10 @@ namespace Simian
         {
             hostObject.AddScriptLPS(1);
 
-            InventoryTaskItem scriptItem = scene.TaskInventory.FindItem(hostObject.Prim.ID,
-                delegate(InventoryTaskItem item) { return item.ID == scriptID; });
-
             uint perms = 0;
 
-            if (scriptItem != null)
+            InventoryTaskItem scriptItem;
+            if (hostObject.Inventory.TryGetItem(scriptID, out scriptItem))
             {
                 perms = scriptItem.GrantedPermissions;
                 if (automaticLinkPermission)
@@ -2499,7 +2495,7 @@ namespace Simian
             hostObject.AddScriptLPS(1);
             int count = 0;
 
-            scene.TaskInventory.ForEachItem(hostObject.Prim.ID,
+            hostObject.Inventory.ForEachItem(
                 delegate(InventoryTaskItem item)
                 {
                     if (type == -1 || (int)item.AssetType == type)
@@ -4520,10 +4516,8 @@ namespace Simian
         {
             hostObject.AddScriptLPS(1);
 
-            InventoryTaskItem findItem = scene.TaskInventory.FindItem(hostObject.Prim.ID,
-                delegate(InventoryTaskItem item) { return item.Name == itemName; });
-
-            if (findItem != null)
+            InventoryTaskItem findItem;
+            if (hostObject.Inventory.TryGetItem(itemName, out findItem))
             {
                 switch (mask)
                 {
@@ -5103,15 +5097,17 @@ namespace Simian
         private InventoryTaskItem InventorySelf()
         {
             hostObject.AddScriptLPS(1);
-            return scene.TaskInventory.FindItem(hostObject.Prim.ID,
-                delegate(InventoryTaskItem item) { return item.AssetID == scriptID; });
+            
+            InventoryTaskItem self;
+            hostObject.Inventory.TryGetItem(scriptID, out self);
+            return self;
         }
 
         private InventoryTaskItem InventoryKey(string name, AssetType type)
         {
             hostObject.AddScriptLPS(1);
 
-            return scene.TaskInventory.FindItem(hostObject.Prim.ID,
+            return hostObject.Inventory.FindItem(
                 delegate(InventoryTaskItem item) { return item.AssetType == type && item.Name == name; });
         }
 
@@ -5119,8 +5115,9 @@ namespace Simian
         {
             hostObject.AddScriptLPS(1);
 
-            return scene.TaskInventory.FindItem(hostObject.Prim.ID,
-                delegate(InventoryTaskItem item) { return item.Name == name; });
+            InventoryTaskItem item;
+            hostObject.Inventory.TryGetItem(name, out item);
+            return item;
         }
 
         /// <summary>
@@ -5151,10 +5148,11 @@ namespace Simian
 
         UUID ScriptByName(string name)
         {
-            InventoryTaskItem scriptItem = scene.TaskInventory.FindItem(hostObject.Prim.ID,
-                delegate(InventoryTaskItem item) { return item.AssetType == AssetType.LSLText && item.Name == name; });
-
-            return (scriptItem != null) ? scriptItem.ID : UUID.Zero;
+            InventoryTaskItem scriptItem;
+            if (hostObject.Inventory.TryGetItem(name, out scriptItem) && scriptItem.AssetType == AssetType.LSLText)
+                return scriptItem.ID;
+            else
+                return UUID.Zero;
         }
 
         void ShoutError(string msg)

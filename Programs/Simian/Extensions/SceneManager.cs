@@ -364,24 +364,10 @@ namespace Simian
         public bool ObjectRemove(object sender, uint localID)
         {
             SimulationObject obj;
-            Agent agent;
 
             if (sceneObjects.TryGetValue(localID, out obj))
             {
-                if (sceneAgents.TryGetValue(obj.Prim.ID, out agent))
-                    AgentRemove(sender, agent);
-
-                if (OnObjectRemove != null)
-                    OnObjectRemove(sender, obj);
-
-                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
-
-                KillObjectPacket kill = new KillObjectPacket();
-                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                kill.ObjectData[0].ID = obj.Prim.LocalID;
-
-                udp.BroadcastPacket(kill, PacketCategory.State);
+                RemoveObject(sender, obj);
                 return true;
             }
 
@@ -391,24 +377,10 @@ namespace Simian
         public bool ObjectRemove(object sender, UUID id)
         {
             SimulationObject obj;
-            Agent agent;
 
             if (sceneObjects.TryGetValue(id, out obj))
             {
-                if (sceneAgents.TryGetValue(id, out agent))
-                    AgentRemove(sender, agent);
-
-                if (OnObjectRemove != null)
-                    OnObjectRemove(sender, obj);
-
-                sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
-
-                KillObjectPacket kill = new KillObjectPacket();
-                kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
-                kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
-                kill.ObjectData[0].ID = obj.Prim.LocalID;
-
-                udp.BroadcastPacket(kill, PacketCategory.State);
+                RemoveObject(sender, obj);
                 return true;
             }
 
@@ -1375,6 +1347,33 @@ namespace Simian
                     ++patchY;
                 }
             }
+        }
+
+        void RemoveObject(object sender, SimulationObject obj)
+        {
+            // If this object has an agent associated with it, remove the agent from the scene as well
+            Agent agent;
+            if (sceneAgents.TryGetValue(obj.Prim.ID, out agent))
+                AgentRemove(sender, agent);
+
+            // Remove the agent from the scene
+            sceneObjects.Remove(obj.Prim.LocalID, obj.Prim.ID);
+
+            // Fire the callback
+            if (OnObjectRemove != null)
+                OnObjectRemove(sender, obj);
+
+            // If this object has a cached task inventory asset, delete it now
+            if (obj.Inventory.InventorySerial > 0)
+                taskInventory.RemoveTaskFile(obj.Inventory.GetInventoryFilename());
+
+            // Broadcast the kill message
+            KillObjectPacket kill = new KillObjectPacket();
+            kill.ObjectData = new KillObjectPacket.ObjectDataBlock[1];
+            kill.ObjectData[0] = new KillObjectPacket.ObjectDataBlock();
+            kill.ObjectData[0].ID = obj.Prim.LocalID;
+
+            udp.BroadcastPacket(kill, PacketCategory.State);
         }
 
         void SendObjectPacket(SimulationObject obj, bool canUseCompressed, bool canUseImproved, PrimFlags creatorFlags, UpdateFlags updateFlags)

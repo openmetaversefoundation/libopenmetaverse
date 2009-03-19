@@ -9,7 +9,8 @@ namespace Simian
     public class LLAssets : IExtension<ISceneProvider>
     {
         ISceneProvider scene;
-        Dictionary<ulong, Asset> CurrentUploads = new Dictionary<ulong, Asset>();
+        Dictionary<ulong, XferDownload> currentDownloads = new Dictionary<ulong, XferDownload>();
+        Dictionary<ulong, Asset> currentUploads = new Dictionary<ulong, Asset>();
 
         public LLAssets()
         {
@@ -19,10 +20,12 @@ namespace Simian
         {
             this.scene = scene;
 
-            scene.UDP.RegisterPacketCallback(PacketType.AssetUploadRequest, new PacketCallback(AssetUploadRequestHandler));
-            scene.UDP.RegisterPacketCallback(PacketType.SendXferPacket, new PacketCallback(SendXferPacketHandler));
-            scene.UDP.RegisterPacketCallback(PacketType.AbortXfer, new PacketCallback(AbortXferHandler));
-            scene.UDP.RegisterPacketCallback(PacketType.TransferRequest, new PacketCallback(TransferRequestHandler));
+            scene.UDP.RegisterPacketCallback(PacketType.RequestXfer, RequestXferHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.ConfirmXferPacket, ConfirmXferPacketHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AssetUploadRequest, AssetUploadRequestHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.SendXferPacket, SendXferPacketHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.AbortXfer, AbortXferHandler);
+            scene.UDP.RegisterPacketCallback(PacketType.TransferRequest, TransferRequestHandler);
             return true;
         }
 
@@ -31,6 +34,89 @@ namespace Simian
         }
 
         #region Xfer System
+
+        void RequestXferHandler(Packet packet, Agent agent)
+        {
+            RequestXferPacket request = (RequestXferPacket)packet;
+
+            string filename = Utils.BytesToString(request.XferID.Filename);
+
+            byte[] assetData;
+            if (scene.TaskInventory.TryGetTaskFile(filename, out assetData))
+            {
+                SendXferPacketPacket xfer = new SendXferPacketPacket();
+                xfer.XferID.ID = request.XferID.ID;
+
+                if (assetData.Length < 1000)
+                {
+                    xfer.XferID.Packet = 0x80000000;
+                    xfer.DataPacket.Data = new byte[assetData.Length + 4];
+                    Utils.IntToBytes(assetData.Length, xfer.DataPacket.Data, 0);
+                    Buffer.BlockCopy(assetData, 0, xfer.DataPacket.Data, 4, assetData.Length);
+
+                    scene.UDP.SendPacket(agent.ID, xfer, PacketCategory.Asset);
+                    Logger.DebugLog("Completed single packet xfer download of " + filename);
+                }
+                else
+                {
+                    xfer.XferID.Packet = 0;
+                    xfer.DataPacket.Data = new byte[1000 + 4];
+                    Utils.IntToBytes(assetData.Length, xfer.DataPacket.Data, 0);
+                    Buffer.BlockCopy(assetData, 0, xfer.DataPacket.Data, 4, 1000);
+
+                    // We don't need the entire XferDownload class, just the asset data and the current packet number
+                    XferDownload download = new XferDownload();
+                    download.AssetData = assetData;
+                    download.PacketNum = 1;
+                    download.Filename = filename;
+                    lock (currentDownloads)
+                        currentDownloads[request.XferID.ID] = download;
+
+                    scene.UDP.SendPacket(agent.ID, xfer, PacketCategory.Asset);
+                }
+            }
+            else
+            {
+                Logger.Log("Got a RequestXfer for an unknown file: " + filename, Helpers.LogLevel.Warning);
+            }
+
+            // lock (currentDownloads)
+        }
+
+        void ConfirmXferPacketHandler(Packet packet, Agent agent)
+        {
+            ConfirmXferPacketPacket confirm = (ConfirmXferPacketPacket)packet;
+
+            XferDownload download;
+            if (currentDownloads.TryGetValue(confirm.XferID.ID, out download))
+            {
+                // Send the next packet
+                SendXferPacketPacket xfer = new SendXferPacketPacket();
+                xfer.XferID.ID = confirm.XferID.ID;
+
+                int bytesRemaining = (int)(download.AssetData.Length - (download.PacketNum * 1000));
+
+                if (bytesRemaining > 1000)
+                {
+                    xfer.DataPacket.Data = new byte[1000];
+                    Buffer.BlockCopy(download.AssetData, (int)download.PacketNum * 1000, xfer.DataPacket.Data, 0, 1000);
+                    xfer.XferID.Packet = download.PacketNum++;
+                }
+                else
+                {
+                    // Last packet
+                    xfer.DataPacket.Data = new byte[bytesRemaining];
+                    Buffer.BlockCopy(download.AssetData, (int)download.PacketNum * 1000, xfer.DataPacket.Data, 0, bytesRemaining);
+                    xfer.XferID.Packet = download.PacketNum++ | 0x80000000;
+
+                    lock (currentDownloads)
+                        currentDownloads.Remove(confirm.XferID.ID);
+                    Logger.DebugLog("Completing xfer download for: " + download.Filename);
+                }
+
+                scene.UDP.SendPacket(agent.ID, xfer, PacketCategory.Asset);
+            }
+        }
 
         void AssetUploadRequestHandler(Packet packet, Agent agent)
         {
@@ -86,8 +172,8 @@ namespace Simian
                 xfer.XferID.VFileType = request.AssetBlock.Type;
 
                 // Add this asset to the current upload list
-                lock (CurrentUploads)
-                    CurrentUploads[xfer.XferID.ID] = asset;
+                lock (currentUploads)
+                    currentUploads[xfer.XferID.ID] = asset;
 
                 scene.UDP.SendPacket(agent.ID, xfer, PacketCategory.Inventory);
             }
@@ -98,7 +184,7 @@ namespace Simian
             SendXferPacketPacket xfer = (SendXferPacketPacket)packet;
 
             Asset asset;
-            if (CurrentUploads.TryGetValue(xfer.XferID.ID, out asset))
+            if (currentUploads.TryGetValue(xfer.XferID.ID, out asset))
             {
                 if (asset.AssetData == null)
                 {
@@ -136,8 +222,8 @@ namespace Simian
                         // Asset upload finished
                         Logger.DebugLog(String.Format("Completed Xfer upload of asset {0} ({1}", asset.AssetID, asset.AssetType));
 
-                        lock (CurrentUploads)
-                            CurrentUploads.Remove(xfer.XferID.ID);
+                        lock (currentUploads)
+                            currentUploads.Remove(xfer.XferID.ID);
 
                         scene.Server.Assets.StoreAsset(asset);
 
@@ -159,14 +245,14 @@ namespace Simian
         {
             AbortXferPacket abort = (AbortXferPacket)packet;
 
-            lock (CurrentUploads)
+            lock (currentUploads)
             {
-                if (CurrentUploads.ContainsKey(abort.XferID.ID))
+                if (currentUploads.ContainsKey(abort.XferID.ID))
                 {
                     Logger.DebugLog(String.Format("Aborting Xfer {0}, result: {1}", abort.XferID.ID,
                         (TransferError)abort.XferID.Result));
 
-                    CurrentUploads.Remove(abort.XferID.ID);
+                    currentUploads.Remove(abort.XferID.ID);
                 }
                 else
                 {

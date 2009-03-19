@@ -10,6 +10,7 @@ namespace Simian
     class TaskInventoryManager : IExtension<ISceneProvider>, ITaskInventoryProvider
     {
         ISceneProvider scene;
+        Dictionary<string, byte[]> assets = new Dictionary<string, byte[]>();
 
         public TaskInventoryManager()
         {
@@ -25,36 +26,21 @@ namespace Simian
         {
         }
 
-        public UUID CreateItem(UUID agentID, UUID containerObjectID, string name, string description, InventoryType invType,
-            AssetType type, UUID assetID, UUID parentID, PermissionMask ownerMask, PermissionMask nextOwnerMask,
-            UUID ownerID, UUID creatorID, UUID transactionID, uint callbackID, bool sendPacket)
+        public void AddTaskFile(string filename, byte[] assetData)
         {
-            return UUID.Zero;
+            lock (assets)
+                assets[filename] = assetData;
         }
 
-        public bool RemoveItem(UUID agentID, UUID containerObjectID, UUID itemID)
+        public bool RemoveTaskFile(string filename)
         {
-            return false;
+            lock (assets)
+                return assets.Remove(filename);
         }
 
-        public bool TryGetAsset(UUID containerObjectID, UUID assetID, out Asset asset)
+        public bool TryGetTaskFile(string filename, out byte[] assetData)
         {
-            asset = null;
-            return false;
-        }
-
-        public void ForEachItem(UUID containerObjectID, Action<InventoryTaskItem> action)
-        {
-        }
-
-        public InventoryTaskItem FindItem(UUID containerObjectID, Predicate<InventoryTaskItem> match)
-        {
-            return null;
-        }
-
-        public List<InventoryTaskItem> FindAllItems(UUID containerObjectID, Predicate<InventoryTaskItem> match)
-        {
-            return new List<InventoryTaskItem>();
+            return assets.TryGetValue(filename, out assetData);
         }
     }
 }
