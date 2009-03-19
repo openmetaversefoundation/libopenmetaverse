@@ -115,8 +115,17 @@ Section "!Base Libraries" SEC01
   SetOutPath "$INSTDIR\bin"
   CreateDirectory "$SMPROGRAMS\OpenMetaverse\libomv"
   SetOverwrite ifnewer
-  File "..\bin\*.dll"
-  File "..\bin\*.config"
+;  File "..\bin\*.dll"
+;  File "..\bin\*.config"
+  File "..\bin\log4net.dll"
+  File "..\bin\openjpeg-dotnet.dll"
+  File "..\bin\OpenMetaverse.dll"
+  File "..\bin\OpenMetaverse.GUI.dll"
+  File "..\bin\OpenMetaverse.Http.dll"
+  File "..\bin\OpenMetaverse.StructuredData.dll"
+  File "..\bin\OpenMetaverse.Utilities.dll"
+  File "..\bin\OpenMetaverseTypes.dll"
+  File "..\bin\OpenMetaverse.dll.config"
   File "..\README.txt"
 SectionEnd
 
@@ -134,7 +143,21 @@ SectionEnd
 
 Section "Example Applications" SEC03
   SetOutPath "$INSTDIR\bin"
-  File "..\bin\*.exe"
+;  File "..\bin\*.exe"
+   File "..\bin\Dashboard.exe"
+   File "..\bin\GridAccountant.exe"
+   File "..\bin\GridImageUpload.exe"
+   File "..\bin\GridProxyApp.exe"
+   File "..\bin\GridProxy.dll"
+   File "..\bin\groupmanager.exe"
+   File "..\bin\TestClient.exe"
+   ; PrimWorkShop/AvatarPreview
+   File "..\bin\PrimWorkshop.exe"
+   File "..\bin\AvatarPreview.exe"
+   File "..\bin\GlacialList.dll"
+   File "..\bin\Tao.OpenGL.dll"
+   File "..\bin\Tao.Platform.Windows.dll"
+   File "..\bin\ICSharpCode.SharpZipLib.dll"
 SectionEnd
 
 Section -AdditionalIcons
