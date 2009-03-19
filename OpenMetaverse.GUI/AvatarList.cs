@@ -134,15 +134,30 @@ namespace OpenMetaverse.GUI
                     {
                         item = this.Items[avatar.LocalID.ToString()];
                         item.SubItems[1].Text = (int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m";
+                        item.Tag = avatar;
                     }
+
                     else
                     {
-                        _Avatars.Add(avatar.LocalID);
-                        string key = avatar.LocalID.ToString();
-                        item = this.Items.Add(key, avatar.Name, null);
-                        item.SubItems.Add((int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m");
-                    }
-                    item.Tag = avatar;
+                        bool replace = false;
+                        for (int i = 0; i < this.Items.Count; i++)
+                        {
+                            if (this.Items[i].Text == avatar.Name)
+                            {
+                                this.Items[i].Name = avatar.LocalID.ToString();
+                                this.Items[i].Tag = avatar;
+                                replace = true;
+                            }
+                        }
+                        if (!replace)
+                        {
+                            _Avatars.Add(avatar.LocalID);
+                            string key = avatar.LocalID.ToString();
+                            item = this.Items.Add(key, avatar.Name, null);
+                            item.SubItems.Add((int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m");
+                            item.Tag = avatar;
+                        }
+                    }                    
                 }
             }
         }
@@ -177,10 +192,7 @@ namespace OpenMetaverse.GUI
 
         private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
-            lock (_Avatars)
-            {
-                if (!_Avatars.Contains(avatar.LocalID)) UpdateAvatar(avatar);
-            }
+            UpdateAvatar(avatar);
         }
 
         private void Objects_OnObjectKilled(Simulator simulator, uint objectID)
