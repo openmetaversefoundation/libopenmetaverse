@@ -73,6 +73,7 @@ namespace OpenMetaverse
     /// <summary>
     /// 
     /// </summary>
+    [Serializable()]
     public struct Permissions
     {
         public PermissionMask BaseMask;
@@ -90,21 +91,34 @@ namespace OpenMetaverse
             OwnerMask = (PermissionMask)ownerMask;
         }
 
-        public LLSD GetLLSD()
+        public Permissions GetNextPermissions()
         {
-            LLSDMap permissions = new LLSDMap(5);
-            permissions["BaseMask"] = LLSD.FromUInteger((uint)BaseMask);
-            permissions["EveryoneMask"] = LLSD.FromUInteger((uint)EveryoneMask);
-            permissions["GroupMask"] = LLSD.FromUInteger((uint)GroupMask);
-            permissions["NextOwnerMask"] = LLSD.FromUInteger((uint)NextOwnerMask);
-            permissions["OwnerMask"] = LLSD.FromUInteger((uint)OwnerMask);
+            uint nextMask = (uint)NextOwnerMask;
+
+            return new Permissions(
+                (uint)BaseMask & nextMask,
+                (uint)EveryoneMask & nextMask,
+                (uint)GroupMask & nextMask,
+                (uint)NextOwnerMask,
+                (uint)OwnerMask & nextMask
+                );
+        }
+
+        public OSD GetOSD()
+        {
+            OSDMap permissions = new OSDMap(5);
+            permissions["BaseMask"] = OSD.FromUInteger((uint)BaseMask);
+            permissions["EveryoneMask"] = OSD.FromUInteger((uint)EveryoneMask);
+            permissions["GroupMask"] = OSD.FromUInteger((uint)GroupMask);
+            permissions["NextOwnerMask"] = OSD.FromUInteger((uint)NextOwnerMask);
+            permissions["OwnerMask"] = OSD.FromUInteger((uint)OwnerMask);
             return permissions;
         }
 
-        public static Permissions FromLLSD(LLSD llsd)
+        public static Permissions FromOSD(OSD llsd)
         {
             Permissions permissions = new Permissions();
-            LLSDMap map = (LLSDMap)llsd;
+            OSDMap map = (OSDMap)llsd;
 
             byte[] bytes = map["BaseMask"].AsBinary();
             permissions.BaseMask = (PermissionMask)Utils.BytesToUInt(bytes);
@@ -155,7 +169,7 @@ namespace OpenMetaverse
         }
 
         public static readonly Permissions NoPermissions = new Permissions();
-        public static readonly Permissions FullPermissions = new Permissions(UInt32.MaxValue, UInt32.MaxValue,
-            UInt32.MaxValue, UInt32.MaxValue, UInt32.MaxValue);
+        public static readonly Permissions FullPermissions = new Permissions((uint)PermissionMask.All, (uint)PermissionMask.All,
+            (uint)PermissionMask.All, (uint)PermissionMask.All, (uint)PermissionMask.All);
     }
 }

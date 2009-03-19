@@ -57,9 +57,9 @@ namespace OpenMetaverse
     [Flags]
     public enum CompressedFlags : uint
     {
-        /// <summary>Hasn't been spotted in the wild yet</summary>
+        /// <summary>Unknown</summary>
         ScratchPad = 0x01,
-        /// <summary>This may be incorrect</summary>
+        /// <summary>Whether the object has a TreeSpecies</summary>
         Tree = 0x02,
         /// <summary>Whether the object has floating text ala llSetText</summary>
         HasText = 0x04,
@@ -218,7 +218,7 @@ namespace OpenMetaverse
         /// <param name="oldSeat"></param>
         /// on. If this is zero the avatar is not sitting on an object</param>
         public delegate void AvatarSitChanged(Simulator simulator, Avatar avatar, uint sittingOn, uint oldSeat);
-		
+
         #endregion Delegates
 
         #region Events
@@ -254,16 +254,6 @@ namespace OpenMetaverse
         /// storing objects.
         /// </remarks>
         public event NewAvatarCallback OnNewAvatar;
-        /// <summary>
-        /// This event will be raised for every ObjectUpdate block that 
-        /// contains a new tree or grass patch.
-        /// </summary>
-        /// <remarks>Depending on the circumstances a client could 
-        /// receive two or more of these events for the same object, if you 
-        /// or the object left the current sim and returned for example. Client
-        /// applications are responsible for tracking and storing objects.
-        /// </remarks>
-        public event NewFoliageCallback OnNewFoliage;
         /// <summary>
         /// This event will be raised when a terse object update packet is 
         /// received, containing the updated position, rotation, and 
@@ -414,7 +404,7 @@ namespace OpenMetaverse
         /// 100, UUID.Zero, Client.Self.InventoryRootFolderUUID);
         /// </code> 
         ///</example>
-        public void BuyObject(Simulator simulator, uint localID, SaleType saleType, int price, UUID groupID, 
+        public void BuyObject(Simulator simulator, uint localID, SaleType saleType, int price, UUID groupID,
             UUID categoryID)
         {
             ObjectBuyPacket buy = new ObjectBuyPacket();
@@ -476,6 +466,71 @@ namespace OpenMetaverse
             }
 
             Client.Network.SendPacket(select, simulator);
+        }
+
+        /// <summary>
+        /// Sets and object's flags (physical, temporary, phantom, casts shadow)
+        /// </summary>
+        /// <param name="localID"></param>
+        /// <param name="physical"></param>
+        /// <param name="temporary"></param>
+        /// <param name="phantom"></param>
+        /// <param name="castsShadow"></param>
+        public void SetFlags(uint localID, bool physical, bool temporary, bool phantom, bool castsShadow)
+        {
+            ObjectFlagUpdatePacket flags = new ObjectFlagUpdatePacket();
+            flags.AgentData.AgentID = Client.Self.AgentID;
+            flags.AgentData.SessionID = Client.Self.SessionID;
+            flags.AgentData.ObjectLocalID = localID;
+            flags.AgentData.UsePhysics = physical;
+            flags.AgentData.IsTemporary = temporary;
+            flags.AgentData.IsPhantom = phantom;
+            flags.AgentData.CastsShadows = castsShadow;
+
+            Client.Network.SendPacket(flags);
+        }
+
+        /// <summary>
+        /// Sets an object's sale information
+        /// </summary>
+        /// <param name="localID"></param>
+        /// <param name="saleType"></param>
+        /// <param name="price"></param>
+        public void SetSaleInfo(uint localID, SaleType saleType, int price)
+        {
+            ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
+            sale.AgentData.AgentID = Client.Self.AgentID;
+            sale.AgentData.SessionID = Client.Self.SessionID;
+            sale.ObjectData = new ObjectSaleInfoPacket.ObjectDataBlock[1];
+            sale.ObjectData[0] = new ObjectSaleInfoPacket.ObjectDataBlock();
+            sale.ObjectData[0].LocalID = localID;
+            sale.ObjectData[0].SalePrice = price;
+            sale.ObjectData[0].SaleType = (byte)saleType;
+
+            Client.Network.SendPacket(sale);
+        }
+
+        /// <summary>
+        /// Sets sale info for multiple objects
+        /// </summary>
+        /// <param name="localIDs"></param>
+        /// <param name="saleType"></param>
+        /// <param name="price"></param>
+        public void SetSaleInfo(List<uint> localIDs, SaleType saleType, int price)
+        {
+            ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
+            sale.AgentData.AgentID = Client.Self.AgentID;
+            sale.AgentData.SessionID = Client.Self.SessionID;
+            sale.ObjectData = new ObjectSaleInfoPacket.ObjectDataBlock[localIDs.Count];
+            for (int i = 0; i < localIDs.Count; i++)
+            {
+                sale.ObjectData[i] = new ObjectSaleInfoPacket.ObjectDataBlock();
+                sale.ObjectData[i].LocalID = localIDs[i];
+                sale.ObjectData[i].SalePrice = price;
+                sale.ObjectData[i].SaleType = (byte)saleType;
+            }
+
+            Client.Network.SendPacket(sale);
         }
 
         /// <summary>
@@ -562,7 +617,7 @@ namespace OpenMetaverse
         /// follow up by moving the object after it has been created. This
         /// function will not set textures, light and flexible data, or other 
         /// extended primitive properties</remarks>
-        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position, 
+        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position,
             Vector3 scale, Quaternion rotation)
         {
             ObjectAddPacket packet = new ObjectAddPacket();
@@ -619,7 +674,7 @@ namespace OpenMetaverse
         /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
         /// or UUID.Zero if no group is to be set</param>
         /// <param name="newTree">true to use the "new" Linden trees, false to use the old</param>
-        public void AddTree(Simulator simulator, Vector3 scale, Quaternion rotation, Vector3 position, 
+        public void AddTree(Simulator simulator, Vector3 scale, Quaternion rotation, Vector3 position,
             Tree treeType, UUID groupOwner, bool newTree)
         {
             ObjectAddPacket add = new ObjectAddPacket();
@@ -700,7 +755,7 @@ namespace OpenMetaverse
             image.ObjectData = new ObjectImagePacket.ObjectDataBlock[1];
             image.ObjectData[0] = new ObjectImagePacket.ObjectDataBlock();
             image.ObjectData[0].ObjectLocalID = localID;
-            image.ObjectData[0].TextureEntry = textures.ToBytes();
+            image.ObjectData[0].TextureEntry = textures.GetBytes();
             image.ObjectData[0].MediaURL = Utils.StringToBytes(mediaUrl);
 
             Client.Network.SendPacket(image, simulator);
@@ -722,12 +777,12 @@ namespace OpenMetaverse
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
             extra.ObjectData[0].ParamType = (byte)ExtraParamType.Light;
-            if (light.Intensity == 0.0f) 
+            if (light.Intensity == 0.0f)
             {
                 // Disables the light if intensity is 0
                 extra.ObjectData[0].ParamInUse = false;
-            } 
-            else 
+            }
+            else
             {
                 extra.ObjectData[0].ParamInUse = true;
             }
@@ -816,7 +871,7 @@ namespace OpenMetaverse
             extra.ObjectData[0].ObjectLocalID = localID;
             extra.ObjectData[0].ParamType = (byte)type;
             extra.ObjectData[0].ParamInUse = false;
-            extra.ObjectData[0].ParamData = new byte[0];
+            extra.ObjectData[0].ParamData = Utils.EmptyBytes;
             extra.ObjectData[0].ParamSize = 0;
 
             Client.Network.SendPacket(extra, simulator);
@@ -959,6 +1014,25 @@ namespace OpenMetaverse
             attach.ObjectData[0].Rotation = rotation;
 
             Client.Network.SendPacket(attach, simulator);
+        }
+
+        /// <summary>
+        /// Drop an attached object from this avatar
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/>
+        /// object where the objects reside. This will always be the simulator the avatar is currently in
+        /// </param>
+        /// <param name="localID">The object's ID which is local to the simulator the object is in</param>
+        public void DropObject(Simulator simulator, uint localID)
+        {
+            ObjectDropPacket dropit = new ObjectDropPacket();
+            dropit.AgentData.AgentID = Client.Self.AgentID;
+            dropit.AgentData.SessionID = Client.Self.SessionID;
+            dropit.ObjectData = new ObjectDropPacket.ObjectDataBlock[1];
+            dropit.ObjectData[0] = new ObjectDropPacket.ObjectDataBlock();
+            dropit.ObjectData[0].ObjectLocalID = localID;
+
+            Client.Network.SendPacket(dropit, simulator);
         }
 
         /// <summary>
@@ -1108,9 +1182,9 @@ namespace OpenMetaverse
 
             objDeedPacket.ObjectData = new ObjectOwnerPacket.ObjectDataBlock[1];
             objDeedPacket.ObjectData[0] = new ObjectOwnerPacket.ObjectDataBlock();
-            
+
             objDeedPacket.ObjectData[0].ObjectLocalID = localID;
-            
+
             Client.Network.SendPacket(objDeedPacket, simulator);
         }
 
@@ -1141,7 +1215,7 @@ namespace OpenMetaverse
             }
             Client.Network.SendPacket(packet, simulator);
         }
-            
+
         /// <summary>
         /// Set the permissions on multiple objects
         /// </summary>
@@ -1150,7 +1224,7 @@ namespace OpenMetaverse
         /// <param name="who">The new Who mask to set</param>
         /// <param name="permissions">The new Permissions mark to set</param>
         /// <param name="set">TODO: What does this do?</param>
-        public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who, 
+        public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who,
             PermissionMask permissions, bool set)
         {
             ObjectPermissionsPacket packet = new ObjectPermissionsPacket();
@@ -1208,7 +1282,7 @@ namespace OpenMetaverse
         }
 
         #endregion
-        
+
         #region Packet Handlers
 
         /// <summary>
@@ -1219,7 +1293,7 @@ namespace OpenMetaverse
         protected void UpdateHandler(Packet packet, Simulator simulator)
         {
             ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
-			UpdateDilation(simulator, update.RegionData.TimeDilation);
+            UpdateDilation(simulator, update.RegionData.TimeDilation);
 
             for (int b = 0; b < update.ObjectData.Length; b++)
             {
@@ -1245,8 +1319,6 @@ namespace OpenMetaverse
                         case PCode.Grass:
                         case PCode.Tree:
                         case PCode.NewTree:
-                            if (OnNewFoliage == null) continue;
-                            break;
                         case PCode.Prim:
                             if (OnNewPrim == null) continue;
                             break;
@@ -1435,12 +1507,12 @@ namespace OpenMetaverse
                     case PCode.Prim:
                         Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
 
-                        #region Update Prim Info with decoded data                            
+                        #region Update Prim Info with decoded data
                         prim.Flags = (PrimFlags)block.UpdateFlags;
 
                         if ((prim.Flags & PrimFlags.ZlibCompressed) != 0)
                         {
-                            Logger.Log("Got a ZlibCompressed ObjectUpdate, implement me!", 
+                            Logger.Log("Got a ZlibCompressed ObjectUpdate, implement me!",
                                 Helpers.LogLevel.Warning, Client);
                             continue;
                         }
@@ -1455,7 +1527,7 @@ namespace OpenMetaverse
                         prim.LocalID = block.ID;
                         prim.ID = block.FullID;
                         prim.ParentID = block.ParentID;
-					    prim.RegionHandle = update.RegionData.RegionHandle;
+                        prim.RegionHandle = update.RegionData.RegionHandle;
                         prim.Scale = block.Scale;
                         prim.ClickAction = (ClickAction)block.ClickAction;
                         prim.OwnerID = block.OwnerID;
@@ -1465,7 +1537,7 @@ namespace OpenMetaverse
 
                         // Sound information
                         prim.Sound = block.Sound;
-                        prim.SoundFlags = block.Flags;
+                        prim.SoundFlags = (SoundFlags)block.Flags;
                         prim.SoundGain = block.Gain;
                         prim.SoundRadius = block.Radius;
 
@@ -1473,7 +1545,7 @@ namespace OpenMetaverse
                         prim.Joint = (JointType)block.JointType;
                         prim.JointPivot = block.JointPivot;
                         prim.JointAxisOrAnchor = block.JointAxisOrAnchor;
-                        
+
                         // Object parameters
                         prim.PrimData = data;
 
@@ -1486,7 +1558,23 @@ namespace OpenMetaverse
                         prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
 
                         // PCode-specific data
-                        prim.GenericData = block.Data;
+                        switch (pcode)
+                        {
+                            case PCode.Grass:
+                            case PCode.Tree:
+                            case PCode.NewTree:
+                                if (block.Data.Length == 1)
+                                    prim.TreeSpecies = (Tree)block.Data[0];
+                                else
+                                    Logger.Log("Got a foliage update with an invalid TreeSpecies field", Helpers.LogLevel.Warning);
+                                prim.ScratchPad = Utils.EmptyBytes;
+                                break;
+                            default:
+                                prim.ScratchPad = new byte[block.Data.Length];
+                                if (block.Data.Length > 0)
+                                    Buffer.BlockCopy(block.Data, 0, prim.ScratchPad, 0, prim.ScratchPad.Length);
+                                break;
+                        }
 
                         // Packed parameters
                         prim.CollisionPlane = collisionPlane;
@@ -1498,13 +1586,10 @@ namespace OpenMetaverse
                         #endregion
 
                         if (attachment)
-                            FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
-                                update.RegionData.TimeDilation);
-                        else if (pcode == PCode.Prim)
-                            FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
+                            FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle,
                                 update.RegionData.TimeDilation);
                         else
-                            FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, 
+                            FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle,
                                 update.RegionData.TimeDilation);
 
                         break;
@@ -1515,10 +1600,10 @@ namespace OpenMetaverse
                         if (block.FullID == Client.Self.AgentID)
                         {
                             #region Update Client.Self
-                            
+
                             // We need the local ID to recognize terse updates for our agent
                             Client.Self.localID = block.ID;
-                            
+
                             // Packed parameters
                             Client.Self.collisionPlane = collisionPlane;
                             Client.Self.relativePosition = position;
@@ -1545,18 +1630,19 @@ namespace OpenMetaverse
                         avatar.AngularVelocity = angularVelocity;
                         avatar.NameValues = nameValues;
                         avatar.PrimData = data;
-                        avatar.GenericData = block.Data;
+                        if (block.Data.Length > 0) Logger.Log("Unexpected Data field for an avatar update, length " + block.Data.Length, Helpers.LogLevel.Warning);
                         avatar.ParentID = block.ParentID;
+                        avatar.RegionHandle = update.RegionData.RegionHandle;
 
                         SetAvatarSittingOn(simulator, avatar, block.ParentID, oldSeatID);
 
                         // Textures
-                        avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, 
+                        avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0,
                             block.TextureEntry.Length);
 
                         #endregion Create an Avatar from the decoded data
 
-                        FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, 
+                        FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle,
                             update.RegionData.TimeDilation);
 
                         break;
@@ -1624,8 +1710,8 @@ namespace OpenMetaverse
         protected void TerseUpdateHandler(Packet packet, Simulator simulator)
         {
             ImprovedTerseObjectUpdatePacket terse = (ImprovedTerseObjectUpdatePacket)packet;
-			UpdateDilation(simulator, terse.RegionData.TimeDilation);
-			
+            UpdateDilation(simulator, terse.RegionData.TimeDilation);
+
             for (int i = 0; i < terse.ObjectData.Length; i++)
             {
                 ImprovedTerseObjectUpdatePacket.ObjectDataBlock block = terse.ObjectData[i];
@@ -1677,7 +1763,7 @@ namespace OpenMetaverse
                         Utils.UInt16ToFloat(block.Data, pos + 4, -1.0f, 1.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 6, -1.0f, 1.0f));
                     pos += 8;
-                    // Angular velocity
+                    // Angular velocity (omega)
                     update.AngularVelocity = new Vector3(
                         Utils.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
@@ -1692,7 +1778,7 @@ namespace OpenMetaverse
                     #endregion Decode update data
 
                     Primitive obj = (update.Avatar) ?
-                        (Primitive)GetAvatar(simulator, update.LocalID, UUID.Zero):
+                        (Primitive)GetAvatar(simulator, update.LocalID, UUID.Zero) :
                         (Primitive)GetPrimitive(simulator, update.LocalID, UUID.Zero);
 
                     #region Update Client.Self
@@ -1715,7 +1801,7 @@ namespace OpenMetaverse
                     obj.Velocity = update.Velocity;
                     if (update.Textures != null)
                         obj.Textures = update.Textures;
-                    
+
                     // Fire the callback
                     FireOnObjectUpdated(simulator, update, terse.RegionData.RegionHandle, terse.RegionData.TimeDilation);
                 }
@@ -1752,6 +1838,7 @@ namespace OpenMetaverse
                     PCode pcode = (PCode)block.Data[i++];
 
                     #region Relevance check
+
                     if (!Client.Settings.ALWAYS_DECODE_OBJECTS)
                     {
                         switch (pcode)
@@ -1759,13 +1846,12 @@ namespace OpenMetaverse
                             case PCode.Grass:
                             case PCode.Tree:
                             case PCode.NewTree:
-                                if (OnNewFoliage == null) continue;
-                                break;
                             case PCode.Prim:
                                 if (OnNewPrim == null) continue;
                                 break;
                         }
                     }
+
                     #endregion Relevance check
 
                     Primitive prim = GetPrimitive(simulator, LocalID, FullID);
@@ -1775,251 +1861,207 @@ namespace OpenMetaverse
                     prim.Flags = (PrimFlags)block.UpdateFlags;
                     prim.PrimData.PCode = pcode;
 
-                    switch (pcode)
+                    #region Decode block and update Prim
+
+                    // State
+                    prim.PrimData.State = block.Data[i++];
+                    // CRC
+                    i += 4;
+                    // Material
+                    prim.PrimData.Material = (Material)block.Data[i++];
+                    // Click action
+                    prim.ClickAction = (ClickAction)block.Data[i++];
+                    // Scale
+                    prim.Scale = new Vector3(block.Data, i);
+                    i += 12;
+                    // Position
+                    prim.Position = new Vector3(block.Data, i);
+                    i += 12;
+                    // Rotation
+                    prim.Rotation = new Quaternion(block.Data, i, true);
+                    i += 12;
+                    // Compressed flags
+                    CompressedFlags flags = (CompressedFlags)Utils.BytesToUInt(block.Data, i);
+                    i += 4;
+
+                    prim.OwnerID = new UUID(block.Data, i);
+                    i += 16;
+
+                    // Angular velocity
+                    if ((flags & CompressedFlags.HasAngularVelocity) != 0)
                     {
-                        case PCode.Grass:
-                        case PCode.Tree:
-                        case PCode.NewTree:
-                            #region Foliage Decoding
-
-                            // State
-                            prim.PrimData.State = block.Data[i++];
-                            // CRC
-                            i += 4;
-                            // Material
-                            prim.PrimData.Material = (Material)block.Data[i++];
-                            // Click action
-                            prim.ClickAction = (ClickAction)block.Data[i++];
-                            // Scale
-                            prim.Scale = new Vector3(block.Data, i);
-                            i += 12;
-                            // Position
-                            prim.Position = new Vector3(block.Data, i);
-                            i += 12;
-                            // Rotation
-                            prim.Rotation = new Quaternion(block.Data, i, true);
-                            i += 12;
-
-                            #endregion Foliage Decoding
-
-                            // FIXME: We are leaving a lot of data left undecoded here, including the
-                            // tree species. Need to understand what is going on with these packets
-                            // and fix it soon!
-
-                            FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-
-                            break;
-                        case PCode.Prim:
-                            #region Decode block and update Prim
-                            // State
-                            prim.PrimData.State = block.Data[i++];
-                            // CRC
-                            i += 4;
-                            // Material
-                            prim.PrimData.Material = (Material)block.Data[i++];
-                            // Click action
-                            prim.ClickAction = (ClickAction)block.Data[i++];
-                            // Scale
-                            prim.Scale = new Vector3(block.Data, i);
-                            i += 12;
-                            // Position
-                            prim.Position = new Vector3(block.Data, i);
-                            i += 12;
-                            // Rotation
-                            prim.Rotation = new Quaternion(block.Data, i, true);
-                            i += 12;
-                            // Compressed flags
-                            CompressedFlags flags = (CompressedFlags)Utils.BytesToUInt(block.Data, i);
-                            i += 4;
-
-                            prim.OwnerID = new UUID(block.Data, i);
-                            i += 16;
-			    
-
-                            // Angular velocity
-                            if ((flags & CompressedFlags.HasAngularVelocity) != 0)
-                            {
-                                prim.AngularVelocity = new Vector3(block.Data, i);
-                                i += 12;
-                            }
-
-                            // Parent ID
-                            if ((flags & CompressedFlags.HasParent) != 0)
-                            {
-                                prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                            }
-                            else
-                            {
-                                prim.ParentID = 0;
-                            }
-
-                            // Tree data
-                            if ((flags & CompressedFlags.Tree) != 0)
-                            {
-                                prim.GenericData = new byte[1];
-                                prim.GenericData[0] = block.Data[i++];
-                            }
-                            // Scratch pad
-                            else if ((flags & CompressedFlags.ScratchPad) != 0)
-                            {
-                                int size = block.Data[i++];
-                                prim.GenericData = new byte[size];
-                                Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
-                                i += size;
-                            }
-
-                            // Floating text
-                            if ((flags & CompressedFlags.HasText) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
-                                {
-                                    text += (char)block.Data[i];
-                                    i++;
-                                }
-                                i++;
-
-                                // Floating text
-                                prim.Text = text;
-
-                                // Text color
-                                prim.TextColor = new Color4(block.Data, i, false);
-                                // FIXME: Is alpha inversed here as well?
-                                i += 4;
-                            }
-                            else
-                            {
-                                prim.Text = String.Empty;
-                            }
-
-                            // Media URL
-                            if ((flags & CompressedFlags.MediaURL) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
-                                {
-                                    text += (char)block.Data[i];
-                                    i++;
-                                }
-                                i++;
-
-                                prim.MediaURL = text;
-                            }
-
-                            // Particle system
-                            if ((flags & CompressedFlags.HasParticles) != 0)
-                            {
-                                prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
-                                i += 86;
-                            }
-
-                            // Extra parameters
-                            i += prim.SetExtraParamsFromBytes(block.Data, i);
-
-                            //Sound data
-                            if ((flags & CompressedFlags.HasSound) != 0)
-                            {
-                                prim.Sound = new UUID(block.Data, i);
-                                i += 16;
-
-                                prim.SoundGain = Utils.BytesToFloat(block.Data, i);
-                                i += 4;
-                                prim.SoundFlags = block.Data[i++];
-                                prim.SoundRadius = Utils.BytesToFloat(block.Data, i);
-                                i += 4;
-                            }
-
-                            // Name values
-                            if ((flags & CompressedFlags.HasNameValues) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
-                                {
-                                    text += (char)block.Data[i];
-                                    i++;
-                                }
-                                i++;
-
-                                // Parse the name values
-                                if (text.Length > 0)
-                                {
-                                    string[] lines = text.Split('\n');
-                                    prim.NameValues = new NameValue[lines.Length];
-
-                                    for (int j = 0; j < lines.Length; j++)
-                                    {
-                                        if (!String.IsNullOrEmpty(lines[j]))
-                                        {
-                                            NameValue nv = new NameValue(lines[j]);
-                                            prim.NameValues[j] = nv;
-                                        }
-                                    }
-                                }
-                            }
-
-                            prim.PrimData.PathCurve = (PathCurve)block.Data[i++];
-                            ushort pathBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.PathBegin = Primitive.UnpackBeginCut(pathBegin);
-                            ushort pathEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.PathEnd = Primitive.UnpackEndCut(pathEnd);
-                            prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.Data[i++]);
-                            prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.Data[i++]);
-                            prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
-                            prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTwist = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTaperX = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
-                            prim.PrimData.PathTaperY = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
-                            prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.Data[i++]);
-                            prim.PrimData.PathSkew = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
-
-                            prim.PrimData.profileCurve = block.Data[i++];
-                            ushort profileBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(profileBegin);
-                            ushort profileEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(profileEnd);
-                            ushort profileHollow = Utils.BytesToUInt16(block.Data, i); i += 2;
-                            prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(profileHollow);
-
-                            // TextureEntry
-                            int textureEntryLength = (int)Utils.BytesToUInt(block.Data, i);
-                            i += 4;
-                            prim.Textures = new Primitive.TextureEntry(block.Data, i, textureEntryLength);
-                            i += textureEntryLength;
-
-                            // Texture animation
-                            if ((flags & CompressedFlags.TextureAnimation) != 0)
-                            {
-                                //int textureAnimLength = (int)Utils.BytesToUIntBig(block.Data, i);
-                                i += 4;
-                                prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
-                            }
-
-                            #endregion
-
-                            #region Fire Events
-
-                            // Fire the appropriate callback
-                            if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
-                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
-                                    update.RegionData.TimeDilation);
-                            else if ((flags & CompressedFlags.Tree) != 0)
-                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, 
-                                    update.RegionData.TimeDilation);
-                            else
-                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
-                                    update.RegionData.TimeDilation);
-
-                            #endregion
-
-                            break;
-                        default:
-                            Logger.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() +
-                                ", implement this!", Client);
-                            break;
+                        prim.AngularVelocity = new Vector3(block.Data, i);
+                        i += 12;
                     }
+
+                    // Parent ID
+                    if ((flags & CompressedFlags.HasParent) != 0)
+                    {
+                        prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                    }
+                    else
+                    {
+                        prim.ParentID = 0;
+                    }
+
+                    // Tree data
+                    if ((flags & CompressedFlags.Tree) != 0)
+                    {
+                        prim.TreeSpecies = (Tree)block.Data[i++];
+                        prim.ScratchPad = Utils.EmptyBytes;
+                    }
+                    // Scratch pad
+                    else if ((flags & CompressedFlags.ScratchPad) != 0)
+                    {
+                        prim.TreeSpecies = (Tree)0;
+
+                        int size = block.Data[i++];
+                        prim.ScratchPad = new byte[size];
+                        Buffer.BlockCopy(block.Data, i, prim.ScratchPad, 0, size);
+                        i += size;
+                    }
+
+                    // Floating text
+                    if ((flags & CompressedFlags.HasText) != 0)
+                    {
+                        string text = String.Empty;
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        i++;
+
+                        // Floating text
+                        prim.Text = text;
+
+                        // Text color
+                        prim.TextColor = new Color4(block.Data, i, false);
+                        i += 4;
+                    }
+                    else
+                    {
+                        prim.Text = String.Empty;
+                    }
+
+                    // Media URL
+                    if ((flags & CompressedFlags.MediaURL) != 0)
+                    {
+                        string text = String.Empty;
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        i++;
+
+                        prim.MediaURL = text;
+                    }
+
+                    // Particle system
+                    if ((flags & CompressedFlags.HasParticles) != 0)
+                    {
+                        prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
+                        i += 86;
+                    }
+
+                    // Extra parameters
+                    i += prim.SetExtraParamsFromBytes(block.Data, i);
+
+                    //Sound data
+                    if ((flags & CompressedFlags.HasSound) != 0)
+                    {
+                        prim.Sound = new UUID(block.Data, i);
+                        i += 16;
+
+                        prim.SoundGain = Utils.BytesToFloat(block.Data, i);
+                        i += 4;
+                        prim.SoundFlags = (SoundFlags)block.Data[i++];
+                        prim.SoundRadius = Utils.BytesToFloat(block.Data, i);
+                        i += 4;
+                    }
+
+                    // Name values
+                    if ((flags & CompressedFlags.HasNameValues) != 0)
+                    {
+                        string text = String.Empty;
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        i++;
+
+                        // Parse the name values
+                        if (text.Length > 0)
+                        {
+                            string[] lines = text.Split('\n');
+                            prim.NameValues = new NameValue[lines.Length];
+
+                            for (int j = 0; j < lines.Length; j++)
+                            {
+                                if (!String.IsNullOrEmpty(lines[j]))
+                                {
+                                    NameValue nv = new NameValue(lines[j]);
+                                    prim.NameValues[j] = nv;
+                                }
+                            }
+                        }
+                    }
+
+                    prim.PrimData.PathCurve = (PathCurve)block.Data[i++];
+                    ushort pathBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.PathBegin = Primitive.UnpackBeginCut(pathBegin);
+                    ushort pathEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.PathEnd = Primitive.UnpackEndCut(pathEnd);
+                    prim.PrimData.PathScaleX = Primitive.UnpackPathScale(block.Data[i++]);
+                    prim.PrimData.PathScaleY = Primitive.UnpackPathScale(block.Data[i++]);
+                    prim.PrimData.PathShearX = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
+                    prim.PrimData.PathShearY = Primitive.UnpackPathShear((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTwist = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTwistBegin = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                    prim.PrimData.PathRadiusOffset = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTaperX = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
+                    prim.PrimData.PathTaperY = Primitive.UnpackPathTaper((sbyte)block.Data[i++]);
+                    prim.PrimData.PathRevolutions = Primitive.UnpackPathRevolutions(block.Data[i++]);
+                    prim.PrimData.PathSkew = Primitive.UnpackPathTwist((sbyte)block.Data[i++]);
+
+                    prim.PrimData.profileCurve = block.Data[i++];
+                    ushort profileBegin = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut(profileBegin);
+                    ushort profileEnd = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.ProfileEnd = Primitive.UnpackEndCut(profileEnd);
+                    ushort profileHollow = Utils.BytesToUInt16(block.Data, i); i += 2;
+                    prim.PrimData.ProfileHollow = Primitive.UnpackProfileHollow(profileHollow);
+
+                    // TextureEntry
+                    int textureEntryLength = (int)Utils.BytesToUInt(block.Data, i);
+                    i += 4;
+                    prim.Textures = new Primitive.TextureEntry(block.Data, i, textureEntryLength);
+                    i += textureEntryLength;
+
+                    // Texture animation
+                    if ((flags & CompressedFlags.TextureAnimation) != 0)
+                    {
+                        //int textureAnimLength = (int)Utils.BytesToUIntBig(block.Data, i);
+                        i += 4;
+                        prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
+                    }
+
+                    #endregion
+
+                    #region Fire Events
+
+                    // Fire the appropriate callback
+                    if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
+                        FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle,
+                            update.RegionData.TimeDilation);
+                    else
+                        FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle,
+                            update.RegionData.TimeDilation);
+
+                    #endregion
                 }
                 catch (IndexOutOfRangeException e)
                 {
@@ -2067,6 +2109,7 @@ namespace OpenMetaverse
 
             lock (simulator.ObjectsPrimitives.Dictionary)
             {
+                List<uint> removeAvatars = new List<uint>();
                 List<uint> removePrims = new List<uint>();
 
                 if (Client.Settings.OBJECT_TRACKING)
@@ -2076,7 +2119,8 @@ namespace OpenMetaverse
                     {
                         localID = kill.ObjectData[i].ID;
 
-                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID)) removePrims.Add(localID);
+                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(localID))
+                            removePrims.Add(localID);
 
                         foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
                         {
@@ -2091,40 +2135,47 @@ namespace OpenMetaverse
 
                 if (Client.Settings.AVATAR_TRACKING)
                 {
-                    uint localID;
-                    for (int i = 0; i < kill.ObjectData.Length; i++)
+                    lock (simulator.ObjectsAvatars.Dictionary)
                     {
-                        localID = kill.ObjectData[i].ID;
-
-                        if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID)) removePrims.Add(localID);                            
-
-                        List<uint> rootPrims = new List<uint>();
-
-                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
+                        uint localID;
+                        for (int i = 0; i < kill.ObjectData.Length; i++)
                         {
-                            if (prim.Value.ParentID == localID)
+                            localID = kill.ObjectData[i].ID;
+
+                            if (simulator.ObjectsAvatars.Dictionary.ContainsKey(localID))
+                                removeAvatars.Add(localID);
+
+                            List<uint> rootPrims = new List<uint>();
+
+                            foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
                             {
-                                FireOnObjectKilled(simulator, prim.Key);
-                                removePrims.Add(prim.Key);
-                                rootPrims.Add(prim.Key);
+                                if (prim.Value.ParentID == localID)
+                                {
+                                    FireOnObjectKilled(simulator, prim.Key);
+                                    removePrims.Add(prim.Key);
+                                    rootPrims.Add(prim.Key);
+                                }
+                            }
+
+                            foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
+                            {
+                                if (rootPrims.Contains(prim.Value.ParentID))
+                                {
+                                    FireOnObjectKilled(simulator, prim.Key);
+                                    removePrims.Add(prim.Key);
+                                }
                             }
                         }
 
-                        foreach (KeyValuePair<uint, Primitive> prim in simulator.ObjectsPrimitives.Dictionary)
-                        {
-                            if (rootPrims.Contains(prim.Value.ParentID))
-                            {
-                                FireOnObjectKilled(simulator, prim.Key);
-                                removePrims.Add(prim.Key);
-                            }
-                        }
+                        //Do the actual removing outside of the loops but still inside the lock.
+                        //This safely prevents the collection from being modified during a loop.
+                        foreach (uint removeID in removeAvatars)
+                            simulator.ObjectsAvatars.Dictionary.Remove(removeID);
                     }
                 }
 
-                //Do the actual removing outside of the loops but still inside the lock.
-                //This safely prevents the collection from being modified during a loop.
                 foreach (uint removeID in removePrims)
-                    simulator.ObjectsPrimitives.Remove(removeID);
+                    simulator.ObjectsPrimitives.Dictionary.Remove(removeID);
             }
         }
 
@@ -2219,7 +2270,11 @@ namespace OpenMetaverse
                     lock (sim.ObjectsPrimitives.Dictionary)
                     {
                         if (sim.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
+                        {
+                            if (sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties == null)
+                                sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties = new Primitive.ObjectProperties();
                             sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties.SetFamilyProperties(props);
+                        }
                     }
                 }
             }
@@ -2325,7 +2380,7 @@ namespace OpenMetaverse
         {
             if (av.LocalID == Client.Self.localID) Client.Self.sittingOn = localid;
             av.ParentID = localid;
-            
+
             if (OnAvatarSitChanged != null && oldSeatID != localid)
             {
                 try { OnAvatarSitChanged(sim, av, localid, oldSeatID); }
@@ -2338,10 +2393,75 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="s"></param>
         /// <param name="dilation"></param>
-		protected void UpdateDilation(Simulator s, uint dilation)
-		{
+        protected void UpdateDilation(Simulator s, uint dilation)
+        {
             s.Stats.Dilation = (float)dilation / 65535.0f;
         }
+
+
+        /// <summary>
+        /// Set the Shape data of an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="prim">Data describing the prim shape</param>
+        public void SetShape(Simulator simulator, uint localID, Primitive.ConstructionData prim)
+        {
+            ObjectShapePacket shape = new ObjectShapePacket();
+
+            shape.AgentData.AgentID = Client.Self.AgentID;
+            shape.AgentData.SessionID = Client.Self.SessionID;
+
+            shape.ObjectData = new OpenMetaverse.Packets.ObjectShapePacket.ObjectDataBlock[1];
+            shape.ObjectData[0] = new OpenMetaverse.Packets.ObjectShapePacket.ObjectDataBlock();
+
+            shape.ObjectData[0].ObjectLocalID = localID;
+
+            shape.ObjectData[0].PathCurve = (byte)prim.PathCurve;
+            shape.ObjectData[0].PathBegin = Primitive.PackBeginCut(prim.PathBegin);
+            shape.ObjectData[0].PathEnd = Primitive.PackEndCut(prim.PathEnd);
+            shape.ObjectData[0].PathScaleX = Primitive.PackPathScale(prim.PathScaleX);
+            shape.ObjectData[0].PathScaleY = Primitive.PackPathScale(prim.PathScaleY);
+            shape.ObjectData[0].PathShearX = (byte)Primitive.PackPathShear(prim.PathShearX);
+            shape.ObjectData[0].PathShearY = (byte)Primitive.PackPathShear(prim.PathShearY);
+            shape.ObjectData[0].PathTwist = Primitive.PackPathTwist(prim.PathTwist);
+            shape.ObjectData[0].PathTwistBegin = Primitive.PackPathTwist(prim.PathTwistBegin);
+            shape.ObjectData[0].PathRadiusOffset = Primitive.PackPathTwist(prim.PathRadiusOffset);
+            shape.ObjectData[0].PathTaperX = Primitive.PackPathTaper(prim.PathTaperX);
+            shape.ObjectData[0].PathTaperY = Primitive.PackPathTaper(prim.PathTaperY);
+            shape.ObjectData[0].PathRevolutions = Primitive.PackPathRevolutions(prim.PathRevolutions);
+            shape.ObjectData[0].PathSkew = Primitive.PackPathTwist(prim.PathSkew);
+
+            shape.ObjectData[0].ProfileCurve = prim.profileCurve;
+            shape.ObjectData[0].ProfileBegin = Primitive.PackBeginCut(prim.ProfileBegin);
+            shape.ObjectData[0].ProfileEnd = Primitive.PackEndCut(prim.ProfileEnd);
+            shape.ObjectData[0].ProfileHollow = Primitive.PackProfileHollow(prim.ProfileHollow);
+
+            Client.Network.SendPacket(shape, simulator);
+        }
+
+        /// <summary>
+        /// Set the Material data of an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="material">The new material of the object</param>
+        public void SetMaterial(Simulator simulator, uint localID, Material material)
+        {
+            ObjectMaterialPacket matPacket = new ObjectMaterialPacket();
+
+            matPacket.AgentData.AgentID = Client.Self.AgentID;
+            matPacket.AgentData.SessionID = Client.Self.SessionID;
+
+            matPacket.ObjectData = new ObjectMaterialPacket.ObjectDataBlock[1];
+            matPacket.ObjectData[0] = new ObjectMaterialPacket.ObjectDataBlock();
+
+            matPacket.ObjectData[0].ObjectLocalID = localID;
+            matPacket.ObjectData[0].Material = (byte)material;
+
+            Client.Network.SendPacket(matPacket, simulator);
+        }
+
 
         #endregion Utility Functions
 
@@ -2380,15 +2500,6 @@ namespace OpenMetaverse
             if (OnNewPrim != null)
             {
                 try { OnNewPrim(simulator, prim, RegionHandle, TimeDilation); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
-        {
-            if (OnNewFoliage != null)
-            {
-                try { OnNewFoliage(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

@@ -39,7 +39,10 @@ namespace OpenMetaverse.TestClient
 
             for (int i = startIndex; i < args.Length; i++)
             {
-                message += args[i] + " ";
+                // Append a space before the next arg
+                if( i > 0 )
+                    message += " ";
+                message += args[i];
             }
 
             Client.Self.Chat(message, channel, ChatType.Whisper);

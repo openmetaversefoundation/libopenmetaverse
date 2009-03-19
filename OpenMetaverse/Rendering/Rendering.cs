@@ -203,6 +203,26 @@ namespace OpenMetaverse.Rendering
     {
         public List<Vertex> Vertices;
         public List<ushort> Indices;
+
+        public SimpleMesh()
+        {
+        }
+
+        public SimpleMesh(SimpleMesh mesh)
+        {
+            this.Indices = new List<ushort>(mesh.Indices);
+            this.Path.Open = mesh.Path.Open;
+            this.Path.Points = new List<PathPoint>(mesh.Path.Points);
+            this.Prim = mesh.Prim;
+            this.Profile.Concave = mesh.Profile.Concave;
+            this.Profile.Faces = new List<ProfileFace>(mesh.Profile.Faces);
+            this.Profile.MaxX = mesh.Profile.MaxX;
+            this.Profile.MinX = mesh.Profile.MinX;
+            this.Profile.Open = mesh.Profile.Open;
+            this.Profile.Positions = new List<Vector3>(mesh.Profile.Positions);
+            this.Profile.TotalOutsidePoints = mesh.Profile.TotalOutsidePoints;
+            this.Vertices = new List<Vertex>(mesh.Vertices);
+        }
     }
 
     #endregion Mesh Classes

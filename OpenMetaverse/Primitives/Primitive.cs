@@ -101,6 +101,20 @@ namespace OpenMetaverse
         ObjectGroupOwned = 0x00040000,
         /// <summary>Deprecated</summary>
         ObjectYouOfficer = 0x00080000,
+
+        /// <summary>Server flag, will not be sent to clients. Specifies that
+        /// the object is destroyed when it touches a simulator edge</summary>
+        DieAtEdge = 0x00100000,
+        /// <summary>Server flag, will not be sent to clients. Specifies that
+        /// the object will be returned to the owner's inventory when it
+        /// touches a simulator edge</summary>
+        ReturnAtEdge = 0x00200000,
+        /// <summary>Server flag, will not be sent to clients.</summary>
+        Sandbox = 0x00400000,
+        /// <summary>Server flag, will not be sent to client. Specifies that
+        /// the object is hovering/flying</summary>
+        Flying = 0x00800000,
+
         /// <summary></summary>
         CameraDecoupled = 0x00100000,
         /// <summary></summary>
@@ -109,6 +123,12 @@ namespace OpenMetaverse
         CameraSource = 0x00400000,
         /// <summary></summary>
         CastShadows = 0x00800000,
+
+        Placeholder5 = 0x01000000,
+        Placeholder6 = 0x02000000,
+        Placeholder7 = 0x04000000,
+        Placeholder8 = 0x08000000,
+
         /// <summary></summary>
         ObjectOwnerModify = 0x10000000,
         /// <summary></summary>
@@ -117,6 +137,28 @@ namespace OpenMetaverse
         Temporary = 0x40000000,
         /// <summary></summary>
         ZlibCompressed = 0x80000000
+    }
+
+    /// <summary>
+    /// Sound flags for sounds attached to primitives
+    /// </summary>
+    [Flags]
+    public enum SoundFlags : byte
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        Loop = 0x01,
+        /// <summary></summary>
+        SyncMaster = 0x02,
+        /// <summary></summary>
+        SyncSlave = 0x04,
+        /// <summary></summary>
+        SyncPending = 0x08,
+        /// <summary></summary>
+        Queue = 0x10,
+        /// <summary></summary>
+        Stop = 0x20
     }
 
     public enum ProfileCurve : byte
@@ -277,7 +319,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         Other,
         /// <summary></summary>
-        Selectected,
+        Selected,
         /// <summary></summary>
         Temporary
     }
@@ -527,6 +569,13 @@ namespace OpenMetaverse
 
             #region Properties
 
+            /// <summary>Attachment point to an avatar</summary>
+            public AttachmentPoint AttachmentPoint
+            {
+                get { return (AttachmentPoint)Utils.SwapWords(State); }
+                set { State = (byte)Utils.SwapWords((byte)value); }
+            }
+
             /// <summary></summary>
             public ProfileCurve ProfileCurve
             {
@@ -577,82 +626,13 @@ namespace OpenMetaverse
                 }
             }
 
-            /// <summary>Uses basic heuristics to estimate the primitive shape</summary>
-            public PrimType Type
-            {
-                get
-                {
-                    bool linearPath = (PathCurve == PathCurve.Line || PathCurve == PathCurve.Flexible);
-                    float scaleX = PathScaleX;
-                    float scaleY = PathScaleY;
-
-                    if (linearPath)
-                    {
-                        switch (ProfileCurve)
-                        {
-                            case ProfileCurve.Circle:
-                                return PrimType.Cylinder;
-                            case ProfileCurve.Square:
-                                return PrimType.Box;
-                            case ProfileCurve.IsoTriangle:
-                            case ProfileCurve.EqualTriangle:
-                            case ProfileCurve.RightTriangle:
-                                return PrimType.Prism;
-                            case ProfileCurve.HalfCircle:
-                            default:
-                                return PrimType.Unknown;
-                        }
-                    }
-                    else
-                    {
-                        switch (PathCurve)
-                        {
-                            case PathCurve.Flexible:
-                                return PrimType.Unknown;
-                            case PathCurve.Circle:
-                                switch (ProfileCurve)
-                                {
-                                    case ProfileCurve.Circle:
-                                        if (scaleY > 0.75f)
-                                            return PrimType.Sphere;
-                                        else
-                                            return PrimType.Torus;
-                                    case ProfileCurve.HalfCircle:
-                                        return PrimType.Sphere;
-                                    case ProfileCurve.EqualTriangle:
-                                        return PrimType.Ring;
-                                    case ProfileCurve.Square:
-                                        if (scaleY <= 0.75f)
-                                            return PrimType.Tube;
-                                        else
-                                            return PrimType.Unknown;
-                                    default:
-                                        return PrimType.Unknown;
-                                }
-                            case PathCurve.Circle2:
-                                if (ProfileCurve == ProfileCurve.Circle)
-                                    return PrimType.Sphere;
-                                else
-                                    return PrimType.Unknown;
-                            default:
-                                return PrimType.Unknown;
-                        }
-                    }
-                }
-            }
-
             #endregion Properties
-
-            public override string ToString()
-            {
-                return Type.ToString();
-            }
         }
 
         /// <summary>
         /// Information on the flexible properties of a primitive
         /// </summary>
-        public struct FlexibleData
+        public class FlexibleData
         {
             /// <summary></summary>
             public int Softness;
@@ -666,6 +646,13 @@ namespace OpenMetaverse
             public float Tension;
             /// <summary></summary>
             public Vector3 Force;
+
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public FlexibleData()
+            {
+            }
 
             /// <summary>
             /// 
@@ -723,34 +710,34 @@ namespace OpenMetaverse
             /// 
             /// </summary>
             /// <returns></returns>
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDMap map = new LLSDMap();
+                OSDMap map = new OSDMap();
 
-                map["simulate_lod"] = LLSD.FromInteger(Softness);
-                map["gravity"] = LLSD.FromReal(Gravity);
-                map["air_friction"] = LLSD.FromReal(Drag);
-                map["wind_sensitivity"] = LLSD.FromReal(Wind);
-                map["tension"] = LLSD.FromReal(Tension);
-                map["user_force"] = LLSD.FromVector3(Force);
+                map["simulate_lod"] = OSD.FromInteger(Softness);
+                map["gravity"] = OSD.FromReal(Gravity);
+                map["air_friction"] = OSD.FromReal(Drag);
+                map["wind_sensitivity"] = OSD.FromReal(Wind);
+                map["tension"] = OSD.FromReal(Tension);
+                map["user_force"] = OSD.FromVector3(Force);
 
                 return map;
             }
 
-            public static FlexibleData FromLLSD(LLSD llsd)
+            public static FlexibleData FromOSD(OSD osd)
             {
                 FlexibleData flex = new FlexibleData();
 
-                if (llsd.Type == LLSDType.Map)
+                if (osd.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)llsd;
+                    OSDMap map = (OSDMap)osd;
 
                     flex.Softness = map["simulate_lod"].AsInteger();
                     flex.Gravity = (float)map["gravity"].AsReal();
                     flex.Drag = (float)map["air_friction"].AsReal();
                     flex.Wind = (float)map["wind_sensitivity"].AsReal();
                     flex.Tension = (float)map["tension"].AsReal();
-                    flex.Force = ((LLSDArray)map["user_force"]).AsVector3();
+                    flex.Force = ((OSDArray)map["user_force"]).AsVector3();
                 }
 
                 return flex;
@@ -760,7 +747,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Information on the light properties of a primitive
         /// </summary>
-        public struct LightData
+        public class LightData
         {
             /// <summary></summary>
             public Color4 Color;
@@ -772,6 +759,13 @@ namespace OpenMetaverse
             public float Cutoff;
             /// <summary></summary>
             public float Falloff;
+
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public LightData()
+            {
+            }
 
             /// <summary>
             /// 
@@ -820,28 +814,28 @@ namespace OpenMetaverse
                 return data;
             }
 
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDMap map = new LLSDMap();
+                OSDMap map = new OSDMap();
 
-                map["color"] = LLSD.FromColor4(Color);
-                map["intensity"] = LLSD.FromReal(Intensity);
-                map["radius"] = LLSD.FromReal(Radius);
-                map["cutoff"] = LLSD.FromReal(Cutoff);
-                map["falloff"] = LLSD.FromReal(Falloff);
+                map["color"] = OSD.FromColor4(Color);
+                map["intensity"] = OSD.FromReal(Intensity);
+                map["radius"] = OSD.FromReal(Radius);
+                map["cutoff"] = OSD.FromReal(Cutoff);
+                map["falloff"] = OSD.FromReal(Falloff);
 
                 return map;
             }
 
-            public static LightData FromLLSD(LLSD llsd)
+            public static LightData FromOSD(OSD osd)
             {
                 LightData light = new LightData();
 
-                if (llsd.Type == LLSDType.Map)
+                if (osd.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)llsd;
+                    OSDMap map = (OSDMap)osd;
 
-                    light.Color = ((LLSDArray)map["color"]).AsColor4();
+                    light.Color = ((OSDArray)map["color"]).AsColor4();
                     light.Intensity = (float)map["intensity"].AsReal();
                     light.Radius = (float)map["radius"].AsReal();
                     light.Cutoff = (float)map["cutoff"].AsReal();
@@ -865,11 +859,23 @@ namespace OpenMetaverse
         /// <summary>
         /// Information on the sculpt properties of a sculpted primitive
         /// </summary>
-        public struct SculptData
+        public class SculptData
         {
             public UUID SculptTexture;
             public SculptType Type;
 
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public SculptData()
+            {
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="data"></param>
+            /// <param name="pos"></param>
             public SculptData(byte[] data, int pos)
             {
                 if (data.Length >= 17)
@@ -894,23 +900,23 @@ namespace OpenMetaverse
                 return data;
             }
 
-            public LLSD GetLLSD()
+            public OSD GetOSD()
             {
-                LLSDMap map = new LLSDMap();
+                OSDMap map = new OSDMap();
 
-                map["texture"] = LLSD.FromUUID(SculptTexture);
-                map["type"] = LLSD.FromInteger((int)Type);
+                map["texture"] = OSD.FromUUID(SculptTexture);
+                map["type"] = OSD.FromInteger((int)Type);
 
                 return map;
             }
 
-            public static SculptData FromLLSD(LLSD llsd)
+            public static SculptData FromOSD(OSD osd)
             {
                 SculptData sculpt = new SculptData();
 
-                if (llsd.Type == LLSDType.Map)
+                if (osd.Type == OSDType.Map)
                 {
-                    LLSDMap map = (LLSDMap)llsd;
+                    OSDMap map = (OSDMap)osd;
 
                     sculpt.SculptTexture = map["texture"].AsUUID();
                     sculpt.Type = (SculptType)map["type"].AsInteger();
@@ -923,7 +929,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Extended properties to describe an object
         /// </summary>
-        public struct ObjectProperties
+        public class ObjectProperties
         {
             /// <summary></summary>
             public UUID ObjectID;
@@ -973,6 +979,17 @@ namespace OpenMetaverse
             public UUID[] TextureIDs;
 
             /// <summary>
+            /// Default constructor
+            /// </summary>
+            public ObjectProperties()
+            {
+                Name = String.Empty;
+                Description = String.Empty;
+                TouchName = String.Empty;
+                SitName = String.Empty;
+            }
+
+            /// <summary>
             /// Set the properties that are set in an ObjectPropertiesFamily packet
             /// </summary>
             /// <param name="props"><seealso cref="ObjectProperties"/> that has
@@ -990,6 +1007,18 @@ namespace OpenMetaverse
                 LastOwnerID = props.LastOwnerID;
                 Name = props.Name;
                 Description = props.Description;
+            }
+
+            public byte[] GetTextureIDBytes()
+            {
+                if (TextureIDs == null || TextureIDs.Length == 0)
+                    return Utils.EmptyBytes;
+
+                byte[] bytes = new byte[16 * TextureIDs.Length];
+                for (int i = 0; i < TextureIDs.Length; i++)
+                    TextureIDs[i].ToBytes(bytes, 16 * i);
+
+                return bytes;
             }
         }
 
@@ -1009,14 +1038,17 @@ namespace OpenMetaverse
         public ulong RegionHandle;
         /// <summary></summary>
         public PrimFlags Flags;
+        /// <summary>Foliage type for this primitive. Only applicable if this
+        /// primitive is foliage</summary>
+        public Tree TreeSpecies;
         /// <summary>Unknown</summary>
-        public byte[] GenericData;
+        public byte[] ScratchPad;
         /// <summary></summary>
         public Vector3 Position;
         /// <summary></summary>
         public Vector3 Scale;
         /// <summary></summary>
-        public Quaternion Rotation;
+        public Quaternion Rotation = Quaternion.Identity;
         /// <summary></summary>
         public Vector3 Velocity;
         /// <summary></summary>
@@ -1039,7 +1071,7 @@ namespace OpenMetaverse
         /// active</summary>
         public UUID OwnerID;
         /// <summary></summary>
-        public byte SoundFlags;
+        public SoundFlags SoundFlags;
         /// <summary></summary>
         public float SoundGain;
         /// <summary></summary>
@@ -1065,6 +1097,76 @@ namespace OpenMetaverse
 
         #endregion Public Members
 
+        #region Properties
+
+        /// <summary>Uses basic heuristics to estimate the primitive shape</summary>
+        public PrimType Type
+        {
+            get
+            {
+                if (Sculpt != null && Sculpt.Type != SculptType.None)
+                    return PrimType.Sculpt;
+
+                bool linearPath = (PrimData.PathCurve == PathCurve.Line || PrimData.PathCurve == PathCurve.Flexible);
+                float scaleY = PrimData.PathScaleY;
+
+                if (linearPath)
+                {
+                    switch (PrimData.ProfileCurve)
+                    {
+                        case ProfileCurve.Circle:
+                            return PrimType.Cylinder;
+                        case ProfileCurve.Square:
+                            return PrimType.Box;
+                        case ProfileCurve.IsoTriangle:
+                        case ProfileCurve.EqualTriangle:
+                        case ProfileCurve.RightTriangle:
+                            return PrimType.Prism;
+                        case ProfileCurve.HalfCircle:
+                        default:
+                            return PrimType.Unknown;
+                    }
+                }
+                else
+                {
+                    switch (PrimData.PathCurve)
+                    {
+                        case PathCurve.Flexible:
+                            return PrimType.Unknown;
+                        case PathCurve.Circle:
+                            switch (PrimData.ProfileCurve)
+                            {
+                                case ProfileCurve.Circle:
+                                    if (scaleY > 0.75f)
+                                        return PrimType.Sphere;
+                                    else
+                                        return PrimType.Torus;
+                                case ProfileCurve.HalfCircle:
+                                    return PrimType.Sphere;
+                                case ProfileCurve.EqualTriangle:
+                                    return PrimType.Ring;
+                                case ProfileCurve.Square:
+                                    if (scaleY <= 0.75f)
+                                        return PrimType.Tube;
+                                    else
+                                        return PrimType.Unknown;
+                                default:
+                                    return PrimType.Unknown;
+                            }
+                        case PathCurve.Circle2:
+                            if (PrimData.ProfileCurve == ProfileCurve.Circle)
+                                return PrimType.Sphere;
+                            else
+                                return PrimType.Unknown;
+                        default:
+                            return PrimType.Unknown;
+                    }
+                }
+            }
+        }
+
+        #endregion Properties
+
         #region Constructors
 
         /// <summary>
@@ -1075,10 +1177,6 @@ namespace OpenMetaverse
             // Default a few null property values to String.Empty
             Text = String.Empty;
             MediaURL = String.Empty;
-            Properties.Name = String.Empty;
-            Properties.Description = String.Empty;
-            Properties.TouchName = String.Empty;
-            Properties.SitName = String.Empty;
         }
 
         public Primitive(Primitive prim)
@@ -1089,10 +1187,14 @@ namespace OpenMetaverse
             ParentID = prim.ParentID;
             RegionHandle = prim.RegionHandle;
             Flags = prim.Flags;
-            if (prim.GenericData != null)
-                Buffer.BlockCopy(prim.GenericData, 0, GenericData, 0, prim.GenericData.Length);
+            TreeSpecies = prim.TreeSpecies;
+            if (prim.ScratchPad != null)
+            {
+                ScratchPad = new byte[prim.ScratchPad.Length];
+                Buffer.BlockCopy(prim.ScratchPad, 0, ScratchPad, 0, ScratchPad.Length);
+            }
             else
-                GenericData = null;
+                ScratchPad = null;
             Position = prim.Position;
             Scale = prim.Scale;
             Rotation = prim.Rotation;
@@ -1116,7 +1218,11 @@ namespace OpenMetaverse
             JointPivot = prim.JointPivot;
             JointAxisOrAnchor = prim.JointAxisOrAnchor;
             if (prim.NameValues != null)
+            {
+                if (NameValues == null || NameValues.Length != prim.NameValues.Length)
+                    NameValues = new NameValue[prim.NameValues.Length];
                 Array.Copy(prim.NameValues, NameValues, prim.NameValues.Length);
+            }
             else
                 NameValues = null;
             PrimData = prim.PrimData;
@@ -1124,7 +1230,7 @@ namespace OpenMetaverse
             // FIXME: Get a real copy constructor for TextureEntry instead of serializing to bytes and back
             if (prim.Textures != null)
             {
-                byte[] textureBytes = prim.Textures.ToBytes();
+                byte[] textureBytes = prim.Textures.GetBytes();
                 Textures = new TextureEntry(textureBytes, 0, textureBytes.Length);
             }
             else
@@ -1139,73 +1245,78 @@ namespace OpenMetaverse
 
         #region Public Methods
 
-        public LLSD GetLLSD()
+        public OSD GetOSD()
         {
-            LLSDMap path = new LLSDMap(14);
-            path["begin"] = LLSD.FromReal(PrimData.PathBegin);
-            path["curve"] = LLSD.FromInteger((int)PrimData.PathCurve);
-            path["end"] = LLSD.FromReal(PrimData.PathEnd);
-            path["radius_offset"] = LLSD.FromReal(PrimData.PathRadiusOffset);
-            path["revolutions"] = LLSD.FromReal(PrimData.PathRevolutions);
-            path["scale_x"] = LLSD.FromReal(PrimData.PathScaleX);
-            path["scale_y"] = LLSD.FromReal(PrimData.PathScaleY);
-            path["shear_x"] = LLSD.FromReal(PrimData.PathShearX);
-            path["shear_y"] = LLSD.FromReal(PrimData.PathShearY);
-            path["skew"] = LLSD.FromReal(PrimData.PathSkew);
-            path["taper_x"] = LLSD.FromReal(PrimData.PathTaperX);
-            path["taper_y"] = LLSD.FromReal(PrimData.PathTaperY);
-            path["twist"] = LLSD.FromReal(PrimData.PathTwist);
-            path["twist_begin"] = LLSD.FromReal(PrimData.PathTwistBegin);
+            OSDMap path = new OSDMap(14);
+            path["begin"] = OSD.FromReal(PrimData.PathBegin);
+            path["curve"] = OSD.FromInteger((int)PrimData.PathCurve);
+            path["end"] = OSD.FromReal(PrimData.PathEnd);
+            path["radius_offset"] = OSD.FromReal(PrimData.PathRadiusOffset);
+            path["revolutions"] = OSD.FromReal(PrimData.PathRevolutions);
+            path["scale_x"] = OSD.FromReal(PrimData.PathScaleX);
+            path["scale_y"] = OSD.FromReal(PrimData.PathScaleY);
+            path["shear_x"] = OSD.FromReal(PrimData.PathShearX);
+            path["shear_y"] = OSD.FromReal(PrimData.PathShearY);
+            path["skew"] = OSD.FromReal(PrimData.PathSkew);
+            path["taper_x"] = OSD.FromReal(PrimData.PathTaperX);
+            path["taper_y"] = OSD.FromReal(PrimData.PathTaperY);
+            path["twist"] = OSD.FromReal(PrimData.PathTwist);
+            path["twist_begin"] = OSD.FromReal(PrimData.PathTwistBegin);
 
-            LLSDMap profile = new LLSDMap(4);
-            profile["begin"] = LLSD.FromReal(PrimData.ProfileBegin);
-            profile["curve"] = LLSD.FromInteger((int)PrimData.ProfileCurve);
-            profile["hole"] = LLSD.FromInteger((int)PrimData.ProfileHole);
-            profile["end"] = LLSD.FromReal(PrimData.ProfileEnd);
-            profile["hollow"] = LLSD.FromReal(PrimData.ProfileHollow);
+            OSDMap profile = new OSDMap(4);
+            profile["begin"] = OSD.FromReal(PrimData.ProfileBegin);
+            profile["curve"] = OSD.FromInteger((int)PrimData.ProfileCurve);
+            profile["hole"] = OSD.FromInteger((int)PrimData.ProfileHole);
+            profile["end"] = OSD.FromReal(PrimData.ProfileEnd);
+            profile["hollow"] = OSD.FromReal(PrimData.ProfileHollow);
 
-            LLSDMap volume = new LLSDMap(2);
+            OSDMap volume = new OSDMap(2);
             volume["path"] = path;
             volume["profile"] = profile;
 
-            LLSDMap prim = new LLSDMap(9);
-            prim["name"] = LLSD.FromString(Properties.Name);
-            prim["description"] = LLSD.FromString(Properties.Description);
-            prim["phantom"] = LLSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
-            prim["physical"] = LLSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
-            prim["position"] = LLSD.FromVector3(Position);
-            prim["rotation"] = LLSD.FromQuaternion(Rotation);
-            prim["scale"] = LLSD.FromVector3(Scale);
-            prim["material"] = LLSD.FromInteger((int)PrimData.Material);
-            prim["shadows"] = LLSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
-            prim["textures"] = Textures.GetLLSD();
+            OSDMap prim = new OSDMap(9);
+            prim["name"] = OSD.FromString(Properties.Name);
+            prim["description"] = OSD.FromString(Properties.Description);
+            prim["phantom"] = OSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
+            prim["physical"] = OSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
+            prim["position"] = OSD.FromVector3(Position);
+            prim["rotation"] = OSD.FromQuaternion(Rotation);
+            prim["scale"] = OSD.FromVector3(Scale);
+            prim["material"] = OSD.FromInteger((int)PrimData.Material);
+            prim["shadows"] = OSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
+            prim["textures"] = Textures.GetOSD();
             prim["volume"] = volume;
             if (ParentID != 0)
-                prim["parentid"] = LLSD.FromInteger(ParentID);
+                prim["parentid"] = OSD.FromInteger(ParentID);
 
-            prim["light"] = Light.GetLLSD();
-            prim["flex"] = Flexible.GetLLSD();
-            prim["sculpt"] = Sculpt.GetLLSD();
+            if (Light != null)
+                prim["light"] = Light.GetOSD();
+
+            if (Flexible != null)
+                prim["flex"] = Flexible.GetOSD();
+
+            if (Sculpt != null)
+                prim["sculpt"] = Sculpt.GetOSD();
 
             return prim;
         }
 
-        public static Primitive FromLLSD(LLSD llsd)
+        public static Primitive FromOSD(OSD osd)
         {
             Primitive prim = new Primitive();
             Primitive.ConstructionData data;
 
-            LLSDMap map = (LLSDMap)llsd;
-            LLSDMap volume = (LLSDMap)map["volume"];
-            LLSDMap path = (LLSDMap)volume["path"];
-            LLSDMap profile = (LLSDMap)volume["profile"];
+            OSDMap map = (OSDMap)osd;
+            OSDMap volume = (OSDMap)map["volume"];
+            OSDMap path = (OSDMap)volume["path"];
+            OSDMap profile = (OSDMap)volume["profile"];
 
             #region Path/Profile
 
             data.profileCurve = (byte)0;
             data.State = 0;
             data.Material = (Material)map["material"].AsInteger();
-            data.PCode = PCode.Prim; // TODO: Put this in LLSD
+            data.PCode = PCode.Prim; // TODO: Put this in SD
 
             data.PathBegin = (float)path["begin"].AsReal();
             data.PathCurve = (PathCurve)path["curve"].AsInteger();
@@ -1242,13 +1353,15 @@ namespace OpenMetaverse
                 prim.Flags |= PrimFlags.CastShadows;
 
             prim.ParentID = (uint)map["parentid"].AsInteger();
-            prim.Position = ((LLSDArray)map["position"]).AsVector3();
-            prim.Rotation = ((LLSDArray)map["rotation"]).AsQuaternion();
-            prim.Scale = ((LLSDArray)map["scale"]).AsVector3();
-            prim.Flexible = FlexibleData.FromLLSD(map["flex"]);
-            prim.Light = LightData.FromLLSD(map["light"]);
-            prim.Sculpt = SculptData.FromLLSD(map["sculpt"]);
-            prim.Textures = TextureEntry.FromLLSD(map["textures"]);
+            prim.Position = ((OSDArray)map["position"]).AsVector3();
+            prim.Rotation = ((OSDArray)map["rotation"]).AsQuaternion();
+            prim.Scale = ((OSDArray)map["scale"]).AsVector3();
+            prim.Flexible = FlexibleData.FromOSD(map["flex"]);
+            prim.Light = LightData.FromOSD(map["light"]);
+            prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
+            prim.Textures = TextureEntry.FromOSD(map["textures"]);
+            prim.Properties = new ObjectProperties();
+
             if (!string.IsNullOrEmpty(map["name"].AsString()))
             {
                 prim.Properties.Name = map["name"].AsString();
@@ -1266,6 +1379,10 @@ namespace OpenMetaverse
         {
             int i = pos;
             int totalLength = 1;
+
+            Flexible = null;
+            Light = null;
+            Sculpt = null;
 
             if (data.Length == 0 || pos >= data.Length)
                 return 0;
@@ -1294,6 +1411,76 @@ namespace OpenMetaverse
             return totalLength;
         }
 
+        public byte[] GetExtraParamsBytes()
+        {
+            byte[] flexible = null;
+            byte[] light = null;
+            byte[] sculpt = null;
+            byte[] buffer = null;
+            int size = 1;
+            int pos = 0;
+            byte count = 0;
+
+            if (Flexible != null)
+            {
+                flexible = Flexible.GetBytes();
+                size += flexible.Length + 6;
+                ++count;
+            }
+            if (Light != null)
+            {
+                light = Light.GetBytes();
+                size += light.Length + 6;
+                ++count;
+            }
+            if (Sculpt != null)
+            {
+                sculpt = Sculpt.GetBytes();
+                size += sculpt.Length + 6;
+                ++count;
+            }
+
+            buffer = new byte[size];
+            buffer[0] = count;
+            ++pos;
+
+            if (flexible != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Flexible), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)flexible.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(flexible, 0, buffer, pos, flexible.Length);
+                pos += flexible.Length;
+            }
+            if (light != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Light), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)light.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(light, 0, buffer, pos, light.Length);
+                pos += light.Length;
+            }
+            if (sculpt != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Sculpt), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)sculpt.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(sculpt, 0, buffer, pos, sculpt.Length);
+                pos += sculpt.Length;
+            }
+
+            return buffer;
+        }
+
         #endregion Public Methods
 
         #region Overrides
@@ -1313,7 +1500,7 @@ namespace OpenMetaverse
             switch (PrimData.PCode)
             {
                 case PCode.Prim:
-                    return String.Format("{0} ({1})", PrimData.Type, ID);
+                    return String.Format("{0} ({1})", Type, ID);
                 default:
                     return String.Format("{0} ({1})", PrimData.PCode, ID);
             }
@@ -1330,19 +1517,19 @@ namespace OpenMetaverse
 
         public static bool operator ==(Primitive lhs, Primitive rhs)
         {
-	    if ((Object)lhs == null || (Object)rhs == null)
-	    {
-		return (Object)rhs == (Object)lhs;
-	    }
+            if ((Object)lhs == null || (Object)rhs == null)
+            {
+                return (Object)rhs == (Object)lhs;
+            }
             return (lhs.ID == rhs.ID);
         }
 
         public static bool operator !=(Primitive lhs, Primitive rhs)
         {
-	    if ((Object)lhs == null || (Object)rhs == null)
-	    {
-		return (Object)rhs != (Object)lhs;
-	    }
+            if ((Object)lhs == null || (Object)rhs == null)
+            {
+                return (Object)rhs != (Object)lhs;
+            }
             return !(lhs.ID == rhs.ID);
         }
 

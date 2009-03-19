@@ -34,10 +34,36 @@ namespace OpenMetaverse
         #region BytesTo
 
         /// <summary>
+        /// Convert the first two bytes starting in the byte array in
+        /// little endian ordering to a signed short integer
+        /// </summary>
+        /// <param name="bytes">An array two bytes or longer</param>
+        /// <returns>A signed short integer, will be zero if a short can't be
+        /// read at the given position</returns>
+        public static short BytesToInt16(byte[] bytes)
+        {
+            return BytesToInt16(bytes, 0);
+        }
+
+        /// <summary>
+        /// Convert the first two bytes starting at the given position in
+        /// little endian ordering to a signed short integer
+        /// </summary>
+        /// <param name="bytes">An array two bytes or longer</param>
+        /// <param name="pos">Position in the array to start reading</param>
+        /// <returns>A signed short integer, will be zero if a short can't be
+        /// read at the given position</returns>
+        public static short BytesToInt16(byte[] bytes, int pos)
+        {
+            if (bytes.Length <= pos + 1) return 0;
+            return (short)(bytes[pos] + (bytes[pos + 1] << 8));
+        }
+
+        /// <summary>
         /// Convert the first four bytes starting at the given position in
         /// little endian ordering to a signed integer
         /// </summary>
-        /// <param name="bytes">Byte array containing the int</param>
+        /// <param name="bytes">An array four bytes or longer</param>
         /// <param name="pos">Position to start reading the int from</param>
         /// <returns>A signed integer, will be zero if an int can't be read
         /// at the given position</returns>
@@ -57,6 +83,40 @@ namespace OpenMetaverse
         public static int BytesToInt(byte[] bytes)
         {
             return BytesToInt(bytes, 0);
+        }
+
+        /// <summary>
+        /// Convert the first eight bytes of the given array in little endian
+        /// ordering to a signed long integer
+        /// </summary>
+        /// <param name="bytes">An array eight bytes or longer</param>
+        /// <returns>A signed long integer, will be zero if the array contains
+        /// less than eight bytes</returns>
+        public static long BytesToInt64(byte[] bytes)
+        {
+            return BytesToInt64(bytes, 0);
+        }
+
+        /// <summary>
+        /// Convert the first eight bytes starting at the given position in
+        /// little endian ordering to a signed long integer
+        /// </summary>
+        /// <param name="bytes">An array eight bytes or longer</param>
+        /// <param name="pos">Position to start reading the long from</param>
+        /// <returns>A signed long integer, will be zero if a long can't be read
+        /// at the given position</returns>
+        public static long BytesToInt64(byte[] bytes, int pos)
+        {
+            if (bytes.Length < 8) return 0;
+            return (long)
+                ((long)bytes[0] +
+                ((long)bytes[1] << 8) +
+                ((long)bytes[2] << 16) +
+                ((long)bytes[3] << 24) +
+                ((long)bytes[4] << 32) +
+                ((long)bytes[5] << 40) +
+                ((long)bytes[6] << 48) +
+                ((long)bytes[7] << 56));
         }
 
         /// <summary>
@@ -146,7 +206,7 @@ namespace OpenMetaverse
             {
                 byte[] newBytes = new byte[4];
                 Buffer.BlockCopy(bytes, pos, newBytes, 0, 4);
-                Array.Reverse(newBytes, pos, 4);
+                Array.Reverse(newBytes, 0, 4);
                 return BitConverter.ToSingle(newBytes, 0);
             }
             else
@@ -161,7 +221,7 @@ namespace OpenMetaverse
             {
                 byte[] newBytes = new byte[8];
                 Buffer.BlockCopy(bytes, pos, newBytes, 0, 8);
-                Array.Reverse(newBytes, pos, 8);
+                Array.Reverse(newBytes, 0, 8);
                 return BitConverter.ToDouble(newBytes, 0);
             }
             else
@@ -215,6 +275,23 @@ namespace OpenMetaverse
             bytes[1] = (byte)((value >> 8) % 256);
             bytes[2] = (byte)((value >> 16) % 256);
             bytes[3] = (byte)((value >> 24) % 256);
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// Convert an integer to a byte array in big endian format
+        /// </summary>
+        /// <param name="value">The integer to convert</param>
+        /// <returns>A four byte big endian array</returns>
+        public static byte[] IntToBytesBig(int value)
+        {
+            byte[] bytes = new byte[4];
+
+            bytes[0] = (byte)((value >> 24) % 256);
+            bytes[1] = (byte)((value >> 16) % 256);
+            bytes[2] = (byte)((value >> 8) % 256);
+            bytes[3] = (byte)(value % 256);
 
             return bytes;
         }
@@ -315,6 +392,14 @@ namespace OpenMetaverse
             return bytes;
         }
 
+        public static byte[] DoubleToBytesBig(double value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            return bytes;
+        }
+
         public static void DoubleToBytes(double value, byte[] dest, int pos)
         {
             byte[] bytes = DoubleToBytes(value);
@@ -347,6 +432,14 @@ namespace OpenMetaverse
                 return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1);
             else
                 return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+        }
+
+        public static string BytesToString(byte[] bytes, int index, int count)
+        {
+            if (bytes.Length > index + count && bytes[index + count - 1] == 0x00)
+                return UTF8Encoding.UTF8.GetString(bytes, index, count - 1);
+            else
+                return UTF8Encoding.UTF8.GetString(bytes, index, count);
         }
 
         /// <summary>
@@ -408,50 +501,53 @@ namespace OpenMetaverse
         /// <returns>A null-terminated UTF8 byte array</returns>
         public static byte[] StringToBytes(string str)
         {
-            if (String.IsNullOrEmpty(str)) { return new byte[0]; }
+            if (String.IsNullOrEmpty(str)) { return Utils.EmptyBytes; }
             if (!str.EndsWith("\0")) { str += "\0"; }
             return System.Text.UTF8Encoding.UTF8.GetBytes(str);
         }
 
-        ///// <summary>
-        ///// Converts a string containing hexadecimal characters to a byte array
-        ///// </summary>
-        ///// <param name="hexString">String containing hexadecimal characters</param>
-        ///// <returns>The converted byte array</returns>
-        public static byte[] HexStringToBytes(string hexString)
+        /// <summary>
+        /// Converts a string containing hexadecimal characters to a byte array
+        /// </summary>
+        /// <param name="hexString">String containing hexadecimal characters</param>
+        /// <param name="handleDirty">If true, gracefully handles null, empty and
+        /// uneven strings as well as stripping unconvertable characters</param>
+        /// <returns>The converted byte array</returns>
+        public static byte[] HexStringToBytes(string hexString, bool handleDirty)
         {
-            if (String.IsNullOrEmpty(hexString))
-                return new byte[0];
-
-            StringBuilder stripped = new StringBuilder(hexString.Length);
-            char c;
-
-            // remove all non A-F, 0-9, characters
-            for (int i = 0; i < hexString.Length; i++)
+            if (handleDirty)
             {
-                c = hexString[i];
-                if (IsHexDigit(c))
-                    stripped.Append(c);
+                if (String.IsNullOrEmpty(hexString))
+                    return Utils.EmptyBytes;
+
+                StringBuilder stripped = new StringBuilder(hexString.Length);
+                char c;
+
+                // remove all non A-F, 0-9, characters
+                for (int i = 0; i < hexString.Length; i++)
+                {
+                    c = hexString[i];
+                    if (IsHexDigit(c))
+                        stripped.Append(c);
+                }
+
+                hexString = stripped.ToString();
+
+                // if odd number of characters, discard last character
+                if (hexString.Length % 2 != 0)
+                {
+                    hexString = hexString.Substring(0, hexString.Length - 1);
+                }
             }
 
-            string newString = stripped.ToString();
-
-            // if odd number of characters, discard last character
-            if (newString.Length % 2 != 0)
-            {
-                newString = newString.Substring(0, newString.Length - 1);
-            }
-
-            int byteLength = newString.Length / 2;
+            int byteLength = hexString.Length / 2;
             byte[] bytes = new byte[byteLength];
-            string hex;
             int j = 0;
 
             for (int i = 0; i < bytes.Length; i++)
             {
-                hex = new String(new Char[] { newString[j], newString[j + 1] });
-                bytes[i] = HexToByte(hex);
-                j = j + 2;
+                bytes[i] = HexToByte(hexString.Substring(j, 2));
+                j += 2;
             }
 
             return bytes;
@@ -575,6 +671,16 @@ namespace OpenMetaverse
             return fval;
         }
 
+        public static ushort FloatToUInt16(float value, float lower, float upper)
+        {
+            float delta = upper - lower;
+            value -= lower;
+            value /= delta;
+            value *= (float)UInt16.MaxValue;
+
+            return (ushort)value;
+        }
+
         #endregion Packed Values
 
         #region TryParse
@@ -600,6 +706,8 @@ namespace OpenMetaverse
         /// <returns>True if the parse was successful, otherwise false</returns>
         public static bool TryParseDouble(string s, out double result)
         {
+            // NOTE: Double.TryParse can't parse Double.[Min/Max]Value.ToString(), see:
+            // http://blogs.msdn.com/bclteam/archive/2006/05/24/598169.aspx
             return Double.TryParse(s, System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat, out result);
         }
 
@@ -685,7 +793,7 @@ namespace OpenMetaverse
         /// the given timestamp</returns>
         public static DateTime UnixTimeToDateTime(uint timestamp)
         {
-            System.DateTime dateTime = Epoch;
+            DateTime dateTime = Epoch;
 
             // Add the number of seconds in our UNIX timestamp
             dateTime = dateTime.AddSeconds(timestamp);
@@ -702,7 +810,7 @@ namespace OpenMetaverse
         /// the given timestamp</returns>
         public static DateTime UnixTimeToDateTime(int timestamp)
         {
-            return DateTime.FromBinary(timestamp);
+            return UnixTimeToDateTime((uint)timestamp);
         }
 
         /// <summary>
@@ -728,6 +836,47 @@ namespace OpenMetaverse
             T temp = lhs;
             lhs = rhs;
             rhs = temp;
+        }
+
+        /// <summary>
+        /// Try to parse an enumeration value from a string
+        /// </summary>
+        /// <typeparam name="T">Enumeration type</typeparam>
+        /// <param name="strType">String value to parse</param>
+        /// <param name="result">Enumeration value on success</param>
+        /// <returns>True if the parsing succeeded, otherwise false</returns>
+        public static bool EnumTryParse<T>(string strType, out T result)
+        {
+            Type t = typeof(T);
+
+            if (Enum.IsDefined(t, strType))
+            {
+                result = (T)Enum.Parse(t, strType, true);
+                return true;
+            }
+            else
+            {
+                foreach (string value in Enum.GetNames(typeof(T)))
+                {
+                    if (value.Equals(strType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = (T)Enum.Parse(typeof(T), value);
+                        return true;
+                    }
+                }
+                result = default(T);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Swaps the high and low words in a byte. Converts aaaabbbb to bbbbaaaa
+        /// </summary>
+        /// <param name="value">Byte to swap the words in</param>
+        /// <returns>Byte value with the words swapped</returns>
+        public static byte SwapWords(byte value)
+        {
+            return (byte)(((value & 0xF0) >> 4) | ((value & 0x0F) << 4));
         }
 
         #endregion Miscellaneous

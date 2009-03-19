@@ -29,6 +29,8 @@ namespace GridImageUpload
         private void InitializeComponent()
         {
             this.grpLogin = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.cboLoginURL = new System.Windows.Forms.ComboBox();
             this.cmdConnect = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.txtPassword = new System.Windows.Forms.TextBox();
@@ -54,6 +56,8 @@ namespace GridImageUpload
             // 
             // grpLogin
             // 
+            this.grpLogin.Controls.Add(this.label5);
+            this.grpLogin.Controls.Add(this.cboLoginURL);
             this.grpLogin.Controls.Add(this.cmdConnect);
             this.grpLogin.Controls.Add(this.label3);
             this.grpLogin.Controls.Add(this.txtPassword);
@@ -63,16 +67,32 @@ namespace GridImageUpload
             this.grpLogin.Controls.Add(this.txtFirstName);
             this.grpLogin.Location = new System.Drawing.Point(11, 260);
             this.grpLogin.Name = "grpLogin";
-            this.grpLogin.Size = new System.Drawing.Size(379, 101);
+            this.grpLogin.Size = new System.Drawing.Size(379, 145);
             this.grpLogin.TabIndex = 67;
             this.grpLogin.TabStop = false;
             // 
+            // label5
+            // 
+            this.label5.Location = new System.Drawing.Point(6, 65);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(120, 16);
+            this.label5.TabIndex = 74;
+            this.label5.Text = "Login URL";
+            // 
+            // cboLoginURL
+            // 
+            this.cboLoginURL.FormattingEnabled = true;
+            this.cboLoginURL.Location = new System.Drawing.Point(6, 84);
+            this.cboLoginURL.Name = "cboLoginURL";
+            this.cboLoginURL.Size = new System.Drawing.Size(365, 21);
+            this.cboLoginURL.TabIndex = 3;
+            // 
             // cmdConnect
             // 
-            this.cmdConnect.Location = new System.Drawing.Point(251, 62);
+            this.cmdConnect.Location = new System.Drawing.Point(251, 111);
             this.cmdConnect.Name = "cmdConnect";
             this.cmdConnect.Size = new System.Drawing.Size(120, 24);
-            this.cmdConnect.TabIndex = 3;
+            this.cmdConnect.TabIndex = 4;
             this.cmdConnect.Text = "Connect";
             this.cmdConnect.Click += new System.EventHandler(this.cmdConnect_Click);
             // 
@@ -146,7 +166,7 @@ namespace GridImageUpload
             this.txtAssetID.Name = "txtAssetID";
             this.txtAssetID.ReadOnly = true;
             this.txtAssetID.Size = new System.Drawing.Size(280, 20);
-            this.txtAssetID.TabIndex = 8;
+            this.txtAssetID.TabIndex = 9;
             this.txtAssetID.TabStop = false;
             // 
             // label4
@@ -187,7 +207,7 @@ namespace GridImageUpload
             this.cmdLoad.Location = new System.Drawing.Point(160, 136);
             this.cmdLoad.Name = "cmdLoad";
             this.cmdLoad.Size = new System.Drawing.Size(102, 24);
-            this.cmdLoad.TabIndex = 6;
+            this.cmdLoad.TabIndex = 7;
             this.cmdLoad.Text = "Load Texture";
             this.cmdLoad.UseVisualStyleBackColor = true;
             this.cmdLoad.Click += new System.EventHandler(this.cmdLoad_Click);
@@ -197,7 +217,7 @@ namespace GridImageUpload
             this.txtSendtoName.Location = new System.Drawing.Point(131, 64);
             this.txtSendtoName.Name = "txtSendtoName";
             this.txtSendtoName.Size = new System.Drawing.Size(239, 20);
-            this.txtSendtoName.TabIndex = 5;
+            this.txtSendtoName.TabIndex = 6;
             // 
             // label6
             // 
@@ -213,7 +233,7 @@ namespace GridImageUpload
             this.chkLossless.Location = new System.Drawing.Point(9, 19);
             this.chkLossless.Name = "chkLossless";
             this.chkLossless.Size = new System.Drawing.Size(362, 37);
-            this.chkLossless.TabIndex = 4;
+            this.chkLossless.TabIndex = 5;
             this.chkLossless.Text = "Single Layer Lossless (only useful for pixel perfect reproductions of small image" +
                 "s, such as sculpt maps)";
             this.chkLossless.UseVisualStyleBackColor = true;
@@ -225,7 +245,7 @@ namespace GridImageUpload
             this.cmdUpload.Location = new System.Drawing.Point(268, 136);
             this.cmdUpload.Name = "cmdUpload";
             this.cmdUpload.Size = new System.Drawing.Size(103, 24);
-            this.cmdUpload.TabIndex = 7;
+            this.cmdUpload.TabIndex = 8;
             this.cmdUpload.Text = "Upload Texture";
             this.cmdUpload.UseVisualStyleBackColor = true;
             this.cmdUpload.Click += new System.EventHandler(this.cmdUpload_Click);
@@ -234,15 +254,14 @@ namespace GridImageUpload
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(402, 373);
+            this.ClientSize = new System.Drawing.Size(402, 417);
             this.Controls.Add(this.grpUpload);
             this.Controls.Add(this.grpLogin);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(410, 400);
             this.MinimumSize = new System.Drawing.Size(410, 400);
             this.Name = "frmGridImageUpload";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "SL Image Upload";
+            this.Text = "Image Upload";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmGridImageUpload_FormClosed);
             this.grpLogin.ResumeLayout(false);
             this.grpLogin.PerformLayout();
@@ -274,6 +293,8 @@ namespace GridImageUpload
         private System.Windows.Forms.Label lblSize;
         private System.Windows.Forms.TextBox txtAssetID;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox cboLoginURL;
+        private System.Windows.Forms.Label label5;
     }
 }
 

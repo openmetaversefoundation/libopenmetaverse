@@ -175,7 +175,9 @@ namespace Prebuild.Core.Targets
 
 		private static ProjectNode FindProjectInSolutionRecursively(string name, SolutionNode solution)
 		{
-			if (solution.ProjectsTable.ContainsKey(name))
+            name = name.Replace(".exe", String.Empty);
+
+			if (solution.ProjectsTable.ContainsKey(name.Replace(".exe", String.Empty)))
 				return (ProjectNode)solution.ProjectsTable[name];
 
 			foreach (SolutionNode child in solution.Solutions)
@@ -270,6 +272,7 @@ namespace Prebuild.Core.Targets
 					ps.WriteLine("    <RemoveIntegerChecks>{0}</RemoveIntegerChecks>", conf.Options["RemoveIntegerChecks"]);
 					ps.WriteLine("    <TreatWarningsAsErrors>{0}</TreatWarningsAsErrors>", conf.Options["WarningsAsErrors"]);
 					ps.WriteLine("    <WarningLevel>{0}</WarningLevel>", conf.Options["WarningLevel"]);
+					ps.WriteLine("    <NoStdLib>{0}</NoStdLib>", conf.Options["NoStdLib"]);
 					ps.WriteLine("    <NoWarn>{0}</NoWarn>", conf.Options["SuppressWarnings"]);
 					ps.WriteLine("  </PropertyGroup>");
 				}
@@ -283,10 +286,15 @@ namespace Prebuild.Core.Targets
 				{
 					ProjectNode projectNode = FindProjectInSolution(refr.Name, solution);
 
-					if (projectNode == null)
-						otherReferences.Add(refr);
-					else
-						projectReferences.Add(projectNode);
+                    if (projectNode == null)
+                    {
+                        otherReferences.Add(refr);
+                    }
+                    else
+                    {
+                        refr.Name = refr.Name.Replace(".exe", String.Empty);
+                        projectReferences.Add(projectNode);
+                    }
 				}
 				// Assembly References
 				ps.WriteLine("  <ItemGroup>");
@@ -301,7 +309,8 @@ namespace Prebuild.Core.Targets
 					ps.WriteLine("</Name>");
 
 					// TODO: Allow reference to *.exe files
-					ps.WriteLine("      <HintPath>{0}</HintPath>", Helper.MakePathRelativeTo(project.FullPath, refr.Path + "\\" + refr.Name + ".dll"));
+					if (!String.IsNullOrEmpty(refr.Path))
+						ps.WriteLine("      <HintPath>{0}</HintPath>", Helper.MakePathRelativeTo(project.FullPath, refr.Path + "\\" + refr.Name + ".dll"));
 					ps.WriteLine("    </Reference>");
 				}
 				ps.WriteLine("  </ItemGroup>");
@@ -364,12 +373,10 @@ namespace Prebuild.Core.Targets
 					if (subType == SubType.Designer)
 					{
 						ps.WriteLine("    <EmbeddedResource Include=\"{0}\">", file);
-						ps.WriteLine("      <SubType>" + subType + "</SubType>");
+						
 						
 						string autogen_name = file.Substring(0, file.LastIndexOf('.')) + ".Designer.cs";
                         string dependent_name = file.Substring(0, file.LastIndexOf('.')) + ".cs";
-
-						ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", autogen_name);
 
                         // Check for a parent .cs file with the same name as this designer file
                         if (File.Exists(dependent_name))
@@ -378,14 +385,21 @@ namespace Prebuild.Core.Targets
                         }
                         else
                         {
-                            ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
+                            /* 
+                             * These two lines screw up the designer, ie: if you make a change to a form,
+                             * when you press Save VS corrups the .Designer.cs file 
+                             */
+                            //ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
+                            //ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
+                            ps.WriteLine("      <SubType>" + subType + "</SubType>");
                         }
 						
                         ps.WriteLine("    </EmbeddedResource>");
 						if (File.Exists(autogen_name))
 						{
 							ps.WriteLine("    <Compile Include=\"{0}\">", autogen_name);
-                            
+							//ps.WriteLine("      <DesignTime>True</DesignTime>");
+
                             // If a parent .cs file exists, link this autogen file to it. Otherwise link
                             // to the designer file
                             if (File.Exists(dependent_name))
@@ -395,7 +409,6 @@ namespace Prebuild.Core.Targets
                             else
                             {
                                 ps.WriteLine("      <AutoGen>True</AutoGen>");
-                                //ps.WriteLine("      <DesignTime>True</DesignTime>");
                                 ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file));
                             }
 	
@@ -477,11 +490,11 @@ namespace Prebuild.Core.Targets
 							{
 								if (project.Files.GetBuildAction(file) != BuildAction.EmbeddedResource)
 								{
-                                    // HACK: Ugly method of supporting WinForms
+                                    //HACK: Ugly method of supporting WinForms
                                     if (file.Contains("frm"))
                                         ps.WriteLine("      <SubType>Form</SubType>");
                                     else
-    									ps.WriteLine("      <SubType>{0}</SubType>", subType);
+                                        ps.WriteLine("      <SubType>{0}</SubType>", subType);
 								}
 							}
 
@@ -718,7 +731,8 @@ namespace Prebuild.Core.Targets
 
 		private void WriteProject(SolutionNode solution, StreamWriter ss, DatabaseProjectNode dbProject)
 		{
-			WriteProject(ss, solution, "Database", dbProject.Guid, dbProject.Name, dbProject.FullPath);
+			if (solution.Files != null && solution.Files.Count > 0)
+				WriteProject(ss, solution, "Database", dbProject.Guid, dbProject.Name, dbProject.FullPath);
 		}
 
 		const string ProjectDeclarationBeginFormat = "Project(\"{0}\") = \"{1}\", \"{2}\", \"{3}\"";

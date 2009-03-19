@@ -27,7 +27,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 /*
  * $Source$
  * $Author: sontek $
- * $Date: 2008-04-30 23:36:53 +0000 (Wed, 30 Apr 2008) $
+ * $Date: 2008-04-30 16:36:53 -0700 (Wed, 30 Apr 2008) $
  * $Revision: 267 $
  */
 #endregion

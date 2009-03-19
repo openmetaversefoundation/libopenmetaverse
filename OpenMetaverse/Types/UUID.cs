@@ -131,19 +131,29 @@ namespace OpenMetaverse
         /// <returns>A 16 byte array containing this UUID</returns>
         public byte[] GetBytes()
         {
-            byte[] bytes = Guid.ToByteArray();
             byte[] output = new byte[16];
-            output[0] = bytes[3];
-            output[1] = bytes[2];
-            output[2] = bytes[1];
-            output[3] = bytes[0];
-            output[4] = bytes[5];
-            output[5] = bytes[4];
-            output[6] = bytes[7];
-            output[7] = bytes[6];
-            Buffer.BlockCopy(bytes, 8, output, 8, 8);
-
+            ToBytes(output, 0);
             return output;
+        }
+
+        /// <summary>
+        /// Writes the raw bytes for this UUID to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 16 bytes before the end of the array</param>
+        public void ToBytes(byte[] dest, int pos)
+        {
+            byte[] bytes = Guid.ToByteArray();
+            dest[pos + 0] = bytes[3];
+            dest[pos + 1] = bytes[2];
+            dest[pos + 2] = bytes[1];
+            dest[pos + 3] = bytes[0];
+            dest[pos + 4] = bytes[5];
+            dest[pos + 5] = bytes[4];
+            dest[pos + 6] = bytes[7];
+            dest[pos + 7] = bytes[6];
+            Buffer.BlockCopy(bytes, 8, dest, pos + 8, 8);
         }
 
         /// <summary>

@@ -6,46 +6,48 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class XMLPersistence : IExtension, IPersistenceProvider
+    public class XMLPersistence : IExtension<Simian>, IPersistenceProvider
     {
         Simian server;
 
-        public XMLPersistence(Simian server)
+        public XMLPersistence()
         {
-            this.server = server;
         }
 
-        public void Start()
+        public bool Start(Simian server)
         {
-            LLSD llsd;
+            this.server = server;
+
+            OSD osd;
 
             try
             {
-                XmlTextReader reader = new XmlTextReader(File.OpenRead(server.DataDir + "simiandata.xml"));
-                llsd = LLSDParser.DeserializeXml(reader);
+                XmlTextReader reader = new XmlTextReader(File.OpenRead(Simian.DATA_DIR + "simiandata.xml"));
+                osd = OSDParser.DeserializeLLSDXml(reader);
                 reader.Close();
             }
             catch (FileNotFoundException)
             {
-                return;
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed to load saved data: " + ex.Message, Helpers.LogLevel.Error);
-                return;
+                Logger.Log("Failed to load saved data. You may have to move or delete simiandata.xml: " +
+                    ex.Message, Helpers.LogLevel.Error);
+                return false;
             }
 
-            if (llsd is LLSDMap)
+            if (osd is OSDMap)
             {
-                LLSDMap dictionary = (LLSDMap)llsd;
+                OSDMap dictionary = (OSDMap)osd;
 
                 for (int i = 0; i < server.PersistentExtensions.Count; i++)
                 {
                     IPersistable persistable = server.PersistentExtensions[i];
 
-                    LLSD savedData;
+                    OSD savedData;
                     if (dictionary.TryGetValue(persistable.ToString(), out savedData))
                     {
                         Logger.DebugLog("Loading saved data for " + persistable.ToString());
@@ -57,32 +59,37 @@ namespace Simian.Extensions
                     }
                 }
             }
+
+            return true;
         }
 
         public void Stop()
         {
-            LLSDMap dictionary = new LLSDMap(server.PersistentExtensions.Count);
-
-            for (int i = 0; i < server.PersistentExtensions.Count; i++)
+            if (server != null)
             {
-                IPersistable persistable = server.PersistentExtensions[i];
+                OSDMap dictionary = new OSDMap(server.PersistentExtensions.Count);
 
-                Logger.DebugLog("Storing persistant data for " + persistable.ToString());
-                dictionary.Add(persistable.ToString(), persistable.Serialize());
-            }
+                for (int i = 0; i < server.PersistentExtensions.Count; i++)
+                {
+                    IPersistable persistable = server.PersistentExtensions[i];
 
-            try
-            {
-                XmlTextWriter writer = new XmlTextWriter(server.DataDir + "simiandata.xml", System.Text.Encoding.UTF8);
-                writer.Formatting = Formatting.Indented;
-                writer.WriteStartElement("llsd");
-                LLSDParser.SerializeXmlElement(writer, dictionary);
-                writer.WriteEndElement();
-                writer.Close();
-            }
-            catch (Exception ex)
-            {
-                Logger.Log("Failed to save persistance data: " + ex.Message, Helpers.LogLevel.Error);
+                    Logger.DebugLog("Storing persistant data for " + persistable.ToString());
+                    dictionary.Add(persistable.ToString(), persistable.Serialize());
+                }
+
+                try
+                {
+                    XmlTextWriter writer = new XmlTextWriter(Simian.DATA_DIR + "simiandata.xml", System.Text.Encoding.UTF8);
+                    writer.Formatting = Formatting.Indented;
+                    writer.WriteStartElement("llsd");
+                    OSDParser.SerializeLLSDXmlElement(writer, dictionary);
+                    writer.WriteEndElement();
+                    writer.Close();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to save persistance data: " + ex.Message, Helpers.LogLevel.Error);
+                }
             }
         }
     }

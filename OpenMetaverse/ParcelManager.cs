@@ -30,6 +30,7 @@ using System.Threading;
 using System.Reflection;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Http;
 
 namespace OpenMetaverse
 {
@@ -89,7 +90,7 @@ namespace OpenMetaverse
         Access = 1 << 0,
         /// <summary>Request the ban list</summary>
         Ban = 1 << 1,
-        /// <summary>Request both the access list and ban list</summary>
+        /// <summary>Request both White and Black lists</summary>
         Both = Access | Ban
     }
 
@@ -509,9 +510,12 @@ namespace OpenMetaverse
         public bool RegionDenyAnonymous;
         /// <summary></summary>
         public bool RegionPushOverride;
-        /// <summary>Access list of who is whitelisted or blacklisted on this
+        /// <summary>Access list of who is whitelisted on this
         /// parcel</summary>
-        public List<ParcelManager.ParcelAccessEntry> AccessList;
+        public List<ParcelManager.ParcelAccessEntry> AccessWhiteList;
+        /// <summary>Access list of who is blacklisted on this
+        /// parcel</summary>
+        public List<ParcelManager.ParcelAccessEntry> AccessBlackList;
         /// <summary>TRUE of region denies access to age unverified users</summary>
         public bool RegionDenyAgeUnverified;
         /// <summary>true to obscure (hide) media url</summary>
@@ -554,7 +558,7 @@ namespace OpenMetaverse
             RentPrice = 0;
             AABBMin = Vector3.Zero;
             AABBMax = Vector3.Zero;
-            Bitmap = new byte[0];
+            Bitmap = Utils.EmptyBytes;
             Area = 0;
             Status = ParcelStatus.None;
             SimWideMaxPrims = 0;
@@ -583,7 +587,8 @@ namespace OpenMetaverse
             Dwell = 0;
             RegionDenyAnonymous = false;
             RegionPushOverride = false;
-            AccessList = new List<ParcelManager.ParcelAccessEntry>(0);
+            AccessWhiteList = new List<ParcelManager.ParcelAccessEntry>();
+            AccessBlackList = new List<ParcelManager.ParcelAccessEntry>(0);
             RegionDenyAgeUnverified = false;
             Media = new ParcelMedia();
             ObscureMedia = false;
@@ -598,36 +603,93 @@ namespace OpenMetaverse
         /// the update with a reply packet or not</param>
         public void Update(Simulator simulator, bool wantReply)
         {
-            ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
+            Uri url = simulator.Caps.CapabilityURI("ParcelPropertiesUpdate");
 
-            request.AgentData.AgentID = simulator.Client.Self.AgentID;
-            request.AgentData.SessionID = simulator.Client.Self.SessionID;
+            if (url != null)
+            {
+                OSDMap body = new OSDMap();
+                body["auth_buyer_id"] =  OSD.FromUUID(this.AuthBuyerID);
+                body["auto_scale"] =  OSD.FromInteger(this.Media.MediaAutoScale);
+                body["category"] = OSD.FromInteger((byte)this.Category);
+                body["description"] = OSD.FromString(this.Desc);
+                body["flags"] =  OSD.FromBinary(Utils.EmptyBytes);
+                body["group_id"] = OSD.FromUUID(this.GroupID);
+                body["landing_type"] = OSD.FromInteger((byte)this.Landing);
+                body["local_id"] = OSD.FromInteger(this.LocalID);
+                body["media_desc"] = OSD.FromString(this.Media.MediaDesc);
+                body["media_height"] = OSD.FromInteger(this.Media.MediaHeight);
+                body["media_id"] = OSD.FromUUID(this.Media.MediaID);
+                body["media_loop"] = OSD.FromInteger(this.Media.MediaLoop ? 1 : 0);
+                body["media_type"] = OSD.FromString(this.Media.MediaType);
+                body["media_url"] = OSD.FromString(this.Media.MediaURL);
+                body["media_width"] = OSD.FromInteger(this.Media.MediaWidth);
+                body["music_url"] = OSD.FromString(this.MusicURL);
+                body["name"] = OSD.FromString(this.Name);
+                body["obscure_media"]= OSD.FromInteger(this.ObscureMedia ? 1 : 0);
+                body["obscure_music"] = OSD.FromInteger(this.ObscureMusic ? 1 : 0);
 
-            request.ParcelData.LocalID = this.LocalID;
+                byte[] flags = Utils.IntToBytes((int)this.Flags); ;
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(flags);
+                body["parcel_flags"] = OSD.FromBinary(flags);
 
-            request.ParcelData.AuthBuyerID = this.AuthBuyerID;
-            request.ParcelData.Category = (byte)this.Category;
-            request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
-            request.ParcelData.GroupID = this.GroupID;
-            request.ParcelData.LandingType = (byte)this.Landing;
+                body["pass_hours"] = OSD.FromReal(this.PassHours);
+                body["pass_price"] = OSD.FromInteger(this.PassPrice);
+                body["sale_price"] = OSD.FromInteger(this.SalePrice);
+                body["snapshot_id"] = OSD.FromUUID(this.SnapshotID);
+                OSDArray uloc = new OSDArray();
+                uloc.Add(OSD.FromReal(this.UserLocation.X));
+                uloc.Add(OSD.FromReal(this.UserLocation.Y));
+                uloc.Add(OSD.FromReal(this.UserLocation.Z));
+                body["user_location"] = uloc;
+                OSDArray ulat = new OSDArray();
+                ulat.Add(OSD.FromReal(this.UserLocation.X));
+                ulat.Add(OSD.FromReal(this.UserLocation.Y));
+                ulat.Add(OSD.FromReal(this.UserLocation.Z));
+                body["user_look_at"] = ulat;
 
-            request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
-            request.ParcelData.MediaID = this.Media.MediaID;
-            request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
-            request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
-            request.ParcelData.Name = Utils.StringToBytes(this.Name);
-            if (wantReply) request.ParcelData.Flags = 1;
-            request.ParcelData.ParcelFlags = (uint)this.Flags;
-            request.ParcelData.PassHours = this.PassHours;
-            request.ParcelData.PassPrice = this.PassPrice;
-            request.ParcelData.SalePrice = this.SalePrice;
-            request.ParcelData.SnapshotID = this.SnapshotID;
-            request.ParcelData.UserLocation = this.UserLocation;
-            request.ParcelData.UserLookAt = this.UserLookAt;
+                //Console.WriteLine("OSD REQUEST\n{0}", body.ToString());
 
-            simulator.SendPacket(request, true);
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(body);
+                //Console.WriteLine("{0}", OSDParser.SerializeLLSDXmlString(body));
+                CapsClient capsPost = new CapsClient(url);
+                capsPost.StartRequest(postData);
+
+            }
+            else
+            {
+
+                ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
+
+                request.AgentData.AgentID = simulator.Client.Self.AgentID;
+                request.AgentData.SessionID = simulator.Client.Self.SessionID;
+
+                request.ParcelData.LocalID = this.LocalID;
+
+                request.ParcelData.AuthBuyerID = this.AuthBuyerID;
+                request.ParcelData.Category = (byte)this.Category;
+                request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
+                request.ParcelData.GroupID = this.GroupID;
+                request.ParcelData.LandingType = (byte)this.Landing;
+                request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
+                request.ParcelData.MediaID = this.Media.MediaID;
+                request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
+                request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
+                request.ParcelData.Name = Utils.StringToBytes(this.Name);
+                if (wantReply) request.ParcelData.Flags = 1;
+                request.ParcelData.ParcelFlags = (uint)this.Flags;
+                request.ParcelData.PassHours = this.PassHours;
+                request.ParcelData.PassPrice = this.PassPrice;
+                request.ParcelData.SalePrice = this.SalePrice;
+                request.ParcelData.SnapshotID = this.SnapshotID;
+                request.ParcelData.UserLocation = this.UserLocation;
+                request.ParcelData.UserLookAt = this.UserLookAt;
+
+                simulator.SendPacket(request, true);
+            }
 
             UpdateOtherCleanTime(simulator);
+            
         }
 
         /// <summary>
@@ -664,7 +726,7 @@ namespace OpenMetaverse
             public UUID AgentID;
             /// <summary></summary>
             public DateTime Time;
-            /// <summary>Flag to Permit access to agent, or ban agent from parcel</summary>
+            /// <summary>Flags for specific entry in white/black lists</summary>
             public AccessList Flags;
         }
 
@@ -931,8 +993,6 @@ namespace OpenMetaverse
                 WaitForSimParcel = new AutoResetEvent(false);
             }
 
-            
-
             if (refresh)
             {
                     for (int y = 0; y < 64; y++)
@@ -1165,7 +1225,15 @@ namespace OpenMetaverse
         /// dictionary.</remarks>
         public int GetParcelLocalID(Simulator simulator, Vector3 position)
         {
-            return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+            if (simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4] > 0)
+            {
+                return simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4];
+            }
+            else
+            {
+                Logger.Log(String.Format("ParcelMap returned an default/invalid value for location {0}/{1} Did you use RequestAllSimParcels() to populate the dictionaries?", (byte)position.Y / 4, (byte)position.X / 4 ), Helpers.LogLevel.Warning);
+                return 0;
+            }
         }
 
         /// <summary>
@@ -1423,19 +1491,22 @@ namespace OpenMetaverse
         /// <param name="capsKey">Not used (will always be ParcelProperties)</param>
         /// <param name="llsd">LLSD Structured data</param>
         /// <param name="simulator">Object representing simulator</param>
-        private void ParcelPropertiesReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ParcelPropertiesReplyHandler(string capsKey, OSD llsd, Simulator simulator)
         {
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
-            {
-                LLSDMap map = (LLSDMap)llsd;
-                LLSDMap parcelDataBlock = (LLSDMap)(((LLSDArray)map["ParcelData"])[0]);
-                LLSDMap ageVerifyBlock = (LLSDMap)(((LLSDArray)map["AgeVerificationBlock"])[0]);
-                LLSDMap mediaDataBlock = (LLSDMap)(((LLSDArray)map["MediaData"])[0]);
+            {             
+                OSDMap map = (OSDMap)llsd;
+                OSDMap parcelDataBlock = (OSDMap)(((OSDArray)map["ParcelData"])[0]);
+                OSDMap ageVerifyBlock = (OSDMap)(((OSDArray)map["AgeVerificationBlock"])[0]);
+
+                OSDMap mediaDataBlock=null;
+                if(map.ContainsKey("MediaData")) //OpenSim compatability, does not yet do this via caps so make it optional
+                    mediaDataBlock = (OSDMap)(((OSDArray)map["MediaData"])[0]);
 
                 Parcel parcel = new Parcel(parcelDataBlock["LocalID"].AsInteger());
 
-                parcel.AABBMax = ((LLSDArray)parcelDataBlock["AABBMax"]).AsVector3();
-                parcel.AABBMin = ((LLSDArray)parcelDataBlock["AABBMin"]).AsVector3();
+                parcel.AABBMax = ((OSDArray)parcelDataBlock["AABBMax"]).AsVector3();
+                parcel.AABBMin = ((OSDArray)parcelDataBlock["AABBMin"]).AsVector3();
                 parcel.Area = parcelDataBlock["Area"].AsInteger();
                 parcel.AuctionID = (uint)parcelDataBlock["AuctionID"].AsInteger();
                 parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
@@ -1485,41 +1556,52 @@ namespace OpenMetaverse
                 parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsUUID();
                 parcel.Status = (Parcel.ParcelStatus)parcelDataBlock["Status"].AsInteger();
                 parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
-                parcel.UserLocation = ((LLSDArray)parcelDataBlock["UserLocation"]).AsVector3();
-                parcel.UserLookAt = ((LLSDArray)parcelDataBlock["UserLookAt"]).AsVector3();
-                parcel.Media.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
-                parcel.Media.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
-                parcel.Media.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
-                parcel.Media.MediaLoop = mediaDataBlock["MediaLoop"].AsBoolean();
-                parcel.Media.MediaType = mediaDataBlock["MediaType"].AsString();
-                parcel.ObscureMedia = mediaDataBlock["ObscureMedia"].AsBoolean();
-                parcel.ObscureMusic = mediaDataBlock["ObscureMusic"].AsBoolean();
+                parcel.UserLocation = ((OSDArray)parcelDataBlock["UserLocation"]).AsVector3();
+                parcel.UserLookAt = ((OSDArray)parcelDataBlock["UserLookAt"]).AsVector3();
+
+                if(mediaDataBlock!=null)
+                {
+                    parcel.Media.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
+                    parcel.Media.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
+                    parcel.Media.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
+                    parcel.Media.MediaLoop = mediaDataBlock["MediaLoop"].AsBoolean();
+                    parcel.Media.MediaType = mediaDataBlock["MediaType"].AsString();
+                    parcel.ObscureMedia = mediaDataBlock["ObscureMedia"].AsBoolean();
+                    parcel.ObscureMusic = mediaDataBlock["ObscureMusic"].AsBoolean();
+                }
 
                 if (Client.Settings.PARCEL_TRACKING)
                 {
-                    if(sequenceID.Equals(int.MaxValue))
-                        WaitForSimParcel.Set();
-
                     lock (simulator.Parcels.Dictionary)
                         simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
 
+                    bool set = false;
                     int y, x, index, bit;
-                    for (y = 0; y < simulator.ParcelMap.GetLength(0); y++)
+                    for (y = 0; y < 64; y++)
                     {
-                        for (x = 0; x < simulator.ParcelMap.GetLength(1); x++)
+                        for (x = 0; x < 64; x++)
                         {
-                            if (simulator.ParcelMap[y, x] == 0)
-                            {
-                                index = (y * 64) + x;
-                                bit = index % 8;
-                                index >>= 3;
+                            index = (y * 64) + x;
+                            bit = index % 8;
+                            index >>= 3;
 
-                                if ((parcel.Bitmap[index] & (1 << bit)) != 0)
-                                    simulator.ParcelMap[y, x] = parcel.LocalID;
+                            if ((parcel.Bitmap[index] & (1 << bit)) != 0)
+                            {
+                                simulator.ParcelMap[y, x] = parcel.LocalID;
+                                set = true;
                             }
                         }
                     }
+
+                    if (!set)
+                    {
+                        Logger.Log("Received a parcel with a bitmap that did not map to any locations",
+                            Helpers.LogLevel.Warning);
+                    }
                 }
+
+                if (sequenceID.Equals(int.MaxValue) && WaitForSimParcel != null)
+                    WaitForSimParcel.Set();
 
                 // auto request acl, will be stored in parcel tracking dictionary if enabled
                 if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
@@ -1556,27 +1638,33 @@ namespace OpenMetaverse
             if (OnAccessListReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
             {
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
+
                 List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>(reply.List.Length);
-
-                for (int i = 0; i < reply.List.Length; i++)
-                {
-                    ParcelAccessEntry pae = new ParcelAccessEntry();
-                    pae.AgentID = reply.List[i].ID;
-                    pae.Flags = (AccessList)reply.List[i].Flags;
-                    pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
-
-                    accessList.Add(pae);
-                }
-
-                lock (simulator.Parcels.Dictionary)
-                {
-                    if (simulator.Parcels.Dictionary.ContainsKey(reply.Data.LocalID))
+                   
+                    for (int i = 0; i < reply.List.Length; i++)
                     {
-                        Parcel parcel = simulator.Parcels.Dictionary[reply.Data.LocalID];
-                        parcel.AccessList = accessList;
-                        simulator.Parcels.Dictionary[reply.Data.LocalID] = parcel;
+                        ParcelAccessEntry pae = new ParcelAccessEntry();
+                        pae.AgentID = reply.List[i].ID;
+                        pae.Time = Utils.UnixTimeToDateTime((uint)reply.List[i].Time);
+                        pae.Flags = (AccessList)reply.List[i].Flags;
+
+                        accessList.Add(pae);
                     }
-                }
+
+                    lock (simulator.Parcels.Dictionary)
+                    {
+                        if (simulator.Parcels.Dictionary.ContainsKey(reply.Data.LocalID))
+                        {
+                            Parcel parcel = simulator.Parcels.Dictionary[reply.Data.LocalID];
+                            if ((AccessList)reply.Data.Flags == AccessList.Ban)
+                                parcel.AccessBlackList = accessList;
+                            else
+                                parcel.AccessWhiteList = accessList;
+
+                            simulator.Parcels.Dictionary[reply.Data.LocalID] = parcel;
+                        }
+                    }
+                
 
                 if (OnAccessListReply != null)
                 {
@@ -1596,30 +1684,30 @@ namespace OpenMetaverse
         /// <param name="capsKey"></param>
         /// <param name="llsd"></param>
         /// <param name="simulator"></param>
-        private void ParcelObjectOwnersReplyHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void ParcelObjectOwnersReplyHandler(string capsKey, OSD llsd, Simulator simulator)
         {
             if (OnPrimOwnersListReply != null)
             {
 
-                LLSDMap map = (LLSDMap)llsd;
+                OSDMap map = (OSDMap)llsd;
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
                 if (map.ContainsKey("Data") && map.ContainsKey("DataExtended"))
                 {
 
-                    LLSDArray dataBlock = (LLSDArray)map["Data"];
-                    LLSDArray dataExtendedBlock = (LLSDArray)map["DataExtended"];
+                    OSDArray dataBlock = (OSDArray)map["Data"];
+                    OSDArray dataExtendedBlock = (OSDArray)map["DataExtended"];
 
                     for (int i = 0; i < dataBlock.Count; i++)
                     {
                         ParcelPrimOwners poe = new ParcelPrimOwners();
-                        poe.OwnerID = ((LLSDMap)dataBlock[i])["OwnerID"].AsUUID();
-                        poe.Count = ((LLSDMap)dataBlock[i])["Count"].AsInteger();
-                        poe.IsGroupOwned = ((LLSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
-                        poe.OnlineStatus = ((LLSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
-                        if (((LLSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
+                        poe.OwnerID = ((OSDMap)dataBlock[i])["OwnerID"].AsUUID();
+                        poe.Count = ((OSDMap)dataBlock[i])["Count"].AsInteger();
+                        poe.IsGroupOwned = ((OSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
+                        poe.OnlineStatus = ((OSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
+                        if (((OSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
                         {
-                            byte[] bytes = (((LLSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
+                            byte[] bytes = (((OSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
 
                             if (BitConverter.IsLittleEndian)
                                 Array.Reverse(bytes);

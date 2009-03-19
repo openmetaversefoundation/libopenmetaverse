@@ -7,10 +7,10 @@ using OpenMetaverse.Packets;
 
 namespace Simian
 {
-    public class Agent
+    public class AgentInfo
     {
         // Account
-        public UUID AgentID;
+        public UUID ID;
         public string FirstName;
         public string LastName;
         public string PasswordHash;
@@ -29,9 +29,6 @@ namespace Simian
         public ulong HomeRegionHandle;
         public Vector3 HomePosition;
         public Vector3 HomeLookAt;
-        public ulong CurrentRegionHandle;
-        public Vector3 CurrentPosition;
-        public Vector3 CurrentLookAt;
 
         // Profile
         public UUID PartnerID;
@@ -50,75 +47,90 @@ namespace Simian
         //public byte[] Texture;
         public float Height;
         public UUID ShapeItem;
-        public UUID ShapeAsset;
         public UUID SkinItem;
-        public UUID SkinAsset;
         public UUID HairItem;
-        public UUID HairAsset;
         public UUID EyesItem;
-        public UUID EyesAsset;
         public UUID ShirtItem;
-        public UUID ShirtAsset;
         public UUID PantsItem;
-        public UUID PantsAsset;
         public UUID ShoesItem;
-        public UUID ShoesAsset;
         public UUID SocksItem;
-        public UUID SocksAsset;
         public UUID JacketItem;
-        public UUID JacketAsset;
         public UUID GlovesItem;
-        public UUID GlovesAsset;
         public UUID UndershirtItem;
-        public UUID UndershirtAsset;
         public UUID UnderpantsItem;
-        public UUID UnderpantsAsset;
         public UUID SkirtItem;
-        public UUID SkirtAsset;
+    }
 
-        // Temporary
-        [NonSerialized]
-        public Avatar Avatar = new Avatar();
-        [NonSerialized]
+    public class Agent
+    {
+        public AgentInfo Info;
+        public SimulationObject Avatar;
         public UUID SessionID;
-        [NonSerialized]
         public UUID SecureSessionID;
-        [NonSerialized]
         public uint CircuitCode;
-        [NonSerialized]
         public bool Running;
-        [NonSerialized]
         public int TickFall;
-        [NonSerialized]
         public int TickJump;
-        [NonSerialized]
         public int TickLastPacketReceived;
-        [NonSerialized]
         public AgentManager.ControlFlags ControlFlags = AgentManager.ControlFlags.NONE;
-        [NonSerialized]
         public AnimationSet Animations = new AnimationSet();
-        // TODO: Replace byte with enum
-        [NonSerialized]
-        public byte State;
-        [NonSerialized]
-        public PrimFlags Flags;
+        public AgentState State;
+        public bool HideTitle;
+        public Uri SeedCapability;
+        public Vector3 CurrentLookAt;
+        public UUID RequestedSitTarget;
+        public Vector3 RequestedSitOffset;
+        public bool[] NeighborConnections = new bool[8];
+
+        public UUID ID
+        {
+            get { return Avatar.Prim.ID; }
+        }
 
         public string FullName
         {
             get
             {
-                bool hasFirst = !String.IsNullOrEmpty(FirstName);
-                bool hasLast = !String.IsNullOrEmpty(LastName);
+                bool hasFirst = !String.IsNullOrEmpty(Info.FirstName);
+                bool hasLast = !String.IsNullOrEmpty(Info.LastName);
 
                 if (hasFirst && hasLast)
-                    return String.Format("{0} {1}", FirstName, LastName);
+                    return String.Format("{0} {1}", Info.FirstName, Info.LastName);
                 else if (hasFirst)
-                    return FirstName;
+                    return Info.FirstName;
                 else if (hasLast)
-                    return LastName;
+                    return Info.LastName;
                 else
                     return String.Empty;
             }
+        }
+
+        public Agent(SimulationObject avatar, AgentInfo info)
+        {
+            Avatar = avatar;
+            Info = info;
+        }
+
+        public AvatarAppearancePacket BuildAppearancePacket()
+        {
+            AvatarAppearancePacket appearance = new AvatarAppearancePacket();
+            appearance.ObjectData.TextureEntry = this.Avatar.Prim.Textures.GetBytes();
+            appearance.Sender.ID = this.ID;
+            appearance.Sender.IsTrial = false;
+
+            int count = this.Info.VisualParams != null ? this.Info.VisualParams.Length : 0;
+
+            appearance.VisualParam = new AvatarAppearancePacket.VisualParamBlock[count];
+            for (int i = 0; i < count; i++)
+            {
+                appearance.VisualParam[i] = new AvatarAppearancePacket.VisualParamBlock();
+                appearance.VisualParam[i].ParamValue = this.Info.VisualParams[i];
+            }
+
+            if (count != 218)
+                Logger.Log("Built an odd appearance packet with VisualParams.Length=" + count, Helpers.LogLevel.Warning);
+
+            return appearance;
         }
     }
 }

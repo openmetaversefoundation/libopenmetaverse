@@ -30,7 +30,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.StructuredData;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
@@ -63,7 +63,7 @@ namespace OpenMetaverse
         MatureEvent = 3,
         /// <summary>Popular location</summary>
         Popular = 4,
-        /// <summary>Location belonging to the current agent</summary>
+        /// <summary>Locations of avatar groups in a region</summary>
         AgentLocations = 6,
         /// <summary>Land for sale</summary>
         LandForSale = 7,
@@ -107,17 +107,8 @@ namespace OpenMetaverse
         /// <returns></returns>
         public override string ToString()
         {
-            StringBuilder output = new StringBuilder("GridRegion: ");
-            output.Append(Name); output.Append(Helpers.NewLine);
-            output.Append("RegionHandle: " + RegionHandle); output.Append(Helpers.NewLine);
-            output.Append(String.Format("X: {0} Y: {1}", X, Y)); output.Append(Helpers.NewLine);
-            output.Append("MapImageID: " + MapImageID.ToString()); output.Append(Helpers.NewLine);
-            output.Append("Access: " + Access); output.Append(Helpers.NewLine);
-            output.Append("RegionFlags: " + RegionFlags); output.Append(Helpers.NewLine);
-            output.Append("WaterHeight: " + WaterHeight); output.Append(Helpers.NewLine);
-            output.Append("Agents: " + Agents);
-
-            return output.ToString();
+            return String.Format("{0} ({1}/{2}), Handle: {3}, MapImage: {4}, Access: {5}, Flags: {6}",
+                Name, X, Y, RegionHandle, MapImageID, Access, RegionFlags);
         }
 
         /// <summary>
@@ -268,11 +259,12 @@ namespace OpenMetaverse
 		{
 			Client = client;
 
-            Client.Network.RegisterCallback(PacketType.MapBlockReply, new NetworkManager.PacketCallback(MapBlockReplyHandler));
-            Client.Network.RegisterCallback(PacketType.MapItemReply, new NetworkManager.PacketCallback(MapItemReplyHandler));
-            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new NetworkManager.PacketCallback(TimeMessageHandler));
-            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
-            Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, new NetworkManager.PacketCallback(RegionHandleReplyHandler));
+            //Client.Network.RegisterCallback(PacketType.MapLayerReply, MapLayerReplyHandler);
+            Client.Network.RegisterCallback(PacketType.MapBlockReply, MapBlockReplyHandler);
+            Client.Network.RegisterCallback(PacketType.MapItemReply, MapItemReplyHandler);
+            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, TimeMessageHandler);
+            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler);
+            Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, RegionHandleReplyHandler);
 		}
 
         /// <summary>
@@ -285,8 +277,8 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap body = new LLSDMap();
-                body["Flags"] = LLSD.FromInteger((int)layer);
+                OSDMap body = new OSDMap();
+                body["Flags"] = OSD.FromInteger((int)layer);
 
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(MapLayerResponseHandler);
@@ -475,16 +467,16 @@ namespace OpenMetaverse
             }
         }
 
-        private void MapLayerResponseHandler(CapsClient client, LLSD result, Exception error)
+        private void MapLayerResponseHandler(CapsClient client, OSD result, Exception error)
         {
-            LLSDMap body = (LLSDMap)result;
-            LLSDArray layerData = (LLSDArray)body["LayerData"];
+            OSDMap body = (OSDMap)result;
+            OSDArray layerData = (OSDArray)body["LayerData"];
 
             if (OnGridLayer != null)
             {
                 for (int i = 0; i < layerData.Count; i++)
                 {
-                    LLSDMap thisLayerData = (LLSDMap)layerData[i];
+                    OSDMap thisLayerData = (OSDMap)layerData[i];
 
                     GridLayer layer;
                     layer.Bottom = thisLayerData["Bottom"].AsInteger();
@@ -636,8 +628,10 @@ namespace OpenMetaverse
                     {
                         simulator.positionIndexPrey = i;
                     }
-                    simulator.avatarPositions.Add(new Vector3(coarse.Location[i].X, coarse.Location[i].Y,
-                        coarse.Location[i].Z));
+                    simulator.avatarPositions.Add(
+                        coarse.AgentData[i].AgentID, 
+                        new Vector3(coarse.Location[i].X, coarse.Location[i].Y,
+                        coarse.Location[i].Z * 4));
                 }
 
                 if (OnCoarseLocationUpdate != null)

@@ -52,6 +52,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OPJ_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="3"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release/DllOpenJPEG.pch"
 				AssemblerListingLocation=".\Release/"
@@ -147,6 +148,7 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				StructMemberAlignment="3"
 				PrecompiledHeaderFile=".\Debug/DllOpenJPEG.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
@@ -251,6 +253,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\dotnet\dotnet.cpp"
+				>
 			</File>
 			<File
 				RelativePath="libopenjpeg\dwt.c"
@@ -391,10 +397,6 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\dotnet\dotnet.cpp"
-				>
 			</File>
 			<File
 				RelativePath="libopenjpeg\mct.c"
@@ -590,6 +592,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dotnet\dotnet.h"
+				>
+			</File>
+			<File
 				RelativePath="libopenjpeg\dwt.h"
 				>
 			</File>
@@ -623,10 +629,6 @@
 			</File>
 			<File
 				RelativePath="libopenjpeg\jpt.h"
-				>
-			</File>
-			<File
-				RelativePath=".\dotnet\dotnet.h"
 				>
 			</File>
 			<File

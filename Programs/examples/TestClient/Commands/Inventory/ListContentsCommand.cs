@@ -56,6 +56,8 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
                         displayString += PermMaskString(item.Permissions.EveryoneMask);
                         displayString += " " + item.UUID;
                         displayString += " " + item.Name;
+                        displayString += nl;
+                        displayString += "  AssetID: " + item.AssetUUID;
                     }
                 }
                 else

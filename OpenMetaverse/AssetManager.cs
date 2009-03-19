@@ -208,45 +208,7 @@ namespace OpenMetaverse
     }
 
     #endregion Enums
-    /*
-    public static class AssetTypeParser
-    {
-        private static readonly ReversableDictionary<string, AssetType> AssetTypeMap = new ReversableDictionary<string, AssetType>();
-        static AssetTypeParser()
-        {
-            AssetTypeMap.Add("animatn", AssetType.Animation);
-            AssetTypeMap.Add("clothing", AssetType.Clothing);
-            AssetTypeMap.Add("callcard", AssetType.CallingCard);
-            AssetTypeMap.Add("object", AssetType.Object);
-            AssetTypeMap.Add("texture", AssetType.Texture);
-            AssetTypeMap.Add("sound", AssetType.Sound);
-            AssetTypeMap.Add("bodypart", AssetType.Bodypart);
-            AssetTypeMap.Add("gesture", AssetType.Gesture);
-            AssetTypeMap.Add("lsltext", AssetType.LSLText);
-            AssetTypeMap.Add("landmark", AssetType.Landmark);
-            AssetTypeMap.Add("notecard", AssetType.Notecard);
-            AssetTypeMap.Add("category", AssetType.Folder);
-        }
 
-        public static AssetType Parse(string str)
-        {
-            AssetType t;
-            if (AssetTypeMap.TryGetValue(str, out t))
-                return t;
-            else
-                return AssetType.Unknown;
-        }
-
-        public static string StringValueOf(AssetType type)
-        {
-            string str;
-            if (AssetTypeMap.TryGetKey(type, out str))
-                return str;
-            else
-                return "unknown";
-        }
-    }
-    */
     #region Transfer Classes
 
     /// <summary>
@@ -256,7 +218,7 @@ namespace OpenMetaverse
     {
         public UUID ID;
         public int Size;
-        public byte[] AssetData = new byte[0];
+        public byte[] AssetData = Utils.EmptyBytes;
         public int Transferred;
         public bool Success;
         public AssetType AssetType;
@@ -273,7 +235,7 @@ namespace OpenMetaverse
 
         public Transfer()
         {
-            AssetData = new byte[0];
+            AssetData = Utils.EmptyBytes;
             transferStart = Environment.TickCount;
         }
     }
@@ -292,6 +254,11 @@ namespace OpenMetaverse
         public Simulator Simulator;
 
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+
+        public AssetDownload()
+            : base()
+        {
+        }
     }
 
     public class XferDownload : Transfer
@@ -301,6 +268,11 @@ namespace OpenMetaverse
         public AssetType Type;
         public uint PacketNum;
         public string Filename = String.Empty;
+
+        public XferDownload()
+            : base()
+        {
+        }
     }
 
     /// <summary>
@@ -319,6 +291,11 @@ namespace OpenMetaverse
 
         internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+
+        public ImageDownload()
+            : base()
+        {
+        }
     }
 
     /// <summary>
@@ -330,7 +307,13 @@ namespace OpenMetaverse
         public AssetType Type;
         public ulong XferID;
         public uint PacketNum;
+
+        public AssetUpload()
+            : base()
+        {
+        }
     }
+
     public class ImageRequest
     {
         public ImageRequest(UUID imageid, ImageType type, float priority, int discardLevel)
@@ -491,7 +474,10 @@ namespace OpenMetaverse
 
                         if (download.TimeSinceLastPacket > 5000)
                         {
-                            --download.DiscardLevel;
+                            if (download.DiscardLevel > 0)
+                            {
+                                --download.DiscardLevel;
+                            }
                             download.TimeSinceLastPacket = 0;
                             RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
                         }
@@ -529,8 +515,8 @@ namespace OpenMetaverse
             request.TransferInfo.TransferID = transfer.ID;
 
             byte[] paramField = new byte[20];
-            Array.Copy(assetID.GetBytes(), 0, paramField, 0, 16);
-            Array.Copy(Utils.IntToBytes((int)type), 0, paramField, 16, 4);
+            Buffer.BlockCopy(assetID.GetBytes(), 0, paramField, 0, 16);
+            Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, paramField, 16, 4);
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);
@@ -548,8 +534,11 @@ namespace OpenMetaverse
         /// left empty</param>
         /// <param name="vFileType">Asset type of <code>vFileID</code>, or
         /// <code>AssetType.Unknown</code> if filename is not empty</param>
+        /// <param name="fromCache">Sets the FilePath in the request to Cache
+        /// (4) if true, otherwise Unknown (0) is used</param>
         /// <returns></returns>
-        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, UUID vFileID, AssetType vFileType)
+        public ulong RequestAssetXfer(string filename, bool deleteOnCompletion, bool useBigPackets, UUID vFileID, AssetType vFileType,
+            bool fromCache)
         {
             UUID uuid = UUID.Random();
             ulong id = uuid.GetULong();
@@ -567,8 +556,7 @@ namespace OpenMetaverse
             RequestXferPacket request = new RequestXferPacket();
             request.XferID.ID = id;
             request.XferID.Filename = Utils.StringToBytes(filename);
-            request.XferID.FilePath = 4; // "Cache". This is a horrible thing that hardcodes a file path enumeration in to the
-                                         // protocol. For asset downloads we should only ever need this value
+            request.XferID.FilePath = fromCache ? (byte)4 : (byte)0;
             request.XferID.DeleteOnCompletion = deleteOnCompletion;
             request.XferID.UseBigPackets = useBigPackets;
             request.XferID.VFileID = vFileID;
@@ -829,6 +817,11 @@ namespace OpenMetaverse
             return RequestUpload(out assetID, type, data, storeLocal);
         }
 
+        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal)
+		{
+			return RequestUpload(out assetID, type, data, storeLocal, UUID.Random());
+		}
+		
         /// <summary>
         /// Initiate an asset upload
         /// </summary>
@@ -838,23 +831,24 @@ namespace OpenMetaverse
         /// <param name="data">Raw asset data to upload</param>
         /// <param name="storeLocal">Whether to store this asset on the local
         /// simulator or the grid-wide asset server</param>
+        /// <param name="transactionID">The tranaction id for the upload <see cref="RequestCreateItem"/></param>
         /// <returns>The transaction ID of this transfer</returns>
-        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal)
+        public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal, UUID transactionID)
         {
             AssetUpload upload = new AssetUpload();
             upload.AssetData = data;
             upload.AssetType = type;
-            upload.ID = UUID.Random();
-            assetID = UUID.Combine(upload.ID, Client.Self.SecureSessionID);
+            assetID = UUID.Combine(transactionID, Client.Self.SecureSessionID);
             upload.AssetID = assetID;
             upload.Size = data.Length;
             upload.XferID = 0;
-
+			upload.ID = transactionID;
+			
             // Build and send the upload packet
             AssetUploadRequestPacket request = new AssetUploadRequestPacket();
             request.AssetBlock.StoreLocal = storeLocal;
             request.AssetBlock.Tempfile = false; // This field is deprecated
-            request.AssetBlock.TransactionID = upload.ID;
+            request.AssetBlock.TransactionID = transactionID;
             request.AssetBlock.Type = (sbyte)type;
 
             if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
@@ -863,6 +857,8 @@ namespace OpenMetaverse
                     String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
                     upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
 
+                    Transfers[upload.ID]=upload;         
+                
                 // The whole asset will fit in this packet, makes things easy
                 request.AssetBlock.AssetData = data;
                 upload.Transferred = data.Length;
@@ -874,7 +870,7 @@ namespace OpenMetaverse
                     upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
 
                 // Asset is too big, send in multiple packets
-                request.AssetBlock.AssetData = new byte[0];
+                request.AssetBlock.AssetData = Utils.EmptyBytes;
             }
 
             // Wait for the previous upload to receive a RequestXferPacket
@@ -936,6 +932,9 @@ namespace OpenMetaverse
                 case AssetType.Animation:
                     asset = new AssetAnimation();
                     break;
+                case AssetType.Sound:
+                    asset = new AssetSound();
+                    break;
                 default:
                     Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
                     return null;
@@ -947,9 +946,16 @@ namespace OpenMetaverse
         private Asset WrapAsset(AssetDownload download)
         {
             Asset asset = CreateAssetWrapper(download.AssetType);
-            asset.AssetID = download.AssetID;
-            asset.AssetData = download.AssetData;
-            return asset;
+            if (asset != null)
+            {
+                asset.AssetID = download.AssetID;
+                asset.AssetData = download.AssetData;
+                return asset;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void SendNextUploadPacket(AssetUpload upload)
@@ -1055,11 +1061,11 @@ namespace OpenMetaverse
                         else if (download.Source == SourceType.SimInventoryItem && info.TransferInfo.Params.Length == 100)
                         {
                             // TODO: Can we use these?
-                            UUID agentID = new UUID(info.TransferInfo.Params, 0);
-                            UUID sessionID = new UUID(info.TransferInfo.Params, 16);
-                            UUID ownerID = new UUID(info.TransferInfo.Params, 32);
-                            UUID taskID = new UUID(info.TransferInfo.Params, 48);
-                            UUID itemID = new UUID(info.TransferInfo.Params, 64);
+                            //UUID agentID = new UUID(info.TransferInfo.Params, 0);
+                            //UUID sessionID = new UUID(info.TransferInfo.Params, 16);
+                            //UUID ownerID = new UUID(info.TransferInfo.Params, 32);
+                            //UUID taskID = new UUID(info.TransferInfo.Params, 48);
+                            //UUID itemID = new UUID(info.TransferInfo.Params, 64);
                             download.AssetID = new UUID(info.TransferInfo.Params, 80);
                             download.AssetType = (AssetType)(sbyte)info.TransferInfo.Params[96];
 
@@ -1127,9 +1133,18 @@ namespace OpenMetaverse
 
                 // This assumes that every transfer packet except the last one is exactly 1000 bytes,
                 // hopefully that is a safe assumption to make
-                Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
-                    asset.TransferData.Data.Length);
-                download.Transferred += asset.TransferData.Data.Length;
+                try
+                {
+                    Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
+                        asset.TransferData.Data.Length);
+                    download.Transferred += asset.TransferData.Data.Length;
+                }
+                catch (ArgumentException)
+                {
+                    Logger.Log(String.Format("TransferPacket handling failed. TransferData.Data.Length={0}, AssetData.Length={1}, TransferData.Packet={2}",
+                        asset.TransferData.Data.Length, download.AssetData.Length, asset.TransferData.Packet), Helpers.LogLevel.Error);
+                    return;
+                }
 
                 //Client.DebugLog(String.Format("Transfer packet {0}, received {1}/{2}/{3} bytes for asset {4}",
                 //    asset.TransferData.Packet, asset.TransferData.Data.Length, transfer.Transferred, transfer.Size,
@@ -1285,6 +1300,8 @@ namespace OpenMetaverse
                     {
                         Logger.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
                             Helpers.LogLevel.Warning, Client);
+                        // Re-confirm the last packet we actually received
+                        SendConfirmXferPacket(download.XferID, download.PacketNum - 1);
                     }
 
                     return;
@@ -1292,11 +1309,13 @@ namespace OpenMetaverse
 
                 if (packetNum == 0)
                 {
-                    // This is the first packet received in the download, the first four bytes are a network order size integer
-                    // FIXME: Is this actually true?
+                    // This is the first packet received in the download, the first four bytes are a size integer
+                    // in little endian ordering
                     byte[] bytes = xfer.DataPacket.Data;
-                    download.Size = (bytes[3] + (bytes[2] << 8) + (bytes[1] << 16) + (bytes[0] << 24));
+                    download.Size = (bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
                     download.AssetData = new byte[download.Size];
+
+                    Logger.DebugLog("Received first packet in an Xfer download of size " + download.Size);
 
                     Buffer.BlockCopy(xfer.DataPacket.Data, 4, download.AssetData, 0, xfer.DataPacket.Data.Length - 4);
                     download.Transferred += xfer.DataPacket.Data.Length - 4;
@@ -1507,316 +1526,4 @@ namespace OpenMetaverse
 
         #endregion Image Callbacks
     }
-
-    #region Texture Cache
-    /// <summary>
-    /// Class that handles the local image cache
-    /// </summary>
-    public class TextureCache
-    {
-        private GridClient Client;
-        private Thread cleanerThread;
-        private System.Timers.Timer cleanerTimer;
-        private double pruneInterval = 1000 * 60 * 5;
-
-        /// <summary>
-        /// Allows setting weather to periodicale prune the cache if it grows too big
-        /// Default is enabled, when caching is enabled
-        /// </summary>
-        public bool AutoPruneEnabled
-        {
-            set {
-                if (!Operational()) {
-                    return;
-                } else {
-                    cleanerTimer.Enabled = value;
-                }
-            }
-            get { return cleanerTimer.Enabled;}
-        }
-
-        /// <summary>
-        /// How long (in ms) between cache checks (default is 5 min.) 
-        /// </summary>
-        public double AutoPruneInterval
-        {
-            get { return pruneInterval; }
-            set
-            {
-                pruneInterval = value;
-                cleanerTimer.Interval = pruneInterval;
-            }
-        }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="client">A reference to the GridClient object</param>
-        public TextureCache(GridClient client)
-        {
-            Client = client;
-            cleanerTimer = new System.Timers.Timer(pruneInterval);
-            cleanerTimer.Elapsed += new System.Timers.ElapsedEventHandler(cleanerTimer_Elapsed);
-            if (Operational()) {
-                cleanerTimer.Enabled = true;
-            } else {
-                cleanerTimer.Enabled = false;
-            }
-        }
-
-        /// <summary>
-        /// Return bytes read from the local image cache, null if it does not exist
-        /// </summary>
-        /// <param name="imageID">UUID of the image we want to get</param>
-        /// <returns>Raw bytes of the image, or null on failure</returns>
-        public byte[] GetCachedImageBytes(UUID imageID)
-        {
-            if (!Operational()) {
-                return null;
-            }
-            try {
-                Logger.DebugLog("Reading " + FileName(imageID) + " from texture cache.");
-                byte[] data = File.ReadAllBytes(FileName(imageID));
-                return data;
-            } catch (Exception ex) {
-                Logger.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Returns ImageDownload object of the
-        /// image from the local image cache, null if it does not exist
-        /// </summary>
-        /// <param name="imageID">UUID of the image we want to get</param>
-        /// <returns>ImageDownload object containing the image, or null on failure</returns>
-        public ImageDownload GetCachedImage(UUID imageID)
-        {
-            if (!Operational())
-                return null;
-
-            byte[] imageData = GetCachedImageBytes(imageID);
-            if (imageData == null)
-                return null;
-            ImageDownload transfer = new ImageDownload();
-            transfer.AssetType = AssetType.Texture;
-            transfer.ID = imageID;
-            transfer.Simulator = Client.Network.CurrentSim;
-            transfer.Size = imageData.Length;
-            transfer.Success = true;
-            transfer.Transferred = imageData.Length;
-            transfer.AssetData = imageData;
-            return transfer;
-        }
-
-        /// <summary>
-        /// Constructs a file name of the cached image
-        /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <returns>String with the file name of the cahced image</returns>
-        private string FileName(UUID imageID)
-        {
-            return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
-        }
-
-        /// <summary>
-        /// Saves an image to the local cache
-        /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <param name="imageData">Raw bytes the image consists of</param>
-        /// <returns>Weather the operation was successfull</returns>
-        public bool SaveImageToCache(UUID imageID, byte[] imageData)
-        {
-            if (!Operational()) {
-                return false;
-            }
-            
-            try {
-                Logger.DebugLog("Saving " + FileName(imageID) + " to texture cache.", Client);
-                
-                if (!Directory.Exists(Client.Settings.TEXTURE_CACHE_DIR)) {
-                    Directory.CreateDirectory(Client.Settings.TEXTURE_CACHE_DIR);
-                }
-                
-                File.WriteAllBytes(FileName(imageID), imageData);
-            } catch (Exception ex) {
-                Logger.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
-                return false;
-            }
-            
-            return true;
-        }
-
-        /// <summary>
-        /// Get the file name of the asset stored with gived UUID
-        /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <returns>Null if we don't have that UUID cached on disk, file name if found in the cache folder</returns>
-        public string ImageFileName(UUID imageID)
-        {
-            if (!Operational())
-            {
-                return null;
-            }
-
-            string fileName = FileName(imageID);
-
-            if (File.Exists(fileName))
-                return fileName;
-            else
-                return null;
-        }
-
-        /// <summary>
-        /// Checks if the image exists in the local cache
-        /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <returns>True is the image is stored in the cache, otherwise false</returns>
-        public bool HasImage(UUID imageID)
-        {
-            if (!Operational()) {
-                return false;
-            }
-            return File.Exists(FileName(imageID));
-        }
-
-        /// <summary>
-        /// Wipes out entire cache
-        /// </summary>
-        public void Clear()
-        {
-            string cacheDir = Client.Settings.TEXTURE_CACHE_DIR;
-            if (!Directory.Exists(cacheDir)) {
-                return;
-            }
-
-            DirectoryInfo di = new DirectoryInfo(cacheDir);
-            // We save file with UUID as file name, only delete those
-            FileInfo[] files = di.GetFiles("????????-????-????-????-????????????", SearchOption.TopDirectoryOnly);
-
-            int num = 0;
-            foreach (FileInfo file in files) {
-                file.Delete();
-                ++num;
-            }
-
-            Logger.Log("Wiped out " + num + " files from the cache directory.", Helpers.LogLevel.Debug);
-        }
-
-        /// <summary>
-        /// Brings cache size to the 90% of the max size
-        /// </summary>
-        public void Prune()
-        {
-            string cacheDir = Client.Settings.TEXTURE_CACHE_DIR;
-            if (!Directory.Exists(cacheDir)) {
-                return;
-            }
-            DirectoryInfo di = new DirectoryInfo(cacheDir);
-            // We save file with UUID as file name, only count those
-            FileInfo[] files = di.GetFiles("????????-????-????-????-????????????", SearchOption.TopDirectoryOnly);
-
-            long size = GetFileSize(files);
-
-            if (size > Client.Settings.TEXTURE_CACHE_MAX_SIZE) {
-                Array.Sort(files, new SortFilesByAccesTimeHelper());
-                long targetSize = (long)(Client.Settings.TEXTURE_CACHE_MAX_SIZE * 0.9);
-                int num = 0;
-                foreach (FileInfo file in files) {
-                    ++num;
-                    size -= file.Length;
-                    file.Delete();
-                    if (size < targetSize) {
-                        break;
-                    }
-                }
-                Logger.Log(num + " files deleted from the cache, cache size now: " + NiceFileSize(size), Helpers.LogLevel.Debug);
-            } else {
-                Logger.Log("Cache size is " + NiceFileSize(size) + ", file deletion not needed", Helpers.LogLevel.Debug);
-            }
-
-        }
-
-        /// <summary>
-        /// Asynchronously brings cache size to the 90% of the max size
-        /// </summary>
-        public void BeginPrune()
-        {
-            // Check if the background cache cleaning thread is active first
-            if (cleanerThread != null && cleanerThread.IsAlive) {
-                return;
-            }
-
-            lock (this) {
-                cleanerThread = new Thread(new ThreadStart(this.Prune));
-                cleanerThread.IsBackground = true;
-                cleanerThread.Start();
-            }
-        }
-
-        /// <summary>
-        /// Adds up file sizes passes in a FileInfo array
-        /// </summary>
-        long GetFileSize(FileInfo[] files)
-        {
-            long ret = 0;
-            foreach (FileInfo file in files) {
-                ret += file.Length;
-            }
-            return ret;
-        }
-
-        /// <summary>
-        /// Checks whether caching is enabled
-        /// </summary>
-        private bool Operational()
-        {
-            return Client.Settings.USE_TEXTURE_CACHE;
-        }
-
-        /// <summary>
-        /// Periodically prune the cache
-        /// </summary>
-        private void cleanerTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            BeginPrune();
-        }
-
-        /// <summary>
-        /// Nicely formats file sizes
-        /// </summary>
-        /// <param name="byteCount">Byte size we want to output</param>
-        /// <returns>String with humanly readable file size</returns>
-        private string NiceFileSize(long byteCount)
-        {
-            string size = "0 Bytes";
-            if (byteCount >= 1073741824)
-                size = String.Format("{0:##.##}", byteCount / 1073741824) + " GB";
-            else if (byteCount >= 1048576)
-                size = String.Format("{0:##.##}", byteCount / 1048576) + " MB";
-            else if (byteCount >= 1024)
-                size = String.Format("{0:##.##}", byteCount / 1024) + " KB";
-            else if (byteCount > 0 && byteCount < 1024)
-                size = byteCount.ToString() + " Bytes";
-
-            return size;
-        }
-
-        /// <summary>
-        /// Helper class for sorting files by their last accessed time
-        /// </summary>
-        private class SortFilesByAccesTimeHelper : IComparer<FileInfo>
-        {
-            int IComparer<FileInfo>.Compare(FileInfo f1, FileInfo f2)
-            {
-                if (f1.LastAccessTime > f2.LastAccessTime)
-                    return 1;
-                if (f1.LastAccessTime < f2.LastAccessTime)
-                    return -1;
-                else
-                    return 0;
-            }
-        }
-    }
-    #endregion
 }

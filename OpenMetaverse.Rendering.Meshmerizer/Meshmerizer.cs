@@ -191,7 +191,7 @@ namespace OpenMetaverse.Rendering
             }
 
             int numCoords = primMesh.coords.Count;
-            int numFaces = primMesh.faces.Count;
+            //int numFaces = primMesh.faces.Count;
 
             List<Coord> coords = primMesh.coords;
             for (int i = 0; i < numCoords; i++)

@@ -8,17 +8,17 @@ namespace OpenMetaverse.TestClient
     public class SayCommand: Command
     {
         public SayCommand(TestClient testClient)
-		{
-			Name = "say";
-			Description = "Say something.  (usage: say (optional channel) whatever)";
+        {
+            Name = "say";
+            Description = "Say something.  (usage: say (optional channel) whatever)";
             Category = CommandCategory.Communication;
-		}
+        }
 
         public override string Execute(string[] args, UUID fromAgentID)
-		{
+        {
             int channel = 0;
             int startIndex = 0;
-            
+
             if (args.Length < 1)
             {
                 return "usage: say (optional channel) whatever";
@@ -26,20 +26,22 @@ namespace OpenMetaverse.TestClient
             else if (args.Length > 1)
             {
                 if (Int32.TryParse(args[0], out channel))
-					startIndex = 1;
+                    startIndex = 1;
             }
 
-            StringBuilder message = new StringBuilder();
+            String message = String.Empty;
 
-			for (int i = startIndex; i < args.Length; i++)
+            for (int i = startIndex; i < args.Length; i++)
             {
-                message.Append(args[i]);
-                if (i != args.Length - 1) message.Append(" ");
+                // Append a space before the next arg
+                if( i > 0 )
+                    message += " ";
+                message += args[i];
             }
 
-			Client.Self.Chat(message.ToString(), channel, ChatType.Normal);
+            Client.Self.Chat(message, channel, ChatType.Normal);
 
             return "Said " + message.ToString();
-		}
+        }
     }
 }

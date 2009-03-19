@@ -37,20 +37,29 @@ namespace OpenMetaverse.TestClient
                 Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                     delegate(Primitive prim)
                     {
-                        if (prim.Text != null && regexPrimName.IsMatch(prim.Text.ToLower()))
+                        bool match = false;
+                        string name = "(unknown)";
+                        string description = "(unknown)";
+
+
+                        match = (prim.Text != null && regexPrimName.IsMatch(prim.Text.ToLower()));
+
+                        if (prim.Properties != null && !match)
                         {
-                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.Properties.Name,
-                                prim.ID, prim.Flags.ToString(), prim.Text, prim.Properties.Description), Helpers.LogLevel.Info, Client);
+                            match = regexPrimName.IsMatch(prim.Properties.Name.ToLower());
+                            if (!match)
+                                match = regexPrimName.IsMatch(prim.Properties.Description.ToLower());
                         }
-                        else if (prim.Properties.Name != null && regexPrimName.IsMatch(prim.Properties.Name.ToLower()))
+
+                        if (match)
                         {
-                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.Properties.Name,
-                                prim.ID, prim.Flags.ToString(), prim.Text, prim.Properties.Description), Helpers.LogLevel.Info, Client);
-                        }
-                        else if (prim.Properties.Description != null && regexPrimName.IsMatch(prim.Properties.Description.ToLower()))
-                        {
-                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}", prim.Properties.Name,
-                                prim.ID, prim.Flags.ToString(), prim.Text, prim.Properties.Description), Helpers.LogLevel.Info, Client);
+                            if (prim.Properties != null)
+                            {
+                                name = prim.Properties.Name;
+                                description = prim.Properties.Description;
+                            }
+                            Logger.Log(string.Format("\nNAME={0}\nID = {1}\nFLAGS = {2}\nTEXT = '{3}'\nDESC='{4}'", name,
+                                prim.ID, prim.Flags.ToString(), prim.Text, description), Helpers.LogLevel.Info, Client);
                         }
                     }
                 );

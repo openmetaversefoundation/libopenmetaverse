@@ -80,10 +80,21 @@ namespace OpenMetaverse
         /// <summary>UNIX epoch in DateTime format</summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1);
 
+        public static readonly byte[] EmptyBytes = new byte[0];
+
         /// <summary>Provide a single instance of the MD5 class to avoid making
-        /// duplicate copies</summary>
+        /// duplicate copies and handle thread safety</summary>
         private static readonly System.Security.Cryptography.MD5 MD5Builder =
             new System.Security.Cryptography.MD5CryptoServiceProvider();
+
+        /// <summary>Provide a single instance of the SHA-1 class to avoid
+        /// making duplicate copies and handle thread safety</summary>
+        private static readonly System.Security.Cryptography.SHA1 SHA1Builder =
+            new System.Security.Cryptography.SHA1CryptoServiceProvider();
+
+        /// <summary>Provide a single instance of a random number generator
+        /// to avoid making duplicate copies and handle thread safety</summary>
+        private static readonly Random RNG = new Random();
 
         #region Math
 
@@ -275,22 +286,75 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Compute the SHA-1 hash for a byte array
+        /// </summary>
+        /// <param name="data">Byte array to compute the hash for</param>
+        /// <returns>SHA-1 hash of the input data</returns>
+        public static byte[] SHA1(byte[] data)
+        {
+            lock (SHA1Builder)
+                return SHA1Builder.ComputeHash(data);
+        }
+
+        /// <summary>
+        /// Calculate the SHA1 hash of a given string
+        /// </summary>
+        /// <param name="value">The string to hash</param>
+        /// <returns>The SHA1 hash as a string</returns>
+        public static string SHA1String(string value)
+        {
+            StringBuilder digest = new StringBuilder(40);
+            byte[] hash = SHA1(Encoding.UTF8.GetBytes(value));
+
+            // Convert the hash to a hex string
+            foreach (byte b in hash)
+                digest.AppendFormat(Utils.EnUsCulture, "{0:x2}", b);
+
+            return digest.ToString();
+        }
+
+        /// <summary>
         /// Calculate the MD5 hash of a given string
         /// </summary>
         /// <param name="password">The password to hash</param>
         /// <returns>An MD5 hash in string format, with $1$ prepended</returns>
         public static string MD5(string password)
         {
-            StringBuilder digest = new StringBuilder();
+            StringBuilder digest = new StringBuilder(32);
             byte[] hash = MD5(ASCIIEncoding.Default.GetBytes(password));
 
             // Convert the hash to a hex string
             foreach (byte b in hash)
-            {
                 digest.AppendFormat(Utils.EnUsCulture, "{0:x2}", b);
-            }
 
             return "$1$" + digest.ToString();
+        }
+
+        /// <summary>
+        /// Calculate the MD5 hash of a given string
+        /// </summary>
+        /// <param name="value">The string to hash</param>
+        /// <returns>The MD5 hash as a string</returns>
+        public static string MD5String(string value)
+        {
+            StringBuilder digest = new StringBuilder(32);
+            byte[] hash = MD5(Encoding.UTF8.GetBytes(value));
+
+            // Convert the hash to a hex string
+            foreach (byte b in hash)
+                digest.AppendFormat(Utils.EnUsCulture, "{0:x2}", b);
+
+            return digest.ToString();
+        }
+
+        /// <summary>
+        /// Generate a random double precision floating point value
+        /// </summary>
+        /// <returns>Random value of type double</returns>
+        public static double RandomDouble()
+        {
+            lock (RNG)
+                return RNG.NextDouble();
         }
 
         #endregion Math

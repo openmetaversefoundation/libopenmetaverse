@@ -215,6 +215,36 @@ namespace OpenMetaverse
 
         #region Properties
 
+        /// <summary>First name</summary>
+        public string FirstName
+        {
+            get
+            {
+                for (int i = 0; i < NameValues.Length; i++)
+                {
+                    if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
+                        return (string)NameValues[i].Value;
+                }
+
+                return String.Empty;
+            }
+        }
+
+        /// <summary>Last name</summary>
+        public string LastName
+        {
+            get
+            {
+                for (int i = 0; i < NameValues.Length; i++)
+                {
+                    if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
+                        return (string)NameValues[i].Value;
+                }
+
+                return String.Empty;
+            }
+        }
+        
         /// <summary>Full name</summary>
         public string Name
         {
@@ -224,38 +254,35 @@ namespace OpenMetaverse
                 {
                     return name;
                 }
-                else
+                else if (NameValues != null && NameValues.Length > 0)
                 {
                     lock (NameValues)
                     {
-                        if (NameValues == null || NameValues.Length == 0)
+                        string firstName = String.Empty;
+                        string lastName = String.Empty;
+
+                        for (int i = 0; i < NameValues.Length; i++)
                         {
-                            return String.Empty;
+                            if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
+                                firstName = (string)NameValues[i].Value;
+                            else if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
+                                lastName = (string)NameValues[i].Value;
+                        }
+
+                        if (firstName != String.Empty && lastName != String.Empty)
+                        {
+                            name = String.Format("{0} {1}", firstName, lastName);
+                            return name;
                         }
                         else
                         {
-                            string firstName = String.Empty;
-                            string lastName = String.Empty;
-
-                            for (int i = 0; i < NameValues.Length; i++)
-                            {
-                                if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
-                                    firstName = (string)NameValues[i].Value;
-                                else if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
-                                    lastName = (string)NameValues[i].Value;
-                            }
-
-                            if (firstName != String.Empty && lastName != String.Empty)
-                            {
-                                name = String.Format("{0} {1}", firstName, lastName);
-                                return name;
-                            }
-                            else
-                            {
-                                return String.Empty;
-                            }
+                            return String.Empty;
                         }
                     }
+                }
+                else
+                {
+                    return String.Empty;
                 }
             }
         }

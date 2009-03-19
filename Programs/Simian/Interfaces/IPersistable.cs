@@ -5,7 +5,7 @@ namespace Simian
 {
     public interface IPersistable
     {
-        LLSD Serialize();
-        void Deserialize(LLSD serialized);
+        OSD Serialize();
+        void Deserialize(OSD serialized);
     }
 }

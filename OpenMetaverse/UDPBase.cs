@@ -56,11 +56,7 @@ namespace OpenMetaverse
         // wait until all outstanding operations are completed before shutting down.
         // this avoids the problem of closing the socket with outstanding operations
         // and trying to catch the inevitable ObjectDisposedException.
-#if PocketPC
-        private OpenMetaverse.ReaderWriterLock rwLock = new OpenMetaverse.ReaderWriterLock();
-#else
         private ReaderWriterLock rwLock = new ReaderWriterLock();
-#endif
 
         // number of outstanding operations.  This is a reference count
         // which we use to ensure that the threads exit cleanly. Note that
@@ -71,8 +67,8 @@ namespace OpenMetaverse
         // the all important shutdownFlag.  This is synchronized through the ReaderWriterLock.
         private volatile bool shutdownFlag = true;
 
-        //
-        private IPEndPoint remoteEndPoint = null;
+        // the remote endpoint to communicate with
+        protected IPEndPoint remoteEndPoint = null;
 
 
         /// <summary>

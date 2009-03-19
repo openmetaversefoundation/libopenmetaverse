@@ -4,20 +4,22 @@ using ExtensionLoader;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
 
-namespace Simian.Extensions
+namespace Simian
 {
-    public class RenderingPluginMesher : IExtension, IMeshingProvider
+    public class RenderingPluginMesher : IExtension<Simian>, IMeshingProvider
     {
-        Simian Server;
+        Simian server;
         IRendering Renderer;
 
-        public RenderingPluginMesher(Simian server)
+        public RenderingPluginMesher()
         {
-            Server = server;
         }
 
-        public void Start()
+        public bool Start(Simian server)
         {
+            this.server = server;
+
+            // FIXME: Use the list in Simian.ini
             // Search for a the best available OpenMetaverse.Rendering plugin
             List<string> renderers = RenderingLoader.ListRenderers(AppDomain.CurrentDomain.BaseDirectory);
 
@@ -33,11 +35,12 @@ namespace Simian.Extensions
                 else
                 {
                     Logger.Log("No suitable OpenMetaverse.Rendering plugins found", Helpers.LogLevel.Error);
-                    return;
+                    return false;
                 }
             }
 
             Renderer = RenderingLoader.LoadRenderer(renderer);
+            return true;
         }
 
         public void Stop()

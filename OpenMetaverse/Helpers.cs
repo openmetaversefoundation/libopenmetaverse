@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenMetaverse.Packets;
+using System.Reflection;
 
 namespace OpenMetaverse
 {
@@ -44,8 +45,6 @@ namespace OpenMetaverse
         public const byte MSG_RELIABLE = 0x40;
         /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
         public const byte MSG_ZEROCODED = 0x80;
-
-        public static readonly string NewLine = Environment.NewLine;
 
         /// <summary>
         /// Passed to Logger.Log() to identify the severity of a log entry
@@ -71,12 +70,6 @@ namespace OpenMetaverse
             /// </summary>
             Debug
         };
-
-        /// <summary>Provide a single instance of the CultureInfo class to
-        /// help parsing in situations where the grid assumes an en-us 
-        /// culture</summary>
-        public static readonly System.Globalization.CultureInfo EnUsCulture =
-            new System.Globalization.CultureInfo("en-us");
 
         /// <summary>
         /// 
@@ -183,18 +176,6 @@ namespace OpenMetaverse
                 s = s.Remove(0, 1);
 
             return s;
-        }
-
-        /// <summary>
-        /// Convert a variable length field (byte array) to a string
-        /// </summary>
-        /// <remarks>If the byte array has unprintable characters in it, a 
-        /// hex dump will be written instead</remarks>
-        /// <param name="output">The StringBuilder object to write to</param>
-        /// <param name="bytes">The byte array to convert to a string</param>
-        internal static void FieldToString(StringBuilder output, byte[] bytes)
-        {
-            FieldToString(output, bytes, String.Empty);
         }
 
         /// <summary>
@@ -503,33 +484,33 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="prims">Primitives to convert to a serializable object</param>
         /// <returns>An object that can be serialized with LLSD</returns>
-        public static StructuredData.LLSD PrimListToLLSD(List<Primitive> prims)
+        public static StructuredData.OSD PrimListToOSD(List<Primitive> prims)
         {
-            StructuredData.LLSDMap map = new OpenMetaverse.StructuredData.LLSDMap(prims.Count);
+            StructuredData.OSDMap map = new OpenMetaverse.StructuredData.OSDMap(prims.Count);
 
             for (int i = 0; i < prims.Count; i++)
-                map.Add(prims[i].LocalID.ToString(), prims[i].GetLLSD());
+                map.Add(prims[i].LocalID.ToString(), prims[i].GetOSD());
 
             return map;
         }
 
         /// <summary>
-        /// Deserializes LLSD in to a list of primitives
+        /// Deserializes OSD in to a list of primitives
         /// </summary>
-        /// <param name="llsd">Structure holding the serialized primitive list,
-        /// must be of the LLSDMap type</param>
+        /// <param name="osd">Structure holding the serialized primitive list,
+        /// must be of the SDMap type</param>
         /// <returns>A list of deserialized primitives</returns>
-        public static List<Primitive> LLSDToPrimList(StructuredData.LLSD llsd)
+        public static List<Primitive> OSDToPrimList(StructuredData.OSD osd)
         {
-            if (llsd.Type != StructuredData.LLSDType.Map)
+            if (osd.Type != StructuredData.OSDType.Map)
                 throw new ArgumentException("LLSD must be in the Map structure");
 
-            StructuredData.LLSDMap map = (StructuredData.LLSDMap)llsd;
+            StructuredData.OSDMap map = (StructuredData.OSDMap)osd;
             List<Primitive> prims = new List<Primitive>(map.Count);
 
-            foreach (KeyValuePair<string, StructuredData.LLSD> kvp in map)
+            foreach (KeyValuePair<string, StructuredData.OSD> kvp in map)
             {
-                Primitive prim = Primitive.FromLLSD(kvp.Value);
+                Primitive prim = Primitive.FromOSD(kvp.Value);
                 prim.LocalID = UInt32.Parse(kvp.Key);
                 prims.Add(prim);
             }
@@ -542,6 +523,96 @@ namespace OpenMetaverse
             const uint ATTACHMENT_MASK = 0xF0;
             uint fixedState = (((byte)state & ATTACHMENT_MASK) >> 4) | (((byte)state & ~ATTACHMENT_MASK) << 4);
             return (AttachmentPoint)fixedState;
+        }
+
+        public static List<int> SplitBlocks(PacketBlock[] blocks, int packetOverhead)
+        {
+            List<int> splitPoints = new List<int>();
+            int size = 0;
+
+            if (blocks != null && blocks.Length > 0)
+            {
+                splitPoints.Add(0);
+
+                for (int i = 0; i < blocks.Length; i++)
+                {
+                    size += blocks[i].Length;
+
+                    // If the next block will put this packet over the limit, add a split point
+                    if (i < blocks.Length - 1 &&
+                        size + blocks[i + 1].Length + packetOverhead >= Settings.MAX_PACKET_SIZE)
+                    {
+                        splitPoints.Add(i + 1);
+                        size = 0;
+                    }
+                }
+            }
+
+            return splitPoints;
+        }
+
+        /// <summary>
+        /// Parse a packet into human readable formatted key/value pairs
+        /// </summary>
+        /// <param name="packet">the Packet to parse</param>
+        /// <returns>A string containing the packet block name, and key/value pairs of the data fields</returns>
+        public static string PacketToString(Packet packet)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach(FieldInfo packetField in packet.GetType().GetFields())
+            {
+                object packetDataObject = packetField.GetValue(packet);
+
+                result.AppendFormat("-- {0} --" + System.Environment.NewLine, packetField.Name);
+
+                foreach(FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
+                {
+                    result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 
+                        packetValueField.Name, packetValueField.GetValue(packetDataObject));
+                }
+
+                // handle blocks that are arrays
+                if (packetDataObject.GetType().IsArray)
+                {
+                    foreach (object nestedArrayRecord in packetDataObject as Array)
+                    {
+                        foreach (FieldInfo packetArrayField in nestedArrayRecord.GetType().GetFields())
+                        {
+                            result.AppendFormat("{0} {1}" + System.Environment.NewLine, 
+                                packetArrayField.Name, packetArrayField.GetValue(nestedArrayRecord));
+                        }
+                    }
+                }
+                else
+                {
+                    // handle non array data blocks
+                    foreach (PropertyInfo packetPropertyField in packetField.GetValue(packet).GetType().GetProperties())
+                    {
+                        // Handle fields named "Data" specifically, this is generally binary data, we'll display it as hex values
+                        if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])) 
+                            && packetPropertyField.Name.Equals("Data"))
+                        {
+                            result.AppendFormat("{0}: {1}" + System.Environment.NewLine,
+                                packetPropertyField.Name, 
+                                Utils.BytesToHexString((byte[])packetPropertyField.GetValue(packetDataObject, null), packetPropertyField.Name));
+                        }
+                        // decode bytes into strings
+                        else if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])))
+                        {
+                            result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 
+                                packetPropertyField.Name, 
+                                Utils.BytesToString((byte[])packetPropertyField.GetValue(packetDataObject, null)));
+                        }
+                        else
+                        {
+                            result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 
+                                packetPropertyField.Name, packetPropertyField.GetValue(packetDataObject, null));
+                        }
+                    }
+                }
+            }
+            return result.ToString();
         }
     }
 }

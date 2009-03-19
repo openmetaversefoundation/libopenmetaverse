@@ -42,7 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /*
  * $Source$
  * $Author: cjcollier $
- * $Date: 2008-02-07 16:31:29 +0000 (Thu, 07 Feb 2008) $
+ * $Date: 2008-02-07 08:31:29 -0800 (Thu, 07 Feb 2008) $
  * $Revision: 256 $
  */
 #endregion

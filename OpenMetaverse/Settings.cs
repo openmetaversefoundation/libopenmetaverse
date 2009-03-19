@@ -48,7 +48,7 @@ namespace OpenMetaverse
         public const string ADITI_LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
 
         /// <summary>The relative directory where external resources are kept</summary>
-        public const string RESOURCE_DIR = "openmetaverse_data";
+        public static string RESOURCE_DIR = "openmetaverse_data";
 
         /// <summary>Login server to connect to</summary>
         public string LOGIN_SERVER = AGNI_LOGIN_SERVER;
@@ -184,7 +184,7 @@ namespace OpenMetaverse
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
-        public bool SEND_PINGS = false;
+        public bool SEND_PINGS = true;
 
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings
@@ -281,6 +281,10 @@ namespace OpenMetaverse
 
         /// <summary>Maximum number of times to resend a failed packet</summary>
         public int MAX_RESEND_COUNT = 3;
+
+        /// <summary>Throttle outgoing packet rate</summary>
+        public bool THROTTLE_OUTGOING_PACKETS = true;
+
         #endregion
         #region Logging Configuration
 

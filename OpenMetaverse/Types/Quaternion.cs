@@ -197,9 +197,19 @@ namespace OpenMetaverse
         public byte[] GetBytes()
         {
             byte[] bytes = new byte[12];
-            float norm;
+            ToBytes(bytes, 0);
+            return bytes;
+        }
 
-            norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
+        /// <summary>
+        /// Writes the raw bytes for this quaternion to a byte array
+        /// </summary>
+        /// <param name="dest">Destination byte array</param>
+        /// <param name="pos">Position in the destination array to start
+        /// writing. Must be at least 12 bytes before the end of the array</param>
+        public void ToBytes(byte[] dest, int pos)
+        {
+            float norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
             if (norm != 0f)
             {
@@ -215,15 +225,15 @@ namespace OpenMetaverse
                     x = -X; y = -Y; z = -Z;
                 }
 
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * x), 0, bytes, 0, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * y), 0, bytes, 4, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(norm * z), 0, bytes, 8, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * x), 0, dest, pos + 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * y), 0, dest, pos + 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * z), 0, dest, pos + 8, 4);
 
                 if (!BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(bytes, 0, 4);
-                    Array.Reverse(bytes, 4, 4);
-                    Array.Reverse(bytes, 8, 4);
+                    Array.Reverse(dest, pos + 0, 4);
+                    Array.Reverse(dest, pos + 4, 4);
+                    Array.Reverse(dest, pos + 8, 4);
                 }
             }
             else
@@ -231,8 +241,6 @@ namespace OpenMetaverse
                 throw new InvalidOperationException(String.Format(
                     "Quaternion {0} normalized to zero", ToString()));
             }
-
-            return bytes;
         }
 
         /// <summary>
@@ -275,7 +283,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Conver this quaternion to an angle around an axis
+        /// Convert this quaternion to an angle around an axis
         /// </summary>
         /// <param name="axis">Unit vector describing the axis</param>
         /// <param name="angle">Angle around the axis, in radians</param>
@@ -317,7 +325,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Returns the conjugate (spatial inverse) of a quaternion
         /// </summary>
-        private static Quaternion Conjugate(Quaternion quaternion)
+        public static Quaternion Conjugate(Quaternion quaternion)
         {
             quaternion.X = -quaternion.X;
             quaternion.Y = -quaternion.Y;

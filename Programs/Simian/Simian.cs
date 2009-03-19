@@ -1,401 +1,342 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.IO;
 using System.Text;
 using System.Xml;
 using System.Threading;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using ExtensionLoader;
+using ExtensionLoader.Config;
+using HttpServer;
+using HttpListener = HttpServer.HttpListener;
 using OpenMetaverse;
-using OpenMetaverse.Capabilities;
-using OpenMetaverse.Packets;
+using OpenMetaverse.Http;
 
 namespace Simian
 {
     public partial class Simian
     {
-        // TODO: Don't hard-code these
-        public const uint REGION_X = 256000;
-        public const uint REGION_Y = 256000;
+        public const string DATA_DIR = "SimianData/";
+        public const string CONFIG_FILE = DATA_DIR + "Simian.ini";
+        public const string REGION_CONFIG_DIR = DATA_DIR + "RegionConfig/";
+        public const string ASSET_CACHE_DIR = DATA_DIR + "AssetCache/";
+        public const string DEFAULT_ASSET_DIR = DATA_DIR + "DefaultAssets/";
+        public const int DEFAULT_UDP_PORT = 9000;
 
-        public int UDPPort = 9000;
-        public int HttpPort = 9000;
-        public string DataDir = "SimianData/";
+        public Uri HttpUri;
+        public HttpListener HttpServer;
+        public IniConfigSource ConfigFile;
+        public List<string> ExtensionList;
 
-        public HttpServer HttpServer;
-        public ulong RegionHandle;
-
-        // Interfaces
-        public IAuthenticationProvider Authentication;
+        // Server Interfaces
         public IAccountProvider Accounts;
-        public IUDPProvider UDP;
-        public ISceneProvider Scene;
         public IAssetProvider Assets;
-        public IAvatarProvider Avatars;
+        public IAuthenticationProvider Authentication;
+        public ICapabilitiesProvider Capabilities;
+        public IGridProvider Grid;
         public IInventoryProvider Inventory;
-        public IParcelProvider Parcels;
         public IMeshingProvider Mesher;
+        public IMessagingProvider Messages;
+        public IPermissionsProvider Permissions;
 
+        // Regions/Scenes
+        public List<ISceneProvider> Scenes = new List<ISceneProvider>();
         // Persistent extensions
         public List<IPersistable> PersistentExtensions = new List<IPersistable>();
 
-        /// <summary>All of the agents currently connected to this UDP server</summary>
-        public Dictionary<UUID, Agent> Agents = new Dictionary<UUID, Agent>();
+        ExtensionLoader<Simian> extensions = new ExtensionLoader<Simian>();
 
         public Simian()
         {
         }
 
-        public bool Start(int port, bool ssl)
+        public bool Start()
         {
-            HttpPort = port;
-            UDPPort = port;
+            IPHostEntry entry;
+            IPAddress address;
+            IConfig httpConfig;
 
-            InitHttpServer(HttpPort, ssl);
-
-            RegionHandle = Utils.UIntsToLong(REGION_X, REGION_Y);
+            #region Config Parsing
 
             try
             {
-                // Load all of the extensions
+                // Load the extension list (and ordering) from our config file
+                ConfigFile = new IniConfigSource(CONFIG_FILE);
+                httpConfig = ConfigFile.Configs["Http"];
+                IConfig extensionConfig = ConfigFile.Configs["Extensions"];
+                ExtensionList = new List<string>(extensionConfig.GetKeys());
+            }
+            catch (Exception)
+            {
+                Logger.Log("Failed to load [Extensions] section from " + CONFIG_FILE, Helpers.LogLevel.Error);
+                return false;
+            }
+
+            #endregion Config Parsing
+
+            #region HTTP Server
+
+            int port = httpConfig.GetInt("ListenPort");
+            string hostname = httpConfig.GetString("Hostname", null);
+            string sslCertFile = httpConfig.GetString("SSLCertFile", null);
+
+            if (String.IsNullOrEmpty(hostname))
+            {
+                hostname = Dns.GetHostName();
+                entry = Dns.GetHostEntry(hostname);
+                address = IPAddress.Any;
+            }
+            else
+            {
+                entry = Dns.GetHostEntry(hostname);
+                if (entry != null && entry.AddressList.Length > 0)
+                {
+                    address = entry.AddressList[0];
+                }
+                else
+                {
+                    Logger.Log("Could not resolve an IP address from hostname " + hostname + ", binding to all interfaces",
+                        Helpers.LogLevel.Warning);
+                    address = IPAddress.Any;
+                }
+            }
+
+            if (!String.IsNullOrEmpty(sslCertFile))
+            {
+                // HTTPS mode
+                X509Certificate serverCert;
+                try { serverCert = X509Certificate.CreateFromCertFile(sslCertFile); }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to load SSL certificate file \"" + sslCertFile + "\": " + ex.Message,
+                        Helpers.LogLevel.Error);
+                    return false;
+                }
+                HttpServer = HttpListener.Create(log4netLogWriter.Instance, address, port, serverCert);
+                HttpUri = new Uri("https://" + hostname + (port != 80 ? (":" + port) : String.Empty));
+            }
+            else
+            {
+                // HTTP mode
+                HttpServer = HttpListener.Create(log4netLogWriter.Instance, address, port);
+                HttpUri = new Uri("http://" + hostname + (port != 80 ? (":" + port) : String.Empty));
+            }
+
+            HttpServer.Start(10);
+            Logger.Log("Simian is listening at " + HttpUri.ToString(), Helpers.LogLevel.Info);
+
+            #endregion HTTP Server
+
+            #region Server Extensions
+
+            try
+            {
+                // Create a list of references for .cs extensions that are compiled at runtime
                 List<string> references = new List<string>();
                 references.Add("OpenMetaverseTypes.dll");
                 references.Add("OpenMetaverse.dll");
                 references.Add("Simian.exe");
 
-                Dictionary<Type, FieldInfo> assignables = GetInterfaces();
+                // Load extensions from the current executing assembly, Simian.*.dll assemblies on disk, and
+                // Simian.*.cs source files on disk.
+                extensions.LoadAllExtensions(Assembly.GetExecutingAssembly(),
+                    AppDomain.CurrentDomain.BaseDirectory, ExtensionList, references,
+                    "Simian.*.dll", "Simian.*.cs");
 
-                ExtensionLoader<Simian>.LoadAllExtensions(Assembly.GetExecutingAssembly(),
-                    AppDomain.CurrentDomain.BaseDirectory, this, references,
-                    "Simian.*.dll", "Simian.*.cs", this, assignables);
+                // Automatically assign extensions that implement interfaces to the list of interface
+                // variables in "assignables"
+                extensions.AssignExtensions(this, extensions.GetInterfaces(this));
             }
             catch (ExtensionException ex)
             {
-                Logger.Log("Interface loading failed, shutting down: " + ex.Message, Helpers.LogLevel.Error);
+                Logger.Log("Extension loading failed, shutting down: " + ex.Message, Helpers.LogLevel.Error);
                 Stop();
                 return false;
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
                 // Track all of the extensions with persistence
                 if (extension is IPersistable)
                     PersistentExtensions.Add((IPersistable)extension);
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            // Start all of the extensions
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
-                // Start all extensions except for persistence providers
-                if (!(extension is IPersistenceProvider))
-                {
-                    Logger.DebugLog("Loading extension " + extension.GetType().Name);
-                    extension.Start();
-                }
+                Logger.Log("Starting Simian extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                extension.Start(this);
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            #endregion Server Extensions
+
+            #region Region Loading
+
+            try
             {
-                // Start the persistance provider(s) after all other extensions are loaded
-                if (extension is IPersistenceProvider)
+                string[] configFiles = Directory.GetFiles(REGION_CONFIG_DIR, "*.ini", SearchOption.AllDirectories);
+
+                for (int i = 0; i < configFiles.Length; i++)
                 {
-                    Logger.DebugLog("Loading persistance provider " + extension.GetType().Name);
-                    extension.Start();
+                    // TODO: Support non-SceneManager scenes?
+                    ISceneProvider scene = new SceneManager();
+
+                    #region Config Parsing
+
+                    IniConfigSource source = new IniConfigSource(configFiles[i]);
+                    IConfig regionConfig = source.Configs["Region"];
+
+                    string name = regionConfig.GetString("Name", null);
+                    string defaultTerrain = regionConfig.GetString("DefaultTerrain", null);
+                    int udpPort = regionConfig.GetInt("UDPPort", 0);
+                    uint regionX, regionY;
+                    UInt32.TryParse(regionConfig.GetString("RegionX", "0"), out regionX);
+                    UInt32.TryParse(regionConfig.GetString("RegionY", "0"), out regionY);
+                    string certFile = regionConfig.GetString("RegionCertificate", null);
+                    int staticObjectLimit = regionConfig.GetInt("StaticObjectLimit", 0);
+                    int physicalObjectLimit = regionConfig.GetInt("PhysicalObjectLimit", 0);
+                    float waterHeight = regionConfig.GetFloat("WaterHeight", 0f);
+
+                    RegionFlags regionFlags = RegionFlags.None;
+                    if (regionConfig.GetBoolean("AllowDamage")) regionFlags |= RegionFlags.AllowDamage;
+                    if (regionConfig.GetBoolean("SunFixed")) regionFlags |= RegionFlags.SunFixed;
+                    if (regionConfig.GetBoolean("BlockTerraform")) regionFlags |= RegionFlags.BlockTerraform;
+                    if (regionConfig.GetBoolean("SkipScripts")) regionFlags |= RegionFlags.SkipScripts;
+                    if (regionConfig.GetBoolean("SkipPhysics")) regionFlags |= RegionFlags.SkipPhysics;
+                    if (regionConfig.GetBoolean("PublicAllowed")) regionFlags |= RegionFlags.PublicAllowed;
+                    if (regionConfig.GetBoolean("NoFly")) regionFlags |= RegionFlags.NoFly;
+                    if (regionConfig.GetBoolean("AllowDirectTeleport")) regionFlags |= RegionFlags.AllowDirectTeleport;
+                    if (regionConfig.GetBoolean("RestrictPushObject")) regionFlags |= RegionFlags.RestrictPushObject;
+                    if (regionConfig.GetBoolean("AllowParcelChanges")) regionFlags |= RegionFlags.AllowParcelChanges;
+
+                    if (String.IsNullOrEmpty(name) || regionX == 0 || regionY == 0 || String.IsNullOrEmpty(certFile))
+                    {
+                        Logger.Log("Incomplete information in " + configFiles[i] + ", skipping", Helpers.LogLevel.Warning);
+                        continue;
+                    }
+
+                    // TODO: Real map tile image generation, perhaps?
+                    UUID mapTextureID = new UUID("89556747-24cb-43ed-920b-47caed15465f");
+
+                    #endregion Config Parsing
+
+                    #region IPEndPoint Assignment
+
+                    IPEndPoint endpoint;
+
+                    if (udpPort != 0)
+                    {
+                        endpoint = new IPEndPoint(address, udpPort);
+                    }
+                    else
+                    {
+                        udpPort = DEFAULT_UDP_PORT;
+
+                        while (true)
+                        {
+                            endpoint = new IPEndPoint(address, udpPort);
+                            Socket udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                            try
+                            {
+                                udpSocket.Bind(endpoint);
+                                udpSocket.Close();
+                                break;
+                            }
+                            catch (SocketException)
+                            {
+                                ++udpPort;
+                            }
+                        }
+                    }
+
+                    // Make sure 0.0.0.0 gets replaced with a valid IP address
+                    if (endpoint.Address == IPAddress.Any)
+                        endpoint.Address = entry.AddressList.Length > 0 ? entry.AddressList[entry.AddressList.Length - 1] : IPAddress.Loopback;
+
+                    #endregion IPEndPoint Assignment
+
+                    #region Grid Registration
+
+                    X509Certificate2 regionCert;
+
+                    try
+                    {
+                        regionCert = new X509Certificate2(DATA_DIR + certFile);
+                    }
+                    catch (Exception)
+                    {
+                        Logger.Log("Failed to load region certificate file from " + certFile, Helpers.LogLevel.Error);
+                        continue;
+                    }
+
+                    RegionInfo regionInfo = new RegionInfo();
+                    regionInfo.Handle = Utils.UIntsToLong(256 * regionX, 256 * regionY);
+                    regionInfo.HttpServer = HttpUri;
+                    regionInfo.IPAndPort = endpoint;
+                    regionInfo.Name = name;
+                    regionInfo.MapTextureID = mapTextureID;
+                    regionInfo.Flags = regionFlags;
+                    regionInfo.AgentCount = 0;
+                    regionInfo.WaterHeight = waterHeight;
+                    regionInfo.Online = true;
+                    // Create a capability for other regions to initiate a client connection to this region
+                    regionInfo.EnableClientCap = Capabilities.CreateCapability(scene.EnableClientCapHandler, false, null);
+
+                    if (!Grid.TryRegisterGridSpace(regionInfo, regionCert, out regionInfo.ID))
+                    {
+                        Logger.Log("Failed to register grid space for region " + name, Helpers.LogLevel.Error);
+                        continue;
+                    }
+
+                    #endregion Grid Registration
+
+                    scene.Start(this, regionInfo, regionCert, defaultTerrain, staticObjectLimit, physicalObjectLimit);
+                    Scenes.Add(scene);
                 }
             }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to load region config files: " + ex.Message, Helpers.LogLevel.Error);
+                return false;
+            }
+
+            #endregion Region Loading
 
             return true;
         }
 
         public void Stop()
         {
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            // FIXME: Scenes shouldn't be publically exposed. This will end in tears
+            for (int i = 0; i < Scenes.Count; i++)
             {
-                // Stop persistance providers first
-                if (extension is IPersistenceProvider)
-                    extension.Stop();
+                Scenes[i].Stop();
             }
 
-            foreach (IExtension extension in ExtensionLoader<Simian>.Extensions)
+            foreach (IExtension<Simian> extension in extensions.Extensions)
+            {
+                // Stop persistence providers first
+                if (extension is IPersistenceProvider)
+                {
+                    Logger.Log("Stopping Simian extension " + extension.GetType().Name, Helpers.LogLevel.Info);
+                    extension.Stop();
+                }
+            }
+
+            foreach (IExtension<Simian> extension in extensions.Extensions)
             {
                 // Stop all other extensions
                 if (!(extension is IPersistenceProvider))
+                {
+                    Logger.Log("Stopping Simian extension " + extension.GetType().Name, Helpers.LogLevel.Info);
                     extension.Stop();
+                }
             }
 
             HttpServer.Stop();
-        }
-
-        public void DisconnectClient(Agent agent)
-        {
-            // Remove the avatar from the scene
-            SimulationObject obj;
-            if (Scene.TryGetObject(agent.AgentID, out obj))
-                Scene.ObjectRemove(this, obj);
-            else
-                Logger.Log("Disconnecting an agent that is not in the scene", Helpers.LogLevel.Warning);
-
-            // Remove the UDP client
-            UDP.RemoveClient(agent);
-
-            // HACK: Notify everyone when someone disconnects
-            OfflineNotificationPacket offline = new OfflineNotificationPacket();
-            offline.AgentBlock = new OfflineNotificationPacket.AgentBlockBlock[1];
-            offline.AgentBlock[0] = new OfflineNotificationPacket.AgentBlockBlock();
-            offline.AgentBlock[0].AgentID = agent.AgentID;
-            UDP.BroadcastPacket(offline, PacketCategory.State);
-        }
-
-        Dictionary<Type, FieldInfo> GetInterfaces()
-        {
-            Dictionary<Type, FieldInfo> interfaces = new Dictionary<Type, FieldInfo>();
-
-            foreach (FieldInfo field in this.GetType().GetFields())
-            {
-                if (field.FieldType.IsInterface)
-                    interfaces.Add(field.FieldType, field);
-            }
-
-            return interfaces;
-        }
-
-        void InitHttpServer(int port, bool ssl)
-        {
-            HttpServer = new HttpServer(HttpPort, ssl);
-
-            // Login webpage HEAD request, used to check if the login webpage is alive
-            HttpRequestSignature signature = new HttpRequestSignature();
-            signature.Method = "head";
-            signature.ContentType = String.Empty;
-            signature.Path = "/loginpage";
-            HttpServer.HttpRequestCallback callback = new HttpServer.HttpRequestCallback(LoginWebpageHeadHandler);
-            HttpServer.HttpRequestHandler handler = new HttpServer.HttpRequestHandler(signature, callback);
-            HttpServer.AddHandler(handler);
-
-            // Login webpage GET request, gets the login webpage data (purely aesthetic)
-            signature.Method = "get";
-            signature.ContentType = String.Empty;
-            signature.Path = "/loginpage";
-            callback = new HttpServer.HttpRequestCallback(LoginWebpageGetHandler);
-            handler.Signature = signature;
-            handler.Callback = callback;
-            HttpServer.AddHandler(handler);
-
-            // Client XML-RPC login
-            signature.Method = "post";
-            signature.ContentType = "text/xml";
-            signature.Path = "/login";
-            callback = new HttpServer.HttpRequestCallback(LoginXmlRpcPostHandler);
-            handler.Signature = signature;
-            handler.Callback = callback;
-            HttpServer.AddHandler(handler);
-
-            // Client LLSD login
-            signature.Method = "post";
-            signature.ContentType = "application/xml";
-            signature.Path = "/login";
-            callback = new HttpServer.HttpRequestCallback(LoginLLSDPostHandler);
-            handler.Signature = signature;
-            handler.Callback = callback;
-            HttpServer.AddHandler(handler);
-
-            HttpServer.Start();
-        }
-
-        void LoginWebpageHeadHandler(HttpRequestSignature signature, ref HttpListenerContext context)
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.StatusDescription = "OK";
-        }
-
-        void LoginWebpageGetHandler(HttpRequestSignature signature, ref HttpListenerContext context)
-        {
-            string pageContent = "<html><head><title>Simian</title></head><body><br/><h1>Welcome to Simian</h1></body></html>";
-            byte[] pageData = Encoding.UTF8.GetBytes(pageContent);
-            context.Response.OutputStream.Write(pageData, 0, pageData.Length);
-            context.Response.Close();
-        }
-
-        void LoginXmlRpcPostHandler(HttpRequestSignature signature, ref HttpListenerContext context)
-        {
-            string
-                firstName = String.Empty,
-                lastName = String.Empty,
-                password = String.Empty,
-                start = String.Empty,
-                version = String.Empty,
-                channel = String.Empty;
-
-            try
-            {
-                // Parse the incoming XML
-                XmlReader reader = XmlReader.Create(context.Request.InputStream);
-
-                reader.ReadStartElement("methodCall");
-                {
-                    string methodName = reader.ReadElementContentAsString("methodName", String.Empty);
-
-                    if (methodName == "login_to_simulator")
-                    {
-                        reader.ReadStartElement("params");
-                        reader.ReadStartElement("param");
-                        reader.ReadStartElement("value");
-                        reader.ReadStartElement("struct");
-                        {
-                            while (reader.Name == "member")
-                            {
-                                reader.ReadStartElement("member");
-                                {
-                                    string name = reader.ReadElementContentAsString("name", String.Empty);
-
-                                    reader.ReadStartElement("value");
-                                    {
-                                        switch (name)
-                                        {
-                                            case "first":
-                                                firstName = reader.ReadElementContentAsString("string", String.Empty);
-                                                break;
-                                            case "last":
-                                                lastName = reader.ReadElementContentAsString("string", String.Empty);
-                                                break;
-                                            case "passwd":
-                                                password = reader.ReadElementContentAsString("string", String.Empty);
-                                                break;
-                                            case "start":
-                                                start = reader.ReadElementContentAsString("string", String.Empty);
-                                                break;
-                                            case "version":
-                                                version = reader.ReadElementContentAsString("string", String.Empty);
-                                                break;
-                                            case "channel":
-                                                channel = reader.ReadElementContentAsString("string", String.Empty);
-                                                break;
-                                            default:
-                                                if (reader.Name == "string")
-                                                    Console.WriteLine(String.Format("Ignore login xml value: name={0}, value={1}", name, reader.ReadInnerXml()));
-                                                else
-                                                    Console.WriteLine(String.Format("Unknown login xml: name={0}, value={1}", name, reader.ReadInnerXml()));
-                                                break;
-                                        }
-                                    }
-                                    reader.ReadEndElement();
-                                }
-                                reader.ReadEndElement();
-                            }
-                        }
-                        reader.ReadEndElement();
-                        reader.ReadEndElement();
-                        reader.ReadEndElement();
-                        reader.ReadEndElement();
-                    }
-                }
-                reader.ReadEndElement();
-                reader.Close();
-
-                LoginResponseData responseData = HandleLogin(firstName, lastName, password, start, version, channel);
-                if (responseData.Success)
-                    responseData.InventorySkeleton = Inventory.CreateInventorySkeleton(responseData.AgentID);
-                XmlWriter writer = XmlWriter.Create(context.Response.OutputStream);
-                responseData.ToXmlRpc(writer);
-                writer.Close();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
-
-        void LoginLLSDPostHandler(HttpRequestSignature signature, ref HttpListenerContext context)
-        {
-            string body = String.Empty;
-
-            using (StreamReader reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
-            {
-                body = reader.ReadToEnd();
-            }
-
-            Console.WriteLine(body);
-        }
-
-        LoginResponseData HandleLogin(string firstName, string lastName, string password, string start, string version, string channel)
-        {
-            LoginResponseData response = new LoginResponseData();
-            Agent agent;
-
-            UUID agentID = Authentication.Authenticate(firstName, lastName, password);
-            if (agentID != UUID.Zero)
-            {
-                // Authentication successful, create a login instance of this agent
-                agent = Accounts.CreateInstance(agentID);
-
-                if (agent != null)
-                {
-                    // Assign a circuit code and insert the agent into the unassociatedAgents dictionary
-                    agent.CircuitCode = UDP.CreateCircuit(agent);
-
-                    agent.TickLastPacketReceived = Environment.TickCount;
-                    agent.LastLoginTime = Utils.DateTimeToUnixTime(DateTime.Now);
-
-                    // Get this machine's IP address
-                    IPHostEntry addresses = Dns.GetHostByName(Dns.GetHostName());
-                    IPAddress simIP = addresses.AddressList.Length > 0 ? addresses.AddressList[0] : IPAddress.Loopback;
-
-                    response.AgentID = agent.AgentID;
-                    response.SecureSessionID = agent.SecureSessionID;
-                    response.SessionID = agent.SessionID;
-                    response.CircuitCode = agent.CircuitCode;
-                    response.AgentAccess = agent.AccessLevel;
-                    response.BuddyList = null; // FIXME:
-                    response.FirstName = agent.FirstName;
-                    response.HomeLookAt = agent.HomeLookAt;
-                    response.HomePosition = agent.HomePosition;
-                    response.HomeRegion = agent.HomeRegionHandle;
-                    response.InventoryRoot = agent.InventoryRoot;
-                    response.InventorySkeleton = null; // FIXME:
-                    response.LastName = agent.LastName;
-                    response.LibraryOwner = agent.InventoryLibraryOwner;
-                    response.LibraryRoot = agent.InventoryLibraryRoot;
-                    response.LibrarySkeleton = null; // FIXME:
-                    response.LookAt = agent.CurrentLookAt;
-                    response.Message = "Welcome to Simian";
-                    response.Reason = String.Empty;
-
-                    uint regionX, regionY;
-                    Utils.LongToUInts(agent.CurrentRegionHandle, out regionX, out regionY);
-                    response.RegionX = regionX;
-                    response.RegionY = regionY;
-
-                    response.SecondsSinceEpoch = DateTime.Now;
-                    // FIXME: Actually generate a seed capability
-                    response.SeedCapability = String.Format("http://{0}:{1}/seed_caps", simIP, HttpPort);
-                    response.SimIP = simIP;
-                    response.SimPort = (ushort)UDPPort;
-                    response.StartLocation = "last"; // FIXME:
-                    response.Success = true;
-                }
-                else
-                {
-                    // Something went wrong creating an agent instance, return a fail response
-                    response.AgentID = agentID;
-                    response.FirstName = firstName;
-                    response.LastName = lastName;
-                    response.Message = "Failed to create an account instance";
-                    response.Reason = "account";
-                    response.Success = false;
-                }
-            }
-            else
-            {
-                // Authentication failed, return a fail response
-                response.AgentID = agentID;
-                response.FirstName = firstName;
-                response.LastName = lastName;
-                response.Message = "Authentication failed";
-                response.Reason = "key";
-                response.Success = false;
-            }
-
-            return response;
         }
     }
 }

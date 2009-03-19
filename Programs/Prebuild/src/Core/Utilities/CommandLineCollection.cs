@@ -27,7 +27,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 /*
  * $Source$
  * $Author: robloach $
- * $Date: 2006-09-25 22:30:53 +0000 (Mon, 25 Sep 2006) $
+ * $Date: 2006-09-25 15:30:53 -0700 (Mon, 25 Sep 2006) $
  * $Revision: 165 $
  */
 #endregion

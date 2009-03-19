@@ -423,7 +423,7 @@ namespace GridAccountant
                 appearance.AgentData.SessionID = Client.Self.SessionID;
                 appearance.AgentData.SerialNum = 1;
                 appearance.AgentData.Size = new Vector3(0.45F, 0.6F, 1.831094F);
-                appearance.ObjectData.TextureEntry = new byte[0];
+                appearance.ObjectData.TextureEntry = Utils.EmptyBytes;
 
                 Client.Network.SendPacket(appearance);
 

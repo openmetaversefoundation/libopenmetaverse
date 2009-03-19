@@ -33,7 +33,7 @@ using System.Xml;
 using System.Threading;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
-using OpenMetaverse.Capabilities;
+using OpenMetaverse.Http;
 
 namespace OpenMetaverse.Utilities
 {
@@ -126,14 +126,14 @@ namespace OpenMetaverse.Utilities
         private bool isModeratorMuted = false;
         private bool isSpeaking = false;
         private int cookie = 0;
-        private int returnCode = 0;
+        //private int returnCode = 0;
         private int statusCode = 0;
         private int volume = 0;
         private int state = 0;
         private int participantType = 0;
         private float energy = 0f;
         private string statusString = String.Empty;
-        private string uuidString = String.Empty;
+        //private string uuidString = String.Empty;
         private string actionString = String.Empty;
         private string connectorHandle = String.Empty;
         private string accountHandle = String.Empty;
@@ -142,7 +142,7 @@ namespace OpenMetaverse.Utilities
         private string eventTypeString = String.Empty;
         private string uriString = String.Empty;
         private string nameString = String.Empty;
-        private string audioMediaString = String.Empty;
+        //private string audioMediaString = String.Empty;
         private string displayNameString = String.Empty;
 
         #endregion Response Processing Variables
@@ -331,7 +331,7 @@ namespace OpenMetaverse.Utilities
                     if (url != null)
                     {
                         CapsClient request = new CapsClient(url);
-                        LLSDMap body = new LLSDMap();
+                        OSDMap body = new OSDMap();
                         request.OnComplete += new CapsClient.CompleteCallback(callback);
                         request.StartRequest(body);
 
@@ -523,9 +523,9 @@ namespace OpenMetaverse.Utilities
 
         #region Callbacks
 
-        private void RequiredVoiceVersionEventHandler(string message, LLSD llsd, Simulator simulator)
+        private void RequiredVoiceVersionEventHandler(string message, OSD osd, Simulator simulator)
         {
-            LLSDMap body = (LLSDMap)llsd;
+            OSDMap body = (OSDMap)osd;
 
             if (body.ContainsKey("major_version"))
             {
@@ -544,11 +544,11 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        private void ProvisionCapsResponse(CapsClient client, LLSD response, Exception error)
+        private void ProvisionCapsResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                OSDMap respTable = (OSDMap)response;
 
                 if (OnProvisionAccount != null)
                 {
@@ -558,18 +558,19 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        private void ParcelVoiceInfoResponse(CapsClient client, LLSD response, Exception error)
+        private void ParcelVoiceInfoResponse(CapsClient client, OSD response, Exception error)
         {
-            if (response is LLSDMap)
+            if (response is OSDMap)
             {
-                LLSDMap respTable = (LLSDMap)response;
+                OSDMap respTable = (OSDMap)response;
 
                 string regionName = respTable["region_name"].AsString();
                 int localID = (int)respTable["parcel_local_id"].AsInteger();
 
                 string channelURI = null;
-                if (respTable["voice_credentials"] is LLSDMap) {
-                    LLSDMap creds = (LLSDMap)respTable["voice_credentials"];
+                if (respTable["voice_credentials"] is OSDMap)
+                {
+                    OSDMap creds = (OSDMap)respTable["voice_credentials"];
                     channelURI = creds["channel_uri"].AsString();
                 }
                 
@@ -605,9 +606,9 @@ namespace OpenMetaverse.Utilities
 
                                     switch (reader.Name)
                                     {
-                                        case "requestId":
-                                            uuidString = reader.Value;
-                                            break;
+//                                         case "requestId":
+//                                             uuidString = reader.Value;
+//                                             break;
                                         case "action":
                                             actionString = reader.Value;
                                             break;
@@ -653,9 +654,9 @@ namespace OpenMetaverse.Utilities
                                 case "RenderDevices":
                                     _RenderDevices.Clear();
                                     break;
-                                case "ReturnCode":
-                                    returnCode = reader.ReadElementContentAsInt();
-                                    break;
+//                                 case "ReturnCode":
+//                                     returnCode = reader.ReadElementContentAsInt();
+//                                     break;
                                 case "StatusCode":
                                     statusCode = reader.ReadElementContentAsInt();
                                     break;
@@ -683,9 +684,9 @@ namespace OpenMetaverse.Utilities
                                 case "Name":
                                     nameString = reader.ReadElementContentAsString();
                                     break;
-                                case "AudioMedia":
-                                    audioMediaString = reader.ReadElementContentAsString();
-                                    break;
+//                                 case "AudioMedia":
+//                                     audioMediaString = reader.ReadElementContentAsString();
+//                                     break;
                                 case "ChannelName":
                                     nameString = reader.ReadElementContentAsString();
                                     break;

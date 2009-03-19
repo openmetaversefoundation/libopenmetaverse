@@ -403,7 +403,7 @@ namespace OpenMetaverse
                 InstantMessageOnline.Online,
                 Client.Self.SimPosition,
                 Client.Network.CurrentSim.ID,
-                new byte[0]);
+                Utils.EmptyBytes);
         }
 
 

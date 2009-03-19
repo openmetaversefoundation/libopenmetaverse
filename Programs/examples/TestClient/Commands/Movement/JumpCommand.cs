@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 
         public override string Execute(string[] args, UUID fromAgentID)
 		{
-            Client.Self.Jump();
+            Client.Self.Jump(true);
             return "Jumped";
 		}
     }

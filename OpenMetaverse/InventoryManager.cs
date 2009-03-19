@@ -29,7 +29,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
-using OpenMetaverse.Capabilities;
+using System.Runtime.Serialization;
+using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 
@@ -153,13 +154,47 @@ namespace OpenMetaverse
         ReturnToLastOwner = 10
     }
 
+    /// <summary>
+    /// Upper half of the Flags field for inventory items
+    /// </summary>
+    [Flags]
+    public enum InventoryItemFlags : uint
+    {
+        None = 0,
+        /// <summary>Indicates that the NextOwner permission will be set to the
+        /// most restrictive set of permissions found in the object set
+        /// (including linkset items and object inventory items) on next rez</summary>
+        ObjectSlamPerm = 0x100,
+        /// <summary>Indicates that the object sale information has been
+        /// changed</summary>
+        ObjectSlamSale = 0x1000,
+        /// <summary>If set, and a slam bit is set, indicates BaseMask will be overwritten on Rez</summary>
+        ObjectOverwriteBase = 0x010000,
+        /// <summary>If set, and a slam bit is set, indicates OwnerMask will be overwritten on Rez</summary>
+        ObjectOverwriteOwner = 0x020000,
+        /// <summary>If set, and a slam bit is set, indicates GroupMask will be overwritten on Rez</summary>
+        ObjectOverwriteGroup = 0x040000,
+        /// <summary>If set, and a slam bit is set, indicates EveryoneMask will be overwritten on Rez</summary>
+        ObjectOverwriteEveryone = 0x080000,
+        /// <summary>If set, and a slam bit is set, indicates NextOwnerMask will be overwritten on Rez</summary>
+        ObjectOverwriteNextOwner = 0x100000,
+        /// <summary>Indicates whether this object is composed of multiple
+        /// items or not</summary>
+        ObjectHasMultipleItems = 0x200000,
+        /// <summary>Indicates that the asset is only referenced by this
+        /// inventory item. If this item is deleted or updated to reference a
+        /// new assetID, the asset can be deleted</summary>
+        SharedSingleReference = 0x40000000,
+    }
+
     #endregion Enums
 
     #region Inventory Object Classes
     /// <summary>
     /// Base Class for Inventory Items
     /// </summary>
-    public abstract class InventoryBase
+    [Serializable()]
+    public abstract class InventoryBase : ISerializable
     {
         /// <summary><seealso cref="OpenMetaverse.UUID"/> of item/folder</summary>
         public readonly UUID UUID;
@@ -179,6 +214,30 @@ namespace OpenMetaverse
             if (itemID == UUID.Zero)
                 Logger.Log("Initializing an InventoryBase with UUID.Zero", Helpers.LogLevel.Warning);
             UUID = itemID;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        {
+            info.AddValue("UUID", UUID);
+            info.AddValue("ParentUUID",ParentUUID );
+            info.AddValue("Name", Name);
+            info.AddValue("OwnerID", OwnerID);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public InventoryBase(SerializationInfo info, StreamingContext ctxt)
+        {
+            UUID = (UUID)info.GetValue("UUID", typeof(UUID));
+            ParentUUID = (UUID)info.GetValue("ParentUUID", typeof(UUID));
+            Name = (string)info.GetValue("Name", typeof(string));
+            OwnerID = (UUID)info.GetValue("OwnerID", typeof(UUID));
         }
 
         /// <summary>
@@ -261,6 +320,48 @@ namespace OpenMetaverse
         /// <param name="itemID"><seealso cref="OpenMetaverse.UUID"/> of the item</param>
         public InventoryItem(InventoryType type, UUID itemID) : base(itemID) { InventoryType = type; }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        new public void GetObjectData(SerializationInfo info, StreamingContext ctxt) 
+        {
+            base.GetObjectData(info,ctxt);
+            info.AddValue("AssetUUID",AssetUUID,typeof(UUID));
+            info.AddValue("Permissions", Permissions,typeof(Permissions));
+            info.AddValue("AssetType", AssetType);
+            info.AddValue("InventoryType", InventoryType);
+            info.AddValue("CreatorID", CreatorID);
+            info.AddValue("Description", Description);
+            info.AddValue("GroupID", GroupID);
+            info.AddValue("GroupOwned", GroupOwned);
+            info.AddValue("SalePrice", SalePrice);
+            info.AddValue("SaleType", SaleType);
+            info.AddValue("Flags", Flags);
+            info.AddValue("CreationDate", CreationDate);  
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public InventoryItem(SerializationInfo info, StreamingContext ctxt) : base (info,ctxt)
+        {
+           AssetUUID = (UUID)info.GetValue("AssetUUID", typeof(UUID));
+           Permissions =(Permissions)info.GetValue("Permissions",typeof(Permissions));
+           AssetType = (AssetType)info.GetValue("AssetType", typeof(AssetType));
+           InventoryType = (InventoryType)info.GetValue("InventoryType", typeof(InventoryType));
+           CreatorID = (UUID)info.GetValue("CreatorID", typeof(UUID));
+           Description = (string)info.GetValue("Description", typeof(string));
+           GroupID= (UUID)info.GetValue("GroupID", typeof(UUID));
+           GroupOwned = (bool)info.GetValue("GroupOwned", typeof(bool));
+           SalePrice = (int)info.GetValue("SalePrice", typeof(int));
+           SaleType = (SaleType)info.GetValue("SaleType", typeof(SaleType));
+           Flags = (uint)info.GetValue("Flags", typeof(uint));
+           CreationDate = (DateTime)info.GetValue("CreationDate", typeof(DateTime));
+        }
+
         /// <summary>
         /// Generates a number corresponding to the value of the object to support the use of a hash table.
         /// Suitable for use in hashing algorithms and data structures such as a hash table
@@ -333,6 +434,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Texture; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryTexture object from a serialization stream
+        /// </summary>
+        public InventoryTexture(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Texture; 
+        }
     }
 
     /// <summary>
@@ -349,6 +458,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Sound; 
         } 
+
+        /// <summary>
+        /// Construct an InventorySound object from a serialization stream
+        /// </summary>
+        public InventorySound(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Sound; 
+        }
     }
 
     /// <summary>
@@ -363,6 +480,14 @@ namespace OpenMetaverse
         /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryCallingCard(UUID itemID) : base(itemID) 
         { 
+            InventoryType = InventoryType.CallingCard; 
+        }
+
+        /// <summary>
+        /// Construct an InventoryCallingCard object from a serialization stream
+        /// </summary>
+        public InventoryCallingCard(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
             InventoryType = InventoryType.CallingCard; 
         }
     }
@@ -383,12 +508,25 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Landmarks use the ObjectType struct and will have a flag of 1 set if they have been visited
+        /// Construct an InventoryLandmark object from a serialization stream
         /// </summary>
-        public ObjectType LandmarkType
+        public InventoryLandmark(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
         {
-            get { return (ObjectType)Flags; }
-            set { Flags = (uint)value; }
+            InventoryType = InventoryType.Landmark;
+
+        }
+
+        /// <summary>
+        /// Landmarks use the InventoryItemFlags struct and will have a flag of 1 set if they have been visited
+        /// </summary>
+        public bool LandmarkVisited
+        {
+            get { return (Flags & 1) != 0; }
+            set
+            {
+                if (value) Flags |= 1;
+                else Flags &= ~1u;
+            }
         }
     }
 
@@ -408,15 +546,20 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Get the Objects permission override settings
-        /// 
-        /// These will indicate the which permissions that 
-        /// will be overwritten when the object is rezzed in-world
+        /// Construct an InventoryObject object from a serialization stream
         /// </summary>
-        public ObjectType ObjectType
+        public InventoryObject(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
         {
-            get { return (ObjectType)Flags; }
-            set { Flags = (uint)value; }
+            InventoryType = InventoryType.Object; 
+        }
+
+        /// <summary>
+        /// Gets or sets the upper byte of the Flags value
+        /// </summary>
+        public InventoryItemFlags ItemFlags
+        {
+            get { return (InventoryItemFlags)(Flags & ~0xFF); }
+            set { Flags = (uint)value | (Flags & 0xFF); }
         }
     }
 
@@ -433,7 +576,15 @@ namespace OpenMetaverse
         public InventoryNotecard(UUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Notecard; 
-        } 
+        }
+
+        /// <summary>
+        /// Construct an InventoryNotecard object from a serialization stream
+        /// </summary>
+        public InventoryNotecard(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Notecard; 
+        }
     }
 
     /// <summary>
@@ -451,6 +602,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Category; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryCategory object from a serialization stream
+        /// </summary>
+        public InventoryCategory(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Category; 
+        }
     }
 
     /// <summary>
@@ -467,6 +626,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.LSL; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryLSL object from a serialization stream
+        /// </summary>
+        public InventoryLSL(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.LSL; 
+        }
     }
 
     /// <summary>
@@ -483,6 +650,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Snapshot; 
         } 
+
+        /// <summary>
+        /// Construct an InventorySnapshot object from a serialization stream
+        /// </summary>
+        public InventorySnapshot(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Snapshot; 
+        }
     }
 
     /// <summary>
@@ -497,6 +672,14 @@ namespace OpenMetaverse
         /// <seealso cref="OpenMetaverse.InventoryItem"/> objects AssetUUID</param>
         public InventoryAttachment(UUID itemID) : base(itemID) 
         { 
+            InventoryType = InventoryType.Attachment; 
+        }
+
+        /// <summary>
+        /// Construct an InventoryAttachment object from a serialization stream
+        /// </summary>
+        public InventoryAttachment(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
             InventoryType = InventoryType.Attachment; 
         }
 
@@ -523,6 +706,14 @@ namespace OpenMetaverse
         public InventoryWearable(UUID itemID) : base(itemID) { InventoryType = InventoryType.Wearable; }
 
         /// <summary>
+        /// Construct an InventoryWearable object from a serialization stream
+        /// </summary>
+        public InventoryWearable(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+            InventoryType = InventoryType.Wearable; 
+        }
+
+        /// <summary>
         /// The <seealso cref="OpenMetaverse.WearableType"/>, Skin, Shape, Skirt, Etc
         /// </summary>
         public WearableType WearableType
@@ -545,7 +736,17 @@ namespace OpenMetaverse
         public InventoryAnimation(UUID itemID) : base(itemID) 
         { 
             InventoryType = InventoryType.Animation; 
-        } 
+        }
+
+	/// <summary>
+        /// Construct an InventoryAnimation object from a serialization stream
+        /// </summary>
+        public InventoryAnimation(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Animation; 
+        }
+ 
+
     }
 
     /// <summary>
@@ -562,6 +763,14 @@ namespace OpenMetaverse
         { 
             InventoryType = InventoryType.Gesture; 
         } 
+
+        /// <summary>
+        /// Construct an InventoryGesture object from a serialization stream
+        /// </summary>
+        public InventoryGesture(SerializationInfo info, StreamingContext ctxt): base(info, ctxt)
+        {
+            InventoryType = InventoryType.Gesture; 
+        }
     }
     
     /// <summary>
@@ -592,6 +801,28 @@ namespace OpenMetaverse
         {
             return Name;
         }
+
+        /// <summary>
+        /// Get Serilization data for this InventoryFolder object
+        /// </summary>
+        new public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        {
+            base.GetObjectData(info,ctxt);
+            info.AddValue("PreferredType", PreferredType, typeof(AssetType));
+            info.AddValue("Version", Version);
+            info.AddValue("DescendentCount", DescendentCount);
+        }
+
+        /// <summary>
+        /// Construct an InventoryFolder object from a serialization stream
+        /// </summary>
+        public InventoryFolder(SerializationInfo info, StreamingContext ctxt) : base (info, ctxt)
+        {
+            PreferredType = (AssetType)info.GetValue("PreferredType", typeof(AssetType));
+            Version=(int)info.GetValue("Version",typeof(int));
+            DescendentCount = (int)info.GetValue("DescendentCount", typeof(int));
+        }
+
 
         /// <summary>
         /// 
@@ -788,7 +1019,7 @@ namespace OpenMetaverse
 
         private GridClient _Client;
         private Inventory _Store;
-        private Random _RandNumbers = new Random();
+        //private Random _RandNumbers = new Random();
         private object _CallbacksLock = new object();
         private uint _CallbackPos;
         private Dictionary<uint, ItemCreatedCallback> _ItemCreatedCallbacks = new Dictionary<uint, ItemCreatedCallback>();
@@ -1424,7 +1655,7 @@ namespace OpenMetaverse
                 MoveInventoryItemPacket.InventoryDataBlock block = new MoveInventoryItemPacket.InventoryDataBlock();
                 block.ItemID = entry.Key;
                 block.FolderID = entry.Value;
-                block.NewName = new byte[0];
+                block.NewName = Utils.EmptyBytes;
                 move.InventoryData[index++] = block;
             }
 
@@ -1732,12 +1963,12 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap query = new LLSDMap();
-                query.Add("folder_id", LLSD.FromUUID(folderID));
-                query.Add("asset_type", LLSD.FromString(AssetTypeToString(assetType)));
-                query.Add("inventory_type", LLSD.FromString(InventoryTypeToString(invType)));
-                query.Add("name", LLSD.FromString(name));
-                query.Add("description", LLSD.FromString(description));
+                OSDMap query = new OSDMap();
+                query.Add("folder_id", OSD.FromUUID(folderID));
+                query.Add("asset_type", OSD.FromString(AssetTypeToString(assetType)));
+                query.Add("inventory_type", OSD.FromString(InventoryTypeToString(invType)));
+                query.Add("name", OSD.FromString(name));
+                query.Add("description", OSD.FromString(description));
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
@@ -1823,20 +2054,21 @@ namespace OpenMetaverse
                 if (newNames != null && !String.IsNullOrEmpty(newNames[i]))
                     copy.InventoryData[i].NewName = Utils.StringToBytes(newNames[i]);
                 else
-                    copy.InventoryData[i].NewName = new byte[0];
+                    copy.InventoryData[i].NewName = Utils.EmptyBytes;
             }
 
             _Client.Network.SendPacket(copy);
         }
 
         /// <summary>
-        /// 
+        /// Request a copy of an asset embedded within a notecard
         /// </summary>
-        /// <param name="objectID"></param>
-        /// <param name="notecardID"></param>
-        /// <param name="folderID"></param>
-        /// <param name="itemID"></param>
-        public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID)
+        /// <param name="objectID">Usually UUID.Zero for copying an asset from a notecard</param>
+        /// <param name="notecardID">UUID of the notecard to request an asset from</param>
+        /// <param name="folderID">Target folder for asset to go to in your inventory</param>
+        /// <param name="itemID">UUID of the embedded asset</param>
+        /// <param name="callback">callback to run when item is copied to inventory</param>
+        public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID, ItemCopiedCallback callback)
         {
             CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
             copy.AgentData.AgentID = _Client.Self.AgentID;
@@ -1849,6 +2081,8 @@ namespace OpenMetaverse
             copy.InventoryData[0] = new CopyInventoryFromNotecardPacket.InventoryDataBlock();
             copy.InventoryData[0].FolderID = folderID;
             copy.InventoryData[0].ItemID = itemID;
+           
+            _ItemCopiedCallbacks[0] = callback; //Notecards always use callback ID 0
 
             _Client.Network.SendPacket(copy);
         }
@@ -1939,10 +2173,10 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                LLSDMap query = new LLSDMap();
-                query.Add("item_id", LLSD.FromUUID(notecardID));
+                OSDMap query = new OSDMap();
+                query.Add("item_id", OSD.FromUUID(notecardID));
 
-                byte[] postData = StructuredData.LLSDParser.SerializeXmlBytes(query);
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(query);
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
@@ -1965,9 +2199,9 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator to place object in</param>
         /// <param name="rotation">Rotation of the object when rezzed</param>
         /// <param name="position">Vector of where to place object</param>
-        /// <param name="item">InventoryObject object containing item details</param>
+        /// <param name="item">InventoryItem object containing item details</param>
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
-            InventoryObject item)
+            InventoryItem item)
         {
             return RequestRezFromInventory(simulator, rotation, position, item, _Client.Self.ActiveGroup,
                 UUID.Random(), false);
@@ -1979,10 +2213,10 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator to place object in</param>
         /// <param name="rotation">Rotation of the object when rezzed</param>
         /// <param name="position">Vector of where to place object</param>
-        /// <param name="item">InventoryObject object containing item details</param>
+        /// <param name="item">InventoryItem object containing item details</param>
         /// <param name="groupOwner">UUID of group to own the object</param>
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
-            InventoryObject item, UUID groupOwner)
+            InventoryItem item, UUID groupOwner)
         {
             return RequestRezFromInventory(simulator, rotation, position, item, groupOwner, UUID.Random(), false);
         }
@@ -1993,13 +2227,13 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator to place object in</param>
         /// <param name="rotation">Rotation of the object when rezzed</param>
         /// <param name="position">Vector of where to place object</param>
-        /// <param name="item">InventoryObject object containing item details</param>
+        /// <param name="item">InventoryItem object containing item details</param>
         /// <param name="groupOwner">UUID of group to own the object</param>        
         /// <param name="queryID">User defined queryID to correlate replies</param>
         /// <param name="requestObjectDetails">if set to true the simulator
         /// will automatically send object detail packet(s) back to the client</param>
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
-            InventoryObject item, UUID groupOwner, UUID queryID, bool requestObjectDetails)
+            InventoryItem item, UUID groupOwner, UUID queryID, bool requestObjectDetails)
         {
             RezObjectPacket add = new RezObjectPacket();
 
@@ -2270,7 +2504,7 @@ namespace OpenMetaverse
                     _Client.Assets.OnXferReceived += xferCallback;
 
                     // Start the actual asset xfer
-                    xferID = _Client.Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown);
+                    xferID = _Client.Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown, true);
 
                     if (taskDownloadEvent.WaitOne(timeoutMS, false))
                     {
@@ -2549,8 +2783,6 @@ namespace OpenMetaverse
 
         private static bool ParseLine(string line, out string key, out string value)
         {
-            string origLine = line;
-
             // Clean up and convert tabs to spaces
             line = line.Trim();
             line = line.Replace('\t', ' ');
@@ -2873,7 +3105,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        Logger.Log("Unrecognized token " + key + " in: " + Helpers.NewLine + taskData,
+                        Logger.Log("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
                             Helpers.LogLevel.Error);
                     }
                 }
@@ -2886,7 +3118,7 @@ namespace OpenMetaverse
 
         #region Callbacks
 
-        private void CreateItemFromAssetResponse(CapsClient client, LLSD result, Exception error)
+        private void CreateItemFromAssetResponse(CapsClient client, OSD result, Exception error)
         {
             object[] args = (object[])client.UserData;
             CapsClient.ProgressCallback progCallback = (CapsClient.ProgressCallback)args[0];
@@ -2900,7 +3132,7 @@ namespace OpenMetaverse
                 return;
             }
 
-            LLSDMap contents = (LLSDMap)result;
+            OSDMap contents = (OSDMap)result;
 
             string status = contents["state"].AsString().ToLower();
 
@@ -2943,7 +3175,7 @@ namespace OpenMetaverse
 
         private void SaveAssetIntoInventoryHandler(Packet packet, Simulator simulator)
         {
-            SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
+            //SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
 
             // FIXME: Find this item in the inventory structure and mark the parent as needing an update
             //save.InventoryData.ItemID;
@@ -3157,6 +3389,21 @@ namespace OpenMetaverse
                         dataBlock.OwnerMask);
                 item.SalePrice = dataBlock.SalePrice;
                 item.SaleType = (SaleType)dataBlock.SaleType;
+
+                /* 
+                 * When attaching new objects, an UpdateCreateInventoryItem packet will be
+                 * returned by the server that has a FolderID/ParentUUID of zero. It is up
+                 * to the client to make sure that the item gets a good folder, otherwise
+                 * it will end up inaccesible in inventory.
+                 */
+                if (item.ParentUUID == UUID.Zero)
+                {
+                    // assign default folder for type
+                    item.ParentUUID = FindFolderForType(item.AssetType);
+
+                    // send update to the sim
+                    RequestUpdateItem(item);
+                }
 
                 // Update the local copy
                 _Store[item.UUID] = item;
@@ -3401,7 +3648,7 @@ namespace OpenMetaverse
                     imp.MessageBlock.ID = im.IMSessionID;
                     imp.MessageBlock.Timestamp = 0;
                     imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Client.Self.Name);
-                    imp.MessageBlock.Message = new byte[0];
+                    imp.MessageBlock.Message = Utils.EmptyBytes;
                     imp.MessageBlock.ParentEstateID = 0;
                     imp.MessageBlock.RegionID = UUID.Zero;
                     imp.MessageBlock.Position = _Client.Self.SimPosition;
@@ -3440,7 +3687,7 @@ namespace OpenMetaverse
                                 break;
                         }
 
-                        imp.MessageBlock.BinaryBucket = new byte[0];
+                        imp.MessageBlock.BinaryBucket = Utils.EmptyBytes;
                     }
 
                     _Client.Network.SendPacket(imp, simulator);
@@ -3477,9 +3724,9 @@ namespace OpenMetaverse
             }
         }
 
-        private void UploadNotecardAssetResponse(CapsClient client, LLSD result, Exception error)
+        private void UploadNotecardAssetResponse(CapsClient client, OSD result, Exception error)
         {
-            LLSDMap contents = (LLSDMap)result;
+            OSDMap contents = (OSDMap)result;
             KeyValuePair<NotecardUploadedAssetCallback, byte[]> kvp = (KeyValuePair<NotecardUploadedAssetCallback, byte[]>)(((object[])client.UserData)[0]);
             NotecardUploadedAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;

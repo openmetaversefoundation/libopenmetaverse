@@ -24,6 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+using OpenMetaverse.Imaging;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -31,7 +32,9 @@ namespace OpenMetaverse.GUI
 {
     public class MiniMap : PictureBox
     {
+        private UUID _MapImageID;
         private GridClient _Client;
+        private Image _MapLayer;
 
         /// <summary>
         /// Gets or sets the GridClient associated with this control
@@ -62,7 +65,28 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
+            _Client.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
             _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
+            _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
+        }
+
+        void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
+        {
+            if (asset.AssetID == _MapImageID)
+            {
+                ManagedImage nullImage;
+                OpenJPEG.DecodeToImage(asset.AssetData, out nullImage, out _MapLayer);
+            }
+        }
+
+        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        {
+            GridRegion region;
+            if (Client.Grid.GetGridRegion(Client.Network.CurrentSim.Name, GridLayerType.Objects, out region))
+            {
+                _MapImageID = region.MapImageID;
+                Client.Assets.RequestImage(_MapImageID, ImageType.Baked);
+            }
         }
 
         private void UpdateMiniMap(Simulator sim)
@@ -70,21 +94,22 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateMiniMap(sim); });
             else
             {
-                Bitmap bmp = new Bitmap(256, 256);
+                Bitmap bmp = _MapLayer == null ? new Bitmap(256, 256) : (Bitmap)_MapLayer.Clone();
                 Graphics g = Graphics.FromImage(bmp);
-                SolidBrush brush = new SolidBrush(Color.FromArgb(90, 32, 32, 32));
 
-                g.Clear(this.BackColor);
+                if (_MapLayer == null)
+                {
+                    g.Clear(this.BackColor);
+                    g.FillRectangle(Brushes.White, 0f, 0f, 256f, 256f);
+                }
 
-                g.FillRectangle(Brushes.White, 0f, 0f, 256f, 256f);
-
-                if (sim.PositionIndexYou == -1 || sim.PositionIndexYou >= sim.AvatarPositions.Count) return;
+                if (!sim.AvatarPositions.ContainsKey(Client.Self.AgentID)) return;
 
                 int i = 0;
 
-                Vector3 myPos = sim.AvatarPositions[sim.PositionIndexYou];
+                Vector3 myPos = sim.AvatarPositions[_Client.Self.AgentID];
 
-                _Client.Network.CurrentSim.AvatarPositions.ForEach(delegate(Vector3 pos)
+                foreach (Vector3 pos in _Client.Network.CurrentSim.AvatarPositions.Values)
                 {
                     int x = (int)pos.X;
                     int y = 255 - (int)pos.Y;
@@ -116,7 +141,7 @@ namespace OpenMetaverse.GUI
                         }
                     }
                     i++;
-                });
+                };
 
                 g.DrawImage(bmp, 0, 0);
                 this.Image = bmp;

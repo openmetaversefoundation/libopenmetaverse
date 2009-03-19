@@ -162,7 +162,6 @@ namespace PrimWorkshop
             Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            Client.Objects.OnNewFoliage += new ObjectManager.NewFoliageCallback(Objects_OnNewFoliage);
             Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.OnSimParcelsDownloaded += new ParcelManager.SimParcelsDownloaded(Parcels_OnSimParcelsDownloaded);
@@ -170,7 +169,7 @@ namespace PrimWorkshop
             // Initialize the texture download pipeline
             if (TextureDownloader != null)
                 TextureDownloader.Shutdown();
-            TextureDownloader = new TexturePipeline(Client);
+            TextureDownloader = new TexturePipeline(Client, 10);
             TextureDownloader.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(TextureDownloader_OnDownloadFinished);
             TextureDownloader.OnDownloadProgress += new TexturePipeline.DownloadProgressCallback(TextureDownloader_OnDownloadProgress);
 
@@ -334,7 +333,7 @@ namespace PrimWorkshop
             textures = 0;
             
             // Write the LLSD to the hard drive in XML format
-            string output = LLSDParser.SerializeXmlString(Helpers.PrimListToLLSD(primList));
+            string output = OSDParser.SerializeLLSDXmlString(Helpers.PrimListToOSD(primList));
             try
             {
                 // Create a temporary directory
@@ -504,8 +503,8 @@ namespace PrimWorkshop
 
                 // Decode the .prims file
                 string raw = File.ReadAllText(primFile);
-                LLSD llsd = LLSDParser.DeserializeXml(raw);
-                return Helpers.LLSDToPrimList(llsd);
+                OSD osd = OSDParser.DeserializeLLSDXml(raw);
+                return Helpers.OSDToPrimList(osd);
             }
             catch (Exception e)
             {
@@ -926,6 +925,13 @@ namespace PrimWorkshop
 
         private void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
+            if (prim.PrimData.PCode == PCode.Grass || prim.PrimData.PCode == PCode.Tree || prim.PrimData.PCode == PCode.NewTree)
+            {
+                lock (RenderFoliageList)
+                    RenderFoliageList[prim.LocalID] = prim;
+                return;
+            }
+
             RenderablePrim render = new RenderablePrim();
             render.Prim = prim;
             render.Mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.High);
@@ -970,7 +976,7 @@ namespace PrimWorkshop
                         if (!Textures.ContainsKey(teFace.TextureID))
                         {
                             // We haven't constructed this image in OpenGL yet, get ahold of it
-                            TextureDownloader.RequestTexture(teFace.TextureID);
+                            TextureDownloader.RequestTexture(teFace.TextureID, ImageType.Normal);
                         }
                     }
                 }
@@ -981,12 +987,6 @@ namespace PrimWorkshop
             }
 
             lock (RenderPrimList) RenderPrimList[prim.LocalID] = render;
-        }
-
-        private void Objects_OnNewFoliage(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
-        {
-            lock (RenderFoliageList)
-                RenderFoliageList[foliage.LocalID] = foliage;
         }
 
         private void Objects_OnObjectKilled(Simulator simulator, uint objectID)

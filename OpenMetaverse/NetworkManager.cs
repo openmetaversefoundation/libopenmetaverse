@@ -94,7 +94,7 @@ namespace OpenMetaverse
         /// Holds a simulator reference and an encoded packet, these structs are put in
         /// the packet outbox for sending
         /// </summary>
-        public struct OutgoingPacket
+        public class OutgoingPacket
         {
             /// <summary>Reference to the simulator this packet is destined for</summary>
             public Simulator Simulator;
@@ -115,21 +115,6 @@ namespace OpenMetaverse
                 ResendCount = 0;
                 TickCount = 0;
             }
-
-            public void IncrementResendCount()
-            {
-                ++ResendCount;
-            }
-
-            public void SetTickCount()
-            {
-                TickCount = Environment.TickCount;
-            }
-
-            public void ZeroTickCount()
-            {
-                TickCount = 0;
-            }
         }
 
         #endregion Structs
@@ -143,6 +128,13 @@ namespace OpenMetaverse
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
         public delegate void PacketCallback(Packet packet, Simulator simulator);
+        /// <summary>
+        /// Triggered whenever an outgoing packet is sent
+        /// </summary>
+        /// <param name="data">Buffer holding the outgoing packet payload</param>
+        /// <param name="bytesSent">Number of bytes of the data buffer that were sent</param>
+        /// <param name="simulator">Simulator this packet was sent to</param>
+        public delegate void PacketSentCallback(byte[] data, int bytesSent, Simulator simulator);
         /// <summary>
         /// Assigned by the OnConnected event. Raised when login was a success
         /// </summary>
@@ -198,6 +190,10 @@ namespace OpenMetaverse
 
         #region Events
 
+        /// <summary>
+        /// Event raised when an outgoing packet is sent to a simulator
+        /// </summary>
+        public event PacketSentCallback OnPacketSent;
         /// <summary>
         /// Event raised when the client was able to connected successfully.
         /// </summary>
@@ -561,7 +557,7 @@ namespace OpenMetaverse
             LogoutRequestPacket logout = new LogoutRequestPacket();
             logout.AgentData.AgentID = Client.Self.AgentID;
             logout.AgentData.SessionID = Client.Self.SessionID;
-            CurrentSim.SendPacket(logout, true);
+            SendPacket(logout);
         }
 
         /// <summary>
@@ -672,6 +668,12 @@ namespace OpenMetaverse
             return null;
         }
 
+        internal void PacketSent(byte[] data, int bytesSent, Simulator simulator)
+        {
+            if (OnPacketSent != null)
+                OnPacketSent(data, bytesSent, simulator);
+        }
+
         /// <summary>
         /// Fire an event when an event queue connects for capabilities
         /// </summary>
@@ -687,11 +689,10 @@ namespace OpenMetaverse
 
         private void OutgoingPacketHandler()
         {
-            OutgoingPacket outgoingPacket = new OutgoingPacket();
+            OutgoingPacket outgoingPacket = null;
             Simulator simulator = null;
             Packet packet = null;
-            int now;
-            int lastPacketTime = Environment.TickCount;
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
             while (connected)
             {
@@ -701,17 +702,15 @@ namespace OpenMetaverse
                     packet = outgoingPacket.Packet;
 
                     // Very primitive rate limiting, keeps a fixed buffer of time between each packet
-                    now = Environment.TickCount;
-                    int ms = now - lastPacketTime;
-
-                    if (ms < 75)
+                    stopwatch.Stop();
+                    if (stopwatch.ElapsedMilliseconds < 10)
                     {
                         //Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
-                        Thread.Sleep(75 - ms);
+                        Thread.Sleep(10 - (int)stopwatch.ElapsedMilliseconds);
                     }
 
-                    lastPacketTime = now;
-                    simulator.SendPacketUnqueued(packet, outgoingPacket.SetSequence);
+                    simulator.SendPacketUnqueued(outgoingPacket);
+                    stopwatch.Start();
                 }
             }
         }
@@ -1105,26 +1104,33 @@ namespace OpenMetaverse
         /// Handler for EnableSimulator packet
         /// </summary>
         /// <param name="capsKey">the Capabilities Key, "EnableSimulator"</param>
-        /// <param name="llsd">the LLSD Encoded packet</param>
+        /// <param name="osd">the LLSD Encoded packet</param>
         /// <param name="simulator">The simulator the packet was sent from</param>
-        private void EnableSimulatorHandler(string capsKey, LLSD llsd, Simulator simulator)
+        private void EnableSimulatorHandler(string capsKey, OSD osd, Simulator simulator)
         {
             if (!Client.Settings.MULTIPLE_SIMS) return;
-            LLSDMap map = (LLSDMap)llsd;
-            LLSDArray connectInfo = (LLSDArray)map["SimulatorInfo"];
+            OSDMap map = (OSDMap)osd;
+            OSDArray connectInfo = (OSDArray)map["SimulatorInfo"];
 
             for(int i = 0; i < connectInfo.Count; i++)
             {
-                IPAddress ip = new IPAddress(((LLSDMap)connectInfo[i])["IP"].AsBinary());
-                ushort port = (ushort)((LLSDMap)connectInfo[i])["Port"].AsInteger();
-                ulong rh = (ulong)((LLSDMap)connectInfo[i])["Handle"].AsInteger();
+                OSDMap data = (OSDMap)connectInfo[i];
+
+                IPAddress ip = new IPAddress(data["IP"].AsBinary());
+                ushort port = (ushort)data["Port"].AsInteger();
+                byte[] bytes = data["Handle"].AsBinary();
+
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(bytes);
+
+                ulong rh = Utils.BytesToUInt64(bytes);
 
                 IPEndPoint endPoint = new IPEndPoint(ip, port);
                 
                 // don't reconnect if we're already connected or attempting to connect
                 if (FindSimulator(endPoint) != null) return;
 
-                if (Connect(ip, port, rh, false, LoginSeedCapability) == null)
+                if (Connect(ip, port, rh, false, null) == null)
                 {
                     Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
                         Helpers.LogLevel.Error, Client);

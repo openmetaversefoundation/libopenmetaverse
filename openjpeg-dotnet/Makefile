@@ -1,7 +1,7 @@
 # Linux makefile for OpenJPEG
 
 VER_MAJOR = 2
-VER_MINOR = 1.3.0
+VER_MINOR = 1.3.0-dotnet-1
 
 SRCS = ./libopenjpeg/bio.c ./libopenjpeg/cio.c ./libopenjpeg/dwt.c ./libopenjpeg/event.c ./libopenjpeg/image.c ./libopenjpeg/j2k.c ./libopenjpeg/j2k_lib.c ./libopenjpeg/jp2.c ./libopenjpeg/jpt.c ./libopenjpeg/mct.c ./libopenjpeg/mqc.c ./libopenjpeg/openjpeg.c ./libopenjpeg/pi.c ./libopenjpeg/raw.c ./libopenjpeg/t1.c ./libopenjpeg/t2.c ./libopenjpeg/tcd.c ./libopenjpeg/tgt.c
 CPPSRCS = ./dotnet/dotnet.cpp
@@ -14,17 +14,21 @@ AR = ar
 
 OSNAME = $(shell uname -s)
 ifeq ($(OSNAME), Linux)
-  ARCH = $(shell uname -m)
+  ARCH = $(shell arch)
   ifeq ($(ARCH), x86_64)
     ARCH=-x86_64
+    ARCHFLAGS=
   else
-    ARCH=
+    ARCH=-i686
+    ARCHFLAGS=-m32
   endif
 endif
+
+
 # Converts cr/lf to just lf
 DOS2UNIX = dos2unix
 
-COMPILERFLAGS = -O3 -fPIC
+COMPILERFLAGS = -O3 -fPIC $(ARCHFLAGS)
 LIBRARIES = -lstdc++
 
 MODULES = $(SRCS:.c=.o)
@@ -35,8 +39,10 @@ TARGET  = openjpeg-dotnet
 SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR)$(ARCH).so
 LIBNAME = lib$(TARGET).so.$(VER_MAJOR)
 
-
 default: all
+
+# Force 32 bit binary on 64 bit platform
+32bit: OpenJPEG
 
 all: OpenJPEG
 
@@ -56,7 +62,7 @@ $(CPPMODULES): %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(SHAREDLIB): $(MODULES) $(CPPMODULES)
-	$(CC) -s -shared -Wl,-soname,$(LIBNAME) -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
+	$(CC) $(ARCHFLAGS) -s -shared -Wl,-soname,$(LIBNAME) -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
 
 install: OpenJPEG
 	install -d ../bin

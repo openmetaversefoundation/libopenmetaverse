@@ -147,11 +147,11 @@ namespace OpenMetaverse.Tests
             face.TexMapType = MappingType.Planar;
             face.TextureID = UUID.Random();
 
-            byte[] teBytes = te.ToBytes();
+            byte[] teBytes = te.GetBytes();
 
             Primitive.TextureEntry te2 = new Primitive.TextureEntry(teBytes, 0, teBytes.Length);
 
-            byte[] teBytes2 = te2.ToBytes();
+            byte[] teBytes2 = te2.GetBytes();
 
             Assert.IsTrue(teBytes.Length == teBytes2.Length);
 

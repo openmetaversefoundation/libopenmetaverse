@@ -8,10 +8,13 @@ namespace OpenMetaverse.TestClient
 {
     public class FollowCommand: Command
     {
+        const float DISTANCE_BUFFER = 3.0f;
+        uint targetLocalID = 0;
+
 		public FollowCommand(TestClient testClient)
 		{
 			Name = "follow";
-			Description = "Follow another avatar. (usage: follow [FirstName LastName])  If no target is set then will follow master.";
+			Description = "Follow another avatar. Usage: follow [FirstName LastName]/off.";
             Category = CommandCategory.Movement;
 
             testClient.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
@@ -19,43 +22,27 @@ namespace OpenMetaverse.TestClient
 
         public override string Execute(string[] args, UUID fromAgentID)
 		{
+            // Construct the target name from the passed arguments
 			string target = String.Empty;
 			for (int ct = 0; ct < args.Length; ct++)
 				target = target + args[ct] + " ";
 			target = target.TrimEnd();
 
-            if (target.Length > 0)
+            if (target.Length == 0 || target == "off")
+            {
+                Active = false;
+                targetLocalID = 0;
+                Client.Self.AutoPilotCancel();
+                return "Following is off";
+            }
+            else
             {
                 if (Follow(target))
                     return "Following " + target;
                 else
                     return "Unable to follow " + target + ".  Client may not be able to see that avatar.";
             }
-            else
-            {
-                if (Client.MasterKey != UUID.Zero)
-                {
-                    if (Follow(Client.MasterKey))
-                        return "Following UUID " + Client.MasterKey;
-                    else
-                        return "Unable to follow UUID " + Client.MasterKey;
-                }
-                else if (Client.MasterName != String.Empty)
-                {
-                    if (Follow(Client.MasterName))
-                        return "Following " + Client.MasterName;
-                    else
-                        return "Unable to follow " + Client.MasterName;
-                }
-                else
-                {
-                    return "No master specified. Usage: follow <target>";
-                }
-            }
 		}
-
-        const float DISTANCE_BUFFER = 3.0f;
-        uint targetLocalID = 0;
 
         bool Follow(string name)
         {
@@ -79,7 +66,12 @@ namespace OpenMetaverse.TestClient
                 }
             }
 
-            Active = false;
+            if (Active)
+            {
+                Client.Self.AutoPilotCancel();
+                Active = false;
+            }
+
             return false;
         }
 
@@ -111,44 +103,47 @@ namespace OpenMetaverse.TestClient
 
 		public override void Think()
 		{
-            // Find the target position
-            lock (Client.Network.Simulators)
+            if (Active)
             {
-                for (int i = 0; i < Client.Network.Simulators.Count; i++)
+                // Find the target position
+                lock (Client.Network.Simulators)
                 {
-                    Avatar targetAv;
-
-                    if (Client.Network.Simulators[i].ObjectsAvatars.TryGetValue(targetLocalID, out targetAv))
+                    for (int i = 0; i < Client.Network.Simulators.Count; i++)
                     {
-                        float distance = 0.0f;
+                        Avatar targetAv;
 
-                        if (Client.Network.Simulators[i] == Client.Network.CurrentSim)
+                        if (Client.Network.Simulators[i].ObjectsAvatars.TryGetValue(targetLocalID, out targetAv))
                         {
-                            distance = Vector3.Distance(targetAv.Position, Client.Self.SimPosition);
-                        }
-                        else
-                        {
-                            // FIXME: Calculate global distances
-                        }
+                            float distance = 0.0f;
 
-                        if (distance > DISTANCE_BUFFER)
-                        {
-                            uint regionX, regionY;
-                            Utils.LongToUInts(Client.Network.Simulators[i].Handle, out regionX, out regionY);
+                            if (Client.Network.Simulators[i] == Client.Network.CurrentSim)
+                            {
+                                distance = Vector3.Distance(targetAv.Position, Client.Self.SimPosition);
+                            }
+                            else
+                            {
+                                // FIXME: Calculate global distances
+                            }
 
-                            double xTarget = (double)targetAv.Position.X + (double)regionX;
-                            double yTarget = (double)targetAv.Position.Y + (double)regionY;
-                            double zTarget = targetAv.Position.Z - 2f;
+                            if (distance > DISTANCE_BUFFER)
+                            {
+                                uint regionX, regionY;
+                                Utils.LongToUInts(Client.Network.Simulators[i].Handle, out regionX, out regionY);
 
-                            Logger.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
-                                distance, xTarget, yTarget, zTarget), Client);
+                                double xTarget = (double)targetAv.Position.X + (double)regionX;
+                                double yTarget = (double)targetAv.Position.Y + (double)regionY;
+                                double zTarget = targetAv.Position.Z - 2f;
 
-                            Client.Self.AutoPilot(xTarget, yTarget, zTarget);
-                        }
-                        else
-                        {
-                            // We are in range of the target and moving, stop moving
-                            Client.Self.AutoPilotCancel();
+                                Logger.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
+                                    distance, xTarget, yTarget, zTarget), Client);
+
+                                Client.Self.AutoPilot(xTarget, yTarget, zTarget);
+                            }
+                            else
+                            {
+                                // We are in range of the target and moving, stop moving
+                                Client.Self.AutoPilotCancel();
+                            }
                         }
                     }
                 }
@@ -164,7 +159,7 @@ namespace OpenMetaverse.TestClient
 
             if (message.Contains("Autopilot cancel"))
             {
-                Logger.Log("Server cancelled the autopilot", Helpers.LogLevel.Info, Client);
+                Logger.Log("FollowCommand: " + message, Helpers.LogLevel.Info, Client);
             }
         }
     }

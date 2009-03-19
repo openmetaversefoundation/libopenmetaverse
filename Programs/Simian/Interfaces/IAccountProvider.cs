@@ -5,10 +5,10 @@ namespace Simian
 {
     public interface IAccountProvider
     {
-        void AddAccount(Agent agent);
+        void AddAccount(AgentInfo agent);
         bool RemoveAccount(UUID agentID);
-        Agent CreateInstance(UUID agentID);
-        bool TryGetAccount(UUID agentID, out Agent agent);
-        bool TryGetAccount(string fullName, out Agent agent);
+        AgentInfo CreateInstance(UUID agentID);
+        bool TryGetAccount(UUID agentID, out AgentInfo agent);
+        bool TryGetAccount(string fullName, out AgentInfo agent);
     }
 }

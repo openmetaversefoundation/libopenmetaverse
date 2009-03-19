@@ -36,36 +36,35 @@ namespace OpenMetaverse.TestClient
         }
     }
 
+    // WOW WHAT A HACK!
+    public static class ClientManagerRef
+    {
+        public static ClientManager ClientManager;
+    }
+
     public class ClientManager
     {
-        public Dictionary<UUID, GridClient> Clients = new Dictionary<UUID, GridClient>();
+        public Dictionary<UUID, TestClient> Clients = new Dictionary<UUID, TestClient>();
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
+        public bool GetTextures = false;
 
         string version = "1.0.0";
         /// <summary>
         /// 
         /// </summary>
         /// <param name="accounts"></param>
-        public ClientManager(List<LoginDetails> accounts)
+        public ClientManager(List<LoginDetails> accounts, bool getTextures)
         {
+            ClientManagerRef.ClientManager = this;
+
+            GetTextures = getTextures;
+
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
-        public ClientManager(List<LoginDetails> accounts, string s)
-        {
-            char sep = '/';
-            string[] startbits = s.Split(sep);
-
-            foreach (LoginDetails account in accounts)
-            {
-                account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
-                    Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
-                Login(account);
-            }
-        }
         /// <summary>
         /// 
         /// </summary>
@@ -108,27 +107,37 @@ namespace OpenMetaverse.TestClient
             if (client.Network.Login(loginParams))
             {
                 Clients[client.Self.AgentID] = client;
+
                 if (client.MasterKey == UUID.Zero)
                 {
                     UUID query = UUID.Random();
-                    client.Directory.OnDirPeopleReply +=
+                    DirectoryManager.DirPeopleReplyCallback peopleDirCallback =
                         delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
                         {
-                            if (queryID != query)
-                                return;
-                            if (matchedPeople.Count != 1)
-                                Console.WriteLine("Unable to resolve master key.");
-                            else
-                                client.MasterKey = matchedPeople[0].AgentID;
+                            if (queryID == query)
+                            {
+                                if (matchedPeople.Count != 1)
+                                {
+                                    Logger.Log("Unable to resolve master key from " + client.MasterName, Helpers.LogLevel.Warning);
+                                }
+                                else
+                                {
+                                    client.MasterKey = matchedPeople[0].AgentID;
+                                    Logger.Log("Master key resolved to " + client.MasterKey, Helpers.LogLevel.Info);
+                                }
+                            }
                         };
+
+                    client.Directory.OnDirPeopleReply += peopleDirCallback;
                     client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, client.MasterName, 0, query);
                 }
-                Console.WriteLine("Logged in " + client.ToString());
+
+                Logger.Log("Logged in " + client.ToString(), Helpers.LogLevel.Info);
             }
             else
             {
-                Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                    client.Network.LoginMessage);
+                Logger.Log("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                    client.Network.LoginMessage, Helpers.LogLevel.Warning);
             }
 
             return client;
@@ -141,15 +150,39 @@ namespace OpenMetaverse.TestClient
         /// <returns></returns>
         public TestClient Login(string[] args)
         {
+            
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Usage: login firstname lastname password [simname] [login server url]");
+                return null;
+            }
             LoginDetails account = new LoginDetails();
             account.FirstName = args[0];
             account.LastName = args[1];
             account.Password = args[2];
 
-            if (args.Length == 4)
+            if (args.Length > 3)
             {
-                account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+                // If it looks like a full starting position was specified, parse it
+                if( args[3].IndexOf('/') >= 0 )
+                { 
+                    char sep = '/';
+                    string[] startbits = args[3].Split(sep);
+                    account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
+                            Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
+                }
+                // Otherwise, use the center of the named region
+                else
+                    account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
             }
+
+            if (args.Length > 4)
+                if(args[4].StartsWith("http://"))
+                    account.URI = args[4];
+
+            if (string.IsNullOrEmpty(account.URI))
+                account.URI = Program.LoginURI;
+            Logger.Log("Using login URI " + account.URI, Helpers.LogLevel.Info);
 
             return Login(account);
         }
@@ -196,31 +229,77 @@ namespace OpenMetaverse.TestClient
         public void DoCommandAll(string cmd, UUID fromAgentID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
-            string firstToken = tokens[0].ToLower();
-
             if (tokens.Length == 0)
                 return;
+            
+            string firstToken = tokens[0].ToLower();
+            if (String.IsNullOrEmpty(firstToken))
+                return;
+
+            // Allow for comments when cmdline begins with ';' or '#'
+            if (firstToken[0] == ';' || firstToken[0] == '#')
+                return;
+            
+            string[] args = new string[tokens.Length - 1];
+            if (args.Length > 0)
+                Array.Copy(tokens, 1, args, 0, args.Length);
 
             if (firstToken == "login")
             {
-                // Special login case: Only call it once, and allow it with
-                // no logged in avatars
-                string[] args = new string[tokens.Length - 1];
-                Array.Copy(tokens, 1, args, 0, args.Length);
                 Login(args);
             }
             else if (firstToken == "quit")
             {
                 Quit();
-                Console.WriteLine("All clients logged out and program finished running.");
+                Logger.Log("All clients logged out and program finished running.", Helpers.LogLevel.Info);
+            }
+            else if (firstToken == "help")
+            {
+                if (Clients.Count > 0)
+                {
+                    foreach (TestClient client in Clients.Values)
+                    {
+                        Console.WriteLine(client.Commands["help"].Execute(args, UUID.Zero));
+                        break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("You must login at least one bot to use the help command");
+                }
+            }
+            else if (firstToken == "script")
+            {
+                // No reason to pass this to all bots, and we also want to allow it when there are no bots
+                ScriptCommand command = new ScriptCommand(null);
+                Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
             }
             else
             {
-                // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-                Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
+                // Make an immutable copy of the Clients dictionary to safely iterate over
+                Dictionary<UUID, TestClient> clientsCopy = new Dictionary<UUID, TestClient>(Clients);
+
+                int completed = 0;
 
                 foreach (TestClient client in clientsCopy.Values)
-                    client.DoCommand(cmd, fromAgentID);
+                {
+                    ThreadPool.QueueUserWorkItem((WaitCallback)
+                        delegate(object state)
+                        {
+                            TestClient testClient = (TestClient)state;
+                            if (testClient.Commands.ContainsKey(firstToken))
+                                Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
+                                    Helpers.LogLevel.Info, testClient);
+                            else
+                                Logger.Log("Unknown command " + firstToken, Helpers.LogLevel.Warning);
+
+                            ++completed;
+                        },
+                        client);
+                }
+
+                while (completed < clientsCopy.Count)
+                    Thread.Sleep(50);
             }
         }
 
@@ -237,21 +316,8 @@ namespace OpenMetaverse.TestClient
         /// <summary>
         /// 
         /// </summary>
-        public void LogoutAll()
-        {
-            // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-            Dictionary<UUID, GridClient> clientsCopy = new Dictionary<UUID, GridClient>(Clients);
-
-            foreach (TestClient client in clientsCopy.Values)
-                Logout(client);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public void Quit()
         {
-            LogoutAll();
             Running = false;
             // TODO: It would be really nice if we could figure out a way to abort the ReadLine here in so that Run() will exit.
         }

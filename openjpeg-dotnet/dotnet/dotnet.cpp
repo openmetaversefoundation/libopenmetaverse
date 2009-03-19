@@ -94,7 +94,7 @@ bool DotNetEncode(MarshalledImage* image, bool lossless)
 		}
 
 		opj_image_t* jp2_image = opj_image_create(image->components, comptparm, CLRSPC_SRGB);
-		if (image == NULL)
+		if (jp2_image == NULL)
 			throw "opj_image_create failed";
 
 		jp2_image->x0 = 0;
@@ -144,7 +144,7 @@ bool DotNetDecode(MarshalledImage* image)
 		opj_cio* cio = opj_cio_open((opj_common_ptr)dinfo, image->encoded, image->length);
 
 		opj_image* jp2_image = opj_decode(dinfo, cio); // decode happens here
-		if (image == NULL)
+		if (jp2_image == NULL)
 			throw "opj_decode failed";
 
 		image->width = jp2_image->x1 - jp2_image->x0;
@@ -181,7 +181,7 @@ bool DotNetDecodeWithInfo(MarshalledImage* image)
 		opj_cio* cio = opj_cio_open((opj_common_ptr)dinfo, image->encoded, image->length);
 
 		opj_image* jp2_image = opj_decode_with_info(dinfo, cio, &info); // decode happens here
-		if (image == NULL)
+		if (jp2_image == NULL)
 			throw "opj_decode failed";
 
 		// maximum number of decompositions
