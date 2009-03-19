@@ -158,18 +158,32 @@ namespace OpenMetaverse
     /// Upper half of the Flags field for inventory items
     /// </summary>
     [Flags]
-    public enum InventoryItemFlags
+    public enum InventoryItemFlags : uint
     {
         None = 0,
-        LandmarkVisited = 1,
+        /// <summary>Indicates that the NextOwner permission will be set to the
+        /// most restrictive set of permissions found in the object set
+        /// (including linkset items and object inventory items) on next rez</summary>
         ObjectSlamPerm = 0x100,
+        /// <summary>Indicates that the object sale information has been
+        /// changed</summary>
         ObjectSlamSale = 0x1000,
-        ObjectPermOverwriteBase = 0x010000,
-        ObjectPermOverwriteOwner = 0x020000,
-        ObjectPermOverwriteGroup = 0x040000,
-        ObjectPermOverwriteEveryone = 0x080000,
-        ObjectPermOverwriteNextOwner = 0x100000,
+        /// <summary>If set, and a slam bit is set, indicates BaseMask will be overwritten on Rez</summary>
+        ObjectOverwriteBase = 0x010000,
+        /// <summary>If set, and a slam bit is set, indicates OwnerMask will be overwritten on Rez</summary>
+        ObjectOverwriteOwner = 0x020000,
+        /// <summary>If set, and a slam bit is set, indicates GroupMask will be overwritten on Rez</summary>
+        ObjectOverwriteGroup = 0x040000,
+        /// <summary>If set, and a slam bit is set, indicates EveryoneMask will be overwritten on Rez</summary>
+        ObjectOverwriteEveryone = 0x080000,
+        /// <summary>If set, and a slam bit is set, indicates NextOwnerMask will be overwritten on Rez</summary>
+        ObjectOverwriteNextOwner = 0x100000,
+        /// <summary>Indicates whether this object is composed of multiple
+        /// items or not</summary>
         ObjectHasMultipleItems = 0x200000,
+        /// <summary>Indicates that the asset is only referenced by this
+        /// inventory item. If this item is deleted or updated to reference a
+        /// new assetID, the asset can be deleted</summary>
         SharedSingleReference = 0x40000000,
     }
 
@@ -503,12 +517,16 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Landmarks use the ObjectType struct and will have a flag of 1 set if they have been visited
+        /// Landmarks use the InventoryItemFlags struct and will have a flag of 1 set if they have been visited
         /// </summary>
-        public ObjectType LandmarkType
+        public bool LandmarkVisited
         {
-            get { return (ObjectType)Flags; }
-            set { Flags = (uint)value; }
+            get { return (Flags & 1) != 0; }
+            set
+            {
+                if (value) Flags |= 1;
+                else Flags &= ~1u;
+            }
         }
     }
 
@@ -536,15 +554,12 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Get the Objects permission override settings
-        /// 
-        /// These will indicate the which permissions that 
-        /// will be overwritten when the object is rezzed in-world
+        /// Gets or sets the upper byte of the Flags value
         /// </summary>
-        public ObjectType ObjectType
+        public InventoryItemFlags ItemFlags
         {
-            get { return (ObjectType)Flags; }
-            set { Flags = (uint)value; }
+            get { return (InventoryItemFlags)(Flags & ~0xFF); }
+            set { Flags = (uint)value | (Flags & 0xFF); }
         }
     }
 
