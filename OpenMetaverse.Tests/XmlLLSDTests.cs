@@ -74,7 +74,7 @@ namespace OpenMetaverse.Tests
 		                <real>4</real>
 		                <key>active task count</key>
 		                <real>0</real>
-		                <key>pending uploads</key>B
+		                <key>pending uploads</key>
 		                <real>0.0001096525</real>
 	                </map>
                 </map>

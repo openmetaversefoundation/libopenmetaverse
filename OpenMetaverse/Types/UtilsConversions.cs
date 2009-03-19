@@ -706,6 +706,8 @@ namespace OpenMetaverse
         /// <returns>True if the parse was successful, otherwise false</returns>
         public static bool TryParseDouble(string s, out double result)
         {
+            // NOTE: Double.TryParse can't parse Double.[Min/Max]Value.ToString(), see:
+            // http://blogs.msdn.com/bclteam/archive/2006/05/24/598169.aspx
             return Double.TryParse(s, System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat, out result);
         }
 

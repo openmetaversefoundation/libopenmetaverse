@@ -261,8 +261,6 @@ namespace OpenMetaverse.Tests
             OSD llsdSixDS = OSDParser.DeserializeLLSDNotation(sSix);
             Assert.AreEqual(OSDType.Real, llsdSixDS.Type);
             Assert.AreEqual(2.0193899999999998204e-06, llsdSixDS.AsReal());
-
-
         }
 
         [Test()]

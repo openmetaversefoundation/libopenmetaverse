@@ -457,7 +457,8 @@ namespace OpenMetaverse.StructuredData
         }
 
         public override double AsReal() { return value; }
-        public override string AsString() { return value.ToString(Utils.EnUsCulture); }
+        // "r" ensures the value will correctly round-trip back through Double.TryParse
+        public override string AsString() { return value.ToString("r", Utils.EnUsCulture); }
         public override byte[] AsBinary() { return Utils.DoubleToBytesBig(value); }
         public override string ToString() { return AsString(); }
     }
