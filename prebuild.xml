@@ -790,6 +790,7 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
+      <Reference name="Tools"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
