@@ -766,60 +766,6 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
-    
-    <Project name="Simian" path="Programs/Simian" type="Exe">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Drawing"/>
-      <Reference name="System.Xml"/>
-      <Reference name="ExtensionLoader"/>
-      <Reference name="Mono.Security"/>
-      <Reference name="HttpServer"/>
-      <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="OpenMetaverse.Http"/>
-      <Reference name="Tools"/>
-
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-    
-    <Project name="Simian.Tests" path="Programs/Simian.Tests" type="Library">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="nunit.framework"/>
-      <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseTypes"/>
-      <Reference name="Simian.exe"/>
-      <Reference name="ExtensionLoader"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
 
   </Solution>
 </Prebuild>
