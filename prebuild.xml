@@ -34,25 +34,6 @@
     
     <!-- External Libraries -->
     
-    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library" guid="F0CCD62E-8055-4419-8171-F2C5FD7C8B6D">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-    
     <Project name="HttpServer" path="HttpServer" type="Library" guid="455E7D70-1C85-4D7F-9F01-DC801B8B8C34">
       <Configuration name="Debug">
         <Options>
