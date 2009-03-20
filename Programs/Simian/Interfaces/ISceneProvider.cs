@@ -89,7 +89,7 @@ namespace Simian
 
     #region Scene delegates
 
-    public delegate void ObjectAddOrUpdateCallback(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
+    public delegate void ObjectAddOrUpdateCallback(object sender, SimulationObject obj, UUID ownerID, PrimFlags creatorFlags, UpdateFlags updateFlags);
     public delegate void ObjectRemoveCallback(object sender, SimulationObject obj);
     public delegate void ObjectSetRotationAxisCallback(object sender, SimulationObject obj, Vector3 rotationAxis);
     public delegate void ObjectApplyImpulseCallback(object sender, SimulationObject obj, Vector3 impulse);
@@ -158,7 +158,7 @@ namespace Simian
         bool Start(Simian server, RegionInfo regionInfo, X509Certificate2 regionCert, string defaultTerrainFile, int staticObjects, int physicalObjects);
         void Stop();
 
-        void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags);
+        void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, PrimFlags creatorFlags, UpdateFlags updateFlags);
         bool ObjectRemove(object sender, uint localID);
         bool ObjectRemove(object sender, UUID id);
         void ObjectSetRotationAxis(object sender, SimulationObject obj, Vector3 rotationAxis);

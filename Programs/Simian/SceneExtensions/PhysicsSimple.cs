@@ -424,7 +424,7 @@ namespace Simian
             }
         }
 
-        void Scene_OnObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags update)
+        void Scene_OnObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, PrimFlags creatorFlags, UpdateFlags update)
         {
             // Recompute meshes for 
             bool forceMeshing = false;

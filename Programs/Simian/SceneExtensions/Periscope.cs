@@ -79,13 +79,13 @@ namespace Simian
             SimulationObject simObj = new SimulationObject(prim, scene);
             if (MasterAgent != null)
                 simObj.Prim.OwnerID = MasterAgent.ID;
-            scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnNewAttachment(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             SimulationObject simObj = new SimulationObject(prim, scene);
-            scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            scene.ObjectAddOrUpdate(this, simObj, MasterAgent.ID, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
@@ -95,7 +95,7 @@ namespace Simian
             Agent agent = new Agent(obj, AgentInfoFromAvatar(avatar));
 
             scene.AgentAdd(this, agent, avatar.Flags);
-            scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.FullUpdate);
         }
 
         void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
@@ -117,7 +117,7 @@ namespace Simian
                 if (update.Avatar) obj.Prim.CollisionPlane = update.CollisionPlane;
                 if (update.Textures != null) obj.Prim.Textures = update.Textures;
 
-                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, flags);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, flags);
             }
 
             if (update.LocalID == client.Self.LocalID)
@@ -130,7 +130,7 @@ namespace Simian
                 if (update.Avatar) MasterAgent.Avatar.Prim.CollisionPlane = update.CollisionPlane;
                 if (update.Textures != null) MasterAgent.Avatar.Prim.Textures = update.Textures;
 
-                scene.ObjectAddOrUpdate(this, MasterAgent.Avatar, MasterAgent.ID, 0, PrimFlags.None, flags);
+                scene.ObjectAddOrUpdate(this, MasterAgent.Avatar, MasterAgent.ID, PrimFlags.None, flags);
             }
         }
 

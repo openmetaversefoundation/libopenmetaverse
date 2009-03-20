@@ -247,7 +247,7 @@ namespace Simian
 
             if ((otherScriptID = ScriptByName(name)) != UUID.Zero)
             {
-                return scene.ScriptEngine.GetScriptState(otherScriptID) ? 1 : 0;
+                return scene.ScriptEngine.IsScriptEnabled(otherScriptID) ? 1 : 0;
             }
 
             ShoutError("llGetScriptState: script " + name + " not found");
@@ -264,7 +264,7 @@ namespace Simian
 
             if ((otherScriptID = ScriptByName(name)) != UUID.Zero)
             {
-                scene.ScriptEngine.SetScriptState(otherScriptID, run == 0 ? false : true);
+                scene.ScriptEngine.SetScriptEnabled(otherScriptID, run == 0 ? false : true);
             }
             else
             {
@@ -1022,7 +1022,7 @@ namespace Simian
                 scene.ObjectSetRotationAxis(this, parent, rotationAxis);
             }
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.OwnerID, PrimFlags.None, UpdateFlags.PrimFlags);
         }
 
         public LSL_Integer llGetStatus(int status)
@@ -1078,7 +1078,7 @@ namespace Simian
 
             // TODO: Apply constraints
             hostObject.Prim.Scale = new Vector3((float)scale.x, (float)scale.y, (float)scale.z);
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Scale);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Scale);
         }
 
         public LSL_Vector llGetScale()
@@ -1092,7 +1092,7 @@ namespace Simian
             hostObject.AddScriptLPS(1);
 
             hostObject.Prim.ClickAction = (ClickAction)action;
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.ClickAction);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.ClickAction);
         }
 
         public void llSetColor(LSL_Vector color, int face)
@@ -1258,7 +1258,7 @@ namespace Simian
             // Child prims do not have velocity, only parents
             SimulationObject parent = hostObject.GetLinksetParent();
             parent.Prim.Velocity = velocity;
-            scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Velocity);
+            scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, PrimFlags.None, UpdateFlags.Velocity);
         }
 
         public LSL_Vector llGetForce()
@@ -1464,7 +1464,7 @@ namespace Simian
             hostObject.Prim.SoundFlags = SoundFlags.Loop;
             hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llLoopSoundMaster(string sound, double volume)
@@ -1479,7 +1479,7 @@ namespace Simian
             hostObject.Prim.SoundFlags = SoundFlags.Loop | SoundFlags.SyncMaster;
             hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llLoopSoundSlave(string sound, double volume)
@@ -1494,7 +1494,7 @@ namespace Simian
             hostObject.Prim.SoundFlags = SoundFlags.Loop | SoundFlags.SyncSlave;
             hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llPlaySoundSlave(string sound, double volume)
@@ -1509,7 +1509,7 @@ namespace Simian
             hostObject.Prim.SoundFlags = SoundFlags.SyncSlave;
             hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llTriggerSound(string sound, double volume)
@@ -1531,7 +1531,7 @@ namespace Simian
             hostObject.Prim.SoundFlags = SoundFlags.None;
             hostObject.Prim.SoundRadius = 0f;
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Sound);
         }
 
         public void llPreloadSound(string sound)
@@ -1546,7 +1546,7 @@ namespace Simian
             hostObject.Prim.SoundFlags = SoundFlags.Queue; // TODO: Is this correct?
             hostObject.Prim.SoundRadius = 20f; // TODO: Randomly selected
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Sound);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Sound);
             // ScriptSleep(1000);
         }
 
@@ -1836,7 +1836,7 @@ namespace Simian
             Quaternion llrot = new Quaternion((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.s);
 
             if (Vector3.Distance(llpos, hostObject.GetSimulatorPosition()) > 10.0f)
-                return; // wiki says, if it's further than 10m away, silently fail.
+                return; // wiki says if it's further than 10m away, silently fail.
 
             // need the magnitude later
             float velmag = llvel.Length();
@@ -1876,7 +1876,16 @@ namespace Simian
                         newObj.Prim.Rotation = llrot;
                     }
 
-                    scene.ObjectAddOrUpdate(this, newObj, hostObject.Prim.Properties.OwnerID, param, PrimFlags.None, UpdateFlags.FullUpdate);
+                    // Start scripts
+                    hostObject.Inventory.ForEachItem(
+                        delegate(InventoryTaskItem taskItem)
+                        {
+                            if (taskItem.AssetType == AssetType.LSLText)
+                                scene.ScriptEngine.RezScript(taskItem.ID, taskItem.AssetID, hostObject, param);
+                        }
+                    );
+
+                    scene.ObjectAddOrUpdate(this, newObj, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.FullUpdate);
 
                     if (newObj.Prim.ParentID == 0)
                         newParent = newObj;
@@ -2103,7 +2112,7 @@ namespace Simian
 
             parent.Prim.Position = newPosition;
             // Don't set UpdateFlags.PrimFlags since Flying is a server-side only flag
-            scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position);
+            scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, PrimFlags.None, UpdateFlags.Position);
         }
 
         public void llStopHover()
@@ -2115,7 +2124,7 @@ namespace Simian
 
             // Trigger an object transformation even though we don't directly manipulate any parameters that are sent
             // to the client. This will make sure the physics engine realizes the flying flag has been turned off
-            scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position);
+            scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, PrimFlags.None, UpdateFlags.Position);
         }
 
         public void llMinEventDelay(double delay)
@@ -2224,7 +2233,7 @@ namespace Simian
             angVel *= (float)spinrate;
 
             hostObject.Prim.AngularVelocity = angVel;
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.AngularVelocity);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.OwnerID, PrimFlags.None, UpdateFlags.AngularVelocity);
         }
 
         public LSL_Integer llGetStartParameter()
@@ -2545,7 +2554,7 @@ namespace Simian
                 (float)Utils.Clamp(alpha, 0f, 1f));
             hostObject.Prim.Text = text;
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Text);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Text);
         }
 
         public LSL_Float llWater(LSL_Vector offset)
@@ -3441,7 +3450,7 @@ namespace Simian
             pTexAnim.Start = (float)start;
 
             hostObject.Prim.TextureAnim = pTexAnim;
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.TextureAnim);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.TextureAnim);
         }
 
         public void llTriggerSoundLimited(string sound, double volume, LSL_Vector top_north_east, LSL_Vector bottom_south_west)
@@ -3789,7 +3798,7 @@ namespace Simian
                 hostObject.Prim.ParticleSys = prules;
             }
 
-            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Particles);
+            scene.ObjectAddOrUpdate(this, hostObject, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Particles);
         }
 
         public void llGroundRepel(double height, int water, double tau)
@@ -5195,7 +5204,7 @@ namespace Simian
                 texcolor.A = Utils.Clamp((float)alpha, 0.0f, 1.0f);
                 tex.FaceTextures[face].RGBA = texcolor;
 
-                scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+                scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
             }
             else if (face == ScriptTypes.ALL_SIDES)
             {
@@ -5213,7 +5222,7 @@ namespace Simian
                 texcolor.A = Utils.Clamp((float)alpha, 0.0f, 1.0f);
                 tex.DefaultTexture.RGBA = texcolor;
 
-                scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+                scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
             }
         }
 
@@ -5239,7 +5248,7 @@ namespace Simian
                 part.Prim.PrimData.PathCurve = PathCurve.Line;
             }
 
-            scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData | UpdateFlags.PrimData);
+            scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.ExtraData | UpdateFlags.PrimData);
         }
 
         private void SetPointLight(SimulationObject part, bool light, LSL_Vector color, float intensity, float radius, float falloff)
@@ -5262,7 +5271,7 @@ namespace Simian
                 part.Prim.Light = null;
             }
 
-            scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData);
+            scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.ExtraData);
         }
 
         private LSL_Vector GetColor(SimulationObject part, int face)
@@ -5565,7 +5574,7 @@ namespace Simian
             prim.Prim.PrimData.ProfileBegin = Primitive.UnpackBeginCut((ushort)(50000.0 * dimple.x));
             prim.Prim.PrimData.ProfileEnd = Primitive.UnpackBeginCut((ushort)(50000.0 * (1.0 - dimple.y)));
 
-            scene.ObjectAddOrUpdate(this, prim, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimData);
+            scene.ObjectAddOrUpdate(this, prim, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.PrimData);
         }
 
         private void SetPrimitiveShapeParams(SimulationObject prim, int holeshape, LSL_Vector cut, float hollow, LSL_Vector twist,
@@ -5960,7 +5969,7 @@ namespace Simian
                         else
                             parent.Prim.Flags &= ~PrimFlags.Phantom;
 
-                        scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
+                        scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, PrimFlags.None, UpdateFlags.PrimFlags);
                         break;
                     case ScriptTypes.PRIM_PHYSICS:
                         if (remain < 1) return;
@@ -5972,7 +5981,7 @@ namespace Simian
                         else
                             parent.Prim.Flags &= ~PrimFlags.Physics;
 
-                        scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
+                        scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, PrimFlags.None, UpdateFlags.PrimFlags);
                         break;
                     case ScriptTypes.PRIM_TEMP_ON_REZ:
                         if (remain < 1) return;
@@ -5984,7 +5993,7 @@ namespace Simian
                         else
                             parent.Prim.Flags &= ~PrimFlags.TemporaryOnRez;
 
-                        scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
+                        scene.ObjectAddOrUpdate(this, parent, parent.Prim.OwnerID, PrimFlags.None, UpdateFlags.PrimFlags);
                         break;
                 }
             }
@@ -5999,7 +6008,7 @@ namespace Simian
                 return;
 
             part.Prim.Scale = new Vector3((float)scale.x, (float)scale.y, (float)scale.z);
-            scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, 0, PrimFlags.None, UpdateFlags.Scale);
+            scene.ObjectAddOrUpdate(this, part, hostObject.Prim.Properties.OwnerID, PrimFlags.None, UpdateFlags.Scale);
         }
 
         private void SetColor(SimulationObject part, LSL_Vector color, int face)
@@ -6037,7 +6046,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         public void SetGlow(SimulationObject part, int face, float glow)
@@ -6061,7 +6070,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         public void SetShiny(SimulationObject part, int face, int shiny, Bumpiness bump)
@@ -6111,7 +6120,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         public void SetFullBright(SimulationObject part, int face, bool bright)
@@ -6137,7 +6146,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void SetTexture(SimulationObject part, string texture, int face)
@@ -6172,7 +6181,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void ScaleTexture(SimulationObject part, double u, double v, int face)
@@ -6202,7 +6211,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void OffsetTexture(SimulationObject part, double u, double v, int face)
@@ -6232,7 +6241,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void RotateTexture(SimulationObject part, double rotation, int face)
@@ -6259,7 +6268,7 @@ namespace Simian
             }
 
             part.Prim.Textures = tex;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Textures);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Textures);
         }
 
         private void SetPos(SimulationObject part, LSL_Vector targetPos)
@@ -6270,13 +6279,13 @@ namespace Simian
                 targetPos = currentPos + SCRIPT_DISTANCE_FACTOR * 10.0f * llVecNorm(targetPos - currentPos);
 
             part.Prim.Position = new Vector3((float)targetPos.x, (float)targetPos.y, (float)targetPos.z);
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Position);
         }
 
         private void SetRot(SimulationObject part, Quaternion rot)
         {
             part.Prim.Rotation = rot;
-            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Rotation);
+            scene.ObjectAddOrUpdate(this, part, part.Prim.OwnerID, PrimFlags.None, UpdateFlags.Rotation);
         }
 
         private LSL_Vector GetTextureOffset(SimulationObject part, int face)

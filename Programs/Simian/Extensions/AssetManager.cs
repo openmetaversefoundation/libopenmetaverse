@@ -169,6 +169,7 @@ namespace Simian
                 string[] clothing = Directory.GetFiles(path, "*.clothing", SearchOption.TopDirectoryOnly);
                 string[] bodyparts = Directory.GetFiles(path, "*.bodypart", SearchOption.TopDirectoryOnly);
                 string[] sounds = Directory.GetFiles(path, "*.ogg", SearchOption.TopDirectoryOnly);
+                string[] scripts = Directory.GetFiles(path, "*.lsl", SearchOption.TopDirectoryOnly);
 
                 for (int i = 0; i < textures.Length; i++)
                 {
@@ -198,6 +199,14 @@ namespace Simian
                 {
                     UUID assetID = ParseUUIDFromFilename(sounds[i]);
                     Asset asset = new AssetSound(assetID, File.ReadAllBytes(sounds[i]));
+                    asset.Temporary = true;
+                    StoreAsset(asset);
+                }
+
+                for (int i = 0; i < scripts.Length; i++)
+                {
+                    UUID assetID = ParseUUIDFromFilename(scripts[i]);
+                    Asset asset = new AssetScriptText(assetID, File.ReadAllBytes(scripts[i]));
                     asset.Temporary = true;
                     StoreAsset(asset);
                 }

@@ -99,13 +99,11 @@ namespace Simian
 
         public void StartScripts(int startParam, bool triggerOnRezEvent)
         {
-            LazyInitialize();
             throw new NotImplementedException();
         }
 
         public void StopScripts()
         {
-            LazyInitialize();
             throw new NotImplementedException();
         }
 

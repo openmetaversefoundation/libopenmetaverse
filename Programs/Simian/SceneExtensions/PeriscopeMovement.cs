@@ -332,7 +332,7 @@ namespace Simian
             if (scene.TryGetObject(update.AgentData.AgentID, out obj))
             {
                 obj.Prim.Rotation = update.AgentData.BodyRotation;
-                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Rotation);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.Rotation);
             }
         }
 

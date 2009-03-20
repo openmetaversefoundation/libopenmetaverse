@@ -164,7 +164,7 @@ namespace Simian
 
             // Add this prim to the object database
             SimulationObject simObj = new SimulationObject(prim, scene);
-            scene.ObjectAddOrUpdate(this, simObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
+            scene.ObjectAddOrUpdate(this, simObj, agent.ID, flags, UpdateFlags.FullUpdate);
         }
 
         void ObjectAttachHandler(Packet packet, Agent agent)
@@ -186,7 +186,7 @@ namespace Simian
                     obj.Prim.PrimData.AttachmentPoint = (point == AttachmentPoint.Default ? obj.LastAttachmentPoint : point);
 
                     // Send an update out to everyone
-                    scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, obj.Prim.Flags,
+                    scene.ObjectAddOrUpdate(this, obj, agent.ID, obj.Prim.Flags,
                         UpdateFlags.ParentID | UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.AttachmentPoint);
                 }
             }
@@ -212,7 +212,7 @@ namespace Simian
                     newObj.Prim.LocalID = 0;
                     newObj.Prim.Properties.CreationDate = DateTime.Now;
 
-                    scene.ObjectAddOrUpdate(this, newObj, agent.ID, 0, flags, UpdateFlags.FullUpdate);
+                    scene.ObjectAddOrUpdate(this, newObj, agent.ID, flags, UpdateFlags.FullUpdate);
                 }
                 else
                 {
@@ -360,7 +360,7 @@ namespace Simian
                     linkSet[i].Prim.ParentID = 0;
                 }
 
-                scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
+                scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, linkSet[i].Prim.Flags,
                     UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.ParentID);
             }
         }
@@ -402,7 +402,7 @@ namespace Simian
                     linkSet[i].Prim.Rotation *= linkSet[0].Prim.Rotation;
                 }
 
-                scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, 0, linkSet[i].Prim.Flags,
+                scene.ObjectAddOrUpdate(this, linkSet[i], agent.ID, linkSet[i].Prim.Flags,
                     UpdateFlags.Position | UpdateFlags.Rotation | UpdateFlags.ParentID);
             }
         }
@@ -440,7 +440,7 @@ namespace Simian
                     data.ProfileHollow = Primitive.UnpackProfileHollow(block.ProfileHollow);
 
                     obj.Prim.PrimData = data;
-                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimData);
+                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.PrimData);
                 }
                 else
                 {
@@ -480,7 +480,7 @@ namespace Simian
                     flags &= ~PrimFlags.Physics;
 
                 obj.Prim.Flags = flags;
-                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.PrimFlags);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.PrimFlags);
             }
             else
             {
@@ -533,7 +533,7 @@ namespace Simian
                         }
                     }
 
-                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.ExtraData);
+                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.ExtraData);
                 }
             }
         }
@@ -549,7 +549,7 @@ namespace Simian
                 {
                     obj.Prim.MediaURL = Utils.BytesToString(image.ObjectData[i].MediaURL);
                     obj.Prim.Textures = new Primitive.TextureEntry(image.ObjectData[i].TextureEntry, 0, image.ObjectData[i].TextureEntry.Length);
-                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.MediaURL | UpdateFlags.Textures);
+                    scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.MediaURL | UpdateFlags.Textures);
                 }
             }
         }
@@ -626,7 +626,7 @@ namespace Simian
                     obj.Prim.Rotation = rotation;
                     if (scaled) obj.Prim.Scale = scale;
 
-                    scene.ObjectAddOrUpdate(this, obj, agent.ID, 0, PrimFlags.None, updateFlags);
+                    scene.ObjectAddOrUpdate(this, obj, agent.ID, PrimFlags.None, updateFlags);
                 }
                 else
                 {

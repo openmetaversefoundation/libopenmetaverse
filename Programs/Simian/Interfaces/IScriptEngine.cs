@@ -73,10 +73,56 @@ namespace Simian
         }
     }
 
+    public class ScriptInstance
+    {
+        public bool Running;
+        public bool ShuttingDown;
+        public string State;
+        public UUID AppDomain;
+        //public string PrimName;
+        //public string ScriptName;
+        public UUID ScriptItemID;
+        public UUID ScriptAssetID;
+        public UUID HostObjectID;
+        public int StartParam;
+
+        ISceneProvider scene;
+
+        public ScriptInstance()
+        {
+        }
+
+        public void Start()
+        {
+        }
+
+        public void Stop()
+        {
+        }
+
+        public void SetState(string state)
+        {
+        }
+
+        public void PostEvent(EventParams data)
+        {
+        }
+
+        public void ClearQueue()
+        {
+        }
+
+        public void RemoveState()
+        {
+        }
+    }
+
     #endregion Scripting Support Classes
 
     public interface IScriptEngine
     {
+        bool RezScript(UUID scriptID, UUID scriptSourceAssetID, SimulationObject hostObject, int startParam);
+
         bool PostScriptEvent(UUID scriptID, EventParams parms);
         bool PostObjectEvent(UUID hostObjectID, EventParams parms);
 
@@ -84,8 +130,8 @@ namespace Simian
 
         DetectParams GetDetectParams(UUID scriptID, int detectIndex);
 
-        bool GetScriptState(UUID scriptID);
-        void SetScriptState(UUID scriptID, bool state);
+        bool IsScriptEnabled(UUID scriptID);
+        void SetScriptEnabled(UUID scriptID, bool enabled);
 
         void SetStartParameter(UUID scriptID, int startParam);
         int GetStartParameter(UUID scriptID);

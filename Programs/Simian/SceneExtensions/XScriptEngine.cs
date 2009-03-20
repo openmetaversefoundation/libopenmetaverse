@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using ExtensionLoader;
 using OpenMetaverse;
 
@@ -24,6 +25,32 @@ namespace Simian
         {
         }
 
+        public bool RezScript(UUID scriptID, UUID scriptSourceAssetID, SimulationObject hostObject, int scriptStartParam)
+        {
+            Asset sourceAsset;
+            Asset binaryAsset;
+
+            // Try to fetch the script source code asset
+            if (scene.Server.Assets.TryGetAsset(scriptSourceAssetID, out sourceAsset) && sourceAsset is AssetScriptText)
+            {
+                // The script binary assetID is the MD5 hash of the source to avoid lots of duplicate compiles
+                UUID scriptBinaryAssetID = new UUID(Utils.MD5(sourceAsset.AssetData), 0);
+
+                // Check if a compiled assembly already exists for this script
+                if (scene.Server.Assets.TryGetAsset(scriptBinaryAssetID, out binaryAsset))
+                {
+                    Logger.Log("Using existing compile for scriptID " + scriptID, Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    ScriptCompiler compiler = new ScriptCompiler();
+                    string csText = compiler.Convert(Encoding.UTF8.GetString(sourceAsset.AssetData));
+                }
+            }
+
+            return false;
+        }
+
         public bool PostScriptEvent(UUID scriptID, EventParams parms)
         {
             return false;
@@ -44,12 +71,12 @@ namespace Simian
             return parms;
         }
 
-        public bool GetScriptState(UUID scriptID)
+        public bool IsScriptEnabled(UUID scriptID)
         {
             return false;
         }
 
-        public void SetScriptState(UUID scriptID, bool state)
+        public void SetScriptEnabled(UUID scriptID, bool enabled)
         {
         }
 

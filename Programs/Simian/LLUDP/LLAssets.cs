@@ -266,6 +266,87 @@ namespace Simian
 
         #region Transfer System
 
+        void TransferDownload(UUID agentID, UUID transferID, UUID assetID, AssetType type, Asset asset)
+        {
+            if (type == asset.AssetType)
+            {
+                Logger.DebugLog(String.Format("Transferring asset {0} ({1})", asset.AssetID, asset.AssetType));
+
+                TransferInfoPacket response = new TransferInfoPacket();
+                response.TransferInfo = new TransferInfoPacket.TransferInfoBlock();
+                response.TransferInfo.TransferID = transferID;
+
+                // Set the response channel type
+                response.TransferInfo.ChannelType = (int)ChannelType.Asset;
+
+                // Params
+                response.TransferInfo.Params = new byte[20];
+                assetID.ToBytes(response.TransferInfo.Params, 0);
+                Utils.IntToBytes((int)type, response.TransferInfo.Params, 16);
+
+                response.TransferInfo.Size = asset.AssetData.Length;
+                response.TransferInfo.Status = (int)StatusCode.OK;
+                response.TransferInfo.TargetType = (int)TargetType.Unknown; // Doesn't seem to be used by the client
+
+                scene.UDP.SendPacket(agentID, response, PacketCategory.Asset);
+
+                // Transfer system does not wait for ACKs, just sends all of the
+                // packets for this transfer out
+                const int MAX_CHUNK_SIZE = Settings.MAX_PACKET_SIZE - 100;
+                int processedLength = 0;
+                int packetNum = 0;
+                while (processedLength < asset.AssetData.Length)
+                {
+                    TransferPacketPacket transfer = new TransferPacketPacket();
+                    transfer.TransferData.ChannelType = (int)ChannelType.Asset;
+                    transfer.TransferData.TransferID = transferID;
+                    transfer.TransferData.Packet = packetNum++;
+
+                    int chunkSize = Math.Min(asset.AssetData.Length - processedLength, MAX_CHUNK_SIZE);
+                    transfer.TransferData.Data = new byte[chunkSize];
+                    Buffer.BlockCopy(asset.AssetData, processedLength, transfer.TransferData.Data, 0, chunkSize);
+                    processedLength += chunkSize;
+
+                    if (processedLength >= asset.AssetData.Length)
+                        transfer.TransferData.Status = (int)StatusCode.Done;
+                    else
+                        transfer.TransferData.Status = (int)StatusCode.OK;
+
+                    scene.UDP.SendPacket(agentID, transfer, PacketCategory.Asset);
+                }
+            }
+            else
+            {
+                Logger.Log(String.Format("Request for asset {0} with type {1} does not match actual asset type {2}",
+                    assetID, type, asset.AssetType), Helpers.LogLevel.Warning);
+
+                TransferNotFound(agentID, transferID, assetID, type);
+            }
+        }
+
+        void TransferNotFound(UUID agentID, UUID transferID, UUID assetID, AssetType type)
+        {
+            Logger.Log("TransferNotFound for asset " + assetID + " with type " + type, Helpers.LogLevel.Info);
+
+            TransferInfoPacket response = new TransferInfoPacket();
+            response.TransferInfo = new TransferInfoPacket.TransferInfoBlock();
+            response.TransferInfo.TransferID = transferID;
+
+            // Set the response channel type
+            response.TransferInfo.ChannelType = (int)ChannelType.Asset;
+
+            // Params
+            response.TransferInfo.Params = new byte[20];
+            assetID.ToBytes(response.TransferInfo.Params, 0);
+            Utils.IntToBytes((int)type, response.TransferInfo.Params, 16);
+
+            response.TransferInfo.Size = 0;
+            response.TransferInfo.Status = (int)StatusCode.UnknownSource;
+            response.TransferInfo.TargetType = (int)TargetType.Unknown;
+
+            scene.UDP.SendPacket(agentID, response, PacketCategory.Asset);
+        }
+
         void TransferRequestHandler(Packet packet, Agent agent)
         {
             TransferRequestPacket request = (TransferRequestPacket)packet;
@@ -275,92 +356,18 @@ namespace Simian
 
             if (channel == ChannelType.Asset)
             {
-                // Construct the response packet
-                TransferInfoPacket response = new TransferInfoPacket();
-                response.TransferInfo = new TransferInfoPacket.TransferInfoBlock();
-                response.TransferInfo.TransferID = request.TransferInfo.TransferID;
-
                 if (source == SourceType.Asset)
                 {
                     // Parse the request
                     UUID assetID = new UUID(request.TransferInfo.Params, 0);
                     AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 16);
 
-                    // Set the response channel type
-                    response.TransferInfo.ChannelType = (int)ChannelType.Asset;
-
-                    // Params
-                    response.TransferInfo.Params = new byte[20];
-                    Buffer.BlockCopy(assetID.GetBytes(), 0, response.TransferInfo.Params, 0, 16);
-                    Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, response.TransferInfo.Params, 16, 4);
-
                     // Check if we have this asset
                     Asset asset;
                     if (scene.Server.Assets.TryGetAsset(assetID, out asset))
-                    {
-                        if (asset.AssetType == type)
-                        {
-                            Logger.DebugLog(String.Format("Transferring asset {0} ({1})", asset.AssetID, asset.AssetType));
-
-                            // Asset found
-                            response.TransferInfo.Size = asset.AssetData.Length;
-                            response.TransferInfo.Status = (int)StatusCode.OK;
-                            response.TransferInfo.TargetType = (int)TargetType.Unknown; // Doesn't seem to be used by the client
-
-                            scene.UDP.SendPacket(agent.ID, response, PacketCategory.Asset);
-
-                            // Transfer system does not wait for ACKs, just sends all of the
-                            // packets for this transfer out
-                            const int MAX_CHUNK_SIZE = Settings.MAX_PACKET_SIZE - 100;
-                            int processedLength = 0;
-                            int packetNum = 0;
-                            while (processedLength < asset.AssetData.Length)
-                            {
-                                TransferPacketPacket transfer = new TransferPacketPacket();
-                                transfer.TransferData.ChannelType = (int)ChannelType.Asset;
-                                transfer.TransferData.TransferID = request.TransferInfo.TransferID;
-                                transfer.TransferData.Packet = packetNum++;
-
-                                int chunkSize = Math.Min(asset.AssetData.Length - processedLength, MAX_CHUNK_SIZE);
-                                transfer.TransferData.Data = new byte[chunkSize];
-                                Buffer.BlockCopy(asset.AssetData, processedLength, transfer.TransferData.Data, 0, chunkSize);
-                                processedLength += chunkSize;
-
-                                if (processedLength >= asset.AssetData.Length)
-                                    transfer.TransferData.Status = (int)StatusCode.Done;
-                                else
-                                    transfer.TransferData.Status = (int)StatusCode.OK;
-
-                                scene.UDP.SendPacket(agent.ID, transfer, PacketCategory.Asset);
-                            }
-                        }
-                        else
-                        {
-                            Logger.Log(String.Format(
-                                "Request for asset {0} with type {1} does not match actual asset type {2}",
-                                assetID, type, asset.AssetType), Helpers.LogLevel.Warning);
-                        }
-                    }
+                        TransferDownload(agent.ID, request.TransferInfo.TransferID, assetID, type, asset);
                     else
-                    {
-                        Logger.Log(String.Format("Request for missing asset {0} with type {1}",
-                            assetID, type), Helpers.LogLevel.Warning);
-
-                        // Asset not found
-                        response.TransferInfo.Size = 0;
-                        response.TransferInfo.Status = (int)StatusCode.UnknownSource;
-                        response.TransferInfo.TargetType = (int)TargetType.Unknown;
-
-                        scene.UDP.SendPacket(agent.ID, response, PacketCategory.Asset);
-                    }
-                }
-                else if (source == SourceType.SimEstate)
-                {
-                    UUID agentID = new UUID(request.TransferInfo.Params, 0);
-                    UUID sessionID = new UUID(request.TransferInfo.Params, 16);
-                    EstateAssetType type = (EstateAssetType)Utils.BytesToInt(request.TransferInfo.Params, 32);
-
-                    Logger.Log("Please implement estate asset transfers", Helpers.LogLevel.Warning);
+                        TransferNotFound(agent.ID, request.TransferInfo.TransferID, assetID, type);
                 }
                 else if (source == SourceType.SimInventoryItem)
                 {
@@ -372,16 +379,23 @@ namespace Simian
                     UUID assetID = new UUID(request.TransferInfo.Params, 80);
                     AssetType type = (AssetType)(sbyte)Utils.BytesToInt(request.TransferInfo.Params, 96);
 
-                    if (taskID != UUID.Zero)
-                    {
-                        // Task (prim) inventory request
-                        Logger.Log("Please implement task inventory transfers", Helpers.LogLevel.Warning);
-                    }
+                    //if (taskID != UUID.Zero) // Task (prim) inventory request
+                    //else // Agent inventory request
+
+                    // Check if we have this asset
+                    Asset asset;
+                    if (scene.Server.Assets.TryGetAsset(assetID, out asset))
+                        TransferDownload(agent.ID, request.TransferInfo.TransferID, assetID, type, asset);
                     else
-                    {
-                        // Agent inventory request
-                        Logger.Log("Please implement agent inventory transfer", Helpers.LogLevel.Warning);
-                    }
+                        TransferNotFound(agent.ID, request.TransferInfo.TransferID, assetID, type);
+                }
+                else if (source == SourceType.SimEstate)
+                {
+                    UUID agentID = new UUID(request.TransferInfo.Params, 0);
+                    UUID sessionID = new UUID(request.TransferInfo.Params, 16);
+                    EstateAssetType type = (EstateAssetType)Utils.BytesToInt(request.TransferInfo.Params, 32);
+
+                    Logger.Log("Please implement estate asset transfers", Helpers.LogLevel.Warning);
                 }
                 else
                 {

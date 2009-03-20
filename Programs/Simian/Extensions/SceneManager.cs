@@ -247,11 +247,11 @@ namespace Simian
 
         #region Object Interfaces
 
-        public void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, int scriptStartParam, PrimFlags creatorFlags, UpdateFlags updateFlags)
+        public void ObjectAddOrUpdate(object sender, SimulationObject obj, UUID ownerID, PrimFlags creatorFlags, UpdateFlags updateFlags)
         {
             if (OnObjectAddOrUpdate != null)
             {
-                OnObjectAddOrUpdate(sender, obj, ownerID, scriptStartParam, creatorFlags, updateFlags);
+                OnObjectAddOrUpdate(sender, obj, ownerID, creatorFlags, updateFlags);
             }
 
             #region Initialize new objects
@@ -493,7 +493,7 @@ namespace Simian
                 obj.Prim = prim;
 
                 // Inform clients
-                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.FullUpdate);
             }
             else
             {
@@ -518,7 +518,7 @@ namespace Simian
                 obj.Prim = prim;
 
                 // Inform clients
-                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+                ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.FullUpdate);
             }
             else
             {
@@ -1223,7 +1223,7 @@ namespace Simian
         void CompleteAgentMovementHandler(Packet packet, Agent agent)
         {
             // Add this avatar as an object in the scene
-            ObjectAddOrUpdate(this, agent.Avatar, agent.Avatar.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.FullUpdate);
+            ObjectAddOrUpdate(this, agent.Avatar, agent.Avatar.Prim.OwnerID, PrimFlags.None, UpdateFlags.FullUpdate);
 
             // Send a response back to the client
             AgentMovementCompletePacket complete = new AgentMovementCompletePacket();

@@ -294,6 +294,40 @@ namespace Simian
             }
         }
 
+        public static ObjectPropertiesPacket.ObjectDataBlock BuildPropertiesBlock(Primitive prim)
+        {
+            ObjectPropertiesPacket.ObjectDataBlock block = new ObjectPropertiesPacket.ObjectDataBlock();
+            block.AggregatePerms = prim.Properties.AggregatePerms;
+            block.AggregatePermTextures = prim.Properties.AggregatePermTextures;
+            block.AggregatePermTexturesOwner = prim.Properties.AggregatePermTexturesOwner;
+            block.BaseMask = (uint)prim.Properties.Permissions.BaseMask;
+            block.Category = (uint)prim.Properties.Category;
+            block.CreationDate = Utils.DateTimeToUnixTime(prim.Properties.CreationDate);
+            block.CreatorID = prim.Properties.CreatorID;
+            block.Description = Utils.StringToBytes(prim.Properties.Description);
+            block.EveryoneMask = (uint)prim.Properties.Permissions.EveryoneMask;
+            block.FolderID = prim.Properties.FolderID;
+            block.FromTaskID = prim.Properties.FromTaskID;
+            block.GroupID = prim.Properties.GroupID;
+            block.GroupMask = (uint)prim.Properties.Permissions.GroupMask;
+            block.InventorySerial = prim.Properties.InventorySerial;
+            block.ItemID = prim.Properties.ItemID;
+            block.LastOwnerID = prim.Properties.LastOwnerID;
+            block.Name = Utils.StringToBytes(prim.Properties.Name);
+            block.NextOwnerMask = (uint)prim.Properties.Permissions.NextOwnerMask;
+            block.ObjectID = prim.ID;
+            block.OwnerID = prim.Properties.OwnerID;
+            block.OwnerMask = (uint)prim.Properties.Permissions.OwnerMask;
+            block.OwnershipCost = prim.Properties.OwnershipCost;
+            block.SalePrice = prim.Properties.SalePrice;
+            block.SaleType = (byte)prim.Properties.SaleType;
+            block.SitName = Utils.StringToBytes(prim.Properties.SitName);
+            block.TextureID = prim.Properties.GetTextureIDBytes();
+            block.TouchName = Utils.StringToBytes(prim.Properties.TouchName);
+
+            return block;
+        }
+
         public static ObjectUpdatePacket.ObjectDataBlock BuildUpdateBlock(Primitive prim, PrimFlags flags, uint crc)
         {
             byte[] objectData = new byte[60];

@@ -79,7 +79,7 @@ namespace Simian
                         obj.Prim.Scale.Z * 0.5f,
                         agent.Avatar.Prim.Scale.Z * 0.33f);
 
-                    scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, 0, PrimFlags.None,
+                    scene.ObjectAddOrUpdate(this, avObj, avObj.Prim.OwnerID, PrimFlags.None,
                         UpdateFlags.PrimFlags | UpdateFlags.ParentID | UpdateFlags.Position);
                     scene.Avatars.SetDefaultAnimation(agent, Animations.SIT);
                     scene.Avatars.SendAnimations(agent);
@@ -126,7 +126,7 @@ namespace Simian
                     agent.Avatar.Prim.Flags |= PrimFlags.Physics;
                 }
 
-                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, 0, PrimFlags.None, UpdateFlags.Position | UpdateFlags.Rotation);
+                scene.ObjectAddOrUpdate(this, obj, obj.Prim.OwnerID, PrimFlags.None, UpdateFlags.Position | UpdateFlags.Rotation);
             }
         }
 
