@@ -301,7 +301,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Add to the current outfit with the list supplied
         /// </summary>
-        /// <param name="ibs">List of wearables that will be added to the outfit</param>
+        /// <param name="ibs_new">List of wearables that will be added to the outfit</param>
         /// <param name="bake">Whether to bake textures for the avatar or not</param>
         public void AddToOutfit(List<InventoryBase> ibs_new, bool bake)
         {

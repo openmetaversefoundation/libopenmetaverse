@@ -262,7 +262,7 @@ namespace OpenMetaverse
             }
         }
 
-        // <summary>
+        /// <summary>
         /// Writes the raw bytes for this color to a byte array
         /// </summary>
         /// <param name="dest">Destination byte array</param>
