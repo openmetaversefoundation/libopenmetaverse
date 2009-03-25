@@ -368,6 +368,12 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="upload"></param>
         public delegate void UploadProgressCallback(AssetUpload upload);
+        /// <summary>
+        /// Callback fired when an InitiateDownload packet is received
+        /// </summary>
+        /// <param name="simFilename">The filename on the simulator</param>
+        /// <param name="viewerFilename">The name of the file the viewer requested</param>
+        public delegate void InitiateDownloadCallback(string simFilename, string viewerFilename);
 
         #endregion Delegates
 
@@ -385,7 +391,8 @@ namespace OpenMetaverse
         public event AssetUploadedCallback OnAssetUploaded;
         /// <summary></summary>
         public event UploadProgressCallback OnUploadProgress;
-
+        /// <summary>Fired when the simulator sends an InitiateDownloadPacket, used to download terrain .raw files</summary>
+        public event InitiateDownloadCallback OnInitiateDownload;
         #endregion Events
 
         /// <summary>Texture download cache</summary>
@@ -423,6 +430,9 @@ namespace OpenMetaverse
 
             // Xfer packet for downloading misc assets
             Client.Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
+
+            // Simulator is responding to a request to download a file
+            Client.Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
 
             // HACK: Re-request stale pending image downloads
             RefreshDownloadsTimer.Elapsed += new System.Timers.ElapsedEventHandler(RefreshDownloadsTimer_Elapsed);
@@ -1170,6 +1180,25 @@ namespace OpenMetaverse
         #endregion Transfer Callbacks
 
         #region Xfer Callbacks
+
+        /// <summary>
+        /// Packet Handler for InitiateDownloadPacket, sent in response to EstateOwnerMessage 
+        /// requesting download of simulators RAW terrain file.
+        /// </summary>
+        /// <param name="packet">The InitiateDownloadPacket packet</param>
+        /// <param name="simulator">The simulator originating the packet</param>
+        /// <remarks>Only the Estate Owner will receive this when he/she makes the request</remarks>
+        private void InitiateDownloadPacketHandler(Packet packet, Simulator simulator)
+        {
+            if (OnInitiateDownload != null)
+            {
+                InitiateDownloadPacket request = (InitiateDownloadPacket)packet;
+                try { OnInitiateDownload(Utils.BytesToString(request.FileData.SimFilename), 
+                    Utils.BytesToString(request.FileData.ViewerFilename)); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+            
+        }
 
         private void RequestXferHandler(Packet packet, Simulator simulator)
         {
