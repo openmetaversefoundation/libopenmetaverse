@@ -439,6 +439,38 @@ namespace mapgenerator
             writer.WriteLine("        public override PacketType Type { get { return PacketType." +
                 packet.Name + "; } }");
 
+            // Length member
+            writer.WriteLine("        public override int Length" + Environment.NewLine +
+                "        {" + Environment.NewLine + "            get" + Environment.NewLine +
+                "            {");
+            if (packet.Frequency == PacketFrequency.Low) { writer.WriteLine("                int length = 10;"); }
+            else if (packet.Frequency == PacketFrequency.Medium) { writer.WriteLine("                int length = 8;"); }
+            else { writer.WriteLine("                int length = 7;"); }
+            foreach (MapBlock block in packet.Blocks)
+            {
+                if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
+                else { sanitizedName = block.Name; }
+
+                if (block.Count == -1)
+                {
+                    // Variable count block
+                    writer.WriteLine("                for (int j = 0; j < " + sanitizedName + ".Length; j++)");
+                    writer.WriteLine("                    length += " + sanitizedName + "[j].Length;");
+                }
+                else if (block.Count == 1)
+                {
+                    writer.WriteLine("                length += " + sanitizedName + ".Length;");
+                }
+                else
+                {
+                    // Multiple count block
+                    writer.WriteLine("                for (int j = 0; j < " + block.Count + "; j++)");
+                    writer.WriteLine("                    length += " + sanitizedName + "[j].Length;");
+                }
+            }
+            writer.WriteLine("                return length;");
+            writer.WriteLine("            }" + Environment.NewLine + "        }");
+
             // Block members
             foreach (MapBlock block in packet.Blocks)
             {
@@ -791,6 +823,7 @@ namespace mapgenerator
                 "    public abstract partial class Packet" + Environment.NewLine + "    {" + Environment.NewLine +
                 "        public abstract Header Header { get; set; }" + Environment.NewLine +
                 "        public abstract PacketType Type { get; }" + Environment.NewLine +
+                "        public abstract int Length { get; }" + Environment.NewLine +
                 "        public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +
                 "        public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +
                 "        public abstract byte[] ToBytes();"
