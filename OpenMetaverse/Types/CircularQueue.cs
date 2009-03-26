@@ -53,15 +53,18 @@ namespace OpenMetaverse
         /// <param name="queue">Circular queue to copy</param>
         public CircularQueue(CircularQueue<T> queue)
         {
-            capacity = queue.capacity;
-            Items = new T[capacity];
-            syncRoot = new object();
+            lock (queue.syncRoot)
+            {
+                capacity = queue.capacity;
+                Items = new T[capacity];
+                syncRoot = new object();
 
-            for (int i = 0; i < capacity; i++)
-                Items[i] = queue.Items[i];
+                for (int i = 0; i < capacity; i++)
+                    Items[i] = queue.Items[i];
 
-            first = queue.first;
-            next = queue.next;
+                first = queue.first;
+                next = queue.next;
+            }
         }
 
         public void Clear()

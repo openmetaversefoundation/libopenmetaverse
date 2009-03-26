@@ -85,7 +85,7 @@ namespace OpenMetaverse.StructuredData
         public virtual string AsString() { return String.Empty; }
         public virtual UUID AsUUID() { return UUID.Zero; }
         public virtual DateTime AsDate() { return Utils.Epoch; }
-        public virtual Uri AsUri() { return new Uri(String.Empty); }
+        public virtual Uri AsUri() { return new Uri("http://null/"); }
         public virtual byte[] AsBinary() { return Utils.EmptyBytes; }
         public virtual Vector2 AsVector2() { return Vector2.Zero; }
         public virtual Vector3 AsVector3() { return Vector3.Zero; }
