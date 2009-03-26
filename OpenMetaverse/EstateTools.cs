@@ -574,6 +574,33 @@ namespace OpenMetaverse
             Client.Network.SendPacket(req);
         }
 
-	}
+        /// <summary>
+        /// Upload a terrain RAW file
+        /// </summary>
+        /// <param name="fileData">A byte array containing the encoded terrain data</param>
+        /// <param name="fileName">The name of the file being uploaded</param>
+        /// <returns>The Id of the transfer request</returns>
+        public UUID UploadTerrain(byte[] fileData, string fileName)
+        {
+            AssetUpload upload = new AssetUpload();
+            upload.AssetData = fileData;
+            upload.AssetType = AssetType.Unknown;
+            upload.Size = fileData.Length;
+            upload.ID = UUID.Random();
+
+            // Tell the library we have a pending file to upload
+            Client.Assets.SetPendingAssetUploadData(upload);
+
+            // Create and populate a list with commands specific to uploading a raw terrain file
+            List<String> paramList = new List<string>();
+            paramList.Add("upload filename");
+            paramList.Add(fileName);
+
+            // Tell the simulator we have a new raw file to upload
+            Client.Network.CurrentSim.Estate.EstateOwnerMessage("terrain", paramList);
+
+            return upload.ID;
+        }
+    }
 
 }

@@ -31,7 +31,7 @@ namespace OpenMetaverse.TestClient
         {
             Name = "downloadterrain";
             Description = "Download the RAW terrain file for this estate. Usage: downloadterrain [timeout]";
-            Category = CommandCategory.Movement;
+            Category = CommandCategory.Simulator;
         }
 
         /// <summary>
