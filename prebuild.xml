@@ -164,6 +164,8 @@
           <Exclude name="ExpiringCache.cs"/>
           <Exclude name="CircularQueue.cs"/>
           <Exclude name="CRC32.cs"/>
+          <Exclude name="CircularHashedQueue.cs"/>
+          <Exclude name="TokenBucket.cs"/>
         </Match>
       </Files>
     </Project>
