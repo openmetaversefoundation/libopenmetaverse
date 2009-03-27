@@ -27,25 +27,26 @@ bin\Prebuild.exe /target vs2008
 echo @echo off > compile.bat
 if(.%1)==(.) echo C:\WINDOWS\Microsoft.NET\Framework\v3.5\msbuild OpenMetaverse.sln >> compile.bat
 
-if(.%1)==(.msbuild) echo "echo ==== COMPILE BEGIN ====" >> compile.bat
+if(.%1)==(.msbuild) echo echo ==== COMPILE BEGIN ==== >> compile.bat
 if(.%1)==(.msbuild) echo C:\WINDOWS\Microsoft.NET\Framework\v3.5\msbuild /p:Configuration=Release OpenMetaverse.sln >> compile.bat
 if(.%1)==(.msbuild) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 if(.%1)==(.nant) echo nant >> compile.bat
 if(.%1)==(.nant) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
-if(.%3)==(.docs) echo "echo ==== GENERATE DOCUMENTATION BEGIN ====" >> compile.bat
+if(.%3)==(.docs) echo echo ==== GENERATE DOCUMENTATION BEGIN ==== >> compile.bat
 if(.%2)==(.docs) echo SandCastleBuilderConsole.exe docs\OpenMetaverse-docs.shfb >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 if(.%2)==(.docs) echo 7za.exe a -tzip docs\documentation.zip docs\trunk >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
-if(.%3)==(.runtests) echo "echo ==== UNIT TESTS BEGIN ====" >> compile.bat
-if(.%2)==(.runtests) echo "nunit-console.exe" /nologo /nodots /labels /exclude:NetworkTests bin\OpenMetaverse.Tests.dll >> compile.bat
+if(.%2)==(.runtests) echo echo ==== UNIT TESTS BEGIN ==== >> compile.bat
+if(.%2)==(.runtests) echo nunit-console bin\OpenMetaverse.Tests.dll /exclude:NetworkTest,DetectObjects,CapsQueue /nodots /labels >> compile.bat
+
 if(.%2)==(.runtests) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 :: nsis compiler needs to be in path
-if(.%3)==(.dist) echo "echo ==== GENERATE DISTRIBUTION BEGIN ====" >> compile.bat
+if(.%3)==(.dist) echo echo ==== GENERATE DISTRIBUTION BEGIN ==== >> compile.bat
 if(.%3)==(.dist) echo makensis.exe /DPlatform=test docs\OpenMetaverse-installer.nsi >> compile.bat
 if(.%3)==(.dist) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 if(.%3)==(.dist) echo 7za.exe a -tzip dist\openmetaverse-dist.zip @docs\distfiles.lst >> compile.bat
@@ -62,8 +63,4 @@ echo exit /B 1 >> compile.bat
 if(.%1)==(.msbuild) compile.bat
 if(.%1)==(.nant) compile.bat
 if(.%1)==(.dist) compile.bat
-
-
-
-
 

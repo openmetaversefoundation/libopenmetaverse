@@ -860,6 +860,7 @@ namespace OpenMetaverse
         /// Request an asset be uploaded to the simulator
         /// </summary>
         /// <param name="assetID"></param>
+        /// <param name="type">Asset type to upload this data as</param>
         /// <param name="data">A byte array containing the encoded asset data</param>
         /// <param name="storeLocal">If True, the asset once uploaded will be stored on the simulator
         /// in which the client was connected in addition to being stored on the asset server</param>
