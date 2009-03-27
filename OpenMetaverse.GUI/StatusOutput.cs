@@ -30,6 +30,9 @@ using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
 {
+    /// <summary>
+    /// RichTextBox GUI component for displaying a client's status output
+    /// </summary>
     public class StatusOutput : RichTextBox
     {
         private GridClient _Client;
@@ -57,6 +60,8 @@ namespace OpenMetaverse.GUI
             }
             else
             {
+                if (!this.IsHandleCreated) return;
+
                 this.SelectionStart = this.Text.Length;
                 this.SelectionColor = color;
                 DateTime now = DateTime.Now;

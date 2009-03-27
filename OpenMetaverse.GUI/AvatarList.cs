@@ -28,20 +28,46 @@ using OpenMetaverse;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
 {
+
+    /// <summary>
+    /// Contains any available information for an avatar in the simulator.
+    /// A null value for .Avatar indicates coarse data for an avatar outside of visible range.
+    /// </summary>
+    public class TrackedAvatar
+    {
+        /// <summary>Assigned if the avatar is within visible range</summary>
+        public Avatar Avatar = null;
+
+        /// <summary>Last known coarse location of avatar</summary>
+        public Vector3 CoarseLocation;
+
+        /// <summary>Avatar ID</summary>
+        public UUID ID;
+
+        /// <summary>ListViewItem associated with this avatar</summary>
+        public ListViewItem ListViewItem;
+
+        /// <summary>Populated by RequestAvatarName if avatar is not visible</summary>
+        public string Name = "(Loading...)";
+    }
+
     /// <summary>
     /// ListView GUI component for viewing a client's nearby avatars list
     /// </summary>
     public class AvatarList : ListView
     {
         private GridClient _Client;
-        private List<uint> _Avatars = new List<uint>();
         private ColumnSorter _ColumnSorter = new ColumnSorter();
 
-        public delegate void AvatarDoubleClickCallback(Avatar avatar);
+        private DoubleDictionary<uint, UUID, TrackedAvatar> _TrackedAvatars = new DoubleDictionary<uint, UUID, TrackedAvatar>();
+        private Dictionary<UUID, TrackedAvatar> _UntrackedAvatars = new Dictionary<UUID, TrackedAvatar>();
+
+        public delegate void AvatarDoubleClickCallback(TrackedAvatar trackedAvatar);
 
         /// <summary>
         /// Triggered when the user double clicks on an avatar in the list
@@ -68,7 +94,9 @@ namespace OpenMetaverse.GUI
             ColumnHeader header2 = this.Columns.Add(" ");
             header2.Width = 40;
 
-            _ColumnSorter.SortColumn = 0;
+            _ColumnSorter.SortColumn = 1;
+            this.Sorting = SortOrder.Ascending;
+            this.ListViewItemSorter = _ColumnSorter;
 
             this.DoubleBuffered = true;
             this.ListViewItemSorter = _ColumnSorter;
@@ -89,19 +117,69 @@ namespace OpenMetaverse.GUI
         /// <summary>
         /// Thread-safe method for clearing the TreeView control
         /// </summary>
-        public void ClearNodes()
+        public void ClearItems()
         {
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { ClearNodes(); });
-            else this.Items.Clear();
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { ClearItems(); });
+            else
+            {
+                if (this.Handle != IntPtr.Zero)
+                    this.Items.Clear();
+            }
         }
 
         private void InitializeClient(GridClient client)
         {
             _Client = client;
+            _Client.Avatars.OnAvatarAppearance += new AvatarManager.AvatarAppearanceCallback(Avatars_OnAvatarAppearance);
+            _Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
+            _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             _Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
+        }
+
+        private void AddAvatar(uint localID, UUID avatarID, Vector3 coarsePosition, Avatar avatar)
+        {
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { AddAvatar(localID, avatarID, coarsePosition, avatar); });
+            else
+            {
+                if (!this.IsHandleCreated) return;
+
+                TrackedAvatar trackedAvatar = new TrackedAvatar();
+                trackedAvatar.CoarseLocation = coarsePosition;
+                trackedAvatar.ID = avatarID;
+                trackedAvatar.ListViewItem = this.Items.Add(avatarID.ToString(), trackedAvatar.Name, null);
+
+                string strDist = avatarID == _Client.Self.AgentID ? "--" : (int)Vector3.Distance(_Client.Self.SimPosition, coarsePosition) + "m";
+                trackedAvatar.ListViewItem.SubItems.Add(strDist);
+
+                if (avatar != null)
+                {
+                    trackedAvatar.Name = avatar.Name;
+                    trackedAvatar.ListViewItem.Text = avatar.Name;
+
+                    lock (_TrackedAvatars)
+                        _TrackedAvatars.Add(localID, avatarID, trackedAvatar);
+                }
+                else
+                {
+                    lock (_UntrackedAvatars)
+                    {
+                        _UntrackedAvatars.Add(avatarID, trackedAvatar);
+
+                        trackedAvatar.ListViewItem.ForeColor = Color.FromKnownColor(KnownColor.GrayText);
+
+                        if (avatarID == _Client.Self.AgentID)
+                        {
+                            trackedAvatar.Name = _Client.Self.Name;
+                            trackedAvatar.ListViewItem.Text = _Client.Self.Name;
+                        }
+
+                        else Client.Avatars.RequestAvatarName(avatarID);
+                    }
+                }
+            }
         }
 
         private void RemoveAvatar(uint localID)
@@ -109,14 +187,15 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(localID); });
             else
             {
-                lock (_Avatars)
+                if (!this.IsHandleCreated) return;
+
+                lock (_TrackedAvatars)
                 {
-                    if (_Avatars.Contains(localID))
+                    TrackedAvatar trackedAvatar;
+                    if (_TrackedAvatars.TryGetValue(localID, out trackedAvatar))
                     {
-                        _Avatars.Remove(localID);
-                        string key = localID.ToString();
-                        int index = this.Items.IndexOfKey(key);
-                        if (index > -1) this.Items.RemoveAt(index);
+                        this.Items.Remove(trackedAvatar.ListViewItem);
+                        _TrackedAvatars.Remove(localID);
                     }
                 }
             }
@@ -127,37 +206,72 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateAvatar(avatar); });
             else
             {
-                lock (_Avatars)
-                {
-                    ListViewItem item;
-                    if (_Avatars.Contains(avatar.LocalID))
-                    {
-                        item = this.Items[avatar.LocalID.ToString()];
-                        item.SubItems[1].Text = (int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m";
-                        item.Tag = avatar;
-                    }
+                if (!this.IsHandleCreated) return;
 
+                lock (_TrackedAvatars)
+                {
+                    TrackedAvatar trackedAvatar;
+
+                    lock (_UntrackedAvatars)
+                    {
+                        if (_UntrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar))
+                        {
+                            trackedAvatar.Name = avatar.Name;
+                            trackedAvatar.ListViewItem.Text = avatar.Name;
+                            trackedAvatar.ListViewItem.ForeColor = Color.FromKnownColor(KnownColor.ControlText);
+
+                            _TrackedAvatars.Add(avatar.LocalID, avatar.ID, trackedAvatar);
+                            _UntrackedAvatars.Remove(avatar.ID);
+                        }
+                    }
+                    
+                    if (_TrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar))
+                    {
+                        trackedAvatar.Avatar = avatar;
+                        trackedAvatar.Name = avatar.Name;
+                        trackedAvatar.ID = avatar.ID;
+
+                        string strDist = avatar.ID == _Client.Self.AgentID ? "--" : (int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m";
+                        trackedAvatar.ListViewItem.SubItems[1].Text = strDist;
+                    }
                     else
                     {
-                        bool replace = false;
-                        for (int i = 0; i < this.Items.Count; i++)
+                        AddAvatar(avatar.LocalID, avatar.ID, Vector3.Zero, avatar);
+                    }               
+                }
+
+                this.Sort();
+            }
+        }
+
+        private void UpdateCoarseInfo(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
+        {
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateCoarseInfo(sim, newEntries, removedEntries); });
+            else
+            {
+                lock (_UntrackedAvatars)
+                {
+                    for (int i = 0; i < removedEntries.Count; i++)
+                    {
+                        TrackedAvatar trackedAvatar;
+                        if (_UntrackedAvatars.TryGetValue(removedEntries[i], out trackedAvatar))
                         {
-                            if (this.Items[i].Text == avatar.Name)
-                            {
-                                this.Items[i].Name = avatar.LocalID.ToString();
-                                this.Items[i].Tag = avatar;
-                                replace = true;
-                            }
+                            this.Items.Remove(trackedAvatar.ListViewItem);
+                            _UntrackedAvatars.Remove(trackedAvatar.ID);
                         }
-                        if (!replace)
+                    }
+                    for (int i = 0; i < newEntries.Count; i++)
+                    {
+                        int index = this.Items.IndexOfKey(newEntries[i].ToString());
+                        if (index == -1)
                         {
-                            _Avatars.Add(avatar.LocalID);
-                            string key = avatar.LocalID.ToString();
-                            item = this.Items.Add(key, avatar.Name, null);
-                            item.SubItems.Add((int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m");
-                            item.Tag = avatar;
+                            Vector3 coarsePos;
+                            if (!sim.AvatarPositions.TryGetValue(newEntries[i], out coarsePos))
+                                continue;
+
+                            AddAvatar(0, newEntries[i], coarsePos, null);
                         }
-                    }                    
+                    }
                 }
             }
         }
@@ -175,19 +289,77 @@ namespace OpenMetaverse.GUI
             if (OnAvatarDoubleClick != null)
             {
                 ListView list = (ListView)sender;
-                if (list.SelectedItems.Count > 0 && list.SelectedItems[0].Tag is Avatar)
+                if (list.SelectedItems.Count > 0)
                 {
-                    Avatar av = (Avatar)list.SelectedItems[0].Tag;
-                    try { OnAvatarDoubleClick(av); }
+                    TrackedAvatar trackedAvatar;
+                    if (!_TrackedAvatars.TryGetValue(new UUID(list.SelectedItems[0].Name), out trackedAvatar)
+                        && !_UntrackedAvatars.TryGetValue(new UUID(list.SelectedItems[0].Name), out trackedAvatar))
+                        return;
+
+                    try { OnAvatarDoubleClick(trackedAvatar); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
             }
         }
 
+        private void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
+        {
+            if (visualParams.Count > 105)
+            {
+                lock (_TrackedAvatars)
+                {
+                    TrackedAvatar trackedAvatar;
+                    if (_TrackedAvatars.TryGetValue(avatarID, out trackedAvatar))
+                    {
+                        
+                        this.BeginInvoke((MethodInvoker)delegate
+                        {
+                            byte param = visualParams[80];
+                            if (param > 117)
+                                trackedAvatar.ListViewItem.ForeColor = Color.Blue;
+                            else
+                                trackedAvatar.ListViewItem.ForeColor = Color.Magenta;
+                        });
+                        
+                    }
+                }
+            }
+        }
+
+        private void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
+        {
+            lock (_UntrackedAvatars)
+            {
+                foreach (KeyValuePair<UUID, string> name in names)
+                {
+                    TrackedAvatar trackedAvatar;
+                    if (_UntrackedAvatars.TryGetValue(name.Key, out trackedAvatar))
+                    {
+                        trackedAvatar.Name = name.Value;
+
+                        this.BeginInvoke((MethodInvoker)delegate
+                        {
+                            trackedAvatar.ListViewItem.Text = name.Value;
+                        });
+                    }
+                }
+            }
+        }
+
+        private void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
+        {
+            UpdateCoarseInfo(sim, newEntries, removedEntries);
+        }
+
         private void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
-            lock (_Avatars) _Avatars.Clear();
-            ClearNodes();
+            lock (_TrackedAvatars)
+                _TrackedAvatars.Clear();
+
+            lock (_UntrackedAvatars)
+                _UntrackedAvatars.Clear();
+
+            ClearItems();
         }
 
         private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
@@ -197,17 +369,17 @@ namespace OpenMetaverse.GUI
 
         private void Objects_OnObjectKilled(Simulator simulator, uint objectID)
         {
-            lock (_Avatars)
+            lock (_TrackedAvatars)
             {
-                if (_Avatars.Contains(objectID)) RemoveAvatar(objectID);
+                if (_TrackedAvatars.ContainsKey(objectID)) RemoveAvatar(objectID);
             }
         }
 
         private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
         {
-            lock (_Avatars)
+            lock (_TrackedAvatars)
             {
-                if (_Avatars.Contains(update.LocalID))
+                if (_TrackedAvatars.ContainsKey(update.LocalID))
                 {
                     Avatar av;
                     if (simulator.ObjectsAvatars.TryGetValue(update.LocalID, out av))
@@ -228,8 +400,8 @@ namespace OpenMetaverse.GUI
 
                 if (SortColumn == 1)
                 {
-                    int valueA = itemB.SubItems.Count > 1 ? int.Parse(itemA.SubItems[1].Text.Replace("m", "")) : 0;
-                    int valueB = itemB.SubItems.Count > 1 ? int.Parse(itemB.SubItems[1].Text.Replace("m", "")) : 0;
+                    int valueA = itemB.SubItems.Count > 1 ? int.Parse(itemA.SubItems[1].Text.Replace("m", "").Replace("--", "0")) : 0;
+                    int valueB = itemB.SubItems.Count > 1 ? int.Parse(itemB.SubItems[1].Text.Replace("m", "").Replace("--", "0")) : 0;
                     if (Ascending)
                     {
                         if (valueA == valueB) return 0;

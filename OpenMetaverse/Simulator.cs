@@ -363,11 +363,9 @@ namespace OpenMetaverse
         /// not</summary>
         public bool Connected { get { return connected; } }
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        public Dictionary<UUID, Vector3> AvatarPositions { get { return avatarPositions; } }
-        /// <summary>AvatarPositions index representing your avatar</summary>
-        public int PositionIndexYou { get { return positionIndexYou; } }
-        /// <summary>AvatarPositions index representing TrackAgent target</summary>
-        public int PositionIndexPrey { get { return positionIndexPrey; } }
+        public InternalDictionary<UUID, Vector3> AvatarPositions { get { return avatarPositions; } }
+        /// <summary>AvatarPositions key representing TrackAgent target</summary>
+        public UUID PreyID { get { return preyID; } }
 
         #endregion Properties
 
@@ -381,11 +379,9 @@ namespace OpenMetaverse
         /// to the property Connected</summary>
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        internal Dictionary<UUID, Vector3> avatarPositions = new Dictionary<UUID, Vector3>();
-        /// <summary>AvatarPositions index representing your avatar</summary>
-        internal int positionIndexYou = -1;
-        /// <summary>AvatarPositions index representing TrackAgent target</summary>
-        internal int positionIndexPrey = -1;
+        internal InternalDictionary<UUID, Vector3> avatarPositions = new InternalDictionary<UUID, Vector3>();
+        /// <summary>AvatarPositions key representing TrackAgent target</summary>
+        internal UUID preyID = UUID.Zero;
         /// <summary>Sequence numbers of packets we've received
         /// (for duplicate checking)</summary>
         internal Queue<uint> PacketArchive;
