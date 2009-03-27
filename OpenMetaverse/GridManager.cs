@@ -193,6 +193,8 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="sim"></param>
+        /// <param name="newEntries"></param>
+        /// <param name="removedEntries"></param>
         public delegate void CoarseLocationUpdateCallback(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries);
         /// <summary>
         /// 
@@ -252,7 +254,6 @@ namespace OpenMetaverse
         private float sunPhase;
         private Vector3 sunDirection;
         private Vector3 sunAngVelocity;
-        private DateTime worldTime;
 
         /// <summary>
         /// Constructor
