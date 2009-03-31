@@ -84,6 +84,8 @@ namespace OpenMetaverse.GUI
 
         public void LogChat(string name, ChatType type, string text, Color color)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired)
             {
                 this.BeginInvoke((MethodInvoker)delegate { LogChat(name, type, text, color); });

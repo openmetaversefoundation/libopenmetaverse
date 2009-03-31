@@ -118,11 +118,11 @@ namespace OpenMetaverse.GUI
 
         private void UpdateMiniMap(Simulator sim)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateMiniMap(sim); });
             else
             {
-                if (!this.IsHandleCreated) return;
-                
                 Bitmap bmp = _MapLayer == null ? new Bitmap(256, 256) : (Bitmap)_MapLayer.Clone();
                 Graphics g = Graphics.FromImage(bmp);
 

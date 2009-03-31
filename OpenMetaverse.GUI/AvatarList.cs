@@ -141,11 +141,11 @@ namespace OpenMetaverse.GUI
 
         private void AddAvatar(uint localID, UUID avatarID, Vector3 coarsePosition, Avatar avatar)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { AddAvatar(localID, avatarID, coarsePosition, avatar); });
             else
             {
-                if (!this.IsHandleCreated) return;
-
                 TrackedAvatar trackedAvatar = new TrackedAvatar();
                 trackedAvatar.CoarseLocation = coarsePosition;
                 trackedAvatar.ID = avatarID;
@@ -184,11 +184,11 @@ namespace OpenMetaverse.GUI
 
         private void RemoveAvatar(uint localID)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(localID); });
             else
             {
-                if (!this.IsHandleCreated) return;
-
                 lock (_TrackedAvatars)
                 {
                     TrackedAvatar trackedAvatar;
@@ -203,11 +203,11 @@ namespace OpenMetaverse.GUI
 
         private void UpdateAvatar(Avatar avatar)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateAvatar(avatar); });
             else
             {
-                if (!this.IsHandleCreated) return;
-
                 lock (_TrackedAvatars)
                 {
                     TrackedAvatar trackedAvatar;
@@ -304,7 +304,7 @@ namespace OpenMetaverse.GUI
 
         private void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
         {
-            if (visualParams.Count > 80)
+            if (visualParams.Count > 31)
             {
                 lock (_TrackedAvatars)
                 {
@@ -313,8 +313,8 @@ namespace OpenMetaverse.GUI
                     {                        
                         this.BeginInvoke((MethodInvoker)delegate
                         {
-                            byte param = visualParams[80];
-                            if (param > 93)
+                            byte param = visualParams[31];
+                            if (param > 0)
                                 trackedAvatar.ListViewItem.ForeColor = Color.Blue;
                             else
                                 trackedAvatar.ListViewItem.ForeColor = Color.Magenta;
