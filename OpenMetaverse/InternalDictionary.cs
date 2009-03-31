@@ -124,7 +124,10 @@ namespace OpenMetaverse
         /// </example>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return Dictionary.TryGetValue(key, out value);
+            lock (Dictionary)
+            {
+                return Dictionary.TryGetValue(key, out value);
+            }
         }
 
         /// <summary>
@@ -178,6 +181,33 @@ namespace OpenMetaverse
                 {
                     if (match(kvp.Value))
                         found.Add(kvp.Value);
+                }
+            }
+            return found;
+        }
+
+        /// <summary>Find All items in an <seealso cref="T:InternalDictionary"/></summary>
+        /// <param name="match">return matching keys.</param>
+        /// <returns>a <seealso cref="T:System.Collections.Generic.List"/> containing found keys.</returns>
+        /// <example>
+        /// Find All keys which also exist in another dictionary
+        /// <code>
+        /// List&lt;UUID&gt; matches = myDict.FindAll(
+        ///         delegate(UUID id) {
+        ///             return myOtherDict.ContainsKey(id);
+        ///         }
+        ///    ); 
+        ///</code>
+        ///</example>
+        public List<TKey> FindAll(Predicate<TKey> match)
+        {
+            List<TKey> found = new List<TKey>();
+            lock (Dictionary)
+            {
+                foreach (KeyValuePair<TKey, TValue> kvp in Dictionary)
+                {
+                    if (match(kvp.Key))
+                        found.Add(kvp.Key);
                 }
             }
             return found;

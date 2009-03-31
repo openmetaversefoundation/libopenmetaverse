@@ -25,16 +25,23 @@
  */
 
 using OpenMetaverse.Imaging;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
 {
+    /// <summary>
+    /// PictureBox GUI component for displaying a client's mini-map
+    /// </summary>
     public class MiniMap : PictureBox
     {
         private UUID _MapImageID;
         private GridClient _Client;
         private Image _MapLayer;
+        private Point _MousePosition;
+        ToolTip _ToolTip;
 
         /// <summary>
         /// Gets or sets the GridClient associated with this control
@@ -60,6 +67,26 @@ namespace OpenMetaverse.GUI
         public MiniMap(GridClient client) : this ()
         {
             InitializeClient(client);
+
+            _ToolTip = new ToolTip();
+            _ToolTip.Active = true;
+            _ToolTip.AutomaticDelay = 1;
+
+            this.MouseHover += new System.EventHandler(MiniMap_MouseHover);
+            this.MouseMove += new MouseEventHandler(MiniMap_MouseMove);
+        }
+
+        void MiniMap_MouseHover(object sender, System.EventArgs e)
+        {
+            _ToolTip.SetToolTip(this, "test");
+            _ToolTip.Show("test", this);
+            //TODO: tooltip popup with closest avatar's name, if within range
+        }
+
+        void MiniMap_MouseMove(object sender, MouseEventArgs e)
+        {
+            _ToolTip.Hide(this);
+            _MousePosition = e.Location;
         }
 
         private void InitializeClient(GridClient client)
@@ -94,61 +121,80 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateMiniMap(sim); });
             else
             {
+                if (!this.IsHandleCreated) return;
+                
                 Bitmap bmp = _MapLayer == null ? new Bitmap(256, 256) : (Bitmap)_MapLayer.Clone();
                 Graphics g = Graphics.FromImage(bmp);
 
                 if (_MapLayer == null)
                 {
                     g.Clear(this.BackColor);
-                    g.FillRectangle(Brushes.White, 0f, 0f, 256f, 256f);
+                    g.FillRectangle(Brushes.Navy, 0f, 0f, 256f, 256f);
                 }
 
-                if (!sim.AvatarPositions.ContainsKey(Client.Self.AgentID)) return;
+                Vector3 myCoarsePos;
+
+                if (!sim.AvatarPositions.TryGetValue(Client.Self.AgentID, out myCoarsePos)) return;
 
                 int i = 0;
 
-                Vector3 myPos = sim.AvatarPositions[_Client.Self.AgentID];
-
-                foreach (Vector3 pos in _Client.Network.CurrentSim.AvatarPositions.Values)
+                lock (_Client.Network.CurrentSim.AvatarPositions.Dictionary)
                 {
-                    int x = (int)pos.X;
-                    int y = 255 - (int)pos.Y;
-                    if (i == _Client.Network.CurrentSim.PositionIndexYou)
+                    foreach (KeyValuePair<UUID, Vector3> coarse in _Client.Network.CurrentSim.AvatarPositions.Dictionary)
                     {
-                        g.FillEllipse(Brushes.PaleGreen, x - 5, y - 5, 10, 10);
-                        g.DrawEllipse(Pens.Green, x - 5, y - 5, 10, 10);
-                    }
-                    else
-                    {
-                        if (myPos.Z - (pos.Z * 4) > 5)
+                        int x = (int)coarse.Value.X;
+                        int y = 255 - (int)coarse.Value.Y;
+                        if (coarse.Key == Client.Self.AgentID)
                         {
-                            Point[] points = new Point[3] { new Point(x - 6, y - 6), new Point(x + 6, y - 6), new Point(x, y + 6) };
-                            g.FillPolygon(Brushes.Red, points);
-                            g.DrawPolygon(Pens.DarkRed, points);
+                            g.FillEllipse(Brushes.Yellow, x - 5, y - 5, 10, 10);
+                            g.DrawEllipse(Pens.Khaki, x - 5, y - 5, 10, 10);
                         }
-
-                        else if (myPos.Z - (pos.Z * 4) < -5)
-                        {
-                            Point[] points = new Point[3] { new Point(x - 6, y + 6), new Point(x + 6, y + 6), new Point(x, y - 6) };
-                            g.FillPolygon(Brushes.Red, points);
-                            g.DrawPolygon(Pens.DarkRed, points);
-                        }
-
                         else
                         {
-                            g.FillEllipse(Brushes.Red, x - 5, y - 5, 10, 10);
-                            g.DrawEllipse(Pens.DarkRed, x - 5, y - 5, 10, 10);
+                            Pen penColor;
+                            Brush brushColor;
+
+                            if (Client.Network.CurrentSim.ObjectsAvatars.Find(delegate(Avatar av) { return av.ID == coarse.Key; }) != null)
+                            {
+                                brushColor = Brushes.PaleGreen;
+                                penColor = Pens.Green;
+                            }
+                            else
+                            {
+                                brushColor = Brushes.LightGray;
+                                penColor = Pens.Gray;
+                            }
+
+                            if (myCoarsePos.Z - coarse.Value.Z > 1)
+                            {
+                                Point[] points = new Point[3] { new Point(x - 6, y - 6), new Point(x + 6, y - 6), new Point(x, y + 6) };
+                                g.FillPolygon(brushColor, points);
+                                g.DrawPolygon(penColor, points);
+                            }
+
+                            else if (myCoarsePos.Z - coarse.Value.Z < -1)
+                            {
+                                Point[] points = new Point[3] { new Point(x - 6, y + 6), new Point(x + 6, y + 6), new Point(x, y - 6) };
+                                g.FillPolygon(brushColor, points);
+                                g.DrawPolygon(penColor, points);
+                            }
+
+                            else
+                            {
+                                g.FillEllipse(brushColor, x - 5, y - 5, 10, 10);
+                                g.DrawEllipse(penColor, x - 5, y - 5, 10, 10);
+                            }
                         }
-                    }
-                    i++;
-                };
+                        i++;
+                    };
+                }
 
                 g.DrawImage(bmp, 0, 0);
                 this.Image = bmp;
             }
         }
 
-        private void Grid_OnCoarseLocationUpdate(Simulator sim)
+        private void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
         {
             UpdateMiniMap(sim);
         }

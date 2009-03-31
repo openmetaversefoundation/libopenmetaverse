@@ -546,6 +546,24 @@ namespace OpenMetaverse
                 return face;
             }
 
+            public override int GetHashCode()
+            {
+                return
+                    RGBA.GetHashCode() ^
+                    RepeatU.GetHashCode() ^
+                    RepeatV.GetHashCode() ^
+                    OffsetU.GetHashCode() ^
+                    OffsetV.GetHashCode() ^
+                    Rotation.GetHashCode() ^
+                    Glow.GetHashCode() ^
+                    Bump.GetHashCode() ^
+                    Shiny.GetHashCode() ^
+                    Fullbright.GetHashCode() ^
+                    MediaFlags.GetHashCode() ^
+                    TexMapType.GetHashCode() ^
+                    TextureID.GetHashCode();
+            }
+
             /// <summary>
             /// 
             /// </summary>
@@ -1097,6 +1115,17 @@ namespace OpenMetaverse
                 #endregion Glow
 
                 return memStream.ToArray();
+            }
+
+            public override int GetHashCode()
+            {
+                int hashCode = DefaultTexture.GetHashCode();
+                for (int i = 0; i < FaceTextures.Length; i++)
+                {
+                    if (FaceTextures[i] != null)
+                        hashCode ^= FaceTextures[i].GetHashCode();
+                }
+                return hashCode;
             }
 
             /// <summary>

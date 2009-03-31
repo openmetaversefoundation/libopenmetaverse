@@ -193,7 +193,9 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="sim"></param>
-        public delegate void CoarseLocationUpdateCallback(Simulator sim);
+        /// <param name="newEntries"></param>
+        /// <param name="removedEntries"></param>
+        public delegate void CoarseLocationUpdateCallback(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries);
         /// <summary>
         /// 
         /// </summary>
@@ -240,6 +242,8 @@ namespace OpenMetaverse
         public Vector3 SunDirection { get { return sunDirection; } }
         /// <summary>Current angular velocity of the sun</summary>
         public Vector3 SunAngVelocity { get { return sunAngVelocity; } }
+        /// <summary>Current world time</summary>
+        public DateTime WorldTime { get { return WorldTime; } }
 
         /// <summary>A dictionary of all the regions, indexed by region name</summary>
         internal Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
@@ -608,38 +612,51 @@ namespace OpenMetaverse
             sunAngVelocity = time.TimeInfo.SunAngVelocity;
 
             // TODO: Does anyone have a use for the time stuff?
-        }
+      }
 
         private void CoarseLocationHandler(Packet packet, Simulator simulator)
         {
             CoarseLocationUpdatePacket coarse = (CoarseLocationUpdatePacket)packet;
 
+            // populate a dictionary from the packet, for local use
+            Dictionary<UUID, Vector3> coarseEntries = new Dictionary<UUID, Vector3>();
+            for (int i = 0; i < coarse.AgentData.Length; i++)
+            {
+                coarseEntries[coarse.AgentData[i].AgentID] = new Vector3((int)coarse.Location[i].X, (int)coarse.Location[i].Y, (int)coarse.Location[i].Z * 4);
+
+                // the friend we are tracking on radar
+                if (i == coarse.Index.Prey)
+                    simulator.preyID = coarse.AgentData[i].AgentID;
+            }
+
+            // find stale entries (people who left the sim)
+            List<UUID> removedEntries = simulator.avatarPositions.FindAll(delegate(UUID findID) { return !coarseEntries.ContainsKey(findID); });
+
+            // anyone who was not listed in the previous update
+            List<UUID> newEntries = new List<UUID>();
+
             lock (simulator.avatarPositions)
             {
-                simulator.avatarPositions.Clear();
+                // remove stale entries
+                foreach(UUID trackedID in removedEntries)
+                    simulator.avatarPositions.Dictionary.Remove(trackedID);
 
-                for (int i = 0; i < coarse.Location.Length; i++)
+                // add or update tracked info, and record who is new
+                foreach (KeyValuePair<UUID, Vector3> entry in coarseEntries)
                 {
-                    if (i == coarse.Index.You)
-                    {
-                        simulator.positionIndexYou = i;
-                    }
-                    else if (i == coarse.Index.Prey)
-                    {
-                        simulator.positionIndexPrey = i;
-                    }
-                    simulator.avatarPositions.Add(
-                        coarse.AgentData[i].AgentID, 
-                        new Vector3(coarse.Location[i].X, coarse.Location[i].Y,
-                        coarse.Location[i].Z * 4));
-                }
+                    if (!simulator.avatarPositions.Dictionary.ContainsKey(entry.Key))
+                        newEntries.Add(entry.Key);
 
-                if (OnCoarseLocationUpdate != null)
-                {
-                    try { OnCoarseLocationUpdate(simulator); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    simulator.avatarPositions.Dictionary[entry.Key] = entry.Value;
                 }
             }
+
+            if (OnCoarseLocationUpdate != null)
+            {
+                try { OnCoarseLocationUpdate(simulator, newEntries, removedEntries); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+
         }
 
         private void RegionHandleReplyHandler(Packet packet, Simulator simulator)

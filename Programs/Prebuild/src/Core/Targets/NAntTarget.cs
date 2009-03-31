@@ -383,6 +383,24 @@ namespace Prebuild.Core.Targets
 				}
 				ss.WriteLine("			  </references>");
 
+                ArrayList suppressWarningsArray = new ArrayList();
+                ss.WriteLine("            <nowarn>");
+                foreach (ConfigurationNode conf in project.Configurations)
+                {
+                    foreach (string s in conf.Options.SuppressWarnings.Split(new char[] { ',', ' ' }))
+                    {
+                        // duplicate check
+                        if (!suppressWarningsArray.Contains(s))
+                        {
+                            suppressWarningsArray.Add(s);
+                            ss.WriteLine("                <warning number=\"{0}\" />", s);
+                        }
+                    }
+                }
+                suppressWarningsArray.Clear();
+
+                ss.WriteLine("            </nowarn>");
+
 				ss.WriteLine("		  </csc>");
 				ss.WriteLine("	  </target>");
 

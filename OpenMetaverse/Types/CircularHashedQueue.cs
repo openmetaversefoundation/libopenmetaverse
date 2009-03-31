@@ -25,13 +25,18 @@
  */
 
 using System;
+using System.Collections.Generic;
 
 namespace OpenMetaverse
 {
-    public class CircularQueue<T>
+    /// <summary>
+    /// A circular queue with a hash-based Contains function
+    /// </summary>
+    public class CircularHashedQueue<T>
     {
         public readonly T[] Items;
 
+        Dictionary<T, bool> hashSet;
         int first;
         int next;
         int capacity;
@@ -40,23 +45,25 @@ namespace OpenMetaverse
         public int First { get { return first; } }
         public int Next { get { return next; } }
 
-        public CircularQueue(int capacity)
+        public CircularHashedQueue(int capacity)
         {
             this.capacity = capacity;
             Items = new T[capacity];
+            hashSet = new Dictionary<T, bool>(capacity);
             syncRoot = new object();
         }
 
         /// <summary>
         /// Copy constructor
         /// </summary>
-        /// <param name="queue">Circular queue to copy</param>
-        public CircularQueue(CircularQueue<T> queue)
+        /// <param name="queue">Circular hashed queue to copy</param>
+        public CircularHashedQueue(CircularHashedQueue<T> queue)
         {
             lock (queue.syncRoot)
             {
                 capacity = queue.capacity;
                 Items = new T[capacity];
+                hashSet = new Dictionary<T, bool>(queue.hashSet);
                 syncRoot = new object();
 
                 for (int i = 0; i < capacity; i++)
@@ -76,7 +83,14 @@ namespace OpenMetaverse
                     Items[i] = default(T);
 
                 first = next;
+
+                hashSet.Clear();
             }
+        }
+
+        public bool Contains(T value)
+        {
+            return hashSet.ContainsKey(value);
         }
 
         public void Enqueue(T value)
@@ -86,6 +100,25 @@ namespace OpenMetaverse
                 Items[next] = value;
                 next = (next + 1) % capacity;
                 if (next == first) first = (first + 1) % capacity;
+
+                hashSet[value] = true;
+            }
+        }
+
+        public bool TryEnqueue(T value)
+        {
+            lock (syncRoot)
+            {
+                if (hashSet.ContainsKey(value))
+                    return false;
+
+                Items[next] = value;
+                next = (next + 1) % capacity;
+                if (next == first) first = (first + 1) % capacity;
+
+                hashSet[value] = true;
+
+                return true;
             }
         }
 
@@ -98,6 +131,8 @@ namespace OpenMetaverse
 
                 if (first != next)
                     first = (first + 1) % capacity;
+
+                hashSet.Remove(value);
 
                 return value;
             }
@@ -128,6 +163,8 @@ namespace OpenMetaverse
 
                 T value = Items[next];
                 Items[next] = default(T);
+
+                hashSet.Remove(value);
 
                 return value;
             }

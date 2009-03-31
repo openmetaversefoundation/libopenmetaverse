@@ -261,6 +261,9 @@ namespace OpenMetaverse
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class XferDownload : Transfer
     {
         public ulong XferID;
@@ -368,7 +371,12 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="upload"></param>
         public delegate void UploadProgressCallback(AssetUpload upload);
-
+        /// <summary>
+        /// Callback fired when an InitiateDownload packet is received
+        /// </summary>
+        /// <param name="simFilename">The filename on the simulator</param>
+        /// <param name="viewerFilename">The name of the file the viewer requested</param>
+        public delegate void InitiateDownloadCallback(string simFilename, string viewerFilename);
         #endregion Delegates
 
         #region Events
@@ -385,7 +393,8 @@ namespace OpenMetaverse
         public event AssetUploadedCallback OnAssetUploaded;
         /// <summary></summary>
         public event UploadProgressCallback OnUploadProgress;
-
+        /// <summary>Fired when the simulator sends an InitiateDownloadPacket, used to download terrain .raw files</summary>
+        public event InitiateDownloadCallback OnInitiateDownload;
         #endregion Events
 
         /// <summary>Texture download cache</summary>
@@ -423,6 +432,9 @@ namespace OpenMetaverse
 
             // Xfer packet for downloading misc assets
             Client.Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
+
+            // Simulator is responding to a request to download a file
+            Client.Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
 
             // HACK: Re-request stale pending image downloads
             RefreshDownloadsTimer.Elapsed += new System.Timers.ElapsedEventHandler(RefreshDownloadsTimer_Elapsed);
@@ -800,6 +812,24 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Used to force asset data into the PendingUpload property, ie: for raw terrain uploads
+        /// </summary>
+        /// <param name="assetData">An AssetUpload object containing the data to upload to the simulator</param>
+        internal void SetPendingAssetUploadData(AssetUpload assetData)
+        {
+            lock(PendingUploadLock)
+                PendingUpload = assetData;
+        }
+
+        /// <summary>
+        /// Request an asset be uploaded to the simulator
+        /// </summary>
+        /// <param name="asset">The <seealso cref="Asset"/> Object containing the asset data</param>
+        /// <param name="storeLocal">If True, the asset once uploaded will be stored on the simulator
+        /// in which the client was connected in addition to being stored on the asset server</param>
+        /// <returns>The <seealso cref="UUID"/> of the transfer, can be used to correlate the upload with
+        /// events being fired</returns>
         public UUID RequestUpload(Asset asset, bool storeLocal)
         {
             if (asset.AssetData == null)
@@ -811,12 +841,31 @@ namespace OpenMetaverse
             return transferID;
         }
         
+        /// <summary>
+        /// Request an asset be uploaded to the simulator
+        /// </summary>
+        /// <param name="type">The <seealso cref="AssetType"/> of the asset being uploaded</param>
+        /// <param name="data">A byte array containing the encoded asset data</param>
+        /// <param name="storeLocal">If True, the asset once uploaded will be stored on the simulator
+        /// in which the client was connected in addition to being stored on the asset server</param>
+        /// <returns>The <seealso cref="UUID"/> of the transfer, can be used to correlate the upload with
+        /// events being fired</returns>
         public UUID RequestUpload(AssetType type, byte[] data, bool storeLocal)
         {
             UUID assetID;
             return RequestUpload(out assetID, type, data, storeLocal);
         }
 
+        /// <summary>
+        /// Request an asset be uploaded to the simulator
+        /// </summary>
+        /// <param name="assetID"></param>
+        /// <param name="type">Asset type to upload this data as</param>
+        /// <param name="data">A byte array containing the encoded asset data</param>
+        /// <param name="storeLocal">If True, the asset once uploaded will be stored on the simulator
+        /// in which the client was connected in addition to being stored on the asset server</param>
+        /// <returns>The <seealso cref="UUID"/> of the transfer, can be used to correlate the upload with
+        /// events being fired</returns>
         public UUID RequestUpload(out UUID assetID, AssetType type, byte[] data, bool storeLocal)
 		{
 			return RequestUpload(out assetID, type, data, storeLocal, UUID.Random());
@@ -1170,6 +1219,27 @@ namespace OpenMetaverse
         #endregion Transfer Callbacks
 
         #region Xfer Callbacks
+
+        /// <summary>
+        /// Packet Handler for InitiateDownloadPacket, sent in response to EstateOwnerMessage 
+        /// requesting download of simulators RAW terrain file.
+        /// </summary>
+        /// <param name="packet">The InitiateDownloadPacket packet</param>
+        /// <param name="simulator">The simulator originating the packet</param>
+        /// <remarks>Only the Estate Owner will receive this when he/she makes the request</remarks>
+        private void InitiateDownloadPacketHandler(Packet packet, Simulator simulator)
+        {
+            if (OnInitiateDownload != null)
+            {
+                InitiateDownloadPacket request = (InitiateDownloadPacket)packet;
+                try { OnInitiateDownload(Utils.BytesToString(request.FileData.SimFilename), 
+                    Utils.BytesToString(request.FileData.ViewerFilename)); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+            
+        }
+
+        
 
         private void RequestXferHandler(Packet packet, Simulator simulator)
         {

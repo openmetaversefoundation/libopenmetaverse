@@ -645,9 +645,7 @@ namespace OpenMetaverse.Rendering
 
     class AngleList
     {
-        private float iX, iY; // intersection point
-
-        private Angle[] angles3 =
+        private static readonly Angle[] angles3 =
         {
             new Angle(0.0f, 1.0f, 0.0f),
             new Angle(0.33333333333333333f, -0.5f, 0.86602540378443871f),
@@ -655,7 +653,7 @@ namespace OpenMetaverse.Rendering
             new Angle(1.0f, 1.0f, 0.0f)
         };
 
-        private Angle[] angles4 =
+        private static readonly Angle[] angles4 =
         {
             new Angle(0.0f, 1.0f, 0.0f),
             new Angle(0.25f, 0.0f, 1.0f),
@@ -664,7 +662,7 @@ namespace OpenMetaverse.Rendering
             new Angle(1.0f, 1.0f, 0.0f)
         };
 
-        private Angle[] angles24 =
+        private static readonly Angle[] angles24 =
         {
             new Angle(0.0f, 1.0f, 0.0f),
             new Angle(0.041666666666666664f, 0.96592582628906831f, 0.25881904510252074f),
@@ -693,11 +691,8 @@ namespace OpenMetaverse.Rendering
             new Angle(1.0f, 1.0f, 0.0f)
         };
 
-        private Angle interpolatePoints(float newPoint, Angle p1, Angle p2)
-        {
-            float m = (newPoint - p1.angle) / (p2.angle - p1.angle);
-            return new Angle(newPoint, p1.X + m * (p2.X - p1.X), p1.Y + m * (p2.Y - p1.Y));
-        }
+        internal List<Angle> angles;
+        private float iX, iY; // intersection point
 
         private void intersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
         { // ref: http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
@@ -711,8 +706,6 @@ namespace OpenMetaverse.Rendering
                 iY = (float)(y1 + ua * (y2 - y1));
             }
         }
-
-        internal List<Angle> angles;
 
         internal void makeAngles(int sides, float startAngle, float stopAngle)
         {
@@ -805,6 +798,12 @@ namespace OpenMetaverse.Rendering
                     angles[index] = newAngle;
                 }
             }
+        }
+
+        private static Angle interpolatePoints(float newPoint, Angle p1, Angle p2)
+        {
+            float m = (newPoint - p1.angle) / (p2.angle - p1.angle);
+            return new Angle(newPoint, p1.X + m * (p2.X - p1.X), p1.Y + m * (p2.Y - p1.Y));
         }
     }
 

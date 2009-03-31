@@ -101,20 +101,6 @@ namespace OpenMetaverse
         ObjectGroupOwned = 0x00040000,
         /// <summary>Deprecated</summary>
         ObjectYouOfficer = 0x00080000,
-
-        /// <summary>Server flag, will not be sent to clients. Specifies that
-        /// the object is destroyed when it touches a simulator edge</summary>
-        DieAtEdge = 0x00100000,
-        /// <summary>Server flag, will not be sent to clients. Specifies that
-        /// the object will be returned to the owner's inventory when it
-        /// touches a simulator edge</summary>
-        ReturnAtEdge = 0x00200000,
-        /// <summary>Server flag, will not be sent to clients.</summary>
-        Sandbox = 0x00400000,
-        /// <summary>Server flag, will not be sent to client. Specifies that
-        /// the object is hovering/flying</summary>
-        Flying = 0x00800000,
-
         /// <summary></summary>
         CameraDecoupled = 0x00100000,
         /// <summary></summary>
@@ -123,12 +109,18 @@ namespace OpenMetaverse
         CameraSource = 0x00400000,
         /// <summary></summary>
         CastShadows = 0x00800000,
-
-        Placeholder5 = 0x01000000,
-        Placeholder6 = 0x02000000,
-        Placeholder7 = 0x04000000,
-        Placeholder8 = 0x08000000,
-
+        /// <summary>Server flag, will not be sent to clients. Specifies that
+        /// the object is destroyed when it touches a simulator edge</summary>
+        DieAtEdge = 0x01000000,
+        /// <summary>Server flag, will not be sent to clients. Specifies that
+        /// the object will be returned to the owner's inventory when it
+        /// touches a simulator edge</summary>
+        ReturnAtEdge = 0x02000000,
+        /// <summary>Server flag, will not be sent to clients.</summary>
+        Sandbox = 0x04000000,
+        /// <summary>Server flag, will not be sent to client. Specifies that
+        /// the object is hovering/flying</summary>
+        Flying = 0x08000000,
         /// <summary></summary>
         ObjectOwnerModify = 0x10000000,
         /// <summary></summary>
@@ -742,6 +734,17 @@ namespace OpenMetaverse
 
                 return flex;
             }
+
+            public override int GetHashCode()
+            {
+                return
+                    Softness.GetHashCode() ^
+                    Gravity.GetHashCode() ^
+                    Drag.GetHashCode() ^
+                    Wind.GetHashCode() ^
+                    Tension.GetHashCode() ^
+                    Force.GetHashCode();
+            }
         }
 
         /// <summary>
@@ -845,6 +848,16 @@ namespace OpenMetaverse
                 return light;
             }
 
+            public override int GetHashCode()
+            {
+                return
+                    Color.GetHashCode() ^
+                    Intensity.GetHashCode() ^
+                    Radius.GetHashCode() ^
+                    Cutoff.GetHashCode() ^
+                    Falloff.GetHashCode();
+            }
+
             /// <summary>
             /// 
             /// </summary>
@@ -923,6 +936,11 @@ namespace OpenMetaverse
                 }
 
                 return sculpt;
+            }
+
+            public override int GetHashCode()
+            {
+                return SculptTexture.GetHashCode() ^ Type.GetHashCode();
             }
         }
 
@@ -1508,7 +1526,51 @@ namespace OpenMetaverse
 
         public override int GetHashCode()
         {
-            return ID.GetHashCode();
+            return
+                Position.GetHashCode() ^
+                Velocity.GetHashCode() ^
+                Acceleration.GetHashCode() ^
+                Rotation.GetHashCode() ^
+                AngularVelocity.GetHashCode() ^
+                ClickAction.GetHashCode() ^
+                (Flexible != null ? Flexible.GetHashCode() : 0) ^
+                (Light != null ? Light.GetHashCode() : 0) ^
+                (Sculpt != null ? Sculpt.GetHashCode() : 0) ^
+                Flags.GetHashCode() ^
+                PrimData.Material.GetHashCode() ^
+                MediaURL.GetHashCode() ^
+                //TODO: NameValues?
+                (Properties != null ? Properties.OwnerID.GetHashCode() : 0) ^
+                ParentID.GetHashCode() ^
+                PrimData.PathBegin.GetHashCode() ^
+                PrimData.PathCurve.GetHashCode() ^
+                PrimData.PathEnd.GetHashCode() ^
+                PrimData.PathRadiusOffset.GetHashCode() ^
+                PrimData.PathRevolutions.GetHashCode() ^
+                PrimData.PathScaleX.GetHashCode() ^
+                PrimData.PathScaleY.GetHashCode() ^
+                PrimData.PathShearX.GetHashCode() ^
+                PrimData.PathShearY.GetHashCode() ^
+                PrimData.PathSkew.GetHashCode() ^
+                PrimData.PathTaperX.GetHashCode() ^
+                PrimData.PathTaperY.GetHashCode() ^
+                PrimData.PathTwist.GetHashCode() ^
+                PrimData.PathTwistBegin.GetHashCode() ^
+                PrimData.PCode.GetHashCode() ^
+                PrimData.ProfileBegin.GetHashCode() ^
+                PrimData.ProfileCurve.GetHashCode() ^
+                PrimData.ProfileEnd.GetHashCode() ^
+                PrimData.ProfileHollow.GetHashCode() ^
+                ParticleSys.GetHashCode() ^
+                TextColor.GetHashCode() ^
+                TextureAnim.GetHashCode() ^
+                (Textures != null ? Textures.GetHashCode() : 0) ^
+                SoundRadius.GetHashCode() ^
+                Scale.GetHashCode() ^
+                Sound.GetHashCode() ^
+                PrimData.State.GetHashCode() ^
+                Text.GetHashCode() ^
+                TreeSpecies.GetHashCode();
         }
 
         #endregion Overrides

@@ -249,7 +249,6 @@ namespace OpenMetaverse
         /// <param name="id">The avatar key to retrieve a name for</param>
         public void RequestAvatarName(UUID id)
         {
-            Logger.Log("AvatarManager requesting UUID for " + id, Helpers.LogLevel.Debug);
             UUIDNameRequestPacket request = new UUIDNameRequestPacket();
             request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[1];
             request.UUIDNameBlock[0] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
@@ -281,7 +280,6 @@ namespace OpenMetaverse
                     request.UUIDNameBlock[i % m].ID = ids[i];
                 }
 
-                Logger.Log("AvatarManager requesting names for " + request.UUIDNameBlock.Length + " UUIDs", Helpers.LogLevel.Debug);
                 Client.Network.SendPacket(request);
             }
 
@@ -297,7 +295,6 @@ namespace OpenMetaverse
                     request.UUIDNameBlock[i % m].ID = ids[i];
                 }
 
-                Logger.Log("AvatarManager requesting names for " + request.UUIDNameBlock.Length + " UUIDs", Helpers.LogLevel.Debug);
                 Client.Network.SendPacket(request);
             }
         }

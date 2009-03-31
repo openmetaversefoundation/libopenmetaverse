@@ -81,7 +81,7 @@ namespace OpenMetaverse.Tests
             int start = Environment.TickCount;
             while (!DetectedObject)
             {
-                if (Environment.TickCount - start > 10000)
+                if (Environment.TickCount - start > 20000)
                 {
                     Assert.Fail("Timeout waiting for an ObjectUpdate packet");
                 }

@@ -34,25 +34,6 @@
     
     <!-- External Libraries -->
     
-    <Project name="ExtensionLoader" path="ExtensionLoader" type="Library" guid="F0CCD62E-8055-4419-8171-F2C5FD7C8B6D">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-    
     <Project name="HttpServer" path="HttpServer" type="Library" guid="455E7D70-1C85-4D7F-9F01-DC801B8B8C34">
       <Configuration name="Debug">
         <Options>
@@ -183,6 +164,8 @@
           <Exclude name="ExpiringCache.cs"/>
           <Exclude name="CircularQueue.cs"/>
           <Exclude name="CRC32.cs"/>
+          <Exclude name="CircularHashedQueue.cs"/>
+          <Exclude name="TokenBucket.cs"/>
         </Match>
       </Files>
     </Project>
@@ -762,59 +745,6 @@
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
 
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-    
-    <Project name="Simian" path="Programs/Simian" type="Exe">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Drawing"/>
-      <Reference name="System.Xml"/>
-      <Reference name="ExtensionLoader"/>
-      <Reference name="Mono.Security"/>
-      <Reference name="HttpServer"/>
-      <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="OpenMetaverse.Http"/>
-
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-    
-    <Project name="Simian.Tests" path="Programs/Simian.Tests" type="Library">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="nunit.framework"/>
-      <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseTypes"/>
-      <Reference name="Simian.exe"/>
-      <Reference name="ExtensionLoader"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>

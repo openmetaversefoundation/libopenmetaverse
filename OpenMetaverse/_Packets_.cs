@@ -806,6 +806,7 @@ namespace OpenMetaverse.Packets
     {
         public abstract Header Header { get; set; }
         public abstract PacketType Type { get; }
+        public abstract int Length { get; }
         public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
         public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
         public abstract byte[] ToBytes();
@@ -2145,6 +2146,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TestMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TestBlock1.Length;
+                for (int j = 0; j < 4; j++)
+                    length += NeighborBlock[j].Length;
+                return length;
+            }
+        }
         public TestBlock1Block TestBlock1;
         public NeighborBlockBlock[] NeighborBlock;
 
@@ -2271,6 +2283,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UseCircuitCode; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += CircuitCode.Length;
+                return length;
+            }
+        }
         public CircuitCodeBlock CircuitCode;
 
         public UseCircuitCodePacket()
@@ -2437,6 +2458,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TelehubInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TelehubBlock.Length;
+                for (int j = 0; j < SpawnPointBlock.Length; j++)
+                    length += SpawnPointBlock[j].Length;
+                return length;
+            }
+        }
         public TelehubBlockBlock TelehubBlock;
         public SpawnPointBlockBlock[] SpawnPointBlock;
 
@@ -2522,6 +2554,14 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EconomyDataRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                return length;
+            }
+        }
 
         public EconomyDataRequestPacket()
         {
@@ -2668,6 +2708,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EconomyData; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public EconomyDataPacket()
@@ -2832,6 +2881,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarPickerRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -3017,6 +3076,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarPickerReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -3261,6 +3331,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PlacesQuery; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionDataBlock TransactionData;
         public QueryDataBlock QueryData;
@@ -3534,6 +3615,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PlacesReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionData.Length;
+                for (int j = 0; j < QueryData.Length; j++)
+                    length += QueryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionDataBlock TransactionData;
         public QueryDataBlock[] QueryData;
@@ -3729,6 +3822,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirFindQuery; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
 
@@ -3924,6 +4027,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirPlacesQuery; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
 
@@ -4137,6 +4250,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirPlacesReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < QueryData.Length; j++)
+                    length += QueryData[j].Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock[] QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -4416,6 +4542,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirPeopleReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -4666,6 +4804,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirEventsReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -4896,6 +5046,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirGroupsReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -5094,6 +5256,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirClassifiedQuery; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
 
@@ -5310,6 +5482,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirClassifiedReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -5499,6 +5683,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarClassifiedReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -5663,6 +5858,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ClassifiedInfoRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -5911,6 +6116,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ClassifiedInfoReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -6118,6 +6333,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ClassifiedInfoUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -6267,6 +6492,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ClassifiedDelete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -6419,6 +6654,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ClassifiedGodDelete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -6583,6 +6828,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirLandQuery; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
 
@@ -6799,6 +7054,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirLandReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -6972,6 +7239,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirPopularQuery; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
 
@@ -7179,6 +7456,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DirPopularReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += QueryData.Length;
+                for (int j = 0; j < QueryReplies.Length; j++)
+                    length += QueryReplies[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public QueryDataBlock QueryData;
         public QueryRepliesBlock[] QueryReplies;
@@ -7349,6 +7638,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelInfoRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -7581,6 +7880,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelInfoReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -7731,6 +8040,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelObjectOwnersRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -7848,6 +8167,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelObjectOwnersReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public DataBlock[] Data;
 
         public ParcelObjectOwnersReplyPacket()
@@ -8008,6 +8337,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupNoticesListRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -8204,6 +8543,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupNoticesListReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -8368,6 +8718,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupNoticeRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -8523,6 +8883,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Info.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InfoBlock Info;
 
@@ -8678,6 +9048,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportLocationRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Info.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InfoBlock Info;
 
@@ -8798,6 +9178,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportLocal; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportLocalPacket()
@@ -8907,6 +9296,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportLandmarkRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportLandmarkRequestPacket()
@@ -9068,6 +9466,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportProgress; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Info.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InfoBlock Info;
 
@@ -9215,6 +9623,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportFinish; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportFinishPacket()
@@ -9416,6 +9833,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.StartLure; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Info.Length;
+                for (int j = 0; j < TargetData.Length; j++)
+                    length += TargetData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InfoBlock Info;
         public TargetDataBlock[] TargetData;
@@ -9553,6 +9982,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportLureRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportLureRequestPacket()
@@ -9659,6 +10097,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportCancel; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportCancelPacket()
@@ -9762,6 +10209,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportStart; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportStartPacket()
@@ -9884,6 +10340,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TeleportFailed; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Info.Length;
+                return length;
+            }
+        }
         public InfoBlock Info;
 
         public TeleportFailedPacket()
@@ -10031,6 +10496,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.Undo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -10198,6 +10674,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.Redo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -10324,6 +10811,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UndoLand; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public UndoLandPacket()
@@ -10433,6 +10929,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentPause; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentPausePacket()
@@ -10542,6 +11047,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentResume; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentResumePacket()
@@ -10709,6 +11223,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChatFromViewer; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ChatData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ChatDataBlock ChatData;
 
@@ -10881,6 +11405,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentThrottle; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Throttle.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ThrottleBlock Throttle;
 
@@ -11037,6 +11571,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentFOV; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += FOVBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FOVBlockBlock FOVBlock;
 
@@ -11197,6 +11741,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentHeightWidth; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += HeightWidthBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public HeightWidthBlockBlock HeightWidthBlock;
 
@@ -11448,6 +12002,20 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentSetAppearance; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < WearableData.Length; j++)
+                    length += WearableData[j].Length;
+                length += ObjectData.Length;
+                for (int j = 0; j < VisualParam.Length; j++)
+                    length += VisualParam[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public WearableDataBlock[] WearableData;
         public ObjectDataBlock ObjectData;
@@ -11638,6 +12206,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentQuitCopy; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += FuseBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FuseBlockBlock FuseBlock;
 
@@ -11746,6 +12324,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ImageNotInDatabase; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ImageID.Length;
+                return length;
+            }
+        }
         public ImageIDBlock ImageID;
 
         public ImageNotInDatabasePacket()
@@ -11849,6 +12436,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RebakeAvatarTextures; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TextureData.Length;
+                return length;
+            }
+        }
         public TextureDataBlock TextureData;
 
         public RebakeAvatarTexturesPacket()
@@ -11958,6 +12554,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetAlwaysRun; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public SetAlwaysRunPacket()
@@ -12105,6 +12710,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDelete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -12314,6 +12930,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDuplicate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += SharedData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public SharedDataBlock SharedData;
         public ObjectDataBlock[] ObjectData;
@@ -12511,6 +13139,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDuplicateOnRay; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -12679,6 +13318,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectScale; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -12847,6 +13497,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectRotation; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -12989,6 +13650,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectFlagUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ObjectFlagUpdatePacket()
@@ -13137,6 +13807,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectClickAction; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -13339,6 +14020,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectImage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -13507,6 +14199,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectMaterial; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -13731,6 +14434,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectShape; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -13925,6 +14639,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectExtraParams; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -14134,6 +14859,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectOwner; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += HeaderData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public HeaderDataBlock HeaderData;
         public ObjectDataBlock[] ObjectData;
@@ -14307,6 +15044,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectGroup; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -14484,6 +15232,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectBuy; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -14655,6 +15414,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.BuyObjectInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -14767,6 +15536,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DerezContainer; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                return length;
+            }
+        }
         public DataBlock Data;
 
         public DerezContainerPacket()
@@ -14959,6 +15737,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectPermissions; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += HeaderData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public HeaderDataBlock HeaderData;
         public ObjectDataBlock[] ObjectData;
@@ -15135,6 +15925,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectSaleInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -15319,6 +16120,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectName; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -15503,6 +16315,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDescription; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -15671,6 +16494,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectCategory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -15836,6 +16670,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectSelect; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -16001,6 +16846,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDeselect; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -16172,6 +17028,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectAttach; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -16337,6 +17204,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDetach; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -16501,6 +17379,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDrop; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -16665,6 +17554,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectLink; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -16829,6 +17729,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDelink; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -17049,6 +17960,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectGrab; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                for (int j = 0; j < SurfaceInfo.Length; j++)
+                    length += SurfaceInfo[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
         public SurfaceInfoBlock[] SurfaceInfo;
@@ -17281,6 +18204,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectGrabUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                for (int j = 0; j < SurfaceInfo.Length; j++)
+                    length += SurfaceInfo[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
         public SurfaceInfoBlock[] SurfaceInfo;
@@ -17504,6 +18439,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectDeGrab; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                for (int j = 0; j < SurfaceInfo.Length; j++)
+                    length += SurfaceInfo[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
         public SurfaceInfoBlock[] SurfaceInfo;
@@ -17673,6 +18620,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectSpinStart; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
 
@@ -17826,6 +18783,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectSpinUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
 
@@ -17976,6 +18943,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectSpinStop; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
 
@@ -18130,6 +19107,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectExportSelected; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -18354,6 +19342,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ModifyLand; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ModifyBlock.Length;
+                for (int j = 0; j < ParcelData.Length; j++)
+                    length += ParcelData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ModifyBlockBlock ModifyBlock;
         public ParcelDataBlock[] ParcelData;
@@ -18486,6 +19486,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.VelocityInterpolateOn; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public VelocityInterpolateOnPacket()
@@ -18592,6 +19601,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.VelocityInterpolateOff; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public VelocityInterpolateOffPacket()
@@ -18752,6 +19770,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.StateSave; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += DataBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlockBlock DataBlock;
 
@@ -18863,6 +19891,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ReportAutosaveCrash; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AutosaveData.Length;
+                return length;
+            }
+        }
         public AutosaveDataBlock AutosaveData;
 
         public ReportAutosaveCrashPacket()
@@ -19010,6 +20047,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SimWideDeletes; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += DataBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlockBlock DataBlock;
 
@@ -19159,6 +20206,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TrackAgent; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TargetData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TargetDataBlock TargetData;
 
@@ -19538,6 +20595,21 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ViewerStats; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += DownloadTotals.Length;
+                for (int j = 0; j < 2; j++)
+                    length += NetStats[j].Length;
+                length += FailStats.Length;
+                for (int j = 0; j < MiscStats.Length; j++)
+                    length += MiscStats[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DownloadTotalsBlock DownloadTotals;
         public NetStatsBlock[] NetStats;
@@ -19735,6 +20807,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptAnswerYes; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -19976,6 +21058,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UserReport; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ReportData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ReportDataBlock ReportData;
 
@@ -20101,6 +21193,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AlertMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AlertData.Length;
+                return length;
+            }
+        }
         public AlertDataBlock AlertData;
 
         public AlertMessagePacket()
@@ -20261,6 +21362,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentAlertMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += AlertData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public AlertDataBlock AlertData;
 
@@ -20381,6 +21492,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MeanCollisionAlert; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < MeanCollision.Length; j++)
+                    length += MeanCollision[j].Length;
+                return length;
+            }
+        }
         public MeanCollisionBlock[] MeanCollision;
 
         public MeanCollisionAlertPacket()
@@ -20500,6 +21621,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ViewerFrozenMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += FrozenData.Length;
+                return length;
+            }
+        }
         public FrozenDataBlock FrozenData;
 
         public ViewerFrozenMessagePacket()
@@ -20603,6 +21733,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.HealthMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += HealthData.Length;
+                return length;
+            }
+        }
         public HealthDataBlock HealthData;
 
         public HealthMessagePacket()
@@ -20759,6 +21898,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChatFromSimulator; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ChatData.Length;
+                return length;
+            }
+        }
         public ChatDataBlock ChatData;
 
         public ChatFromSimulatorPacket()
@@ -20950,6 +22098,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SimStats; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Region.Length;
+                for (int j = 0; j < Stat.Length; j++)
+                    length += Stat[j].Length;
+                length += PidStat.Length;
+                return length;
+            }
+        }
         public RegionBlock Region;
         public StatBlock[] Stat;
         public PidStatBlock PidStat;
@@ -21081,6 +22241,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestRegionInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public RequestRegionInfoPacket()
@@ -21286,6 +22455,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RegionInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RegionInfo.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RegionInfoBlock RegionInfo;
 
@@ -21473,6 +22652,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GodUpdateRegionInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RegionInfo.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RegionInfoBlock RegionInfo;
 
@@ -21582,6 +22771,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.NearestLandingRegionUpdated; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += RegionData.Length;
+                return length;
+            }
+        }
         public RegionDataBlock RegionData;
 
         public NearestLandingRegionUpdatedPacket()
@@ -21808,6 +23006,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RegionHandshake; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += RegionInfo.Length;
+                length += RegionInfo2.Length;
+                return length;
+            }
+        }
         public RegionInfoBlock RegionInfo;
         public RegionInfo2Block RegionInfo2;
 
@@ -21958,6 +23166,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RegionHandshakeReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RegionInfo.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RegionInfoBlock RegionInfo;
 
@@ -22082,6 +23300,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SimulatorViewerTimeMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TimeInfo.Length;
+                return length;
+            }
+        }
         public TimeInfoBlock TimeInfo;
 
         public SimulatorViewerTimeMessagePacket()
@@ -22192,6 +23419,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EnableSimulator; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += SimulatorInfo.Length;
+                return length;
+            }
+        }
         public SimulatorInfoBlock SimulatorInfo;
 
         public EnableSimulatorPacket()
@@ -22257,6 +23493,14 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DisableSimulator; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                return length;
+            }
+        }
 
         public DisableSimulatorPacket()
         {
@@ -22384,6 +23628,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TransferRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TransferInfo.Length;
+                return length;
+            }
+        }
         public TransferInfoBlock TransferInfo;
 
         public TransferRequestPacket()
@@ -22520,6 +23773,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TransferInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TransferInfo.Length;
+                return length;
+            }
+        }
         public TransferInfoBlock TransferInfo;
 
         public TransferInfoPacket()
@@ -22627,6 +23889,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TransferAbort; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TransferInfo.Length;
+                return length;
+            }
+        }
         public TransferInfoBlock TransferInfo;
 
         public TransferAbortPacket()
@@ -22766,6 +24037,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestXfer; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += XferID.Length;
+                return length;
+            }
+        }
         public XferIDBlock XferID;
 
         public RequestXferPacket()
@@ -22873,6 +24153,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AbortXfer; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += XferID.Length;
+                return length;
+            }
+        }
         public XferIDBlock XferID;
 
         public AbortXferPacket()
@@ -23072,6 +24361,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarAppearance; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Sender.Length;
+                length += ObjectData.Length;
+                for (int j = 0; j < VisualParam.Length; j++)
+                    length += VisualParam[j].Length;
+                return length;
+            }
+        }
         public SenderBlock Sender;
         public ObjectDataBlock ObjectData;
         public VisualParamBlock[] VisualParam;
@@ -23242,6 +24543,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetFollowCamProperties; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ObjectData.Length;
+                for (int j = 0; j < CameraProperty.Length; j++)
+                    length += CameraProperty[j].Length;
+                return length;
+            }
+        }
         public ObjectDataBlock ObjectData;
         public CameraPropertyBlock[] CameraProperty;
 
@@ -23365,6 +24677,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ClearFollowCamProperties; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public ObjectDataBlock ObjectData;
 
         public ClearFollowCamPropertiesPacket()
@@ -23468,6 +24789,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestPayPrice; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public ObjectDataBlock ObjectData;
 
         public RequestPayPricePacket()
@@ -23612,6 +24942,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PayPriceReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ObjectData.Length;
+                for (int j = 0; j < ButtonData.Length; j++)
+                    length += ButtonData[j].Length;
+                return length;
+            }
+        }
         public ObjectDataBlock ObjectData;
         public ButtonDataBlock[] ButtonData;
 
@@ -23800,6 +25141,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.KickUser; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TargetBlock.Length;
+                length += UserInfo.Length;
+                return length;
+            }
+        }
         public TargetBlockBlock TargetBlock;
         public UserInfoBlock UserInfo;
 
@@ -23911,6 +25262,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.KickUserAck; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += UserInfo.Length;
+                return length;
+            }
+        }
         public UserInfoBlock UserInfo;
 
         public KickUserAckPacket()
@@ -24043,6 +25403,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GodKickUser; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += UserInfo.Length;
+                return length;
+            }
+        }
         public UserInfoBlock UserInfo;
 
         public GodKickUserPacket()
@@ -24190,6 +25559,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EjectUser; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -24342,6 +25721,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.FreezeUser; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -24456,6 +25845,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarPropertiesRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AvatarPropertiesRequestPacket()
@@ -24697,6 +26095,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarPropertiesReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += PropertiesData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public PropertiesDataBlock PropertiesData;
 
@@ -24903,6 +26311,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarInterestsReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += PropertiesData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public PropertiesDataBlock PropertiesData;
 
@@ -25136,6 +26554,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarGroupsReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < GroupData.Length; j++)
+                    length += GroupData[j].Length;
+                length += NewGroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock[] GroupData;
         public NewGroupDataBlock NewGroupData;
@@ -25369,6 +26799,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarPropertiesUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += PropertiesData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public PropertiesDataBlock PropertiesData;
 
@@ -25575,6 +27015,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarInterestsUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += PropertiesData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public PropertiesDataBlock PropertiesData;
 
@@ -25742,6 +27192,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarNotesReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -25911,6 +27371,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarNotesUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -26079,6 +27549,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarPicksReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -26243,6 +27724,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EventInfoRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += EventData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EventDataBlock EventData;
 
@@ -26512,6 +28003,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EventInfoReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += EventData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EventDataBlock EventData;
 
@@ -26661,6 +28162,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EventNotificationAddRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += EventData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EventDataBlock EventData;
 
@@ -26810,6 +28321,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EventNotificationRemoveRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += EventData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EventDataBlock EventData;
 
@@ -27022,6 +28543,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EventGodDelete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += EventData.Length;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EventDataBlock EventData;
         public QueryDataBlock QueryData;
@@ -27282,6 +28814,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PickInfoReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -27489,6 +29031,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PickInfoUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -27638,6 +29190,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PickDelete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -27790,6 +29352,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PickGodDelete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -27940,6 +29512,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptQuestion; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                return length;
+            }
+        }
         public DataBlock Data;
 
         public ScriptQuestionPacket()
@@ -28049,6 +29630,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptControlChange; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public DataBlock[] Data;
 
         public ScriptControlChangePacket()
@@ -28298,6 +29889,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptDialog; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                for (int j = 0; j < Buttons.Length; j++)
+                    length += Buttons[j].Length;
+                return length;
+            }
+        }
         public DataBlock Data;
         public ButtonsBlock[] Buttons;
 
@@ -28488,6 +30090,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptDialogReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -28600,6 +30212,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ForceScriptControlRelease; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ForceScriptControlReleasePacket()
@@ -28747,6 +30368,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RevokePermissions; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -28914,6 +30545,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LoadURL; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                return length;
+            }
+        }
         public DataBlock Data;
 
         public LoadURLPacket()
@@ -29056,6 +30696,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptTeleportRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                return length;
+            }
+        }
         public DataBlock Data;
 
         public ScriptTeleportRequestPacket()
@@ -29179,6 +30828,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelOverlay; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public ParcelDataBlock ParcelData;
 
         public ParcelOverlayPacket()
@@ -29327,6 +30985,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelPropertiesRequestByID; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -29589,6 +31257,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelPropertiesUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -29818,6 +31496,20 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelReturnObjects; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                for (int j = 0; j < TaskIDs.Length; j++)
+                    length += TaskIDs[j].Length;
+                for (int j = 0; j < OwnerIDs.Length; j++)
+                    length += OwnerIDs[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
         public TaskIDsBlock[] TaskIDs;
@@ -30011,6 +31703,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelSetOtherCleanTime; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -30240,6 +31942,20 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelDisableObjects; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                for (int j = 0; j < TaskIDs.Length; j++)
+                    length += TaskIDs[j].Length;
+                for (int j = 0; j < OwnerIDs.Length; j++)
+                    length += OwnerIDs[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
         public TaskIDsBlock[] TaskIDs;
@@ -30471,6 +32187,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelSelectObjects; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                for (int j = 0; j < ReturnIDs.Length; j++)
+                    length += ReturnIDs[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
         public ReturnIDsBlock[] ReturnIDs;
@@ -30603,6 +32331,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EstateCovenantRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public EstateCovenantRequestPacket()
@@ -30731,6 +32468,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EstateCovenantReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                return length;
+            }
+        }
         public DataBlock Data;
 
         public EstateCovenantReplyPacket()
@@ -30872,6 +32618,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ForceObjectSelect; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += _Header.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public HeaderBlock _Header;
         public DataBlock[] Data;
 
@@ -31036,6 +32793,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelBuyPass; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -31188,6 +32955,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelDeedToGroup; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -31337,6 +33114,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelReclaim; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -31539,6 +33326,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelClaim; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                for (int j = 0; j < ParcelData.Length; j++)
+                    length += ParcelData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
         public ParcelDataBlock[] ParcelData;
@@ -31718,6 +33517,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelJoin; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -31876,6 +33685,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelDivide; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -32025,6 +33844,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelRelease; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -32227,6 +34056,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelBuy; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
         public ParcelDataBlock ParcelData;
@@ -32385,6 +34225,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelGodForceOwner; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -32541,6 +34391,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelAccessListRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -32703,6 +34563,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelAccessListReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Data.Length;
+                for (int j = 0; j < List.Length; j++)
+                    length += List[j].Length;
+                return length;
+            }
+        }
         public DataBlock Data;
         public ListBlock[] List;
 
@@ -32924,6 +34795,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelAccessListUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                for (int j = 0; j < List.Length; j++)
+                    length += List[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
         public ListBlock[] List;
@@ -33097,6 +34980,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelDwellRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -33249,6 +35142,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelDwellReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -33398,6 +35301,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelGodMarkAsContent; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -33550,6 +35463,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ViewerStartAuction; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -33658,6 +35581,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UUIDNameRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < UUIDNameBlock.Length; j++)
+                    length += UUIDNameBlock[j].Length;
+                return length;
+            }
+        }
         public UUIDNameBlockBlock[] UUIDNameBlock;
 
         public UUIDNameRequestPacket()
@@ -33812,6 +35745,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UUIDNameReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < UUIDNameBlock.Length; j++)
+                    length += UUIDNameBlock[j].Length;
+                return length;
+            }
+        }
         public UUIDNameBlockBlock[] UUIDNameBlock;
 
         public UUIDNameReplyPacket()
@@ -33930,6 +35873,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UUIDGroupNameRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < UUIDNameBlock.Length; j++)
+                    length += UUIDNameBlock[j].Length;
+                return length;
+            }
+        }
         public UUIDNameBlockBlock[] UUIDNameBlock;
 
         public UUIDGroupNameRequestPacket()
@@ -34067,6 +36020,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UUIDGroupNameReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < UUIDNameBlock.Length; j++)
+                    length += UUIDNameBlock[j].Length;
+                return length;
+            }
+        }
         public UUIDNameBlockBlock[] UUIDNameBlock;
 
         public UUIDGroupNameReplyPacket()
@@ -34188,6 +36151,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChildAgentDying; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ChildAgentDyingPacket()
@@ -34295,6 +36267,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChildAgentUnknown; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ChildAgentUnknownPacket()
@@ -34401,6 +36382,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GetScriptRunning; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Script.Length;
+                return length;
+            }
+        }
         public ScriptBlock Script;
 
         public GetScriptRunningPacket()
@@ -34510,6 +36500,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptRunningReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Script.Length;
+                return length;
+            }
+        }
         public ScriptBlock Script;
 
         public ScriptRunningReplyPacket()
@@ -34660,6 +36659,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetScriptRunning; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Script.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ScriptBlock Script;
 
@@ -34812,6 +36821,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptReset; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Script.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ScriptBlock Script;
 
@@ -34966,6 +36985,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptSensorRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Requester.Length;
+                return length;
+            }
+        }
         public RequesterBlock Requester;
 
         public ScriptSensorRequestPacket()
@@ -35148,6 +37176,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ScriptSensorReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += Requester.Length;
+                for (int j = 0; j < SensedData.Length; j++)
+                    length += SensedData[j].Length;
+                return length;
+            }
+        }
         public RequesterBlock Requester;
         public SensedDataBlock[] SensedData;
 
@@ -35278,6 +37317,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CompleteAgentMovement; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public CompleteAgentMovementPacket()
@@ -35486,6 +37534,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentMovementComplete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                length += SimData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
         public SimDataBlock SimData;
@@ -35602,6 +37661,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LogoutRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public LogoutRequestPacket()
@@ -35746,6 +37814,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LogoutReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -35990,6 +38069,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ImprovedInstantMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MessageBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MessageBlockBlock MessageBlock;
 
@@ -36102,6 +38191,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RetrieveInstantMessages; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public RetrieveInstantMessagesPacket()
@@ -36252,6 +38350,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.FindAgent; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentBlock.Length;
+                for (int j = 0; j < LocationBlock.Length; j++)
+                    length += LocationBlock[j].Length;
+                return length;
+            }
+        }
         public AgentBlockBlock AgentBlock;
         public LocationBlockBlock[] LocationBlock;
 
@@ -36419,6 +38528,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestGodlikePowers; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RequestBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RequestBlockBlock RequestBlock;
 
@@ -36571,6 +38690,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GrantGodlikePowers; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GrantData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GrantDataBlock GrantData;
 
@@ -36796,6 +38925,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GodlikeMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MethodData.Length;
+                for (int j = 0; j < ParamList.Length; j++)
+                    length += ParamList[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MethodDataBlock MethodData;
         public ParamListBlock[] ParamList;
@@ -37042,6 +39183,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EstateOwnerMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MethodData.Length;
+                for (int j = 0; j < ParamList.Length; j++)
+                    length += ParamList[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MethodDataBlock MethodData;
         public ParamListBlock[] ParamList;
@@ -37288,6 +39441,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GenericMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MethodData.Length;
+                for (int j = 0; j < ParamList.Length; j++)
+                    length += ParamList[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MethodDataBlock MethodData;
         public ParamListBlock[] ParamList;
@@ -37458,6 +39623,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MuteListRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MuteData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MuteDataBlock MuteData;
 
@@ -37632,6 +39807,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateMuteListEntry; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MuteData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MuteDataBlock MuteData;
 
@@ -37800,6 +39985,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RemoveMuteListEntry; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MuteData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MuteDataBlock MuteData;
 
@@ -37993,6 +40188,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CopyInventoryFromNotecard; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += NotecardData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public NotecardDataBlock NotecardData;
         public InventoryDataBlock[] InventoryData;
@@ -38259,6 +40466,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateInventoryItem; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -38520,6 +40738,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateCreateInventoryItem; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -38710,6 +40939,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MoveInventoryItem; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -38903,6 +41143,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CopyInventoryItem; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -39068,6 +41319,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RemoveInventoryItem; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -39235,6 +41497,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChangeInventoryItemFlags; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -39399,6 +41672,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SaveAssetIntoInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock InventoryData;
 
@@ -39573,6 +41856,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateInventoryFolder; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += FolderData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FolderDataBlock FolderData;
 
@@ -39747,6 +42040,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateInventoryFolder; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FolderDataBlock[] FolderData;
 
@@ -39917,6 +42221,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MoveInventoryFolder; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -40082,6 +42397,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RemoveInventoryFolder; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FolderDataBlock[] FolderData;
 
@@ -40258,6 +42584,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.FetchInventoryDescendents; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock InventoryData;
 
@@ -40570,6 +42906,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.InventoryDescendents; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                for (int j = 0; j < ItemData.Length; j++)
+                    length += ItemData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FolderDataBlock[] FolderData;
         public ItemDataBlock[] ItemData;
@@ -40758,6 +43107,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.FetchInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -41010,6 +43370,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.FetchInventoryReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock[] InventoryData;
 
@@ -41331,6 +43702,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.BulkUpdateInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                for (int j = 0; j < ItemData.Length; j++)
+                    length += ItemData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FolderDataBlock[] FolderData;
         public ItemDataBlock[] ItemData;
@@ -41484,6 +43868,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestInventoryAsset; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public QueryDataBlock QueryData;
 
         public RequestInventoryAssetPacket()
@@ -41593,6 +43986,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.InventoryAssetResponse; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += QueryData.Length;
+                return length;
+            }
+        }
         public QueryDataBlock QueryData;
 
         public InventoryAssetResponsePacket()
@@ -41775,6 +44177,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RemoveInventoryObjects; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                for (int j = 0; j < ItemData.Length; j++)
+                    length += ItemData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FolderDataBlock[] FolderData;
         public ItemDataBlock[] ItemData;
@@ -41959,6 +44374,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PurgeInventoryDescendents; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock InventoryData;
 
@@ -42240,6 +44665,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateTaskInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += UpdateData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public UpdateDataBlock UpdateData;
         public InventoryDataBlock InventoryData;
@@ -42398,6 +44834,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RemoveTaskInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock InventoryData;
 
@@ -42554,6 +45000,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MoveTaskInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock InventoryData;
 
@@ -42703,6 +45159,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestTaskInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryDataBlock InventoryData;
 
@@ -42834,6 +45300,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ReplyTaskInventory; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public InventoryDataBlock InventoryData;
 
         public ReplyTaskInventoryPacket()
@@ -43032,6 +45507,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DeRezObject; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += AgentBlock.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public AgentBlockBlock AgentBlock;
         public ObjectDataBlock[] ObjectData;
@@ -43164,6 +45651,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DeRezAck; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TransactionData.Length;
+                return length;
+            }
+        }
         public TransactionDataBlock TransactionData;
 
         public DeRezAckPacket()
@@ -43472,6 +45968,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RezObject; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RezData.Length;
+                length += InventoryData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RezDataBlock RezData;
         public InventoryDataBlock InventoryData;
@@ -43742,6 +46249,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RezObjectFromNotecard; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RezData.Length;
+                length += NotecardData.Length;
+                for (int j = 0; j < InventoryData.Length; j++)
+                    length += InventoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RezDataBlock RezData;
         public NotecardDataBlock NotecardData;
@@ -43955,6 +46475,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AcceptFriendship; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionBlock.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionBlockBlock TransactionBlock;
         public FolderDataBlock[] FolderData;
@@ -44124,6 +46656,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DeclineFriendship; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionBlockBlock TransactionBlock;
 
@@ -44235,6 +46777,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.FormFriendship; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentBlock.Length;
+                return length;
+            }
+        }
         public AgentBlockBlock AgentBlock;
 
         public FormFriendshipPacket()
@@ -44379,6 +46930,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TerminateFriendship; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ExBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ExBlockBlock ExBlock;
 
@@ -44531,6 +47092,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.OfferCallingCard; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += AgentBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public AgentBlockBlock AgentBlock;
 
@@ -44718,6 +47289,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AcceptCallingCard; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionBlock.Length;
+                for (int j = 0; j < FolderData.Length; j++)
+                    length += FolderData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionBlockBlock TransactionBlock;
         public FolderDataBlock[] FolderData;
@@ -44887,6 +47470,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DeclineCallingCard; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionBlockBlock TransactionBlock;
 
@@ -45170,6 +47763,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RezScript; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += UpdateBlock.Length;
+                length += InventoryBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public UpdateBlockBlock UpdateBlock;
         public InventoryBlockBlock InventoryBlock;
@@ -45379,6 +47983,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateInventoryItem; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public InventoryBlockBlock InventoryBlock;
 
@@ -45586,6 +48200,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateLandmarkForEvent; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += EventData.Length;
+                length += InventoryBlock.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EventDataBlock EventData;
         public InventoryBlockBlock InventoryBlock;
@@ -45700,6 +48325,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RegionHandleRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += RequestBlock.Length;
+                return length;
+            }
+        }
         public RequestBlockBlock RequestBlock;
 
         public RegionHandleRequestPacket()
@@ -45806,6 +48440,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RegionIDAndHandleReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ReplyBlock.Length;
+                return length;
+            }
+        }
         public ReplyBlockBlock ReplyBlock;
 
         public RegionIDAndHandleReplyPacket()
@@ -45987,6 +48630,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MoneyTransferRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
 
@@ -46137,6 +48790,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MoneyBalanceRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
 
@@ -46280,6 +48943,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MoneyBalanceReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public MoneyDataBlock MoneyData;
 
         public MoneyBalanceReplyPacket()
@@ -46460,6 +49132,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RoutedMoneyBalanceReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += TargetBlock.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public TargetBlockBlock TargetBlock;
         public MoneyDataBlock MoneyData;
 
@@ -46619,6 +49301,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ActivateGestures; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -46789,6 +49482,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DeactivateGestures; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -46931,6 +49635,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MuteListUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += MuteData.Length;
+                return length;
+            }
+        }
         public MuteDataBlock MuteData;
 
         public MuteListUpdatePacket()
@@ -47034,6 +49747,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UseCachedMuteList; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public UseCachedMuteListPacket()
@@ -47181,6 +49903,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GrantUserRights; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Rights.Length; j++)
+                    length += Rights[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RightsBlock[] Rights;
 
@@ -47345,6 +50078,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChangeUserRights; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Rights.Length; j++)
+                    length += Rights[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RightsBlock[] Rights;
 
@@ -47468,6 +50212,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.OnlineNotification; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < AgentBlock.Length; j++)
+                    length += AgentBlock[j].Length;
+                return length;
+            }
+        }
         public AgentBlockBlock[] AgentBlock;
 
         public OnlineNotificationPacket()
@@ -47586,6 +50340,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.OfflineNotification; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < AgentBlock.Length; j++)
+                    length += AgentBlock[j].Length;
+                return length;
+            }
+        }
         public AgentBlockBlock[] AgentBlock;
 
         public OfflineNotificationPacket()
@@ -47770,6 +50534,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetStartLocationRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += StartLocationData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public StartLocationDataBlock StartLocationData;
 
@@ -47908,6 +50682,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AssetUploadRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AssetBlock.Length;
+                return length;
+            }
+        }
         public AssetBlockBlock AssetBlock;
 
         public AssetUploadRequestPacket()
@@ -48017,6 +50800,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AssetUploadComplete; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AssetBlock.Length;
+                return length;
+            }
+        }
         public AssetBlockBlock AssetBlock;
 
         public AssetUploadCompletePacket()
@@ -48213,6 +51005,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateGroupRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -48382,6 +51184,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateGroupReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ReplyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ReplyDataBlock ReplyData;
 
@@ -48569,6 +51381,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateGroupInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -48728,6 +51550,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupRoleChanges; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < RoleChange.Length; j++)
+                    length += RoleChange[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RoleChangeBlock[] RoleChange;
 
@@ -48892,6 +51725,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.JoinGroupRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -49042,6 +51885,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.JoinGroupReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -49229,6 +52082,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EjectGroupMemberRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                for (int j = 0; j < EjectData.Length; j++)
+                    length += EjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public EjectDataBlock[] EjectData;
@@ -49433,6 +52298,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.EjectGroupMemberReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                length += EjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public EjectDataBlock EjectData;
@@ -49587,6 +52463,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LeaveGroupRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -49736,6 +52622,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LeaveGroupReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -49926,6 +52822,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.InviteGroupRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                for (int j = 0; j < InviteData.Length; j++)
+                    length += InviteData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public InviteDataBlock[] InviteData;
@@ -50095,6 +53003,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupProfileRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -50331,6 +53249,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupProfileReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -50490,6 +53418,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupAccountSummaryRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
 
@@ -50741,6 +53679,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupAccountSummaryReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
 
@@ -50900,6 +53848,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupAccountDetailsRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
 
@@ -51132,6 +54090,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupAccountDetailsReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                for (int j = 0; j < HistoryData.Length; j++)
+                    length += HistoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
         public HistoryDataBlock[] HistoryData;
@@ -51311,6 +54281,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupAccountTransactionsRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
 
@@ -51580,6 +54560,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupAccountTransactionsReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += MoneyData.Length;
+                for (int j = 0; j < HistoryData.Length; j++)
+                    length += HistoryData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MoneyDataBlock MoneyData;
         public HistoryDataBlock[] HistoryData;
@@ -51788,6 +54780,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupActiveProposalsRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                length += TransactionData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public TransactionDataBlock TransactionData;
@@ -52082,6 +55085,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupActiveProposalItemReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionData.Length;
+                for (int j = 0; j < ProposalData.Length; j++)
+                    length += ProposalData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionDataBlock TransactionData;
         public ProposalDataBlock[] ProposalData;
@@ -52290,6 +55305,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupVoteHistoryRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                length += TransactionData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public TransactionDataBlock TransactionData;
@@ -52659,6 +55685,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupVoteHistoryItemReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += TransactionData.Length;
+                length += HistoryItemData.Length;
+                for (int j = 0; j < VoteItem.Length; j++)
+                    length += VoteItem[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TransactionDataBlock TransactionData;
         public HistoryItemDataBlock HistoryItemData;
@@ -52862,6 +55901,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.StartGroupProposal; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ProposalData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ProposalDataBlock ProposalData;
 
@@ -53034,6 +56083,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupProposalBallot; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ProposalData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ProposalDataBlock ProposalData;
 
@@ -53186,6 +56245,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupMembersRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -53421,6 +56490,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupMembersReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                for (int j = 0; j < MemberData.Length; j++)
+                    length += MemberData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public MemberDataBlock[] MemberData;
@@ -53556,6 +56637,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ActivateGroup; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ActivateGroupPacket()
@@ -53704,6 +56794,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetGroupContribution; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -53894,6 +56994,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SetGroupAcceptNotices; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                length += NewData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
         public NewDataBlock NewData;
@@ -54051,6 +57162,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupRoleDataRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -54300,6 +57421,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupRoleDataReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                for (int j = 0; j < RoleData.Length; j++)
+                    length += RoleData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
         public RoleDataBlock[] RoleData;
@@ -54472,6 +57605,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupRoleMembersRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += GroupData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock GroupData;
 
@@ -54630,6 +57773,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupRoleMembersReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < MemberData.Length; j++)
+                    length += MemberData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public MemberDataBlock[] MemberData;
 
@@ -54762,6 +57916,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupTitlesRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public GroupTitlesRequestPacket()
@@ -54931,6 +58094,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupTitlesReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < GroupData.Length; j++)
+                    length += GroupData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock[] GroupData;
 
@@ -55064,6 +58238,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupTitleUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public GroupTitleUpdatePacket()
@@ -55270,6 +58453,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupRoleUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < RoleData.Length; j++)
+                    length += RoleData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RoleDataBlock[] RoleData;
 
@@ -55396,6 +58590,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LiveHelpGroupRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += RequestData.Length;
+                return length;
+            }
+        }
         public RequestDataBlock RequestData;
 
         public LiveHelpGroupRequestPacket()
@@ -55521,6 +58724,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LiveHelpGroupReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ReplyData.Length;
+                return length;
+            }
+        }
         public ReplyDataBlock ReplyData;
 
         public LiveHelpGroupReplyPacket()
@@ -55627,6 +58839,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentWearablesRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentWearablesRequestPacket()
@@ -55780,6 +59001,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentWearablesUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < WearableData.Length; j++)
+                    length += WearableData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public WearableDataBlock[] WearableData;
 
@@ -55948,6 +59180,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentIsNowWearing; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < WearableData.Length; j++)
+                    length += WearableData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public WearableDataBlock[] WearableData;
 
@@ -56119,6 +59362,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentCachedTexture; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < WearableData.Length; j++)
+                    length += WearableData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public WearableDataBlock[] WearableData;
 
@@ -56308,6 +59562,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentCachedTextureResponse; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < WearableData.Length; j++)
+                    length += WearableData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public WearableDataBlock[] WearableData;
 
@@ -56434,6 +59699,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentDataUpdateRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentDataUpdateRequestPacket()
@@ -56613,6 +59887,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentDataUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentDataUpdatePacket()
@@ -56742,6 +60025,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.GroupDataUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < AgentGroupData.Length; j++)
+                    length += AgentGroupData[j].Length;
+                return length;
+            }
+        }
         public AgentGroupDataBlock[] AgentGroupData;
 
         public GroupDataUpdatePacket()
@@ -56930,6 +60223,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentGroupDataUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < GroupData.Length; j++)
+                    length += GroupData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock[] GroupData;
 
@@ -57057,6 +60361,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentDropGroup; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentDropGroupPacket()
@@ -57165,6 +60478,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateTrustedCircuit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += DataBlock.Length;
+                return length;
+            }
+        }
         public DataBlockBlock DataBlock;
 
         public CreateTrustedCircuitPacket()
@@ -57268,6 +60590,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DenyTrustedCircuit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += DataBlock.Length;
+                return length;
+            }
+        }
         public DataBlockBlock DataBlock;
 
         public DenyTrustedCircuitPacket()
@@ -57333,6 +60664,14 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestTrustedCircuit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                return length;
+            }
+        }
 
         public RequestTrustedCircuitPacket()
         {
@@ -57526,6 +60865,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RezSingleAttachmentFromInv; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
 
@@ -57774,6 +61123,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RezMultipleAttachmentsFromInv; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += HeaderData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public HeaderDataBlock HeaderData;
         public ObjectDataBlock[] ObjectData;
@@ -57906,6 +61267,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DetachAttachmentIntoInv; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public ObjectDataBlock ObjectData;
 
         public DetachAttachmentIntoInvPacket()
@@ -58091,6 +61461,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CreateNewOutfitAttachments; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += HeaderData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public HeaderDataBlock HeaderData;
         public ObjectDataBlock[] ObjectData;
@@ -58222,6 +61604,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UserInfoRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public UserInfoRequestPacket()
@@ -58400,6 +61791,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UserInfoReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += UserData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public UserDataBlock UserData;
 
@@ -58568,6 +61969,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UpdateUserInfo; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += UserData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public UserDataBlock UserData;
 
@@ -58747,6 +62158,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.InitiateDownload; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += FileData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public FileDataBlock FileData;
 
@@ -58932,6 +62353,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SystemMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += MethodData.Length;
+                for (int j = 0; j < ParamList.Length; j++)
+                    length += ParamList[j].Length;
+                return length;
+            }
+        }
         public MethodDataBlock MethodData;
         public ParamListBlock[] ParamList;
 
@@ -59068,6 +62500,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapLayerRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public MapLayerRequestPacket()
@@ -59224,6 +62665,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapLayerReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < LayerData.Length; j++)
+                    length += LayerData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public LayerDataBlock[] LayerData;
 
@@ -59410,6 +62862,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapBlockRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += PositionData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public PositionDataBlock PositionData;
 
@@ -59584,6 +63046,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapNameRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += NameData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public NameDataBlock NameData;
 
@@ -59772,6 +63244,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapBlockReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock[] Data;
 
@@ -59948,6 +63431,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapItemRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RequestData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RequestDataBlock RequestData;
 
@@ -60166,6 +63659,18 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MapItemReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RequestData.Length;
+                for (int j = 0; j < Data.Length; j++)
+                    length += Data[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RequestDataBlock RequestData;
         public DataBlock[] Data;
@@ -60397,6 +63902,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SendPostcard; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public SendPostcardPacket()
@@ -60506,6 +64020,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelMediaCommandMessage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += CommandBlock.Length;
+                return length;
+            }
+        }
         public CommandBlockBlock CommandBlock;
 
         public ParcelMediaCommandMessagePacket()
@@ -60711,6 +64234,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelMediaUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += DataBlock.Length;
+                length += DataBlockExtended.Length;
+                return length;
+            }
+        }
         public DataBlockBlock DataBlock;
         public DataBlockExtendedBlock DataBlockExtended;
 
@@ -60885,6 +64418,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LandStatRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += RequestData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RequestDataBlock RequestData;
 
@@ -61088,6 +64631,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LandStatReply; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += RequestData.Length;
+                for (int j = 0; j < ReportData.Length; j++)
+                    length += ReportData[j].Length;
+                return length;
+            }
+        }
         public RequestDataBlock RequestData;
         public ReportDataBlock[] ReportData;
 
@@ -61324,6 +64878,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.Error; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += Data.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public DataBlock Data;
 
@@ -61477,6 +65041,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectIncludeInSearch; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -61600,6 +65175,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PacketAck; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                for (int j = 0; j < Packets.Length; j++)
+                    length += Packets[j].Length;
+                return length;
+            }
+        }
         public PacketsBlock[] Packets;
 
         public PacketAckPacket()
@@ -61722,6 +65307,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.OpenCircuit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += CircuitInfo.Length;
+                return length;
+            }
+        }
         public CircuitInfoBlock CircuitInfo;
 
         public OpenCircuitPacket()
@@ -61787,6 +65381,14 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CloseCircuit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                return length;
+            }
+        }
 
         public CloseCircuitPacket()
         {
@@ -62018,6 +65620,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectAdd; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
 
@@ -62190,6 +65802,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.MultipleObjectUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -62358,6 +65981,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestMultipleObjects; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -62526,6 +66160,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectPosition; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock[] ObjectData;
 
@@ -62694,6 +66339,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestObjectPropertiesFamily; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ObjectDataBlock ObjectData;
 
@@ -62890,6 +66545,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CoarseLocationUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                for (int j = 0; j < Location.Length; j++)
+                    length += Location[j].Length;
+                length += Index.Length;
+                for (int j = 0; j < AgentData.Length; j++)
+                    length += AgentData[j].Length;
+                return length;
+            }
+        }
         public LocationBlock[] Location;
         public IndexBlock Index;
         public AgentDataBlock[] AgentData;
@@ -63142,6 +66810,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CrossedRegion; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                length += RegionData.Length;
+                length += Info.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RegionDataBlock RegionData;
         public InfoBlock Info;
@@ -63258,6 +66937,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ConfirmEnableSimulator; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ConfirmEnableSimulatorPacket()
@@ -63512,6 +67200,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectProperties; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public ObjectDataBlock[] ObjectData;
 
         public ObjectPropertiesPacket()
@@ -63706,6 +67404,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectPropertiesFamily; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += ObjectData.Length;
+                return length;
+            }
+        }
         public ObjectDataBlock ObjectData;
 
         public ObjectPropertiesFamilyPacket()
@@ -63866,6 +67573,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelPropertiesRequest; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                length += ParcelData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public ParcelDataBlock ParcelData;
 
@@ -63987,6 +67704,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AttachedSound; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += DataBlock.Length;
+                return length;
+            }
+        }
         public DataBlockBlock DataBlock;
 
         public AttachedSoundPacket()
@@ -64093,6 +67819,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AttachedSoundGainChange; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += DataBlock.Length;
+                return length;
+            }
+        }
         public DataBlockBlock DataBlock;
 
         public AttachedSoundGainChangePacket()
@@ -64202,6 +67937,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.PreloadSound; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                for (int j = 0; j < DataBlock.Length; j++)
+                    length += DataBlock[j].Length;
+                return length;
+            }
+        }
         public DataBlockBlock[] DataBlock;
 
         public PreloadSoundPacket()
@@ -64393,6 +68138,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ViewerEffect; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 8;
+                length += AgentData.Length;
+                for (int j = 0; j < Effect.Length; j++)
+                    length += Effect[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public EffectBlock[] Effect;
 
@@ -64520,6 +68276,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.StartPingCheck; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += PingID.Length;
+                return length;
+            }
+        }
         public PingIDBlock PingID;
 
         public StartPingCheckPacket()
@@ -64623,6 +68388,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CompletePingCheck; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += PingID.Length;
+                return length;
+            }
+        }
         public PingIDBlock PingID;
 
         public CompletePingCheckPacket()
@@ -64759,6 +68533,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentUpdatePacket()
@@ -64961,6 +68744,19 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentAnimation; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                for (int j = 0; j < AnimationList.Length; j++)
+                    length += AnimationList[j].Length;
+                for (int j = 0; j < PhysicalAvatarEventList.Length; j++)
+                    length += PhysicalAvatarEventList[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public AnimationListBlock[] AnimationList;
         public PhysicalAvatarEventListBlock[] PhysicalAvatarEventList;
@@ -65148,6 +68944,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentRequestSit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                length += TargetObject.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public TargetObjectBlock TargetObject;
 
@@ -65260,6 +69066,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentSit; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public AgentSitPacket()
@@ -65416,6 +69231,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.RequestImage; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                for (int j = 0; j < RequestImage.Length; j++)
+                    length += RequestImage[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public RequestImageBlock[] RequestImage;
 
@@ -65604,6 +69430,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ImageData; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += ImageID.Length;
+                length += ImageData.Length;
+                return length;
+            }
+        }
         public ImageIDBlock ImageID;
         public ImageDataBlock ImageData;
 
@@ -65771,6 +69607,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ImagePacket; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += ImageID.Length;
+                length += ImageData.Length;
+                return length;
+            }
+        }
         public ImageIDBlock ImageID;
         public ImageDataBlock ImageData;
 
@@ -65934,6 +69780,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.LayerData; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += LayerID.Length;
+                length += LayerData.Length;
+                return length;
+            }
+        }
         public LayerIDBlock LayerID;
         public LayerDataBlock LayerData;
 
@@ -66356,6 +70212,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += RegionData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public RegionDataBlock RegionData;
         public ObjectDataBlock[] ObjectData;
 
@@ -66542,6 +70409,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectUpdateCompressed; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += RegionData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public RegionDataBlock RegionData;
         public ObjectDataBlock[] ObjectData;
 
@@ -66713,6 +70591,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ObjectUpdateCached; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += RegionData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public RegionDataBlock RegionData;
         public ObjectDataBlock[] ObjectData;
 
@@ -66912,6 +70801,17 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ImprovedTerseObjectUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += RegionData.Length;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public RegionDataBlock RegionData;
         public ObjectDataBlock[] ObjectData;
 
@@ -67035,6 +70935,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.KillObject; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                for (int j = 0; j < ObjectData.Length; j++)
+                    length += ObjectData[j].Length;
+                return length;
+            }
+        }
         public ObjectDataBlock[] ObjectData;
 
         public KillObjectPacket()
@@ -67182,6 +71092,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.TransferPacket; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += TransferData.Length;
+                return length;
+            }
+        }
         public TransferDataBlock TransferData;
 
         public TransferPacketPacket()
@@ -67343,6 +71262,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SendXferPacket; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += XferID.Length;
+                length += DataPacket.Length;
+                return length;
+            }
+        }
         public XferIDBlock XferID;
         public DataPacketBlock DataPacket;
 
@@ -67454,6 +71383,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ConfirmXferPacket; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += XferID.Length;
+                return length;
+            }
+        }
         public XferIDBlock XferID;
 
         public ConfirmXferPacketPacket()
@@ -67690,6 +71628,21 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarAnimation; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += Sender.Length;
+                for (int j = 0; j < AnimationList.Length; j++)
+                    length += AnimationList[j].Length;
+                for (int j = 0; j < AnimationSourceList.Length; j++)
+                    length += AnimationSourceList[j].Length;
+                for (int j = 0; j < PhysicalAvatarEventList.Length; j++)
+                    length += PhysicalAvatarEventList[j].Length;
+                return length;
+            }
+        }
         public SenderBlock Sender;
         public AnimationListBlock[] AnimationList;
         public AnimationSourceListBlock[] AnimationSourceList;
@@ -67906,6 +71859,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarSitResponse; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += SitObject.Length;
+                length += SitTransform.Length;
+                return length;
+            }
+        }
         public SitObjectBlock SitObject;
         public SitTransformBlock SitTransform;
 
@@ -68015,6 +71978,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.CameraConstraint; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += CameraCollidePlane.Length;
+                return length;
+            }
+        }
         public CameraCollidePlaneBlock CameraCollidePlane;
 
         public CameraConstraintPacket()
@@ -68374,6 +72346,16 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ParcelProperties; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += ParcelData.Length;
+                length += AgeVerificationBlock.Length;
+                return length;
+            }
+        }
         public ParcelDataBlock ParcelData;
         public AgeVerificationBlockBlock AgeVerificationBlock;
 
@@ -68805,6 +72787,25 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChildAgentUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                for (int j = 0; j < GroupData.Length; j++)
+                    length += GroupData[j].Length;
+                for (int j = 0; j < AnimationData.Length; j++)
+                    length += AnimationData[j].Length;
+                for (int j = 0; j < GranterBlock.Length; j++)
+                    length += GranterBlock[j].Length;
+                for (int j = 0; j < NVPairData.Length; j++)
+                    length += NVPairData[j].Length;
+                for (int j = 0; j < VisualParam.Length; j++)
+                    length += VisualParam[j].Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
         public GroupDataBlock[] GroupData;
         public AnimationDataBlock[] AnimationData;
@@ -69018,6 +73019,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChildAgentAlive; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ChildAgentAlivePacket()
@@ -69154,6 +73164,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ChildAgentPositionUpdate; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += AgentData.Length;
+                return length;
+            }
+        }
         public AgentDataBlock AgentData;
 
         public ChildAgentPositionUpdatePacket()
@@ -69275,6 +73294,15 @@ namespace OpenMetaverse.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.SoundTrigger; } }
+        public override int Length
+        {
+            get
+            {
+                int length = 7;
+                length += SoundData.Length;
+                return length;
+            }
+        }
         public SoundDataBlock SoundData;
 
         public SoundTriggerPacket()
