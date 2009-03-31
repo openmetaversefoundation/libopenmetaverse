@@ -601,7 +601,7 @@ namespace OpenMetaverse
             Client.Network.SendPacket(degrab, simulator);
         }
 
-        /// <summary>
+                /// <summary>
         /// Create, or "rez" a new prim object in a simulator
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
@@ -620,6 +620,29 @@ namespace OpenMetaverse
         public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position,
             Vector3 scale, Quaternion rotation)
         {
+            AddPrim(simulator, prim, groupID, position, scale, rotation, PrimFlags.CreateSelected);
+        }
+
+        /// <summary>
+        /// Create, or "rez" a new prim object in a simulator
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
+        /// <param name="prim">Data describing the prim object to rez</param>
+        /// <param name="groupID">Group ID that this prim will be set to, or UUID.Zero if you
+        /// do not want the object to be associated with a specific group</param>
+        /// <param name="position">An approximation of the position at which to rez the prim</param>
+        /// <param name="scale">Scale vector to size this prim</param>
+        /// <param name="rotation">Rotation quaternion to rotate this prim</param>
+        /// <param name="createFlags">Specify the <seealso cref="PrimFlags"/></param>
+        /// <remarks>Due to the way client prim rezzing is done on the server,
+        /// the requested position for an object is only close to where the prim
+        /// actually ends up. If you desire exact placement you'll need to 
+        /// follow up by moving the object after it has been created. This
+        /// function will not set textures, light and flexible data, or other 
+        /// extended primitive properties</remarks>
+        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position,
+            Vector3 scale, Quaternion rotation, PrimFlags createFlags)
+        {
             ObjectAddPacket packet = new ObjectAddPacket();
 
             packet.AgentData.AgentID = Client.Self.AgentID;
@@ -627,7 +650,7 @@ namespace OpenMetaverse
             packet.AgentData.GroupID = groupID;
 
             packet.ObjectData.State = prim.State;
-            packet.ObjectData.AddFlags = (uint)PrimFlags.CreateSelected;
+            packet.ObjectData.AddFlags = (uint)createFlags;
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
             packet.ObjectData.Material = (byte)prim.Material;
