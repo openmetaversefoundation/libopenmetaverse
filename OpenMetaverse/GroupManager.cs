@@ -1147,8 +1147,11 @@ namespace OpenMetaverse
 
                     currentGroups[block.GroupID] = group;
 
-                    if (!GroupName2KeyCache.ContainsKey(block.GroupID))
-                        GroupName2KeyCache.SafeAdd(block.GroupID, Utils.BytesToString(block.GroupName));
+                    lock (GroupName2KeyCache.Dictionary)
+                    {
+                        if (!GroupName2KeyCache.Dictionary.ContainsKey(block.GroupID))
+                            GroupName2KeyCache.Dictionary.Add(block.GroupID, Utils.BytesToString(block.GroupName));
+                    }
                 }
 
                 try { OnCurrentGroups(currentGroups); }
