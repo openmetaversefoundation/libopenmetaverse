@@ -43,16 +43,40 @@ namespace OpenMetaverse
         /// <summary>Rate that the bucket fills, in bytes per millisecond. If
         /// zero, the bucket always remains full</summary>
         int tokensPerMS;
-        /// <summary>Time of the last drip, in system ticks</summary>
-        int lastDrip;
         /// <summary>Number of tokens currently in the bucket</summary>
         int content;
+        /// <summary>Time of the last drip, in system ticks</summary>
+        int lastDrip;
 
+        #region Properties
+
+        /// <summary>
+        /// The parent bucket of this bucket, or null if this bucket has no
+        /// parent. The parent bucket will limit the aggregate bandwidth of all
+        /// of its children buckets
+        /// </summary>
+        public TokenBucket Parent
+        {
+            get { return parent; }
+        }
+
+        /// <summary>
+        /// Maximum burst rate in bytes per second. This is the maximum number
+        /// of tokens that can accumulate in the bucket at any one time
+        /// </summary>
         public int MaxBurst
         {
             get { return maxBurst; }
             set { maxBurst = (value >= 0 ? value : 0); }
         }
+
+        /// <summary>
+        /// The speed limit of this bucket in bytes per second. This is the
+        /// number of tokens that are added to the bucket per second
+        /// </summary>
+        /// <remarks>Tokens are added to the bucket any time 
+        /// <seealso cref="RemoveTokens"/> is called, at the granularity of
+        /// the system tick interval (typically around 15-22ms)</remarks>
         public int DripRate
         {
             get { return tokensPerMS * 1000; }
@@ -66,7 +90,20 @@ namespace OpenMetaverse
                     tokensPerMS = value / 1000;
             }
         }
-        public int Content { get { return content; } }
+
+        /// <summary>
+        /// The number of bytes that can be sent at this moment. This is the
+        /// current number of tokens in the bucket
+        /// <remarks>If this bucket has a parent bucket that does not have
+        /// enough tokens for a request, <seealso cref="RemoveTokens"/> will 
+        /// return false regardless of the content of this bucket</remarks>
+        /// </summary>
+        public int Content
+        {
+            get { return content; }
+        }
+
+        #endregion Properties
 
         /// <summary>
         /// Default constructor
@@ -93,23 +130,8 @@ namespace OpenMetaverse
         /// the bucket, otherwise false</returns>
         public bool RemoveTokens(int amount)
         {
-            if (maxBurst == 0)
-                return true;
-
-            Drip();
-
-            if (content - amount >= 0)
-            {
-                if (parent != null && !parent.RemoveTokens(amount))
-                    return false;
-
-                content -= amount;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            bool dummy;
+            return RemoveTokens(amount, out dummy);
         }
 
         /// <summary>
@@ -150,7 +172,7 @@ namespace OpenMetaverse
         /// call to Drip
         /// </summary>
         /// <returns>True if tokens were added to the bucket, otherwise false</returns>
-        bool Drip()
+        private bool Drip()
         {
             if (tokensPerMS == 0)
             {
