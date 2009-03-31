@@ -88,7 +88,10 @@ namespace OpenMetaverse.GUI
 
         void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
-            LogText("Entered region \"" + Client.Network.CurrentSim.Name + "\".", Color.Black);
+            if (Client.Network.CurrentSim != null)
+            {
+                LogText("Entered region \"" + Client.Network.CurrentSim.Name + "\".", Color.Black);
+            }
         }
 
         void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)

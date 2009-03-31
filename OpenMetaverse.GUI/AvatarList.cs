@@ -304,18 +304,17 @@ namespace OpenMetaverse.GUI
 
         private void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
         {
-            if (visualParams.Count > 105)
+            if (visualParams.Count > 80)
             {
                 lock (_TrackedAvatars)
                 {
                     TrackedAvatar trackedAvatar;
                     if (_TrackedAvatars.TryGetValue(avatarID, out trackedAvatar))
-                    {
-                        
+                    {                        
                         this.BeginInvoke((MethodInvoker)delegate
                         {
                             byte param = visualParams[80];
-                            if (param > 117)
+                            if (param > 93)
                                 trackedAvatar.ListViewItem.ForeColor = Color.Blue;
                             else
                                 trackedAvatar.ListViewItem.ForeColor = Color.Magenta;

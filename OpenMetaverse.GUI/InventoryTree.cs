@@ -155,7 +155,10 @@ namespace OpenMetaverse.GUI
         void Network_OnLogin(LoginStatus login, string message)
         {
             if (login == LoginStatus.Success)
-                UpdateFolder(Client.Inventory.Store.RootFolder.UUID);
+            {
+                if (Client.Inventory.Store != null)
+                    UpdateFolder(Client.Inventory.Store.RootFolder.UUID);
+            }
         }
 
         void Inventory_OnFolderUpdated(UUID folderID)
