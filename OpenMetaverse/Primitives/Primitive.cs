@@ -1540,7 +1540,7 @@ namespace OpenMetaverse
                 PrimData.Material.GetHashCode() ^
                 MediaURL.GetHashCode() ^
                 //TODO: NameValues?
-                Properties.OwnerID.GetHashCode() ^
+                (Properties != null ? Properties.OwnerID.GetHashCode() : 0) ^
                 ParentID.GetHashCode() ^
                 PrimData.PathBegin.GetHashCode() ^
                 PrimData.PathCurve.GetHashCode() ^
