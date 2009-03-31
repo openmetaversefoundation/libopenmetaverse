@@ -638,11 +638,8 @@ namespace OpenMetaverse
             lock (simulator.avatarPositions)
             {
                 // remove stale entries
-                foreach(UUID trackedID in simulator.avatarPositions.Dictionary.Keys)
-                {
-                    if (removedEntries.Contains(trackedID))
-                        simulator.avatarPositions.Dictionary.Remove(trackedID);
-                }
+                foreach(UUID trackedID in removedEntries)
+                    simulator.avatarPositions.Dictionary.Remove(trackedID);
 
                 // add or update tracked info, and record who is new
                 foreach (KeyValuePair<UUID, Vector3> entry in coarseEntries)
