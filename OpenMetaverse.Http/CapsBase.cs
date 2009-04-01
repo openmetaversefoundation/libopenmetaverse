@@ -209,6 +209,7 @@ namespace OpenMetaverse.Http
                     }
                 }
             );
+            asyncThread.IsBackground = true;
             asyncThread.Start();
         }
 

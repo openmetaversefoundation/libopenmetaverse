@@ -132,15 +132,15 @@ namespace OpenMetaverse.Http
 
                 if (ack != currentID - 1 && ack != 0)
                 {
-                    Logger.Log.WarnFormat("[EventQueue] Received an ack for id {0}, last id sent was {1}",
-                        ack, currentID - 1);
+                    //Logger.Log.WarnFormat("[EventQueue] Received an ack for id {0}, last id sent was {1}",
+                    //    ack, currentID - 1);
                 }
 
                 if (!done)
                 {
                     if (threadRunning)
                     {
-                        Logger.Log.Info("[EventQueue] New connection opened to the event queue while a previous connection is open. Closing old connection");
+                        //Logger.Log.Debug("[EventQueue] New connection opened to the event queue while a previous connection is open. Closing old connection");
                         
                         // If the old connection is still open, queue a signal to close it. Otherwise, just wait for the closed
                         // connection to be detected by the handler thread
@@ -150,7 +150,7 @@ namespace OpenMetaverse.Http
                         while (threadRunning && running)
                             Thread.Sleep(50);
 
-                        Logger.Log.Info("[EventQueue] Old connection closed");
+                        //Logger.Log.Debug("[EventQueue] Old connection closed");
                     }
 
                     this.context = context;
@@ -159,6 +159,7 @@ namespace OpenMetaverse.Http
 
                     // Spawn a new thread to hold the connection open and return from our precious IOCP thread
                     Thread thread = new Thread(new ThreadStart(EventQueueThread));
+                    thread.IsBackground = true;
                     thread.Start();
 
                     // Tell HttpServer to leave the connection open
@@ -166,7 +167,7 @@ namespace OpenMetaverse.Http
                 }
                 else
                 {
-                    Logger.Log.InfoFormat("[EventQueue] Shutting down the event queue {0} at the client's request",
+                    Logger.Log.DebugFormat("[EventQueue] Shutting down the event queue {0} at the client's request",
                         request.Uri);
                     Stop();
 
@@ -256,7 +257,7 @@ namespace OpenMetaverse.Http
 
         ThreadDone:
             threadRunning = false;
-            Logger.Log.Debug("[EventQueue] Handler thread is exiting");
+            //Logger.Log.Debug("[EventQueue] Handler thread is exiting");
         }
 
         void SendResponse(IHttpClientContext context, IHttpRequest request, IHttpResponse response, List<EventQueueEvent> eventsToSend)
@@ -291,7 +292,7 @@ namespace OpenMetaverse.Http
             }
             else
             {
-                Logger.Log.Debug("[EventQueue] Sending a timeout response over the event queue");
+                //Logger.Log.Debug("[EventQueue] Sending a timeout response over the event queue");
 
                 // The 502 response started as a bug in the LL event queue server implementation,
                 // but is now hardcoded into the protocol as the code to use for a timeout
