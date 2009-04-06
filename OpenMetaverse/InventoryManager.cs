@@ -1153,6 +1153,7 @@ namespace OpenMetaverse
                     "inventory-lib-owner", "inventory-skel-lib"});
         }
 
+        #region Fetch
 
         /// <summary>
         /// Fetch an inventory item from the dataserver
@@ -2596,7 +2597,7 @@ namespace OpenMetaverse
             _Client.Network.SendPacket(remove, simulator);
         }
 
-                /// <summary>
+        /// <summary>
         /// Copy an InventoryScript item from the Agents Inventory into a primitives task inventory
         /// </summary>
         /// <param name="objectLocalID">An unsigned integer representing a primitive being simulated</param>
