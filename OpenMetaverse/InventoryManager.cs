@@ -1153,7 +1153,6 @@ namespace OpenMetaverse
                     "inventory-lib-owner", "inventory-skel-lib"});
         }
 
-        #region Fetch
 
         /// <summary>
         /// Fetch an inventory item from the dataserver
@@ -2595,6 +2594,60 @@ namespace OpenMetaverse
             remove.InventoryData.LocalID = objectLocalID;
 
             _Client.Network.SendPacket(remove, simulator);
+        }
+
+                /// <summary>
+        /// Copy an InventoryScript item from the Agents Inventory into a primitives task inventory
+        /// </summary>
+        /// <param name="objectLocalID">An unsigned integer representing a primitive being simulated</param>
+        /// <param name="item">An <seealso cref="InventoryItem"/> which represents a script object from the agents inventory</param>
+        /// <returns>A Unique Transaction ID</returns>
+        /// <remarks>
+        /// <code>
+        ///    uint Prim = 95899503; // Fake prim ID
+        ///    UUID Script = UUID.Parse("92a7fe8a-e949-dd39-a8d8-1681d8673232"); // Fake Script UUID in Inventory
+        ///
+        ///    Client.Inventory.FolderContents(Client.Inventory.FindFolderForType(AssetType.LSLText), Client.Self.AgentID, 
+        ///        false, true, InventorySortOrder.ByName, 10000);
+        ///
+        ///    UUID Transaction = Client.Inventory.RezScript(Prim, (InventoryItem)Client.Inventory.Store[Script]);
+        /// </code>
+        /// </remarks>
+        public UUID CopyScriptToTask(uint objectLocalID, InventoryItem item)
+        {
+            UUID transactionID = UUID.Random();
+
+            RezScriptPacket ScriptPacket = new RezScriptPacket();
+            ScriptPacket.AgentData.AgentID = _Client.Self.AgentID;
+            ScriptPacket.AgentData.SessionID = _Client.Self.SessionID;
+
+            ScriptPacket.UpdateBlock.ObjectLocalID = objectLocalID;
+
+            ScriptPacket.InventoryBlock.ItemID = item.UUID;
+            ScriptPacket.InventoryBlock.FolderID = item.ParentUUID;
+            ScriptPacket.InventoryBlock.CreatorID = item.CreatorID;
+            ScriptPacket.InventoryBlock.OwnerID = item.OwnerID;
+            ScriptPacket.InventoryBlock.GroupID = item.GroupID;
+            ScriptPacket.InventoryBlock.BaseMask = (uint)item.Permissions.BaseMask;
+            ScriptPacket.InventoryBlock.OwnerMask = (uint)item.Permissions.OwnerMask;
+            ScriptPacket.InventoryBlock.GroupMask = (uint)item.Permissions.GroupMask;
+            ScriptPacket.InventoryBlock.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            ScriptPacket.InventoryBlock.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+            ScriptPacket.InventoryBlock.GroupOwned = item.GroupOwned;
+            ScriptPacket.InventoryBlock.TransactionID = transactionID;
+            ScriptPacket.InventoryBlock.Type = (sbyte)item.AssetType;
+            ScriptPacket.InventoryBlock.InvType = (sbyte)item.InventoryType;
+            ScriptPacket.InventoryBlock.Flags = (uint)item.Flags;
+            ScriptPacket.InventoryBlock.SaleType = (byte)item.SaleType;
+            ScriptPacket.InventoryBlock.SalePrice = item.SalePrice;
+            ScriptPacket.InventoryBlock.Name = Utils.StringToBytes(item.Name);
+            ScriptPacket.InventoryBlock.Description = Utils.StringToBytes(item.Description);
+            ScriptPacket.InventoryBlock.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
+            ScriptPacket.InventoryBlock.CRC = ItemCRC(item);
+
+            _Client.Network.SendPacket(ScriptPacket);
+
+            return transactionID;
         }
 
         #endregion Task
