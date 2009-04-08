@@ -138,7 +138,6 @@ namespace OpenMetaverse.TestClient
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
             if (p.AgentData.AgentID == sim.Client.Self.AgentID)
             {
-                Console.WriteLine("Got the group ID for " + sim.Client.ToString() + ", requesting group members...");
                 GroupID = p.AgentData.ActiveGroupID;
 
                 sim.Client.Groups.RequestGroupMembers(GroupID);
@@ -147,7 +146,6 @@ namespace OpenMetaverse.TestClient
 
         private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
         {
-            Console.WriteLine("Got " + members.Count + " group members.");
             GroupMembers = members;
         }
 
