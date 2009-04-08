@@ -71,38 +71,17 @@ namespace OpenMetaverse
     /// </summary>
     public struct LoginParams
     {
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string URI;
         public int Timeout;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string MethodName;
-        //[XmlRpcMember("first")]
         public string FirstName;
-        //[XmlRpcMember("last")]
         public string LastName;
-        //[XmlRpcMember("passwd")]
         public string Password;
-        //[XmlRpcMember("start")]
         public string Start;
-        //[XmlRpcMember("channel")]
         public string Channel;
-        //[XmlRpcMember("version")]
         public string Version;
-        //[XmlRpcMember("platform")]
         public string Platform;
-        //[XmlRpcMember("mac")]
         public string MAC;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
-        //[XmlRpcMember("viewer_digest")]
-        //public string viewer_digest;
-        //public string id0;
-        /* Login via XML-RPC Specific Members */
-        //public string user-agent;
-        //public string author;
-        //public string agree_to_tos;
-        //public string read_critical;
-        //public string viewer_digest;
-        //public string[] options;
         public string ViewerDigest;
         public string ID0;
         public string UserAgent;
@@ -112,66 +91,6 @@ namespace OpenMetaverse
         public string[] Options;
     }
 
-    #region XML-RPC login respons structs
-    /// <summary>
-    /// Represents a folder entry returned during login
-    /// </summary>
-    public struct InventorySkeletonEntry
-    {
-        /// <summary>
-        /// The default <seealso cref="AssetType"/> stored in this folder
-        /// </summary>
-        public int type_default;
-        /// <summary>The version number of this folder asset</summary>
-        public int version;
-        /// <summary>The name of this foler</summary>
-        public string name;
-        /// <summary>This folders <seealso cref="UUID"/></summary>
-        public string folder_id;
-        /// <summary>The parent folders <seealso cref="UUID"/></summary>
-        public string parent_id;
-    }
-
-    /// <summary>
-    /// Represents the root folder of the inventory tree
-    /// </summary>
-    public struct InventoryRootEntry
-    {
-        /// <summary>The root folders <seealso cref="UUID"/> represented as a string</summary>
-        public string folder_id;
-    }
-
-    public struct CategoryEntry
-    {
-        public int category_id;
-        public string category_name;
-    }
-
-    public struct EventNotificationEntry
-    {
-        // ???
-    }
-
-    public struct GlobalTextureEntry
-    {
-        public string cloud_texture_id;
-        public string sun_texture_id;
-        public string moon_texture_id;
-    }
-
-    public struct InventoryLibraryOwnerEntry
-    {
-        public string agent_id;
-    }
-
-    public struct LoginFlagsEntry
-    {
-        public string ever_logged_in;
-        public string daylight_savings;
-        public string stipend_since_login;
-        public string gendered;
-    }
-
     public struct BuddyListEntry
     {
         public int buddy_rights_given;
@@ -179,23 +98,6 @@ namespace OpenMetaverse
         public int buddy_rights_has;
     }
 
-    public struct GestureEntry
-    {
-        public string asset_id;
-        public string item_id;
-    }
-
-    public struct UIConfigEntry
-    {
-        public string allow_first_life;
-    }
-
-    public struct OutfitEntry
-    {
-        // ???
-    }
-    #endregion
-  
     /// <summary>
     /// 
     /// </summary>
@@ -204,90 +106,51 @@ namespace OpenMetaverse
         /// <summary>true, false, indeterminate</summary>
         //[XmlRpcMember("login")]
         public string Login;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public bool Success;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string Reason;
         /// <summary>Login message of the day</summary>
-        //[XmlRpcMember("message")]
         public string Message;
-        //[XmlRpcMember("agent_id")]
         public UUID AgentID;
-        //[XmlRpcMember("session_id")]
         public UUID SessionID;
-        //[XmlRpcMember("secure_session_id")]
         public UUID SecureSessionID;
-        //[XmlRpcMember("first_name")]
         public string FirstName;
-        //[XmlRpcMember("last_name")]
         public string LastName;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
-        //[XmlRpcMember("start_location")]
         public string StartLocation;
         /// <summary>M or PG, also agent_region_access and agent_access_max</summary>
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
-        //[XmlRpcMember("agent_access")]
         public string AgentAccess;
-        /// <summary>
-        /// {'region_handle':[r257280, r259584], 'position':[r157.684, r148.283, r650], 'look_at':[r1, r0, r0]}
-        /// </summary>
-        public string home;
-        /// <summary></summary>
-        /// <remarks>[r0.99967899999999998428,r0.025349300000000001692,r0]</remarks>
-        //[XmlRpcMember("look_at")]
         public Vector3 LookAt;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public ulong HomeRegion;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public Vector3 HomePosition;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public Vector3 HomeLookAt;
-        //[XmlRpcMember("circuit_code")]
         public int CircuitCode;
-        //[XmlRpcMember("region_x")]
         public int RegionX;
-        //[XmlRpcMember("region_y")]
         public int RegionY;
-        //[XmlRpcMember("sim_port")]
         public int SimPort;
-        //[XmlRpcMember("sim_ip")]
         public IPAddress SimIP;
-        //[XmlRpcMember("seed_capability")]
         public string SeedCapability;
-        //[XmlRpcMember("buddy-list")]
         public BuddyListEntry[] BuddyList;
-        //[XmlRpcMember("seconds_since_epoch")]
         public int SecondsSinceEpoch;
 
         #region Inventory
         
-        //[XmlRpcMember("inventory-root")]
-        public InventoryRootEntry[] InventoryRoot;
-        //[XmlRpcMember("inventory-lib-root")]
-        public InventoryRootEntry[] LibraryRoot;
-        //[XmlRpcMember("inventory-skeleton")]
-        public InventorySkeletonEntry[] InventorySkeleton;
-        //[XmlRpcMember("inventory-skel-lib")]
-        public InventorySkeletonEntry[] LibrarySkeleton;
-        //[XmlRpcMember("inventory-lib-owner")]
-        public InventoryLibraryOwnerEntry[] LibraryOwner;
+        public UUID InventoryRoot;
+        public UUID LibraryRoot;
+        public InventoryFolder[] InventorySkeleton;
+        public InventoryFolder[] LibrarySkeleton;
+        public UUID LibraryOwner;
 
         #endregion
 
         #region Redirection
 
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string NextMethod;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string NextUrl;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string[] NextOptions;
-        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public int NextDuration;
 
         #endregion
 
-        /* These aren't currently being utilized by the library */
+        // These aren't currently being utilized by the library
         public string AgentAccessMax;
         public string AgentRegionAccess;
         public int AOTransition;
@@ -385,16 +248,11 @@ namespace OpenMetaverse
 
             SecondsSinceEpoch = (int)ParseUInt("seconds_since_epoch", reply);
             
-            InventoryRoot = new InventoryRootEntry[1];
-            InventoryRoot[0].folder_id = ParseMappedUUID("inventory-root", "folder_id", reply).ToString();
+            InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
             InventorySkeleton = ParseInventorySkeleton("inventory-skeleton", reply);
-
-            LibraryRoot = new InventoryRootEntry[1];
             
-            LibraryOwner = new InventoryLibraryOwnerEntry[1];
-            LibraryOwner[0].agent_id = ParseMappedUUID("inventory-lib-owner", "agent_id", reply).ToString();
-
-            LibraryRoot[0].folder_id = ParseMappedUUID("inventory-lib-root", "folder_id", reply).ToString();
+            LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
+            LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibrarySkeleton = ParseInventorySkeleton("inventory-skel-lib", reply);
         }
 
@@ -486,16 +344,11 @@ namespace OpenMetaverse
 
             SecondsSinceEpoch = (int)ParseUInt("seconds_since_epoch", reply);
 
-            InventoryRoot = new InventoryRootEntry[1];
-            InventoryRoot[0].folder_id = ParseMappedUUID("inventory-root", "folder_id", reply).ToString();
+            InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
             InventorySkeleton = ParseInventorySkeleton("inventory-skeleton", reply);
 
-            LibraryRoot = new InventoryRootEntry[1];
-
-            LibraryOwner = new InventoryLibraryOwnerEntry[1];
-            LibraryOwner[0].agent_id = ParseMappedUUID("inventory-lib-owner", "agent_id", reply).ToString();
-
-            LibraryRoot[0].folder_id = ParseMappedUUID("inventory-lib-root", "folder_id", reply).ToString();
+            LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
+            LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibrarySkeleton = ParseInventorySkeleton("inventory-skel-lib", reply);
         }
 
@@ -564,13 +417,13 @@ namespace OpenMetaverse
                         {
                             for (int i = 0; i < InventorySkeleton.Length; i++)
                             {
-                                WriteXmlRpcInventoryItem(writer, InventorySkeleton[i].name, UUID.Parse(InventorySkeleton[i].parent_id),
-                                    (uint)InventorySkeleton[i].version, (uint)InventorySkeleton[i].type_default, UUID.Parse(InventorySkeleton[i].folder_id));
+                                WriteXmlRpcInventoryItem(writer, InventorySkeleton[i].Name, InventorySkeleton[i].ParentUUID,
+                                    (uint)InventorySkeleton[i].Version, (uint)InventorySkeleton[i].PreferredType,InventorySkeleton[i].UUID);
                             }
                         }
                         else
                         {
-                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)AssetType.Folder, UUID.Parse(InventoryRoot[0].folder_id));
+                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)AssetType.Folder, InventoryRoot);
                         }
                         WriteXmlRpcArrayEnd(writer);
 
@@ -612,13 +465,13 @@ namespace OpenMetaverse
                         {
                             for (int i = 0; i < LibrarySkeleton.Length; i++)
                             {
-                                WriteXmlRpcInventoryItem(writer, LibrarySkeleton[i].name, UUID.Parse(LibrarySkeleton[i].parent_id),
-                                    (uint)LibrarySkeleton[i].version, (uint)LibrarySkeleton[i].type_default, UUID.Parse(LibrarySkeleton[i].folder_id));
+                                WriteXmlRpcInventoryItem(writer, LibrarySkeleton[i].Name, LibrarySkeleton[i].ParentUUID,
+                                    (uint)LibrarySkeleton[i].Version, (uint)LibrarySkeleton[i].PreferredType, LibrarySkeleton[i].UUID);
                             }
                         }
                         else
                         {
-                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)AssetType.Folder, UUID.Parse(LibraryRoot[0].folder_id));
+                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)AssetType.Folder, LibraryRoot);
                         }
                         WriteXmlRpcArrayEnd(writer);
 
@@ -890,9 +743,9 @@ namespace OpenMetaverse
             return folders.ToArray();
         }
 
-        public InventorySkeletonEntry[] ParseInventorySkeleton(string key, OSDMap reply)
+        public InventoryFolder[] ParseInventorySkeleton(string key, OSDMap reply)
         {
-            List<InventorySkeletonEntry> folders = new List<InventorySkeletonEntry>();
+            List<InventoryFolder> folders = new List<InventoryFolder>();
 
             OSD skeleton;
             if (reply.TryGetValue(key, out skeleton) && skeleton.Type == OSDType.Array)
@@ -903,12 +756,11 @@ namespace OpenMetaverse
                     if (array[i].Type == OSDType.Map)
                     {
                         OSDMap map = (OSDMap)array[i];
-                        InventorySkeletonEntry folder = new InventorySkeletonEntry();
-                        folder.folder_id = map["folder_id"].AsString();
-                        folder.name = map["name"].AsString();
-                        folder.parent_id = map["parent_id"].AsString();
-                        folder.type_default = map["type_default"].AsInteger();
-                        folder.version = map["version"].AsInteger();
+                        InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
+                        folder.Name = map["name"].AsString();
+                        folder.ParentUUID = map["parent_id"].AsUUID();
+                        folder.PreferredType = (AssetType)map["type_default"].AsInteger();
+                        folder.Version = map["version"].AsInteger();
                         folders.Add(folder);
                     }
                 }
@@ -916,9 +768,9 @@ namespace OpenMetaverse
             return folders.ToArray();
         }
 
-        public InventorySkeletonEntry[] ParseInventorySkeleton(string key, Hashtable reply)
+        public InventoryFolder[] ParseInventorySkeleton(string key, Hashtable reply)
         {
-            List<InventorySkeletonEntry> folders = new List<InventorySkeletonEntry>();
+            List<InventoryFolder> folders = new List<InventoryFolder>();
 
             if (reply.ContainsKey(key) && reply[key] is ArrayList)
             {
@@ -928,12 +780,11 @@ namespace OpenMetaverse
                     if (array[i] is Hashtable)
                     {
                         Hashtable map = (Hashtable)array[i];
-                        InventorySkeletonEntry folder = new InventorySkeletonEntry();
-                        folder.folder_id = (string)map["folder_id"];
-                        folder.name = (string)map["name"];
-                        folder.parent_id = (string)map["parent_id"];
-                        folder.type_default = (int)map["type_default"];
-                        folder.version = (int)map["version"];
+                        InventoryFolder folder = new InventoryFolder(ParseUUID("folder_id", map));
+                        folder.Name = ParseString("name", map);
+                        folder.ParentUUID = ParseUUID("parent_id", map);
+                        folder.PreferredType = (AssetType)ParseUInt("type_default", map);
+                        folder.Version = (int)ParseUInt("version", map);
                         folders.Add(folder);
                     }
                 }
