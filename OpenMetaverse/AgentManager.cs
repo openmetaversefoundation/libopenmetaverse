@@ -1523,8 +1523,6 @@ namespace OpenMetaverse
 
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
 
-                Console.WriteLine(req.ToString());
-
                 CapsClient request = new CapsClient(url);
                 request.StartRequest(postData);
             }
@@ -3067,14 +3065,14 @@ namespace OpenMetaverse
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
             LoginResponseData reply)
         {
-            id = reply.AgentID;
-            sessionID = reply.SessionID;
-            secureSessionID = reply.SecureSessionID;
+            id = UUID.Parse(reply.AgentID);
+            sessionID = UUID.Parse(reply.SessionID);
+            secureSessionID = UUID.Parse(reply.SecureSessionID);
             firstName = reply.FirstName;
             lastName = reply.LastName;
             startLocation = reply.StartLocation;
             agentAccess = reply.AgentAccess;
-            Movement.Camera.LookDirection(reply.LookAt);
+            Movement.Camera.LookDirection(OSDParser.DeserializeLLSDNotation(reply.LookAt).AsVector3());
             homePosition = reply.HomePosition;
             homeLookAt = reply.HomeLookAt;
         }

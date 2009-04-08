@@ -319,7 +319,6 @@ namespace OpenMetaverse
         {
             Stream stream = File.Open(filename, FileMode.Create);
             BinaryFormatter bformatter = new BinaryFormatter();
-            Console.WriteLine("Writing Inventory Information");
             foreach (KeyValuePair<UUID, InventoryNode> kvp in Items)
             {
                 bformatter.Serialize(stream, kvp.Value);

@@ -3759,22 +3759,36 @@ namespace OpenMetaverse
             {
                 // Initialize the store here so we know who owns it:
                 _Store = new Inventory(_Client, this, _Client.Self.AgentID);
-                Logger.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString(), _Client);
-                InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
+                InventoryFolder rootFolder = new InventoryFolder(UUID.Parse(replyData.InventoryRoot[0].folder_id));
                 rootFolder.Name = String.Empty;
                 rootFolder.ParentUUID = UUID.Zero;
                 _Store.RootFolder = rootFolder;
 
                 for (int i = 0; i < replyData.InventorySkeleton.Length; i++)
-                    _Store.UpdateNodeFor(replyData.InventorySkeleton[i]);
-
-                InventoryFolder libraryRootFolder = new InventoryFolder(replyData.LibraryRoot);
+                {
+                    InventoryFolder folder = new InventoryFolder(UUID.Parse(replyData.InventorySkeleton[i].folder_id));
+                    folder.Name = replyData.InventorySkeleton[i].name;
+                    folder.OwnerID = UUID.Parse(replyData.AgentID);
+                    folder.ParentUUID = UUID.Parse(replyData.InventorySkeleton[i].parent_id);
+                    folder.PreferredType = (AssetType)replyData.InventorySkeleton[i].type_default;
+                    folder.Version = replyData.InventorySkeleton[i].version;
+                    _Store.UpdateNodeFor(folder);
+                }
+                
+                InventoryFolder libraryRootFolder = new InventoryFolder(UUID.Parse(replyData.LibraryRoot[0].folder_id));
                 libraryRootFolder.Name = String.Empty;
                 libraryRootFolder.ParentUUID = UUID.Zero;
                 _Store.LibraryFolder = libraryRootFolder;
 
-                for(int i = 0; i < replyData.LibrarySkeleton.Length; i++)
-                    _Store.UpdateNodeFor(replyData.LibrarySkeleton[i]);
+                for (int i = 0; i < replyData.LibrarySkeleton.Length; i++)
+                {
+                    InventoryFolder folder = new InventoryFolder(UUID.Parse(replyData.LibrarySkeleton[i].folder_id));
+                    folder.Name = replyData.LibrarySkeleton[i].name;
+                    folder.ParentUUID = UUID.Parse(replyData.LibrarySkeleton[i].parent_id);
+                    folder.PreferredType = (AssetType)replyData.LibrarySkeleton[i].type_default;
+                    folder.Version = replyData.LibrarySkeleton[i].version;
+                    _Store.UpdateNodeFor(folder);
+                }
             }
         }
 

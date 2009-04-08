@@ -743,6 +743,15 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Populate FriendList <seealso cref="InternalDictionary"/> with data from the login reply
+        /// </summary>
+        /// <param name="loginSuccess">true if login was successful</param>
+        /// <param name="redirect">true if login request is requiring a redirect</param>
+        /// <param name="message">A string containing the response to the login request</param>
+        /// <param name="reason">A string containing the reason for the request</param>
+        /// <param name="replyData">A <seealso cref="LoginResponseData"/> object containing the decoded 
+        /// reply from the login server</param>
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
             LoginResponseData replyData)
         {
@@ -750,13 +759,19 @@ namespace OpenMetaverse
             {
                 lock (FriendList)
                 {
-                    for (int i = 0; i < replyData.BuddyList.Length; i++)
+                    if (replyData.BuddyList != null)
                     {
-                        FriendInfo friend = replyData.BuddyList[i];
-                        FriendList[friend.UUID] = friend;
+                        foreach (BuddyListEntry buddy in replyData.BuddyList)
+                        {
+                            FriendList.Add(UUID.Parse(buddy.buddy_id),
+                                new FriendInfo(UUID.Parse(buddy.buddy_id),
+                                    (FriendRights)buddy.buddy_rights_given,
+                                    (FriendRights)buddy.buddy_rights_has));
+                        }
                     }
                 }
             }
         }
+
     }
 }

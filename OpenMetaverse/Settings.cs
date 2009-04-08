@@ -56,6 +56,8 @@ namespace OpenMetaverse
         /// <summary>IP Address the client will bind to</summary>
         public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
 
+        /// <summary>Use XML-RPC Login or LLSD Login, default is XML-RPC Login</summary>
+        public bool USE_LLSD_LOGIN = false;
         #endregion
         #region Inventory
         /// <summary>

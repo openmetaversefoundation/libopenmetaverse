@@ -146,6 +146,8 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
+      <Reference name="CookComputing.XmlRpcV2"/>
+
       <Files>
         <Match pattern="*.cs" recurse="true">
           <Exclude name="Color4.cs"/>
