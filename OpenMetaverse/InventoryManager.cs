@@ -3768,7 +3768,7 @@ namespace OpenMetaverse
                 {
                     InventoryFolder folder = new InventoryFolder(UUID.Parse(replyData.InventorySkeleton[i].folder_id));
                     folder.Name = replyData.InventorySkeleton[i].name;
-                    folder.OwnerID = UUID.Parse(replyData.AgentID);
+                    folder.OwnerID = replyData.AgentID;
                     folder.ParentUUID = UUID.Parse(replyData.InventorySkeleton[i].parent_id);
                     folder.PreferredType = (AssetType)replyData.InventorySkeleton[i].type_default;
                     folder.Version = replyData.InventorySkeleton[i].version;

@@ -146,7 +146,7 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
-      <Reference name="CookComputing.XmlRpcV2"/>
+      <Reference name="XMLRPC"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true">

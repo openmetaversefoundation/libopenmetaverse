@@ -25,17 +25,17 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Net;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
+using Nwc.XmlRpc;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Http;
 using OpenMetaverse.Packets;
-using CookComputing.XmlRpc;
-using OpenMetaverse.Interfaces;
 
 namespace OpenMetaverse
 {
@@ -71,53 +71,45 @@ namespace OpenMetaverse
     /// </summary>
     public struct LoginParams
     {
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string URI;
-        /// <summary></summary>
         public int Timeout;
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string MethodName;
-        /// <summary></summary>
-        [XmlRpcMember("first")]
+        //[XmlRpcMember("first")]
         public string FirstName;
-        /// <summary></summary>
-        [XmlRpcMember("last")]
+        //[XmlRpcMember("last")]
         public string LastName;
-        /// <summary></summary>
-        [XmlRpcMember("passwd")]
+        //[XmlRpcMember("passwd")]
         public string Password;
-        /// <summary></summary>
-        [XmlRpcMember("start")]
+        //[XmlRpcMember("start")]
         public string Start;
-        /// <summary></summary>
-        [XmlRpcMember("channel")]
+        //[XmlRpcMember("channel")]
         public string Channel;
-        /// <summary></summary>
-        [XmlRpcMember("version")]
+        //[XmlRpcMember("version")]
         public string Version;
-        /// <summary></summary>
-        [XmlRpcMember("platform")]
+        //[XmlRpcMember("platform")]
         public string Platform;
-        /// <summary></summary>
-        [XmlRpcMember("mac")]
+        //[XmlRpcMember("mac")]
         public string MAC;
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        [XmlRpcMember("viewer_digest")]
-        public string ViewerDigest;
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        public string id0;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMember("viewer_digest")]
+        //public string viewer_digest;
+        //public string id0;
         /* Login via XML-RPC Specific Members */
-        [XmlRpcMember("user-agent")]
-        public string user_agent;
-        public string author;
-        public string agree_to_tos;
-        public string read_critical;
-        public string viewer_digest;
-        public string[] options;
+        //public string user-agent;
+        //public string author;
+        //public string agree_to_tos;
+        //public string read_critical;
+        //public string viewer_digest;
+        //public string[] options;
+        public string ViewerDigest;
+        public string ID0;
+        public string UserAgent;
+        public string Author;
+        public string AgreeToTos;
+        public string ReadCritical;
+        public string[] Options;
     }
 
     #region XML-RPC login respons structs
@@ -210,158 +202,97 @@ namespace OpenMetaverse
     public struct LoginResponseData
     {
         /// <summary>true, false, indeterminate</summary>
-        public string login;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMember("login")]
+        public string Login;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public bool Success;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public string Reason;
-
-        /// <summary>Login Motd</summary>
-        [XmlRpcMember("message")]
+        /// <summary>Login message of the day</summary>
+        //[XmlRpcMember("message")]
         public string Message;
-        
-        /// <summary></summary>
-        [XmlRpcMember("agent_id")]
-        public string AgentID;
-
-        /// <summary></summary>
-        [XmlRpcMember("session_id")]
-        public string SessionID;
-
-        /// <summary></summary>
-        
-        [XmlRpcMember("secure_session_id")]
-        public string SecureSessionID;
-
-        /// <summary></summary>
-        
-        [XmlRpcMember("first_name")]
+        //[XmlRpcMember("agent_id")]
+        public UUID AgentID;
+        //[XmlRpcMember("session_id")]
+        public UUID SessionID;
+        //[XmlRpcMember("secure_session_id")]
+        public UUID SecureSessionID;
+        //[XmlRpcMember("first_name")]
         public string FirstName;
-
-        /// <summary></summary>
-        
-        [XmlRpcMember("last_name")]
+        //[XmlRpcMember("last_name")]
         public string LastName;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        [XmlRpcMember("start_location")]
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMember("start_location")]
         public string StartLocation;
-
-        /// <summary>M or PG // also agent_region_access and agent_access_max</summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        [XmlRpcMember("agent_access")]
+        /// <summary>M or PG, also agent_region_access and agent_access_max</summary>
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMember("agent_access")]
         public string AgentAccess;
-
         /// <summary>
         /// {'region_handle':[r257280, r259584], 'position':[r157.684, r148.283, r650], 'look_at':[r1, r0, r0]}
         /// </summary>
         public string home;
-
         /// <summary></summary>
         /// <remarks>[r0.99967899999999998428,r0.025349300000000001692,r0]</remarks>
-        [XmlRpcMember("look_at")]
-        public string LookAt;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMember("look_at")]
+        public Vector3 LookAt;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public ulong HomeRegion;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public Vector3 HomePosition;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
         public Vector3 HomeLookAt;
-
-        /// <summary></summary>
-        [XmlRpcMember("circuit_code")]
+        //[XmlRpcMember("circuit_code")]
         public int CircuitCode;
-
-        /// <summary></summary>
-        [XmlRpcMember("region_x")]
+        //[XmlRpcMember("region_x")]
         public int RegionX;
-
-        /// <summary></summary>
-        [XmlRpcMember("region_y")]
+        //[XmlRpcMember("region_y")]
         public int RegionY;
-
-        /// <summary></summary>
-        [XmlRpcMember("sim_port")]
+        //[XmlRpcMember("sim_port")]
         public int SimPort;
-
-        /// <summary></summary>
-        [XmlRpcMember("sim_ip")]
-        public string SimIP;
-
-        /// <summary></summary>
-        [XmlRpcMember("seed_capability")]
+        //[XmlRpcMember("sim_ip")]
+        public IPAddress SimIP;
+        //[XmlRpcMember("seed_capability")]
         public string SeedCapability;
-
-        /// <summary></summary>
-        [XmlRpcMember("buddy-list")]
+        //[XmlRpcMember("buddy-list")]
         public BuddyListEntry[] BuddyList;
-        
-        /// <summary></summary>
-        [XmlRpcMember("seconds_since_epoch")]
+        //[XmlRpcMember("seconds_since_epoch")]
         public int SecondsSinceEpoch;
 
         #region Inventory
-        /// <summary></summary>
-        [XmlRpcMember("inventory-root")]
+        
+        //[XmlRpcMember("inventory-root")]
         public InventoryRootEntry[] InventoryRoot;
-        
-        /// <summary></summary>
-        [XmlRpcMember("inventory-lib-root")]
+        //[XmlRpcMember("inventory-lib-root")]
         public InventoryRootEntry[] LibraryRoot;
-        
-        /// <summary></summary>
-        [XmlRpcMember("inventory-skeleton")]
+        //[XmlRpcMember("inventory-skeleton")]
         public InventorySkeletonEntry[] InventorySkeleton;
-        
-        /// <summary></summary>
-        [XmlRpcMember("inventory-skel-lib")]
+        //[XmlRpcMember("inventory-skel-lib")]
         public InventorySkeletonEntry[] LibrarySkeleton;
-
-        /// <summary></summary>
-        [XmlRpcMember("inventory-lib-owner")]
+        //[XmlRpcMember("inventory-lib-owner")]
         public InventoryLibraryOwnerEntry[] LibraryOwner;
+
         #endregion
 
         #region Redirection
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        public string next_method;
 
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        public string next_url;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        public string NextMethod;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        public string NextUrl;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        public string[] NextOptions;
+        //[XmlRpcMissingMapping(MappingAction.Ignore)]
+        public int NextDuration;
 
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        public string[] next_options;
-
-        /// <summary></summary>
-        [XmlRpcMissingMapping(MappingAction.Ignore)]
-        public int next_duration;
         #endregion
 
         /* These aren't currently being utilized by the library */
-        /// <summary></summary>
-        public string agent_access_max;
-        /// <summary></summary>
-        public string agent_region_access;
-        /// <summary></summary>
-        public int ao_transition;
-        /// <summary></summary>
-        public string inventory_host;
-        /// <summary></summary>
-        public string udp_blacklist;
+        public string AgentAccessMax;
+        public string AgentRegionAccess;
+        public int AOTransition;
+        public string InventoryHost;
+        public string UDPBlacklist;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -374,18 +305,23 @@ namespace OpenMetaverse
         {
             try
             {
-                AgentID = ParseString("agent_id", reply);
-                SessionID = ParseString("session_id", reply);
-                SecureSessionID = ParseString("secure_session_id", reply);
+                AgentID = ParseUUID("agent_id", reply);
+                SessionID = ParseUUID("session_id", reply);
+                SecureSessionID = ParseUUID("secure_session_id", reply);
                 FirstName = ParseString("first_name", reply).Trim('"');
                 LastName = ParseString("last_name", reply).Trim('"');
                 StartLocation = ParseString("start_location", reply);
                 AgentAccess = ParseString("agent_access", reply);
-                LookAt = ParseString("look_at", reply); 
+                LookAt = ParseVector3("look_at", reply);
+                Reason = ParseString("reason", reply);
+                Message = ParseString("message", reply);
+
+                Login = reply["login"].AsString();
+                Success = reply["login"].AsBoolean();
             }
             catch (OSDException e)
             {
-                Logger.DebugLog("Login server returned (some) invalid data: " + e.Message);
+                Logger.Log("Login server returned (some) invalid data: " + e.Message, Helpers.LogLevel.Warning);
             }
 
             // Home
@@ -420,9 +356,8 @@ namespace OpenMetaverse
             RegionX = (int)ParseUInt("region_x", reply);
             RegionY = (int)ParseUInt("region_y", reply);
             SimPort = (short)ParseUInt("sim_port", reply);
-            //string simIP = ParseString("sim_ip", reply);
-            SimIP = ParseString("sim_ip", reply);
-            //IPAddress.TryParse(simIP, out SimIP);
+            string simIP = ParseString("sim_ip", reply);
+            IPAddress.TryParse(simIP, out SimIP);
             SeedCapability = ParseString("seed_capability", reply);
 
             // Buddy list
@@ -461,10 +396,108 @@ namespace OpenMetaverse
 
             LibraryRoot[0].folder_id = ParseMappedUUID("inventory-lib-root", "folder_id", reply).ToString();
             LibrarySkeleton = ParseInventorySkeleton("inventory-skel-lib", reply);
-
-
         }
 
+        public void Parse(Hashtable reply)
+        {
+            try
+            {
+                AgentID = ParseUUID("agent_id", reply);
+                SessionID = ParseUUID("session_id", reply);
+                SecureSessionID = ParseUUID("secure_session_id", reply);
+                FirstName = ParseString("first_name", reply).Trim('"');
+                LastName = ParseString("last_name", reply).Trim('"');
+                StartLocation = ParseString("start_location", reply);
+                AgentAccess = ParseString("agent_access", reply);
+                LookAt = ParseVector3("look_at", reply);
+                Reason = ParseString("reason", reply);
+                Message = ParseString("message", reply);
+
+                if (reply.ContainsKey("login"))
+                {
+                    Login = (string)reply["login"];
+                    Success = Login == "true";
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Login server returned (some) invalid data: " + e.Message, Helpers.LogLevel.Warning);
+            }
+
+            // Home
+            OSDMap home = null;
+            OSD osdHome = OSDParser.DeserializeLLSDNotation(reply["home"].ToString());
+
+            if (osdHome.Type == OSDType.Map)
+            {
+                home = (OSDMap)osdHome;
+
+                OSD homeRegion;
+                if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
+                {
+                    OSDArray homeArray = (OSDArray)homeRegion;
+                    if (homeArray.Count == 2)
+                        HomeRegion = Utils.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
+                    else
+                        HomeRegion = 0;
+                }
+
+                HomePosition = ParseVector3("position", home);
+                HomeLookAt = ParseVector3("look_at", home);
+            }
+            else
+            {
+                HomeRegion = 0;
+                HomePosition = Vector3.Zero;
+                HomeLookAt = Vector3.Zero;
+            }
+
+            CircuitCode = (int)ParseUInt("circuit_code", reply);
+            RegionX = (int)ParseUInt("region_x", reply);
+            RegionY = (int)ParseUInt("region_y", reply);
+            SimPort = (short)ParseUInt("sim_port", reply);
+            string simIP = ParseString("sim_ip", reply);
+            IPAddress.TryParse(simIP, out SimIP);
+            SeedCapability = ParseString("seed_capability", reply);
+
+            // Buddy list
+            if (reply.ContainsKey("buddy-list") && reply["buddy-list"] is ArrayList)
+            {
+                List<BuddyListEntry> buddys = new List<BuddyListEntry>();
+
+                ArrayList buddyArray = (ArrayList)reply["buddy-list"];
+                for (int i = 0; i < buddyArray.Count; i++)
+                {
+                    if (buddyArray[i] is Hashtable)
+                    {
+                        BuddyListEntry bud = new BuddyListEntry();
+                        Hashtable buddy = (Hashtable)buddyArray[i];
+
+                        bud.buddy_id = ParseString("buddy_id", buddy);
+                        bud.buddy_rights_given = (int)ParseUInt("buddy_rights_given", buddy);
+                        bud.buddy_rights_has = (int)ParseUInt("buddy_rights_has", buddy);
+
+                        buddys.Add(bud);
+                    }
+                }
+
+                BuddyList = buddys.ToArray();
+            }
+
+            SecondsSinceEpoch = (int)ParseUInt("seconds_since_epoch", reply);
+
+            InventoryRoot = new InventoryRootEntry[1];
+            InventoryRoot[0].folder_id = ParseMappedUUID("inventory-root", "folder_id", reply).ToString();
+            InventorySkeleton = ParseInventorySkeleton("inventory-skeleton", reply);
+
+            LibraryRoot = new InventoryRootEntry[1];
+
+            LibraryOwner = new InventoryLibraryOwnerEntry[1];
+            LibraryOwner[0].agent_id = ParseMappedUUID("inventory-lib-owner", "agent_id", reply).ToString();
+
+            LibraryRoot[0].folder_id = ParseMappedUUID("inventory-lib-root", "folder_id", reply).ToString();
+            LibrarySkeleton = ParseInventorySkeleton("inventory-skel-lib", reply);
+        }
 
         public void ToXmlRpc(XmlWriter writer)
         {
@@ -643,7 +676,8 @@ namespace OpenMetaverse
                         WriteXmlRpcStringMember(writer, false, "message", Message);
 
                         // look_at
-                        WriteXmlRpcStringMember(writer, false, "look_at", LookAt);
+                        string lookAt = OSDParser.SerializeLLSDNotation(OSD.FromVector3(LookAt));
+                        WriteXmlRpcStringMember(writer, false, "look_at", lookAt);
 
                         // login
                         WriteXmlRpcStringMember(writer, false, "login", "true");
@@ -696,6 +730,18 @@ namespace OpenMetaverse
                 return 0;
         }
 
+        public static uint ParseUInt(string key, Hashtable reply)
+        {
+            if (reply.ContainsKey(key))
+            {
+                object value = reply[key];
+                if (value is int)
+                    return (uint)(int)value;
+            }
+
+            return 0;
+        }
+
         public static UUID ParseUUID(string key, OSDMap reply)
         {
             OSD osd;
@@ -705,6 +751,18 @@ namespace OpenMetaverse
                 return UUID.Zero;
         }
 
+        public static UUID ParseUUID(string key, Hashtable reply)
+        {
+            if (reply.ContainsKey(key))
+            {
+                UUID value;
+                if (UUID.TryParse((string)reply[key], out value))
+                    return value;
+            }
+
+            return UUID.Zero;
+        }
+
         public static string ParseString(string key, OSDMap reply)
         {
             OSD osd;
@@ -712,6 +770,14 @@ namespace OpenMetaverse
                 return osd.AsString();
             else
                 return String.Empty;
+        }
+
+        public static string ParseString(string key, Hashtable reply)
+        {
+            if (reply.ContainsKey(key))
+                return (string)reply[key];
+
+            return String.Empty;
         }
 
         public static Vector3 ParseVector3(string key, OSDMap reply)
@@ -733,6 +799,35 @@ namespace OpenMetaverse
             return Vector3.Zero;
         }
 
+        public static Vector3 ParseVector3(string key, Hashtable reply)
+        {
+            if (reply.ContainsKey(key))
+            {
+                object value = reply[key];
+
+                if (value is IList)
+                {
+                    IList list = (IList)value;
+                    if (list.Count == 3)
+                    {
+                        float x, y, z;
+                        Single.TryParse((string)list[0], out x);
+                        Single.TryParse((string)list[1], out y);
+                        Single.TryParse((string)list[2], out z);
+
+                        return new Vector3(x, y, z);
+                    }
+                }
+                else if (value is string)
+                {
+                    OSDArray array = (OSDArray)OSDParser.DeserializeLLSDNotation((string)value);
+                    return array.AsVector3();
+                }
+            }
+
+            return Vector3.Zero;
+        }
+
         public static UUID ParseMappedUUID(string key, string key2, OSDMap reply)
         {
             OSD folderOSD;
@@ -745,6 +840,21 @@ namespace OpenMetaverse
                     OSD folder;
                     if (map.TryGetValue(key2, out folder))
                         return folder.AsUUID();
+                }
+            }
+
+            return UUID.Zero;
+        }
+
+        public static UUID ParseMappedUUID(string key, string key2, Hashtable reply)
+        {
+            if (reply.ContainsKey(key) && reply[key] is ArrayList)
+            {
+                ArrayList array = (ArrayList)reply[key];
+                if (array.Count == 1 && array[0] is Hashtable)
+                {
+                    Hashtable map = (Hashtable)array[0];
+                    return ParseUUID(key2, map);
                 }
             }
 
@@ -780,7 +890,7 @@ namespace OpenMetaverse
             return folders.ToArray();
         }
 
-        private InventorySkeletonEntry[] ParseInventorySkeleton(string key, OSDMap reply)
+        public InventorySkeletonEntry[] ParseInventorySkeleton(string key, OSDMap reply)
         {
             List<InventorySkeletonEntry> folders = new List<InventorySkeletonEntry>();
 
@@ -806,6 +916,31 @@ namespace OpenMetaverse
             return folders.ToArray();
         }
 
+        public InventorySkeletonEntry[] ParseInventorySkeleton(string key, Hashtable reply)
+        {
+            List<InventorySkeletonEntry> folders = new List<InventorySkeletonEntry>();
+
+            if (reply.ContainsKey(key) && reply[key] is ArrayList)
+            {
+                ArrayList array = (ArrayList)reply[key];
+                for (int i = 0; i < array.Count; i++)
+                {
+                    if (array[i] is Hashtable)
+                    {
+                        Hashtable map = (Hashtable)array[i];
+                        InventorySkeletonEntry folder = new InventorySkeletonEntry();
+                        folder.folder_id = (string)map["folder_id"];
+                        folder.name = (string)map["name"];
+                        folder.parent_id = (string)map["parent_id"];
+                        folder.type_default = (int)map["type_default"];
+                        folder.version = (int)map["version"];
+                        folders.Add(folder);
+                    }
+                }
+            }
+
+            return folders.ToArray();
+        }
 
         #endregion Parsing Helpers
 
@@ -1096,8 +1231,8 @@ namespace OpenMetaverse
             loginParams.Platform = GetPlatform();
             loginParams.MAC = GetMAC();
             loginParams.ViewerDigest = String.Empty;
-            loginParams.options = options.ToArray();
-            loginParams.id0 = GetMAC();
+            loginParams.Options = options.ToArray();
+            loginParams.ID0 = GetMAC();
 
             return loginParams;
         }
@@ -1221,23 +1356,23 @@ namespace OpenMetaverse
         {
             LoginParams loginParams = CurrentContext.Value;
 
-            // Sanity check login Params
             #region Sanity Check loginParams
-            if (loginParams.options == null)
-                loginParams.options = new List<string>().ToArray();
+
+            if (loginParams.Options == null)
+                loginParams.Options = new List<string>().ToArray();
 
             // Convert the password to MD5 if it isn't already
             if (loginParams.Password.Length != 35 && !loginParams.Password.StartsWith("$1$"))
                 loginParams.Password = Utils.MD5(loginParams.Password);
 
-            if (loginParams.viewer_digest == null)
-                loginParams.viewer_digest = String.Empty;
+            if (loginParams.ViewerDigest== null)
+                loginParams.ViewerDigest = String.Empty;
 
             if (loginParams.Version == null)
                 loginParams.Version = String.Empty;
 
-            if (loginParams.user_agent == null)
-                loginParams.user_agent = String.Empty;
+            if (loginParams.UserAgent == null)
+                loginParams.UserAgent = String.Empty;
 
             if (loginParams.Platform == null)
                 loginParams.Platform = String.Empty;
@@ -1248,14 +1383,15 @@ namespace OpenMetaverse
             if (loginParams.Channel == null)
                 loginParams.Channel = String.Empty;
 
-            if (loginParams.agree_to_tos == null)
-                loginParams.agree_to_tos = "true";
+            if (loginParams.AgreeToTos == null)
+                loginParams.AgreeToTos = "true";
 
-            if (loginParams.read_critical == null)
-                loginParams.read_critical = "true";
+            if (loginParams.ReadCritical == null)
+                loginParams.ReadCritical = "true";
 
-            if (loginParams.author == null)
-                loginParams.author = String.Empty;
+            if (loginParams.Author == null)
+                loginParams.Author = String.Empty;
+
             #endregion
 
             // Override SSL authentication mechanisms. DO NOT convert this to the 
@@ -1263,13 +1399,12 @@ namespace OpenMetaverse
             // different name and it will break compatibility!
             #pragma warning disable 0618
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+            // TODO: At some point, maybe we should check the cert?
 
             if (Client.Settings.USE_LLSD_LOGIN)
             {
                 #region LLSD Based Login
                 
-                // TODO: At some point, maybe we should check the cert?
-
                 // Create the CAPS login structure
                 OSDMap loginLLSD = new OSDMap();
                 loginLLSD["first"] = OSD.FromString(loginParams.FirstName);
@@ -1283,14 +1418,13 @@ namespace OpenMetaverse
                 loginLLSD["agree_to_tos"] = OSD.FromBoolean(true);
                 loginLLSD["read_critical"] = OSD.FromBoolean(true);
                 loginLLSD["viewer_digest"] = OSD.FromString(loginParams.ViewerDigest);
-                loginLLSD["id0"] = OSD.FromString(loginParams.id0);
+                loginLLSD["id0"] = OSD.FromString(loginParams.ID0);
                 
                 // Create the options LLSD array
                 OSDArray optionsOSD = new OSDArray();
-                for (int i = 0; i < loginParams.options.Length; i++)
-                    optionsOSD.Add(OSD.FromString(loginParams.options[i]));
+                for (int i = 0; i < loginParams.Options.Length; i++)
+                    optionsOSD.Add(OSD.FromString(loginParams.Options[i]));
 
-                
                 foreach (string[] callbackOpts in CallbackOptions.Values)
                 {
                     if (callbackOpts != null)
@@ -1318,7 +1452,7 @@ namespace OpenMetaverse
                 }
 
                 CapsClient loginRequest = new CapsClient(loginUri);
-                loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyHandler);
+                loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyLLSDHandler);
                 loginRequest.UserData = CurrentContext;
                 UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
                 loginRequest.StartRequest(OSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
@@ -1329,38 +1463,55 @@ namespace OpenMetaverse
             {
                 #region XML-RPC Based Login Code
                 
-                loginParams.FirstName = CurrentContext.Value.FirstName;
-                loginParams.LastName = CurrentContext.Value.LastName;
-                loginParams.Password = CurrentContext.Value.Password;
-                loginParams.Start = CurrentContext.Value.Start;
-                loginParams.Channel = CurrentContext.Value.Channel;
-                loginParams.Version = CurrentContext.Value.Version;
-                loginParams.Platform = CurrentContext.Value.Platform;
-                loginParams.MAC = CurrentContext.Value.MAC;
-                
-                List<string> options = new List<string>(CurrentContext.Value.options.Length + CallbackOptions.Values.Count);
-                options.AddRange(CurrentContext.Value.options);
+                // Create the Hashtable for XmlRpcCs
+                Hashtable loginXmlRpc = new Hashtable();
+                loginXmlRpc["first"] = loginParams.FirstName;
+                loginXmlRpc["last"] = loginParams.LastName;
+                loginXmlRpc["passwd"] = loginParams.Password;
+                loginXmlRpc["start"] = loginParams.Start;
+                loginXmlRpc["channel"] = loginParams.Channel;
+                loginXmlRpc["version"] = loginParams.Version;
+                loginXmlRpc["platform"] = loginParams.Platform;
+                loginXmlRpc["mac"] = loginParams.MAC;
+                loginXmlRpc["agree_to_tos"] = true;
+                loginXmlRpc["read_critical"] = true;
+                loginXmlRpc["viewer_digest"] = loginParams.ViewerDigest;
+                loginXmlRpc["id0"] = loginParams.ID0;
+
+                // Create the options array
+                ArrayList options = new ArrayList();
+                for (int i = 0; i < loginParams.Options.Length; i++)
+                    options.Add(loginParams.Options[i]);
+
                 foreach (string[] callbackOpts in CallbackOptions.Values)
                 {
                     if (callbackOpts != null)
-                        foreach (string option in callbackOpts)
-                            if (!options.Contains(option)) // TODO: Replace with some kind of Dictionary/Set?
-                                options.Add(option);
+                    {
+                        for (int i = 0; i < callbackOpts.Length; i++)
+                        {
+                            if (!options.Contains(callbackOpts[i]))
+                                options.Add(callbackOpts[i]);
+                        }
+                    }
                 }
-
-                loginParams.options = options.ToArray();
+                loginXmlRpc["options"] = options;
 
                 try
                 {
-                    ILoginProxy proxy = XmlRpcProxyGen.Create<ILoginProxy>();
-                    proxy.KeepAlive = false;
-                    proxy.Expect100Continue = false;
-                    proxy.ResponseEvent += new XmlRpcResponseEventHandler(proxy_ResponseEvent);
-                    proxy.Url = CurrentContext.Value.URI;
-                    proxy.XmlRpcMethod = CurrentContext.Value.MethodName;
+                    ArrayList loginArray = new ArrayList(1);
+                    loginArray.Add(loginXmlRpc);
+                    XmlRpcRequest request = new XmlRpcRequest(CurrentContext.Value.MethodName, loginArray);
 
                     // Start the request
-                    proxy.BeginLoginToSimulator(loginParams, new AsyncCallback(LoginMethodCallback), new object[] { proxy, CurrentContext });
+                    Thread requestThread = new Thread(new ThreadStart(
+                        delegate()
+                        {
+                            LoginReplyXmlRpcHandler(
+                                request.Send(CurrentContext.Value.URI, CurrentContext.Value.Timeout),
+                                loginParams);
+                        }));
+                    requestThread.Name = "XML-RPC Login";
+                    requestThread.Start();
                 }
                 catch (Exception e)
                 {
@@ -1392,35 +1543,21 @@ namespace OpenMetaverse
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
-        #region XML-RPC Callbacks
-
-        private void proxy_ResponseEvent(object sender, XmlRpcResponseEventArgs args)
-        {
-            TextReader reader = new StreamReader(args.ResponseStream);
-            InternalRawLoginReply = reader.ReadToEnd();
-        }
 
         /// <summary>
-        /// Handles response from XML-RPC.NET login replies
+        /// Handles response from XML-RPC login replies
         /// </summary>
-        /// <param name="result"></param>
-        private void LoginMethodCallback(IAsyncResult result)
+        private void LoginReplyXmlRpcHandler(XmlRpcResponse response, LoginParams context)
         {
-            object[] asyncState = result.AsyncState as object[];
-            ILoginProxy proxy = asyncState[0] as ILoginProxy;
-            LoginParams context = (LoginParams)asyncState[1];
-            XmlRpcAsyncResult clientResult = result as XmlRpcAsyncResult;
-            LoginResponseData reply;
-            IPAddress simIP = IPAddress.Any; // Temporary
+            LoginResponseData reply = new LoginResponseData();
             ushort simPort = 0;
             uint regionX = 0;
             uint regionY = 0;
-            bool loginSuccess = false;
 
             // Fetch the login response
             try
             {
-                reply = proxy.EndLoginToSimulator(clientResult);
+                reply.Parse(response.Value as Hashtable);
                 if (context.GetHashCode() != CurrentContext.Value.GetHashCode())
                 {
                     Logger.Log("Login Response does not match login request", Helpers.LogLevel.Warning);
@@ -1436,13 +1573,8 @@ namespace OpenMetaverse
             string reason = reply.Reason;
             string message = reply.Message;
             
-            if (reply.login == "true")
+            if (reply.Login == "true")
             {
-                loginSuccess = true;
-
-                // FIXME: No information should be set here, everything can take care of itself
-                // through login reply handlers
-
                 // Remove the quotes around our first name.
                 if (reply.FirstName[0] == '"')
                     reply.FirstName = reply.FirstName.Remove(0, 1);
@@ -1458,8 +1590,6 @@ namespace OpenMetaverse
                     regionX = (uint)reply.RegionX;
                     regionY = (uint)reply.RegionY;
                     simPort = (ushort)reply.SimPort;
-                    //simIP = reply.SimIP;
-                    IPAddress.TryParse(reply.SimIP, out simIP);
                     LoginSeedCapability = reply.SeedCapability;
                 }
                 catch (Exception)
@@ -1489,13 +1619,13 @@ namespace OpenMetaverse
                 // reply.initial_outfit
             }
             
-            bool redirect = (reply.login == "indeterminate");
+            bool redirect = (reply.Login == "indeterminate");
             
             try
             {
                 if (OnLoginResponse != null)
                 {
-                    try { OnLoginResponse(loginSuccess, redirect, message, reason, reply); }
+                    try { OnLoginResponse(reply.Success, redirect, message, reason, reply); }
                     catch (Exception ex) { Logger.Log(ex.ToString(), Helpers.LogLevel.Error); }
                 }
             }
@@ -1506,11 +1636,11 @@ namespace OpenMetaverse
             {
                 UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
                 LoginParams loginParams = CurrentContext.Value;
-                loginParams.URI = reply.next_url;
+                loginParams.URI = reply.NextUrl;
                 //CurrentContext.Value.MethodName = reply.next_method;
 
                 // Sleep for some amount of time while the servers work
-                int seconds = reply.next_duration;
+                int seconds = reply.NextDuration;
                 Logger.Log("Sleeping for " + seconds + " seconds during a login redirect",
                     Helpers.LogLevel.Info);
                 Thread.Sleep(seconds * 1000);
@@ -1521,14 +1651,14 @@ namespace OpenMetaverse
                 // Ignore next_options and next_duration for now
                 BeginLogin();
             }
-            else if (loginSuccess)
+            else if (reply.Success)
             {
                 UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
 
                 ulong handle = Utils.UIntsToLong(regionX, regionY);
 
                 // Connect to the sim given in the login reply
-                if (Connect(simIP, simPort, handle, true, LoginSeedCapability) != null)
+                if (Connect(reply.SimIP, simPort, handle, true, LoginSeedCapability) != null)
                 {
                     // Request the economy data right after login
                     SendPacket(new EconomyDataRequestPacket());
@@ -1561,50 +1691,35 @@ namespace OpenMetaverse
             }
         }
 
-
-        #endregion
-
         /// <summary>
         /// Handle response from LLSD login replies
         /// </summary>
         /// <param name="client"></param>
         /// <param name="result"></param>
         /// <param name="error"></param>
-        private void LoginReplyHandler(CapsClient client, OSD result, Exception error)
+        private void LoginReplyLLSDHandler(CapsClient client, OSD result, Exception error)
         {
             if (error == null)
             {
                 if (result != null && result.Type == OSDType.Map)
                 {
                     OSDMap map = (OSDMap)result;
-
                     OSD osd;
-                    string reason, message;
 
-                    if (map.TryGetValue("reason", out osd))
-                        reason = osd.AsString();
-                    else
-                        reason = String.Empty;
-
-                    if (map.TryGetValue("message", out osd))
-                        message = osd.AsString();
-                    else
-                        message = String.Empty;
+                    LoginResponseData data = new LoginResponseData();
+                    data.Parse(map);
 
                     if (map.TryGetValue("login", out osd))
                     {
                         bool loginSuccess = osd.AsBoolean();
                         bool redirect = (osd.AsString() == "indeterminate");
-                        LoginResponseData data = new LoginResponseData();
-                        data.Reason = reason;
-                        data.Message = message;               
 
                         if (redirect)
                         {
                             // Login redirected
 
                             // Make the next login URL jump
-                            UpdateLoginStatus(LoginStatus.Redirecting, message);
+                            UpdateLoginStatus(LoginStatus.Redirecting, data.Message);
 
                             LoginParams loginParams = CurrentContext.Value;
                             loginParams.URI = LoginResponseData.ParseString("next_url", map);
@@ -1625,13 +1740,10 @@ namespace OpenMetaverse
                         {
                             // Login succeeded
 
-                            // Parse successful login replies into LoginResponseData structs
-                            data.Parse(map);
-
                             // Fire the login callback
                             if (OnLoginResponse != null)
                             {
-                                try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
+                                try { OnLoginResponse(loginSuccess, redirect, data.Message, data.Reason, data); }
                                 catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                             }
 
@@ -1647,13 +1759,13 @@ namespace OpenMetaverse
                             if (data.SimIP != null && data.SimPort != 0)
                             {
                                 // Connect to the sim given in the login reply
-                                if (Connect(IPAddress.Parse(data.SimIP), (ushort)data.SimPort, handle, true, LoginSeedCapability) != null)
+                                if (Connect(data.SimIP, (ushort)data.SimPort, handle, true, LoginSeedCapability) != null)
                                 {
                                     // Request the economy data right after login
                                     SendPacket(new EconomyDataRequestPacket());
 
                                     // Update the login message with the MOTD returned from the server
-                                    UpdateLoginStatus(LoginStatus.Success, message);
+                                    UpdateLoginStatus(LoginStatus.Success, data.Message);
 
                                     // Fire an event for connecting to the grid
                                     if (OnConnected != null)
@@ -1679,12 +1791,12 @@ namespace OpenMetaverse
                             // Login failed
 
                             // Make sure a usable error key is set
-                            if (reason != String.Empty)
-                                InternalErrorKey = reason;
+                            if (data.Reason != String.Empty)
+                                InternalErrorKey = data.Reason;
                             else
                                 InternalErrorKey = "unknown";
 
-                            UpdateLoginStatus(LoginStatus.Failed, message);
+                            UpdateLoginStatus(LoginStatus.Failed, data.Message);
                         }
                     }
                     else
@@ -1707,6 +1819,7 @@ namespace OpenMetaverse
                 UpdateLoginStatus(LoginStatus.Failed, error.Message);
             }
         }
+        
         /// <summary>
         /// Get current OS
         /// </summary>
@@ -1717,7 +1830,6 @@ namespace OpenMetaverse
             {
                 case PlatformID.Unix:
                     return "Linux";
-
                 default:
                     return "Win";
             }

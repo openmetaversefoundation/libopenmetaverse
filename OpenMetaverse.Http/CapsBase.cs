@@ -257,6 +257,7 @@ namespace OpenMetaverse.Http
             });
 
             object[] cbArgs = new object[] { address, method, data, userToken };
+            asyncThread.IsBackground = true;
             asyncThread.Start(cbArgs);
         }
 

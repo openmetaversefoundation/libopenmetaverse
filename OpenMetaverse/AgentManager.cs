@@ -3065,14 +3065,14 @@ namespace OpenMetaverse
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
             LoginResponseData reply)
         {
-            id = UUID.Parse(reply.AgentID);
-            sessionID = UUID.Parse(reply.SessionID);
-            secureSessionID = UUID.Parse(reply.SecureSessionID);
+            id = reply.AgentID;
+            sessionID = reply.SessionID;
+            secureSessionID = reply.SecureSessionID;
             firstName = reply.FirstName;
             lastName = reply.LastName;
             startLocation = reply.StartLocation;
             agentAccess = reply.AgentAccess;
-            Movement.Camera.LookDirection(OSDParser.DeserializeLLSDNotation(reply.LookAt).AsVector3());
+            Movement.Camera.LookDirection(reply.LookAt);
             homePosition = reply.HomePosition;
             homeLookAt = reply.HomeLookAt;
         }
