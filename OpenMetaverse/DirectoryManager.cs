@@ -517,7 +517,7 @@ namespace OpenMetaverse
         /// </summary>
         public UUID StartPlacesSearch()
         {
-            return StartPlacesSearch(DirFindFlags.AgentOwned, Parcel.ParcelCategory.Any, String.Empty, String.Empty, 
+            return StartPlacesSearch(DirFindFlags.AgentOwned, ParcelCategory.Any, String.Empty, String.Empty, 
                 UUID.Zero, UUID.Zero);
         }
 
@@ -530,7 +530,7 @@ namespace OpenMetaverse
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
         public UUID StartPlacesSearch(DirFindFlags findFlags, UUID groupID)
         {
-            return StartPlacesSearch(findFlags, Parcel.ParcelCategory.Any, String.Empty, String.Empty, groupID, 
+            return StartPlacesSearch(findFlags, ParcelCategory.Any, String.Empty, String.Empty, groupID, 
                 UUID.Random());
         }
 
@@ -542,7 +542,7 @@ namespace OpenMetaverse
         /// <param name="groupID">LLUID of group you want to recieve results for</param>
         /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
-        public UUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, UUID groupID, UUID transactionID)
+        public UUID StartPlacesSearch(DirFindFlags findFlags, ParcelCategory searchCategory, UUID groupID, UUID transactionID)
         {
             return StartPlacesSearch(findFlags, searchCategory, String.Empty, String.Empty, groupID, transactionID);
         }
@@ -557,7 +557,7 @@ namespace OpenMetaverse
         /// <param name="groupID">LLUID of group you want to recieve results for</param>
         /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
-        public UUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, string searchText, string simulatorName, UUID groupID, UUID transactionID)
+        public UUID StartPlacesSearch(DirFindFlags findFlags, ParcelCategory searchCategory, string searchText, string simulatorName, UUID groupID, UUID transactionID)
         {
             PlacesQueryPacket find = new PlacesQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;

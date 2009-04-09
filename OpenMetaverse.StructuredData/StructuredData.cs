@@ -902,6 +902,16 @@ namespace OpenMetaverse.StructuredData
                 this.value = new List<OSD>();
         }
 
+        public override byte[] AsBinary()
+        {
+            byte[] binary = new byte[value.Count];
+
+            for (int i = 0; i < value.Count; i++)
+                binary[i] = (byte)value[i].AsInteger();
+
+            return binary;
+        }
+
         public override Vector2 AsVector2()
         {
             Vector2 vector = Vector2.Zero;

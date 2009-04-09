@@ -35,55 +35,10 @@ namespace OpenMetaverse.StructuredData
                     return OSD.FromReal((double)json);
                 case JsonType.String:
                     string str = (string)json;
-
                     if (String.IsNullOrEmpty(str))
-                    {
                         return new OSD();
-                    }
                     else
-                    {
-                        switch (str[0])
-                        {
-                            case 'd':
-                                if (str.StartsWith("date::"))
-                                {
-                                    DateTime dt;
-                                    if (DateTime.TryParse(str.Substring(6), out dt))
-                                        return OSD.FromDate(dt);
-                                }
-                                break;
-                            case 'u':
-                                if (str.StartsWith("uuid::"))
-                                {
-                                    UUID id;
-                                    if (UUID.TryParse(str.Substring(6), out id))
-                                        return OSD.FromUUID(id);
-                                }
-                                else if (str.StartsWith("uri::"))
-                                {
-                                    try
-                                    {
-                                        Uri uri = new Uri(str.Substring(5));
-                                        return OSD.FromUri(uri);
-                                    }
-                                    catch (UriFormatException) { }
-                                }
-                                break;
-                            case 'b':
-                                if (str.StartsWith("b64::"))
-                                {
-                                    try
-                                    {
-                                        byte[] data = Convert.FromBase64String(str.Substring(5));
-                                        return OSD.FromBinary(data);
-                                    }
-                                    catch (FormatException) { }
-                                }
-                                break;
-                        }
-
-                        return OSD.FromString((string)json);
-                    }
+                        return OSD.FromString(str);
                 case JsonType.Array:
                     OSDArray array = new OSDArray(json.Count);
                     for (int i = 0; i < json.Count; i++)
@@ -121,15 +76,17 @@ namespace OpenMetaverse.StructuredData
                 case OSDType.Real:
                     return new JsonData(osd.AsReal());
                 case OSDType.String:
-                    return new JsonData(osd.AsString());
                 case OSDType.Date:
-                    return new JsonData("date::" + osd.AsString());
                 case OSDType.URI:
-                    return new JsonData("uri::" + osd.AsString());
                 case OSDType.UUID:
-                    return new JsonData("uuid::" + osd.AsString());
+                    return new JsonData(osd.AsString());
                 case OSDType.Binary:
-                    return new JsonData("b64::" + Convert.ToBase64String(osd.AsBinary()));
+                    byte[] binary = osd.AsBinary();
+                    JsonData jsonbinarray = new JsonData();
+                    jsonbinarray.SetJsonType(JsonType.Array);
+                    for (int i = 0; i < binary.Length; i++)
+                        jsonbinarray.Add(new JsonData(binary[i]));
+                    return jsonbinarray;
                 case OSDType.Array:
                     JsonData jsonarray = new JsonData();
                     jsonarray.SetJsonType(JsonType.Array);

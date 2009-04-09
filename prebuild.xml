@@ -168,6 +168,7 @@
           <Exclude name="CRC32.cs"/>
           <Exclude name="CircularHashedQueue.cs"/>
           <Exclude name="TokenBucket.cs"/>
+          <Exclude name="Enums.cs"/>
         </Match>
       </Files>
     </Project>

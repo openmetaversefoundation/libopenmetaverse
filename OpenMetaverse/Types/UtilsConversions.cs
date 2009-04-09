@@ -31,6 +31,70 @@ namespace OpenMetaverse
 {
     public static partial class Utils
     {
+        #region String Arrays
+
+        private static readonly string[] _AssetTypeNames = new string[]
+        {
+            "texture",
+	        "sound",
+	        "callcard",
+	        "landmark",
+	        "script",
+	        "clothing",
+	        "object",
+	        "notecard",
+	        "category",
+	        "root",
+	        "lsltext",
+	        "lslbyte",
+	        "txtr_tga",
+	        "bodypart",
+	        "trash",
+	        "snapshot",
+	        "lstndfnd",
+	        "snd_wav",
+	        "img_tga",
+	        "jpeg",
+	        "animatn",
+	        "gesture",
+	        "simstate"
+        };
+
+        private static readonly string[] _InventoryTypeNames = new string[]
+        {
+            "texture",
+	        "sound",
+	        "callcard",
+	        "landmark",
+	        String.Empty,
+	        String.Empty,
+	        "object",
+	        "notecard",
+	        "category",
+	        "root",
+	        "script",
+	        String.Empty,
+	        String.Empty,
+	        String.Empty,
+	        String.Empty,
+	        "snapshot",
+	        String.Empty,
+	        "attach",
+	        "wearable",
+	        "animation",
+	        "gesture",
+        };
+
+        private static readonly string[] _SaleTypeNames = new string[]
+        {
+            "not",
+            "orig",
+            "copy",
+            "cntn"
+        };
+
+        #endregion String Arrays
+
         #region BytesTo
 
         /// <summary>
@@ -723,6 +787,88 @@ namespace OpenMetaverse
         }
 
         #endregion TryParse
+
+        #region Enum String Conversion
+
+        /// <summary>
+        /// Takes an AssetType and returns the string representation
+        /// </summary>
+        /// <param name="type">The source <seealso cref="AssetType"/></param>
+        /// <returns>The string version of the AssetType</returns>
+        public static string AssetTypeToString(AssetType type)
+        {
+            return _AssetTypeNames[(int)type];
+        }
+
+        /// <summary>
+        /// Translate a string name of an AssetType into the proper Type
+        /// </summary>
+        /// <param name="type">A string containing the AssetType name</param>
+        /// <returns>The AssetType which matches the string name, or AssetType.Unknown if no match was found</returns>
+        public static AssetType StringToAssetType(string type)
+        {
+            for (int i = 0; i < _AssetTypeNames.Length; i++)
+            {
+                if (_AssetTypeNames[i] == type)
+                    return (AssetType)i;
+            }
+
+            return AssetType.Unknown;
+        }
+
+        /// <summary>
+        /// Convert an InventoryType to a string
+        /// </summary>
+        /// <param name="type">The <seealso cref="T:InventoryType"/> to convert</param>
+        /// <returns>A string representation of the source</returns>
+        public static string InventoryTypeToString(InventoryType type)
+        {
+            return _InventoryTypeNames[(int)type];
+        }
+
+        /// <summary>
+        /// Convert a string into a valid InventoryType
+        /// </summary>
+        /// <param name="type">A string representation of the InventoryType to convert</param>
+        /// <returns>A InventoryType object which matched the type</returns>
+        public static InventoryType StringToInventoryType(string type)
+        {
+            for (int i = 0; i < _InventoryTypeNames.Length; i++)
+            {
+                if (_InventoryTypeNames[i] == type)
+                    return (InventoryType)i;
+            }
+
+            return InventoryType.Unknown;
+        }
+
+        /// <summary>
+        /// Convert a SaleType to a string
+        /// </summary>
+        /// <param name="type">The <seealso cref="T:SaleType"/> to convert</param>
+        /// <returns>A string representation of the source</returns>
+        public static string SaleTypeToString(SaleType type)
+        {
+            return _SaleTypeNames[(int)type];
+        }
+
+        /// <summary>
+        /// Convert a string into a valid SaleType
+        /// </summary>
+        /// <param name="value">A string representation of the SaleType to convert</param>
+        /// <returns>A SaleType object which matched the type</returns>
+        public static SaleType StringToSaleType(string value)
+        {
+            for (int i = 0; i < _SaleTypeNames.Length; i++)
+            {
+                if (value == _SaleTypeNames[i])
+                    return (SaleType)i;
+            }
+
+            return SaleType.Not;
+        }
+
+        #endregion Enum String Conversion
 
         #region Miscellaneous
 

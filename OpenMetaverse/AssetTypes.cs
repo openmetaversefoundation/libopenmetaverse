@@ -603,7 +603,7 @@ namespace OpenMetaverse
                                 GroupOwned = (Int32.Parse(fields[1]) != 0);
                                 break;
                             case "sale_type":
-                                ForSale = InventoryManager.StringToSaleType(fields[1]);
+                                ForSale = Utils.StringToSaleType(fields[1]);
                                 break;
                             case "sale_price":
                                 SalePrice = Int32.Parse(fields[1]);
@@ -644,7 +644,7 @@ namespace OpenMetaverse
             data.Append("\t}\n");
             data.Append("\tsale_info\t0\n");
             data.Append("\t{\n");
-            data.Append("\t\tsale_type\t"); data.Append(InventoryManager.SaleTypeToString(ForSale)); data.Append(NL);
+            data.Append("\t\tsale_type\t"); data.Append(Utils.SaleTypeToString(ForSale)); data.Append(NL);
             data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append(NL);
             data.Append("\t}\n");
             data.Append("type "); data.Append((int)WearableType); data.Append(NL);

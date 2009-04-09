@@ -663,6 +663,7 @@ namespace OpenMetaverse
         public InstantMessageOnline Offline;
         /// <summary>Context specific packed data</summary>
         public byte[] BinaryBucket;
+
         //Print the contents of a message
         public override string ToString()
         {
