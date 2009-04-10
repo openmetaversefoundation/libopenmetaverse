@@ -923,6 +923,9 @@ namespace OpenMetaverse
                 case AssetType.Sound:
                     asset = new AssetSound();
                     break;
+                case AssetType.Landmark:
+                    asset = new AssetLandmark();
+                    break;
                 default:
                     Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
                     return null;
