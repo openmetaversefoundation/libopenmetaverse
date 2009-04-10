@@ -350,6 +350,12 @@ namespace OpenMetaverse
             LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
             LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibrarySkeleton = ParseInventorySkeleton("inventory-skel-lib", reply);
+
+            // UDP Blacklist
+            if (reply.ContainsKey("udp_blacklist"))
+            {
+                UDPBlacklist = ParseString("udp_blacklist", reply);
+            }
         }
 
         public void ToXmlRpc(XmlWriter writer)
@@ -1026,6 +1032,7 @@ namespace OpenMetaverse
         /// message of the day, and after a failed login a descriptive error 
         /// message will be returned</summary>
         public string LoginMessage { get { return InternalLoginMessage; } }
+
         #endregion
 
         #region Private Members
@@ -1036,6 +1043,8 @@ namespace OpenMetaverse
         private string InternalLoginMessage = String.Empty;
         private string InternalRawLoginReply = String.Empty;
         private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
+        /// <summary>A list of packets obtained during the login process which networkmanager will log but not process</summary>
+        private List<string> UDPBlacklist = new List<string>();
         #endregion
 
         #region Public Methods
@@ -1450,7 +1459,11 @@ namespace OpenMetaverse
                 }
 
                 #endregion Critical Information
-
+                
+                /* Add any blacklisted UDP packets to the blacklist
+                 * for exclusion from packet processing */
+                UDPBlacklist.AddRange(reply.UDPBlacklist.Split(','));
+                
                 // Misc:
                 //uint timestamp = (uint)reply.seconds_since_epoch;
                 //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?

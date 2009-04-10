@@ -733,6 +733,14 @@ namespace OpenMetaverse
 
                     if (packet != null)
                     {
+                        // skip blacklisted packets
+                        if (UDPBlacklist.Contains(packet.Type.ToString()))
+                        {
+                            Logger.Log(String.Format("Discarding Blacklisted packet {0} from {1}", 
+                                packet.Type, simulator.IPEndPoint), Helpers.LogLevel.Warning);
+                            return;
+                        }
+
                         // Skip the ACK handling on packets synthesized from CAPS messages
                         if (packet.Header.Sequence != 0)
                         {
