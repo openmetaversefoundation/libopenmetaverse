@@ -442,6 +442,31 @@
       </Files>
     </Project>
     
+    <Project name="IRCGateway" path="Programs/examples/IRCGateway" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Net"/>
+      <Reference name="System.Net.Sockets"/>
+      <Reference name="System.Text"/>
+      <Reference name="System.Threading"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>      
+    
     <Project name="Dashboard" path="Programs/examples/Dashboard" type="WinExe">
       <Configuration name="Debug">
         <Options>
