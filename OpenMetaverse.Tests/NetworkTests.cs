@@ -34,6 +34,7 @@ using NUnit.Framework;
 namespace OpenMetaverse.Tests
 {
     [TestFixture]
+    [Category("Network")]
     public class NetworkTests : Assert
     {
         GridClient Client;
