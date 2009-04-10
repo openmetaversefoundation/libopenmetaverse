@@ -3,25 +3,49 @@ using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse.Messages.Linden
 {
-    public class PrimOwnersListMessage
+    /// <summary>
+    /// Contains a list of prim owner information for a specific parcel in a simulator
+    /// </summary>
+    /// <remarks>
+    /// A Simulator will always return at least 1 entry
+    /// If agent does not have proper permission the OwnerID will be UUID.Zero
+    /// If agent does not have proper permission OR there are no primitives on parcel
+    /// the DataBlocksExtended map will not be sent from the simulator
+    /// </remarks>
+    public class ParcelObjectOwnersMessage
     {
-        public class DataBlock
+        /// <summary>
+        /// Prim ownership information for a specified owner on a single parcel
+        /// </summary>
+        public class PrimOwners
         {
+            /// <summary>The <see cref="UUID"/> of the prim owner, 
+            /// UUID.Zero if agent has no permission</summary>
             public UUID OwnerID;
+            /// <summary>The total number of prims on parcel owned</summary>
             public int Count;
+            /// <summary>True if the Owner is a group</summary>
             public bool IsGroupOwned;
+            /// <summary>True if the owner is online 
+            /// <remarks>This is no longer used by the LL Simulators</remarks></summary>
             public bool OnlineStatus;
+            /// <summary>The date of the newest prim</summary>
             public DateTime TimeStamp;
         }
 
-        public DataBlock[] DataBlocks;
+        /// <summary>
+        /// An Array of Datablocks containing prim owner information
+        /// </summary>
+        public PrimOwners[] DataBlocks;
 
+        /// <summary>
+        /// Create an OSDMap from the parcel prim owner information
+        /// </summary>
+        /// <returns></returns>
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(2);
-
             OSDArray dataArray = new OSDArray(DataBlocks.Length);
-            OSDArray dataExtendedArray = new OSDArray(DataBlocks.Length);
+            OSDArray dataExtendedArray = new OSDArray();
 
             for (int i = 0; i < DataBlocks.Length; i++)
             {
@@ -32,35 +56,65 @@ namespace OpenMetaverse.Messages.Linden
                 dataMap["OnlineStatus"] = OSD.FromBoolean(DataBlocks[i].OnlineStatus);
                 dataArray.Add(dataMap);
 
-                OSDMap dataExtendedMap = new OSDMap(1);
-                dataExtendedMap["TimeStamp"] = OSD.FromDate(DataBlocks[i].TimeStamp);
-                dataExtendedArray.Add(dataExtendedMap);
-
+                /* If the tmestamp is null, don't create the DataExtended map, this 
+                 * is usually when the parcel contains no primitives, or the agent does not have
+                 * permissions to see ownership information */
+                if (DataBlocks[i].TimeStamp != null)
+                {
+                    OSDMap dataExtendedMap = new OSDMap(1);
+                    dataExtendedMap["TimeStamp"] = OSD.FromDate(DataBlocks[i].TimeStamp);
+                    dataExtendedArray.Add(dataExtendedMap);
+                }
             }
 
-            map["Data"] = dataArray;
-            map["DataExtended"] = dataExtendedArray;
+            OSDMap map = new OSDMap();
+            map.Add("Data", dataArray);
+            if(dataExtendedArray.Count > 0)
+                map.Add("DataExtended", dataExtendedArray);
 
             return map;
         }
 
+        /// <summary>
+        /// Convert an OSDMap into the a strongly typed object containing 
+        /// prim ownership information
+        /// </summary>
+        /// <param name="map"></param>
         public void Deserialize(OSDMap map)
         {
             OSDArray dataArray = (OSDArray)map["Data"];
-            OSDArray dataExtendedArray = (OSDArray)map["DataExtended"];
 
-            DataBlocks = new DataBlock[dataArray.Count];
+            // DataExtended is optional, will not exist of parcel contains zero prims
+            OSDArray dataExtendedArray;
+            if (map.ContainsKey("DataExtended"))
+            {
+                dataExtendedArray = (OSDArray)map["DataExtended"];
+            }
+            else
+            {
+                dataExtendedArray = new OSDArray();
+            }
+
+            DataBlocks = new PrimOwners[dataArray.Count];
+
             for (int i = 0; i < dataArray.Count; i++)
             {
                 OSDMap dataMap = (OSDMap)dataArray[i];
-                DataBlock block = new DataBlock();
+                PrimOwners block = new PrimOwners();
                 block.OwnerID = dataMap["OwnerID"].AsUUID();
                 block.Count = dataMap["Count"].AsInteger();
                 block.IsGroupOwned = dataMap["IsGroupOwned"].AsBoolean();
                 block.OnlineStatus = dataMap["OnlineStatus"].AsBoolean(); // deprecated
 
-                OSDMap dataExtendedMap = (OSDMap)dataExtendedArray[i];
-                block.TimeStamp = dataExtendedMap["TimeStamp"].AsDate();
+                /* if the agent has no permissions, or there are no prims, the counts
+                 * should not match up, so we don't decode the DataExtended map */
+                if (dataExtendedArray.Count == dataArray.Count)
+                {
+                    OSDMap dataExtendedMap = (OSDMap)dataExtendedArray[i];
+                    block.TimeStamp = dataExtendedMap["TimeStamp"].AsDate();
+                }
+
+                DataBlocks[i] = block;  
             }
         }
     }
@@ -74,7 +128,7 @@ namespace OpenMetaverse.Messages.Linden
         public Vector3 AABBMax;
         public Vector3 AABBMin;
         public int Area;
-        public int AuctionID;
+        public uint AuctionID;
         public UUID AuthBuyerID;
         public byte[] Bitmap;
         public ParcelCategory Category;
@@ -213,14 +267,26 @@ namespace OpenMetaverse.Messages.Linden
             AABBMax = parcelDataMap["AABBMax"].AsVector3();
             AABBMin = parcelDataMap["AABBMin"].AsVector3();
             Area = parcelDataMap["Area"].AsInteger();
-            AuctionID = parcelDataMap["AuctionID"].AsInteger();
+            AuctionID = (uint)parcelDataMap["AuctionID"].AsInteger();
             AuthBuyerID = parcelDataMap["AuthBuyerID"].AsUUID();
             Bitmap = parcelDataMap["Bitmap"].AsBinary();
             Category = (ParcelCategory)parcelDataMap["Category"].AsInteger();
             ClaimDate = Utils.UnixTimeToDateTime((uint)parcelDataMap["ClaimDate"].AsInteger());
             ClaimPrice = parcelDataMap["ClaimPrice"].AsInteger();
             Desc = parcelDataMap["Desc"].AsString();
-            ParcelFlags = (ParcelFlags)parcelDataMap["ParcelFlags"].AsLong(); // verify this!
+
+            // LL sends this as binary, we'll convert it here
+            if (parcelDataMap["ParcelFlags"].Type == OSDType.Binary)
+            {
+                byte[] bytes = parcelDataMap["ParcelFlags"].AsBinary();
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(bytes);
+                ParcelFlags = (ParcelFlags)BitConverter.ToUInt32(bytes, 0);
+            }
+            else
+            {
+                ParcelFlags = (ParcelFlags)parcelDataMap["ParcelFlags"].AsInteger(); // verify this!
+            }
             GroupID = parcelDataMap["GroupID"].AsUUID();
             GroupPrims = parcelDataMap["GroupPrims"].AsInteger();
             IsGroupOwned = parcelDataMap["IsGroupOwned"].AsBoolean();
@@ -268,6 +334,98 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDMap ageVerificationBlockMap = (OSDMap)((OSDArray)map["AgeVerificationBlock"])[0];
             RegionDenyAgeUnverified = ageVerificationBlockMap["RegionDenyAgeUnverified"].AsBoolean();
+        }
+    }
+
+    public class ParcelPropertiesUpdateMessage
+    {
+        public UUID AuthBuyerID;
+        public bool MediaAutoScale;
+        public ParcelCategory Category;
+        public string Desc;
+        public UUID GroupID;
+        public LandingType Landing;
+        public int LocalID;
+        public string MediaDesc;
+        public int MediaHeight;
+        public bool MediaLoop;
+        public UUID MediaID;
+        public string MediaType;
+        public string MediaURL;
+        public int MediaWidth;
+        public string MusicURL;
+        public string Name;
+        public bool ObscureMedia;
+        public bool ObscureMusic;
+        public ParcelFlags ParcelFlags;
+        public float PassHours;
+        public uint PassPrice;
+        public uint SalePrice;
+        public UUID SnapshotID;
+        public Vector3 UserLocation;
+        public Vector3 UserLookAt;
+
+        public void Deserialize(OSDMap map)
+        {
+            AuthBuyerID = map["auth_buyer_id"].AsUUID();
+            MediaAutoScale = map["auto_scale"].AsBoolean();
+            Category = (ParcelCategory)map["category"].AsInteger();
+            Desc = map["description"].AsString();
+            GroupID = map["group_id"].AsUUID();
+            Landing = (LandingType)map["landing_type"].AsUInteger();
+            LocalID = map["local_id"].AsInteger();
+            MediaDesc = map["media_desc"].AsString();
+            MediaHeight = map["media_height"].AsInteger();
+            MediaLoop = map["media_loop"].AsBoolean();
+            MediaID = map["media_id"].AsUUID();
+            MediaType = map["media_type"].AsString();
+            MediaURL = map["media_url"].AsString();
+            MediaWidth = map["media_width"].AsInteger();
+            MusicURL = map["music_url"].AsString();
+            Name = map["name"].AsString();
+            ObscureMedia = map["obscure_media"].AsBoolean();
+            ObscureMusic = map["obscure_music"].AsBoolean();
+            ParcelFlags = (ParcelFlags)map["parcel_flags"].AsInteger();
+            PassHours = (float)map["pass_hours"].AsReal();
+            PassPrice = map["pass_price"].AsUInteger();
+            SalePrice = map["sale_price"].AsUInteger();
+            SnapshotID = map["snapshot_id"].AsUUID();
+            UserLocation = map["user_location"].AsVector3();
+            UserLookAt = map["user_look_at"].AsVector3();
+        }
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["auth_buyer_id"] = OSD.FromUUID(AuthBuyerID);
+            map["auto_scale"] = OSD.FromBoolean(MediaAutoScale);
+            map["category"] = OSD.FromInteger((byte)Category);
+            map["description"] = OSD.FromString(Desc);
+            map["flags"] = OSD.FromBinary(Utils.EmptyBytes);
+            map["group_id"] = OSD.FromUUID(GroupID);
+            map["landing_type"] = OSD.FromInteger((byte)Landing);
+            map["local_id"] = OSD.FromInteger(LocalID);
+            map["media_desc"] = OSD.FromString(MediaDesc);
+            map["media_height"] = OSD.FromInteger(MediaHeight);
+            map["media_id"] = OSD.FromUUID(MediaID);
+            map["media_loop"] = OSD.FromBoolean(MediaLoop);
+            map["media_type"] = OSD.FromString(MediaType);
+            map["media_url"] = OSD.FromString(MediaURL);
+            map["media_width"] = OSD.FromInteger(MediaWidth);
+            map["music_url"] = OSD.FromString(MusicURL);
+            map["name"] = OSD.FromString(Name);
+            map["obscure_media"] = OSD.FromBoolean(ObscureMedia);
+            map["obscure_music"] = OSD.FromBoolean(ObscureMusic);
+            // is this endian correct?
+            map["parcel_flags"] = OSD.FromInteger((int)ParcelFlags);
+            map["pass_hours"] = OSD.FromReal(PassHours);
+            map["pass_price"] = OSD.FromInteger(PassPrice);
+            map["sale_price"] = OSD.FromInteger(SalePrice);
+            map["snapshot_id"] = OSD.FromUUID(SnapshotID);
+            map["user_location"] = OSD.FromVector3(UserLocation);
+            map["user_look_at"] = OSD.FromVector3(UserLookAt);
+
+            return map;
         }
     }
 

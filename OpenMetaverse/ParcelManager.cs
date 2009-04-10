@@ -30,6 +30,7 @@ using System.Threading;
 using System.Reflection;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Messages.Linden;
 using OpenMetaverse.Http;
 
 namespace OpenMetaverse
@@ -389,7 +390,7 @@ namespace OpenMetaverse
     public struct ParcelMedia
     {
         /// <summary>A byte, if 0x1 viewer should auto scale media to fit object</summary>
-        public byte MediaAutoScale;
+        public bool MediaAutoScale;
         /// <summary>A boolean, if true the viewer should loop the media</summary>
         public bool MediaLoop;
         /// <summary>The Asset UUID of the Texture which when applied to a 
@@ -605,7 +606,7 @@ namespace OpenMetaverse
             {
                 OSDMap body = new OSDMap();
                 body["auth_buyer_id"] =  OSD.FromUUID(this.AuthBuyerID);
-                body["auto_scale"] =  OSD.FromInteger(this.Media.MediaAutoScale);
+                body["auto_scale"] =  OSD.FromBoolean(this.Media.MediaAutoScale);
                 body["category"] = OSD.FromInteger((byte)this.Category);
                 body["description"] = OSD.FromString(this.Desc);
                 body["flags"] =  OSD.FromBinary(Utils.EmptyBytes);
@@ -644,10 +645,8 @@ namespace OpenMetaverse
                 ulat.Add(OSD.FromReal(this.UserLocation.Z));
                 body["user_look_at"] = ulat;
 
-                //Console.WriteLine("OSD REQUEST\n{0}", body.ToString());
-
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(body);
-                //Console.WriteLine("{0}", OSDParser.SerializeLLSDXmlString(body));
+
                 CapsClient capsPost = new CapsClient(url);
                 capsPost.StartRequest(postData);
 
@@ -667,7 +666,7 @@ namespace OpenMetaverse
                 request.ParcelData.Desc = Utils.StringToBytes(this.Desc);
                 request.ParcelData.GroupID = this.GroupID;
                 request.ParcelData.LandingType = (byte)this.Landing;
-                request.ParcelData.MediaAutoScale = this.Media.MediaAutoScale;
+                request.ParcelData.MediaAutoScale = (this.Media.MediaAutoScale) ? (byte)0x1 : (byte)0x0;
                 request.ParcelData.MediaID = this.Media.MediaID;
                 request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
                 request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
@@ -1490,81 +1489,66 @@ namespace OpenMetaverse
         private void ParcelPropertiesReplyHandler(string capsKey, OSD llsd, Simulator simulator)
         {
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
-            {             
-                OSDMap map = (OSDMap)llsd;
-                OSDMap parcelDataBlock = (OSDMap)(((OSDArray)map["ParcelData"])[0]);
-                OSDMap ageVerifyBlock = (OSDMap)(((OSDArray)map["AgeVerificationBlock"])[0]);
+            {
+                ParcelPropertiesMessage message = new ParcelPropertiesMessage();
+                message.Deserialize((OSDMap)llsd);
 
-                OSDMap mediaDataBlock=null;
-                if(map.ContainsKey("MediaData")) //OpenSim compatability, does not yet do this via caps so make it optional
-                    mediaDataBlock = (OSDMap)(((OSDArray)map["MediaData"])[0]);
+                Parcel parcel = new Parcel(message.LocalID);
 
-                Parcel parcel = new Parcel(parcelDataBlock["LocalID"].AsInteger());
-
-                parcel.AABBMax = ((OSDArray)parcelDataBlock["AABBMax"]).AsVector3();
-                parcel.AABBMin = ((OSDArray)parcelDataBlock["AABBMin"]).AsVector3();
-                parcel.Area = parcelDataBlock["Area"].AsInteger();
-                parcel.AuctionID = (uint)parcelDataBlock["AuctionID"].AsInteger();
-                parcel.AuthBuyerID = parcelDataBlock["AuthBuyerID"].AsUUID();
-                parcel.Bitmap = parcelDataBlock["Bitmap"].AsBinary();
-                parcel.Category = (ParcelCategory)parcelDataBlock["Category"].AsInteger();
-                parcel.ClaimDate = Utils.UnixTimeToDateTime((uint)parcelDataBlock["ClaimDate"].AsInteger());
-                parcel.ClaimPrice = parcelDataBlock["ClaimPrice"].AsInteger();
-                parcel.Desc = parcelDataBlock["Desc"].AsString();
-                
-                // TODO: this probably needs to happen when the packet is deserialized.
-                byte[] bytes = parcelDataBlock["ParcelFlags"].AsBinary();
-                if (BitConverter.IsLittleEndian)
-                    Array.Reverse(bytes);
-                parcel.Flags = (ParcelFlags)BitConverter.ToUInt32(bytes, 0);
-                parcel.GroupID = parcelDataBlock["GroupID"].AsUUID();
-                parcel.GroupPrims = parcelDataBlock["GroupPrims"].AsInteger();
-                parcel.IsGroupOwned = parcelDataBlock["IsGroupOwned"].AsBoolean();
-                parcel.Landing = (LandingType)(byte)parcelDataBlock["LandingType"].AsInteger();
-                parcel.LocalID = parcelDataBlock["LocalID"].AsInteger();
-                parcel.MaxPrims = parcelDataBlock["MaxPrims"].AsInteger();
-                parcel.Media.MediaAutoScale = (byte)parcelDataBlock["MediaAutoScale"].AsInteger(); 
-                parcel.Media.MediaID = parcelDataBlock["MediaID"].AsUUID();
-                parcel.Media.MediaURL = parcelDataBlock["MediaURL"].AsString();
-                parcel.MusicURL = parcelDataBlock["MusicURL"].AsString();
-                parcel.Name = parcelDataBlock["Name"].AsString();
-                parcel.OtherCleanTime = parcelDataBlock["OtherCleanTime"].AsInteger();
-                parcel.OtherCount = parcelDataBlock["OtherCount"].AsInteger();
-                parcel.OtherPrims = parcelDataBlock["OtherPrims"].AsInteger();
-                parcel.OwnerID = parcelDataBlock["OwnerID"].AsUUID();
-                parcel.OwnerPrims = parcelDataBlock["OwnerPrims"].AsInteger();
-                parcel.ParcelPrimBonus = (float)parcelDataBlock["ParcelPrimBonus"].AsReal();
-                parcel.PassHours = (float)parcelDataBlock["PassHours"].AsReal();
-                parcel.PassPrice = parcelDataBlock["PassPrice"].AsInteger();
-                parcel.PublicCount = parcelDataBlock["PublicCount"].AsInteger();
-                parcel.RegionDenyAgeUnverified = ageVerifyBlock["RegionDenyAgeUnverified"].AsBoolean();
-                parcel.RegionDenyAnonymous = parcelDataBlock["RegionDenyAnonymous"].AsBoolean();
-                parcel.RegionPushOverride = parcelDataBlock["RegionPushOverride"].AsBoolean();
-                parcel.RentPrice = parcelDataBlock["RentPrice"].AsInteger();
-                ParcelResult result = (ParcelResult)parcelDataBlock["RequestResult"].AsInteger();
-                parcel.SalePrice = parcelDataBlock["SalePrice"].AsInteger();
-                int selectedPrims = parcelDataBlock["SelectedPrims"].AsInteger();
-                parcel.SelfCount = parcelDataBlock["SelfCount"].AsInteger();
-                int sequenceID = parcelDataBlock["SequenceID"].AsInteger();
-                parcel.SimWideMaxPrims = parcelDataBlock["SimWideMaxPrims"].AsInteger();
-                parcel.SimWideTotalPrims = parcelDataBlock["SimWideTotalPrims"].AsInteger();
-                bool snapSelection = parcelDataBlock["SnapSelection"].AsBoolean();
-                parcel.SnapshotID = parcelDataBlock["SnapshotID"].AsUUID();
-                parcel.Status = (ParcelStatus)parcelDataBlock["Status"].AsInteger();
-                parcel.TotalPrims = parcelDataBlock["TotalPrims"].AsInteger();
-                parcel.UserLocation = ((OSDArray)parcelDataBlock["UserLocation"]).AsVector3();
-                parcel.UserLookAt = ((OSDArray)parcelDataBlock["UserLookAt"]).AsVector3();
-
-                if(mediaDataBlock!=null)
-                {
-                    parcel.Media.MediaDesc = mediaDataBlock["MediaDesc"].AsString();
-                    parcel.Media.MediaHeight = mediaDataBlock["MediaHeight"].AsInteger();
-                    parcel.Media.MediaWidth = mediaDataBlock["MediaWidth"].AsInteger();
-                    parcel.Media.MediaLoop = mediaDataBlock["MediaLoop"].AsBoolean();
-                    parcel.Media.MediaType = mediaDataBlock["MediaType"].AsString();
-                    parcel.ObscureMedia = mediaDataBlock["ObscureMedia"].AsBoolean();
-                    parcel.ObscureMusic = mediaDataBlock["ObscureMusic"].AsBoolean();
-                }
+                parcel.AABBMax = message.AABBMax;
+                parcel.AABBMin = message.AABBMin;
+                parcel.Area = message.Area;
+                parcel.AuctionID = message.AuctionID;
+                parcel.AuthBuyerID = message.AuthBuyerID;
+                parcel.Bitmap = message.Bitmap;
+                parcel.Category = message.Category;
+                parcel.ClaimDate = message.ClaimDate;
+                parcel.ClaimPrice = message.ClaimPrice;
+                parcel.Desc = message.Desc;
+                parcel.Flags = message.ParcelFlags;
+                parcel.GroupID = message.GroupID;
+                parcel.GroupPrims = message.GroupPrims;
+                parcel.IsGroupOwned = message.IsGroupOwned;
+                parcel.Landing = message.LandingType;
+                parcel.MaxPrims = message.MaxPrims;
+                parcel.Media.MediaAutoScale = message.MediaAutoScale;
+                parcel.Media.MediaID = message.MediaID;
+                parcel.Media.MediaURL = message.MediaURL;
+                parcel.MusicURL = message.MusicURL;
+                parcel.Name = message.Name;
+                parcel.OtherCleanTime = message.OtherCleanTime;
+                parcel.OtherCount = message.OtherCount;
+                parcel.OtherPrims = message.OtherPrims;
+                parcel.OwnerID = message.OwnerID;
+                parcel.OwnerPrims = message.OwnerPrims;
+                parcel.ParcelPrimBonus = message.ParcelPrimBonus;
+                parcel.PassHours = message.PassHours;
+                parcel.PassPrice = message.PassPrice;
+                parcel.PublicCount = message.PublicCount;
+                parcel.RegionDenyAgeUnverified = message.RegionDenyAgeUnverified;
+                parcel.RegionDenyAnonymous = message.RegionDenyAnonymous;
+                parcel.RegionPushOverride = message.RegionPushOverride;
+                parcel.RentPrice = message.RentPrice;
+                ParcelResult result = message.RequestResult;
+                parcel.SalePrice = message.SalePrice;
+                int selectedPrims = message.SelectedPrims;
+                parcel.SelfCount = message.SelfCount;
+                int sequenceID = message.SequenceID;
+                parcel.SimWideMaxPrims = message.SimWideMaxPrims;
+                parcel.SimWideTotalPrims = message.SimWideTotalPrims;
+                bool snapSelection = message.SnapSelection;
+                parcel.SnapshotID = message.SnapshotID;
+                parcel.Status = message.Status;
+                parcel.TotalPrims = message.TotalPrims;
+                parcel.UserLocation = message.UserLocation;
+                parcel.UserLookAt = message.UserLookAt;
+                parcel.Media.MediaDesc = message.MediaDesc;
+                parcel.Media.MediaHeight = message.MediaHeight;
+                parcel.Media.MediaWidth = message.MediaWidth;
+                parcel.Media.MediaLoop = message.MediaLoop;
+                parcel.Media.MediaType = message.MediaType;
+                parcel.ObscureMedia = message.ObscureMedia;
+                parcel.ObscureMusic = message.ObscureMusic;
 
                 if (Client.Settings.PARCEL_TRACKING)
                 {
@@ -1675,7 +1659,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Decode the prim owner information, send the decoded object to any event subscribers
         /// </summary>
         /// <param name="capsKey"></param>
         /// <param name="llsd"></param>
@@ -1684,53 +1668,28 @@ namespace OpenMetaverse
         {
             if (OnPrimOwnersListReply != null)
             {
-
-                OSDMap map = (OSDMap)llsd;
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
-                if (map.ContainsKey("Data") && map.ContainsKey("DataExtended"))
+                ParcelObjectOwnersMessage message = new ParcelObjectOwnersMessage();
+                message.Deserialize((OSDMap)llsd);
+
+                for (int i = 0; i < message.DataBlocks.Length; i++)
                 {
+                    ParcelPrimOwners primOwner = new ParcelPrimOwners();
+                    primOwner.OwnerID = message.DataBlocks[i].OwnerID;
+                    primOwner.Count = message.DataBlocks[i].Count;
+                    primOwner.IsGroupOwned = message.DataBlocks[i].IsGroupOwned;
+                    primOwner.OnlineStatus = message.DataBlocks[i].OnlineStatus;
+                    primOwner.NewestPrim = message.DataBlocks[i].TimeStamp;
 
-                    OSDArray dataBlock = (OSDArray)map["Data"];
-                    OSDArray dataExtendedBlock = (OSDArray)map["DataExtended"];
-
-                    for (int i = 0; i < dataBlock.Count; i++)
-                    {
-                        ParcelPrimOwners poe = new ParcelPrimOwners();
-                        poe.OwnerID = ((OSDMap)dataBlock[i])["OwnerID"].AsUUID();
-                        poe.Count = ((OSDMap)dataBlock[i])["Count"].AsInteger();
-                        poe.IsGroupOwned = ((OSDMap)dataBlock[i])["IsGroupOwned"].AsBoolean();
-                        poe.OnlineStatus = ((OSDMap)dataBlock[i])["OnlineStatus"].AsBoolean();
-                        if (((OSDMap)dataExtendedBlock[i]).ContainsKey("TimeStamp"))
-                        {
-                            byte[] bytes = (((OSDMap)dataExtendedBlock[i])["TimeStamp"].AsBinary());
-
-                            if (BitConverter.IsLittleEndian)
-                                Array.Reverse(bytes);
-
-                            uint value = Utils.BytesToUInt(bytes);
-
-                            poe.NewestPrim = Utils.UnixTimeToDateTime(value);
-                        }
-
-                        primOwners.Add(poe);
-                    }
-
-                   
-                }
-                else
-                {
-                    // the server will send back a response even when there are no prims
-                    primOwners.Add(new ParcelPrimOwners());    
+                    primOwners.Add(primOwner);
                 }
 
-                if (OnPrimOwnersListReply != null)
-                {
-                    try { OnPrimOwnersListReply(simulator, primOwners); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
-            }
+                try { OnPrimOwnersListReply(simulator, primOwners); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }                
         }
+        
 
         /// <summary>
         /// 
@@ -1759,7 +1718,7 @@ namespace OpenMetaverse
             ParcelMediaUpdatePacket reply = (ParcelMediaUpdatePacket)packet;
             ParcelMedia media = new ParcelMedia();
 
-            media.MediaAutoScale = reply.DataBlock.MediaAutoScale;
+            media.MediaAutoScale = (reply.DataBlock.MediaAutoScale == (byte)0x1) ? true : false;
             media.MediaID = reply.DataBlock.MediaID;
             media.MediaDesc = Utils.BytesToString(reply.DataBlockExtended.MediaDesc);
             media.MediaHeight = reply.DataBlockExtended.MediaHeight;
