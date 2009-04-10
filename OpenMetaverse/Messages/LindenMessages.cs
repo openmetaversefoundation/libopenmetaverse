@@ -3,6 +3,192 @@ using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse.Messages.Linden
 {
+    public class TeleportFinishMessage
+    {
+        public UUID AgentID;
+        public int LocationID;
+        public ulong RegionHandle;
+        public Uri SeedCapability;
+        public SimAccess SimAccess;
+        public IPAddress IP;
+        public int Port;
+        public TeleportFlags Flags;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+
+            OSDArray infoArray = new OSDArray(1);
+
+            OSDMap info = new OSDMap(8);
+            info.Add("AgentID", OSD.FromUUID(AgentID));
+            info.Add("LocationID", OSD.FromInteger(LocationID)); // Unused by the client
+            info.Add("RegionHandle", OSD.FromULong(RegionHandle));
+            info.Add("SeedCapability", OSD.FromUri(SeedCapability));
+            info.Add("SimAccess", OSD.FromInteger((byte)SimAccess));
+            info.Add("SimIP", OSD.FromBinary(IP.GetAddressBytes()));
+            info.Add("SimPort", OSD.FromInteger(Port));
+            info.Add("TeleportFlags", OSD.FromUInteger((uint)Flags));
+
+            infoArray.Add(info);
+
+            map.Add("Info", infoArray);
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray array = (OSDArray)map["Info"];
+            OSDMap blockMap = (OSDMap)array[0];
+
+            AgentID = blockMap["AgentID"].AsUUID();
+            LocationID = blockMap["LocationID"].AsInteger();
+            RegionHandle = blockMap["RegionHandle"].AsULong();
+            SeedCapability = blockMap["SeedCapability"].AsUri();
+            SimAccess = (SimAccess)blockMap["SimAccess"].AsInteger();
+            IP = new IPAddress(blockMap["SimIP"].AsBinary());
+            Port = blockMap["SimPort"].AsInteger();
+            Flags = (TeleportFlags)blockMap["TeleportFlags"].AsUInteger();
+        }
+    }
+
+    public class EstablishAgentCommunicationMessage
+    {
+        public UUID AgentID;
+        public IPAddress Address;
+        public int Port;
+        public Uri SeedCapability;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+            map["agent-id"] = OSD.FromUUID(AgentID);
+            map["sim-ip-and-port"] = OSD.FromString(String.Format("{0}:{1}", Address, Port));
+            map["seed-capability"] = OSD.FromUri(SeedCapability);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            string ipAndPort = map["sim-ip-and-port"].AsString();
+            int i = ipAndPort.IndexOf(':');
+
+            AgentID = map["agent-id"].AsUUID();
+            Address = IPAddress.Parse(ipAndPort.Substring(0, i));
+            Port = Int32.Parse(ipAndPort.Substring(i + 1));
+            SeedCapability = map["seed-capability"].AsUri();
+        }
+    }
+
+    public class CrossedRegionMessage
+    {
+        public Vector3 LookAt;
+        public Vector3 Position;
+        public UUID AgentID;
+        public UUID SessionID;
+        public ulong RegionHandle;
+        public Uri SeedCapability;
+        public IPAddress IP;
+        public int Port;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+
+            OSDArray infoArray = new OSDArray(1);
+            OSDMap infoMap = new OSDMap(2);
+            infoMap["LookAt"] = OSD.FromVector3(LookAt);
+            infoMap["Position"] = OSD.FromVector3(Position);
+            infoArray.Add(infoMap);
+            map["Info"] = infoArray;
+
+            OSDArray agentDataArray = new OSDArray(1);
+            OSDMap agentDataMap = new OSDMap(2);
+            agentDataMap["AgentID"] = OSD.FromUUID(AgentID);
+            agentDataMap["SessionID"] = OSD.FromUUID(SessionID);
+            agentDataArray.Add(agentDataMap);
+            map["AgentData"] = agentDataArray;
+
+            OSDArray regionDataArray = new OSDArray(1);
+            OSDMap regionDataMap = new OSDMap(4);
+            regionDataMap["RegionHandle"] = OSD.FromULong(RegionHandle);
+            regionDataMap["SeedCapability"] = OSD.FromUri(SeedCapability);
+            regionDataMap["SimIP"] = OSD.FromBinary(IP.GetAddressBytes());
+            regionDataMap["SimPort"] = OSD.FromInteger(Port);
+            regionDataArray.Add(regionDataMap);
+            map["RegionData"] = regionDataArray;
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap infoMap = (OSDMap)((OSDArray)map["Info"])[0];
+            LookAt = infoMap["LookAt"].AsVector3();
+            Position = infoMap["Position"].AsVector3();
+
+            OSDMap agentDataMap = (OSDMap)((OSDArray)map["AgentData"])[0];
+            AgentID = agentDataMap["AgentID"].AsUUID();
+            SessionID = agentDataMap["SessionID"].AsUUID();
+
+            OSDMap regionDataMap = (OSDMap)((OSDArray)map["RegionData"])[0];
+            RegionHandle = regionDataMap["RegionHandle"].AsULong();
+            SeedCapability = regionDataMap["SeedCapability"].AsUri();
+            IP = new IPAddress(regionDataMap["SimIP"].AsBinary());
+            Port = regionDataMap["SimPort"].AsInteger();
+        }
+    }
+
+    public class EnableSimulatorMessage
+    {
+        public class SimulatorInfoBlock
+        {
+            public ulong RegionHandle;
+            public IPAddress IP;
+            public int Port;
+        }
+
+        public SimulatorInfoBlock[] Simulators;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+
+            OSDArray array = new OSDArray(Simulators.Length);
+            for (int i = 0; i < Simulators.Length; i++)
+            {
+                SimulatorInfoBlock block = Simulators[i];
+
+                OSDMap blockMap = new OSDMap(3);
+                blockMap["Handle"] = OSD.FromULong(block.RegionHandle);
+                blockMap["IP"] = OSD.FromBinary(block.IP.GetAddressBytes());
+                blockMap["Port"] = OSD.FromInteger(block.Port);
+                array.Add(blockMap);
+            }
+
+            map["SimulatorInfo"] = array;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray array = (OSDArray)map["SimulatorInfo"];
+            Simulators = new SimulatorInfoBlock[array.Count];
+
+            for (int i = 0; i < array.Count; i++)
+            {
+                OSDMap blockMap = (OSDMap)array[i];
+
+                SimulatorInfoBlock block = new SimulatorInfoBlock();
+                block.RegionHandle = blockMap["Handle"].AsULong();
+                block.IP = new IPAddress(blockMap["IP"].AsBinary());
+                block.Port = blockMap["Port"].AsInteger();
+                Simulators[i] = block;
+            }
+        }
+    }
+
     /// <summary>
     /// Contains a list of prim owner information for a specific parcel in a simulator
     /// </summary>
