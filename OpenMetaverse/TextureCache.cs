@@ -36,6 +36,11 @@ namespace OpenMetaverse
     /// </summary>
     public class TextureCache
     {
+        // User can plug in a routine to compute the texture cache location
+        public delegate string ComputeTextureCacheFilenameDelegate(string cacheDir, UUID textureID);
+
+        public ComputeTextureCacheFilenameDelegate ComputeTextureCacheFilename = null;
+
         private GridClient Client;
         private Thread cleanerThread;
         private System.Timers.Timer cleanerTimer;
@@ -149,6 +154,9 @@ namespace OpenMetaverse
         /// <returns>String with the file name of the cahced image</returns>
         private string FileName(UUID imageID)
         {
+            if (ComputeTextureCacheFilename != null) {
+                return ComputeTextureCacheFilename(Client.Settings.TEXTURE_CACHE_DIR, imageID);
+            }
             return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
         }
 
