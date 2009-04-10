@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse.Messages.Linden
